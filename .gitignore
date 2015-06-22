@@ -1,3 +1,6 @@
 *.txt
 *.pyc
 *.glyphs
+*.ufo
+*.otf
+*.ttf
