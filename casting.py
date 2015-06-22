@@ -7,12 +7,10 @@ import json
 import re
 
 
-def cast_data(data, types=None):
+def cast_data(data, types=None, print_dbg=False):
     """Cast the attributes of parsed glyphs file content."""
 
-    print_dbg = False
     if types is None:
-        print_dbg = True
         types = get_type_structure()
 
     new_data = {}
@@ -109,7 +107,7 @@ def get_type_structure():
             'leftMetricsKey': str,
             'rightKerningGroup': str,
             'rightMetricsKey': str,
-            'unicode': str  #TODO(jamesgk) could be parsed as hex value
+            'unicode': hex_int
         },
         'instances': {
             'customParameters': {
@@ -130,6 +128,11 @@ def get_type_structure():
 def default(value):
     """Just return the value (i.e. don't cast it to anything)."""
     return value
+
+
+def hex_int(string):
+    """Return the hexidecimal value represented by a string."""
+    return int(string, 16)
 
 
 def vector(string, dimension):
