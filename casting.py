@@ -102,7 +102,7 @@ def get_type_structure():
                     'closed': bool,
                     'nodes': nodelist
                 },
-                'width': float
+                'width': num
             },
             'leftKerningGroup': str,
             'leftMetricsKey': str,
@@ -131,6 +131,14 @@ def default(value):
     return value
 
 
+def num(string):
+    """Prefer casting to int, but use float if necessary."""
+
+    val = float(string)
+    int_val = int(val)
+    return int_val if int_val == val else val
+
+
 def hex_int(string):
     """Return the hexidecimal value represented by a string."""
     return int(string, 16)
@@ -140,7 +148,7 @@ def vector(string, dimension):
     """Parse a vector from a string with format {X, Y, Z, ...}."""
 
     rx = '{%s}' % ', '.join(['([-.\d]+)'] * dimension)
-    return [float(i) for i in re.match(rx, string).groups()]
+    return [num(i) for i in re.match(rx, string).groups()]
 
 
 def point(string):
@@ -156,7 +164,7 @@ def node(string):
 
     rx = '([-.\d]+) ([-.\d]+) (LINE|CURVE|OFFCURVE)(?: (SMOOTH))?'
     m = re.match(rx, string).groups()
-    return [float(m[0]), float(m[1]), m[2], m[3]]
+    return [num(m[0]), num(m[1]), m[2], m[3]]
 
 
 def castlist(strlist, cast):
