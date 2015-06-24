@@ -103,14 +103,11 @@ def draw_paths(pen, paths):
 
     for path in paths:
         pen.beginPath()
-        '''
-        closed = path.get('closed')
-        if not closed:
+        if not 'closed' in path:
             x, y, node_type, smooth = path['nodes'][0]
             assert node_type == 'LINE', 'Open path starts with off-curve points'
             pen.addPoint((x, y), 'move')
             path['nodes'] = path['nodes'][1:]
-        '''
         for x, y, node_type, smooth in path['nodes']:
             node_type = node_type.lower()
             if node_type not in ['line', 'curve']:
