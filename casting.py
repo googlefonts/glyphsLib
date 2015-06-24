@@ -42,7 +42,7 @@ def get_type_structure():
         'DisplayStrings': list,
         'classes': {
             'automatic': bool,
-            'code': str,
+            'code': feature_syntax,
             'name': str
         },
         'copyright': str,
@@ -55,12 +55,12 @@ def get_type_structure():
         'designerURL': str,
         'familyName': str,
         'featurePrefixes': {
-            'code': str,
+            'code': feature_syntax,
             'name': str
         },
         'features': {
             'automatic': bool,
-            'code': str,
+            'code': feature_syntax,
             'name': str
         },
         'fontMaster': {
@@ -200,3 +200,8 @@ def version_minor(string):
     num = int(string)
     assert num >= 0 and num <= 999
     return num
+
+
+def feature_syntax(string):
+    """Replace un-escaped characters with their intended characters."""
+    return string.replace('\\012', '\n').replace('\\011', '\t')
