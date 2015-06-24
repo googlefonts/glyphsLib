@@ -9,19 +9,44 @@ def to_robofab(data):
     and returns a list of RFonts, one per master.
     """
 
+    copyright = data['copyright']
+    date_created = data['date'].strftime('%Y/%m/%d %H:%M:%S')
+    designer = data['designer']
+    designer_url = data['designerURL']
     family_name = data['familyName']
-    unitsPerEm = data['unitsPerEm']
+    manufacturer = data['manufacturer']
+    manufacturer_url = data['manufacturerURL']
+    units_per_em = data['unitsPerEm']
+    version_major = data['versionMajor']
+    version_minor = data['versionMinor']
+
+    feature_prefixes = [f['code'] for f in data['featurePrefixes']]
+    classes = [(c['name'], c['code']) for c in data['classes']]
+    features = [(f['name'], f['code']) for f in data['features']]
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     rfonts = {}
     for master in data['fontMaster']:
         rfont = RFont()
+
+        rfont.info.copyright = copyright
+        rfont.info.openTypeNameDesigner = designer
+        rfont.info.openTypeNameDesignerURL = designer_url
         rfont.info.familyName = family_name
-        rfont.info.unitsPerEm = unitsPerEm
+        rfont.info.openTypeNameManufacturer = manufacturer
+        rfont.info.openTypeNameManufacturerURL = manufacturer_url
+        rfont.info.openTypeHeadCreated = date_created
+        rfont.info.unitsPerEm = units_per_em
+        rfont.into.versionMajor = version_major
+        rfont.info.versionMinor = version_minor
+
         rfont.info.ascender = master['ascender']
         rfont.info.capHeight = master['capHeight']
         rfont.info.descender = master['descender']
+        rfont.info.postscriptStemSnapH = master['horizontalStems']
+        rfont.info.postscriptStemSnapV = master['verticalStems']
         rfont.info.xHeight = master['xHeight']
+
         rfonts[master['id']] = rfont
 
     for glyph in data['glyphs']:
@@ -55,6 +80,7 @@ def to_robofab(data):
 
     result = []
     for rfont in rfonts.values():
+        write_features(rfont, feature_prefixes, classes, features)
         rfont.info.postscriptFullName = (
             '%s-%s' % (rfont.info.familyName.replace(' ', ''),
                        rfont.info.styleName.replace(' ', '')))
@@ -106,3 +132,18 @@ def add_anchors(glyph, anchors):
 
     for anchor in anchors:
         glyph.appendAnchor(anchor['name'], anchor['position'])
+
+
+def write_features(font, feature_prefixes, classes, features):
+    """Write an RFont's OpenType feature file."""
+
+    text = ''
+    for feature_prefix in feature_prefixes:
+        text += feature_prefix + '\n'
+    text += '\n'
+    for class_info in classes:
+        text += '@%s = [%s];\n' % class_info
+    text += '\n'
+    for name, code in features:
+        text += '%s {\n%s\n} %s;\n\n' % (name, code, name)
+    font.features.text = text
