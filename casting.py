@@ -77,6 +77,7 @@ def get_type_structure():
             'userData': dict,
             'verticalStems': intlist,
             'weightValue': int,
+            'widthValue': int,
             'xHeight': int
         },
         'glyphs': {
