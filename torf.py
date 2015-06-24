@@ -42,7 +42,7 @@ def to_robofab(data):
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
         rfont.info.unitsPerEm = units_per_em
-        rfont.into.versionMajor = version_major
+        rfont.info.versionMajor = version_major
         rfont.info.versionMinor = version_minor
 
         rfont.info.ascender = master['ascender']
