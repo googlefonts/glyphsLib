@@ -147,5 +147,9 @@ def write_features(font, feature_prefixes, classes, features):
         text += '@%s = [%s];\n' % class_info
     text += '\n'
     for name, code in features:
-        text += '%s {\n%s\n} %s;\n\n' % (name, code, name)
+        # empty features cause makeotf to fail, but empty instructions are fine
+        # so insert an empty instruction into any empty feature definitions
+        if not code.strip():
+            code = ';'
+        text += 'feature %s {\n%s\n} %s;\n\n' % (name, code, name)
     font.features.text = text
