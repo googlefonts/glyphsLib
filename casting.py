@@ -34,7 +34,6 @@ def cast_data(data, types=None, print_dbg=False):
     return new_data
 
 
-# should see: DisplayStrings not found, fontMaster/weight not casted
 def get_type_structure():
     """Generate and return the highest-level type hierarchy for glyphs data."""
 

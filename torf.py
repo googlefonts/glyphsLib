@@ -3,7 +3,7 @@ from robofab.world import RFont
 
 def to_robofab(data):
     """Take .glyphs file data and load it into RFonts.
- 
+
     Takes in data as a dictionary structured according to
     https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
     and returns a list of RFonts, one per master.
