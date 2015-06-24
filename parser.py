@@ -25,23 +25,9 @@ class Parser:
 					start = i
 					while True:
 						c = st[i];i+=1
-						if c in '"\\':
+						if c == '"':
 							break
-					if c == b'"':
-						self.add_object(st[start:i-1])
-					else:
-						s = bytearray(st[start:i-1])
-						i-=1
-						while True:
-							c = st[i];i+=1
-							if c == b'"':
-								break
-							if c == b'\\':
-								c = st[i];i+=1
-								s.append(c)
-								continue
-							s.append(c)
-						self.add_object(bytes(s))
+					self.add_object(st[start:i-1])
 					c = st[i];i+=1
 				elif b'a'<=c<=b'z' or b'A'<=c<=b'Z' or b'0'<=c<=b'9' or c in b'._':
 					start = i - 1
