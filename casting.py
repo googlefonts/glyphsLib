@@ -3,6 +3,7 @@ __all__ = [
 ]
 
 
+from datetime import datetime
 import json
 import re
 
@@ -49,7 +50,7 @@ def get_type_structure():
             'name': str,
             'value': default
         },
-        'date': str,  #TODO(jamesgk) need custom method here?
+        'date': glyphs_datetime,
         'designer': str,
         'designerURL': str,
         'familyName': str,
@@ -80,7 +81,7 @@ def get_type_structure():
         },
         'glyphs': {
             'glyphname': str,
-            'lastChange': str,  #TODO(jamesgk) also a date
+            'lastChange': glyphs_datetime,
             'layers': {
                 'anchors': {
                     'name': str,
@@ -173,6 +174,11 @@ def pointlist(strlist):
 
 def nodelist(strlist):
     return castlist(strlist, node)
+
+
+def glyphs_datetime(string):
+    """Parse a datetime object from a string, ignoring the timezone."""
+    return datetime.strptime(string[:string.rfind(' ')], '%Y-%m-%d %H:%M:%S')
 
 
 def kerning(kerning_data):
