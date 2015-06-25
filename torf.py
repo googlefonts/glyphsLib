@@ -14,6 +14,55 @@ def to_robofab(data):
     and returns a list of RFonts, one per master.
     """
 
+    feature_prefixes = [f['code'] for f in data['featurePrefixes']]
+    classes = [(c['name'], c['code']) for c in data['classes']]
+    features = [(f['name'], f['code']) for f in data['features']]
+    kerning_groups = {}
+
+    #TODO(jamesgk) maybe create one font at a time to reduce memory usage
+    rfonts = generate_base_fonts(data)
+
+    for glyph in data['glyphs']:
+        glyph_name = glyph['glyphname']
+        glyph_unicode = glyph.get('unicode')
+        add_glyph_to_groups(kerning_groups, glyph, glyph_name)
+
+        for layer in glyph['layers']:
+            try:
+                rfont = rfonts[layer['layerId']]
+            except KeyError:
+                print 'Odd data, layer with id', layer['layerId']
+                continue
+
+            style_name = layer['name']
+            if rfont.info.styleName:
+                assert rfont.info.styleName == style_name, ('Inconsistent '
+                    'layer id/name pairs between glyphs')
+            else:
+                rfont.info.styleName = style_name
+
+            glyph = rfont.newGlyph(glyph_name)
+            if glyph_unicode:
+                glyph.unicode = glyph_unicode
+            to_glyph(glyph, layer)
+
+    for master_id, kerning in data['kerning'].items():
+        to_kerning(rfonts[master_id].kerning, kerning)
+
+    result = []
+    for rfont in rfonts.values():
+        write_features(rfont, feature_prefixes, classes, features)
+        add_kerning_groups(rfont, kerning_groups)
+        rfont.info.postscriptFullName = (
+            '%s-%s' % (rfont.info.familyName.replace(' ', ''),
+                       rfont.info.styleName.replace(' ', '')))
+        result.append(rfont)
+    return result
+
+
+def generate_base_fonts(data):
+    """Generate a list of RFonts with metadata loaded from .glyphs data."""
+
     copyright = data['copyright']
     date_created = data['date'].strftime('%Y/%m/%d %H:%M:%S')
     designer = data['designer']
@@ -25,12 +74,6 @@ def to_robofab(data):
     version_major = data['versionMajor']
     version_minor = data['versionMinor']
 
-    feature_prefixes = [f['code'] for f in data['featurePrefixes']]
-    classes = [(c['name'], c['code']) for c in data['classes']]
-    features = [(f['name'], f['code']) for f in data['features']]
-    kerning_groups = {}
-
-    #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     rfonts = {}
     for master in data['fontMaster']:
         rfont = RFont()
@@ -55,56 +98,15 @@ def to_robofab(data):
 
         rfonts[master['id']] = rfont
 
-    for glyph in data['glyphs']:
-        glyph_name = glyph['glyphname']
-        glyph_unicode = glyph.get('unicode')
+    return rfonts
 
-        group_keys = {
-            'L': 'rightKerningGroup',
-            'R': 'leftKerningGroup'}
-        for side in 'LR':
-            group_key = group_keys[side]
-            if group_key not in glyph:
-                continue
-            #TODO(jamesgk) figure out if this is a general rule for group naming
-            group = '@MMK_%s_%s' % (side, glyph[group_key])
-            kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
-        for layer in glyph['layers']:
-            try:
-                rfont = rfonts[layer['layerId']]
-            except KeyError:
-                print 'Odd data, layer with id', layer['layerId']
-                continue
+def to_kerning(rkerning, glyphs_kerning):
+    """Add .glyphs kerning to an RKerning object."""
 
-            style_name = layer['name']
-            if rfont.info.styleName:
-                assert rfont.info.styleName == style_name, ('Inconsistent '
-                    'layer id/name pairs between glyphs')
-            else:
-                rfont.info.styleName = style_name
-
-            glyph = rfont.newGlyph(glyph_name)
-            if glyph_unicode:
-                glyph.unicode = glyph_unicode
-            to_glyph(glyph, layer)
-
-    for master_id, kerning in data['kerning'].items():
-        rfont = rfonts[master_id]
-        for left, pairs in kerning.items():
-            for right, kerning_val in pairs.items():
-                rfont.kerning[left, right] = kerning_val
-
-    result = []
-    for rfont in rfonts.values():
-        write_features(rfont, feature_prefixes, classes, features)
-        for name, glyphs in kerning_groups.items():
-            rfont.groups[name] = glyphs
-        rfont.info.postscriptFullName = (
-            '%s-%s' % (rfont.info.familyName.replace(' ', ''),
-                       rfont.info.styleName.replace(' ', '')))
-        result.append(rfont)
-    return result
+    for left, pairs in glyphs_kerning.items():
+        for right, kerning_val in pairs.items():
+            rkerning[left, right] = kerning_val
 
 
 def to_glyph(glyph, layer):
@@ -148,6 +150,28 @@ def add_anchors(glyph, anchors):
 
     for anchor in anchors:
         glyph.appendAnchor(anchor['name'], anchor['position'])
+
+
+def add_glyph_to_groups(kerning_groups, glyph_data):
+    """Add a glyph to its kerning groups, creating new groups if necessary."""
+
+    group_keys = {
+        'L': 'rightKerningGroup',
+        'R': 'leftKerningGroup'}
+    for side in 'LR':
+        group_key = group_keys[side]
+        if group_key not in glyph_data:
+            continue
+        #TODO(jamesgk) figure out if this is a general rule for group naming
+        group = '@MMK_%s_%s' % (side, glyph[group_key])
+        kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
+
+
+def add_kerning_groups(rfont, kerning_groups):
+    """Add kerning groups to an RFont."""
+
+    for name, glyphs in kerning_groups.items():
+        rfont.groups[name] = glyphs
 
 
 def write_features(font, feature_prefixes, classes, features):
