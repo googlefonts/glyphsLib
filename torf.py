@@ -28,6 +28,7 @@ def to_robofab(data):
     feature_prefixes = [f['code'] for f in data['featurePrefixes']]
     classes = [(c['name'], c['code']) for c in data['classes']]
     features = [(f['name'], f['code']) for f in data['features']]
+    kerning_groups = {}
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     rfonts = {}
@@ -58,6 +59,17 @@ def to_robofab(data):
         glyph_name = glyph['glyphname']
         glyph_unicode = glyph.get('unicode')
 
+        group_keys = {
+            'L': 'rightKerningGroup',
+            'R': 'leftKerningGroup'}
+        for side in 'LR':
+            group_key = group_keys[side]
+            if group_key not in glyph:
+                continue
+            #TODO(jamesgk) figure out if this is a general rule for group naming
+            group = '@MMK_%s_%s' % (side, glyph[group_key])
+            kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
+
         for layer in glyph['layers']:
             try:
                 rfont = rfonts[layer['layerId']]
@@ -86,6 +98,8 @@ def to_robofab(data):
     result = []
     for rfont in rfonts.values():
         write_features(rfont, feature_prefixes, classes, features)
+        for name, glyphs in kerning_groups.items():
+            rfont.groups[name] = glyphs
         rfont.info.postscriptFullName = (
             '%s-%s' % (rfont.info.familyName.replace(' ', ''),
                        rfont.info.styleName.replace(' ', '')))
