@@ -29,7 +29,7 @@ class Parser:
 							break
 					self.add_object(st[start:i-1])
 					c = st[i];i+=1
-				elif b'a'<=c<=b'z' or b'A'<=c<=b'Z' or b'0'<=c<=b'9' or c in b'._':
+				elif b'a'<=c<=b'z' or b'A'<=c<=b'Z' or b'0'<=c<=b'9' or c in b'._-':
 					start = i - 1
 					while True:
 						c = st[i];i+=1
