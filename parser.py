@@ -39,7 +39,7 @@ class Parser:
 							break
 					self.add_object(st[start:i-1])
 				else:
-					assert 0, "Unexpected character '%s'" % c
+					assert 0, "Unexpected character '%s' at %d:\n%s" % (c, i, st[i:i+100])
 		except IndexError:
 			pass
 		assert not self.stack
