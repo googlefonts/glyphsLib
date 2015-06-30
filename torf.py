@@ -20,7 +20,7 @@ def to_robofab(data):
     kerning_groups = {}
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    rfonts = generate_base_fonts(data)
+    rfonts, master_id_order = generate_base_fonts(data)
 
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
@@ -47,7 +47,8 @@ def to_robofab(data):
         load_kerning(rfonts[master_id].kerning, kerning)
 
     result = []
-    for rfont in rfonts.values():
+    for master_id in master_id_order:
+        rfont = rfonts[master_id]
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
 
@@ -92,6 +93,7 @@ def generate_base_fonts(data):
     license_url = custom_params.get('openTypeNameLicenseURL')
 
     rfonts = {}
+    master_id_order = []
     for master in data['fontMaster']:
         rfont = RFont()
 
@@ -121,9 +123,11 @@ def generate_base_fonts(data):
         rfont.info.postscriptStemSnapV = master['verticalStems']
         rfont.info.xHeight = master['xHeight']
 
-        rfonts[master['id']] = rfont
+        master_id = master['id']
+        master_id_order.append(master_id)
+        rfonts[master_id] = rfont
 
-    return rfonts
+    return rfonts, master_id_order
 
 
 def load_kerning(rkerning, glyphs_kerning):
