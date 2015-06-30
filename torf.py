@@ -50,9 +50,21 @@ def to_robofab(data):
     for rfont in rfonts.values():
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
+
+        style_code = 0
+        style_map = ['regular', 'bold', 'italic', 'bold italic']
+        style_name = rfont.info.styleName.lower()
+        if 'bold' in style_name or 'black' in style_name:
+            style_code += 1
+        if 'italic' in style_name:
+            style_code += 2
+        rfont.info.styleMapStyleName = style_map[style_code]
+
         rfont.info.postscriptFullName = (
             '%s-%s' % (rfont.info.familyName.replace(' ', ''),
                        rfont.info.styleName.replace(' ', '')))
+        rfont.info.openTypeNameUniqueID += rfont.info.styleName
+        rfont.info.openTypeNamePreferredSubfamilyName = rfont.info.styleName
         result.append(rfont)
     return result
 
@@ -67,9 +79,17 @@ def generate_base_fonts(data):
     family_name = data['familyName']
     manufacturer = data['manufacturer']
     manufacturer_url = data['manufacturerURL']
+    unique_id = '%s - %s ' % (manufacturer, family_name)
     units_per_em = data['unitsPerEm']
     version_major = data['versionMajor']
     version_minor = data['versionMinor']
+    version_string = 'Version %s.%s' % (version_major, version_minor)
+
+    custom_params = dict(
+        (p['name'], p['value']) for p in data['customParameters'])
+    trademark = custom_params.get('trademark')
+    license = custom_params.get('openTypeNameLicense')
+    license_url = custom_params.get('openTypeNameLicenseURL')
 
     rfonts = {}
     for master in data['fontMaster']:
@@ -78,13 +98,21 @@ def generate_base_fonts(data):
         rfont.info.copyright = copyright
         rfont.info.openTypeNameDesigner = designer
         rfont.info.openTypeNameDesignerURL = designer_url
-        rfont.info.familyName = family_name
+        rfont.info.openTypeNameUniqueID = unique_id
+        rfont.info.familyName = rfont.info.styleMapFamilyName = family_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
         rfont.info.unitsPerEm = units_per_em
         rfont.info.versionMajor = version_major
         rfont.info.versionMinor = version_minor
+        rfont.info.openTypeNameVersion = version_string
+
+        rfont.info.trademark = trademark
+        rfont.info.openTypeNameLicense = license
+        rfont.info.openTypeNameLicenseURL = license_url
+
+        rfont.info.openTypeNamePreferredFamilyName = family_name
 
         rfont.info.ascender = master['ascender']
         rfont.info.capHeight = master['capHeight']
