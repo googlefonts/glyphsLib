@@ -8,6 +8,11 @@ import json
 import re
 
 
+DEFAULTS = {
+    'widthValue': 100,
+    'weightValue': 100}
+
+
 def cast_data(data, types=None, print_dbg=False):
     """Cast the attributes of parsed glyphs file content."""
 
@@ -17,6 +22,10 @@ def cast_data(data, types=None, print_dbg=False):
     new_data = {}
     for key, cur_type in types.items():
         if key not in data:
+            try:
+                new_data[key] = DEFAULTS[key]
+            except KeyError:
+                pass
             continue
         if type(cur_type) == dict:
             new_data[key] = []
