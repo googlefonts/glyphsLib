@@ -61,7 +61,7 @@ def to_robofab(data):
             style_code += 2
         rfont.info.styleMapStyleName = style_map[style_code]
 
-        rfont.info.postscriptFullName = (
+        rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
             '%s-%s' % (rfont.info.familyName.replace(' ', ''),
                        rfont.info.styleName.replace(' ', '')))
         rfont.info.openTypeNameUniqueID += rfont.info.styleName
