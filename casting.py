@@ -49,7 +49,7 @@ def get_type_structure():
     return {
         'DisplayStrings': list,
         'classes': {
-            'automatic': bool,
+            'automatic': truthy,
             'code': feature_syntax,
             'name': str
         },
@@ -67,7 +67,7 @@ def get_type_structure():
             'name': str
         },
         'features': {
-            'automatic': bool,
+            'automatic': truthy,
             'code': feature_syntax,
             'name': str
         },
@@ -108,7 +108,7 @@ def get_type_structure():
                 'rightMetricsKey': str,
                 'name': str,
                 'paths': {
-                    'closed': bool,
+                    'closed': truthy,
                     'nodes': nodelist
                 },
                 'width': num
@@ -138,6 +138,13 @@ def get_type_structure():
 def default(value):
     """Just return the value (i.e. don't cast it to anything)."""
     return value
+
+
+def truthy(string):
+    """Ensure that a boolean value is 1, if present."""
+
+    assert string == '1'
+    return True
 
 
 def num(string):
