@@ -1,5 +1,5 @@
 __all__ = [
-    'cast_data'
+    'cast_data', 'cast_noto_data'
 ]
 
 
@@ -41,6 +41,14 @@ def cast_data(data, types=None, print_dbg=False):
     if print_dbg:
         print 'not casted in data:', json.dumps(data, indent=2, sort_keys=True)
     return new_data
+
+
+def cast_noto_data(data):
+    """Cast data which is specific to Noto font glyphs files."""
+
+    for param in data['customParameters']:
+        if param['name'] == 'openTypeOS2Type':
+            param['value'] = map(int, param['value'])
 
 
 def get_type_structure():
