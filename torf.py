@@ -49,6 +49,7 @@ def to_robofab(data):
                     rglyph.lib[LIB_PREFIX + metadata_key] = layer[metadata_key]
                 elif metadata_key in glyph:
                     rglyph.lib[LIB_PREFIX + metadata_key] = glyph[metadata_key]
+            load_background(rglyph, layer)
             load_glyph(rglyph, layer)
 
     for master_id, kerning in data['kerning'].items():
@@ -150,6 +151,27 @@ def load_kerning(rkerning, glyphs_kerning):
     for left, pairs in glyphs_kerning.items():
         for right, kerning_val in pairs.items():
             rkerning[left, right] = kerning_val
+
+
+def load_background(glyph, layer):
+    """Add background data to a glyph's lib data."""
+
+    try:
+        background = layer['background']
+    except KeyError:
+        return
+    glyph.lib[LIB_PREFIX + 'background'] = background
+
+    # NoneType objects must be removed before the data can be saved to a UFO, so
+    # remove NoneType objects which designate a point as non-smooth
+    try:
+        paths = background['paths']
+    except KeyError:
+        return
+    for path in paths:
+        for node in path['nodes']:
+            if node[3] is None:
+                del node[3]
 
 
 def load_glyph(glyph, layer):
