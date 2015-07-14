@@ -99,28 +99,7 @@ def get_type_structure():
         'glyphs': {
             'glyphname': str,
             'lastChange': glyphs_datetime,
-            'layers': {
-                'anchors': {
-                    'name': str,
-                    'position': point
-                },
-                'components': {
-                    'anchor': str,
-                    'name': str,
-                    'transform': transform
-                },
-                'associatedMasterId': str,
-                'background': dict,  #TODO has same children as layer
-                'layerId': str,
-                'leftMetricsKey': str,
-                'rightMetricsKey': str,
-                'name': str,
-                'paths': {
-                    'closed': truthy,
-                    'nodes': nodelist
-                },
-                'width': num
-            },
+            'layers': get_glyph_layer_type_structure(),
             'leftKerningGroup': str,
             'leftMetricsKey': str,
             'rightKerningGroup': str,
@@ -141,6 +120,40 @@ def get_type_structure():
         'versionMajor': int,
         'versionMinor': int
     }
+
+
+def get_glyph_layer_type_structure(background=False):
+    """Generate and return the type hierarchy for glyph layer data.
+
+    This is used for layer backgrounds as well, so it's abstracted out.
+    """
+
+    structure = {
+        'anchors': {
+            'name': str,
+            'position': point
+        },
+        'components': {
+            'anchor': str,
+            'name': str,
+            'transform': transform
+        },
+        'leftMetricsKey': str,
+        'rightMetricsKey': str,
+        'name': str,
+        'paths': {
+            'closed': truthy,
+            'nodes': nodelist
+        },
+        'width': num
+    }
+    if not background:
+        structure.update({
+            'associatedMasterId': str,
+            'background': layer_background,
+            'layerId': str
+        })
+    return structure
 
 
 def default(value):
@@ -204,6 +217,11 @@ def nodelist(strlist):
 def glyphs_datetime(string):
     """Parse a datetime object from a string, ignoring the timezone."""
     return datetime.strptime(string[:string.rfind(' ')], '%Y-%m-%d %H:%M:%S')
+
+
+def layer_background(data):
+    """Cast the background of a layer."""
+    return cast_data(data, get_glyph_layer_type_structure(background=True))
 
 
 def kerning(kerning_data):
