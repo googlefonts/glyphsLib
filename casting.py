@@ -161,7 +161,7 @@ def hex_int(string):
 def vector(string, dimension):
     """Parse a vector from a string with format {X, Y, Z, ...}."""
 
-    rx = '{%s}' % ', '.join(['([-.\d]+)'] * dimension)
+    rx = '{%s}' % ', '.join(['([-.e\d]+)'] * dimension)
     return [num(i) for i in re.match(rx, string).groups()]
 
 
@@ -176,7 +176,7 @@ def transform(string):
 def node(string):
     """Cast a node from a string with format X Y TYPE [SMOOTH]."""
 
-    rx = '([-.\d]+) ([-.\d]+) (LINE|CURVE|OFFCURVE)(?: (SMOOTH))?'
+    rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE)(?: (SMOOTH))?'
     m = re.match(rx, string).groups()
     return [num(m[0]), num(m[1]), m[2], m[3]]
 
