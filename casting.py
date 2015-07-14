@@ -183,21 +183,16 @@ def node(string):
     return [num(m[0]), num(m[1]), m[2], m[3]]
 
 
-def castlist(strlist, cast):
-    """Cast a list of strings."""
-    return [cast(string) for string in strlist]
-
-
 def intlist(strlist):
-    return castlist(strlist, int)
+    return map(int, strlist)
 
 
 def pointlist(strlist):
-    return castlist(strlist, point)
+    return map(point, strlist)
 
 
 def nodelist(strlist):
-    return castlist(strlist, node)
+    return map(node, strlist)
 
 
 def glyphs_datetime(string):
