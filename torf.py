@@ -60,23 +60,29 @@ def to_robofab(data):
         rfont = rfonts[master_id]
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
-
-        style_code = 0
-        style_map = ['regular', 'bold', 'italic', 'bold italic']
-        style_name = rfont.info.styleName.lower()
-        if 'bold' in style_name or 'black' in style_name:
-            style_code += 1
-        if 'italic' in style_name:
-            style_code += 2
-        rfont.info.styleMapStyleName = style_map[style_code]
-
-        rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
-            '%s-%s' % (rfont.info.familyName.replace(' ', ''),
-                       rfont.info.styleName.replace(' ', '')))
-        rfont.info.openTypeNameUniqueID += rfont.info.styleName
-        rfont.info.openTypeNamePreferredSubfamilyName = rfont.info.styleName
+        set_style_info(rfont)
         result.append(rfont)
     return result
+
+
+def set_style_info(rfont):
+    """Set the metadata for an RFont which depends on its style name."""
+
+    style_name = rfont.info.styleName
+    rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
+        '%s-%s' % (rfont.info.familyName.replace(' ', ''),
+                   style_name.replace(' ', '')))
+    rfont.info.openTypeNameUniqueID += style_name
+    rfont.info.openTypeNamePreferredSubfamilyName = style_name
+
+    style_code = 0
+    style_map = ['regular', 'bold', 'italic', 'bold italic']
+    style_name_lower = style_name.lower()
+    if 'bold' in style_name_lower or 'black' in style_name_lower:
+        style_code += 1
+    if 'italic' in style_name_lower:
+        style_code += 2
+    rfont.info.styleMapStyleName = style_map[style_code]
 
 
 def generate_base_fonts(data):
