@@ -26,16 +26,16 @@ def to_robofab(data):
         add_glyph_to_groups(kerning_groups, glyph)
 
         for layer in glyph['layers']:
-            try:
-                rfont = rfonts[layer['layerId']]
-            except KeyError:
-                print 'Odd data, layer with id', layer['layerId']
-                continue
+            layer_id = layer.get('associatedMasterId', layer['layerId'])
+            rfont = rfonts[layer_id]
 
             style_name = layer['name']
             if rfont.info.styleName:
-                assert rfont.info.styleName == style_name, ('Inconsistent '
-                    'layer id/name pairs between glyphs')
+                if rfont.info.styleName != style_name:
+                    print (
+                        'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
+                        % (glyph['glyphname'], style_name))
+                    continue
             else:
                 rfont.info.styleName = style_name
 
