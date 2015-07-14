@@ -141,10 +141,8 @@ def default(value):
 
 
 def truthy(string):
-    """Ensure that a boolean value is 1, if present."""
-
-    assert string == '1'
-    return True
+    """Determine if an int stored in a string is truthy."""
+    return bool(int(string))
 
 
 def num(string):
