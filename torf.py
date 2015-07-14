@@ -207,17 +207,14 @@ def add_groups_to_rfont(rfont, kerning_groups):
 def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     """Write an RFont's OpenType feature file."""
 
-    text = ''
-    for feature_prefix in feature_prefixes:
-        text += feature_prefix + '\n'
-    text += '\n'
-    for class_info in classes:
-        text += '@%s = [%s];\n' % class_info
-    text += '\n'
+    prefix_str = '\n'.join(feature_prefixes)
+    class_str = '\n'.join('@%s = [%s];' % class_info for class_info in classes)
+    feature_defs = []
     for name, code in features:
         # empty features cause makeotf to fail, but empty instructions are fine
         # so insert an empty instruction into any empty feature definitions
         if not code.strip():
             code = ';'
-        text += 'feature %s {\n%s\n} %s;\n\n' % (name, code, name)
-    rfont.features.text = text
+        feature_defs.append('feature %s {\n%s\n} %s;' % (name, code, name))
+    fea_str = '\n\n'.join(feature_defs)
+    rfont.features.text = '\n\n'.join([prefix_str, class_str, fea_str])
