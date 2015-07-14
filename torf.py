@@ -6,6 +6,9 @@ __all__ = [
 from robofab.world import RFont
 
 
+LIB_PREFIX = 'com.google.glyphs2ufo.'
+
+
 def to_robofab(data):
     """Take .glyphs file data and load it into RFonts.
 
@@ -41,6 +44,11 @@ def to_robofab(data):
 
             rglyph = rfont.newGlyph(glyph['glyphname'])
             rglyph.unicode = glyph.get('unicode')
+            for metadata_key in ['leftMetricsKey', 'rightMetricsKey']:
+                if metadata_key in layer:
+                    rglyph.lib[LIB_PREFIX + metadata_key] = layer[metadata_key]
+                elif metadata_key in glyph:
+                    rglyph.lib[LIB_PREFIX + metadata_key] = glyph[metadata_key]
             load_glyph(rglyph, layer)
 
     for master_id, kerning in data['kerning'].items():
@@ -85,12 +93,7 @@ def generate_base_fonts(data):
     version_major = data['versionMajor']
     version_minor = data['versionMinor']
     version_string = 'Version %s.%s' % (version_major, version_minor)
-
-    custom_params = dict(
-        (p['name'], p['value']) for p in data['customParameters'])
-    trademark = custom_params.get('trademark')
-    license = custom_params.get('openTypeNameLicense')
-    license_url = custom_params.get('openTypeNameLicenseURL')
+    custom_params = parse_custom_params(data)
 
     rfonts = {}
     master_id_order = []
@@ -102,6 +105,7 @@ def generate_base_fonts(data):
         rfont.info.openTypeNameDesignerURL = designer_url
         rfont.info.openTypeNameUniqueID = unique_id
         rfont.info.familyName = rfont.info.styleMapFamilyName = family_name
+        rfont.info.openTypeNamePreferredFamilyName = family_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
@@ -110,12 +114,6 @@ def generate_base_fonts(data):
         rfont.info.versionMinor = version_minor
         rfont.info.openTypeNameVersion = version_string
 
-        rfont.info.trademark = trademark
-        rfont.info.openTypeNameLicense = license
-        rfont.info.openTypeNameLicenseURL = license_url
-
-        rfont.info.openTypeNamePreferredFamilyName = family_name
-
         rfont.info.ascender = master['ascender']
         rfont.info.capHeight = master['capHeight']
         rfont.info.descender = master['descender']
@@ -123,11 +121,27 @@ def generate_base_fonts(data):
         rfont.info.postscriptStemSnapV = master['verticalStems']
         rfont.info.xHeight = master['xHeight']
 
+        for name, value in custom_params + parse_custom_params(master):
+            if hasattr(rfont.info, name):
+                setattr(rfont.info, name, value)
+            elif name == 'glyphOrder':
+                rfont.lib['public.glyphOrder'] = value
+            else:
+                rfont.lib[LIB_PREFIX + name] = value
+
         master_id = master['id']
         master_id_order.append(master_id)
         rfonts[master_id] = rfont
 
     return rfonts, master_id_order
+
+
+def parse_custom_params(data):
+    """Parse customParameters and userData into a list of <name, val> pairs."""
+
+    params = [(p['name'], p['value']) for p in data.get('customParameters', [])]
+    params.extend(data.get('userData', {}).iteritems())
+    return params
 
 
 def load_kerning(rkerning, glyphs_kerning):
