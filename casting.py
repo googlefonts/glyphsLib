@@ -13,34 +13,29 @@ DEFAULTS = {
     'weightValue': 100}
 
 
-def cast_data(data, types=None, print_dbg=False):
-    """Cast the attributes of parsed glyphs file content."""
+def cast_data(data, types=None):
+    """Cast the attributes of parsed glyphs file content.
+
+    Returns the casted data, so that the type-casting functions used by
+    cast_data (which are expected to return a casted value) can themselves call
+    cast_data and then return the result."""
 
     if types is None:
         types = get_type_structure()
 
-    new_data = {}
     for key, cur_type in types.items():
         if key not in data:
             try:
-                new_data[key] = DEFAULTS[key]
+                data[key] = DEFAULTS[key]
             except KeyError:
                 pass
             continue
         if type(cur_type) == dict:
-            new_data[key] = []
             for cur_data in data[key]:
-                new_data[key].append(cast_data(cur_data, dict(cur_type)))
-            data[key] = [dict(cur_data) for cur_data in data[key] if cur_data]
-            if not data[key]:
-                del data[key]
+                cast_data(cur_data, dict(cur_type))
         else:
-            new_data[key] = cur_type(data[key])
-            del data[key]
-
-    if print_dbg:
-        print 'not casted in data:', json.dumps(data, indent=2, sort_keys=True)
-    return new_data
+            data[key] = cur_type(data[key])
+    return data
 
 
 def cast_noto_data(data):
