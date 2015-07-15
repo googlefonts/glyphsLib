@@ -30,10 +30,9 @@ def loads(value, dict_type=dict):
 	print '>>> Parsing .glyphs file'
 	data = p.parse(value)
 	print '>>> Casting parsed values'
-	data = cast_data(data)
+	cast_data(data)
 	cast_noto_data(data)
 	return data
-	#return cast_data(data, print_dbg=True)
 
 
 def load_to_rfonts(filename):
@@ -41,6 +40,7 @@ def load_to_rfonts(filename):
     data = load(open(filename, 'rb'))
     print '>>> Loading to RFonts'
     return to_robofab(data)
+    #return to_robofab(data, debug=True)
 
 
 def main(argv):
