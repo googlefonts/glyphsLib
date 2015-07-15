@@ -29,22 +29,20 @@ def to_robofab(data, debug=False):
 
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
-        glyph_name = glyph.pop('glyphname')
-        unicode_value = glyph.pop('unicode', None)
-        timestamp_key = 'lastChange'
-        timestamp = to_rf_time(glyph.pop(timestamp_key))
 
-        glyph_metrics_keys = {}
-        for key in ['leftMetricsKey', 'rightMetricsKey']:
-            glyph_metrics_keys[key] = glyph.pop(key, None)
+        # pop glyph metadata only once, i.e. not when looping through layers
+        metadata_keys = ['glyphname', 'unicode', 'lastChange',
+                         'leftMetricsKey', 'rightMetricsKey']
+        glyph_data = dict((key, glyph.pop(key, None)) for key in metadata_keys)
 
         for layer in glyph['layers']:
             # whichever attribute we use for layer_id, make sure they are both
-            # removed from the layer data
+            # popped from the layer data
             layer_id = layer.pop('layerId')
             layer_id = layer.pop('associatedMasterId', layer_id)
             rfont = rfonts[layer_id]
 
+            # get style names from layer data, ensuring consistency as we go
             style_name = layer.pop('name')
             if rfont.info.styleName:
                 if rfont.info.styleName != style_name:
@@ -55,20 +53,7 @@ def to_robofab(data, debug=False):
             else:
                 rfont.info.styleName = style_name
 
-            rglyph = rfont.newGlyph(glyph_name)
-            rglyph.unicode = unicode_value
-            rglyph.lib[LIB_PREFIX + timestamp_key] = timestamp
-
-            for key in ['leftMetricsKey', 'rightMetricsKey']:
-                try:
-                    rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
-                except KeyError:
-                    glyph_metrics_key = glyph_metrics_keys[key]
-                    if glyph_metrics_key:
-                        rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
-
-            load_background(rglyph, layer)
-            load_glyph(rglyph, layer)
+            load_glyph(rglyph, layer, glyph_data)
 
     for master_id, kerning in data.pop('kerning').items():
         load_kerning(rfonts[master_id].kerning, kerning)
@@ -232,8 +217,22 @@ def load_background(glyph, layer):
                 del node[3]
 
 
-def load_glyph(glyph, layer):
-    """Add .glyphs paths, components, and anchors as applicable to an RGlyph."""
+def load_glyph(glyph, layer_data, glyph_data):
+    """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
+
+    rglyph = rfont.newGlyph(glyph_data['glyph_name'])
+    rglyph.unicode = glyph_data['unicode']
+    rglyph.lib[LIB_PREFIX + 'lastChange'] = to_rf_time(glyph_data['lastChange'])
+
+    for key in ['leftMetricsKey', 'rightMetricsKey']:
+        try:
+            rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
+        except KeyError:
+            glyph_metrics_key = glyph_metrics_keys[key]
+            if glyph_metrics_key:
+                rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
+
+    load_background(rglyph, layer)
 
     pen = glyph.getPointPen()
     draw_paths(pen, layer.get('paths', []))
