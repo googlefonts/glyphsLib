@@ -19,9 +19,14 @@ def to_robofab(data, debug=False):
     If debug is True, returns unused input data instead of the resulting RFonts.
     """
 
-    feature_prefixes = [f.pop('code') for f in data['featurePrefixes']]
-    classes = [(c.pop('name'), c.pop('code')) for c in data['classes']]
-    features = [(f.pop('name'), f.pop('code')) for f in data['features']]
+    feature_prefixes, classes, features = [], [], []
+    for f in data['featurePrefixes']:
+        feature_prefixes.append((f.pop('name'), f.pop('code')))
+    for c in data['classes']:
+        classes.append((c.pop('name'), c.pop('code'), c.pop('automatic', None)))
+    for f in data['features']:
+        features.append((f.pop('name'), f.pop('code'), f.pop('automatic', None),
+                         f.pop('disabled', None), f.pop('notes', None)))
     kerning_groups = {}
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
@@ -299,14 +304,36 @@ def add_groups_to_rfont(rfont, kerning_groups):
 def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     """Write an RFont's OpenType feature file."""
 
-    prefix_str = '\n'.join(feature_prefixes)
-    class_str = '\n'.join('@%s = [%s];' % class_info for class_info in classes)
+    prefix_str = '\n'.join('# -- name: %s\n%s' % fp for fp in feature_prefixes)
+
+    class_defs = []
+    for name, code, automatic in classes:
+        if automatic:
+            class_defs.append('# -- automatic --')
+        class_defs.append('@%s = [%s];' % (name, code))
+    class_str = '\n'.join(class_defs)
+
     feature_defs = []
-    for name, code in features:
-        # empty features cause makeotf to fail, but empty instructions are fine
-        # so insert an empty instruction into any empty feature definitions
-        if not code.strip():
-            code = ';'
-        feature_defs.append('feature %s {\n%s\n} %s;' % (name, code, name))
+    for name, code, automatic, disabled, notes in features:
+        lines = ['feature %s {' % name]
+        if notes:
+            lines.append('  # -- notes: ' + notes)
+        if automatic:
+            lines.append('  # -- automatic --')
+        if disabled:
+            lines.append('  # -- disabled --')
+            lines.extend('  #' + line for line in code.splitlines())
+        else:
+            # empty features cause makeotf to fail, but empty instructions are fine
+            # so insert an empty instruction into any empty feature definitions
+            if not code.strip():
+                code = ';'
+            lines.extend('  ' + line for line in code.splitlines())
+        lines.append('} %s;' % name)
+        feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
-    rfont.features.text = '\n\n'.join([prefix_str, class_str, fea_str])
+
+    rfont.features.text = '\n\n'.join([
+        '# -- feature prefixes --', prefix_str,
+        '# -- classes --', class_str,
+        '# -- feature prefixes --', fea_str])
