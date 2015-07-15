@@ -189,22 +189,22 @@ def parse_custom_params(data):
     return params
 
 
-def load_kerning(rkerning, glyphs_kerning):
+def load_kerning(rkerning, kerning_data):
     """Add .glyphs kerning to an RKerning object."""
 
-    for left, pairs in glyphs_kerning.items():
+    for left, pairs in kerning_data.items():
         for right, kerning_val in pairs.items():
             rkerning[left, right] = kerning_val
 
 
-def load_background(glyph, layer):
-    """Add background data to a glyph's lib data."""
+def load_background(rglyph, layer):
+    """Add background data to an RGlyph's lib data."""
 
     try:
         background = layer.pop('background')
     except KeyError:
         return
-    glyph.lib[LIB_PREFIX + 'background'] = background
+    rglyph.lib[LIB_PREFIX + 'background'] = background
 
     # NoneType objects must be removed before the data can be saved to a UFO, so
     # remove NoneType objects which designate a point as non-smooth
