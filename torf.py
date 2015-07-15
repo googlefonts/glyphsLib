@@ -48,11 +48,12 @@ def to_robofab(data, debug=False):
                 if rfont.info.styleName != style_name:
                     print (
                         'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
-                        % (glyph_name, style_name))
+                        % (glyph_data['glyphname'], style_name))
                     continue
             else:
                 rfont.info.styleName = style_name
 
+            rglyph = rfont.newGlyph(glyph_data['glyphname'])
             load_glyph(rglyph, layer, glyph_data)
 
     for master_id, kerning in data.pop('kerning').items():
@@ -217,10 +218,9 @@ def load_background(glyph, layer):
                 del node[3]
 
 
-def load_glyph(glyph, layer_data, glyph_data):
+def load_glyph(rglyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
 
-    rglyph = rfont.newGlyph(glyph_data['glyph_name'])
     rglyph.unicode = glyph_data['unicode']
     rglyph.lib[LIB_PREFIX + 'lastChange'] = to_rf_time(glyph_data['lastChange'])
 
@@ -228,17 +228,17 @@ def load_glyph(glyph, layer_data, glyph_data):
         try:
             rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
         except KeyError:
-            glyph_metrics_key = glyph_metrics_keys[key]
+            glyph_metrics_key = glyph_data[key]
             if glyph_metrics_key:
                 rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
 
     load_background(rglyph, layer)
 
-    pen = glyph.getPointPen()
+    pen = rglyph.getPointPen()
     draw_paths(pen, layer.get('paths', []))
     draw_components(pen, layer.get('components', []))
-    add_anchors_to_glyph(glyph, layer.get('anchors', []))
-    glyph.width = layer.pop('width')
+    add_anchors_to_glyph(rglyph, layer.get('anchors', []))
+    rglyph.width = layer.pop('width')
 
 
 def draw_paths(pen, paths):
