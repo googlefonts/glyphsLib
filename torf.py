@@ -9,17 +9,19 @@ from robofab.world import RFont
 LIB_PREFIX = 'com.google.glyphs2ufo.'
 
 
-def to_robofab(data):
+def to_robofab(data, debug=False):
     """Take .glyphs file data and load it into RFonts.
 
     Takes in data as a dictionary structured according to
     https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
     and returns a list of RFonts, one per master.
+
+    If debug is True, returns unused input data instead of the resulting RFonts.
     """
 
-    feature_prefixes = [f['code'] for f in data['featurePrefixes']]
-    classes = [(c['name'], c['code']) for c in data['classes']]
-    features = [(f['name'], f['code']) for f in data['features']]
+    feature_prefixes = [f.pop('code') for f in data['featurePrefixes']]
+    classes = [(c.pop('name'), c.pop('code')) for c in data['classes']]
+    features = [(f.pop('name'), f.pop('code')) for f in data['features']]
     kerning_groups = {}
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
@@ -27,32 +29,48 @@ def to_robofab(data):
 
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
+        glyph_name = glyph.pop('glyphname')
+        unicode_value = glyph.pop('unicode', None)
+        timestamp_key = 'lastChange'
+        timestamp = to_rf_time(glyph.pop(timestamp_key))
+
+        glyph_metrics_keys = {}
+        for key in ['leftMetricsKey', 'rightMetricsKey']:
+            glyph_metrics_keys[key] = glyph.pop(key, None)
 
         for layer in glyph['layers']:
-            layer_id = layer.get('associatedMasterId', layer['layerId'])
+            # whichever attribute we use for layer_id, make sure they are both
+            # removed from the layer data
+            layer_id = layer.pop('layerId')
+            layer_id = layer.pop('associatedMasterId', layer_id)
             rfont = rfonts[layer_id]
 
-            style_name = layer['name']
+            style_name = layer.pop('name')
             if rfont.info.styleName:
                 if rfont.info.styleName != style_name:
                     print (
                         'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
-                        % (glyph['glyphname'], style_name))
+                        % (glyph_name, style_name))
                     continue
             else:
                 rfont.info.styleName = style_name
 
-            rglyph = rfont.newGlyph(glyph['glyphname'])
-            rglyph.unicode = glyph.get('unicode')
-            for metadata_key in ['leftMetricsKey', 'rightMetricsKey']:
-                if metadata_key in layer:
-                    rglyph.lib[LIB_PREFIX + metadata_key] = layer[metadata_key]
-                elif metadata_key in glyph:
-                    rglyph.lib[LIB_PREFIX + metadata_key] = glyph[metadata_key]
+            rglyph = rfont.newGlyph(glyph_name)
+            rglyph.unicode = unicode_value
+            rglyph.lib[LIB_PREFIX + timestamp_key] = timestamp
+
+            for key in ['leftMetricsKey', 'rightMetricsKey']:
+                try:
+                    rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
+                except KeyError:
+                    glyph_metrics_key = glyph_metrics_keys[key]
+                    if glyph_metrics_key:
+                        rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
+
             load_background(rglyph, layer)
             load_glyph(rglyph, layer)
 
-    for master_id, kerning in data['kerning'].items():
+    for master_id, kerning in data.pop('kerning').items():
         load_kerning(rfonts[master_id].kerning, kerning)
 
     result = []
@@ -62,7 +80,34 @@ def to_robofab(data):
         add_groups_to_rfont(rfont, kerning_groups)
         set_style_info(rfont)
         result.append(rfont)
+
+    if debug:
+        return clear_data(data)
     return result
+
+
+def clear_data(data):
+    """Clear empty list or dict attributes in data.
+
+    This is used to determine what input data provided to to_robofab was not
+    loaded into an RFont."""
+
+    data_type = type(data)
+    if data_type is dict:
+        for key, val in data.items():
+            if not clear_data(val):
+                del data[key]
+        return data
+    elif data_type is list:
+        i = 0
+        while i < len(data):
+            val = data[i]
+            if not clear_data(val):
+                del data[i]
+            else:
+                i += 1
+        return data
+    return True
 
 
 def set_style_info(rfont):
@@ -88,17 +133,17 @@ def set_style_info(rfont):
 def generate_base_fonts(data):
     """Generate a list of RFonts with metadata loaded from .glyphs data."""
 
-    copyright = data['copyright']
-    date_created = data['date'].strftime('%Y/%m/%d %H:%M:%S')
-    designer = data['designer']
-    designer_url = data['designerURL']
-    family_name = data['familyName']
-    manufacturer = data['manufacturer']
-    manufacturer_url = data['manufacturerURL']
+    copyright = data.pop('copyright')
+    date_created = to_rf_time(data.pop('date'))
+    designer = data.pop('designer')
+    designer_url = data.pop('designerURL')
+    family_name = data.pop('familyName')
+    manufacturer = data.pop('manufacturer')
+    manufacturer_url = data.pop('manufacturerURL')
     unique_id = '%s - %s ' % (manufacturer, family_name)
-    units_per_em = data['unitsPerEm']
-    version_major = data['versionMajor']
-    version_minor = data['versionMinor']
+    units_per_em = data.pop('unitsPerEm')
+    version_major = data.pop('versionMajor')
+    version_minor = data.pop('versionMinor')
     version_string = 'Version %s.%s' % (version_major, version_minor)
     custom_params = parse_custom_params(data)
 
@@ -121,12 +166,12 @@ def generate_base_fonts(data):
         rfont.info.versionMinor = version_minor
         rfont.info.openTypeNameVersion = version_string
 
-        rfont.info.ascender = master['ascender']
-        rfont.info.capHeight = master['capHeight']
-        rfont.info.descender = master['descender']
-        rfont.info.postscriptStemSnapH = master['horizontalStems']
-        rfont.info.postscriptStemSnapV = master['verticalStems']
-        rfont.info.xHeight = master['xHeight']
+        rfont.info.ascender = master.pop('ascender')
+        rfont.info.capHeight = master.pop('capHeight')
+        rfont.info.descender = master.pop('descender')
+        rfont.info.postscriptStemSnapH = master.pop('horizontalStems')
+        rfont.info.postscriptStemSnapV = master.pop('verticalStems')
+        rfont.info.xHeight = master.pop('xHeight')
 
         for name, value in custom_params + parse_custom_params(master):
             if hasattr(rfont.info, name):
@@ -136,18 +181,25 @@ def generate_base_fonts(data):
             else:
                 rfont.lib[LIB_PREFIX + name] = value
 
-        master_id = master['id']
+        master_id = master.pop('id')
         master_id_order.append(master_id)
         rfonts[master_id] = rfont
 
     return rfonts, master_id_order
 
 
+def to_rf_time(datetime_obj):
+    """Format a datetime object as specified for UFOs."""
+    return datetime_obj.strftime('%Y/%m/%d %H:%M:%S')
+
+
 def parse_custom_params(data):
     """Parse customParameters and userData into a list of <name, val> pairs."""
 
-    params = [(p['name'], p['value']) for p in data.get('customParameters', [])]
-    params.extend(data.get('userData', {}).iteritems())
+    params = []
+    for p in data.get('customParameters', []):
+        params.append((p.pop('name'), p.pop('value')))
+    params.extend(data.pop('userData', {}).iteritems())
     return params
 
 
@@ -163,7 +215,7 @@ def load_background(glyph, layer):
     """Add background data to a glyph's lib data."""
 
     try:
-        background = layer['background']
+        background = layer.pop('background')
     except KeyError:
         return
     glyph.lib[LIB_PREFIX + 'background'] = background
@@ -187,7 +239,7 @@ def load_glyph(glyph, layer):
     draw_paths(pen, layer.get('paths', []))
     draw_components(pen, layer.get('components', []))
     add_anchors_to_glyph(glyph, layer.get('anchors', []))
-    glyph.width = layer['width']
+    glyph.width = layer.pop('width')
 
 
 def draw_paths(pen, paths):
@@ -195,12 +247,11 @@ def draw_paths(pen, paths):
 
     for path in paths:
         pen.beginPath()
-        if not 'closed' in path:
-            x, y, node_type, smooth = path['nodes'][0]
+        if not path.pop('closed', False):
+            x, y, node_type, smooth = path['nodes'].pop(0)
             assert node_type == 'LINE', 'Open path starts with off-curve points'
             pen.addPoint((x, y), 'move')
-            path['nodes'] = path['nodes'][1:]
-        for x, y, node_type, smooth in path['nodes']:
+        for x, y, node_type, smooth in path.pop('nodes'):
             node_type = node_type.lower()
             if node_type not in ['line', 'curve']:
                 node_type = None
@@ -212,15 +263,15 @@ def draw_components(pen, components):
     """Draw .glyphs components onto a pen, adding them to the parent RGlyph."""
 
     for component in components:
-        pen.addComponent(component['name'],
-                         component.get('transform', (1, 0, 0, 1, 0, 0)))
+        pen.addComponent(component.pop('name'),
+                         component.pop('transform', (1, 0, 0, 1, 0, 0)))
 
 
 def add_anchors_to_glyph(glyph, anchors):
     """Add .glyphs anchors to an RGlyph."""
 
     for anchor in anchors:
-        glyph.appendAnchor(anchor['name'], anchor['position'])
+        glyph.appendAnchor(anchor.pop('name'), anchor.pop('position'))
 
 
 def add_glyph_to_groups(kerning_groups, glyph_data):
@@ -235,7 +286,7 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
         if group_key not in glyph_data:
             continue
         #TODO(jamesgk) figure out if this is a general rule for group naming
-        group = '@MMK_%s_%s' % (side, glyph_data[group_key])
+        group = '@MMK_%s_%s' % (side, glyph_data.pop(group_key))
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
