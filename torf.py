@@ -47,16 +47,13 @@ def to_robofab(data, debug=False):
             layer_id = layer.pop('associatedMasterId', layer_id)
             rfont = rfonts[layer_id]
 
-            # get style names from layer data, ensuring consistency as we go
+            # ensure consistency between layer ids / names
             style_name = layer.pop('name')
-            if rfont.info.styleName:
-                if rfont.info.styleName != style_name:
-                    print (
-                        'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
-                        % (glyph_data['glyphname'], style_name))
-                    continue
-            else:
-                rfont.info.styleName = style_name
+            if rfont.info.styleName != style_name:
+                print (
+                    'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
+                    % (glyph_data['glyphname'], style_name))
+                continue
 
             rglyph = rfont.newGlyph(glyph_data['glyphname'])
             load_glyph(rglyph, layer, glyph_data)
@@ -69,7 +66,6 @@ def to_robofab(data, debug=False):
         rfont = rfonts[master_id]
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
-        set_style_info(rfont)
         result.append(rfont)
 
     if debug:
@@ -101,26 +97,6 @@ def clear_data(data):
     return True
 
 
-def set_style_info(rfont):
-    """Set the metadata for an RFont which depends on its style name."""
-
-    style_name = rfont.info.styleName
-    rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
-        '%s-%s' % (rfont.info.familyName.replace(' ', ''),
-                   style_name.replace(' ', '')))
-    rfont.info.openTypeNameUniqueID += style_name
-    rfont.info.openTypeNamePreferredSubfamilyName = style_name
-
-    style_code = 0
-    style_map = ['regular', 'bold', 'italic', 'bold italic']
-    style_name_lower = style_name.lower()
-    if 'bold' in style_name_lower or 'black' in style_name_lower:
-        style_code += 1
-    if 'italic' in style_name_lower:
-        style_code += 2
-    rfont.info.styleMapStyleName = style_map[style_code]
-
-
 def generate_base_fonts(data):
     """Generate a list of RFonts with metadata loaded from .glyphs data."""
 
@@ -143,12 +119,18 @@ def generate_base_fonts(data):
     for master in data['fontMaster']:
         rfont = RFont()
 
+        weight = master.pop('weight', '')
+        width = master.pop('width', '')
+        style_name = ('%s %s' % (weight, width)).strip() or 'Regular'
+        rfont.info.styleName = style_name
+
         rfont.info.copyright = copyright
         rfont.info.openTypeNameDesigner = designer
         rfont.info.openTypeNameDesignerURL = designer_url
-        rfont.info.openTypeNameUniqueID = unique_id
+        rfont.info.openTypeNameUniqueID = unique_id + style_name
         rfont.info.familyName = rfont.info.styleMapFamilyName = family_name
         rfont.info.openTypeNamePreferredFamilyName = family_name
+        rfont.info.openTypeNamePreferredSubfamilyName = style_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
@@ -163,6 +145,19 @@ def generate_base_fonts(data):
         rfont.info.postscriptStemSnapH = master.pop('horizontalStems')
         rfont.info.postscriptStemSnapV = master.pop('verticalStems')
         rfont.info.xHeight = master.pop('xHeight')
+
+        rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
+            '%s-%s' % (family_name.replace(' ', ''),
+                       style_name.replace(' ', '')))
+
+        style_code = 0
+        style_map = ['regular', 'bold', 'italic', 'bold italic']
+        style_name_lower = style_name.lower()
+        if 'bold' in style_name_lower or 'black' in style_name_lower:
+            style_code += 1
+        if 'italic' in style_name_lower:
+            style_code += 2
+        rfont.info.styleMapStyleName = style_map[style_code]
 
         for name, value in custom_params + parse_custom_params(master):
             if hasattr(rfont.info, name):
