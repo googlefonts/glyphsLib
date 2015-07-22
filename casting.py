@@ -87,7 +87,9 @@ def get_type_structure():
             'id': str,
             'userData': dict,
             'verticalStems': intlist,
+            'weight': str,  # undocumented
             'weightValue': int,
+            'width': str,  # undocumented
             'widthValue': int,
             'xHeight': int
         },
