@@ -131,7 +131,12 @@ def get_type_structure():
             'customParameters': {
                 'name': str,
                 'value': default
-            }
+            },
+            'interpolationWeight': int,  # undocumented
+            'interpolationWidth': int,  # undocumented
+            'name': str,  # undocumented
+            'weightClass': str,  # undocumented
+            'widthClass': str  # undocumented
         },
         'kerning': kerning,
         'manufacturer': str,
