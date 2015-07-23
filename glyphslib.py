@@ -43,16 +43,29 @@ def load_to_rfonts(filename):
     #return to_robofab(data, debug=True)
 
 
+def save_ufo(font):
+    """Save an RFont as a UFO."""
+    ofile = font.info.postscriptFullName + '.ufo'
+    print '>>> Compiling %s' % ofile
+    font.save(ofile)
+
+
+def save_ttf(font):
+    """Save an RFont as a TTF."""
+    ofile = font.info.postscriptFullName + '.ttf'
+    print '>>> Compiling %s' % ofile
+    for glyph in font:
+        glyphCurvesToQuadratic(glyph)
+    compiler = OutlineTTFCompiler(font, ofile)
+    compiler.compile()
+
+
 def main(argv):
     #print json.dumps(load(open(sys.argv[1], 'rb')), indent=2, sort_keys=True)
     rfonts = load_to_rfonts(sys.argv[1])
     for font in rfonts:
-        ofile = font.info.postscriptFullName + '.ttf'
-        print '>>> Compiling %s' % ofile
-        for glyph in font:
-            glyphCurvesToQuadratic(glyph)
-        compiler = OutlineTTFCompiler(font, ofile)
-        compiler.compile()
+        save_ttf(font)
+        #save_ufo(font)
 
 
 if __name__ == '__main__':
