@@ -113,9 +113,8 @@ def generate_base_fonts(data):
     version_minor = data.pop('versionMinor')
     version_string = 'Version %s.%s' % (version_major, version_minor)
 
-    custom_params = parse_custom_params(data)
-    for name in ['disablesAutomaticAlignment', 'disablesNiceNames']:
-        custom_params.append((name, data.pop(name)))
+    misc = ['disablesAutomaticAlignment', 'disablesNiceNames']
+    custom_params = parse_custom_params(data, misc)
 
     rfonts = {}
     master_id_order = []
@@ -162,7 +161,8 @@ def generate_base_fonts(data):
             style_code += 2
         rfont.info.styleMapStyleName = style_map[style_code]
 
-        for name, value in custom_params + parse_custom_params(master):
+        misc = ['alignmentZones', 'guideLines', 'weightValue', 'widthValue']
+        for name, value in custom_params + parse_custom_params(master, misc):
             if hasattr(rfont.info, name):
                 setattr(rfont.info, name, value)
             elif name == 'glyphOrder':
@@ -182,13 +182,19 @@ def to_rf_time(datetime_obj):
     return datetime_obj.strftime('%Y/%m/%d %H:%M:%S')
 
 
-def parse_custom_params(data):
+def parse_custom_params(data, misc_keys):
     """Parse customParameters and userData into a list of <name, val> pairs."""
 
     params = []
     for p in data.get('customParameters', []):
         params.append((p.pop('name'), p.pop('value')))
     params.extend(data.pop('userData', {}).iteritems())
+    for key in misc_keys:
+        try:
+            val = data.pop(key)
+        except KeyError:
+            continue
+        params.append((key, val))
     return params
 
 
