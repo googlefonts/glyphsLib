@@ -79,7 +79,7 @@ def get_type_structure():
                 'name': str,
                 'value': default
             },
-            'descender': int,
+            'descender': descender_val,
             'horizontalStems': intlist,
             'id': str,
             'userData': dict,
@@ -139,7 +139,7 @@ def get_type_structure():
         'unitsPerEm': int,
         'userData': dict,
         'versionMajor': int,
-        'versionMinor': int
+        'versionMinor': version_minor
     }
 
 
@@ -213,6 +213,14 @@ def kerning(kerning_data):
             for right_glyph, value in glyph_map.items():
                 new_data[master_id][left_glyph][right_glyph] = int(value)
     return new_data
+
+
+def descender_val(string):
+    """Ensure that descender values are always negative."""
+
+    num = int(string)
+    assert num < 0
+    return num
 
 
 def version_minor(string):
