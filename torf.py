@@ -37,7 +37,7 @@ def to_robofab(data, debug=False):
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['glyphname', 'unicode', 'lastChange',
-                         'leftMetricsKey', 'rightMetricsKey']
+                         'leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']
         glyph_data = dict((key, glyph.pop(key, None)) for key in metadata_keys)
 
         for layer in glyph['layers']:
@@ -112,7 +112,10 @@ def generate_base_fonts(data):
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
     version_string = 'Version %s.%s' % (version_major, version_minor)
+
     custom_params = parse_custom_params(data)
+    for name in ['disablesAutomaticAlignment', 'disablesNiceNames']:
+        custom_params.append((name, data.pop(name)))
 
     rfonts = {}
     master_id_order = []
@@ -197,25 +200,30 @@ def load_kerning(rkerning, kerning_data):
             rkerning[left, right] = kerning_val
 
 
-def load_background(rglyph, layer):
-    """Add background data to an RGlyph's lib data."""
+def load_glyph_libdata(rglyph, layer):
+    """Add to an RGlyph's lib data."""
 
-    try:
-        background = layer.pop('background')
-    except KeyError:
-        return
-    rglyph.lib[LIB_PREFIX + 'background'] = background
+    for key in ['annotations', 'background', 'guideLines', 'hints']:
+        try:
+            value = layer.pop(key)
+        except KeyError:
+            continue
+        rglyph.lib[LIB_PREFIX + key] = value
 
     # NoneType objects must be removed before the data can be saved to a UFO, so
-    # remove NoneType objects which designate a point as non-smooth
-    try:
-        paths = background['paths']
-    except KeyError:
-        return
-    for path in paths:
+    # remove NoneType objects which designate a background point as non-smooth
+    for path in rglyph.lib.get(LIB_PREFIX + 'background', {}).get('paths', []):
         for node in path['nodes']:
             if node[3] is None:
                 del node[3]
+
+    # data related to components stored in lists of booleans
+    # each list's elements correspond to the components in order
+    for key in ['disableAlignment', 'locked']:
+        values = [c.pop(key, False) for c in layer.get('components', [])]
+        if any(values):
+            key = key[0].upper() + key[1:]
+            rglyph.lib['%scomponents%s' % (LIB_PREFIX, key)] = values
 
 
 def load_glyph(rglyph, layer, glyph_data):
@@ -224,7 +232,7 @@ def load_glyph(rglyph, layer, glyph_data):
     rglyph.unicode = glyph_data['unicode']
     rglyph.lib[LIB_PREFIX + 'lastChange'] = to_rf_time(glyph_data['lastChange'])
 
-    for key in ['leftMetricsKey', 'rightMetricsKey']:
+    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         try:
             rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
         except KeyError:
@@ -232,7 +240,7 @@ def load_glyph(rglyph, layer, glyph_data):
             if glyph_metrics_key:
                 rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
 
-    load_background(rglyph, layer)
+    load_glyph_libdata(rglyph, layer)
 
     pen = rglyph.getPointPen()
     draw_paths(pen, layer.get('paths', []))

@@ -64,6 +64,8 @@ def get_type_structure():
         'date': glyphs_datetime,
         'designer': str,
         'designerURL': str,
+        'disablesAutomaticAlignment': truthy,  # undocumented
+        'disablesNiceNames': truthy,  # undocumented
         'familyName': str,
         'featurePrefixes': {
             'code': feature_syntax,
@@ -101,7 +103,8 @@ def get_type_structure():
             'leftMetricsKey': str,
             'rightKerningGroup': str,
             'rightMetricsKey': str,
-            'unicode': hex_int
+            'unicode': hex_int,
+            'widthMetricsKey': str  # undocumented
         },
         'instances': {
             'customParameters': {
@@ -130,11 +133,16 @@ def get_glyph_layer_type_structure(background=False):
             'name': str,
             'position': point
         },
+        'annotations': default,  # undocumented
         'components': {
             'anchor': str,
+            'disableAlignment': truthy,  # undocumented
+            'locked': truthy,  # undocumented
             'name': str,
             'transform': transform
         },
+        'guideLines': default,  # undocumented
+        'hints': default,  # undocumented
         'leftMetricsKey': str,
         'rightMetricsKey': str,
         'name': str,
