@@ -210,13 +210,6 @@ def load_glyph_libdata(rglyph, layer):
             continue
         rglyph.lib[LIB_PREFIX + key] = value
 
-    # NoneType objects must be removed before the data can be saved to a UFO, so
-    # remove NoneType objects which designate a background point as non-smooth
-    for path in rglyph.lib.get(LIB_PREFIX + 'background', {}).get('paths', []):
-        for node in path['nodes']:
-            if node[3] is None:
-                del node[3]
-
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
     for key in ['disableAlignment', 'locked']:

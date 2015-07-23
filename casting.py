@@ -14,11 +14,7 @@ DEFAULTS = {
 
 
 def cast_data(data, types=None):
-    """Cast the attributes of parsed glyphs file content.
-
-    Returns the casted data, so that the type-casting functions used by
-    cast_data (which are expected to return a casted value) can themselves call
-    cast_data and then return the result."""
+    """Cast the attributes of parsed glyphs file content."""
 
     if types is None:
         types = get_type_structure()
@@ -35,7 +31,6 @@ def cast_data(data, types=None):
                 cast_data(cur_data, dict(cur_type))
         else:
             data[key] = cur_type(data[key])
-    return data
 
 
 def cast_noto_data(data):
@@ -98,7 +93,33 @@ def get_type_structure():
         'glyphs': {
             'glyphname': str,
             'lastChange': glyphs_datetime,
-            'layers': get_glyph_layer_type_structure(),
+            'layers': {
+                'anchors': {
+                    'name': str,
+                    'position': point
+                },
+                'annotations': default,  # undocumented
+                'associatedMasterId': str,
+                'background': default,
+                'components': {
+                    'anchor': str,
+                    'disableAlignment': truthy,  # undocumented
+                    'locked': truthy,  # undocumented
+                    'name': str,
+                    'transform': transform
+                },
+                'guideLines': default,  # undocumented
+                'hints': default,  # undocumented
+                'layerId': str,
+                'leftMetricsKey': str,
+                'rightMetricsKey': str,
+                'name': str,
+                'paths': {
+                    'closed': truthy,
+                    'nodes': nodelist
+                },
+                'width': num
+            },
             'leftKerningGroup': str,
             'leftMetricsKey': str,
             'rightKerningGroup': str,
@@ -120,45 +141,6 @@ def get_type_structure():
         'versionMajor': int,
         'versionMinor': int
     }
-
-
-def get_glyph_layer_type_structure(background=False):
-    """Generate and return the type hierarchy for glyph layer data.
-
-    This is used for layer backgrounds as well, so it's abstracted out.
-    """
-
-    structure = {
-        'anchors': {
-            'name': str,
-            'position': point
-        },
-        'annotations': default,  # undocumented
-        'components': {
-            'anchor': str,
-            'disableAlignment': truthy,  # undocumented
-            'locked': truthy,  # undocumented
-            'name': str,
-            'transform': transform
-        },
-        'guideLines': default,  # undocumented
-        'hints': default,  # undocumented
-        'leftMetricsKey': str,
-        'rightMetricsKey': str,
-        'name': str,
-        'paths': {
-            'closed': truthy,
-            'nodes': nodelist
-        },
-        'width': num
-    }
-    if not background:
-        structure.update({
-            'associatedMasterId': str,
-            'background': layer_background,
-            'layerId': str
-        })
-    return structure
 
 
 def default(value):
@@ -222,11 +204,6 @@ def nodelist(strlist):
 def glyphs_datetime(string):
     """Parse a datetime object from a string, ignoring the timezone."""
     return datetime.strptime(string[:string.rfind(' ')], '%Y-%m-%d %H:%M:%S')
-
-
-def layer_background(data):
-    """Cast the background of a layer."""
-    return cast_data(data, get_glyph_layer_type_structure(background=True))
 
 
 def kerning(kerning_data):
