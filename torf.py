@@ -9,7 +9,7 @@ from robofab.world import RFont
 LIB_PREFIX = 'com.google.glyphs2ufo.'
 
 
-def to_robofab(data, debug=False):
+def to_robofab(data, include_instances=False, debug=False):
     """Take .glyphs file data and load it into RFonts.
 
     Takes in data as a dictionary structured according to
@@ -68,8 +68,11 @@ def to_robofab(data, debug=False):
         add_groups_to_rfont(rfont, kerning_groups)
         result.append(rfont)
 
+    instances = data.pop('instances')
     if debug:
         return clear_data(data)
+    elif include_instances:
+        return result, instances
     return result
 
 
