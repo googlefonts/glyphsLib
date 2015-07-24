@@ -1,6 +1,6 @@
 __all__ = [
-    'to_robofab', 'clear_data', 'build_style_name', 'build_postscript_name',
-    'build_style_map_style'
+    'to_robofab', 'clear_data', 'set_redundant_data', 'build_style_name',
+    'build_postscript_name', 'build_style_map_style'
 ]
 
 
@@ -132,9 +132,7 @@ def generate_base_fonts(data):
         rfont.info.openTypeNameDesigner = designer
         rfont.info.openTypeNameDesignerURL = designer_url
         rfont.info.openTypeNameUniqueID = unique_id + style_name
-        rfont.info.familyName = rfont.info.styleMapFamilyName = family_name
-        rfont.info.openTypeNamePreferredFamilyName = family_name
-        rfont.info.openTypeNamePreferredSubfamilyName = style_name
+        rfont.info.familyName = family_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
@@ -150,11 +148,7 @@ def generate_base_fonts(data):
         rfont.info.postscriptStemSnapV = master.pop('verticalStems')
         rfont.info.xHeight = master.pop('xHeight')
 
-        ps_name = build_postscript_name(family_name, style_name)
-        rfont.info.postscriptFontName = ps_name
-        rfont.info.postscriptFullName = ps_name
-
-        rfont.info.styleMapStyleName = build_style_map_style(style_name)
+        set_redundant_data(rfont)
 
         misc = ['alignmentZones', 'guideLines', 'weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
@@ -170,6 +164,21 @@ def generate_base_fonts(data):
         rfonts[master_id] = rfont
 
     return rfonts, master_id_order
+
+
+def set_redundant_data(rfont):
+    """Set redundant metadata in an RFont, e.g. data based on other data."""
+
+    family_name, style_name = rfont.info.familyName, rfont.info.styleName
+    rfont.info.styleMapFamilyName = family_name
+    rfont.info.openTypeNamePreferredFamilyName = family_name
+    rfont.info.openTypeNamePreferredSubfamilyName = style_name
+
+    ps_name = build_postscript_name(family_name, style_name)
+    rfont.info.postscriptFontName = ps_name
+    rfont.info.postscriptFullName = ps_name
+
+    rfont.info.styleMapStyleName = build_style_map_style(style_name)
 
 
 def build_style_name(data, weight_key, width_key):

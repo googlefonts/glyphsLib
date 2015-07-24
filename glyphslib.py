@@ -13,7 +13,7 @@ from fontbuild.outlineTTF import OutlineTTFCompiler
 
 from parser import Parser
 from casting import cast_data, cast_noto_data
-from torf import to_robofab, clear_data, build_style_name
+from torf import to_robofab, clear_data, set_redundant_data, build_style_name
 from torf import build_postscript_name, build_style_map_style
 
 
@@ -110,8 +110,7 @@ def build_instances(rfonts, instances):
     build(xml_path)
     for ofile in ofiles:
         rfont = OpenFont(ofile)
-        rfont.info.postscriptFullName = (
-            build_postscript_name(rfont.info.familyName, rfont.info.styleName))
+        set_redundant_data(rfont)
         save_ttf(rfont)
 
     return clear_data(instances)
