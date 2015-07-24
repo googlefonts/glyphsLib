@@ -1,5 +1,6 @@
 __all__ = [
-    'to_robofab'
+    'to_robofab', 'clear_data', 'build_style_name', 'build_postscript_name',
+    'build_style_map_style'
 ]
 
 
@@ -124,9 +125,7 @@ def generate_base_fonts(data):
     for master in data['fontMaster']:
         rfont = RFont()
 
-        weight = master.pop('weight', '')
-        width = master.pop('width', '')
-        style_name = ('%s %s' % (weight, width)).strip() or 'Regular'
+        style_name = build_style_name(master, 'weight', 'width')
         rfont.info.styleName = style_name
 
         rfont.info.copyright = copyright
@@ -151,18 +150,11 @@ def generate_base_fonts(data):
         rfont.info.postscriptStemSnapV = master.pop('verticalStems')
         rfont.info.xHeight = master.pop('xHeight')
 
-        rfont.info.postscriptFontName = rfont.info.postscriptFullName = (
-            '%s-%s' % (family_name.replace(' ', ''),
-                       style_name.replace(' ', '')))
+        ps_name = build_postscript_name(family_name, style_name)
+        rfont.info.postscriptFontName = ps_name
+        rfont.info.postscriptFullName = ps_name
 
-        style_code = 0
-        style_map = ['regular', 'bold', 'italic', 'bold italic']
-        style_name_lower = style_name.lower()
-        if 'bold' in style_name_lower or 'black' in style_name_lower:
-            style_code += 1
-        if 'italic' in style_name_lower:
-            style_code += 2
-        rfont.info.styleMapStyleName = style_map[style_code]
+        rfont.info.styleMapStyleName = build_style_map_style(style_name)
 
         misc = ['alignmentZones', 'guideLines', 'weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
@@ -178,6 +170,34 @@ def generate_base_fonts(data):
         rfonts[master_id] = rfont
 
     return rfonts, master_id_order
+
+
+def build_style_name(data, weight_key, width_key):
+    """Build style name from weight and width strings in data."""
+
+    weight = data.pop(weight_key, '')
+    width = data.pop(width_key, '')
+    return ('%s %s' % (weight, width)).strip() or 'Regular'
+
+
+def build_postscript_name(family_name, style_name):
+    """Build string to use for postscript*Name from family and style names."""
+
+    return '%s-%s' % (family_name.replace(' ', ''),
+                      style_name.replace(' ', ''))
+
+
+def build_style_map_style(style_name):
+    """Build style-map-style string from a style name."""
+
+    style_code = 0
+    style_map = ['regular', 'bold', 'italic', 'bold italic']
+    style_name_lower = style_name.lower()
+    if 'bold' in style_name_lower or 'black' in style_name_lower:
+        style_code += 1
+    if 'italic' in style_name_lower:
+        style_code += 2
+    return style_map[style_code]
 
 
 def to_rf_time(datetime_obj):
