@@ -67,6 +67,7 @@ def build_instances(rfonts, instances):
 
     from mutatorMath.ufo import build
     from mutatorMath.ufo.document import DesignSpaceDocumentWriter
+    from robofab.world import OpenFont
 
     xml_path = 'tmp.designspace'
     writer = DesignSpaceDocumentWriter(xml_path)
