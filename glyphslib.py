@@ -91,7 +91,7 @@ def build_instances(rfonts, instances):
         style_name = build_style_name(instance, 'weightClass', 'widthClass')
         ps_name = build_postscript_name(family_name, style_name)
         cur_path = os.path.join('ufo', ps_name + '.ufo')
-        ofiles.append(cur_path)
+        ofiles.append((cur_path, instance['customParameters']))
         writer.startInstance(
             name=instance.pop('name'),
             location={'weight': instance.pop('interpolationWeight', 100),
@@ -109,8 +109,12 @@ def build_instances(rfonts, instances):
     writer.save()
     print '>>> Building instances'
     build(xml_path)
-    for ofile in ofiles:
+
+    for ofile, custom_params in ofiles:
         rfont = OpenFont(ofile)
+        for param in custom_params:
+            if param.pop('name') == 'panose':
+                rfont.info.openTypeOS2Panose = map(int, param.pop('value'))
         set_redundant_data(rfont)
         save_ttf(rfont)
 
