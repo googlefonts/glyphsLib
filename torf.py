@@ -152,7 +152,8 @@ def generate_base_fonts(data):
 
         misc = ['alignmentZones', 'guideLines', 'weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
-            if hasattr(rfont.info, name):
+            if (hasattr(rfont.info, name) and
+                name not in rfont.info._deprecatedAttributes):
                 setattr(rfont.info, name, value)
             elif name == 'glyphOrder':
                 rfont.lib['public.glyphOrder'] = value

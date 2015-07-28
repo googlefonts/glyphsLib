@@ -83,7 +83,7 @@ def build_instances(rfonts, instances):
         writer.addSource(
             path=font.path,
             name=font.info.styleName,
-            location={'weight': font.info.weightValue,
+            location={'weight': font.lib['com.google.glyphs2ufo.weightValue'],
                       'width': font.lib['com.google.glyphs2ufo.widthValue']})
 
     ofiles = []
