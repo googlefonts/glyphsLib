@@ -9,6 +9,8 @@ import re
 
 
 DEFAULTS = {
+    'interpolationWeight': 100,
+    'interpolationWidth': 100,
     'widthValue': 100,
     'weightValue': 100}
 

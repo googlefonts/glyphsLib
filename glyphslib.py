@@ -94,8 +94,8 @@ def build_instances(rfonts, instances):
         ofiles.append((cur_path, instance['customParameters']))
         writer.startInstance(
             name=instance.pop('name'),
-            location={'weight': instance.pop('interpolationWeight', 100),
-                      'width': instance.pop('interpolationWidth', 100)},
+            location={'weight': instance.pop('interpolationWeight'),
+                      'width': instance.pop('interpolationWidth')},
             familyName=family_name,
             styleName=style_name,
             fileName=cur_path,
