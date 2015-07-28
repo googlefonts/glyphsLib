@@ -111,7 +111,6 @@ def generate_base_fonts(data):
     family_name = data.pop('familyName')
     manufacturer = data.pop('manufacturer')
     manufacturer_url = data.pop('manufacturerURL')
-    unique_id = '%s - %s ' % (manufacturer, family_name)
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
@@ -131,7 +130,6 @@ def generate_base_fonts(data):
         rfont.info.copyright = copyright
         rfont.info.openTypeNameDesigner = designer
         rfont.info.openTypeNameDesignerURL = designer_url
-        rfont.info.openTypeNameUniqueID = unique_id + style_name
         rfont.info.familyName = family_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
@@ -178,6 +176,8 @@ def set_redundant_data(rfont):
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
     rfont.info.postscriptFullName = ps_name
+    rfont.info.openTypeNameUniqueID = '%s.%s;%s' % (
+        rfont.info.versionMajor, rfont.info.versionMinor, ps_name)
 
     rfont.info.styleMapStyleName = build_style_map_style(style_name)
 
