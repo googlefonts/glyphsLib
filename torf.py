@@ -1,5 +1,5 @@
 __all__ = [
-    'to_robofab', 'clear_data', 'set_redundant_data', 'build_style_name',
+    'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
     'build_postscript_name', 'build_style_map_style'
 ]
 
@@ -50,7 +50,13 @@ def to_robofab(data, include_instances=False, debug=False):
 
             # ensure consistency between layer ids / names
             style_name = layer.pop('name')
-            if rfont.info.styleName != style_name:
+            font_style = rfont.info.styleName
+            if rfont.info.familyName.split()[-1] == 'Condensed':
+                if font_style == 'Regular':
+                    font_style = 'Condensed'
+                else:
+                    font_style += ' Condensed'
+            if font_style != style_name:
                 print (
                     'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
                     % (glyph_data['glyphname'], style_name))
@@ -124,13 +130,11 @@ def generate_base_fonts(data):
     for master in data['fontMaster']:
         rfont = RFont()
 
-        style_name = build_style_name(master, 'weight', 'width')
-        rfont.info.styleName = style_name
+        rfont.info.familyName = build_family_name(family_name, master, 'width')
 
         rfont.info.copyright = copyright
         rfont.info.openTypeNameDesigner = designer
         rfont.info.openTypeNameDesignerURL = designer_url
-        rfont.info.familyName = family_name
         rfont.info.openTypeNameManufacturer = manufacturer
         rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
@@ -144,6 +148,7 @@ def generate_base_fonts(data):
         rfont.info.descender = master.pop('descender')
         rfont.info.postscriptStemSnapH = master.pop('horizontalStems')
         rfont.info.postscriptStemSnapV = master.pop('verticalStems')
+        rfont.info.styleName = master.pop('weight', 'Regular')
         rfont.info.xHeight = master.pop('xHeight')
 
         set_redundant_data(rfont)
@@ -169,9 +174,6 @@ def set_redundant_data(rfont):
     """Set redundant metadata in an RFont, e.g. data based on other data."""
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
-    rfont.info.styleMapFamilyName = family_name
-    rfont.info.openTypeNamePreferredFamilyName = family_name
-    rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
@@ -179,15 +181,19 @@ def set_redundant_data(rfont):
     rfont.info.openTypeNameUniqueID = '%s.%s;%s' % (
         rfont.info.versionMajor, rfont.info.versionMinor, ps_name)
 
-    rfont.info.styleMapStyleName = build_style_map_style(style_name)
+    style_map_style = build_style_map_style(style_name)
+    rfont.info.styleMapStyleName = style_map_style
+    if style_map_style == style_name.lower():
+        rfont.info.styleMapFamilyName = family_name
+    else:
+        rfont.info.styleMapFamilyName = '%s %s' % (family_name, style_name)
+        rfont.info.openTypeNamePreferredFamilyName = family_name
+        rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
 
-def build_style_name(data, weight_key, width_key):
-    """Build style name from weight and width strings in data."""
-
-    weight = data.pop(weight_key, '')
-    width = data.pop(width_key, '')
-    return ('%s %s' % (weight, width)).strip() or 'Regular'
+def build_family_name(base_family, data, width_key):
+    """Build family name from base name and width string in data."""
+    return ('%s %s' % (base_family, data.pop(width_key, ''))).strip()
 
 
 def build_postscript_name(family_name, style_name):

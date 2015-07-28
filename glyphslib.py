@@ -13,7 +13,7 @@ from fontbuild.outlineTTF import OutlineTTFCompiler
 
 from parser import Parser
 from casting import cast_data, cast_noto_data
-from torf import to_robofab, clear_data, set_redundant_data, build_style_name
+from torf import to_robofab, clear_data, set_redundant_data, build_family_name
 from torf import build_postscript_name, build_style_map_style
 
 
@@ -71,37 +71,35 @@ def build_instances(rfonts, instances):
 
     xml_path = 'tmp.designspace'
     writer = DesignSpaceDocumentWriter(xml_path)
-    family_name = None
+    family_name = ''
 
     for font in rfonts:
         save_ufo(font)
         cur_family_name = font.info.familyName
-        if family_name:
-            assert cur_family_name == family_name
-        else:
+        if cur_family_name in family_name or not family_name:
             family_name = cur_family_name
+        elif family_name not in cur_family_name:
+            raise ValueError('Inconsistent family names for masters')
         writer.addSource(
             path=font.path,
-            name=font.info.styleName,
+            name='%s %s' % (font.info.familyName, font.info.styleName),
             location={'weight': font.lib['com.google.glyphs2ufo.weightValue'],
                       'width': font.lib['com.google.glyphs2ufo.widthValue']})
 
     ofiles = []
     for instance in instances:
-        style_name = build_style_name(instance, 'weightClass', 'widthClass')
-        ps_name = build_postscript_name(family_name, style_name)
+        cur_family_name = build_family_name(family_name, instance, 'widthClass')
+        style_name = instance.pop('weightClass', 'Regular')
+        ps_name = build_postscript_name(cur_family_name, style_name)
         cur_path = os.path.join('ufo', ps_name + '.ufo')
         ofiles.append((cur_path, instance['customParameters']))
         writer.startInstance(
             name=instance.pop('name'),
             location={'weight': instance.pop('interpolationWeight'),
                       'width': instance.pop('interpolationWidth')},
-            familyName=family_name,
+            familyName=cur_family_name,
             styleName=style_name,
-            fileName=cur_path,
-            postScriptFontName=ps_name,
-            styleMapFamilyName=family_name,
-            styleMapStyleName=build_style_map_style(style_name))
+            fileName=cur_path)
         writer.writeInfo()
         writer.writeKerning()
         writer.endInstance()
