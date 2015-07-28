@@ -174,6 +174,7 @@ def set_redundant_data(rfont):
     """Set redundant metadata in an RFont, e.g. data based on other data."""
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
+    rfont.info.openTypeOS2WeightClass = get_weight_code(style_name)
 
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
@@ -214,6 +215,20 @@ def build_style_map_style(style_name):
     if 'italic' in style_name_lower:
         style_code += 2
     return style_map[style_code]
+
+
+def get_weight_code(style_name):
+    """Get the appropriate OS/2 weight code for this style."""
+
+    return {
+        'Thin': 250,
+        'Light': 300,
+        'Medium': 500,
+        'SemiBold': 600,
+        'Bold': 700,
+        'ExtraBold': 800,
+        'Black': 900
+    }.get(style_name, 400)
 
 
 def to_rf_time(datetime_obj):
