@@ -209,10 +209,9 @@ def build_style_map_style(style_name):
 
     style_code = 0
     style_map = ['regular', 'bold', 'italic', 'bold italic']
-    style_name_lower = style_name.lower()
-    if 'bold' in style_name_lower or 'black' in style_name_lower:
+    if 'Bold' in style_name or 'Black' in style_name:
         style_code += 1
-    if 'italic' in style_name_lower:
+    if 'Italic' in style_name:
         style_code += 2
     return style_map[style_code]
 
