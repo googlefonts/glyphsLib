@@ -5,7 +5,6 @@ __all__ = [
 ]
 
 import json
-import os
 import sys
 
 from fontbuild.convertCurves import glyphCurvesToQuadratic
@@ -13,8 +12,8 @@ from fontbuild.outlineTTF import OutlineTTFCompiler
 
 from parser import Parser
 from casting import cast_data, cast_noto_data
-from torf import to_robofab, clear_data, set_redundant_data, build_family_name
-from torf import build_postscript_name, build_style_map_style
+from interpolation import build_instances
+from torf import to_robofab
 
 
 def load(fp, dict_type=dict):
@@ -47,7 +46,7 @@ def load_to_rfonts(filename):
 
 def save_ufo(font):
     """Save an RFont as a UFO."""
-    ofile = os.path.join('master_ufo', font.info.postscriptFullName + '.ufo')
+    ofile = font.info.postscriptFullName + '.ufo'
     print '>>> Compiling %s' % ofile
     font.save(ofile)
 
@@ -60,63 +59,6 @@ def save_ttf(font):
         glyphCurvesToQuadratic(glyph)
     compiler = OutlineTTFCompiler(font, ofile)
     compiler.compile()
-
-
-def build_instances(rfonts, instances):
-    """Create MutatorMath designspace and generate instances."""
-
-    from mutatorMath.ufo import build
-    from mutatorMath.ufo.document import DesignSpaceDocumentWriter
-    from robofab.world import OpenFont
-
-    xml_path = 'tmp.designspace'
-    writer = DesignSpaceDocumentWriter(xml_path)
-    family_name = ''
-
-    for font in rfonts:
-        save_ufo(font)
-        cur_family_name = font.info.familyName
-        if cur_family_name in family_name or not family_name:
-            family_name = cur_family_name
-        elif family_name not in cur_family_name:
-            raise ValueError('Inconsistent family names for masters')
-        writer.addSource(
-            path=font.path,
-            name='%s %s' % (font.info.familyName, font.info.styleName),
-            location={'weight': font.lib['com.google.glyphs2ufo.weightValue'],
-                      'width': font.lib['com.google.glyphs2ufo.widthValue']})
-
-    ofiles = []
-    for instance in instances:
-        cur_family_name = build_family_name(family_name, instance, 'widthClass')
-        style_name = instance.pop('weightClass', 'Regular')
-        ps_name = build_postscript_name(cur_family_name, style_name)
-        cur_path = os.path.join('ufo', ps_name + '.ufo')
-        ofiles.append((cur_path, instance['customParameters']))
-        writer.startInstance(
-            name=instance.pop('name'),
-            location={'weight': instance.pop('interpolationWeight'),
-                      'width': instance.pop('interpolationWidth')},
-            familyName=cur_family_name,
-            styleName=style_name,
-            fileName=cur_path)
-        writer.writeInfo()
-        writer.writeKerning()
-        writer.endInstance()
-
-    writer.save()
-    print '>>> Building instances'
-    build(xml_path)
-
-    for ofile, custom_params in ofiles:
-        rfont = OpenFont(ofile)
-        for param in custom_params:
-            if param.pop('name') == 'panose':
-                rfont.info.openTypeOS2Panose = map(int, param.pop('value'))
-        set_redundant_data(rfont)
-        save_ttf(rfont)
-
-    return clear_data(instances)
 
 
 def main(argv):
