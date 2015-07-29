@@ -1,6 +1,6 @@
 __all__ = [
     'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
-    'build_postscript_name', 'build_style_map_style'
+    'build_style_name', 'build_postscript_name'
 ]
 
 
@@ -10,7 +10,7 @@ from robofab.world import RFont
 LIB_PREFIX = 'com.google.glyphs2ufo.'
 
 
-def to_robofab(data, include_instances=False, debug=False):
+def to_robofab(data, italic=False, include_instances=False, debug=False):
     """Take .glyphs file data and load it into RFonts.
 
     Takes in data as a dictionary structured according to
@@ -31,7 +31,7 @@ def to_robofab(data, include_instances=False, debug=False):
     kerning_groups = {}
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    rfonts, master_id_order = generate_base_fonts(data)
+    rfonts, master_id_order = generate_base_fonts(data, italic)
 
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
@@ -50,12 +50,7 @@ def to_robofab(data, include_instances=False, debug=False):
 
             # ensure consistency between layer ids / names
             style_name = layer.pop('name')
-            font_style = rfont.info.styleName
-            if rfont.info.familyName.split()[-1] == 'Condensed':
-                if font_style == 'Regular':
-                    font_style = 'Condensed'
-                else:
-                    font_style += ' Condensed'
+            font_style = rfont_style_to_layer_style(rfont)
             if font_style != style_name:
                 print (
                     'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
@@ -107,7 +102,7 @@ def clear_data(data):
     return True
 
 
-def generate_base_fonts(data):
+def generate_base_fonts(data, italic):
     """Generate a list of RFonts with metadata loaded from .glyphs data."""
 
     copyright = data.pop('copyright')
@@ -131,6 +126,7 @@ def generate_base_fonts(data):
         rfont = RFont()
 
         rfont.info.familyName = build_family_name(family_name, master, 'width')
+        rfont.info.styleName = build_style_name(master, 'weight', italic)
 
         rfont.info.copyright = copyright
         rfont.info.openTypeNameDesigner = designer
@@ -148,7 +144,6 @@ def generate_base_fonts(data):
         rfont.info.descender = master.pop('descender')
         rfont.info.postscriptStemSnapH = master.pop('horizontalStems')
         rfont.info.postscriptStemSnapV = master.pop('verticalStems')
-        rfont.info.styleName = master.pop('weight', 'Regular')
         rfont.info.xHeight = master.pop('xHeight')
 
         set_redundant_data(rfont)
@@ -174,7 +169,8 @@ def set_redundant_data(rfont):
     """Set redundant metadata in an RFont, e.g. data based on other data."""
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
-    rfont.info.openTypeOS2WeightClass = get_weight_code(style_name)
+    weight = style_name.replace('Italic', '').strip()
+    rfont.info.openTypeOS2WeightClass = get_weight_code(weight)
 
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
@@ -187,7 +183,7 @@ def set_redundant_data(rfont):
     if style_map_style == style_name.lower():
         rfont.info.styleMapFamilyName = family_name
     else:
-        rfont.info.styleMapFamilyName = '%s %s' % (family_name, style_name)
+        rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
         rfont.info.openTypeNamePreferredFamilyName = family_name
         rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
@@ -195,6 +191,18 @@ def set_redundant_data(rfont):
 def build_family_name(base_family, data, width_key):
     """Build family name from base name and width string in data."""
     return ('%s %s' % (base_family, data.pop(width_key, ''))).strip()
+
+
+def build_style_name(data, weight_key, italic):
+    """Build style name from weight string in data and whether it's italic."""
+
+    style_name = data.pop(weight_key, 'Regular')
+    if italic:
+        if style_name == 'Regular':
+            style_name = 'Italic'
+        else:
+            style_name += ' Italic'
+    return style_name
 
 
 def build_postscript_name(family_name, style_name):
@@ -228,6 +236,34 @@ def get_weight_code(style_name):
         'ExtraBold': 800,
         'Black': 900
     }.get(style_name, 400)
+
+
+def rfont_style_to_layer_style(rfont):
+    """Convert style as stored in RFonts into Glyphs layer data.
+
+    We store style info in RFonts as:
+      familyName: "[family] [condensed]"
+      styleName: "[weight] [italic]"
+    where "Regular Italic" in styleName becomes simply "Italic".
+
+    Glyphs layer styles are stored as "[weight] [condensed] [italic]", where
+    "Regular Condensed" becomes "Condensed" but "Regular Italic" does not get
+    shortened.
+    """
+
+    style = rfont.info.styleName.split()
+    family = rfont.info.familyName.split()
+    if style[0] == 'Italic':
+        style.insert(0, 'Regular')
+    if family[-1] == 'Condensed':
+        if style[0] == 'Regular':
+            style[0] = 'Condensed'
+        else:
+            if style[-1] == 'Italic':
+                style.insert(-1, 'Condensed')
+            else:
+                style.append('Condensed')
+    return ' '.join(style)
 
 
 def to_rf_time(datetime_obj):

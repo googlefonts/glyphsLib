@@ -33,11 +33,11 @@ def loads(value, dict_type=dict):
 	return data
 
 
-def load_to_rfonts(filename):
+def load_to_rfonts(filename, italic):
     """Load an unpacked .glyphs object to a RoboFab RFont."""
     data = load(open(filename, 'rb'))
     print '>>> Loading to RFonts'
-    return to_robofab(data, include_instances=True)
+    return to_robofab(data, italic=italic, include_instances=True)
     #return to_robofab(data, debug=True)
 
 
@@ -50,8 +50,10 @@ def save_ufo(font):
 
 def main(argv):
     #print json.dumps(load(open(sys.argv[1], 'rb')), indent=2, sort_keys=True)
-    rfonts, instances = load_to_rfonts(sys.argv[1])
-    data = build_instances(rfonts, instances)
+    filename = sys.argv[1]
+    italic = 'Italic' in filename
+    rfonts, instances = load_to_rfonts(filename, italic)
+    data = build_instances(rfonts, instances, italic)
     print 'unloaded:', json.dumps(data, indent=2)
 
 

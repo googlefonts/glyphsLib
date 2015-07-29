@@ -12,12 +12,13 @@ from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
 from torf import clear_data, set_redundant_data, build_family_name
-from torf import build_postscript_name
+from torf import build_style_name, build_postscript_name
 
 
-def build_instances(rfonts, instances):
+def build_instances(rfonts, instances, italic=False):
     """Create MutatorMath designspace and generate instances."""
 
+    print '>>> Writing masters'
     for font in rfonts:
         font.save(os.path.join(
             'master_ufo', font.info.postscriptFullName + '.ufo'))
@@ -25,7 +26,7 @@ def build_instances(rfonts, instances):
     xml_path = 'tmp.designspace'
     writer = DesignSpaceDocumentWriter(xml_path)
     base_family = add_masters_to_writer(writer, rfonts)
-    ofiles = add_instances_to_writer(writer, base_family, instances)
+    ofiles = add_instances_to_writer(writer, base_family, instances, italic)
     writer.save()
 
     print '>>> Building instances'
@@ -66,7 +67,7 @@ def add_masters_to_writer(writer, rfonts):
     return base_family
 
 
-def add_instances_to_writer(writer, base_family, instances):
+def add_instances_to_writer(writer, base_family, instances, italic):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, custom_font_data> pairs, corresponding to the
@@ -77,7 +78,7 @@ def add_instances_to_writer(writer, base_family, instances):
     for instance in instances:
 
         family_name = build_family_name(base_family, instance, 'widthClass')
-        style_name = instance.pop('weightClass', 'Regular')
+        style_name = build_style_name(instance, 'weightClass', italic)
         ufo_path = os.path.join(
             'ufo', build_postscript_name(family_name, style_name) + '.ufo')
         ofiles.append((ufo_path, instance['customParameters']))
