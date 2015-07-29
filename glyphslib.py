@@ -7,9 +7,6 @@ __all__ = [
 import json
 import sys
 
-from fontbuild.convertCurves import glyphCurvesToQuadratic
-from fontbuild.outlineTTF import OutlineTTFCompiler
-
 from parser import Parser
 from casting import cast_data, cast_noto_data
 from interpolation import build_instances
@@ -49,16 +46,6 @@ def save_ufo(font):
     ofile = font.info.postscriptFullName + '.ufo'
     print '>>> Compiling %s' % ofile
     font.save(ofile)
-
-
-def save_ttf(font):
-    """Save an RFont as a TTF."""
-    ofile = font.info.postscriptFullName + '.ttf'
-    print '>>> Compiling %s' % ofile
-    for glyph in font:
-        glyphCurvesToQuadratic(glyph)
-    compiler = OutlineTTFCompiler(font, ofile)
-    compiler.compile()
 
 
 def main(argv):

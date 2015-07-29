@@ -5,6 +5,8 @@ __all__ = [
 
 import os
 
+from fontbuild.convertCurves import glyphCurvesToQuadratic
+from fontbuild.outlineTTF import OutlineTTFCompiler
 from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
@@ -93,3 +95,14 @@ def add_instances_to_writer(writer, base_family, instances):
         writer.endInstance()
 
     return ofiles
+
+
+def save_ttf(font):
+    """Save an RFont as a TTF."""
+
+    ofile = font.info.postscriptFullName + '.ttf'
+    print '>>> Compiling %s' % ofile
+    for glyph in font:
+        glyphCurvesToQuadratic(glyph)
+    compiler = OutlineTTFCompiler(font, ofile)
+    compiler.compile()
