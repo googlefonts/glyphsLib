@@ -122,9 +122,8 @@ def build_instances(rfonts, instances):
 def main(argv):
     #print json.dumps(load(open(sys.argv[1], 'rb')), indent=2, sort_keys=True)
     rfonts, instances = load_to_rfonts(sys.argv[1])
-    for font in rfonts:
-        save_ttf(font)
-        #save_ufo(font)
+    data = build_instances(rfonts, instances)
+    print 'unloaded:', json.dumps(data, indent=2)
 
 
 if __name__ == '__main__':
