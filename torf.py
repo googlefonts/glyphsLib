@@ -427,4 +427,4 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     rfont.features.text = '\n\n'.join([
         '# -- feature prefixes --', prefix_str,
         '# -- classes --', class_str,
-        '# -- feature prefixes --', fea_str])
+        '# -- features --', fea_str])
