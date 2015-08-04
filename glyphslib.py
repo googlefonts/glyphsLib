@@ -7,12 +7,8 @@ __all__ = [
 import json
 import sys
 
-from fontbuild.convertCurves import glyphCurvesToQuadratic
-from fontbuild.outlineTTF import OutlineTTFCompiler
-
 from parser import Parser
 from casting import cast_data, cast_noto_data
-from interpolation import build_instances
 from torf import to_robofab
 
 
@@ -36,12 +32,12 @@ def loads(value, dict_type=dict):
 	return data
 
 
-def load_to_rfonts(filename, italic):
+def load_to_rfonts(filename, italic=False, include_instances=False):
     """Load an unpacked .glyphs object to a RoboFab RFont."""
+
     data = load(open(filename, 'rb'))
     print '>>> Loading to RFonts'
-    return to_robofab(data, italic=italic, include_instances=True)
-    #return to_robofab(data, debug=True)
+    return to_robofab(data, italic=italic, include_instances=include_instances)
 
 
 def save_ufo(font):
@@ -56,8 +52,23 @@ def save_ufo(font):
         font.save(ofile)
 
 
+def save_otf(font):
+    """Save an RFont as an OTF, using ufo2fdk."""
+
+    from ufo2fdk import OTFCompiler
+
+    ofile = font.info.postscriptFullName + '.otf'
+    print '>>> Compiling ' + ofile
+    compiler = OTFCompiler()
+    reports = compiler.compile(font, ofile)
+    print reports['makeotf']
+
+
 def save_ttf(font):
-    """Save an RFont as a TTF."""
+    """Save an RFont as a TTF, using the Roboto toolchain."""
+
+    from fontbuild.convertCurves import glyphCurvesToQuadratic
+    from fontbuild.outlineTTF import OutlineTTFCompiler
 
     ofile = font.info.postscriptFullName + '.ttf'
     print '>>> Compiling %s' % ofile
@@ -67,15 +78,26 @@ def save_ttf(font):
     compiler.compile()
 
 
-def main(argv):
-    #print json.dumps(load(open(sys.argv[1], 'rb')), indent=2, sort_keys=True)
-    filename = sys.argv[1]
-    italic = 'Italic' in filename
-    masters, instance_data = load_to_rfonts(filename, italic)
-    instances = build_instances(masters, instance_data, italic)
-    for f in instances:
+def build_master_files(filename, italic=False):
+    """Generate UFOs from the masters defined in a .glyphs file."""
+
+    for f in load_to_rfonts(filename, italic):
         save_ufo(f)
-        save_ttf(f)
+
+
+def build_instance_files(filename, italic=False):
+    """Generate UFOs from the instances defined in a .glyphs file."""
+
+    from interpolation import build_instances
+
+    masters, instance_data = load_to_rfonts(filename, italic, True)
+    for f in build_instances(masters, instance_data, italic):
+        save_ufo(f)
+
+
+def main(argv):
+    filename = sys.argv[1]
+    build_instance_files(filename, 'Italic' in filename)
 
 
 if __name__ == '__main__':
