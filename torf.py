@@ -4,6 +4,7 @@ __all__ = [
 ]
 
 
+import re
 from robofab.world import RFont
 
 
@@ -36,10 +37,17 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
 
+        glyph_name = glyph.pop('glyphname')
+        if not re.match('^[\w\d._]{1,31}$', glyph_name):
+            print (
+                'Illegal glyph name "%s". If this is used in the font\'s '
+                'feature syntax, it could cause errors.' % glyph_name)
+
         # pop glyph metadata only once, i.e. not when looping through layers
-        metadata_keys = ['glyphname', 'unicode', 'lastChange',
-                         'leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']
+        metadata_keys = ['unicode', 'lastChange', 'leftMetricsKey',
+                         'rightMetricsKey', 'widthMetricsKey']
         glyph_data = dict((key, glyph.pop(key, None)) for key in metadata_keys)
+
 
         for layer in glyph['layers']:
             # whichever attribute we use for layer_id, make sure they are both
@@ -53,11 +61,11 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
             font_style = rfont_style_to_layer_style(rfont)
             if font_style != style_name:
                 print (
-                    'Inconsistent layer id/name pair: glyph "%s" layer "%s"'
-                    % (glyph_data['glyphname'], style_name))
+                    'Inconsistent layer id/name pair: glyph "%s" layer "%s"' %
+                    (glyph_name, style_name))
                 continue
 
-            rglyph = rfont.newGlyph(glyph_data['glyphname'])
+            rglyph = rfont.newGlyph(glyph_name)
             load_glyph(rglyph, layer, glyph_data)
 
     for master_id, kerning in data.pop('kerning').items():
