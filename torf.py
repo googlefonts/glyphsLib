@@ -178,11 +178,11 @@ def set_redundant_data(rfont):
     rfont.info.openTypeNameUniqueID = '%s.%s;%s' % (
         rfont.info.versionMajor, rfont.info.versionMinor, ps_name)
 
-    style_map_style = build_style_map_style(style_name)
-    rfont.info.styleMapStyleName = style_map_style
-    if style_map_style == style_name.lower():
+    if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
+        rfont.info.styleMapStyleName = style_name.lower()
         rfont.info.styleMapFamilyName = family_name
     else:
+        rfont.info.styleMapStyleName = 'regular'
         rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
         rfont.info.openTypeNamePreferredFamilyName = family_name
         rfont.info.openTypeNamePreferredSubfamilyName = style_name
@@ -210,18 +210,6 @@ def build_postscript_name(family_name, style_name):
 
     return '%s-%s' % (family_name.replace(' ', ''),
                       style_name.replace(' ', ''))
-
-
-def build_style_map_style(style_name):
-    """Build style-map-style string from a style name."""
-
-    style_code = 0
-    style_map = ['regular', 'bold', 'italic', 'bold italic']
-    if 'Bold' in style_name or 'Black' in style_name:
-        style_code += 1
-    if 'Italic' in style_name:
-        style_code += 2
-    return style_map[style_code]
 
 
 def get_weight_code(style_name):
