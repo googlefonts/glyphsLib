@@ -5,8 +5,6 @@ __all__ = [
 
 import os
 
-from fontbuild.convertCurves import glyphCurvesToQuadratic
-from fontbuild.outlineTTF import OutlineTTFCompiler
 from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
@@ -15,8 +13,11 @@ from torf import clear_data, set_redundant_data, build_family_name
 from torf import build_style_name, build_postscript_name
 
 
-def build_instances(rfonts, instances, italic=False):
-    """Create MutatorMath designspace and generate instances."""
+def build_instances(rfonts, instance_data, italic=False, debug=False):
+    """Create MutatorMath designspace and generate instances.
+
+    Returns a list of the instance RFonts, or the unused instance data if debug
+    is True."""
 
     print '>>> Writing masters'
     for font in rfonts:
@@ -26,21 +27,24 @@ def build_instances(rfonts, instances, italic=False):
     xml_path = 'tmp.designspace'
     writer = DesignSpaceDocumentWriter(xml_path)
     base_family = add_masters_to_writer(writer, rfonts)
-    ofiles = add_instances_to_writer(writer, base_family, instances, italic)
+    ofiles = add_instances_to_writer(writer, base_family, instance_data, italic)
     writer.save()
 
     print '>>> Building instances'
     build(xml_path)
 
+    instance_rfonts = []
     for path, custom_params in ofiles:
         rfont = OpenFont(path)
         for param in custom_params:
             if param.pop('name') == 'panose':
                 rfont.info.openTypeOS2Panose = map(int, param.pop('value'))
         set_redundant_data(rfont)
-        save_ttf(rfont)
+        instance_rfonts.append(rfont)
 
-    return clear_data(instances)
+    if debug:
+        return clear_data(instance_data)
+    return instance_rfonts
 
 
 def add_masters_to_writer(writer, rfonts):
@@ -105,14 +109,3 @@ def add_instances_to_writer(writer, base_family, instances, italic):
         writer.endInstance()
 
     return ofiles
-
-
-def save_ttf(font):
-    """Save an RFont as a TTF."""
-
-    ofile = font.info.postscriptFullName + '.ttf'
-    print '>>> Compiling %s' % ofile
-    for glyph in font:
-        glyphCurvesToQuadratic(glyph)
-    compiler = OutlineTTFCompiler(font, ofile)
-    compiler.compile()

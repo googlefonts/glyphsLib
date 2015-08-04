@@ -7,6 +7,9 @@ __all__ = [
 import json
 import sys
 
+from fontbuild.convertCurves import glyphCurvesToQuadratic
+from fontbuild.outlineTTF import OutlineTTFCompiler
+
 from parser import Parser
 from casting import cast_data, cast_noto_data
 from interpolation import build_instances
@@ -43,18 +46,36 @@ def load_to_rfonts(filename, italic):
 
 def save_ufo(font):
     """Save an RFont as a UFO."""
-    ofile = font.info.postscriptFullName + '.ufo'
+
+    if font.path:
+        print '>>> Compiling %s' % font.path
+        font.save()
+    else:
+        ofile = font.info.postscriptFullName + '.ufo'
+        print '>>> Compiling %s' % ofile
+        font.save(ofile)
+
+
+def save_ttf(font):
+    """Save an RFont as a TTF."""
+
+    ofile = font.info.postscriptFullName + '.ttf'
     print '>>> Compiling %s' % ofile
-    font.save(ofile)
+    for glyph in font:
+        glyphCurvesToQuadratic(glyph)
+    compiler = OutlineTTFCompiler(font, ofile)
+    compiler.compile()
 
 
 def main(argv):
     #print json.dumps(load(open(sys.argv[1], 'rb')), indent=2, sort_keys=True)
     filename = sys.argv[1]
     italic = 'Italic' in filename
-    rfonts, instances = load_to_rfonts(filename, italic)
-    data = build_instances(rfonts, instances, italic)
-    print 'unloaded:', json.dumps(data, indent=2)
+    masters, instance_data = load_to_rfonts(filename, italic)
+    instances = build_instances(masters, instance_data, italic)
+    for f in instances:
+        save_ufo(f)
+        save_ttf(f)
 
 
 if __name__ == '__main__':
