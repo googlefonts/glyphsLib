@@ -123,7 +123,6 @@ def generate_base_fonts(data, italic):
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
-    version_string = 'Version %s.%s' % (version_major, version_minor)
 
     misc = ['disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
@@ -145,7 +144,6 @@ def generate_base_fonts(data, italic):
         rfont.info.unitsPerEm = units_per_em
         rfont.info.versionMajor = version_major
         rfont.info.versionMinor = version_minor
-        rfont.info.openTypeNameVersion = version_string
 
         rfont.info.ascender = master.pop('ascender')
         rfont.info.capHeight = master.pop('capHeight')
@@ -183,8 +181,10 @@ def set_redundant_data(rfont):
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
     rfont.info.postscriptFullName = ps_name
-    rfont.info.openTypeNameUniqueID = '%s.%s;%s' % (
-        rfont.info.versionMajor, rfont.info.versionMinor, ps_name)
+
+    version_str = '%s.%s' % (rfont.info.versionMajor, rfont.info.versionMinor)
+    rfont.info.openTypeNameVersion = 'Version ' + version_str
+    rfont.info.openTypeNameUniqueID = '%s;%s' % (version_str, ps_name)
 
     if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
         rfont.info.styleMapStyleName = style_name.lower()
