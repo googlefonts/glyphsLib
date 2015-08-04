@@ -410,9 +410,11 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
         if disabled:
             lines.append('  # -- disabled --')
             lines.extend('  #' + line for line in code.splitlines())
-        else:
             # empty features cause makeotf to fail, but empty instructions are fine
             # so insert an empty instruction into any empty feature definitions
+            lines.append('  ;')
+        else:
+            # see previous comment
             if not code.strip():
                 code = ';'
             lines.extend('  ' + line for line in code.splitlines())
