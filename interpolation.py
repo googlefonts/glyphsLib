@@ -49,20 +49,29 @@ def add_masters_to_writer(writer, rfonts):
     Returns the masters' base family name, as determined by taking the
     intersection of their individual family names."""
 
+    master_data = []
     base_family = ''
+
+    # build list of <path, family, style, weight, width> tuples for each master
     for font in rfonts:
-
-        cur_family = font.info.familyName
-        if cur_family in base_family or not base_family:
-            base_family = cur_family
-        elif base_family not in cur_family:
+        family, style = font.info.familyName, font.info.styleName
+        if family in base_family or not base_family:
+            base_family = family
+        elif base_family not in family:
             raise ValueError('Inconsistent family names for masters')
+        master_data.append((
+            font.path, family, style,
+            font.lib['com.google.glyphs2ufo.weightValue'],
+            font.lib['com.google.glyphs2ufo.widthValue']))
 
+    # add the masters to the writer in a separate loop, when we have a good
+    # candidate to copy metadata from ([base_family] Regular)
+    for path, family, style, weight, width in master_data:
         writer.addSource(
-            path=font.path,
-            name='%s %s' % (cur_family, font.info.styleName),
-            location={'weight': font.lib['com.google.glyphs2ufo.weightValue'],
-                      'width': font.lib['com.google.glyphs2ufo.widthValue']})
+            path=path,
+            name='%s %s' % (family, style),
+            location={'weight': weight, 'width': width},
+            copyInfo=(family == base_family and style == 'Regular'))
 
     return base_family
 
