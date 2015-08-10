@@ -52,7 +52,7 @@ def save_ufo(font):
         font.save(ofile)
 
 
-def save_otf(font):
+def save_otf(font, save_ttf=False):
     """Save an RFont as an OTF, using ufo2fdk."""
 
     from ufo2fdk import OTFCompiler
@@ -63,19 +63,17 @@ def save_otf(font):
     reports = compiler.compile(font, ofile)
     print reports['makeotf']
 
-
-def save_ttf(font):
-    """Save an RFont as a TTF, using the Roboto toolchain."""
+    if 'Wrote new font file' not in reports['makeotf'] or not save_ttf:
+        return
 
     from fontbuild.convertCurves import glyphCurvesToQuadratic
-    from fontbuild.outlineTTF import OutlineTTFCompiler
+    from fontbuild.Build import saveTTF
 
-    ofile = font.info.postscriptFullName + '.ttf'
-    print '>>> Compiling %s' % ofile
+    ttfile = ofile.replace('.otf', '.ttf')
+    print '>>> Compiling ' + ttfile
     for glyph in font:
         glyphCurvesToQuadratic(glyph)
-    compiler = OutlineTTFCompiler(font, ofile)
-    compiler.compile()
+    saveTTF(font, ttfile, ofile)
 
 
 def build_master_files(filename, italic=False):
@@ -96,7 +94,7 @@ def build_instance_files(filename, italic=False):
 
 
 def main(argv):
-    filename = sys.argv[1]
+    filename = argv[1]
     build_instance_files(filename, 'Italic' in filename)
 
 
