@@ -50,7 +50,8 @@ def loads(value, dict_type=dict):
 def load_to_rfonts(filename, italic=False, include_instances=False):
     """Load an unpacked .glyphs object to a RoboFab RFont."""
 
-    data = load(open(filename, 'rb'))
+    with open(filename, 'rb') as ifile:
+        data = load(ifile)
     print '>>> Loading to RFonts'
     return to_robofab(data, italic=italic, include_instances=include_instances)
 

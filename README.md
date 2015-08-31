@@ -40,7 +40,7 @@ rfonts = build_instances(masters, instance_data)
 #### Load .glyphs data as a Python dictionary
 
 ```python
-with open(filename, 'rb') as glyphs_file:
+with open('MyFont.glyphs', 'rb') as glyphs_file:
     glyphs_data = glyphslib.load(glyphs_file)
 ```
 
