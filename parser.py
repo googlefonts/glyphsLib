@@ -13,111 +13,114 @@
 # limitations under the License.
 
 
+import re
+
+
 class Parser:
-	def __init__(self, dict_type):
-		self.stack = []
-		self.current_key = None
-		self.root = None
-		self._dict_type = dict_type
-		self.lineno = 1
+    """Parses Python dictionaries from Glyphs source files."""
 
-	def parse(self, st):
-		i = 0
-		c = st[i];i+=1
-		try:
-			while True:
-				if c == b'\n':
-					self.lineno+=1
-					c = st[i];i+=1
-					continue
-				if c in ' \r\t':
-					c = st[i];i+=1
-					continue
-				elif c in b'{=;}(,)<>':
-					self.handlers[c](self, c)
-					c = st[i];i+=1
-				elif c == b'"':
-					start = i
-					while True:
-						c = st[i];i+=1
-						if c == '"':
-							break
-					self.add_object(st[start:i-1])
-					c = st[i];i+=1
-				elif b'a'<=c<=b'z' or b'A'<=c<=b'Z' or b'0'<=c<=b'9' or c in b'._-':
-					start = i - 1
-					while True:
-						c = st[i];i+=1
-						if b'a'<=c<=b'z' or b'A'<=c<=b'Z' or b'0'<=c<=b'9' or c in b'._':
-							pass
-						else:
-							break
-					self.add_object(st[start:i-1])
-				else:
-					assert 0, "Unexpected character '%s' at %d:\n%s" % (c, i, st[i:i+100])
-		except IndexError:
-			pass
-		assert not self.stack
-		return self.root
+    def __init__(self, dict_type):
+        self.dict_type = dict_type
+        value_re = r'("[^"]*"|[-_.A-Za-z0-9]+)'
+        self.start_dict_re = re.compile(r'\s*{')
+        self.end_dict_re = re.compile(r'\s*}')
+        self.dict_delim_re = re.compile(r'\s*;')
+        self.start_list_re = re.compile(r'\s*\(')
+        self.end_list_re = re.compile(r'\s*\)')
+        self.list_delim_re = re.compile(r'\s*,')
+        self.attr_re = re.compile(r'\s*%s\s*=' % value_re)
+        self.value_re = re.compile(r'\s*%s' % value_re)
 
-	def add_object(self, value):
-		if not self.stack:
-			# this is the root object
-			self.root = value
-		elif isinstance(self.stack[-1], type([])):
-			self.stack[-1].append(value)
-		elif isinstance(self.stack[-1], self._dict_type):
-			if self.current_key is None:
-				self.current_key = value
-			else:
-				self.stack[-1][self.current_key] = value
-				self.current_key = None
-		else:
-			assert 0
+    def parse(self, text):
+        """Do the parsing."""
 
-	# element handlers
+        result, i = self.__parse(text, 0)
+        if text[i:].strip():
+            self.__fail('Unexpected trailing content', text, i)
+        return result
 
-	def unexpected_token(self, tok):
-		return	ValueError("Unexpected character '%s' at line %d" %
-				   (tok, self.lineno))
+    def __parse(self, text, i):
+        """Recursive function to parse a single dictionary, list, or value."""
 
-	def begin_dict(self, _):
-		d = self._dict_type()
-		self.add_object(d)
-		self.stack.append(d)
+        m = self.start_dict_re.match(text, i)
+        if m:
+            parsed = m.group(0)
+            i += len(parsed)
+            return self.__parse_dict(text, i)
 
-	def end_dict(self, _):
-		if self.current_key:
-			raise ValueError("missing value for key '%s' at line %d; missing semi-colon?" %
-							 (self.current_key,0))
-		self.stack.pop()
+        m = self.start_list_re.match(text, i)
+        if m:
+            parsed = m.group(0)
+            i += len(parsed)
+            return self.__parse_list(text, i)
 
-	def dict_key(self, tok):
-		if not self.current_key or not isinstance(self.stack[-1], self._dict_type):
-			raise self.unexpected_token(tok)
+        m = self.value_re.match(text, i)
+        if m:
+            parsed, value = m.group(0), self.__trim_value(m.group(1))
+            i += len(parsed)
+            return value, i
 
-	def dict_value(self, tok):
-		if self.current_key or not isinstance(self.stack[-1], self._dict_type):
-			raise self.unexpected_token(tok)
+        else:
+            self.__fail('Unexpected content', text, i)
 
-	def begin_array(self, _):
-		a = []
-		self.add_object(a)
-		self.stack.append(a)
+    def __parse_dict(self, text, i):
+        """Parse a dictionary from source text starting at i."""
 
-	def array_item(self, tok):
-		if not isinstance(self.stack[-1], type([])):
-			raise self.unexpected_token(tok)
+        res = self.dict_type()
+        end_match = self.end_dict_re.match(text, i)
+        while not end_match:
+            m = self.attr_re.match(text, i)
+            if not m:
+                self.__fail('Unexpected dictionary content', text, i)
+            parsed, name = m.group(0), self.__trim_value(m.group(1))
+            i += len(parsed)
+            res[name], i = self.__parse(text, i)
 
-	def end_array(self, _):
-		self.stack.pop()
+            m = self.dict_delim_re.match(text, i)
+            if not m:
+                self.__fail('Missing delimiter in dictionary before content',
+                            text, i)
+            parsed = m.group(0)
+            i += len(parsed)
 
-	handlers = {
-		'{': begin_dict,
-		'=': dict_key,
-		';': dict_value,
-		'}': end_dict,
-		'(': begin_array,
-		',': array_item,
-		')': end_array,
-	}
+            end_match = self.end_dict_re.match(text, i)
+
+        parsed = end_match.group(0)
+        i += len(parsed)
+        return res, i
+
+    def __parse_list(self, text, i):
+        """Parse a list from source text starting at i."""
+
+        res = []
+        end_match = self.end_list_re.match(text, i)
+        while not end_match:
+            list_item, i = self.__parse(text, i)
+            res.append(list_item)
+
+            end_match = self.end_list_re.match(text, i)
+
+            if not end_match:
+                m = self.list_delim_re.match(text, i)
+                if not m:
+                    self.__fail('Missing delimiter in list before content',
+                                text, i)
+                parsed = m.group(0)
+                i += len(parsed)
+
+        parsed = end_match.group(0)
+        i += len(parsed)
+        return res, i
+
+    def __trim_value(self, value):
+        """Trim double quotes off the ends of a value."""
+
+        if value[0] == '"':
+            assert value[-1] == '"'
+            return value[1:-1]
+        return value
+
+    def __fail(self, message, text, i):
+        """Raise an exception with given message and text at i."""
+
+        raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
