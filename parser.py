@@ -34,36 +34,36 @@ class Parser:
     def parse(self, text):
         """Do the parsing."""
 
-        result, i = self.__parse(text, 0)
+        result, i = self._parse(text, 0)
         if text[i:].strip():
-            self.__fail('Unexpected trailing content', text, i)
+            self._fail('Unexpected trailing content', text, i)
         return result
 
-    def __parse(self, text, i):
+    def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
 
         m = self.start_dict_re.match(text, i)
         if m:
             parsed = m.group(0)
             i += len(parsed)
-            return self.__parse_dict(text, i)
+            return self._parse_dict(text, i)
 
         m = self.start_list_re.match(text, i)
         if m:
             parsed = m.group(0)
             i += len(parsed)
-            return self.__parse_list(text, i)
+            return self._parse_list(text, i)
 
         m = self.value_re.match(text, i)
         if m:
-            parsed, value = m.group(0), self.__trim_value(m.group(1))
+            parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
             return value, i
 
         else:
-            self.__fail('Unexpected content', text, i)
+            self._fail('Unexpected content', text, i)
 
-    def __parse_dict(self, text, i):
+    def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
 
         res = self.dict_type()
@@ -71,14 +71,14 @@ class Parser:
         while not end_match:
             m = self.attr_re.match(text, i)
             if not m:
-                self.__fail('Unexpected dictionary content', text, i)
-            parsed, name = m.group(0), self.__trim_value(m.group(1))
+                self._fail('Unexpected dictionary content', text, i)
+            parsed, name = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
-            res[name], i = self.__parse(text, i)
+            res[name], i = self._parse(text, i)
 
             m = self.dict_delim_re.match(text, i)
             if not m:
-                self.__fail('Missing delimiter in dictionary before content',
+                self._fail('Missing delimiter in dictionary before content',
                             text, i)
             parsed = m.group(0)
             i += len(parsed)
@@ -89,13 +89,13 @@ class Parser:
         i += len(parsed)
         return res, i
 
-    def __parse_list(self, text, i):
+    def _parse_list(self, text, i):
         """Parse a list from source text starting at i."""
 
         res = []
         end_match = self.end_list_re.match(text, i)
         while not end_match:
-            list_item, i = self.__parse(text, i)
+            list_item, i = self._parse(text, i)
             res.append(list_item)
 
             end_match = self.end_list_re.match(text, i)
@@ -103,7 +103,7 @@ class Parser:
             if not end_match:
                 m = self.list_delim_re.match(text, i)
                 if not m:
-                    self.__fail('Missing delimiter in list before content',
+                    self._fail('Missing delimiter in list before content',
                                 text, i)
                 parsed = m.group(0)
                 i += len(parsed)
@@ -112,7 +112,7 @@ class Parser:
         i += len(parsed)
         return res, i
 
-    def __trim_value(self, value):
+    def _trim_value(self, value):
         """Trim double quotes off the ends of a value."""
 
         if value[0] == '"':
@@ -120,7 +120,7 @@ class Parser:
             return value[1:-1]
         return value
 
-    def __fail(self, message, text, i):
+    def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
         raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
