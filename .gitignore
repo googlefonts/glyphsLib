@@ -1,6 +1,9 @@
 *.txt
+*.log
 *.pyc
 *.glyphs
+*.designspace
 *.ufo
 *.otf
 *.ttf
+*.ttx

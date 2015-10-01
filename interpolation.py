@@ -20,46 +20,37 @@ __all__ = [
 
 import os
 
-from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from torf import clear_data, set_redundant_data, build_family_name
-from torf import build_style_name, build_postscript_name
+from torf import clear_data, build_family_name, build_style_name, build_postscript_name
 
 
-def build_instances(rfonts, instance_data, italic=False, debug=False):
-    """Create MutatorMath designspace and generate instances.
-
-    Returns a list of the instance RFonts, or the unused instance data if debug
-    is True."""
+def build_instances(rfonts, master_dir, out_dir, designspace_path,
+                    instance_data, italic=False, debug=False):
+    """Create MutatorMath designspace and extract custom instance data.
+    Returns the custom data, or unused instance data if debug is True.
+    """
 
     print '>>> Writing masters'
     for font in rfonts:
         font.save(os.path.join(
-            'master_ufo', font.info.postscriptFullName + '.ufo'))
+            master_dir, font.info.postscriptFullName + '.ufo'))
 
-    xml_path = 'tmp.designspace'
-    writer = DesignSpaceDocumentWriter(xml_path)
+    print '>>> Writing design space document'
+    writer = DesignSpaceDocumentWriter(designspace_path)
     base_family = add_masters_to_writer(writer, rfonts)
-    ofiles = add_instances_to_writer(writer, base_family, instance_data, italic)
-    writer.save()
+    ofiles = add_instances_to_writer(writer, base_family, instance_data, italic,
+                                     out_dir)
 
-    print '>>> Building instances'
-    build(xml_path)
-
-    instance_rfonts = []
-    for path, custom_params in ofiles:
-        rfont = OpenFont(path)
-        for param in custom_params:
-            if param.pop('name') == 'panose':
-                rfont.info.openTypeOS2Panose = map(int, param.pop('value'))
-        set_redundant_data(rfont)
-        instance_rfonts.append(rfont)
+    new_instance_data = [
+        (path, dict((p.pop('name'), p.pop('value')) for p in custom_params))
+        for path, custom_params in ofiles]
 
     if debug:
         return clear_data(instance_data)
-    return instance_rfonts
+    writer.save()
+    return new_instance_data
 
 
 def add_masters_to_writer(writer, rfonts):
@@ -95,7 +86,7 @@ def add_masters_to_writer(writer, rfonts):
     return base_family
 
 
-def add_instances_to_writer(writer, base_family, instances, italic):
+def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, custom_font_data> pairs, corresponding to the
@@ -108,7 +99,7 @@ def add_instances_to_writer(writer, base_family, instances, italic):
         family_name = build_family_name(base_family, instance, 'widthClass')
         style_name = build_style_name(instance, 'weightClass', italic)
         ufo_path = os.path.join(
-            'ufo', build_postscript_name(family_name, style_name) + '.ufo')
+            out_dir, build_postscript_name(family_name, style_name) + '.ufo')
         ofiles.append((ufo_path, instance['customParameters']))
 
         writer.startInstance(

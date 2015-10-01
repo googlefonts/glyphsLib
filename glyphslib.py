@@ -47,13 +47,15 @@ def loads(value, dict_type=dict):
 	return data
 
 
-def load_to_rfonts(filename, italic=False, include_instances=False):
+def load_to_rfonts(filename, italic=False, include_instances=False,
+                   debug=False):
     """Load an unpacked .glyphs object to a RoboFab RFont."""
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
     print '>>> Loading to RFonts'
-    return to_robofab(data, italic=italic, include_instances=include_instances)
+    return to_robofab(data, italic=italic, include_instances=include_instances,
+                      debug=debug)
 
 
 def save_ufo(font):
@@ -92,27 +94,27 @@ def save_otf(font, save_ttf=False):
     saveTTF(font, ttfile, ofile)
 
 
-def build_master_files(filename, italic=False):
+def build_masters(filename, master_dir, out_dir, italic=False, debug=False):
     """Generate UFOs from the masters defined in a .glyphs file."""
-
-    for f in load_to_rfonts(filename, italic):
-        save_ufo(f)
-
-
-def build_instance_files(filename, italic=False):
-    """Generate UFOs from the instances defined in a .glyphs file."""
 
     from interpolation import build_instances
 
-    masters, instance_data = load_to_rfonts(filename, italic, True)
-    for f in build_instances(masters, instance_data, italic):
-        save_ufo(f)
+    if debug:
+        return load_to_rfonts(filename, italic, True, True)
+
+    designspace_path = filename.replace('.glyphs', '.designspace')
+    rfonts, instance_data = load_to_rfonts(filename, italic, True)
+    new_instance_data = build_instances(rfonts, master_dir, out_dir,
+                                        designspace_path, instance_data)
+    return rfonts, designspace_path, new_instance_data
 
 
-def main(argv):
-    filename = argv[1]
-    build_instance_files(filename, 'Italic' in filename)
+def main(filename, master_dir='master_ufo', out_dir='ufo', *args):
+    rfonts, _, _ = build_masters(filename, master_dir, out_dir,
+                                 italic=('Italic' in filename))
+    for rfont in rfonts:
+        save_ufo(rfont)
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(*sys.argv[1:])
