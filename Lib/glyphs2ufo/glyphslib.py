@@ -16,10 +16,11 @@
 
 
 __all__ = [
-    "load_to_rfonts", "build_instances", "load", "loads",
+    "load_to_ufos", "build_instances", "load", "loads",
 ]
 
 import json
+from os import path
 import sys
 
 from parser import Parser
@@ -47,8 +48,7 @@ def loads(value, dict_type=dict):
 	return data
 
 
-def load_to_rfonts(filename, italic=False, include_instances=False,
-                   debug=False):
+def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
     """Load an unpacked .glyphs object to a RoboFab RFont."""
 
     with open(filename, 'rb') as ifile:
@@ -58,62 +58,45 @@ def load_to_rfonts(filename, italic=False, include_instances=False,
                       debug=debug)
 
 
-def save_ufo(font):
-    """Save an RFont as a UFO."""
+def write(ufo, out_dir):
+    """Write a UFO."""
 
-    if font.path:
-        print '>>> Compiling %s' % font.path
-        font.save()
+    if ufo.path:
+        print '>>> Writing %s' % ufo.path
+        ufo.save()
     else:
-        ofile = font.info.postscriptFullName + '.ufo'
-        print '>>> Compiling %s' % ofile
-        font.save(ofile)
+        ofile = path.join(out_dir, ufo.info.postscriptFullName + '.ufo')
+        print '>>> Writing %s' % ofile
+        ufo.save(ofile)
 
 
-def save_otf(font, save_ttf=False):
-    """Save an RFont as an OTF, using ufo2fdk."""
+def build_masters(filename, master_dir, italic=False):
+    """Write and return UFOs from the masters defined in a .glyphs file."""
 
-    from ufo2fdk import OTFCompiler
+    ufos = load_to_ufos(filename, italic)
 
-    ofile = font.info.postscriptFullName + '.otf'
-    print '>>> Compiling ' + ofile
-    compiler = OTFCompiler()
-    reports = compiler.compile(font, ofile)
-    print reports['makeotf']
-
-    if 'Wrote new font file' not in reports['makeotf'] or not save_ttf:
-        return
-
-    from fontbuild.convertCurves import glyphCurvesToQuadratic
-    from fontbuild.Build import saveTTF
-
-    ttfile = ofile.replace('.otf', '.ttf')
-    print '>>> Compiling ' + ttfile
-    for glyph in font:
-        glyphCurvesToQuadratic(glyph)
-    saveTTF(font, ttfile, ofile)
+    for ufo in ufos:
+        write(ufo, master_dir)
+    return ufos
 
 
-def build_masters(filename, master_dir, out_dir, italic=False, debug=False):
-    """Generate UFOs from the masters defined in a .glyphs file."""
+def build_instances(filename, master_dir, instance_dir, italic=False):
+    """Write and return UFOs from the instances defined in a .glyphs file."""
 
-    from interpolation import build_instances
-
-    if debug:
-        return load_to_rfonts(filename, italic, True, True)
+    from interpolation import interpolate
 
     designspace_path = filename.replace('.glyphs', '.designspace')
-    rfonts, instance_data = load_to_rfonts(filename, italic, True)
-    new_instance_data = build_instances(rfonts, master_dir, out_dir,
-                                        designspace_path, instance_data)
-    return rfonts, designspace_path, new_instance_data
+    master_ufos, instance_data = load_to_ufos(
+        filename, italic, include_instances=True)
+    return interpolate(
+        master_ufos, master_dir, instance_dir, designspace_path, instance_data)
 
 
-def main(filename, master_dir='master_ufo', out_dir='ufo', *args):
-    rfonts, _, _ = build_masters(filename, master_dir, out_dir,
-                                 italic=('Italic' in filename))
-    for rfont in rfonts:
-        save_ufo(rfont)
+def main(filename, master_dir='master_ufo', instance_dir='instance_ufo'):
+    build_masters(
+        filename, master_dir, italic=('Italic' in filename))
+    #build_instances(
+    #    filename, master_dir, instance_dir, italic=('Italic' in filename))
 
 
 if __name__ == '__main__':

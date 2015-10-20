@@ -14,22 +14,23 @@
 
 
 __all__ = [
-    'build_instances'
+    'interpolate'
 ]
 
 
 import os
 
+from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from torf import clear_data, build_family_name, build_style_name, build_postscript_name
+from torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
 
 
-def build_instances(rfonts, master_dir, out_dir, designspace_path,
+def interpolate(rfonts, master_dir, out_dir, designspace_path,
                     instance_data, italic=False, debug=False):
-    """Create MutatorMath designspace and extract custom instance data.
-    Returns the custom data, or unused instance data if debug is True.
+    """Create MutatorMath designspace and generate instances.
+    Returns instance UFOs, or unused instance data if debug is True.
     """
 
     print '>>> Writing masters'
@@ -37,20 +38,27 @@ def build_instances(rfonts, master_dir, out_dir, designspace_path,
         font.save(os.path.join(
             master_dir, font.info.postscriptFullName + '.ufo'))
 
-    print '>>> Writing design space document'
     writer = DesignSpaceDocumentWriter(designspace_path)
     base_family = add_masters_to_writer(writer, rfonts)
-    ofiles = add_instances_to_writer(writer, base_family, instance_data, italic,
-                                     out_dir)
+    instance_files = add_instances_to_writer(
+        writer, base_family, instance_data, italic, out_dir)
+    writer.save()
 
-    new_instance_data = [
-        (path, dict((p.pop('name'), p.pop('value')) for p in custom_params))
-        for path, custom_params in ofiles]
+    print '>>> Building instances'
+    build(designspace_path)
+
+    instance_ufos = []
+    for path, data in instance_files:
+        ufo = OpenFont(path)
+        for attr in data:
+            if attr.pop('name') == 'panose':
+                ufo.info.openTypeOS2Panose = map(int, attr.pop('value'))
+        set_redundant_data(ufo)
+        instance_ufos.append(ufo)
 
     if debug:
         return clear_data(instance_data)
-    writer.save()
-    return new_instance_data
+    return instance_ufos
 
 
 def add_masters_to_writer(writer, rfonts):
