@@ -24,7 +24,7 @@ from os import path
 import sys
 
 from parser import Parser
-from casting import cast_data, cast_noto_data
+from casting import cast_data, cast_custom_data
 from torf import to_robofab
 
 
@@ -44,7 +44,7 @@ def loads(value, dict_type=dict):
 	data = p.parse(value)
 	print '>>> Casting parsed values'
 	cast_data(data)
-	cast_noto_data(data)
+	cast_custom_data(data)
 	return data
 
 

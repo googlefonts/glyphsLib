@@ -14,7 +14,7 @@
 
 
 __all__ = [
-    'cast_data', 'cast_noto_data'
+    'cast_data', 'cast_custom_data'
 ]
 
 
@@ -50,8 +50,8 @@ def cast_data(data, types=None):
             data[key] = cur_type(data[key])
 
 
-def cast_noto_data(data):
-    """Cast data which is specific to Noto font glyphs files."""
+def cast_custom_data(data):
+    """Cast some known data in custom parameters."""
 
     for param in data['customParameters']:
         if param['name'] == 'openTypeOS2Type':
