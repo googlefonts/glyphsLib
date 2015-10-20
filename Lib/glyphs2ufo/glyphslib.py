@@ -16,7 +16,7 @@
 
 
 __all__ = [
-    "load_to_ufos", "build_instances", "load", "loads",
+    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
 ]
 
 import json
