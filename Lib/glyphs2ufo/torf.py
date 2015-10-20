@@ -406,38 +406,36 @@ def add_groups_to_rfont(rfont, kerning_groups):
 def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     """Write an RFont's OpenType feature file."""
 
-    prefix_str = '\n'.join('# -- name: %s\n%s' % fp for fp in feature_prefixes)
+    prefix_str = '\n\n'.join(
+        '# Prefix: %s\n%s' % (name, code.strip())
+        for name, code in feature_prefixes)
 
-    class_defs = []
-    for name, code, automatic in classes:
-        if automatic:
-            class_defs.append('# -- automatic --')
-        class_defs.append('@%s = [%s];' % (name, code))
-    class_str = '\n'.join(class_defs)
+    class_str = '\n\n'.join(
+        '%s@%s = [ %s ];' % ('# automatic\n' if automatic else '', name, code)
+        for name, code, automatic in classes)
 
     feature_defs = []
     for name, code, automatic, disabled, notes in features:
+        code = code.strip()
         lines = ['feature %s {' % name]
         if notes:
-            lines.append('  # -- notes: ' + notes)
+            lines.append('# notes:')
+            lines.extend('# ' + line for line in notes.splitlines())
         if automatic:
-            lines.append('  # -- automatic --')
+            lines.append('# automatic')
         if disabled:
-            lines.append('  # -- disabled --')
-            lines.extend('  #' + line for line in code.splitlines())
+            lines.append('# disabled')
+            lines.extend('#' + line for line in code.splitlines())
             # empty features cause makeotf to fail, but empty instructions are fine
             # so insert an empty instruction into any empty feature definitions
-            lines.append('  ;')
+            lines.append(';')
         else:
             # see previous comment
-            if not code.strip():
+            if not code:
                 code = ';'
-            lines.extend('  ' + line for line in code.splitlines())
+            lines.append(code)
         lines.append('} %s;' % name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
 
-    rfont.features.text = '\n\n'.join([
-        '# -- feature prefixes --', prefix_str,
-        '# -- classes --', class_str,
-        '# -- features --', fea_str])
+    rfont.features.text = '\n\n'.join([prefix_str, class_str, fea_str])

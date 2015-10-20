@@ -59,7 +59,9 @@ def cast_custom_data(data):
 
 
 def get_type_structure():
-    """Generate and return the highest-level type hierarchy for glyphs data."""
+    """Generate and return the highest-level type hierarchy for glyphs data.
+    https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
+    """
 
     return {
         'DisplayStrings': list,
@@ -86,7 +88,9 @@ def get_type_structure():
         'features': {
             'automatic': truthy,
             'code': feature_syntax,
-            'name': str
+            'disabled': truthy,  # undocumented
+            'name': str,
+            'notes': feature_syntax  # undocumented
         },
         'fontMaster': {
             'alignmentZones': list,
@@ -254,5 +258,14 @@ def version_minor(string):
 
 
 def feature_syntax(string):
-    """Replace un-escaped characters with their intended characters."""
-    return string.replace('\\012', '\n').replace('\\011', '\t')
+    """Replace escaped characters with their intended characters.
+    Unescapes curved quotes to straight quotes, so that we can definitely
+    include this casted data in feature syntax.
+    """
+
+    replacements = (
+        ('\\012', '\n'), ('\\011', '\t'), ('\\U2018', "'"), ('\\U2019', "'"),
+        ('\\U201C', '"'), ('\\U201D', '"'))
+    for escaped, unescaped in replacements:
+        string = string.replace(escaped, unescaped)
+    return string
