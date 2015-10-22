@@ -119,36 +119,7 @@ def get_type_structure():
         'glyphs': {
             'glyphname': str,
             'lastChange': glyphs_datetime,
-            'layers': {
-                'anchors': {
-                    'name': str,
-                    'position': point
-                },
-                'annotations': default,  # undocumented
-                'associatedMasterId': str,
-                'background': default,
-                'components': {
-                    'anchor': str,
-                    'disableAlignment': truthy,  # undocumented
-                    'locked': truthy,  # undocumented
-                    'name': str,
-                    'transform': transform
-                },
-                'guideLines': {  # undocumented
-                    'angle': int,
-                    'position': point
-                },
-                'hints': default,  # undocumented
-                'layerId': str,
-                'leftMetricsKey': str,
-                'rightMetricsKey': str,
-                'name': str,
-                'paths': {
-                    'closed': truthy,
-                    'nodes': nodelist
-                },
-                'width': num
-            },
+            'layers': get_layer_type_structure(),
             'leftKerningGroup': str,
             'leftMetricsKey': str,
             'rightKerningGroup': str,
@@ -175,6 +146,57 @@ def get_type_structure():
         'versionMajor': int,
         'versionMinor': version_minor
     }
+
+
+def get_layer_type_structure():
+    """Generate and return type hierarchy for a glyph layer."""
+
+    structure = get_background_type_structure()
+    structure.update({
+        'associatedMasterId': str,
+        'background': background,
+        'layerId': str
+    })
+    return structure
+
+
+def get_background_type_structure():
+    """Generate and return type hierarchy for a glyph background."""
+
+    return {
+        'anchors': {
+            'name': str,
+            'position': point
+        },
+        'annotations': default,  # undocumented
+        'components': {
+            'anchor': str,
+            'disableAlignment': truthy,  # undocumented
+            'locked': truthy,  # undocumented
+            'name': str,
+            'transform': transform
+        },
+        'guideLines': {  # undocumented
+            'angle': int,
+            'position': point
+        },
+        'hints': default,  # undocumented
+        'leftMetricsKey': str,
+        'rightMetricsKey': str,
+        'name': str,
+        'paths': {
+            'closed': truthy,
+            'nodes': nodelist
+        },
+        'width': num
+    }
+
+
+def background(data):
+    """Use background type structure to cast a single dictionary."""
+
+    cast_data(data, get_background_type_structure())
+    return data
 
 
 def default(value):
