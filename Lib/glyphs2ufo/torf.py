@@ -137,6 +137,7 @@ def generate_base_fonts(data, italic):
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
+    user_data = data.pop('userData')
 
     misc = ['disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
@@ -168,6 +169,8 @@ def generate_base_fonts(data, italic):
 
         set_redundant_data(rfont)
         set_blue_values(rfont, master.pop('alignmentZones', []))
+        set_family_user_data(rfont, user_data)
+        set_master_user_data(rfont, master.pop('userData', {}))
         set_robofont_guidelines(rfont, master.pop('guideLines', []))
 
         misc = ['weightValue', 'widthValue']
@@ -237,6 +240,19 @@ def set_robofont_guidelines(rfont, glyphs_guidelines):
         robofont_guidelines.append(
             {'angle': angle, 'isGlobal': True, 'x': x, 'y': y})
     rfont.lib['com.typemytype.robofont.guides'] = robofont_guidelines
+
+
+def set_family_user_data(rfont, user_data):
+    """Set family-wide user data as Glyphs does."""
+
+    for key, val in user_data.iteritems():
+        rfont.lib[key] = val
+
+
+def set_master_user_data(rfont, user_data):
+    """Set master-specific user data as Glyphs does."""
+
+    rfont.lib[LIB_PREFIX + 'fontMaster.userData'] = user_data
 
 
 def build_family_name(base_family, data, width_key):
@@ -311,12 +327,11 @@ def to_rf_time(datetime_obj):
 
 
 def parse_custom_params(data, misc_keys):
-    """Parse customParameters and userData into a list of <name, val> pairs."""
+    """Parse customParameters into a list of <name, val> pairs."""
 
     params = []
     for p in data.get('customParameters', []):
         params.append((p.pop('name'), p.pop('value')))
-    params.extend(data.pop('userData', {}).iteritems())
     for key in misc_keys:
         try:
             val = data.pop(key)
