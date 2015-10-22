@@ -101,6 +101,10 @@ def get_type_structure():
                 'value': default
             },
             'descender': descender_val,
+            'guideLines': {  # undocumented
+                'angle': int,
+                'position': point
+            },
             'horizontalStems': intlist,
             'id': str,
             'userData': dict,
@@ -129,7 +133,10 @@ def get_type_structure():
                     'name': str,
                     'transform': transform
                 },
-                'guideLines': default,  # undocumented
+                'guideLines': {  # undocumented
+                    'angle': int,
+                    'position': point
+                },
                 'hints': default,  # undocumented
                 'layerId': str,
                 'leftMetricsKey': str,

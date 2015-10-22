@@ -168,8 +168,9 @@ def generate_base_fonts(data, italic):
 
         set_redundant_data(rfont)
         set_blue_values(rfont, master.pop('alignmentZones', []))
+        set_robofont_guidelines(rfont, master.pop('guideLines', []))
 
-        misc = ['guideLines', 'weightValue', 'widthValue']
+        misc = ['weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
             if (hasattr(rfont.info, name) and
                 name not in rfont.info._deprecatedAttributes):
@@ -224,6 +225,18 @@ def set_blue_values(rfont, alignment_zones):
 
     rfont.info.postscriptBlueValues = blue_values
     rfont.info.postscriptOtherBlues = other_blues
+
+
+def set_robofont_guidelines(rfont, glyphs_guidelines):
+    """Set guidelines as Glyphs does."""
+
+    robofont_guidelines = []
+    for guideline in glyphs_guidelines:
+        x, y = guideline.pop('position')
+        angle = guideline.pop('angle', 0)
+        robofont_guidelines.append(
+            {'angle': angle, 'isGlobal': True, 'x': x, 'y': y})
+    rfont.lib['com.typemytype.robofont.guides'] = robofont_guidelines
 
 
 def build_family_name(base_family, data, width_key):
