@@ -219,7 +219,7 @@ def node(string):
 
     rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE)(?: (SMOOTH))?'
     m = re.match(rx, string).groups()
-    return [num(m[0]), num(m[1]), m[2], m[3]]
+    return [num(m[0]), num(m[1]), m[2].lower(), bool(m[3])]
 
 
 def intlist(strlist):
