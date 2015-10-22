@@ -103,6 +103,7 @@ def get_type_structure():
             'descender': descender_val,
             'guideLines': {  # undocumented
                 'angle': int,
+                'locked': truthy,  # undocumented
                 'position': point
             },
             'horizontalStems': intlist,

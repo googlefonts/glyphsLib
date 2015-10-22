@@ -248,8 +248,13 @@ def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
     for guideline in glyphs_data.get('guideLines', []):
         x, y = guideline.pop('position')
         angle = guideline.pop('angle', 0)
-        robofont_guidelines.append(
-            {'angle': angle, 'isGlobal': is_global, 'x': x, 'y': y})
+        robofont_guideline = {'x': x, 'y': y, 'angle': angle, 'isGlobal': is_global}
+
+        locked = guideline.pop('locked', False)
+        if locked:
+            robofont_guideline['locked'] = True
+
+        robofont_guidelines.append(new_guideline)
     rf_obj.lib['com.typemytype.robofont.guides'] = robofont_guidelines
 
 
