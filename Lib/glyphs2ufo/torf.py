@@ -24,6 +24,7 @@ from robofab.world import RFont
 
 
 LIB_PREFIX = 'com.schriftgestaltung.'
+ROBOFONT_PREFIX = 'com.typemytype.robofont.'
 
 
 def to_robofab(data, italic=False, include_instances=False, debug=False):
@@ -262,6 +263,54 @@ def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
     rf_obj.lib['com.typemytype.robofont.guides'] = robofont_guidelines
 
 
+def set_robofont_glyph_background(rglyph, glyphs_data):
+    """Set glyph background as Glyphs does."""
+
+    background = glyphs_data.get('background')
+    if not background:
+        return
+
+    new_background = {}
+    new_background['lib'] = background.pop('lib', {})
+
+    anchors = []
+    for anchor in background.get('anchors', []):
+        x, y = anchor.pop('position')
+        anchors.append({'x': x, 'y': y, 'name': anchor.pop('name')})
+    new_background['anchors'] = anchors
+
+    components = []
+    for component in background.get('components', []):
+        new_component = {
+            'baseGlyph': component.pop('name'),
+            'transformation': component.pop('transform', (1, 0, 0, 1, 0, 0))}
+
+        for meta_attr in ['disableAlignment', 'locked']:
+            value = component.pop(meta_attr, False)
+            if value:
+                new_component[meta_attr] = True
+
+        components.append(new_component)
+    new_background['components'] = components
+
+    contours = []
+    for path in background.get('paths', []):
+        points = []
+        for x, y, node_type, smooth in path.pop('nodes', []):
+            point = {'x': x, 'y': y, 'smooth': smooth}
+            if node_type in ['line', 'curve']:
+                point['segmentType'] = node_type
+            points.append(point)
+        contours.append({'points': points, 'closed': path.pop('closed')})
+    new_background['contours'] = contours
+
+    new_background['name'] = rglyph.name
+    new_background['width'] = rglyph.width
+    new_background['unicodes'] = []
+
+    rglyph.lib[ROBOFONT_PREFIX + 'layerData'] = {'background': new_background}
+
+
 def set_family_user_data(rfont, user_data):
     """Set family-wide user data as Glyphs does."""
 
@@ -387,7 +436,8 @@ def load_glyph_libdata(rglyph, layer):
     """Add to an RGlyph's lib data."""
 
     set_robofont_guidelines(rglyph, layer)
-    for key in ['annotations', 'background', 'hints']:
+    set_robofont_glyph_background(rglyph, layer)
+    for key in ['annotations', 'hints']:
         try:
             value = layer.pop(key)
         except KeyError:
@@ -417,13 +467,14 @@ def load_glyph(rglyph, layer, glyph_data):
             if glyph_metrics_key:
                 rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
 
+    # load width before background, which is loaded with lib data
+    rglyph.width = layer.pop('width')
     load_glyph_libdata(rglyph, layer)
 
     pen = rglyph.getPointPen()
     draw_paths(pen, layer.get('paths', []))
     draw_components(pen, layer.get('components', []))
     add_anchors_to_glyph(rglyph, layer.get('anchors', []))
-    rglyph.width = layer.pop('width')
 
 
 def draw_paths(pen, paths):
