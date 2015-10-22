@@ -180,10 +180,14 @@ def generate_base_fonts(data, italic):
                 setattr(rfont.info, name, value)
             elif name == 'glyphOrder':
                 rfont.lib['public.glyphOrder'] = value
+            elif name == 'disablesNiceNames':
+                # weird thing that Glyphs seems to do, so do it here too
+                rfont.lib[LIB_PREFIX + 'useNiceNames'] = int(not value)
             else:
                 rfont.lib[LIB_PREFIX + name] = value
 
         master_id = master.pop('id')
+        rfont.lib[LIB_PREFIX + 'fontMasterID'] = master_id
         master_id_order.append(master_id)
         rfonts[master_id] = rfont
 
@@ -195,7 +199,14 @@ def set_redundant_data(rfont):
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
     weight = style_name.replace('Italic', '').strip()
+    width = family_name.split()[-1]
+
     rfont.info.openTypeOS2WeightClass = get_weight_code(weight)
+    rfont.info.openTypeOS2WidthClass = get_width_code(width)
+    if weight and weight != 'Regular':
+        rfont.lib[LIB_PREFIX + 'weight'] = weight
+    if 'Condensed' in width:
+        rfont.lib[LIB_PREFIX + 'width'] = width
 
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
@@ -211,8 +222,8 @@ def set_redundant_data(rfont):
     else:
         rfont.info.styleMapStyleName = 'regular'
         rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
-        rfont.info.openTypeNamePreferredFamilyName = family_name
-        rfont.info.openTypeNamePreferredSubfamilyName = style_name
+    rfont.info.openTypeNamePreferredFamilyName = family_name
+    rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
 
 def set_blue_values(rfont, alignment_zones):
@@ -252,6 +263,11 @@ def set_family_user_data(rfont, user_data):
 def set_master_user_data(rfont, user_data):
     """Set master-specific user data as Glyphs does."""
 
+    if not user_data:
+        return
+    for attr in ['GSOffsetHorizontal', 'GSOffsetVertical']:
+        if attr in user_data:
+            user_data[attr] = int(user_data[attr])
     rfont.lib[LIB_PREFIX + 'fontMaster.userData'] = user_data
 
 
@@ -291,6 +307,15 @@ def get_weight_code(style_name):
         'ExtraBold': 800,
         'Black': 900
     }.get(style_name, 400)
+
+
+def get_width_code(style_name):
+    """Get the appropriate OS/2 width code for this style."""
+
+    return {
+        'Condensed': 3,
+        'SemiCondensed': 4
+    }.get(style_name, 5)
 
 
 def rfont_style_to_layer_style(rfont):
