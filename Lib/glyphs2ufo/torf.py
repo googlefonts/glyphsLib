@@ -171,7 +171,7 @@ def generate_base_fonts(data, italic):
         set_blue_values(rfont, master.pop('alignmentZones', []))
         set_family_user_data(rfont, user_data)
         set_master_user_data(rfont, master.pop('userData', {}))
-        set_robofont_guidelines(rfont, master.pop('guideLines', []))
+        set_robofont_guidelines(rfont, master, is_global=True)
 
         misc = ['weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
@@ -241,16 +241,16 @@ def set_blue_values(rfont, alignment_zones):
     rfont.info.postscriptOtherBlues = other_blues
 
 
-def set_robofont_guidelines(rfont, glyphs_guidelines):
+def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
     """Set guidelines as Glyphs does."""
 
     robofont_guidelines = []
-    for guideline in glyphs_guidelines:
+    for guideline in glyphs_data.get('guideLines', []):
         x, y = guideline.pop('position')
         angle = guideline.pop('angle', 0)
         robofont_guidelines.append(
-            {'angle': angle, 'isGlobal': True, 'x': x, 'y': y})
-    rfont.lib['com.typemytype.robofont.guides'] = robofont_guidelines
+            {'angle': angle, 'isGlobal': is_global, 'x': x, 'y': y})
+    rf_obj.lib['com.typemytype.robofont.guides'] = robofont_guidelines
 
 
 def set_family_user_data(rfont, user_data):
@@ -377,7 +377,8 @@ def load_kerning(rkerning, kerning_data):
 def load_glyph_libdata(rglyph, layer):
     """Add to an RGlyph's lib data."""
 
-    for key in ['annotations', 'background', 'guideLines', 'hints']:
+    set_robofont_guidelines(rglyph, layer)
+    for key in ['annotations', 'background', 'hints']:
         try:
             value = layer.pop(key)
         except KeyError:
