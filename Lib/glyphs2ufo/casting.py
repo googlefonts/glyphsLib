@@ -93,7 +93,7 @@ def get_type_structure():
             'notes': feature_syntax  # undocumented
         },
         'fontMaster': {
-            'alignmentZones': list,
+            'alignmentZones': pointlist,
             'ascender': int,
             'capHeight': int,
             'customParameters': {
@@ -217,6 +217,10 @@ def node(string):
 
 def intlist(strlist):
     return map(int, strlist)
+
+
+def pointlist(strlist):
+    return map(point, strlist)
 
 
 def nodelist(strlist):

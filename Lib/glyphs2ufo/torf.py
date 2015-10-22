@@ -63,7 +63,6 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                          'rightMetricsKey', 'widthMetricsKey']
         glyph_data = dict((key, glyph.pop(key, None)) for key in metadata_keys)
 
-
         for layer in glyph['layers']:
             # whichever attribute we use for layer_id, make sure they are both
             # popped from the layer data
@@ -168,8 +167,9 @@ def generate_base_fonts(data, italic):
         rfont.info.xHeight = master.pop('xHeight')
 
         set_redundant_data(rfont)
+        set_blue_values(rfont, master.pop('alignmentZones', []))
 
-        misc = ['alignmentZones', 'guideLines', 'weightValue', 'widthValue']
+        misc = ['guideLines', 'weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
             if (hasattr(rfont.info, name) and
                 name not in rfont.info._deprecatedAttributes):
@@ -209,6 +209,21 @@ def set_redundant_data(rfont):
         rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
         rfont.info.openTypeNamePreferredFamilyName = family_name
         rfont.info.openTypeNamePreferredSubfamilyName = style_name
+
+
+def set_blue_values(rfont, alignment_zones):
+    """Set postscript blue values from Glyphs alignment zones."""
+
+    blue_values = []
+    other_blues = []
+
+    for base, offset in sorted(alignment_zones):
+        pair = [base, base + offset]
+        val_list = blue_values if base >= 0 else other_blues
+        val_list.extend(sorted(pair))
+
+    rfont.info.postscriptBlueValues = blue_values
+    rfont.info.postscriptOtherBlues = other_blues
 
 
 def build_family_name(base_family, data, width_key):
