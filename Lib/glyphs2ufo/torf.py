@@ -23,7 +23,7 @@ import re
 from robofab.world import RFont
 
 
-LIB_PREFIX = 'com.schriftgestaltung.'
+GLYPHS_PREFIX = 'com.schriftgestaltung.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
 
 
@@ -183,12 +183,12 @@ def generate_base_fonts(data, italic):
                 rfont.lib['public.glyphOrder'] = value
             elif name == 'disablesNiceNames':
                 # weird thing that Glyphs seems to do, so do it here too
-                rfont.lib[LIB_PREFIX + 'useNiceNames'] = int(not value)
+                rfont.lib[GLYPHS_PREFIX + 'useNiceNames'] = int(not value)
             else:
-                rfont.lib[LIB_PREFIX + name] = value
+                rfont.lib[GLYPHS_PREFIX + name] = value
 
         master_id = master.pop('id')
-        rfont.lib[LIB_PREFIX + 'fontMasterID'] = master_id
+        rfont.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
         master_id_order.append(master_id)
         rfonts[master_id] = rfont
 
@@ -205,9 +205,9 @@ def set_redundant_data(rfont):
     rfont.info.openTypeOS2WeightClass = get_weight_code(weight)
     rfont.info.openTypeOS2WidthClass = get_width_code(width)
     if weight and weight != 'Regular':
-        rfont.lib[LIB_PREFIX + 'weight'] = weight
+        rfont.lib[GLYPHS_PREFIX + 'weight'] = weight
     if 'Condensed' in width:
-        rfont.lib[LIB_PREFIX + 'width'] = width
+        rfont.lib[GLYPHS_PREFIX + 'width'] = width
 
     ps_name = build_postscript_name(family_name, style_name)
     rfont.info.postscriptFontName = ps_name
@@ -326,7 +326,7 @@ def set_master_user_data(rfont, user_data):
     for attr in ['GSOffsetHorizontal', 'GSOffsetVertical']:
         if attr in user_data:
             user_data[attr] = int(user_data[attr])
-    rfont.lib[LIB_PREFIX + 'fontMaster.userData'] = user_data
+    rfont.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
 def build_family_name(base_family, data, width_key):
@@ -442,7 +442,7 @@ def load_glyph_libdata(rglyph, layer):
             value = layer.pop(key)
         except KeyError:
             continue
-        rglyph.lib[LIB_PREFIX + key] = value
+        rglyph.lib[GLYPHS_PREFIX + key] = value
 
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
@@ -450,22 +450,23 @@ def load_glyph_libdata(rglyph, layer):
         values = [c.pop(key, False) for c in layer.get('components', [])]
         if any(values):
             key = key[0].upper() + key[1:]
-            rglyph.lib['%scomponents%s' % (LIB_PREFIX, key)] = values
+            rglyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
 
 
 def load_glyph(rglyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
 
     rglyph.unicode = glyph_data['unicode']
-    rglyph.lib[LIB_PREFIX + 'lastChange'] = to_rf_time(glyph_data['lastChange'])
+    rglyph.lib[GLYPHS_PREFIX + 'lastChange'] = to_rf_time(
+        glyph_data['lastChange'])
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         try:
-            rglyph.lib[LIB_PREFIX + key] = layer.pop(key)
+            rglyph.lib[GLYPHS_PREFIX + key] = layer.pop(key)
         except KeyError:
             glyph_metrics_key = glyph_data[key]
             if glyph_metrics_key:
-                rglyph.lib[LIB_PREFIX + key] = glyph_metrics_key
+                rglyph.lib[GLYPHS_PREFIX + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
     rglyph.width = layer.pop('width')
