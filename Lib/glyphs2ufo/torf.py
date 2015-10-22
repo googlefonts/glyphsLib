@@ -23,7 +23,7 @@ import re
 from robofab.world import RFont
 
 
-LIB_PREFIX = 'com.google.glyphs2ufo.'
+LIB_PREFIX = 'com.schriftgestaltung.'
 
 
 def to_robofab(data, italic=False, include_instances=False, debug=False):
