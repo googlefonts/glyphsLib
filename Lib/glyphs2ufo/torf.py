@@ -244,8 +244,12 @@ def set_blue_values(rfont, alignment_zones):
 def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
     """Set guidelines as Glyphs does."""
 
+    guidelines = glyphs_data.get('guideLines')
+    if not guidelines:
+        return
+
     robofont_guidelines = []
-    for guideline in glyphs_data.get('guideLines', []):
+    for guideline in guidelines:
         x, y = guideline.pop('position')
         angle = guideline.pop('angle', 0)
         robofont_guideline = {'x': x, 'y': y, 'angle': angle, 'isGlobal': is_global}
