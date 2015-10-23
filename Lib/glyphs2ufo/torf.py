@@ -461,12 +461,13 @@ def load_glyph(rglyph, layer, glyph_data):
         glyph_data['lastChange'])
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
+        prefix = GLYPHS_PREFIX + 'Glyphs.'
         try:
-            rglyph.lib[GLYPHS_PREFIX + key] = layer.pop(key)
+            rglyph.lib[prefix + key] = layer.pop(key)
         except KeyError:
             glyph_metrics_key = glyph_data[key]
             if glyph_metrics_key:
-                rglyph.lib[GLYPHS_PREFIX + key] = glyph_metrics_key
+                rglyph.lib[prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
     rglyph.width = layer.pop('width')
