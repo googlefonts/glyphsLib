@@ -43,3 +43,25 @@ italic_ufos = glyphslib.load_to_ufos('MyFont-Italic.glyphs', italic=True)
 with open('MyFont.glyphs', 'rb') as glyphs_file:
     glyphs_data = glyphslib.load(glyphs_file)
 ```
+
+# Notes
+
+glyphs2ufo tries to be round-trip compatible with Glyphs, though round-trip
+compatibility is currently impossible in Glyphs with UFOs. Here is a current
+list of data glyphs2ufo will catch that Glyphs drops/ignores:
+
+- Feature notes and whether a feature is disabled
+- Whether a font or glyph component has automatic alignment disabled
+- Whether guidelines and components are locked
+- Annotations
+- Glyph hints
+- Glyph timestamps
+
+Though this data is loaded into UFOs by glyphs2ufo, it still will not be
+available if the UFO is opened in Glyphs. It may however be useful if a
+ufo2glyphs tool is created.
+
+glyphs2ufo will set some additional UFO data that Glyphs does not, including:
+
+- Name table version and unique ID strings
+- Postscript names
