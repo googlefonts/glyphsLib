@@ -38,11 +38,11 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
     """
 
     feature_prefixes, classes, features = [], [], []
-    for f in data['featurePrefixes']:
+    for f in data.get('featurePrefixes', []):
         feature_prefixes.append((f.pop('name'), f.pop('code')))
-    for c in data['classes']:
+    for c in data.get('classes', []):
         classes.append((c.pop('name'), c.pop('code'), c.pop('automatic', None)))
-    for f in data['features']:
+    for f in data.get('features', []):
         features.append((f.pop('name'), f.pop('code'), f.pop('automatic', None),
                          f.pop('disabled', None), f.pop('notes', None)))
     kerning_groups = {}
@@ -62,7 +62,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'lastChange', 'leftMetricsKey',
                          'rightMetricsKey', 'widthMetricsKey']
-        glyph_data = dict((key, glyph.pop(key, None)) for key in metadata_keys)
+        glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
             # whichever attribute we use for layer_id, make sure they are both
@@ -83,7 +83,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
             rglyph = rfont.newGlyph(glyph_name)
             load_glyph(rglyph, layer, glyph_data)
 
-    for master_id, kerning in data.pop('kerning').items():
+    for master_id, kerning in data.pop('kerning', {}).iteritems():
         load_kerning(rfonts[master_id].kerning, kerning)
 
     result = []
@@ -138,7 +138,7 @@ def generate_base_fonts(data, italic):
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
-    user_data = data.pop('userData')
+    user_data = data.pop('userData', {})
 
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
@@ -456,16 +456,19 @@ def load_glyph_libdata(rglyph, layer):
 def load_glyph(rglyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
 
-    rglyph.unicode = glyph_data['unicode']
-    rglyph.lib[GLYPHS_PREFIX + 'lastChange'] = to_rf_time(
-        glyph_data['lastChange'])
+    uval = glyph_data.get('unicode')
+    if uval is not None:
+        rglyph.unicode = uval
+    last_change = glyph_data.get('lastChange')
+    if last_change is not None:
+        rglyph.lib[GLYPHS_PREFIX + 'lastChange'] = to_rf_time(last_change)
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         prefix = GLYPHS_PREFIX + 'Glyphs.'
         try:
             rglyph.lib[prefix + key] = layer.pop(key)
         except KeyError:
-            glyph_metrics_key = glyph_data[key]
+            glyph_metrics_key = glyph_data.get(key)
             if glyph_metrics_key:
                 rglyph.lib[prefix + key] = glyph_metrics_key
 
