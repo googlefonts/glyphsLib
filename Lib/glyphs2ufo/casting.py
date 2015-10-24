@@ -259,7 +259,7 @@ def nodelist(strlist):
 
 def glyphs_datetime(string):
     """Parse a datetime object from a string, ignoring the timezone."""
-    return datetime.strptime(string[:string.rfind(' ')], '%Y-%m-%d %H:%M:%S')
+    return datetime.strptime(string, '%Y-%m-%d %H:%M:%S +0000')
 
 
 def kerning(kerning_data):
