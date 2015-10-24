@@ -54,8 +54,12 @@ def cast_custom_data(data):
     """Cast some known data in custom parameters."""
 
     for param in data['customParameters']:
-        if param['name'] == 'openTypeOS2Type':
-            param['value'] = map(int, param['value'])
+        name = param['name']
+        value = param['value']
+        if name == 'openTypeOS2Type':
+            param['value'] = intlist(value)
+        elif name == 'DisableAllAutomaticBehaviour':
+            param['value'] = truthy(value)
 
 
 def get_type_structure():
