@@ -66,3 +66,9 @@ glyphs2ufo will set some additional UFO data that Glyphs does not, including:
 
 - Name table version and unique ID strings
 - Postscript names
+
+Glyphs sets a couple of fontinfo.plist values which are not and have never been
+part of the UFO specification. These values are impossible to load via RoboFab:
+
+- "DisableAllAutomaticBehaviour" (put into lib.plist by glyphs2ufo)
+- "description" (stored in "openTypeNameDescription" by glyphs2ufo)

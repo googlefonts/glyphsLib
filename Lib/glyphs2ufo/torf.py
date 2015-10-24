@@ -174,16 +174,29 @@ def generate_base_fonts(data, italic):
         set_master_user_data(rfont, master.pop('userData', {}))
         set_robofont_guidelines(rfont, master, is_global=True)
 
+        # handle random optional stuff
         misc = ['weightValue', 'widthValue']
         for name, value in custom_params + parse_custom_params(master, misc):
-            if (hasattr(rfont.info, name) and
-                name not in rfont.info._deprecatedAttributes):
+
+            # deal with any Glyphs naming quirks here
+            if name == 'description':
+                name = 'openTypeNameDescription'
+
+            # most OpenType table entries go in the info object
+            # the misc attributes double as deprecated info attributes!
+            # they are Glyphs-related, not OpenType-related, and don't go here
+            if hasattr(rfont.info, name) and name not in misc:
                 setattr(rfont.info, name, value)
+
+            # glyph order gets its own special lib entry according to UFO spec
             elif name == 'glyphOrder':
                 rfont.lib['public.glyphOrder'] = value
+
+            # this is a weird thing that Glyphs seems to do, so do it here too
             elif name == 'disablesNiceNames':
-                # weird thing that Glyphs seems to do, so do it here too
                 rfont.lib[GLYPHS_PREFIX + 'useNiceNames'] = int(not value)
+
+            # everything else gets dumped in the lib
             else:
                 rfont.lib[GLYPHS_PREFIX + name] = value
 
