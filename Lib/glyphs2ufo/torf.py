@@ -140,7 +140,7 @@ def generate_base_fonts(data, italic):
     version_minor = data.pop('versionMinor')
     user_data = data.pop('userData')
 
-    misc = ['disablesAutomaticAlignment', 'disablesNiceNames']
+    misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
 
     rfonts = {}

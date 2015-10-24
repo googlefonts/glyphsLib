@@ -56,6 +56,7 @@ list of data glyphs2ufo will catch that Glyphs drops/ignores:
 - Annotations
 - Glyph hints
 - Glyph timestamps
+- Tabs to display when opened
 
 Though this data is loaded into UFOs by glyphs2ufo, it still will not be
 available if the UFO is opened in Glyphs. It may however be useful if a
