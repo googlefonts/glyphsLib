@@ -56,9 +56,8 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
 
         glyph_name = glyph.pop('glyphname')
         if not re.match('^[\w\d._]{1,31}$', glyph_name):
-            print (
-                'Illegal glyph name "%s". If this is used in the font\'s '
-                'feature syntax, it could cause errors.' % glyph_name)
+            warn('Illegal glyph name "%s". If this is used in the font\'s '
+                 'feature syntax, it could cause errors.' % glyph_name)
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'lastChange', 'leftMetricsKey',
@@ -76,9 +75,8 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
             style_name = layer.pop('name')
             font_style = rfont_style_to_layer_style(rfont)
             if font_style != style_name:
-                print (
-                    'Inconsistent layer id/name pair: glyph "%s" layer "%s"' %
-                    (glyph_name, style_name))
+                warn('Inconsistent layer id/name pair: glyph "%s" layer "%s"' %
+                     (glyph_name, style_name))
                 continue
 
             rglyph = rfont.newGlyph(glyph_name)
@@ -588,3 +586,7 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     fea_str = '\n\n'.join(feature_defs)
 
     rfont.features.text = '\n\n'.join([prefix_str, class_str, fea_str])
+
+
+def warn(message):
+    print(message)
