@@ -39,7 +39,8 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
 
     feature_prefixes, classes, features = [], [], []
     for f in data.get('featurePrefixes', []):
-        feature_prefixes.append((f.pop('name'), f.pop('code')))
+        feature_prefixes.append((f.pop('name'), f.pop('code'),
+                                 f.pop('automatic', None)))
     for c in data.get('classes', []):
         classes.append((c.pop('name'), c.pop('code'), c.pop('automatic', None)))
     for f in data.get('features', []):
@@ -552,12 +553,14 @@ def add_groups_to_rfont(rfont, kerning_groups):
 def add_features_to_rfont(rfont, feature_prefixes, classes, features):
     """Write an RFont's OpenType feature file."""
 
+    autostr = lambda automatic: '# automatic\n' if automatic else ''
+
     prefix_str = '\n\n'.join(
-        '# Prefix: %s\n%s' % (name, code.strip())
-        for name, code in feature_prefixes)
+        '# Prefix: %s\n%s%s' % (name, autostr(automatic), code.strip())
+        for name, code, automatic in feature_prefixes)
 
     class_str = '\n\n'.join(
-        '%s@%s = [ %s ];' % ('# automatic\n' if automatic else '', name, code)
+        '%s@%s = [ %s ];' % (autostr(automatic), name, code)
         for name, code, automatic in classes)
 
     feature_defs = []

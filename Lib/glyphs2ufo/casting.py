@@ -86,6 +86,7 @@ def get_type_structure():
         'disablesNiceNames': truthy,  # undocumented
         'familyName': str,
         'featurePrefixes': {
+            'automatic': truthy,  # undocumented
             'code': feature_syntax,
             'name': str
         },
