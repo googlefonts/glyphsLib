@@ -255,7 +255,7 @@ def kerning(kerning_data):
         for left_glyph, glyph_map in master_map.items():
             new_data[master_id][left_glyph] = {}
             for right_glyph, value in glyph_map.items():
-                new_data[master_id][left_glyph][right_glyph] = int(value)
+                new_data[master_id][left_glyph][right_glyph] = num(value)
     return new_data
 
 
