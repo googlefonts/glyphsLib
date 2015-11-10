@@ -176,11 +176,16 @@ def generate_base_fonts(data, italic):
         for name, value in custom_params + parse_custom_params(master, misc):
 
             # deal with any Glyphs naming quirks here
-            if name == 'description':
-                name = 'openTypeNameDescription'
             if name == 'disablesNiceNames':
                 name = 'useNiceNames'
                 value = int(not value)
+            opentype_attr_prefix_pairs = (
+                ('hhea', 'Hhea'), ('description', 'NameDescription'),
+                ('typo', 'OS2Typo'), ('win', 'OS2Win'),
+                ('vendorID', 'OS2VendorID'), ('fsType', 'OS2Type'))
+            for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
+                name = re.sub(
+                    '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
 
             # most OpenType table entries go in the info object
             # the misc attributes double as deprecated info attributes!

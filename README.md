@@ -72,3 +72,5 @@ part of the UFO specification. These values are impossible to load via RoboFab:
 
 - "DisableAllAutomaticBehaviour" (put into lib.plist by glyphs2ufo)
 - "description" (stored in "openTypeNameDescription" by glyphs2ufo)
+- "vendorID" (stored in "openTypeOS2VendorID" by glyphs2ufo)
+- "fsType" (stored in "openTypeOS2Type" by glyphs2ufo)

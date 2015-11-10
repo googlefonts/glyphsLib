@@ -292,11 +292,18 @@ def feature_syntax(string):
 def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
+    int_params = ('typoAscender', 'typoDescender', 'typoLineGap', 'winAscent',
+                  'winDescent', 'hheaAscender', 'hheaDescender', 'hheaLineGap')
+    intlist_params = ('fsType', 'openTypeOS2Type')
+
     for param in param_list:
         name = param['name']
         value = param['value']
-        if name == 'openTypeOS2Type':
+        if name in int_params:
+            param['value'] = int(value)
+        if name in intlist_params:
             param['value'] = intlist(value)
         elif name == 'DisableAllAutomaticBehaviour':
             param['value'] = truthy(value)
+
     return param_list
