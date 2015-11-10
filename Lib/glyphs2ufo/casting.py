@@ -14,7 +14,7 @@
 
 
 __all__ = [
-    'cast_data', 'cast_custom_data'
+    'cast_data'
 ]
 
 
@@ -50,18 +50,6 @@ def cast_data(data, types=None):
             data[key] = cur_type(data[key])
 
 
-def cast_custom_data(data):
-    """Cast some known data in custom parameters."""
-
-    for param in data['customParameters']:
-        name = param['name']
-        value = param['value']
-        if name == 'openTypeOS2Type':
-            param['value'] = intlist(value)
-        elif name == 'DisableAllAutomaticBehaviour':
-            param['value'] = truthy(value)
-
-
 def get_type_structure():
     """Generate and return the highest-level type hierarchy for glyphs data.
     https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
@@ -75,10 +63,7 @@ def get_type_structure():
             'name': str
         },
         'copyright': str,
-        'customParameters': {
-            'name': str,
-            'value': default
-        },
+        'customParameters': custom_params,
         'date': glyphs_datetime,
         'designer': str,
         'designerURL': str,
@@ -101,10 +86,7 @@ def get_type_structure():
             'alignmentZones': pointlist,
             'ascender': int,
             'capHeight': int,
-            'customParameters': {
-                'name': str,
-                'value': default
-            },
+            'customParameters': custom_params,
             'descender': descender_val,
             'guideLines': {  # undocumented
                 'angle': int,
@@ -133,10 +115,7 @@ def get_type_structure():
             'widthMetricsKey': str  # undocumented
         },
         'instances': {
-            'customParameters': {
-                'name': str,
-                'value': default
-            },
+            'customParameters': custom_params,
             'interpolationWeight': int,  # undocumented
             'interpolationWidth': int,  # undocumented
             'name': str,  # undocumented
@@ -308,3 +287,16 @@ def feature_syntax(string):
     for escaped, unescaped in replacements:
         string = string.replace(escaped, unescaped)
     return string
+
+
+def custom_params(param_list):
+    """Cast some known data in custom parameters."""
+
+    for param in param_list:
+        name = param['name']
+        value = param['value']
+        if name == 'openTypeOS2Type':
+            param['value'] = intlist(value)
+        elif name == 'DisableAllAutomaticBehaviour':
+            param['value'] = truthy(value)
+    return param_list
