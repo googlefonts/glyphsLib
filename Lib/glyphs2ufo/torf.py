@@ -82,16 +82,14 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
             rglyph = rfont.newGlyph(glyph_name)
             load_glyph(rglyph, layer, glyph_data)
 
-    for master_id, kerning in data.pop('kerning', {}).iteritems():
-        load_kerning(rfonts[master_id].kerning, kerning)
-
-    result = []
-    for master_id in master_id_order:
-        rfont = rfonts[master_id]
+    for rfont in rfonts.itervalues():
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
-        result.append(rfont)
 
+    for master_id, kerning in data.pop('kerning', {}).iteritems():
+        load_kerning(rfonts[master_id], kerning)
+
+    result = [rfonts[master_id] for master_id in master_id_order]
     instances = data.pop('instances')
     if debug:
         return clear_data(data)
@@ -436,12 +434,19 @@ def parse_custom_params(data, misc_keys):
     return params
 
 
-def load_kerning(rkerning, kerning_data):
-    """Add .glyphs kerning to an RKerning object."""
+def load_kerning(rfont, kerning_data):
+    """Add .glyphs kerning to an RFont."""
 
+    warning_msg = 'Non-existent glyph class %s found in kerning rules.'
     for left, pairs in kerning_data.items():
+        if left.startswith('@') and left not in rfont.groups:
+            warn(warning_msg % left)
+            continue
         for right, kerning_val in pairs.items():
-            rkerning[left, right] = kerning_val
+            if right.startswith('@') and right not in rfont.groups:
+                warn(warning_msg % right)
+                continue
+            rfont.kerning[left, right] = kerning_val
 
 
 def load_glyph_libdata(rglyph, layer):
