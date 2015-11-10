@@ -178,6 +178,9 @@ def generate_base_fonts(data, italic):
             # deal with any Glyphs naming quirks here
             if name == 'description':
                 name = 'openTypeNameDescription'
+            if name == 'disablesNiceNames':
+                name = 'useNiceNames'
+                value = int(not value)
 
             # most OpenType table entries go in the info object
             # the misc attributes double as deprecated info attributes!
@@ -188,10 +191,6 @@ def generate_base_fonts(data, italic):
             # glyph order gets its own special lib entry according to UFO spec
             elif name == 'glyphOrder':
                 rfont.lib['public.glyphOrder'] = value
-
-            # this is a weird thing that Glyphs seems to do, so do it here too
-            elif name == 'disablesNiceNames':
-                rfont.lib[GLYPHS_PREFIX + 'useNiceNames'] = int(not value)
 
             # everything else gets dumped in the lib
             else:
