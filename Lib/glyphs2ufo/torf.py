@@ -26,6 +26,19 @@ from robofab.world import RFont
 PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
+GLYPHS_COLORS = (
+    '0.85,0.26,0.06,1',
+    '0.99,0.62,0.11,1',
+    '0.65,0.48,0.2,1',
+    '0.97,1,0,1',
+    '0.67,0.95,0.38,1',
+    '0.04,0.57,0.04,1',
+    '0,0.67,0.91,1',
+    '0.18,0.16,0.78,1',
+    '0.5,0.09,0.79,1',
+    '0.98,0.36,0.67,1',
+    '0.75,0.75,0.75,1',
+    '0.25,0.25,0.25,1')
 
 
 def to_robofab(data, italic=False, include_instances=False, debug=False):
@@ -61,8 +74,8 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                  'feature syntax, it could cause errors.' % glyph_name)
 
         # pop glyph metadata only once, i.e. not when looping through layers
-        metadata_keys = ['unicode', 'lastChange', 'leftMetricsKey',
-                         'rightMetricsKey', 'widthMetricsKey']
+        metadata_keys = ['unicode', 'color', 'lastChange', 'leftMetricsKey',
+                         'note', 'rightMetricsKey', 'widthMetricsKey']
         glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
@@ -483,21 +496,29 @@ def load_glyph_libdata(rglyph, layer):
 def load_glyph(rglyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
 
+    glyphlib_prefix = GLYPHS_PREFIX + 'Glyphs.'
+
     uval = glyph_data.get('unicode')
     if uval is not None:
         rglyph.unicode = uval
+    note = glyph_data.get('note')
+    if note is not None:
+        rglyph.note = note
     last_change = glyph_data.get('lastChange')
     if last_change is not None:
-        rglyph.lib[GLYPHS_PREFIX + 'lastChange'] = to_rf_time(last_change)
+        rglyph.lib[glyphlib_prefix + 'lastChange'] = to_rf_time(last_change)
+    color_index = glyph_data.get('color')
+    if color_index is not None:
+        rglyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
+        rglyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
-        prefix = GLYPHS_PREFIX + 'Glyphs.'
         try:
-            rglyph.lib[prefix + key] = layer.pop(key)
+            rglyph.lib[glyphlib_prefix + key] = layer.pop(key)
         except KeyError:
             glyph_metrics_key = glyph_data.get(key)
             if glyph_metrics_key:
-                rglyph.lib[prefix + key] = glyph_metrics_key
+                rglyph.lib[glyphlib_prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
     rglyph.width = layer.pop('width')

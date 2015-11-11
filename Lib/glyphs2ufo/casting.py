@@ -104,11 +104,13 @@ def get_type_structure():
             'xHeight': int
         },
         'glyphs': {
+            'color': int,  # undocumented
             'glyphname': str,
             'lastChange': glyphs_datetime,
             'layers': get_layer_type_structure(),
             'leftKerningGroup': str,
             'leftMetricsKey': str,
+            'note': str,  # undocumented
             'rightKerningGroup': str,
             'rightMetricsKey': str,
             'unicode': hex_int,
