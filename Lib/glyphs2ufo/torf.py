@@ -23,6 +23,7 @@ import re
 from robofab.world import RFont
 
 
+PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
 
@@ -85,6 +86,11 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
     for rfont in rfonts.itervalues():
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
+
+        glyph_order = rfont.lib[GLYPHS_PREFIX + 'glyphOrder']
+        actual_order = glyph_order + sorted(
+            set(rfont.keys()) - set(glyph_order))
+        rfont.lib[PUBLIC_PREFIX + 'glyphOrder'] = actual_order
 
     for master_id, kerning in data.pop('kerning', {}).iteritems():
         load_kerning(rfonts[master_id], kerning)
@@ -195,7 +201,7 @@ def generate_base_fonts(data, italic):
 
             # glyph order gets its own special lib entry according to UFO spec
             elif name == 'glyphOrder':
-                rfont.lib['public.glyphOrder'] = value
+                rfont.lib[GLYPHS_PREFIX + 'glyphOrder'] = value
 
             # everything else gets dumped in the lib
             else:
