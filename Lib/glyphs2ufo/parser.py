@@ -21,7 +21,7 @@ class Parser:
 
     def __init__(self, dict_type):
         self.dict_type = dict_type
-        value_re = r'("[^"]*"|[-_./A-Za-z0-9]+)'
+        value_re = r'(".*?(?<!\\)"|[-_./A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
         self.dict_delim_re = re.compile(r'\s*;')
@@ -113,11 +113,13 @@ class Parser:
         return res, i
 
     def _trim_value(self, value):
-        """Trim double quotes off the ends of a value."""
+        """Trim double quotes off the ends of a value, un-escaping inner
+        double quotes.
+        """
 
         if value[0] == '"':
             assert value[-1] == '"'
-            return value[1:-1]
+            return value[1:-1].replace('\\"', '"')
         return value
 
     def _fail(self, message, text, i):
