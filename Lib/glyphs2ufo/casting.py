@@ -89,7 +89,7 @@ def get_type_structure():
             'customParameters': custom_params,
             'descender': descender_val,
             'guideLines': {  # undocumented
-                'angle': int,
+                'angle': num,
                 'locked': truthy,  # undocumented
                 'position': point
             },
@@ -163,7 +163,7 @@ def get_background_type_structure():
             'transform': transform
         },
         'guideLines': {  # undocumented
-            'angle': int,
+            'angle': num,
             'position': point
         },
         'hints': default,  # undocumented
