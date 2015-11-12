@@ -199,7 +199,7 @@ def generate_base_fonts(data, italic):
         if horizontal_stems:
             rfont.info.postscriptStemSnapH = horizontal_stems
         vertical_stems = master.pop('verticalStems', None)
-        if horizontal_stems:
+        if vertical_stems:
             rfont.info.postscriptStemSnapV = vertical_stems
 
         set_redundant_data(rfont)
