@@ -295,7 +295,8 @@ def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
     int_params = ('typoAscender', 'typoDescender', 'typoLineGap', 'winAscent',
-                  'winDescent', 'hheaAscender', 'hheaDescender', 'hheaLineGap')
+                  'winDescent', 'hheaAscender', 'hheaDescender', 'hheaLineGap',
+                  'underlinePosition', 'underlineThickness')
     intlist_params = ('fsType', 'openTypeOS2Type')
 
     for param in param_list:

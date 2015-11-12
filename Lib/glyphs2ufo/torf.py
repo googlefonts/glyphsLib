@@ -231,6 +231,10 @@ def generate_base_fonts(data, italic):
                 name = re.sub(
                     '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
 
+            postscript_attrs = ('underlinePosition', 'underlineThickness')
+            if name in postscript_attrs:
+                name = 'postscript' + name[0].upper() + name[1:]
+
             # enforce that winAscent/Descent are positive, according to UFO spec
             if name.startswith('openTypeOS2Win') and value < 0:
                 value = -value
