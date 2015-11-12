@@ -642,7 +642,8 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
 
-    rfont.features.text = '\n\n'.join([prefix_str, class_str, fea_str])
+    full_text = '\n\n'.join([prefix_str, class_str, fea_str])
+    rfont.features.text = full_text if full_text.strip() else ''
 
 
 def warn(message):
