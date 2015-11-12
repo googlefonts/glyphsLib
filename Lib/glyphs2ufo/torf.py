@@ -216,6 +216,7 @@ def generate_base_fonts(data, italic):
             if name == 'disablesNiceNames':
                 name = 'useNiceNames'
                 value = int(not value)
+
             opentype_attr_prefix_pairs = (
                 ('hhea', 'Hhea'), ('description', 'NameDescription'),
                 ('typo', 'OS2Typo'), ('win', 'OS2Win'),
@@ -223,6 +224,10 @@ def generate_base_fonts(data, italic):
             for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
                 name = re.sub(
                     '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
+
+            # enforce that winAscent/Descent are positive, according to UFO spec
+            if name.startswith('openTypeOS2Win') and value < 0:
+                value = -value
 
             # most OpenType table entries go in the info object
             # the misc attributes double as deprecated info attributes!
