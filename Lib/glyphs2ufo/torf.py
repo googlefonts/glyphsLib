@@ -192,9 +192,14 @@ def generate_base_fonts(data, italic):
         rfont.info.ascender = master.pop('ascender')
         rfont.info.capHeight = master.pop('capHeight')
         rfont.info.descender = master.pop('descender')
-        rfont.info.postscriptStemSnapH = master.pop('horizontalStems')
-        rfont.info.postscriptStemSnapV = master.pop('verticalStems')
         rfont.info.xHeight = master.pop('xHeight')
+
+        horizontal_stems = master.pop('horizontalStems', None)
+        if horizontal_stems:
+            rfont.info.postscriptStemSnapH = horizontal_stems
+        vertical_stems = master.pop('verticalStems', None)
+        if horizontal_stems:
+            rfont.info.postscriptStemSnapV = vertical_stems
 
         set_redundant_data(rfont)
         set_blue_values(rfont, master.pop('alignmentZones', []))
