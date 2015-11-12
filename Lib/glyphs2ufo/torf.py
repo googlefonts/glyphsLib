@@ -122,7 +122,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         load_kerning(rfonts[master_id], kerning)
 
     result = [rfonts[master_id] for master_id in master_id_order]
-    instances = data.pop('instances')
+    instances = data.pop('instances', [])
     if debug:
         return clear_data(data)
     elif include_instances:
@@ -157,17 +157,17 @@ def clear_data(data):
 def generate_base_fonts(data, italic):
     """Generate a list of RFonts with metadata loaded from .glyphs data."""
 
-    copyright = data.pop('copyright')
     date_created = to_rf_time(data.pop('date'))
-    designer = data.pop('designer')
-    designer_url = data.pop('designerURL')
     family_name = data.pop('familyName')
-    manufacturer = data.pop('manufacturer')
-    manufacturer_url = data.pop('manufacturerURL')
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
     user_data = data.pop('userData', {})
+    copyright = data.pop('copyright', None)
+    designer = data.pop('designer', None)
+    designer_url = data.pop('designerURL', None)
+    manufacturer = data.pop('manufacturer', None)
+    manufacturer_url = data.pop('manufacturerURL', None)
 
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
@@ -180,25 +180,31 @@ def generate_base_fonts(data, italic):
         rfont.info.familyName = build_family_name(family_name, master, 'width')
         rfont.info.styleName = build_style_name(master, 'weight', italic)
 
-        rfont.info.copyright = copyright
-        rfont.info.openTypeNameDesigner = designer
-        rfont.info.openTypeNameDesignerURL = designer_url
-        rfont.info.openTypeNameManufacturer = manufacturer
-        rfont.info.openTypeNameManufacturerURL = manufacturer_url
         rfont.info.openTypeHeadCreated = date_created
         rfont.info.unitsPerEm = units_per_em
         rfont.info.versionMajor = version_major
         rfont.info.versionMinor = version_minor
 
+        if copyright:
+            rfont.info.copyright = copyright
+        if designer:
+            rfont.info.openTypeNameDesigner = designer
+        if designer_url:
+            rfont.info.openTypeNameDesignerURL = designer_url
+        if manufacturer:
+            rfont.info.openTypeNameManufacturer = manufacturer
+        if manufacturer_url:
+            rfont.info.openTypeNameManufacturerURL = manufacturer_url
+
         rfont.info.ascender = master.pop('ascender')
         rfont.info.capHeight = master.pop('capHeight')
         rfont.info.descender = master.pop('descender')
         rfont.info.xHeight = master.pop('xHeight')
-
         horizontal_stems = master.pop('horizontalStems', None)
+        vertical_stems = master.pop('verticalStems', None)
+
         if horizontal_stems:
             rfont.info.postscriptStemSnapH = horizontal_stems
-        vertical_stems = master.pop('verticalStems', None)
         if vertical_stems:
             rfont.info.postscriptStemSnapV = vertical_stems
 
