@@ -62,6 +62,9 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                          f.pop('disabled', None), f.pop('notes', None)))
     kerning_groups = {}
 
+    # stores background data from "associated layers"
+    supplementary_bg_data = []
+
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     rfonts, master_id_order = generate_base_fonts(data, italic)
 
@@ -79,22 +82,31 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
-            # whichever attribute we use for layer_id, make sure they are both
-            # popped from the layer data
             layer_id = layer.pop('layerId')
-            layer_id = layer.pop('associatedMasterId', layer_id)
+            layer_name = layer.pop('name', None)
+
+            assoc_id = layer.pop('associatedMasterId', None)
+            if assoc_id is not None:
+                if layer_name is not None:
+                    supplementary_bg_data.append(
+                        (assoc_id, glyph_name, layer_name, layer))
+                continue
+
             rfont = rfonts[layer_id]
 
             # ensure consistency between layer ids / names
-            style_name = layer.pop('name')
             font_style = rfont_style_to_layer_style(rfont)
-            if font_style != style_name:
+            if font_style != layer_name:
                 warn('Inconsistent layer id/name pair: glyph "%s" layer "%s"' %
-                     (glyph_name, style_name))
+                     (glyph_name, layer_name))
                 continue
 
             rglyph = rfont.newGlyph(glyph_name)
             load_glyph(rglyph, layer, glyph_data)
+
+    for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
+        rglyph = rfonts[layer_id][glyph_name]
+        set_robofont_glyph_background(rglyph, bg_name, bg_data)
 
     for rfont in rfonts.itervalues():
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
@@ -296,10 +308,9 @@ def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
     rf_obj.lib[ROBOFONT_PREFIX + 'guides'] = new_guidelines
 
 
-def set_robofont_glyph_background(rglyph, glyphs_data):
+def set_robofont_glyph_background(rglyph, key, background):
     """Set glyph background as Glyphs does."""
 
-    background = glyphs_data.get('background')
     if not background:
         return
 
@@ -334,14 +345,19 @@ def set_robofont_glyph_background(rglyph, glyphs_data):
             if node_type in ['line', 'curve']:
                 point['segmentType'] = node_type
             points.append(point)
-        contours.append({'points': points, 'closed': path.pop('closed')})
+        contours.append({'points': points})
+        path.pop('closed', None)  # not used, but remove for debug purposes
     new_background['contours'] = contours
 
+    new_background['width'] = background.pop('width', rglyph.width)
     new_background['name'] = rglyph.name
-    new_background['width'] = rglyph.width
     new_background['unicodes'] = []
 
-    rglyph.lib[ROBOFONT_PREFIX + 'layerData'] = {'background': new_background}
+    libkey = ROBOFONT_PREFIX + 'layerData'
+    try:
+        rglyph.lib[libkey][key] = new_background
+    except KeyError:
+        rglyph.lib[libkey] = {key: new_background}
 
 
 def set_family_user_data(rfont, user_data):
@@ -476,7 +492,7 @@ def load_glyph_libdata(rglyph, layer):
     """Add to an RGlyph's lib data."""
 
     set_robofont_guidelines(rglyph, layer)
-    set_robofont_glyph_background(rglyph, layer)
+    set_robofont_glyph_background(rglyph, 'background', layer.get('background'))
     for key in ['annotations', 'hints']:
         try:
             value = layer.pop(key)
