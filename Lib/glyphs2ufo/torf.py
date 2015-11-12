@@ -112,6 +112,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
 
+        # try to create a glyph order which includes all of the glyphs
         glyph_order = rfont.lib[GLYPHS_PREFIX + 'glyphOrder']
         actual_order = glyph_order + sorted(
             set(rfont.keys()) - set(glyph_order))
@@ -228,10 +229,6 @@ def generate_base_fonts(data, italic):
             # they are Glyphs-related, not OpenType-related, and don't go here
             if hasattr(rfont.info, name) and name not in misc:
                 setattr(rfont.info, name, value)
-
-            # glyph order gets its own special lib entry according to UFO spec
-            elif name == 'glyphOrder':
-                rfont.lib[GLYPHS_PREFIX + 'glyphOrder'] = value
 
             # everything else gets dumped in the lib
             else:
