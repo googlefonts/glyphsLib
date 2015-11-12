@@ -113,7 +113,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         add_groups_to_rfont(rfont, kerning_groups)
 
         # try to create a glyph order which includes all of the glyphs
-        glyph_order = rfont.lib[GLYPHS_PREFIX + 'glyphOrder']
+        glyph_order = rfont.lib.get(GLYPHS_PREFIX + 'glyphOrder', [])
         actual_order = glyph_order + sorted(
             set(rfont.keys()) - set(glyph_order))
         rfont.lib[PUBLIC_PREFIX + 'glyphOrder'] = actual_order
