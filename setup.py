@@ -13,12 +13,17 @@
 # limitations under the License.
 
 
-from distutils.core import setup
+from setuptools import setup
 
 
 setup(
     name='glyphs2ufo',
     version='1.0',
     packages=['glyphs2ufo'],
+    entry_points={
+        "console_scripts": [
+            "glyphs2ufo = glyphs2ufo.__main__:main"
+        ]
+    },
     package_dir={'': 'Lib'}
 )
