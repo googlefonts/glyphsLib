@@ -94,14 +94,6 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                 continue
 
             rfont = rfonts[layer_id]
-
-            # ensure consistency between layer ids / names
-            font_style = rfont_style_to_layer_style(rfont)
-            if font_style != layer_name:
-                warn('Inconsistent layer id/name pair: glyph "%s" layer "%s"' %
-                     (glyph_name, layer_name))
-                continue
-
             rglyph = rfont.newGlyph(glyph_name)
             load_glyph(rglyph, layer, glyph_data)
 
