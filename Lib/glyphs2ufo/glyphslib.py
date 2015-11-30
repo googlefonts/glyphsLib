@@ -19,8 +19,9 @@ __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
 ]
 
+import glob
 import json
-from os import path
+import os
 import sys
 
 from parser import Parser
@@ -60,13 +61,20 @@ def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
 def write(ufo, out_dir):
     """Write a UFO."""
 
+    out_path = (
+        ufo.path or os.path.join(out_dir, ufo.info.postscriptFullName + '.ufo'))
+
+    # RoboFab doesn't seem to ever delete glif files
+    # TODO(jamesgk) think about pushing this upstream
+    if os.path.exists(os.path.join(out_path, 'glyphs')):
+        for glifs_path in glob.glob(os.path.join(out_path, 'glyphs', '*.glif')):
+            os.remove(glifs_path)
+
+    print '>>> Writing %s' % out_path
     if ufo.path:
-        print '>>> Writing %s' % ufo.path
         ufo.save()
     else:
-        ofile = path.join(out_dir, ufo.info.postscriptFullName + '.ufo')
-        print '>>> Writing %s' % ofile
-        ufo.save(ofile)
+        ufo.save(out_path)
 
 
 def build_masters(filename, master_dir, italic=False):
