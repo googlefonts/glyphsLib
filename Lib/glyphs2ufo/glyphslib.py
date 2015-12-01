@@ -15,9 +15,7 @@
 # limitations under the License.
 
 
-__all__ = [
-    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
-]
+from __future__ import print_function, division, absolute_import
 
 import glob
 import json
@@ -27,6 +25,10 @@ import sys
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
 from glyphs2ufo.torf import to_robofab
+
+__all__ = [
+    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
+]
 
 
 def load(fp, dict_type=dict):
@@ -41,9 +43,9 @@ def loads(value, dict_type=dict):
 	Return the unpacked root object (which usually is a dictionary).
 	"""
 	p = Parser(dict_type=dict_type)
-	print '>>> Parsing .glyphs file'
+	print('>>> Parsing .glyphs file')
 	data = p.parse(value)
-	print '>>> Casting parsed values'
+	print('>>> Casting parsed values')
 	cast_data(data)
 	return data
 
@@ -53,7 +55,7 @@ def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
-    print '>>> Loading to RFonts'
+    print('>>> Loading to RFonts')
     return to_robofab(data, italic=italic, include_instances=include_instances,
                       debug=debug)
 
@@ -70,7 +72,7 @@ def write(ufo, out_dir):
         for glifs_path in glob.glob(os.path.join(out_path, 'glyphs', '*.glif')):
             os.remove(glifs_path)
 
-    print '>>> Writing %s' % out_path
+    print('>>> Writing %s' % out_path)
     if ufo.path:
         ufo.save()
     else:

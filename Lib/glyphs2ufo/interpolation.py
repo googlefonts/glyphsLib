@@ -13,10 +13,7 @@
 # limitations under the License.
 
 
-__all__ = [
-    'interpolate'
-]
-
+from __future__ import print_function, division, absolute_import
 
 import os
 
@@ -26,6 +23,10 @@ from robofab.world import OpenFont
 
 from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
 
+__all__ = [
+    'interpolate'
+]
+
 
 def interpolate(rfonts, master_dir, out_dir, designspace_path,
                     instance_data, italic=False, debug=False):
@@ -33,7 +34,7 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     Returns instance UFOs, or unused instance data if debug is True.
     """
 
-    print '>>> Writing masters'
+    print('>>> Writing masters')
     for font in rfonts:
         font.save(os.path.join(
             master_dir, font.info.postscriptFullName + '.ufo'))
@@ -44,7 +45,7 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
         writer, base_family, instance_data, italic, out_dir)
     writer.save()
 
-    print '>>> Building instances'
+    print('>>> Building instances')
     build(designspace_path)
 
     instance_ufos = []

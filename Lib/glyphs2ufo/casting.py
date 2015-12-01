@@ -13,14 +13,15 @@
 # limitations under the License.
 
 
-__all__ = [
-    'cast_data'
-]
-
+from __future__ import print_function, division, absolute_import
 
 from datetime import datetime
 import json
 import re
+
+__all__ = [
+    'cast_data'
+]
 
 
 DEFAULTS = {

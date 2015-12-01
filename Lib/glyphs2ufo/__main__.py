@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function, division, absolute_import, unicode_literals
 
-from __future__ import unicode_literals
 import sys
 import argparse
 import glyphs2ufo.glyphslib as glyphslib

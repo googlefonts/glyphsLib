@@ -13,14 +13,15 @@
 # limitations under the License.
 
 
+from __future__ import print_function, division, absolute_import
+
+import re
+from robofab.world import RFont
+
 __all__ = [
     'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
     'build_style_name', 'build_postscript_name'
 ]
-
-
-import re
-from robofab.world import RFont
 
 
 PUBLIC_PREFIX = 'public.'
