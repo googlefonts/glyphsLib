@@ -24,7 +24,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
+from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
 
 
 def interpolate(rfonts, master_dir, out_dir, designspace_path,

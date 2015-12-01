@@ -24,9 +24,9 @@ import json
 import os
 import sys
 
-from parser import Parser
-from casting import cast_data
-from torf import to_robofab
+from glyphs2ufo.casting import cast_data
+from glyphs2ufo.parser import Parser
+from glyphs2ufo.torf import to_robofab
 
 
 def load(fp, dict_type=dict):
