@@ -23,7 +23,7 @@ class Parser:
 
     def __init__(self, dict_type):
         self.dict_type = dict_type
-        value_re = r'(".*?(?<!\\)"|[-_./A-Za-z0-9]+)'
+        value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
         self.dict_delim_re = re.compile(r'\s*;')
