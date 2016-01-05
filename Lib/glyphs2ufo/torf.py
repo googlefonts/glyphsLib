@@ -380,12 +380,8 @@ def set_family_user_data(rfont, user_data):
 def set_master_user_data(rfont, user_data):
     """Set master-specific user data as Glyphs does."""
 
-    if not user_data:
-        return
-    for attr in ['GSOffsetHorizontal', 'GSOffsetVertical']:
-        if attr in user_data:
-            user_data[attr] = int(user_data[attr])
-    rfont.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
+    if user_data:
+        rfont.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
 def build_family_name(base_family, data, width_key):

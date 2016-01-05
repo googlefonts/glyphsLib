@@ -96,7 +96,7 @@ def get_type_structure():
             },
             'horizontalStems': intlist,
             'id': str,
-            'userData': dict,
+            'userData': user_data,
             'verticalStems': intlist,
             'weight': str,  # undocumented
             'weightValue': int,
@@ -129,7 +129,7 @@ def get_type_structure():
         'manufacturer': str,
         'manufacturerURL': str,
         'unitsPerEm': int,
-        'userData': dict,
+        'userData': user_data,
         'versionMajor': int,
         'versionMinor': version_minor
     }
@@ -311,3 +311,17 @@ def custom_params(param_list):
             param['value'] = truthy(value)
 
     return param_list
+
+
+def user_data(data_dict):
+    """Cast some known user data."""
+
+    num_params = ('GSOffsetHorizontal', 'GSOffsetVertical')
+
+    new_data = {}
+    for key, val in data_dict.iteritems():
+        if key in num_params:
+            new_data[key] = num(val)
+
+    data_dict.update(new_data)
+    return data_dict
