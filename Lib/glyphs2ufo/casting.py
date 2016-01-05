@@ -227,7 +227,7 @@ def transform(string):
 def node(string):
     """Cast a node from a string with format X Y TYPE [SMOOTH]."""
 
-    rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE)(?: (SMOOTH))?'
+    rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
     m = re.match(rx, string).groups()
     return [num(m[0]), num(m[1]), m[2].lower(), bool(m[3])]
 
