@@ -1,9 +1,3 @@
-*.txt
-*.log
+build
 *.pyc
-*.glyphs
-*.designspace
-*.ufo
-*.otf
-*.ttf
-*.ttx
+*.egg-info/
