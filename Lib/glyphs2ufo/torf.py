@@ -615,9 +615,12 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
         '# Prefix: %s\n%s%s' % (name, autostr(automatic), code.strip())
         for name, code, automatic in feature_prefixes)
 
-    class_str = '\n\n'.join(
-        '%s@%s = [ %s ];' % (autostr(automatic), name, code)
-        for name, code, automatic in classes)
+    class_defs = []
+    for name, code, automatic in classes:
+        if not name.startswith('@'):
+            name = '@' + name
+        class_defs.append('%s%s = [ %s ];' % (autostr(automatic), name, code))
+    class_str = '\n\n'.join(class_defs)
 
     feature_defs = []
     for name, code, automatic, disabled, notes in features:
