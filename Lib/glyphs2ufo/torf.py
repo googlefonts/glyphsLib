@@ -427,9 +427,8 @@ def get_weight_code(style_name):
         'Black': 900
     }.get(style_name, None)
     if not weight_code:
-      print('WARNING: Unrecognized style name "%s"' % style_name,
-            file=sys.stderr)
-      weight_code = 400
+        warn('Unrecognized style name "%s"' % style_name)
+        weight_code = 400
     return weight_code
 
 
@@ -662,4 +661,4 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
 
 
 def warn(message):
-    print(message)
+    print('WARNING: ' + message, file=sys.stderr)
