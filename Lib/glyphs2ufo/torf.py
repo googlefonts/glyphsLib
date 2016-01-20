@@ -16,6 +16,7 @@
 from __future__ import print_function, division, absolute_import
 
 import re
+import sys
 from robofab.world import RFont
 
 __all__ = [
@@ -411,15 +412,24 @@ def build_postscript_name(family_name, style_name):
 def get_weight_code(style_name):
     """Get the appropriate OS/2 weight code for this style."""
 
-    return {
+    weight_code = {
         'Thin': 250,
         'Light': 300,
+        'SemiLight': 350,
+        'DemiLight': 350,
+        '': 400,
+        'Regular': 400,
         'Medium': 500,
+        'DemiBold': 600,
         'SemiBold': 600,
         'Bold': 700,
         'ExtraBold': 800,
         'Black': 900
-    }.get(style_name, 400)
+    }.get(style_name, None)
+    if not weight_code:
+        warn('Unrecognized style name "%s"' % style_name)
+        weight_code = 400
+    return weight_code
 
 
 def get_width_code(style_name):
@@ -651,4 +661,4 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
 
 
 def warn(message):
-    print(message)
+    print('WARNING: ' + message, file=sys.stderr)
