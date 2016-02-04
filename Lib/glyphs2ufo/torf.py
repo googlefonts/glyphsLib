@@ -305,8 +305,10 @@ def set_redundant_data(rfont):
         rfont.info.styleMapStyleName = style_name.lower()
         rfont.info.styleMapFamilyName = family_name
     else:
-        rfont.info.styleMapStyleName = 'regular'
-        rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
+        rfont.info.styleMapStyleName = (
+            'italic' if 'Italic' in style_name else 'regular')
+        rfont.info.styleMapFamilyName = (
+            ' '.join(filter(None, [family_name, width, weight])))
     rfont.info.openTypeNamePreferredFamilyName = family_name
     rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
