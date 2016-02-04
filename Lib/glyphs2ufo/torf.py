@@ -179,7 +179,7 @@ def generate_base_fonts(data, italic):
         rfont.info.versionMinor = version_minor
 
         if copyright:
-            rfont.info.copyright = copyright
+            rfont.info.copyright = unicode(copyright.decode("utf-8"))
         if designer:
             rfont.info.openTypeNameDesigner = designer
         if designer_url:
@@ -544,12 +544,14 @@ def load_glyph(rglyph, layer, glyph_data):
         rglyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
+        glyph_metrics_key = None
         try:
-            rglyph.lib[glyphlib_prefix + key] = layer.pop(key)
+            glyph_metrics_key = layer.pop(key)
         except KeyError:
             glyph_metrics_key = glyph_data.get(key)
-            if glyph_metrics_key:
-                rglyph.lib[glyphlib_prefix + key] = glyph_metrics_key
+        if glyph_metrics_key:
+            glyph_metrics_key = unicode(glyph_metrics_key.decode("utf-8"))
+            rglyph.lib[glyphlib_prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
     rglyph.width = layer.pop('width')
