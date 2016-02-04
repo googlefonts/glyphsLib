@@ -69,11 +69,14 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     rfonts, master_id_order = generate_base_fonts(data, italic)
-
+    
+    glyph_order = []
+    
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
-
+        
         glyph_name = glyph.pop('glyphname')
+        glyph_order.append(glyph_name)
         if not re.match('^[\w\d._]{1,31}$', glyph_name):
             warn('Illegal glyph name "%s". If this is used in the font\'s '
                  'feature syntax, it could cause errors.' % glyph_name)
@@ -106,11 +109,7 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
         add_features_to_rfont(rfont, feature_prefixes, classes, features)
         add_groups_to_rfont(rfont, kerning_groups)
 
-        # try to create a glyph order which includes all of the glyphs
-        glyph_order = rfont.lib.get(GLYPHS_PREFIX + 'glyphOrder', [])
-        actual_order = glyph_order + sorted(
-            set(rfont.keys()) - set(glyph_order))
-        rfont.lib[PUBLIC_PREFIX + 'glyphOrder'] = actual_order
+        rfont.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
 
     for master_id, kerning in data.pop('kerning', {}).iteritems():
         load_kerning(rfonts[master_id], kerning)
