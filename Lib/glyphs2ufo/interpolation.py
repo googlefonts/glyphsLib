@@ -21,7 +21,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
+from glyphs2ufo.torf import set_redundant_data, clear_data, build_style_name, build_postscript_name
 
 __all__ = [
     'interpolate'
@@ -95,7 +95,7 @@ def add_masters_to_writer(writer, rfonts):
     return base_family
 
 
-def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
+def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, custom_font_data> pairs, corresponding to the
@@ -105,8 +105,8 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
     ofiles = []
     for instance in instances:
 
-        family_name = build_family_name(base_family, instance, 'widthClass')
-        style_name = build_style_name(instance, 'weightClass', italic)
+        style_name = build_style_name(
+            instance, 'widthClass', 'weightClass', italic)
         ufo_path = os.path.join(
             out_dir, build_postscript_name(family_name, style_name) + '.ufo')
         ofiles.append((ufo_path, instance['customParameters']))
