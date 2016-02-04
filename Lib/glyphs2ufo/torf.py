@@ -433,34 +433,6 @@ def build_postscript_name(family_name, style_name):
                       style_name.replace(' ', ''))
 
 
-def rfont_style_to_layer_style(rfont):
-    """Convert style as stored in RFonts into Glyphs layer data.
-
-    We store style info in RFonts as:
-      familyName: "[family] [condensed]"
-      styleName: "[weight] [italic]"
-    where "Regular Italic" in styleName becomes simply "Italic".
-
-    Glyphs layer styles are stored as "[weight] [condensed] [italic]", where
-    "Regular Condensed" becomes "Condensed" but "Regular Italic" does not get
-    shortened.
-    """
-
-    style = rfont.info.styleName.split()
-    family = rfont.info.familyName.split()
-    if style[0] == 'Italic':
-        style.insert(0, 'Regular')
-    if family[-1] == 'Condensed':
-        if style[0] == 'Regular':
-            style[0] = 'Condensed'
-        else:
-            if style[-1] == 'Italic':
-                style.insert(-1, 'Condensed')
-            else:
-                style.append('Condensed')
-    return ' '.join(style)
-
-
 def to_rf_time(datetime_obj):
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime('%Y/%m/%d %H:%M:%S')
