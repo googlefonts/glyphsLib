@@ -38,7 +38,7 @@ def _check_warnings():
 
 
 class SetRedundantDataTest(unittest.TestCase):
-    def run_on_ufo(self, family_name, style_name):
+    def _run_on_ufo(self, family_name, style_name):
         ufo = RFont()
         ufo.info.familyName = family_name
         ufo.info.styleName = style_name
@@ -46,51 +46,64 @@ class SetRedundantDataTest(unittest.TestCase):
         return ufo
 
     def test_sets_regular_weight_class_for_missing_weight(self):
-        reg_ufo = self.run_on_ufo('MyFont', 'Regular')
-        cond_ufo = self.run_on_ufo('MyFont', 'Condensed')
+        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
+        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
         self.assertEquals(
             reg_ufo.info.openTypeOS2WeightClass,
-            cond_ufo.info.openTypeOS2WeightClass)
+            italic_ufo.info.openTypeOS2WeightClass)
 
     def test_sets_regular_weight_class_and_warns_for_unknown_weight(self):
-        reg_ufo = self.run_on_ufo('MyFont', 'Regular')
-        bogus_ufo = self.run_on_ufo('MyFont', 'abc123')
+        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
+        bogus_ufo = self._run_on_ufo('MyFont', 'abc123')
         self.assertEquals(
             reg_ufo.info.openTypeOS2WeightClass,
             bogus_ufo.info.openTypeOS2WeightClass)
         self.assertTrue(_check_warnings())
 
-    def run_style_map_names_test(self, args):
+    def test_sets_weight_lib_entry_only_nonregular(self):
+        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
+        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
+        thin_ufo = self._run_on_ufo('MyFont', 'Thin')
+        self.assertFalse(reg_ufo.lib)
+        self.assertFalse(italic_ufo.lib)
+        self.assertTrue(thin_ufo.lib)
+
+    def test_sets_width_lib_entry_only_condensed(self):
+        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
+        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
+        cond_ufo = self._run_on_ufo('MyFont Condensed', 'Regular')
+        semicond_ufo = self._run_on_ufo('MyFont SemiCondensed', 'Regular')
+        self.assertFalse(reg_ufo.lib)
+        self.assertFalse(italic_ufo.lib)
+        self.assertTrue(cond_ufo.lib)
+        self.assertTrue(semicond_ufo.lib)
+
+    def _run_style_map_names_test(self, args):
         for family, style, expected_family, expected_style in args:
-            ufo = self.run_on_ufo(family, style)
+            ufo = self._run_on_ufo(family, style)
             self.assertEquals(ufo.info.styleMapFamilyName, expected_family)
             self.assertEquals(ufo.info.styleMapStyleName, expected_style)
 
     def test_sets_legal_style_map_names(self):
-        self.run_style_map_names_test((
+        self._run_style_map_names_test((
+            ('MyFont', '', 'MyFont', 'regular'),
             ('MyFont', 'Regular', 'MyFont', 'regular'),
             ('MyFont', 'Bold', 'MyFont', 'bold'),
             ('MyFont', 'Italic', 'MyFont', 'italic'),
-            ('MyFont', 'Bold Italic', 'MyFont', 'bold italic')))
+            ('MyFont', 'Bold Italic', 'MyFont', 'bold italic'),
+            ('MyFont Condensed', '', 'MyFont Condensed', 'regular'),
+            ('MyFont Condensed', 'Regular', 'MyFont Condensed', 'regular'),
+            ('MyFont Condensed', 'Bold', 'MyFont Condensed', 'bold'),
+            ('MyFont Condensed', 'Italic', 'MyFont Condensed', 'italic'),
+            ('MyFont Condensed', 'Bold Italic', 'MyFont Condensed',
+             'bold italic')))
 
     def test_moves_nonbold_weight_to_family(self):
-        self.run_style_map_names_test((
+        self._run_style_map_names_test((
             ('MyFont', 'Thin', 'MyFont Thin', 'regular'),
-            ('MyFont', 'Thin Italic', 'MyFont Thin', 'italic')))
-
-    def test_moves_width_to_family(self):
-        self.run_style_map_names_test((
-            ('MyFont', 'Condensed', 'MyFont Condensed', 'regular'),
-            ('MyFont', 'Condensed Italic', 'MyFont Condensed', 'italic'),
-            ('MyFont', 'Condensed Thin', 'MyFont Condensed Thin', 'regular'),
-            ('MyFont', 'Condensed Thin Italic', 'MyFont Condensed Thin',
-             'italic')))
-
-    def test_moves_bold_weight_to_family_with_width(self):
-        # this may be changed in the future, if needed
-        self.run_style_map_names_test((
-            ('MyFont', 'Condensed Bold', 'MyFont Condensed Bold', 'regular'),
-            ('MyFont', 'Condensed Bold Italic', 'MyFont Condensed Bold',
+            ('MyFont', 'Thin Italic', 'MyFont Thin', 'italic'),
+            ('MyFont Condensed', 'Thin', 'MyFont Condensed Thin', 'regular'),
+            ('MyFont Condensed', 'Thin Italic', 'MyFont Condensed Thin',
              'italic')))
 
 

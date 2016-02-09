@@ -20,7 +20,7 @@ import sys
 from robofab.world import RFont
 
 __all__ = [
-    'to_robofab', 'clear_data', 'set_redundant_data',
+    'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
     'build_style_name', 'build_postscript_name'
 ]
 
@@ -190,9 +190,8 @@ def generate_base_fonts(data, italic):
     for master in data['fontMaster']:
         rfont = RFont()
 
-        rfont.info.familyName = family_name
-        rfont.info.styleName = build_style_name(
-            master, 'width', 'weight', italic)
+        rfont.info.familyName = build_family_name(family_name, master, 'width')
+        rfont.info.styleName = build_style_name(master, 'weight', italic)
 
         rfont.info.openTypeHeadCreated = date_created
         rfont.info.unitsPerEm = units_per_em
@@ -276,12 +275,12 @@ def set_redundant_data(rfont):
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
 
-    width_match = re.match('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
-                           style_name)
+    width_match = re.search('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
+                            family_name)
     width = width_match.group(0) if width_match else ''
     rfont.info.openTypeOS2WidthClass = WIDTH_CODES[width]
 
-    weight = style_name.replace('Italic', '').replace(width, '').strip()
+    weight = style_name.replace('Italic', '').strip()
     weight_code = WEIGHT_CODES.get(weight, None)
     if not weight_code:
         warn('Unrecognized weight "%s"' % weight)
@@ -308,7 +307,7 @@ def set_redundant_data(rfont):
         rfont.info.styleMapStyleName = (
             'italic' if 'Italic' in style_name else 'regular')
         rfont.info.styleMapFamilyName = (
-            ' '.join(filter(None, [family_name, width, weight])))
+            '%s %s' % (family_name, weight)).strip()
     rfont.info.openTypeNamePreferredFamilyName = family_name
     rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
@@ -415,17 +414,21 @@ def set_master_user_data(rfont, user_data):
         rfont.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_style_name(data, width_key, weight_key, italic):
-    """Build style name from weight and width strings in data, and whether the
-    style is italic.
-    """
+def build_family_name(base_family, data, width_key):
+    """Build family name from base name and width string in data."""
+
+    width = data.pop(width_key, '')
+    return ('%s %s' % (base_family, width)).strip()
+
+
+def build_style_name(data, weight_key, italic):
+    """Build style name from weight string in data and whether it's italic."""
 
     italic = 'Italic' if italic else ''
-    width = data.pop(width_key, '')
     weight = data.pop(weight_key, 'Regular')
-    if (italic or width) and weight == 'Regular':
+    if italic and weight == 'Regular':
         weight = ''
-    return ('%s %s %s' % (width, weight, italic)).strip()
+    return ('%s %s' % (weight, italic)).strip()
 
 
 def build_postscript_name(family_name, style_name):
