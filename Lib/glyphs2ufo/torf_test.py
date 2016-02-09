@@ -19,7 +19,7 @@ import unittest
 from robofab.world import RFont
 
 from glyphs2ufo import torf
-from glyphs2ufo.torf import set_redundant_data
+from glyphs2ufo.torf import set_redundant_data, build_family_name, build_style_name, build_postscript_name
 
 
 _warnings = []
@@ -35,6 +35,35 @@ def _check_warnings():
     checked = list(_warnings)
     _warnings = []
     return checked
+
+
+class BuildNameTest(unittest.TestCase):
+    def test_family_regular_width(self):
+        self.assertEquals(build_family_name('MyFont', {}, 'width'), 'MyFont')
+
+    def test_family_nonregular_width(self):
+        self.assertEquals(
+            build_family_name('MyFont', {'width': 'Condensed'}, 'width'),
+            'MyFont Condensed')
+
+    def test_style_regular_weight(self):
+        self.assertEquals(build_style_name({}, 'weight', False), 'Regular')
+        self.assertEquals(build_style_name({}, 'weight', True), 'Italic')
+        self.assertEquals(build_style_name(
+            {'weight': 'Regular'}, 'weight', True), 'Italic')
+
+    def test_style_nonregular_weight(self):
+        self.assertEquals(
+            build_style_name({'weight': 'Thin'}, 'weight', False), 'Thin')
+        self.assertEquals(
+            build_style_name({'weight': 'Thin'}, 'weight', True), 'Thin Italic')
+
+    def test_postscript(self):
+        self.assertEquals(
+            build_postscript_name('MyFont', 'Regular'), 'MyFont-Regular')
+        self.assertEquals(
+            build_postscript_name('MyFont Condensed', 'Thin Italic'),
+            'MyFontCondensed-ThinItalic')
 
 
 class SetRedundantDataTest(unittest.TestCase):
