@@ -28,6 +28,7 @@ __all__ = [
 PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
+
 GLYPHS_COLORS = (
     '0.85,0.26,0.06,1',
     '0.99,0.62,0.11,1',
@@ -41,6 +42,25 @@ GLYPHS_COLORS = (
     '0.98,0.36,0.67,1',
     '0.75,0.75,0.75,1',
     '0.25,0.25,0.25,1')
+
+WEIGHT_CODES = {
+    'Thin': 250,
+    'Light': 300,
+    'SemiLight': 350,
+    'DemiLight': 350,
+    '': 400,
+    'Regular': 400,
+    'Medium': 500,
+    'DemiBold': 600,
+    'SemiBold': 600,
+    'Bold': 700,
+    'ExtraBold': 800,
+    'Black': 900}
+
+WIDTH_CODES = {
+    'Condensed': 3,
+    'SemiCondensed': 4,
+    '': 5}
 
 
 def to_robofab(data, italic=False, include_instances=False, debug=False):
@@ -254,14 +274,22 @@ def set_redundant_data(rfont):
     """Set redundant metadata in an RFont, e.g. data based on other data."""
 
     family_name, style_name = rfont.info.familyName, rfont.info.styleName
-    weight = style_name.replace('Italic', '').strip()
-    width = family_name.split()[-1]
 
-    rfont.info.openTypeOS2WeightClass = get_weight_code(weight)
-    rfont.info.openTypeOS2WidthClass = get_width_code(width)
+    width_match = re.search('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
+                            family_name)
+    width = width_match.group(0) if width_match else ''
+    rfont.info.openTypeOS2WidthClass = WIDTH_CODES[width]
+
+    weight = style_name.replace('Italic', '').strip()
+    weight_code = WEIGHT_CODES.get(weight, None)
+    if not weight_code:
+        warn('Unrecognized weight "%s"' % weight)
+        weight_code = WEIGHT_CODES['']
+    rfont.info.openTypeOS2WeightClass = weight_code
+
     if weight and weight != 'Regular':
         rfont.lib[GLYPHS_PREFIX + 'weight'] = weight
-    if 'Condensed' in width:
+    if width:
         rfont.lib[GLYPHS_PREFIX + 'width'] = width
 
     ps_name = build_postscript_name(family_name, style_name)
@@ -276,8 +304,10 @@ def set_redundant_data(rfont):
         rfont.info.styleMapStyleName = style_name.lower()
         rfont.info.styleMapFamilyName = family_name
     else:
-        rfont.info.styleMapStyleName = 'regular'
-        rfont.info.styleMapFamilyName = '%s %s' % (family_name, weight)
+        rfont.info.styleMapStyleName = (
+            'italic' if 'Italic' in style_name else 'regular')
+        rfont.info.styleMapFamilyName = (
+            '%s %s' % (family_name, weight)).strip()
     rfont.info.openTypeNamePreferredFamilyName = family_name
     rfont.info.openTypeNamePreferredSubfamilyName = style_name
 
@@ -386,19 +416,19 @@ def set_master_user_data(rfont, user_data):
 
 def build_family_name(base_family, data, width_key):
     """Build family name from base name and width string in data."""
-    return ('%s %s' % (base_family, data.pop(width_key, ''))).strip()
+
+    width = data.pop(width_key, '')
+    return ('%s %s' % (base_family, width)).strip()
 
 
 def build_style_name(data, weight_key, italic):
     """Build style name from weight string in data and whether it's italic."""
 
-    style_name = data.pop(weight_key, 'Regular')
-    if italic:
-        if style_name == 'Regular':
-            style_name = 'Italic'
-        else:
-            style_name += ' Italic'
-    return style_name
+    italic = 'Italic' if italic else ''
+    weight = data.pop(weight_key, 'Regular')
+    if italic and weight == 'Regular':
+        weight = ''
+    return ('%s %s' % (weight, italic)).strip()
 
 
 def build_postscript_name(family_name, style_name):
@@ -406,66 +436,6 @@ def build_postscript_name(family_name, style_name):
 
     return '%s-%s' % (family_name.replace(' ', ''),
                       style_name.replace(' ', ''))
-
-
-def get_weight_code(style_name):
-    """Get the appropriate OS/2 weight code for this style."""
-
-    weight_code = {
-        'Thin': 250,
-        'Light': 300,
-        'SemiLight': 350,
-        'DemiLight': 350,
-        '': 400,
-        'Regular': 400,
-        'Medium': 500,
-        'DemiBold': 600,
-        'SemiBold': 600,
-        'Bold': 700,
-        'ExtraBold': 800,
-        'Black': 900
-    }.get(style_name, None)
-    if not weight_code:
-        warn('Unrecognized style name "%s"' % style_name)
-        weight_code = 400
-    return weight_code
-
-
-def get_width_code(style_name):
-    """Get the appropriate OS/2 width code for this style."""
-
-    return {
-        'Condensed': 3,
-        'SemiCondensed': 4
-    }.get(style_name, 5)
-
-
-def rfont_style_to_layer_style(rfont):
-    """Convert style as stored in RFonts into Glyphs layer data.
-
-    We store style info in RFonts as:
-      familyName: "[family] [condensed]"
-      styleName: "[weight] [italic]"
-    where "Regular Italic" in styleName becomes simply "Italic".
-
-    Glyphs layer styles are stored as "[weight] [condensed] [italic]", where
-    "Regular Condensed" becomes "Condensed" but "Regular Italic" does not get
-    shortened.
-    """
-
-    style = rfont.info.styleName.split()
-    family = rfont.info.familyName.split()
-    if style[0] == 'Italic':
-        style.insert(0, 'Regular')
-    if family[-1] == 'Condensed':
-        if style[0] == 'Regular':
-            style[0] = 'Condensed'
-        else:
-            if style[-1] == 'Italic':
-                style.insert(-1, 'Condensed')
-            else:
-                style.append('Condensed')
-    return ' '.join(style)
 
 
 def to_rf_time(datetime_obj):
