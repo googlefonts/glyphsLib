@@ -59,6 +59,7 @@ WEIGHT_CODES = {
     'Black': 900}
 
 WIDTH_CODES = {
+    'Extra Condensed': 2,
     'Condensed': 3,
     'SemiCondensed': 4,
     '': 5}
