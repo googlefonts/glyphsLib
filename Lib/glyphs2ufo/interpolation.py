@@ -21,7 +21,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name
+from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate'
@@ -80,17 +80,18 @@ def add_masters_to_writer(writer, rfonts):
             raise ValueError('Inconsistent family names for masters')
         master_data.append((
             font.path, family, style,
-            font.lib['com.google.glyphs2ufo.weightValue'],
-            font.lib['com.google.glyphs2ufo.widthValue']))
+            font.lib[GLYPHS_PREFIX + 'weightValue'],
+            font.lib[GLYPHS_PREFIX + 'widthValue']))
 
     # add the masters to the writer in a separate loop, when we have a good
     # candidate to copy metadata from ([base_family] Regular)
     for path, family, style, weight, width in master_data:
+        is_base = family == base_family and style == 'Regular'
         writer.addSource(
             path=path,
             name='%s %s' % (family, style),
             location={'weight': weight, 'width': width},
-            copyInfo=(family == base_family and style == 'Regular'))
+            copyGroups=is_base, copyInfo=is_base)
 
     return base_family
 

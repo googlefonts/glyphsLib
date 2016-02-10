@@ -22,6 +22,7 @@ from robofab.world import RFont
 __all__ = [
     'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
     'build_style_name', 'build_postscript_name'
+    'GLYPHS_PREFIX'
 ]
 
 

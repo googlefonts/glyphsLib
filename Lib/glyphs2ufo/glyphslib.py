@@ -92,7 +92,7 @@ def build_masters(filename, master_dir, italic=False):
 def build_instances(filename, master_dir, instance_dir, italic=False):
     """Write and return UFOs from the instances defined in a .glyphs file."""
 
-    from interpolation import interpolate
+    from glyphs2ufo.interpolation import interpolate
 
     designspace_path = filename.replace('.glyphs', '.designspace')
     master_ufos, instance_data = load_to_ufos(
