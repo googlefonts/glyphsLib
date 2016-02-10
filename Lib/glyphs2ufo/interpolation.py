@@ -110,7 +110,7 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
         style_name = build_style_name(instance, 'weightClass', italic)
         ufo_path = os.path.join(
             out_dir, build_postscript_name(family_name, style_name) + '.ufo')
-        ofiles.append((ufo_path, instance['customParameters']))
+        ofiles.append((ufo_path, instance.get('customParameters', [])))
 
         writer.startInstance(
             name=instance.pop('name'),
