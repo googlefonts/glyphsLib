@@ -18,9 +18,9 @@
 from __future__ import print_function, division, absolute_import
 
 import glob
-import json
 import os
 import sys
+import tempfile
 
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
@@ -94,11 +94,14 @@ def build_instances(filename, master_dir, instance_dir, italic=False):
 
     from glyphs2ufo.interpolation import interpolate
 
-    designspace_path = filename.replace('.glyphs', '.designspace')
+    fd, designspace_path = tempfile.mkstemp()
+    os.close(fd)
     master_ufos, instance_data = load_to_ufos(
         filename, italic, include_instances=True)
-    return interpolate(
+    instance_ufos = interpolate(
         master_ufos, master_dir, instance_dir, designspace_path, instance_data)
+    os.remove(designspace_path)
+    return instance_ufos
 
 
 def main(filename, master_dir='master_ufo', instance_dir='instance_ufo'):
