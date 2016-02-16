@@ -15,7 +15,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-from datetime import datetime
+import datetime
 import json
 import re
 
@@ -245,8 +245,14 @@ def nodelist(strlist):
 
 
 def glyphs_datetime(string):
-    """Parse a datetime object from a string, ignoring the timezone."""
-    return datetime.strptime(string, '%Y-%m-%d %H:%M:%S +0000')
+    """Parse a datetime object from a string."""
+
+    # parse timezone ourselves, since %z is not always supported
+    # see: http://bugs.python.org/issue6641
+    string, tz = string.rsplit(' ', 1)
+    datetime_obj = datetime.datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
+    offset = datetime.timedelta(hours=int(tz[:3]), minutes=int(tz[0] + tz[3:]))
+    return datetime_obj + offset
 
 
 def kerning(kerning_data):
