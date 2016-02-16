@@ -295,16 +295,37 @@ def feature_syntax(string):
 def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
-    int_params = ('typoAscender', 'typoDescender', 'typoLineGap', 'winAscent',
-                  'winDescent', 'hheaAscender', 'hheaDescender', 'hheaLineGap',
-                  'underlinePosition', 'underlineThickness')
-    intlist_params = ('fsType', 'openTypeOS2Type')
+    int_params = (
+        'hheaAscender', 'hheaDescender', 'hheaLineGap',
+        'macintoshFONDFamilyID', 'openTypeHeadLowestRecPPEM',
+        'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
+        'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
+        'openTypeOS2SubscriptYOffset', 'openTypeOS2SubscriptYSize',
+        'openTypeOS2SuperscriptXOffset', 'openTypeOS2SuperscriptXSize',
+        'openTypeOS2SuperscriptYOffset', 'openTypeOS2SuperscriptYSize',
+        'postscriptBlueFuzz', 'postscriptBlueShift', 'postscriptDefaultWidthX',
+        'postscriptSlantAngle', 'postscriptUniqueID',
+        'postscriptWindowsCharacterSet',
+        'typoAscender', 'typoDescender', 'typoLineGap',
+        'underlinePosition', 'underlineThickness',
+        'winAscent', 'winDescent', 'year')
+    float_params = (
+        'postscriptBlueScale')
+    truthy_params = (
+        'postscriptForceBold', 'postscriptIsFixedPitch')
+    intlist_params = (
+        'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
+        'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges')
 
     for param in param_list:
         name = param['name']
         value = param['value']
         if name in int_params:
             param['value'] = int(value)
+        if name in float_params:
+            param['value'] = float(value)
+        if name in truthy_params:
+            param['value'] = truthy(value)
         if name in intlist_params:
             param['value'] = intlist(value)
         elif name == 'DisableAllAutomaticBehaviour':
