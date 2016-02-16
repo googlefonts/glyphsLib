@@ -49,7 +49,7 @@ class GlyphsDatetimeTest(unittest.TestCase):
             (2001, 2, 3, 14, 15, 6))
         self.compare_parsed_date_string(
             '2001-02-03 14:15:06 -1010',
-            (2001, 2, 3, 04, 05, 6))
+            (2001, 2, 3, 4, 5, 6))
         self.compare_parsed_date_string(
             '2001-02-03 00:05:06 -0010',
             (2001, 2, 2, 23, 55, 6))
