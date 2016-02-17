@@ -302,23 +302,35 @@ def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
     int_params = (
-        'hheaAscender', 'hheaDescender', 'hheaLineGap',
-        'macintoshFONDFamilyID', 'openTypeHeadLowestRecPPEM',
+        'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
+        'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
+        'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+        'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
+        'openTypeHheaDescender', 'openTypeHheaLineGap',
         'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
         'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
         'openTypeOS2SubscriptYOffset', 'openTypeOS2SubscriptYSize',
         'openTypeOS2SuperscriptXOffset', 'openTypeOS2SuperscriptXSize',
         'openTypeOS2SuperscriptYOffset', 'openTypeOS2SuperscriptYSize',
-        'postscriptBlueFuzz', 'postscriptBlueShift', 'postscriptDefaultWidthX',
-        'postscriptSlantAngle', 'postscriptUniqueID',
-        'postscriptWindowsCharacterSet',
-        'typoAscender', 'typoDescender', 'typoLineGap',
-        'underlinePosition', 'underlineThickness',
-        'winAscent', 'winDescent', 'year')
+        'openTypeOS2TypoAscender', 'openTypeOS2TypoDescender',
+        'openTypeOS2TypoLineGap', 'openTypeOS2WeightClass',
+        'openTypeOS2WidthClass', 'openTypeOS2WinAscent',
+        'openTypeOS2WinDescent', 'openTypeVheaCaretOffset',
+        'openTypeVheaCaretSlopeRise', 'openTypeVheaCaretSlopeRun',
+        'openTypeVheaVertTypoAscender', 'openTypeVheaVertTypoDescender',
+        'openTypeVheaVertTypoLineGap', 'postscriptBlueFuzz',
+        'postscriptBlueShift', 'postscriptDefaultWidthX',
+        'postscriptSlantAngle', 'postscriptUnderlinePosition',
+        'postscriptUnderlineThickness', 'postscriptUniqueID',
+        'postscriptWindowsCharacterSet', 'shoulderHeight', 'smallCapHeight',
+        'typoAscender', 'typoDescender', 'typoLineGap', 'underlinePosition',
+        'underlineThickness', 'unitsPerEm', 'vheaVertAscender',
+        'vheaVertDescender', 'vheaVertLineGap', 'winAscent', 'winDescent',
+        'year')
     float_params = (
         'postscriptBlueScale')
     truthy_params = (
-        'postscriptForceBold', 'postscriptIsFixedPitch')
+        'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch')
     intlist_params = (
         'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
         'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges')
