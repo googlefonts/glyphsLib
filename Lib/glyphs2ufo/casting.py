@@ -15,7 +15,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-from datetime import datetime
+import datetime
 import json
 import re
 
@@ -29,6 +29,40 @@ DEFAULTS = {
     'interpolationWidth': 100,
     'widthValue': 100,
     'weightValue': 100}
+
+CUSTOM_INT_PARAMS = frozenset((
+    'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
+    'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
+    'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+    'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
+    'openTypeHheaDescender', 'openTypeHheaLineGap',
+    'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
+    'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
+    'openTypeOS2SubscriptYOffset', 'openTypeOS2SubscriptYSize',
+    'openTypeOS2SuperscriptXOffset', 'openTypeOS2SuperscriptXSize',
+    'openTypeOS2SuperscriptYOffset', 'openTypeOS2SuperscriptYSize',
+    'openTypeOS2TypoAscender', 'openTypeOS2TypoDescender',
+    'openTypeOS2TypoLineGap', 'openTypeOS2WeightClass', 'openTypeOS2WidthClass',
+    'openTypeOS2WinAscent', 'openTypeOS2WinDescent', 'openTypeVheaCaretOffset',
+    'openTypeVheaCaretSlopeRise', 'openTypeVheaCaretSlopeRun',
+    'openTypeVheaVertTypoAscender', 'openTypeVheaVertTypoDescender',
+    'openTypeVheaVertTypoLineGap', 'postscriptBlueFuzz', 'postscriptBlueShift',
+    'postscriptDefaultWidthX', 'postscriptSlantAngle',
+    'postscriptUnderlinePosition', 'postscriptUnderlineThickness',
+    'postscriptUniqueID', 'postscriptWindowsCharacterSet', 'shoulderHeight',
+    'smallCapHeight', 'typoAscender', 'typoDescender', 'typoLineGap',
+    'underlinePosition', 'underlineThickness', 'unitsPerEm', 'vheaVertAscender',
+    'vheaVertDescender', 'vheaVertLineGap', 'winAscent', 'winDescent', 'year'))
+
+CUSTOM_FLOAT_PARAMS = frozenset((
+    'postscriptBlueScale',))
+
+CUSTOM_TRUTHY_PARAMS = frozenset((
+    'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch'))
+
+CUSTOM_INTLIST_PARAMS = frozenset((
+    'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
+    'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges'))
 
 
 def cast_data(data, types=None):
@@ -245,8 +279,14 @@ def nodelist(strlist):
 
 
 def glyphs_datetime(string):
-    """Parse a datetime object from a string, ignoring the timezone."""
-    return datetime.strptime(string, '%Y-%m-%d %H:%M:%S +0000')
+    """Parse a datetime object from a string."""
+
+    # parse timezone ourselves, since %z is not always supported
+    # see: http://bugs.python.org/issue6641
+    string, tz = string.rsplit(' ', 1)
+    datetime_obj = datetime.datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
+    offset = datetime.timedelta(hours=int(tz[:3]), minutes=int(tz[0] + tz[3:]))
+    return datetime_obj + offset
 
 
 def kerning(kerning_data):
@@ -295,17 +335,16 @@ def feature_syntax(string):
 def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
-    int_params = ('typoAscender', 'typoDescender', 'typoLineGap', 'winAscent',
-                  'winDescent', 'hheaAscender', 'hheaDescender', 'hheaLineGap',
-                  'underlinePosition', 'underlineThickness')
-    intlist_params = ('fsType', 'openTypeOS2Type')
-
     for param in param_list:
         name = param['name']
         value = param['value']
-        if name in int_params:
+        if name in CUSTOM_INT_PARAMS:
             param['value'] = int(value)
-        if name in intlist_params:
+        if name in CUSTOM_FLOAT_PARAMS:
+            param['value'] = float(value)
+        if name in CUSTOM_TRUTHY_PARAMS:
+            param['value'] = truthy(value)
+        if name in CUSTOM_INTLIST_PARAMS:
             param['value'] = intlist(value)
         elif name == 'DisableAllAutomaticBehaviour':
             param['value'] = truthy(value)
