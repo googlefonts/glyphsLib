@@ -130,6 +130,7 @@ def get_type_structure():
         },
         'glyphs': {
             'color': int,  # undocumented
+            'export': truthy,  # undocumented
             'glyphname': str,
             'lastChange': glyphs_datetime,
             'layers': get_layer_type_structure(),

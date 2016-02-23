@@ -103,8 +103,9 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                  'feature syntax, it could cause errors.' % glyph_name)
 
         # pop glyph metadata only once, i.e. not when looping through layers
-        metadata_keys = ['unicode', 'color', 'lastChange', 'leftMetricsKey',
-                         'note', 'rightMetricsKey', 'widthMetricsKey']
+        metadata_keys = ['unicode', 'color', 'export', 'lastChange',
+                         'leftMetricsKey', 'note', 'rightMetricsKey',
+                         'widthMetricsKey']
         glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
@@ -498,6 +499,9 @@ def load_glyph(rglyph, layer, glyph_data):
     if color_index is not None:
         rglyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
         rglyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
+    export = glyph_data.get('export')
+    if export is not None:
+        rglyph.lib[glyphlib_prefix + 'Export'] = export
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         glyph_metrics_key = None
