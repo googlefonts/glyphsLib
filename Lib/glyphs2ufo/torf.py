@@ -21,8 +21,7 @@ from robofab.world import RFont
 
 __all__ = [
     'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
-    'build_style_name', 'build_postscript_name'
-    'GLYPHS_PREFIX'
+    'build_style_name', 'GLYPHS_PREFIX'
 ]
 
 
@@ -294,14 +293,6 @@ def set_redundant_data(rfont):
     if width:
         rfont.lib[GLYPHS_PREFIX + 'width'] = width
 
-    ps_name = build_postscript_name(family_name, style_name)
-    rfont.info.postscriptFontName = ps_name
-    rfont.info.postscriptFullName = ps_name
-
-    version_str = '%s.%s' % (rfont.info.versionMajor, rfont.info.versionMinor)
-    rfont.info.openTypeNameVersion = 'Version ' + version_str
-    rfont.info.openTypeNameUniqueID = '%s;%s' % (version_str, ps_name)
-
     if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
         rfont.info.styleMapStyleName = style_name.lower()
         rfont.info.styleMapFamilyName = family_name
@@ -431,13 +422,6 @@ def build_style_name(data, weight_key, italic):
     if italic and weight == 'Regular':
         weight = ''
     return ('%s %s' % (weight, italic)).strip()
-
-
-def build_postscript_name(family_name, style_name):
-    """Build string to use for postscript*Name from family and style names."""
-
-    return '%s-%s' % (family_name.replace(' ', ''),
-                      style_name.replace(' ', ''))
 
 
 def to_rf_time(datetime_obj):

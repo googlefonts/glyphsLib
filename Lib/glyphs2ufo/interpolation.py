@@ -21,7 +21,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name, GLYPHS_PREFIX
+from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate'
@@ -40,7 +40,8 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     print('>>> Writing masters')
     for font in rfonts:
         font.save(os.path.join(
-            master_dir, font.info.postscriptFullName + '.ufo'))
+            master_dir, build_postscript_name(
+                font.info.familyName, font.info.styleName) + '.ufo'))
 
     writer = DesignSpaceDocumentWriter(designspace_path)
     base_family = add_masters_to_writer(writer, rfonts)
@@ -129,3 +130,10 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
         writer.endInstance()
 
     return ofiles
+
+
+def build_postscript_name(family_name, style_name):
+    """Build string to use for postscript*Name from family and style names."""
+
+    return '%s-%s' % (family_name.replace(' ', ''),
+                      style_name.replace(' ', ''))

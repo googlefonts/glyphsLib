@@ -64,7 +64,10 @@ def write(ufo, out_dir):
     """Write a UFO."""
 
     out_path = (
-        ufo.path or os.path.join(out_dir, ufo.info.postscriptFullName + '.ufo'))
+        ufo.path or
+        os.path.join(out_dir, '%s-%s.ufo' % (
+            ufo.info.familyName.replace(' ', ''),
+            ufo.info.styleName.replace(' ', ''))))
 
     # RoboFab doesn't seem to ever delete glif files
     # TODO(jamesgk) think about pushing this upstream
