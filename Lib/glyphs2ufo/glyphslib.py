@@ -64,7 +64,10 @@ def write(ufo, out_dir):
     """Write a UFO."""
 
     out_path = (
-        ufo.path or os.path.join(out_dir, ufo.info.postscriptFullName + '.ufo'))
+        ufo.path or
+        os.path.join(out_dir, '%s-%s.ufo' % (
+            ufo.info.familyName.replace(' ', ''),
+            ufo.info.styleName.replace(' ', ''))))
 
     # RoboFab doesn't seem to ever delete glif files
     # TODO(jamesgk) think about pushing this upstream
@@ -94,13 +97,16 @@ def build_instances(filename, master_dir, instance_dir, italic=False):
 
     from glyphs2ufo.interpolation import interpolate
 
-    fd, designspace_path = tempfile.mkstemp()
-    os.close(fd)
     master_ufos, instance_data = load_to_ufos(
         filename, italic, include_instances=True)
-    instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, designspace_path, instance_data)
-    os.remove(designspace_path)
+    fd, designspace_path = tempfile.mkstemp()
+    os.close(fd)
+    try:
+        instance_ufos = interpolate(
+            master_ufos, master_dir, instance_dir, designspace_path,
+            instance_data)
+    finally:
+        os.remove(designspace_path)
     return instance_ufos
 
 

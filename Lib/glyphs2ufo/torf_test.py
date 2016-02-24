@@ -19,7 +19,7 @@ import unittest
 from robofab.world import RFont
 
 from glyphs2ufo import torf
-from glyphs2ufo.torf import set_redundant_data, build_family_name, build_style_name, build_postscript_name
+from glyphs2ufo.torf import set_redundant_data, build_family_name, build_style_name
 
 
 _warnings = []
@@ -57,13 +57,6 @@ class BuildNameTest(unittest.TestCase):
             build_style_name({'weight': 'Thin'}, 'weight', False), 'Thin')
         self.assertEquals(
             build_style_name({'weight': 'Thin'}, 'weight', True), 'Thin Italic')
-
-    def test_postscript(self):
-        self.assertEquals(
-            build_postscript_name('MyFont', 'Regular'), 'MyFont-Regular')
-        self.assertEquals(
-            build_postscript_name('MyFont Condensed', 'Thin Italic'),
-            'MyFontCondensed-ThinItalic')
 
 
 class SetRedundantDataTest(unittest.TestCase):

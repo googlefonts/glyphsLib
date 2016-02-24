@@ -24,12 +24,6 @@ __all__ = [
 ]
 
 
-DEFAULTS = {
-    'interpolationWeight': 100,
-    'interpolationWidth': 100,
-    'widthValue': 100,
-    'weightValue': 100}
-
 CUSTOM_INT_PARAMS = frozenset((
     'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
     'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
@@ -73,10 +67,6 @@ def cast_data(data, types=None):
 
     for key, cur_type in types.items():
         if key not in data:
-            try:
-                data[key] = DEFAULTS[key]
-            except KeyError:
-                pass
             continue
         if type(cur_type) == dict:
             for cur_data in data[key]:
@@ -140,6 +130,7 @@ def get_type_structure():
         },
         'glyphs': {
             'color': int,  # undocumented
+            'export': truthy,  # undocumented
             'glyphname': str,
             'lastChange': glyphs_datetime,
             'layers': get_layer_type_structure(),

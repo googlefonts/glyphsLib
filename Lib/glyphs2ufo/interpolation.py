@@ -21,11 +21,14 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, build_postscript_name, GLYPHS_PREFIX
+from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate'
 ]
+
+
+DEFAULT_LOC = 100
 
 
 def interpolate(rfonts, master_dir, out_dir, designspace_path,
@@ -37,7 +40,8 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     print('>>> Writing masters')
     for font in rfonts:
         font.save(os.path.join(
-            master_dir, font.info.postscriptFullName + '.ufo'))
+            master_dir, build_postscript_name(
+                font.info.familyName, font.info.styleName) + '.ufo'))
 
     writer = DesignSpaceDocumentWriter(designspace_path)
     base_family = add_masters_to_writer(writer, rfonts)
@@ -80,8 +84,8 @@ def add_masters_to_writer(writer, rfonts):
             raise ValueError('Inconsistent family names for masters')
         master_data.append((
             font.path, family, style,
-            font.lib[GLYPHS_PREFIX + 'weightValue'],
-            font.lib[GLYPHS_PREFIX + 'widthValue']))
+            font.lib.get(GLYPHS_PREFIX + 'weightValue', DEFAULT_LOC),
+            font.lib.get(GLYPHS_PREFIX + 'widthValue', DEFAULT_LOC)))
 
     # add the masters to the writer in a separate loop, when we have a good
     # candidate to copy metadata from ([base_family] Regular)
@@ -114,8 +118,9 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
 
         writer.startInstance(
             name=instance.pop('name'),
-            location={'weight': instance.pop('interpolationWeight'),
-                      'width': instance.pop('interpolationWidth')},
+            location={
+                'weight': instance.pop('interpolationWeight', DEFAULT_LOC),
+                'width': instance.pop('interpolationWidth', DEFAULT_LOC)},
             familyName=family_name,
             styleName=style_name,
             fileName=ufo_path)
@@ -125,3 +130,10 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
         writer.endInstance()
 
     return ofiles
+
+
+def build_postscript_name(family_name, style_name):
+    """Build string to use for postscript*Name from family and style names."""
+
+    return '%s-%s' % (family_name.replace(' ', ''),
+                      style_name.replace(' ', ''))
