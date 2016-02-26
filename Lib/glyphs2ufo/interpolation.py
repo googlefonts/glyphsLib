@@ -57,6 +57,7 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
         ufo = OpenFont(path)
         set_custom_params(ufo, data=data)
         set_redundant_data(ufo)
+        ufo.save()
         instance_ufos.append(ufo)
 
     if debug:
