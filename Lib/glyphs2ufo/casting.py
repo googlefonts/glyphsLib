@@ -52,7 +52,8 @@ CUSTOM_FLOAT_PARAMS = frozenset((
     'postscriptBlueScale',))
 
 CUSTOM_TRUTHY_PARAMS = frozenset((
-    'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch'))
+    'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
+    'DisableAllAutomaticBehaviour'))
 
 CUSTOM_INTLIST_PARAMS = frozenset((
     'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
@@ -337,8 +338,6 @@ def custom_params(param_list):
             param['value'] = truthy(value)
         if name in CUSTOM_INTLIST_PARAMS:
             param['value'] = intlist(value)
-        elif name == 'DisableAllAutomaticBehaviour':
-            param['value'] = truthy(value)
 
     return param_list
 
