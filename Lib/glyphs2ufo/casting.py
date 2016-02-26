@@ -53,7 +53,7 @@ CUSTOM_FLOAT_PARAMS = frozenset((
 
 CUSTOM_TRUTHY_PARAMS = frozenset((
     'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
-    'DisableAllAutomaticBehaviour'))
+    "Don't use Production Names", 'DisableAllAutomaticBehaviour'))
 
 CUSTOM_INTLIST_PARAMS = frozenset((
     'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
