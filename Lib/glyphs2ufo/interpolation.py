@@ -21,7 +21,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.torf import set_redundant_data, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
+from glyphs2ufo.torf import set_redundant_data, set_custom_params, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate'
@@ -55,9 +55,7 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     instance_ufos = []
     for path, data in instance_files:
         ufo = OpenFont(path)
-        for attr in data:
-            if attr.pop('name') == 'panose':
-                ufo.info.openTypeOS2Panose = map(int, attr.pop('value'))
+        set_custom_params(ufo, data=data)
         set_redundant_data(ufo)
         instance_ufos.append(ufo)
 
@@ -103,9 +101,10 @@ def add_masters_to_writer(writer, rfonts):
 def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
-    Returns a list of <ufo_path, custom_font_data> pairs, corresponding to the
-    instances which will be output by the document writer. The custom font data
-    is Glyphs customParameters data (a list of <attr_name, value> pairs)."""
+    Returns a list of <ufo_path, font_data> pairs, corresponding to the
+    instances which will be output by the document writer. The font data is the
+    Glyphs data for this instance as a dict.
+    """
 
     ofiles = []
     for instance in instances:
@@ -114,7 +113,7 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
         style_name = build_style_name(instance, 'weightClass', italic)
         ufo_path = os.path.join(
             out_dir, build_postscript_name(family_name, style_name) + '.ufo')
-        ofiles.append((ufo_path, instance.get('customParameters', [])))
+        ofiles.append((ufo_path, instance))
 
         writer.startInstance(
             name=instance.pop('name'),

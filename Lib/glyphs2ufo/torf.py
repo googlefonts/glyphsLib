@@ -20,8 +20,8 @@ import sys
 from robofab.world import RFont
 
 __all__ = [
-    'to_robofab', 'clear_data', 'set_redundant_data', 'build_family_name',
-    'build_style_name', 'GLYPHS_PREFIX'
+    'to_robofab', 'clear_data', 'set_redundant_data', 'set_custom_params',
+    'build_family_name', 'build_style_name', 'GLYPHS_PREFIX'
 ]
 
 
@@ -229,40 +229,11 @@ def generate_base_fonts(data, italic):
         set_master_user_data(rfont, master.pop('userData', {}))
         set_robofont_guidelines(rfont, master, is_global=True)
 
-        # handle random optional stuff
+        set_custom_params(rfont, parsed=custom_params)
+        # the misc attributes double as deprecated info attributes!
+        # they are Glyphs-related, not OpenType-related, and don't go in info
         misc = ['weightValue', 'widthValue']
-        for name, value in custom_params + parse_custom_params(master, misc):
-
-            # deal with any Glyphs naming quirks here
-            if name == 'disablesNiceNames':
-                name = 'useNiceNames'
-                value = int(not value)
-
-            opentype_attr_prefix_pairs = (
-                ('hhea', 'Hhea'), ('description', 'NameDescription'),
-                ('typo', 'OS2Typo'), ('win', 'OS2Win'),
-                ('vendorID', 'OS2VendorID'), ('fsType', 'OS2Type'))
-            for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
-                name = re.sub(
-                    '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
-
-            postscript_attrs = ('underlinePosition', 'underlineThickness')
-            if name in postscript_attrs:
-                name = 'postscript' + name[0].upper() + name[1:]
-
-            # enforce that winAscent/Descent are positive, according to UFO spec
-            if name.startswith('openTypeOS2Win') and value < 0:
-                value = -value
-
-            # most OpenType table entries go in the info object
-            # the misc attributes double as deprecated info attributes!
-            # they are Glyphs-related, not OpenType-related, and don't go here
-            if hasattr(rfont.info, name) and name not in misc:
-                setattr(rfont.info, name, value)
-
-            # everything else gets dumped in the lib
-            else:
-                rfont.lib[GLYPHS_PREFIX + name] = value
+        set_custom_params(rfont, data=master, misc_keys=misc, non_info=misc)
 
         master_id = master.pop('id')
         rfont.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
@@ -304,6 +275,56 @@ def set_redundant_data(rfont):
             '%s %s' % (family_name, weight)).strip()
     rfont.info.openTypeNamePreferredFamilyName = family_name
     rfont.info.openTypeNamePreferredSubfamilyName = style_name
+
+
+def set_custom_params(rfont, parsed=None, data=None, misc_keys=(), non_info=()):
+    """Set Glyphs custom parameters in UFO info or lib, where appropriate.
+
+    Custom parameter data can be pre-parsed out of Glyphs data and provided via
+    the `parsed` argument, otherwise `data` should be provided and will be
+    parsed. The `parsed` option is provided so that custom params can be popped
+    from Glyphs data once and used several times; in general this is used for
+    debugging purposes (to detect unused Glyphs data).
+
+    The `non_info` argument can be used to specify potential UFO info attributes
+    which should not be put in UFO info.
+    """
+
+    if parsed is None:
+        parsed = parse_custom_params(data or {}, misc_keys)
+    else:
+        assert data is None, "Shouldn't provide parsed data and data to parse."
+
+    for name, value in parsed:
+
+        # deal with any Glyphs naming quirks here
+        if name == 'disablesNiceNames':
+            name = 'useNiceNames'
+            value = int(not value)
+
+        opentype_attr_prefix_pairs = (
+            ('hhea', 'Hhea'), ('description', 'NameDescription'),
+            ('panose', 'OS2Panose'), ('typo', 'OS2Typo'), ('win', 'OS2Win'),
+            ('vendorID', 'OS2VendorID'), ('fsType', 'OS2Type'))
+        for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
+            name = re.sub(
+                '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
+
+        postscript_attrs = ('underlinePosition', 'underlineThickness')
+        if name in postscript_attrs:
+            name = 'postscript' + name[0].upper() + name[1:]
+
+        # enforce that winAscent/Descent are positive, according to UFO spec
+        if name.startswith('openTypeOS2Win') and value < 0:
+            value = -value
+
+        # most OpenType table entries go in the info object
+        if hasattr(rfont.info, name) and name not in non_info:
+            setattr(rfont.info, name, value)
+
+        # everything else gets dumped in the lib
+        else:
+            rfont.lib[GLYPHS_PREFIX + name] = value
 
 
 def set_blue_values(rfont, alignment_zones):
