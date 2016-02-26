@@ -52,11 +52,13 @@ CUSTOM_FLOAT_PARAMS = frozenset((
     'postscriptBlueScale',))
 
 CUSTOM_TRUTHY_PARAMS = frozenset((
-    'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch'))
+    'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
+    "Don't use Production Names", 'DisableAllAutomaticBehaviour'))
 
 CUSTOM_INTLIST_PARAMS = frozenset((
     'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
-    'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges'))
+    'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
+    'panose'))
 
 
 def cast_data(data, types=None):
@@ -84,7 +86,7 @@ def get_type_structure():
         'DisplayStrings': list,
         'classes': {
             'automatic': truthy,
-            'code': feature_syntax,
+            'code': normalized,
             'name': str
         },
         'copyright': str,
@@ -97,15 +99,15 @@ def get_type_structure():
         'familyName': str,
         'featurePrefixes': {
             'automatic': truthy,  # undocumented
-            'code': feature_syntax,
+            'code': normalized,
             'name': str
         },
         'features': {
             'automatic': truthy,
-            'code': feature_syntax,
+            'code': normalized,
             'disabled': truthy,  # undocumented
             'name': str,
-            'notes': feature_syntax  # undocumented
+            'notes': normalized  # undocumented
         },
         'fontMaster': {
             'alignmentZones': pointlist,
@@ -309,7 +311,7 @@ def version_minor(string):
     return num
 
 
-def feature_syntax(string):
+def normalized(string):
     """Replace escaped characters with their intended characters.
     Unescapes curved quotes to straight quotes, so that we can definitely
     include this casted data in feature syntax.
@@ -327,8 +329,10 @@ def custom_params(param_list):
     """Cast some known data in custom parameters."""
 
     for param in param_list:
-        name = param['name']
+        name = normalized(param['name'])
         value = param['value']
+
+        param['name'] = name
         if name in CUSTOM_INT_PARAMS:
             param['value'] = int(value)
         if name in CUSTOM_FLOAT_PARAMS:
@@ -337,8 +341,6 @@ def custom_params(param_list):
             param['value'] = truthy(value)
         if name in CUSTOM_INTLIST_PARAMS:
             param['value'] = intlist(value)
-        elif name == 'DisableAllAutomaticBehaviour':
-            param['value'] = truthy(value)
 
     return param_list
 
