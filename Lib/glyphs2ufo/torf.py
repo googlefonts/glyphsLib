@@ -644,8 +644,7 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
     group_keys = {
         '1': 'rightKerningGroup',
         '2': 'leftKerningGroup'}
-    for side in group_keys.keys():
-        group_key = group_keys[side]
+    for side, group_key in group_keys.items():
         if group_key not in glyph_data:
             continue
         group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
