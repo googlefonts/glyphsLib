@@ -471,13 +471,19 @@ def load_kerning(rfont, kerning_data):
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
     for left, pairs in kerning_data.items():
-        if left.startswith('@') and left not in rfont.groups:
-            warn(warning_msg % left)
-            continue
-        for right, kerning_val in pairs.items():
-            if right.startswith('@') and right not in rfont.groups:
-                warn(warning_msg % right)
+        match = re.match(r'@MMK_L_(.+)', left)
+        if match:
+            left = 'public.kern1.%s' % match.group(1)
+            if left not in rfont.groups:
+                warn(warning_msg % left)
                 continue
+        for right, kerning_val in pairs.items():
+            match = re.match(r'@MMK_R_(.+)', right)
+            if match:
+                right = 'public.kern2.%s' % match.group(1)
+                if right not in rfont.groups:
+                    warn(warning_msg % right)
+                    continue
             rfont.kerning[left, right] = kerning_val
 
 
@@ -580,14 +586,13 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
 
     glyph_name = glyph_data['glyphname']
     group_keys = {
-        'L': 'rightKerningGroup',
-        'R': 'leftKerningGroup'}
-    for side in 'LR':
+        '1': 'rightKerningGroup',
+        '2': 'leftKerningGroup'}
+    for side in group_keys.keys():
         group_key = group_keys[side]
         if group_key not in glyph_data:
             continue
-        #TODO(jamesgk) figure out if this is a general rule for group naming
-        group = '@MMK_%s_%s' % (side, glyph_data.pop(group_key))
+        group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
