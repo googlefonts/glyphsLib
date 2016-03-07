@@ -485,6 +485,62 @@ def load_kerning(rfont, kerning_data):
                     warn(warning_msg % right)
                     continue
             rfont.kerning[left, right] = kerning_val
+    remove_conflicting_kerning(rfont)
+
+
+def remove_conflicting_kerning(ufo):
+    """Remove any conflicting kerning rules.
+
+    If conflicts are detected in a class-to-glyph rule, the rule is replaced
+    with glyph-to-glyph rules for each of the class's members (minus the
+    offending members).
+    """
+
+    left_class_kerning = {}
+    right_class_kerning = {}
+
+    # collect kerning rules by type
+    for pair, value in ufo.kerning.items():
+        left, right = pair
+        left_is_class = left.startswith('public.kern1.')
+        right_is_class = right.startswith('public.kern2.')
+        if left_is_class and not right_is_class:
+            left_class_kerning[pair] = value
+        elif right_is_class and not left_is_class:
+            right_class_kerning[pair] = value
+
+    # remove conflicts
+    seen = {}
+    for (left, right), val in list(left_class_kerning.items()):
+        remove_rule_if_conflict(ufo, seen, left, right, is_left_class=True)
+    for (left, right), val in list(right_class_kerning.items()):
+        remove_rule_if_conflict(ufo, seen, right, left, is_left_class=False)
+
+
+def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
+    """Check if a class-to-glyph kerning rule has a conflict with any existing
+    rule in `seen`, and remove any conflicts if they exists.
+    """
+
+    original_pair = (classname, glyph) if is_left_class else (glyph, classname)
+    val = ufo.kerning[original_pair]
+    old_glyphs = ufo.groups[classname]
+    new_glyphs = []
+    for member in old_glyphs:
+        pair = (member, glyph) if is_left_class else (glyph, member)
+        seen_val = seen.get(pair)
+        if seen_val is not None and seen_val != val:
+            warn('Conflicting kerning rules found for glyph pair "%s, %s" '
+                 '(%d vs %d), removing from rule "%s, %s"' %
+                 (pair + (seen_val, val) + original_pair))
+        else:
+            new_glyphs.append(member)
+            seen[pair] = val
+    if new_glyphs != old_glyphs:
+        ufo.kerning.remove(original_pair)
+        for member in new_glyphs:
+            pair = (member, glyph) if is_left_class else(glyph, member)
+            ufo.kerning[pair] = val
 
 
 def load_glyph_libdata(rglyph, layer):
