@@ -496,8 +496,8 @@ def remove_conflicting_kerning(ufo):
     offending members).
     """
 
-    left_class_kerning = {}
-    right_class_kerning = {}
+    left_class_kerning = []
+    right_class_kerning = []
 
     # collect kerning rules by type
     for pair, value in ufo.kerning.items():
@@ -505,15 +505,15 @@ def remove_conflicting_kerning(ufo):
         left_is_class = left.startswith('public.kern1.')
         right_is_class = right.startswith('public.kern2.')
         if left_is_class and not right_is_class:
-            left_class_kerning[pair] = value
+            left_class_kerning.append(pair)
         elif right_is_class and not left_is_class:
-            right_class_kerning[pair] = value
+            right_class_kerning.append(pair)
 
     # remove conflicts
     seen = {}
-    for (left, right), val in list(left_class_kerning.items()):
+    for left, right in left_class_kerning:
         remove_rule_if_conflict(ufo, seen, left, right, is_left_class=True)
-    for (left, right), val in list(right_class_kerning.items()):
+    for left, right in right_class_kerning:
         remove_rule_if_conflict(ufo, seen, right, left, is_left_class=False)
 
 
