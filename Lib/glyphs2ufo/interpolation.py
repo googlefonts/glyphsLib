@@ -50,13 +50,7 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     writer.save()
 
     print('>>> Building instances')
-    # exceptions raised by defcon may have "report" attr, print this if present
-    try:
-        build(designspace_path)
-    except Exception as e:
-        if hasattr(e, 'report'):
-            print(e.report)
-        raise e
+    build(designspace_path)
 
     instance_ufos = []
     for path, data in instance_files:

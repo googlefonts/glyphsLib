@@ -471,14 +471,76 @@ def load_kerning(rfont, kerning_data):
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
     for left, pairs in kerning_data.items():
-        if left.startswith('@') and left not in rfont.groups:
-            warn(warning_msg % left)
-            continue
-        for right, kerning_val in pairs.items():
-            if right.startswith('@') and right not in rfont.groups:
-                warn(warning_msg % right)
+        match = re.match(r'@MMK_L_(.+)', left)
+        if match:
+            left = 'public.kern1.%s' % match.group(1)
+            if left not in rfont.groups:
+                warn(warning_msg % left)
                 continue
+        for right, kerning_val in pairs.items():
+            match = re.match(r'@MMK_R_(.+)', right)
+            if match:
+                right = 'public.kern2.%s' % match.group(1)
+                if right not in rfont.groups:
+                    warn(warning_msg % right)
+                    continue
             rfont.kerning[left, right] = kerning_val
+    remove_conflicting_kerning(rfont)
+
+
+def remove_conflicting_kerning(ufo):
+    """Remove any conflicting kerning rules.
+
+    If conflicts are detected in a class-to-glyph rule, the rule is replaced
+    with glyph-to-glyph rules for each of the class's members (minus the
+    offending members).
+    """
+
+    left_class_kerning = []
+    right_class_kerning = []
+
+    # collect kerning rules by type
+    for pair, value in ufo.kerning.items():
+        left, right = pair
+        left_is_class = left.startswith('public.kern1.')
+        right_is_class = right.startswith('public.kern2.')
+        if left_is_class and not right_is_class:
+            left_class_kerning.append(pair)
+        elif right_is_class and not left_is_class:
+            right_class_kerning.append(pair)
+
+    # remove conflicts
+    seen = {}
+    for left, right in left_class_kerning:
+        remove_rule_if_conflict(ufo, seen, left, right, is_left_class=True)
+    for left, right in right_class_kerning:
+        remove_rule_if_conflict(ufo, seen, right, left, is_left_class=False)
+
+
+def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
+    """Check if a class-to-glyph kerning rule has a conflict with any existing
+    rule in `seen`, and remove any conflicts if they exist.
+    """
+
+    original_pair = (classname, glyph) if is_left_class else (glyph, classname)
+    val = ufo.kerning[original_pair]
+    old_glyphs = ufo.groups[classname]
+    new_glyphs = []
+    for member in old_glyphs:
+        pair = (member, glyph) if is_left_class else (glyph, member)
+        seen_val = seen.get(pair)
+        if seen_val is not None:
+            warn('Duplicate kerning rules found for glyph pair "%s, %s" '
+                 '(%d vs %d), removing from rule "%s, %s"' %
+                 (pair + (seen_val, val) + original_pair))
+        else:
+            new_glyphs.append(member)
+            seen[pair] = val
+    if new_glyphs != old_glyphs:
+        ufo.kerning.remove(original_pair)
+        for member in new_glyphs:
+            pair = (member, glyph) if is_left_class else(glyph, member)
+            ufo.kerning[pair] = val
 
 
 def load_glyph_libdata(rglyph, layer):
@@ -580,14 +642,12 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
 
     glyph_name = glyph_data['glyphname']
     group_keys = {
-        'L': 'rightKerningGroup',
-        'R': 'leftKerningGroup'}
-    for side in 'LR':
-        group_key = group_keys[side]
+        '1': 'rightKerningGroup',
+        '2': 'leftKerningGroup'}
+    for side, group_key in group_keys.items():
         if group_key not in glyph_data:
             continue
-        #TODO(jamesgk) figure out if this is a general rule for group naming
-        group = '@MMK_%s_%s' % (side, glyph_data.pop(group_key))
+        group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
