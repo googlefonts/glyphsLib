@@ -519,7 +519,7 @@ def remove_conflicting_kerning(ufo):
 
 def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
     """Check if a class-to-glyph kerning rule has a conflict with any existing
-    rule in `seen`, and remove any conflicts if they exists.
+    rule in `seen`, and remove any conflicts if they exist.
     """
 
     original_pair = (classname, glyph) if is_left_class else (glyph, classname)
