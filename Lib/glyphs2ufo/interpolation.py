@@ -31,14 +31,14 @@ __all__ = [
 DEFAULT_LOC = 100
 
 
-def interpolate(rfonts, master_dir, out_dir, designspace_path,
+def interpolate(ufos, master_dir, out_dir, designspace_path,
                 instance_data, italic=False, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
 
     instance_files = build_designspace(
-        designspace_path, rfonts, master_dir, out_dir, instance_data, italic)
+        designspace_path, ufos, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
     build(designspace_path)
@@ -77,8 +77,8 @@ def build_designspace(designspace_path, masters, master_dir, out_dir,
     return instance_files
 
 
-def add_masters_to_writer(writer, rfonts):
-    """Add master RFonts to a MutatorMath document writer.
+def add_masters_to_writer(writer, ufos):
+    """Add master UFOs to a MutatorMath document writer.
 
     Returns the masters' base family name, as determined by taking the
     intersection of their individual family names."""
@@ -87,7 +87,7 @@ def add_masters_to_writer(writer, rfonts):
     base_family = ''
 
     # build list of <path, family, style, weight, width> tuples for each master
-    for font in rfonts:
+    for font in ufos:
         family, style = font.info.familyName, font.info.styleName
         if family in base_family or not base_family:
             base_family = family

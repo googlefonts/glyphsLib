@@ -22,9 +22,9 @@ import os
 import sys
 import tempfile
 
+from glyphs2ufo.builder import to_ufos
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
-from glyphs2ufo.builder import to_robofab
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
@@ -51,13 +51,13 @@ def loads(value, dict_type=dict):
 
 
 def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
-    """Load an unpacked .glyphs object to a RoboFab RFont."""
+    """Load an unpacked .glyphs object to UFO objects."""
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
-    print('>>> Loading to RFonts')
-    return to_robofab(data, italic=italic, include_instances=include_instances,
-                      debug=debug)
+    print('>>> Loading to UFOs')
+    return to_ufos(data, italic=italic, include_instances=include_instances,
+                   debug=debug)
 
 
 def write(ufo, out_dir):

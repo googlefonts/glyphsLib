@@ -18,8 +18,8 @@ from __future__ import print_function, division, absolute_import
 import unittest
 from robofab.world import RFont
 
-from glyphs2ufo import torf
-from glyphs2ufo.torf import set_redundant_data, build_family_name, build_style_name
+from glyphs2ufo import builder
+from glyphs2ufo.builder import set_redundant_data, build_family_name, build_style_name
 
 
 _warnings = []
@@ -130,5 +130,5 @@ class SetRedundantDataTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    torf.warn = _add_warning
+    builder.warn = _add_warning
     unittest.main()
