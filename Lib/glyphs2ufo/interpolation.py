@@ -32,7 +32,7 @@ DEFAULT_LOC = 100
 
 
 def interpolate(rfonts, master_dir, out_dir, designspace_path,
-                    instance_data, italic=False, debug=False):
+                instance_data, italic=False, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """

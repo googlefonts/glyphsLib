@@ -102,7 +102,7 @@ def build_instances(filename, master_dir, instance_dir, italic=False):
     designspace_path = os.path.join(master_dir, 'mm.designspace')
     instance_ufos = interpolate(
         master_ufos, master_dir, instance_dir, designspace_path,
-        instance_data)
+        instance_data, italic)
     return instance_ufos
 
 
