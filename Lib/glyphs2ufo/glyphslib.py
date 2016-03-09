@@ -24,7 +24,7 @@ import tempfile
 
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
-from glyphs2ufo.torf import to_robofab
+from glyphs2ufo.builder import to_robofab
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
