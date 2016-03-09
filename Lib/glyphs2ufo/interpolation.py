@@ -32,7 +32,7 @@ DEFAULT_LOC = 100
 
 
 def interpolate(rfonts, master_dir, out_dir, designspace_path,
-                    instance_data, italic=False, debug=False):
+                instance_data, italic=False, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
@@ -87,14 +87,14 @@ def add_masters_to_writer(writer, rfonts):
             font.lib.get(GLYPHS_PREFIX + 'widthValue', DEFAULT_LOC)))
 
     # add the masters to the writer in a separate loop, when we have a good
-    # candidate to copy metadata from ([base_family] Regular)
+    # candidate to copy metadata from ([base_family] Regular|Italic)
     for path, family, style, weight, width in master_data:
-        is_base = family == base_family and style == 'Regular'
+        is_base = family == base_family and style in ['Regular', 'Italic']
         writer.addSource(
             path=path,
             name='%s %s' % (family, style),
             location={'weight': weight, 'width': width},
-            copyGroups=is_base, copyInfo=is_base)
+            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base)
 
     return base_family
 
