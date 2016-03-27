@@ -125,9 +125,9 @@ def get_type_structure():
             'userData': user_data,
             'verticalStems': intlist,
             'weight': str,  # undocumented
-            'weightValue': int,
+            'weightValue': num,
             'width': str,  # undocumented
-            'widthValue': int,
+            'widthValue': num,
             'xHeight': int
         },
         'glyphs': {
