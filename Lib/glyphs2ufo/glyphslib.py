@@ -22,7 +22,7 @@ import os
 import sys
 import tempfile
 
-from glyphs2ufo.builder import to_ufos
+from glyphs2ufo.builder import to_ufos, write_ufo
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
 
@@ -60,35 +60,13 @@ def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
                    debug=debug)
 
 
-def write(ufo, out_dir):
-    """Write a UFO."""
-
-    out_path = (
-        ufo.path or
-        os.path.join(out_dir, '%s-%s.ufo' % (
-            ufo.info.familyName.replace(' ', ''),
-            ufo.info.styleName.replace(' ', ''))))
-
-    # RoboFab doesn't seem to ever delete glif files
-    # TODO(jamesgk) think about pushing this upstream
-    if os.path.exists(os.path.join(out_path, 'glyphs')):
-        for glifs_path in glob.glob(os.path.join(out_path, 'glyphs', '*.glif')):
-            os.remove(glifs_path)
-
-    print('>>> Writing %s' % out_path)
-    if ufo.path:
-        ufo.save()
-    else:
-        ufo.save(out_path)
-
-
 def build_masters(filename, master_dir, italic=False):
     """Write and return UFOs from the masters defined in a .glyphs file."""
 
     ufos = load_to_ufos(filename, italic)
 
     for ufo in ufos:
-        write(ufo, master_dir)
+        write_ufo(ufo, master_dir)
     return ufos
 
 

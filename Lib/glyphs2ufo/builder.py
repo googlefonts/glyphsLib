@@ -15,13 +15,16 @@
 
 from __future__ import print_function, division, absolute_import
 
+import os
 import re
+import shutil
 import sys
 from robofab.world import RFont
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_family_name', 'build_style_name', 'GLYPHS_PREFIX'
+    'build_family_name', 'build_style_name', 'build_ufo_path',
+    'write_ufo', 'GLYPHS_PREFIX'
 ]
 
 
@@ -703,6 +706,33 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
 
     full_text = '\n\n'.join([prefix_str, class_str, fea_str])
     ufo.features.text = full_text if full_text.strip() else ''
+
+
+def build_ufo_path(out_dir, family_name, style_name):
+    """Build string to use as a UFO path."""
+
+    return os.path.join(
+        out_dir, '%s-%s.ufo' % (
+            family_name.replace(' ', ''),
+            style_name.replace(' ', '')))
+
+
+def write_ufo(ufo, out_dir):
+    """Write a UFO."""
+
+    out_path = build_ufo_path(
+        out_dir, ufo.info.familyName, ufo.info.styleName)
+
+    # Defcon seems to fail trying to update UFOs
+    # TODO(jamesgk) maybe look into this
+    if os.path.exists(out_path):
+        shutil.rmtree(out_path)
+
+    print('>>> Writing %s' % out_path)
+    if ufo.path:
+        ufo.save()
+    else:
+        ufo.save(out_path)
 
 
 def warn(message):

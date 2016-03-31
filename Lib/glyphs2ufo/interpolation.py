@@ -15,13 +15,13 @@
 
 from __future__ import print_function, division, absolute_import
 
-import os
-
 from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 from robofab.world import OpenFont
 
-from glyphs2ufo.builder import set_redundant_data, set_custom_params, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
+from glyphs2ufo.builder import set_redundant_data, set_custom_params,\
+    clear_data, build_family_name, build_style_name,\
+    write_ufo, build_ufo_path, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate', 'build_designspace'
@@ -63,11 +63,8 @@ def build_designspace(designspace_path, masters, master_dir, out_dir,
     UFO filenames to Glyphs data for that instance.
     """
 
-    print('>>> Writing masters')
     for font in masters:
-        font.save(os.path.join(
-            master_dir, build_postscript_name(
-                font.info.familyName, font.info.styleName) + '.ufo'))
+        write_ufo(font, master_dir)
 
     writer = DesignSpaceDocumentWriter(designspace_path)
     base_family = add_masters_to_writer(writer, masters)
@@ -124,8 +121,7 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
 
         family_name = build_family_name(base_family, instance, 'widthClass')
         style_name = build_style_name(instance, 'weightClass', italic)
-        ufo_path = os.path.join(
-            out_dir, build_postscript_name(family_name, style_name) + '.ufo')
+        ufo_path = build_ufo_path(out_dir, family_name, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
@@ -142,10 +138,3 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
         writer.endInstance()
 
     return ofiles
-
-
-def build_postscript_name(family_name, style_name):
-    """Build string to use for postscript*Name from family and style names."""
-
-    return '%s-%s' % (family_name.replace(' ', ''),
-                      style_name.replace(' ', ''))
