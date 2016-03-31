@@ -15,9 +15,9 @@
 
 from __future__ import print_function, division, absolute_import
 
+from defcon import Font
 from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
-from robofab.world import OpenFont
 
 from glyphs2ufo.builder import set_redundant_data, set_custom_params,\
     clear_data, build_family_name, build_style_name,\
@@ -45,7 +45,7 @@ def interpolate(ufos, master_dir, out_dir, designspace_path,
 
     instance_ufos = []
     for path, data in instance_files:
-        ufo = OpenFont(path)
+        ufo = Font(path)
         set_custom_params(ufo, data=data)
         set_redundant_data(ufo)
         ufo.save()

@@ -16,7 +16,7 @@
 from __future__ import print_function, division, absolute_import
 
 import unittest
-from robofab.world import RFont
+from defcon import Font
 
 from glyphs2ufo import builder
 from glyphs2ufo.builder import set_redundant_data, build_family_name, build_style_name
@@ -61,7 +61,7 @@ class BuildNameTest(unittest.TestCase):
 
 class SetRedundantDataTest(unittest.TestCase):
     def _run_on_ufo(self, family_name, style_name):
-        ufo = RFont()
+        ufo = Font()
         ufo.info.familyName = family_name
         ufo.info.styleName = style_name
         set_redundant_data(ufo)

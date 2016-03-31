@@ -19,7 +19,8 @@ import os
 import re
 import shutil
 import sys
-from robofab.world import RFont
+
+from defcon import Font
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
@@ -193,7 +194,7 @@ def generate_base_fonts(data, italic):
     ufos = {}
     master_id_order = []
     for master in data['fontMaster']:
-        ufo = RFont()
+        ufo = Font()
 
         ufo.info.familyName = build_family_name(family_name, master, 'width')
         ufo.info.styleName = build_style_name(master, 'weight', italic)
@@ -640,7 +641,9 @@ def add_anchors_to_glyph(glyph, anchors):
     """Add .glyphs anchors to a glyph."""
 
     for anchor in anchors:
-        glyph.appendAnchor(anchor.pop('name'), anchor.pop('position'))
+        x, y = anchor.pop('position')
+        anchor_dict = {'name': anchor.pop('name'), 'x': x, 'y': y}
+        glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
 def add_glyph_to_groups(kerning_groups, glyph_data):
@@ -704,7 +707,8 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
 
-    full_text = '\n\n'.join([prefix_str, class_str, fea_str])
+    # make sure feature text is a unicode string, for defcon
+    full_text = u'\n\n'.join([prefix_str, class_str, fea_str])
     ufo.features.text = full_text if full_text.strip() else ''
 
 
