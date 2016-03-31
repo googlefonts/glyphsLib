@@ -24,7 +24,7 @@ from robofab.world import OpenFont
 from glyphs2ufo.torf import set_redundant_data, set_custom_params, clear_data, build_family_name, build_style_name, GLYPHS_PREFIX
 
 __all__ = [
-    'interpolate'
+    'interpolate', 'build_designspace'
 ]
 
 
@@ -37,17 +37,8 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     Returns instance UFOs, or unused instance data if debug is True.
     """
 
-    print('>>> Writing masters')
-    for font in rfonts:
-        font.save(os.path.join(
-            master_dir, build_postscript_name(
-                font.info.familyName, font.info.styleName) + '.ufo'))
-
-    writer = DesignSpaceDocumentWriter(designspace_path)
-    base_family = add_masters_to_writer(writer, rfonts)
-    instance_files = add_instances_to_writer(
-        writer, base_family, instance_data, italic, out_dir)
-    writer.save()
+    instance_files = build_designspace(
+        designspace_path, rfonts, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
     build(designspace_path)
@@ -63,6 +54,27 @@ def interpolate(rfonts, master_dir, out_dir, designspace_path,
     if debug:
         return clear_data(instance_data)
     return instance_ufos
+
+
+def build_designspace(designspace_path, masters, master_dir, out_dir,
+                      instance_data, italic=False):
+    """Just create MutatorMath designspace without generating instances.
+    Returns a list of (instance_path, instance_data) tuples which map instance
+    UFO filenames to Glyphs data for that instance.
+    """
+
+    print('>>> Writing masters')
+    for font in masters:
+        font.save(os.path.join(
+            master_dir, build_postscript_name(
+                font.info.familyName, font.info.styleName) + '.ufo'))
+
+    writer = DesignSpaceDocumentWriter(designspace_path)
+    base_family = add_masters_to_writer(writer, masters)
+    instance_files = add_instances_to_writer(
+        writer, base_family, instance_data, italic, out_dir)
+    writer.save()
+    return instance_files
 
 
 def add_masters_to_writer(writer, rfonts):
