@@ -32,22 +32,22 @@ __all__ = [
 
 
 def load(fp, dict_type=dict):
-	"""Read a .glyphs file. 'fp' should be (readable) file object.
-	Return the unpacked root object (which usually is a dictionary).
-	"""
-	return loads(fp.read(), dict_type=dict_type)
+    """Read a .glyphs file. 'fp' should be (readable) file object.
+    Return the unpacked root object (which usually is a dictionary).
+    """
+    return loads(fp.read(), dict_type=dict_type)
 
 
 def loads(value, dict_type=dict):
-	"""Read a .glyphs file from a bytes object.
-	Return the unpacked root object (which usually is a dictionary).
-	"""
-	p = Parser(dict_type=dict_type)
-	print('>>> Parsing .glyphs file')
-	data = p.parse(value)
-	print('>>> Casting parsed values')
-	cast_data(data)
-	return data
+    """Read a .glyphs file from a bytes object.
+    Return the unpacked root object (which usually is a dictionary).
+    """
+    p = Parser(dict_type=dict_type)
+    print('>>> Parsing .glyphs file')
+    data = p.parse(value)
+    print('>>> Casting parsed values')
+    cast_data(data)
+    return data
 
 
 def load_to_ufos(filename, italic=False, include_instances=False, debug=False):

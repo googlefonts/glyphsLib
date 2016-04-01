@@ -94,12 +94,12 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     ufos, master_id_order = generate_base_fonts(data, italic)
-    
+
     glyph_order = []
-    
+
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
-        
+
         glyph_name = glyph.pop('glyphname')
         glyph_order.append(glyph_name)
         if not re.match('^[\w\d._]{1,31}$', glyph_name):
