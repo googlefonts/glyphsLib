@@ -695,13 +695,7 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
         if disabled:
             lines.append('# disabled')
             lines.extend('#' + line for line in code.splitlines())
-            # empty features cause makeotf to fail, but empty instructions are fine
-            # so insert an empty instruction into any empty feature definitions
-            lines.append(';')
         else:
-            # see previous comment
-            if not code:
-                code = ';'
             lines.append(code)
         lines.append('} %s;' % name)
         feature_defs.append('\n'.join(lines))
