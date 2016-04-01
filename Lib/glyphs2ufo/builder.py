@@ -102,7 +102,7 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
 
         glyph_name = glyph.pop('glyphname')
         glyph_order.append(glyph_name)
-        if not re.match('^[\w\d._]{1,31}$', glyph_name):
+        if not re.match(r'^([A-Za-z_][\w.]*|\.notdef)$', glyph_name):
             warn('Illegal glyph name "%s". If this is used in the font\'s '
                  'feature syntax, it could cause errors.' % glyph_name)
 
