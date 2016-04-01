@@ -544,7 +544,7 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
             seen[pair] = rule
 
     if new_glyphs != old_glyphs:
-        ufo.kerning.remove(original_pair)
+        del ufo.kerning[original_pair]
         for member in new_glyphs:
             pair = (member, glyph) if is_left_class else(glyph, member)
             ufo.kerning[pair] = val
