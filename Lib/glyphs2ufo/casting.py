@@ -351,7 +351,7 @@ def user_data(data_dict):
     num_params = ('GSOffsetHorizontal', 'GSOffsetVertical')
 
     new_data = {}
-    for key, val in data_dict.iteritems():
+    for key, val in data_dict.items():
         if key in num_params:
             new_data[key] = num(val)
 

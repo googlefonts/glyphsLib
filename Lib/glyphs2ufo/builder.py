@@ -131,13 +131,13 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
         glyph = ufos[layer_id][glyph_name]
         set_robofont_glyph_background(glyph, bg_name, bg_data)
 
-    for ufo in ufos.itervalues():
+    for ufo in ufos.values():
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
 
         ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
 
-    for master_id, kerning in data.pop('kerning', {}).iteritems():
+    for master_id, kerning in data.pop('kerning', {}).items():
         load_kerning(ufos[master_id], kerning)
 
     result = [ufos[master_id] for master_id in master_id_order]
@@ -422,7 +422,7 @@ def set_robofont_glyph_background(glyph, key, background):
 def set_family_user_data(ufo, user_data):
     """Set family-wide user data as Glyphs does."""
 
-    for key, val in user_data.iteritems():
+    for key, val in user_data.items():
         ufo.lib[key] = val
 
 
