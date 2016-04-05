@@ -15,13 +15,17 @@
 
 from __future__ import print_function, division, absolute_import
 
+import os
 import re
+import shutil
 import sys
-from robofab.world import RFont
+
+from defcon import Font
 
 __all__ = [
-    'to_robofab', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_family_name', 'build_style_name', 'GLYPHS_PREFIX'
+    'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
+    'build_family_name', 'build_style_name', 'build_ufo_path',
+    'write_ufo', 'GLYPHS_PREFIX'
 ]
 
 
@@ -64,14 +68,14 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_robofab(data, italic=False, include_instances=False, debug=False):
-    """Take .glyphs file data and load it into RFonts.
+def to_ufos(data, italic=False, include_instances=False, debug=False):
+    """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
     https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
-    and returns a list of RFonts, one per master.
+    and returns a list of UFOs, one per master.
 
-    If debug is True, returns unused input data instead of the resulting RFonts.
+    If debug is True, returns unused input data instead of the resulting UFOs.
     """
 
     feature_prefixes, classes, features = [], [], []
@@ -89,16 +93,16 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
     supplementary_bg_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    rfonts, master_id_order = generate_base_fonts(data, italic)
-    
+    ufos, master_id_order = generate_base_fonts(data, italic)
+
     glyph_order = []
-    
+
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
-        
+
         glyph_name = glyph.pop('glyphname')
         glyph_order.append(glyph_name)
-        if not re.match('^[\w\d._]{1,31}$', glyph_name):
+        if not re.match(r'^([A-Za-z_][\w.]*|\.notdef)$', glyph_name):
             warn('Illegal glyph name "%s". If this is used in the font\'s '
                  'feature syntax, it could cause errors.' % glyph_name)
 
@@ -119,24 +123,24 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
                         (assoc_id, glyph_name, layer_name, layer))
                 continue
 
-            rfont = rfonts[layer_id]
-            rglyph = rfont.newGlyph(glyph_name)
-            load_glyph(rglyph, layer, glyph_data)
+            ufo = ufos[layer_id]
+            glyph = ufo.newGlyph(glyph_name)
+            load_glyph(glyph, layer, glyph_data)
 
     for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
-        rglyph = rfonts[layer_id][glyph_name]
-        set_robofont_glyph_background(rglyph, bg_name, bg_data)
+        glyph = ufos[layer_id][glyph_name]
+        set_robofont_glyph_background(glyph, bg_name, bg_data)
 
-    for rfont in rfonts.itervalues():
-        add_features_to_rfont(rfont, feature_prefixes, classes, features)
-        add_groups_to_rfont(rfont, kerning_groups)
+    for ufo in ufos.values():
+        add_features_to_ufo(ufo, feature_prefixes, classes, features)
+        add_groups_to_ufo(ufo, kerning_groups)
 
-        rfont.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
+        ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
 
-    for master_id, kerning in data.pop('kerning', {}).iteritems():
-        load_kerning(rfonts[master_id], kerning)
+    for master_id, kerning in data.pop('kerning', {}).items():
+        load_kerning(ufos[master_id], kerning)
 
-    result = [rfonts[master_id] for master_id in master_id_order]
+    result = [ufos[master_id] for master_id in master_id_order]
     instances = data.pop('instances', [])
     if debug:
         return clear_data(data)
@@ -148,8 +152,8 @@ def to_robofab(data, italic=False, include_instances=False, debug=False):
 def clear_data(data):
     """Clear empty list or dict attributes in data.
 
-    This is used to determine what input data provided to to_robofab was not
-    loaded into an RFont."""
+    This is used to determine what input data provided to to_ufos was not
+    loaded into an UFO."""
 
     data_type = type(data)
     if data_type is dict:
@@ -170,9 +174,9 @@ def clear_data(data):
 
 
 def generate_base_fonts(data, italic):
-    """Generate a list of RFonts with metadata loaded from .glyphs data."""
+    """Generate a list of UFOs with metadata loaded from .glyphs data."""
 
-    date_created = to_rf_time(data.pop('date'))
+    date_created = to_ufo_time(data.pop('date'))
     family_name = data.pop('familyName')
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
@@ -187,97 +191,97 @@ def generate_base_fonts(data, italic):
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
     custom_params = parse_custom_params(data, misc)
 
-    rfonts = {}
+    ufos = {}
     master_id_order = []
     for master in data['fontMaster']:
-        rfont = RFont()
+        ufo = Font()
 
-        rfont.info.familyName = build_family_name(family_name, master, 'width')
-        rfont.info.styleName = build_style_name(master, 'weight', italic)
+        ufo.info.familyName = build_family_name(family_name, master, 'width')
+        ufo.info.styleName = build_style_name(master, 'weight', italic)
 
-        rfont.info.openTypeHeadCreated = date_created
-        rfont.info.unitsPerEm = units_per_em
-        rfont.info.versionMajor = version_major
-        rfont.info.versionMinor = version_minor
+        ufo.info.openTypeHeadCreated = date_created
+        ufo.info.unitsPerEm = units_per_em
+        ufo.info.versionMajor = version_major
+        ufo.info.versionMinor = version_minor
 
         if copyright:
-            rfont.info.copyright = unicode(copyright.decode("utf-8"))
+            ufo.info.copyright = unicode(copyright.decode("utf-8"))
         if designer:
-            rfont.info.openTypeNameDesigner = designer
+            ufo.info.openTypeNameDesigner = designer
         if designer_url:
-            rfont.info.openTypeNameDesignerURL = designer_url
+            ufo.info.openTypeNameDesignerURL = designer_url
         if manufacturer:
-            rfont.info.openTypeNameManufacturer = manufacturer
+            ufo.info.openTypeNameManufacturer = manufacturer
         if manufacturer_url:
-            rfont.info.openTypeNameManufacturerURL = manufacturer_url
+            ufo.info.openTypeNameManufacturerURL = manufacturer_url
 
-        rfont.info.ascender = master.pop('ascender')
-        rfont.info.capHeight = master.pop('capHeight')
-        rfont.info.descender = master.pop('descender')
-        rfont.info.xHeight = master.pop('xHeight')
+        ufo.info.ascender = master.pop('ascender')
+        ufo.info.capHeight = master.pop('capHeight')
+        ufo.info.descender = master.pop('descender')
+        ufo.info.xHeight = master.pop('xHeight')
         horizontal_stems = master.pop('horizontalStems', None)
         vertical_stems = master.pop('verticalStems', None)
 
         if horizontal_stems:
-            rfont.info.postscriptStemSnapH = horizontal_stems
+            ufo.info.postscriptStemSnapH = horizontal_stems
         if vertical_stems:
-            rfont.info.postscriptStemSnapV = vertical_stems
+            ufo.info.postscriptStemSnapV = vertical_stems
 
-        set_redundant_data(rfont)
-        set_blue_values(rfont, master.pop('alignmentZones', []))
-        set_family_user_data(rfont, user_data)
-        set_master_user_data(rfont, master.pop('userData', {}))
-        set_robofont_guidelines(rfont, master, is_global=True)
+        set_redundant_data(ufo)
+        set_blue_values(ufo, master.pop('alignmentZones', []))
+        set_family_user_data(ufo, user_data)
+        set_master_user_data(ufo, master.pop('userData', {}))
+        set_robofont_guidelines(ufo, master, is_global=True)
 
-        set_custom_params(rfont, parsed=custom_params)
+        set_custom_params(ufo, parsed=custom_params)
         # the misc attributes double as deprecated info attributes!
         # they are Glyphs-related, not OpenType-related, and don't go in info
         misc = ['weightValue', 'widthValue']
-        set_custom_params(rfont, data=master, misc_keys=misc, non_info=misc)
+        set_custom_params(ufo, data=master, misc_keys=misc, non_info=misc)
 
         master_id = master.pop('id')
-        rfont.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
+        ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
         master_id_order.append(master_id)
-        rfonts[master_id] = rfont
+        ufos[master_id] = ufo
 
-    return rfonts, master_id_order
+    return ufos, master_id_order
 
 
-def set_redundant_data(rfont):
-    """Set redundant metadata in an RFont, e.g. data based on other data."""
+def set_redundant_data(ufo):
+    """Set redundant metadata in a UFO, e.g. data based on other data."""
 
-    family_name, style_name = rfont.info.familyName, rfont.info.styleName
+    family_name, style_name = ufo.info.familyName, ufo.info.styleName
 
     width_match = re.search('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
                             family_name)
     width = width_match.group(0) if width_match else ''
-    rfont.info.openTypeOS2WidthClass = WIDTH_CODES[width]
+    ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
 
     weight = style_name.replace('Italic', '').strip()
     weight_code = WEIGHT_CODES.get(weight, None)
     if not weight_code:
         warn('Unrecognized weight "%s"' % weight)
         weight_code = WEIGHT_CODES['']
-    rfont.info.openTypeOS2WeightClass = weight_code
+    ufo.info.openTypeOS2WeightClass = weight_code
 
     if weight and weight != 'Regular':
-        rfont.lib[GLYPHS_PREFIX + 'weight'] = weight
+        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
     if width:
-        rfont.lib[GLYPHS_PREFIX + 'width'] = width
+        ufo.lib[GLYPHS_PREFIX + 'width'] = width
 
     if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
-        rfont.info.styleMapStyleName = style_name.lower()
-        rfont.info.styleMapFamilyName = family_name
+        ufo.info.styleMapStyleName = style_name.lower()
+        ufo.info.styleMapFamilyName = family_name
     else:
-        rfont.info.styleMapStyleName = (
+        ufo.info.styleMapStyleName = (
             'italic' if 'Italic' in style_name else 'regular')
-        rfont.info.styleMapFamilyName = (
+        ufo.info.styleMapFamilyName = (
             '%s %s' % (family_name, weight)).strip()
-    rfont.info.openTypeNamePreferredFamilyName = family_name
-    rfont.info.openTypeNamePreferredSubfamilyName = style_name
+    ufo.info.openTypeNamePreferredFamilyName = family_name
+    ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
 
-def set_custom_params(rfont, parsed=None, data=None, misc_keys=(), non_info=()):
+def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
     """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
     Custom parameter data can be pre-parsed out of Glyphs data and provided via
@@ -319,15 +323,15 @@ def set_custom_params(rfont, parsed=None, data=None, misc_keys=(), non_info=()):
             value = -value
 
         # most OpenType table entries go in the info object
-        if hasattr(rfont.info, name) and name not in non_info:
-            setattr(rfont.info, name, value)
+        if hasattr(ufo.info, name) and name not in non_info:
+            setattr(ufo.info, name, value)
 
         # everything else gets dumped in the lib
         else:
-            rfont.lib[GLYPHS_PREFIX + name] = value
+            ufo.lib[GLYPHS_PREFIX + name] = value
 
 
-def set_blue_values(rfont, alignment_zones):
+def set_blue_values(ufo, alignment_zones):
     """Set postscript blue values from Glyphs alignment zones."""
 
     blue_values = []
@@ -338,11 +342,11 @@ def set_blue_values(rfont, alignment_zones):
         val_list = blue_values if base >= 0 else other_blues
         val_list.extend(sorted(pair))
 
-    rfont.info.postscriptBlueValues = blue_values
-    rfont.info.postscriptOtherBlues = other_blues
+    ufo.info.postscriptBlueValues = blue_values
+    ufo.info.postscriptOtherBlues = other_blues
 
 
-def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
+def set_robofont_guidelines(ufo_obj, glyphs_data, is_global=False):
     """Set guidelines as Glyphs does."""
 
     guidelines = glyphs_data.get('guideLines')
@@ -360,10 +364,10 @@ def set_robofont_guidelines(rf_obj, glyphs_data, is_global=False):
             new_guideline['locked'] = True
 
         new_guidelines.append(new_guideline)
-    rf_obj.lib[ROBOFONT_PREFIX + 'guides'] = new_guidelines
+    ufo_obj.lib[ROBOFONT_PREFIX + 'guides'] = new_guidelines
 
 
-def set_robofont_glyph_background(rglyph, key, background):
+def set_robofont_glyph_background(glyph, key, background):
     """Set glyph background as Glyphs does."""
 
     if not background:
@@ -404,29 +408,29 @@ def set_robofont_glyph_background(rglyph, key, background):
         path.pop('closed', None)  # not used, but remove for debug purposes
     new_background['contours'] = contours
 
-    new_background['width'] = background.pop('width', rglyph.width)
-    new_background['name'] = rglyph.name
+    new_background['width'] = background.pop('width', glyph.width)
+    new_background['name'] = glyph.name
     new_background['unicodes'] = []
 
     libkey = ROBOFONT_PREFIX + 'layerData'
     try:
-        rglyph.lib[libkey][key] = new_background
+        glyph.lib[libkey][key] = new_background
     except KeyError:
-        rglyph.lib[libkey] = {key: new_background}
+        glyph.lib[libkey] = {key: new_background}
 
 
-def set_family_user_data(rfont, user_data):
+def set_family_user_data(ufo, user_data):
     """Set family-wide user data as Glyphs does."""
 
-    for key, val in user_data.iteritems():
-        rfont.lib[key] = val
+    for key, val in user_data.items():
+        ufo.lib[key] = val
 
 
-def set_master_user_data(rfont, user_data):
+def set_master_user_data(ufo, user_data):
     """Set master-specific user data as Glyphs does."""
 
     if user_data:
-        rfont.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
+        ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
 def build_family_name(base_family, data, width_key):
@@ -446,7 +450,7 @@ def build_style_name(data, weight_key, italic):
     return ('%s %s' % (weight, italic)).strip()
 
 
-def to_rf_time(datetime_obj):
+def to_ufo_time(datetime_obj):
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime('%Y/%m/%d %H:%M:%S')
 
@@ -466,26 +470,26 @@ def parse_custom_params(data, misc_keys):
     return params
 
 
-def load_kerning(rfont, kerning_data):
-    """Add .glyphs kerning to an RFont."""
+def load_kerning(ufo, kerning_data):
+    """Add .glyphs kerning to an UFO."""
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
     for left, pairs in kerning_data.items():
         match = re.match(r'@MMK_L_(.+)', left)
         if match:
             left = 'public.kern1.%s' % match.group(1)
-            if left not in rfont.groups:
+            if left not in ufo.groups:
                 warn(warning_msg % left)
                 continue
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
             if match:
                 right = 'public.kern2.%s' % match.group(1)
-                if right not in rfont.groups:
+                if right not in ufo.groups:
                     warn(warning_msg % right)
                     continue
-            rfont.kerning[left, right] = kerning_val
-    remove_conflicting_kerning(rfont)
+            ufo.kerning[left, right] = kerning_val
+    remove_conflicting_kerning(ufo)
 
 
 def remove_conflicting_kerning(ufo):
@@ -540,23 +544,23 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
             seen[pair] = rule
 
     if new_glyphs != old_glyphs:
-        ufo.kerning.remove(original_pair)
+        del ufo.kerning[original_pair]
         for member in new_glyphs:
             pair = (member, glyph) if is_left_class else(glyph, member)
             ufo.kerning[pair] = val
 
 
-def load_glyph_libdata(rglyph, layer):
-    """Add to an RGlyph's lib data."""
+def load_glyph_libdata(glyph, layer):
+    """Add to a glyph's lib data."""
 
-    set_robofont_guidelines(rglyph, layer)
-    set_robofont_glyph_background(rglyph, 'background', layer.get('background'))
+    set_robofont_guidelines(glyph, layer)
+    set_robofont_glyph_background(glyph, 'background', layer.get('background'))
     for key in ['annotations', 'hints']:
         try:
             value = layer.pop(key)
         except KeyError:
             continue
-        rglyph.lib[GLYPHS_PREFIX + key] = value
+        glyph.lib[GLYPHS_PREFIX + key] = value
 
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
@@ -564,30 +568,30 @@ def load_glyph_libdata(rglyph, layer):
         values = [c.pop(key, False) for c in layer.get('components', [])]
         if any(values):
             key = key[0].upper() + key[1:]
-            rglyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
+            glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
 
 
-def load_glyph(rglyph, layer, glyph_data):
-    """Add .glyphs metadata, paths, components, and anchors to an RGlyph."""
+def load_glyph(glyph, layer, glyph_data):
+    """Add .glyphs metadata, paths, components, and anchors to a glyph."""
 
     glyphlib_prefix = GLYPHS_PREFIX + 'Glyphs.'
 
     uval = glyph_data.get('unicode')
     if uval is not None:
-        rglyph.unicode = uval
+        glyph.unicode = uval
     note = glyph_data.get('note')
     if note is not None:
-        rglyph.note = note
+        glyph.note = note
     last_change = glyph_data.get('lastChange')
     if last_change is not None:
-        rglyph.lib[glyphlib_prefix + 'lastChange'] = to_rf_time(last_change)
+        glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
     color_index = glyph_data.get('color')
     if color_index is not None:
-        rglyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
-        rglyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
+        glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
+        glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
     export = glyph_data.get('export')
     if export is not None:
-        rglyph.lib[glyphlib_prefix + 'Export'] = export
+        glyph.lib[glyphlib_prefix + 'Export'] = export
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         glyph_metrics_key = None
@@ -597,16 +601,16 @@ def load_glyph(rglyph, layer, glyph_data):
             glyph_metrics_key = glyph_data.get(key)
         if glyph_metrics_key:
             glyph_metrics_key = unicode(glyph_metrics_key.decode("utf-8"))
-            rglyph.lib[glyphlib_prefix + key] = glyph_metrics_key
+            glyph.lib[glyphlib_prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
-    rglyph.width = layer.pop('width')
-    load_glyph_libdata(rglyph, layer)
+    glyph.width = layer.pop('width')
+    load_glyph_libdata(glyph, layer)
 
-    pen = rglyph.getPointPen()
+    pen = glyph.getPointPen()
     draw_paths(pen, layer.get('paths', []))
     draw_components(pen, layer.get('components', []))
-    add_anchors_to_glyph(rglyph, layer.get('anchors', []))
+    add_anchors_to_glyph(glyph, layer.get('anchors', []))
 
 
 def draw_paths(pen, paths):
@@ -626,7 +630,7 @@ def draw_paths(pen, paths):
 
 
 def draw_components(pen, components):
-    """Draw .glyphs components onto a pen, adding them to the parent RGlyph."""
+    """Draw .glyphs components onto a pen, adding them to the parent glyph."""
 
     for component in components:
         pen.addComponent(component.pop('name'),
@@ -634,10 +638,12 @@ def draw_components(pen, components):
 
 
 def add_anchors_to_glyph(glyph, anchors):
-    """Add .glyphs anchors to an RGlyph."""
+    """Add .glyphs anchors to a glyph."""
 
     for anchor in anchors:
-        glyph.appendAnchor(anchor.pop('name'), anchor.pop('position'))
+        x, y = anchor.pop('position')
+        anchor_dict = {'name': anchor.pop('name'), 'x': x, 'y': y}
+        glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
 def add_glyph_to_groups(kerning_groups, glyph_data):
@@ -654,15 +660,15 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
-def add_groups_to_rfont(rfont, kerning_groups):
-    """Add kerning groups to an RFont."""
+def add_groups_to_ufo(ufo, kerning_groups):
+    """Add kerning groups to an UFO."""
 
     for name, glyphs in kerning_groups.items():
-        rfont.groups[name] = glyphs
+        ufo.groups[name] = glyphs
 
 
-def add_features_to_rfont(rfont, feature_prefixes, classes, features):
-    """Write an RFont's OpenType feature file."""
+def add_features_to_ufo(ufo, feature_prefixes, classes, features):
+    """Write an UFO's OpenType feature file."""
 
     autostr = lambda automatic: '# automatic\n' if automatic else ''
 
@@ -689,20 +695,42 @@ def add_features_to_rfont(rfont, feature_prefixes, classes, features):
         if disabled:
             lines.append('# disabled')
             lines.extend('#' + line for line in code.splitlines())
-            # empty features cause makeotf to fail, but empty instructions are fine
-            # so insert an empty instruction into any empty feature definitions
-            lines.append(';')
         else:
-            # see previous comment
-            if not code:
-                code = ';'
             lines.append(code)
         lines.append('} %s;' % name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
 
-    full_text = '\n\n'.join([prefix_str, class_str, fea_str])
-    rfont.features.text = full_text if full_text.strip() else ''
+    # make sure feature text is a unicode string, for defcon
+    full_text = u'\n\n'.join([prefix_str, class_str, fea_str])
+    ufo.features.text = full_text if full_text.strip() else ''
+
+
+def build_ufo_path(out_dir, family_name, style_name):
+    """Build string to use as a UFO path."""
+
+    return os.path.join(
+        out_dir, '%s-%s.ufo' % (
+            family_name.replace(' ', ''),
+            style_name.replace(' ', '')))
+
+
+def write_ufo(ufo, out_dir):
+    """Write a UFO."""
+
+    out_path = build_ufo_path(
+        out_dir, ufo.info.familyName, ufo.info.styleName)
+
+    # Defcon seems to fail trying to update UFOs
+    # TODO(jamesgk) maybe look into this
+    if os.path.exists(out_path):
+        shutil.rmtree(out_path)
+
+    print('>>> Writing %s' % out_path)
+    if ufo.path:
+        ufo.save()
+    else:
+        ufo.save(out_path)
 
 
 def warn(message):

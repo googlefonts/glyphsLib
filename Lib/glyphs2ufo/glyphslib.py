@@ -22,9 +22,9 @@ import os
 import sys
 import tempfile
 
+from glyphs2ufo.builder import to_ufos, write_ufo
 from glyphs2ufo.casting import cast_data
 from glyphs2ufo.parser import Parser
-from glyphs2ufo.torf import to_robofab
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
@@ -32,54 +32,32 @@ __all__ = [
 
 
 def load(fp, dict_type=dict):
-	"""Read a .glyphs file. 'fp' should be (readable) file object.
-	Return the unpacked root object (which usually is a dictionary).
-	"""
-	return loads(fp.read(), dict_type=dict_type)
+    """Read a .glyphs file. 'fp' should be (readable) file object.
+    Return the unpacked root object (which usually is a dictionary).
+    """
+    return loads(fp.read(), dict_type=dict_type)
 
 
 def loads(value, dict_type=dict):
-	"""Read a .glyphs file from a bytes object.
-	Return the unpacked root object (which usually is a dictionary).
-	"""
-	p = Parser(dict_type=dict_type)
-	print('>>> Parsing .glyphs file')
-	data = p.parse(value)
-	print('>>> Casting parsed values')
-	cast_data(data)
-	return data
+    """Read a .glyphs file from a bytes object.
+    Return the unpacked root object (which usually is a dictionary).
+    """
+    p = Parser(dict_type=dict_type)
+    print('>>> Parsing .glyphs file')
+    data = p.parse(value)
+    print('>>> Casting parsed values')
+    cast_data(data)
+    return data
 
 
 def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
-    """Load an unpacked .glyphs object to a RoboFab RFont."""
+    """Load an unpacked .glyphs object to UFO objects."""
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
-    print('>>> Loading to RFonts')
-    return to_robofab(data, italic=italic, include_instances=include_instances,
-                      debug=debug)
-
-
-def write(ufo, out_dir):
-    """Write a UFO."""
-
-    out_path = (
-        ufo.path or
-        os.path.join(out_dir, '%s-%s.ufo' % (
-            ufo.info.familyName.replace(' ', ''),
-            ufo.info.styleName.replace(' ', ''))))
-
-    # RoboFab doesn't seem to ever delete glif files
-    # TODO(jamesgk) think about pushing this upstream
-    if os.path.exists(os.path.join(out_path, 'glyphs')):
-        for glifs_path in glob.glob(os.path.join(out_path, 'glyphs', '*.glif')):
-            os.remove(glifs_path)
-
-    print('>>> Writing %s' % out_path)
-    if ufo.path:
-        ufo.save()
-    else:
-        ufo.save(out_path)
+    print('>>> Loading to UFOs')
+    return to_ufos(data, italic=italic, include_instances=include_instances,
+                   debug=debug)
 
 
 def build_masters(filename, master_dir, italic=False):
@@ -88,7 +66,7 @@ def build_masters(filename, master_dir, italic=False):
     ufos = load_to_ufos(filename, italic)
 
     for ufo in ufos:
-        write(ufo, master_dir)
+        write_ufo(ufo, master_dir)
     return ufos
 
 
