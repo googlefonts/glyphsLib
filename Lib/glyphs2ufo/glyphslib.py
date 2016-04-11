@@ -17,10 +17,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-import glob
-import os
 import sys
-import tempfile
 
 from glyphs2ufo.builder import to_ufos, write_ufo
 from glyphs2ufo.casting import cast_data
