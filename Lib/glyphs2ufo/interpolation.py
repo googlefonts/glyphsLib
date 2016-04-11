@@ -119,7 +119,16 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
     ofiles = []
     for instance in instances:
 
-        family_name = build_family_name(base_family, instance, 'widthClass')
+        # use family name in instance data if available
+        instance_family = base_family
+        custom_params = instance.get('customParameters', ())
+        for i in range(len(custom_params)):
+            if custom_params[i]['name'] == 'familyName':
+                instance_family = custom_params[i]['value']
+                del custom_params[i]
+                break
+
+        family_name = build_family_name(instance_family, instance, 'widthClass')
         style_name = build_style_name(instance, 'weightClass', italic)
         ufo_path = build_ufo_path(out_dir, family_name, style_name)
         ofiles.append((ufo_path, instance))
