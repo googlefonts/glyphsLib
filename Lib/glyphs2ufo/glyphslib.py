@@ -74,9 +74,9 @@ def build_masters(filename, master_dir, italic=False,
         designspace_path = os.path.join(master_dir, 'mm.designspace')
         build_designspace(designspace_path, ufos, master_dir,
                           designspace_instance_dir, instance_data, italic)
-
-    for ufo in ufos:
-        write_ufo(ufo, master_dir)
+    else:
+        for ufo in ufos:
+            write_ufo(ufo, master_dir)
     return ufos
 
 
