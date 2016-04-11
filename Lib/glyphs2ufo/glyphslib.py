@@ -24,6 +24,7 @@ import tempfile
 
 from glyphs2ufo.builder import to_ufos, write_ufo
 from glyphs2ufo.casting import cast_data
+from glyphs2ufo.interpolation import interpolate, build_designspace
 from glyphs2ufo.parser import Parser
 
 __all__ = [
@@ -60,10 +61,19 @@ def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
                    debug=debug)
 
 
-def build_masters(filename, master_dir, italic=False):
-    """Write and return UFOs from the masters defined in a .glyphs file."""
+def build_masters(filename, master_dir, italic=False,
+                  designspace_instance_dir=None):
+    """Write and return UFOs from the masters defined in a .glyphs file.
 
-    ufos = load_to_ufos(filename, italic)
+    If `designspace_instance_dir` is provided, a designspace document will be
+    written alongside the master UFOs, though no instances will be built.
+    """
+
+    ufos, instance_data = load_to_ufos(filename, italic, include_instances=True)
+    if designspace_instance_dir is not None:
+        designspace_path = os.path.join(master_dir, 'mm.designspace')
+        build_designspace(designspace_path, ufos, master_dir,
+                          designspace_instance_dir, instance_data, italic)
 
     for ufo in ufos:
         write_ufo(ufo, master_dir)
@@ -72,8 +82,6 @@ def build_masters(filename, master_dir, italic=False):
 
 def build_instances(filename, master_dir, instance_dir, italic=False):
     """Write and return UFOs from the instances defined in a .glyphs file."""
-
-    from glyphs2ufo.interpolation import interpolate
 
     master_ufos, instance_data = load_to_ufos(
         filename, italic, include_instances=True)
