@@ -71,9 +71,8 @@ def build_masters(filename, master_dir, italic=False,
 
     ufos, instance_data = load_to_ufos(filename, italic, include_instances=True)
     if designspace_instance_dir is not None:
-        designspace_path = os.path.join(master_dir, 'mm.designspace')
-        build_designspace(designspace_path, ufos, master_dir,
-                          designspace_instance_dir, instance_data, italic)
+        build_designspace(ufos, master_dir, designspace_instance_dir,
+                          instance_data, italic)
     else:
         for ufo in ufos:
             write_ufo(ufo, master_dir)
@@ -85,10 +84,8 @@ def build_instances(filename, master_dir, instance_dir, italic=False):
 
     master_ufos, instance_data = load_to_ufos(
         filename, italic, include_instances=True)
-    designspace_path = os.path.join(master_dir, 'mm.designspace')
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, designspace_path,
-        instance_data, italic)
+        master_ufos, master_dir, instance_dir, instance_data, italic)
     return instance_ufos
 
 
