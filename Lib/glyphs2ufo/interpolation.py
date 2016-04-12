@@ -15,6 +15,8 @@
 
 from __future__ import print_function, division, absolute_import
 
+import os
+
 from defcon import Font
 from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
@@ -31,14 +33,14 @@ __all__ = [
 DEFAULT_LOC = 100
 
 
-def interpolate(ufos, master_dir, out_dir, designspace_path,
-                instance_data, italic=False, debug=False):
+def interpolate(ufos, master_dir, out_dir, instance_data,
+                italic=False, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
 
-    instance_files = build_designspace(
-        designspace_path, ufos, master_dir, out_dir, instance_data, italic)
+    designspace_path, instance_files = build_designspace(
+        ufos, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
     build(designspace_path)
@@ -56,22 +58,30 @@ def interpolate(ufos, master_dir, out_dir, designspace_path,
     return instance_ufos
 
 
-def build_designspace(designspace_path, masters, master_dir, out_dir,
-                      instance_data, italic=False):
+def build_designspace(masters, master_dir, out_dir, instance_data,
+                      italic=False):
     """Just create MutatorMath designspace without generating instances.
-    Returns a list of (instance_path, instance_data) tuples which map instance
-    UFO filenames to Glyphs data for that instance.
+
+    Returns the path of the resulting designspace document and a list of
+    (instance_path, instance_data) tuples which map instance UFO filenames to
+    Glyphs data for that instance.
     """
 
     for font in masters:
         write_ufo(font, master_dir)
 
-    writer = DesignSpaceDocumentWriter(designspace_path)
+    # needed so that added masters and instances have correct relative paths
+    tmp_path = os.path.join(master_dir, 'tmp.designspace')
+    writer = DesignSpaceDocumentWriter(tmp_path)
+
     base_family = add_masters_to_writer(writer, masters)
     instance_files = add_instances_to_writer(
         writer, base_family, instance_data, italic, out_dir)
+
+    basename = '%s%s.designspace' % (base_family, '-Italic' if italic else '')
+    writer.path = os.path.join(master_dir, basename.replace(' ', ''))
     writer.save()
-    return instance_files
+    return writer.path, instance_files
 
 
 def add_masters_to_writer(writer, ufos):
