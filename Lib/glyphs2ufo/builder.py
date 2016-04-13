@@ -308,8 +308,9 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
 
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
-            ('panose', 'OS2Panose'), ('typo', 'OS2Typo'), ('win', 'OS2Win'),
-            ('vendorID', 'OS2VendorID'), ('fsType', 'OS2Type'))
+            ('license', 'NameLicense'), ('panose', 'OS2Panose'),
+            ('typo', 'OS2Typo'), ('win', 'OS2Win'), ('vendorID', 'OS2VendorID'),
+            ('versionString', 'NameVersion'), ('fsType', 'OS2Type'))
         for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
             name = re.sub(
                 '^' + glyphs_prefix, 'openType' + ufo_prefix, name)
