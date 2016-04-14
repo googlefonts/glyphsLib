@@ -62,6 +62,7 @@ WEIGHT_CODES = {
 
 WIDTH_CODES = {
     'Extra Condensed': 2,
+    'Cd': 3,
     'Cond': 3,
     'Condensed': 3,
     'Narrow': 4,
