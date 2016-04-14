@@ -53,6 +53,18 @@ class BuildStyleNameTest(unittest.TestCase):
         self.assertEquals(
             self._build({'weight': 'Thin'}, True), 'Thin Italic')
 
+    def test_style_nonregular_width(self):
+        self.assertEquals(
+            self._build({'width': 'Condensed'}, False), 'Condensed')
+        self.assertEquals(
+            self._build({'width': 'Condensed'}, True), 'Condensed Italic')
+        self.assertEquals(
+            self._build({'weight': 'Thin', 'width': 'Condensed'}, False),
+            'Condensed Thin')
+        self.assertEquals(
+            self._build({'weight': 'Thin', 'width': 'Condensed'}, True),
+            'Condensed Thin Italic')
+
 
 class SetRedundantDataTest(unittest.TestCase):
     def _run_on_ufo(self, family_name, style_name):
