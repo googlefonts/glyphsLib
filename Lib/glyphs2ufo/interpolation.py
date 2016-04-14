@@ -22,8 +22,7 @@ from mutatorMath.ufo import build
 from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 
 from glyphs2ufo.builder import set_redundant_data, set_custom_params,\
-    clear_data, build_family_name, build_style_name,\
-    write_ufo, build_ufo_path, GLYPHS_PREFIX
+    clear_data, build_style_name, write_ufo, build_ufo_path, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate', 'build_designspace'
@@ -118,7 +117,7 @@ def add_masters_to_writer(writer, ufos):
     return base_family
 
 
-def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
+def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the
@@ -130,7 +129,7 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
     for instance in instances:
 
         # use family name in instance data if available
-        instance_family = base_family
+        instance_family = family_name
         custom_params = instance.get('customParameters', ())
         for i in range(len(custom_params)):
             if custom_params[i]['name'] == 'familyName':
@@ -138,9 +137,9 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
                 del custom_params[i]
                 break
 
-        family_name = build_family_name(instance_family, instance, 'widthClass')
-        style_name = build_style_name(instance, 'weightClass', italic)
-        ufo_path = build_ufo_path(out_dir, family_name, style_name)
+        style_name = build_style_name(
+            instance, 'widthClass', 'weightClass', italic)
+        ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
@@ -148,7 +147,7 @@ def add_instances_to_writer(writer, base_family, instances, italic, out_dir):
             location={
                 'weight': instance.pop('interpolationWeight', DEFAULT_LOC),
                 'width': instance.pop('interpolationWidth', DEFAULT_LOC)},
-            familyName=family_name,
+            familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
 
