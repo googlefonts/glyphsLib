@@ -24,8 +24,7 @@ from defcon import Font
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_family_name', 'build_style_name', 'build_ufo_path',
-    'write_ufo', 'GLYPHS_PREFIX'
+    'build_style_name', 'build_ufo_path', 'write_ufo', 'GLYPHS_PREFIX'
 ]
 
 
@@ -196,8 +195,8 @@ def generate_base_fonts(data, italic):
     for master in data['fontMaster']:
         ufo = Font()
 
-        ufo.info.familyName = build_family_name(family_name, master, 'width')
-        ufo.info.styleName = build_style_name(master, 'weight', italic)
+        ufo.info.familyName = family_name
+        ufo.info.styleName = build_style_name(master, 'width', 'weight', italic)
 
         ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
@@ -253,11 +252,11 @@ def set_redundant_data(ufo):
     family_name, style_name = ufo.info.familyName, ufo.info.styleName
 
     width_match = re.search('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
-                            family_name)
+                            style_name)
     width = width_match.group(0) if width_match else ''
     ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
 
-    weight = style_name.replace('Italic', '').strip()
+    weight = style_name.replace('Italic', '').replace(width, '').strip()
     weight_code = WEIGHT_CODES.get(weight, None)
     if not weight_code:
         warn('Unrecognized weight "%s"' % weight)
@@ -273,10 +272,11 @@ def set_redundant_data(ufo):
         ufo.info.styleMapStyleName = style_name.lower()
         ufo.info.styleMapFamilyName = family_name
     else:
-        ufo.info.styleMapStyleName = (
-            'italic' if 'Italic' in style_name else 'regular')
-        ufo.info.styleMapFamilyName = (
-            '%s %s' % (family_name, weight)).strip()
+        ufo.info.styleMapStyleName = ' '.join(s for s in (
+            'bold' if weight == 'Bold' else '',
+            'italic' if 'Italic' in style_name else '') if s) or 'regular'
+        ufo.info.styleMapFamilyName = ' '.join(s for s in (
+            family_name, width, weight if weight != 'Bold' else '') if s)
     ufo.info.openTypeNamePreferredFamilyName = family_name
     ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
@@ -434,21 +434,17 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_family_name(base_family, data, width_key):
-    """Build family name from base name and width string in data."""
-
-    width = data.pop(width_key, '')
-    return ('%s %s' % (base_family, width)).strip()
-
-
-def build_style_name(data, weight_key, italic):
-    """Build style name from weight string in data and whether it's italic."""
+def build_style_name(data, width_key, weight_key, italic):
+    """Build style name from width and weight strings in data, and whether the
+    style is italic.
+    """
 
     italic = 'Italic' if italic else ''
+    width = data.pop(width_key, '')
     weight = data.pop(weight_key, 'Regular')
-    if italic and weight == 'Regular':
+    if (italic or width) and weight == 'Regular':
         weight = ''
-    return ('%s %s' % (weight, italic)).strip()
+    return ' '.join(s for s in (width, weight, italic) if s)
 
 
 def to_ufo_time(datetime_obj):
