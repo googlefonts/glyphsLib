@@ -58,6 +58,7 @@ WEIGHT_CODES = {
     'SemiBold': 600,
     'Bold': 700,
     'ExtraBold': 800,
+    'Extra Bold': 800,
     'Black': 900}
 
 WIDTH_CODES = {
