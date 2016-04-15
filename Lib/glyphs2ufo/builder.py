@@ -58,11 +58,15 @@ WEIGHT_CODES = {
     'SemiBold': 600,
     'Bold': 700,
     'ExtraBold': 800,
+    'Extra Bold': 800,
     'Black': 900}
 
 WIDTH_CODES = {
     'Extra Condensed': 2,
+    'Cd': 3,
+    'Cond': 3,
     'Condensed': 3,
+    'Narrow': 4,
     'SemiCondensed': 4,
     '': 5}
 
@@ -196,7 +200,7 @@ def generate_base_fonts(data, italic):
         ufo = Font()
 
         ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(master, 'width', 'weight', italic)
+        ufo.info.styleName = build_style_name(master, ('width', 'weight'), italic)
 
         ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
@@ -251,17 +255,9 @@ def set_redundant_data(ufo):
 
     family_name, style_name = ufo.info.familyName, ufo.info.styleName
 
-    width_match = re.search('(%s)' % '|'.join(filter(None, WIDTH_CODES.keys())),
-                            style_name)
-    width = width_match.group(0) if width_match else ''
+    width, weight = parse_style_attrs(style_name)
     ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
-
-    weight = style_name.replace('Italic', '').replace(width, '').strip()
-    weight_code = WEIGHT_CODES.get(weight, None)
-    if not weight_code:
-        warn('Unrecognized weight "%s"' % weight)
-        weight_code = WEIGHT_CODES['']
-    ufo.info.openTypeOS2WeightClass = weight_code
+    ufo.info.openTypeOS2WeightClass = WEIGHT_CODES[weight]
 
     if weight and weight != 'Regular':
         ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
@@ -434,17 +430,34 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_style_name(data, width_key, weight_key, italic):
+def build_style_name(data, attr_keys, italic):
     """Build style name from width and weight strings in data, and whether the
     style is italic.
     """
 
     italic = 'Italic' if italic else ''
-    width = data.pop(width_key, '')
-    weight = data.pop(weight_key, 'Regular')
+    if len(attr_keys) == 2:
+        # assume keys are for width and weight
+        width = data.pop(attr_keys[0], '')
+        weight = data.pop(attr_keys[1], 'Regular')
+    else:
+        # assume one key for both width and weight
+        width, weight = parse_style_attrs(data.pop(attr_keys[0]))
     if (italic or width) and weight == 'Regular':
         weight = ''
     return ' '.join(s for s in (width, weight, italic) if s)
+
+
+def parse_style_attrs(name):
+    """Parse width and weight from a style name, and return them in a tuple."""
+
+    m = re.search('(%s)' % '|'.join(k for k in WIDTH_CODES.keys() if k), name)
+    width = m.group(0) if m else ''
+    weight = name.replace(width, '').replace('Italic', '').strip()
+    if weight not in WEIGHT_CODES:
+        warn('Unrecognized weight "%s"' % weight)
+        weight = ''
+    return width, weight
 
 
 def to_ufo_time(datetime_obj):

@@ -39,7 +39,7 @@ def _check_warnings():
 
 class BuildStyleNameTest(unittest.TestCase):
     def _build(self, data, italic):
-        return build_style_name(data, 'width', 'weight', italic)
+        return build_style_name(data, ('width', 'weight'), italic)
 
     def test_style_regular_weight(self):
         self.assertEquals(self._build({}, False), 'Regular')

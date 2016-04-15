@@ -137,13 +137,12 @@ def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
                 del custom_params[i]
                 break
 
-        style_name = build_style_name(
-            instance, 'widthClass', 'weightClass', italic)
+        style_name = build_style_name(instance, ('name',), italic)
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
-            name=instance.pop('name'),
+            name=' '.join((instance_family, style_name)),
             location={
                 'weight': instance.pop('interpolationWeight', DEFAULT_LOC),
                 'width': instance.pop('interpolationWidth', DEFAULT_LOC)},
