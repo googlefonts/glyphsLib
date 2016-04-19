@@ -135,9 +135,9 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
         set_robofont_glyph_background(glyph, bg_name, bg_data)
 
     for ufo in ufos.values():
+        propagate_anchors(ufo)
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
-
         ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
 
     for master_id, kerning in data.pop('kerning', {}).items():
@@ -670,6 +670,47 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
             continue
         group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
+
+
+def propagate_anchors(ufo):
+    """Copy anchors from parent glyphs' components to the parent."""
+
+    def get_anchor(glyph, name):
+        return next((a for a in glyph.anchors if a.name == name), None)
+
+    # defcon does not allow simply copying an anchor from one glyph to another
+    def append_anchor(glyph, anchor):
+        anchor_dict = {'x': anchor.x, 'y': anchor.y, 'name': anchor.name}
+        glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
+
+    for parent in ufo:
+        added_here = set()
+
+        # don't propagate anchors for mark glyphs
+        if any(a.name.startswith('_') for a in parent.anchors):
+            continue
+
+        # try to get anchors from base (first) components
+        glyph = parent
+        while glyph.components:
+            glyph = ufo[glyph.components[0].baseGlyph]
+            for anchor in glyph.anchors:
+                if get_anchor(parent, anchor.name) is None:
+                    added_here.add(anchor.name)
+                    #XXX need to apply component transformation
+                    append_anchor(parent, anchor)
+
+        # adjust anchors to which a mark has been attached
+        for component in parent.components:
+            glyph = ufo[component.baseGlyph]
+            for anchor in glyph.anchors:
+                if anchor.name not in added_here:
+                    continue
+                existing_anchor = get_anchor(parent, anchor.name)
+                attached_anchor = get_anchor(glyph, '_' + anchor.name)
+                if attached_anchor is not None:
+                    existing_anchor.move((anchor.x - attached_anchor.x,
+                                          anchor.y - attached_anchor.y))
 
 
 def add_groups_to_ufo(ufo, kerning_groups):
