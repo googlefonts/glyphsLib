@@ -699,10 +699,10 @@ def propagate_anchors(ufo):
                         (anchor.x, anchor.y))
 
         # adjust anchors to which a mark has been attached
-        for component in parent.components:
+        for component in parent.components[1:]:
             glyph = ufo[component.baseGlyph]
             transformation = Transform(*component.transformation)
-            for anchor in glyph.anchors[1:]:
+            for anchor in glyph.anchors:
                 if (anchor.name in added_here and
                     get_anchor(glyph, '_' + anchor.name) is not None):
                     added_here[anchor.name] = transformation.transformPoint(
