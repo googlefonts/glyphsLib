@@ -21,6 +21,7 @@ import shutil
 import sys
 
 from defcon import Font
+from fontTools.misc.transform import Transform
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
@@ -678,13 +679,8 @@ def propagate_anchors(ufo):
     def get_anchor(glyph, name):
         return next((a for a in glyph.anchors if a.name == name), None)
 
-    # defcon does not allow simply copying an anchor from one glyph to another
-    def append_anchor(glyph, anchor):
-        anchor_dict = {'x': anchor.x, 'y': anchor.y, 'name': anchor.name}
-        glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
-
     for parent in ufo:
-        added_here = set()
+        added_here = {}
 
         # don't propagate anchors for mark glyphs
         if any(a.name.startswith('_') for a in parent.anchors):
@@ -692,25 +688,29 @@ def propagate_anchors(ufo):
 
         # try to get anchors from base (first) components
         glyph = parent
+        transformation = Transform()
         while glyph.components:
-            glyph = ufo[glyph.components[0].baseGlyph]
+            component = glyph.components[0]
+            glyph = ufo[component.baseGlyph]
+            transformation = transformation.transform(component.transformation)
             for anchor in glyph.anchors:
                 if get_anchor(parent, anchor.name) is None:
-                    added_here.add(anchor.name)
-                    #XXX need to apply component transformation
-                    append_anchor(parent, anchor)
+                    added_here[anchor.name] = transformation.transformPoint(
+                        (anchor.x, anchor.y))
 
         # adjust anchors to which a mark has been attached
         for component in parent.components:
             glyph = ufo[component.baseGlyph]
-            for anchor in glyph.anchors:
-                if anchor.name not in added_here:
-                    continue
-                existing_anchor = get_anchor(parent, anchor.name)
-                attached_anchor = get_anchor(glyph, '_' + anchor.name)
-                if attached_anchor is not None:
-                    existing_anchor.move((anchor.x - attached_anchor.x,
-                                          anchor.y - attached_anchor.y))
+            transformation = Transform(*component.transformation)
+            for anchor in glyph.anchors[1:]:
+                if (anchor.name in added_here and
+                    get_anchor(glyph, '_' + anchor.name) is not None):
+                    added_here[anchor.name] = transformation.transformPoint(
+                        (anchor.x, anchor.y))
+
+        for name, (x, y) in added_here.items():
+            anchor_dict = {'name': name, 'x': x, 'y': y}
+            parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
 def add_groups_to_ufo(ufo, kerning_groups):
