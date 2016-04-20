@@ -42,7 +42,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
         ufos, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
-    build(designspace_path)
+    build(designspace_path, outputUFOFormatVersion=3)
 
     instance_ufos = []
     for path, data in instance_files:
