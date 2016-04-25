@@ -674,12 +674,7 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
 
 
 def propagate_anchors(ufo):
-    """Move anchors around to replicate Glyphs-specific mark attachment
-    behavior for what's generally expected in UFOs.
-
-    Copies anchors from parent glyphs' components to the parent, and removes
-    the _1 suffix from any anchor names.
-    """
+    """Copy anchors from parent glyphs' components to the parent."""
 
     def get_anchor(glyph, name):
         return next((a for a in glyph.anchors if a.name == name), None)
@@ -713,15 +708,9 @@ def propagate_anchors(ufo):
                     added_here[anchor.name] = transformation.transformPoint(
                         (anchor.x, anchor.y))
 
-        # add the new anchors
         for name, (x, y) in added_here.items():
             anchor_dict = {'name': name, 'x': x, 'y': y}
             parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
-
-        # remove _1 suffixes
-        for anchor in parent.anchors:
-            if anchor.name.endswith('_1'):
-                anchor.name = anchor.name[:-2]
 
 
 def add_groups_to_ufo(ufo, kerning_groups):
