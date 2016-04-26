@@ -20,8 +20,6 @@ import re
 import shutil
 import sys
 
-from defcon import Font
-
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
     'build_style_name', 'build_ufo_path', 'write_ufo', 'GLYPHS_PREFIX'
@@ -178,6 +176,7 @@ def clear_data(data):
 
 def generate_base_fonts(data, italic):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
+    from defcon import Font
 
     date_created = to_ufo_time(data.pop('date'))
     family_name = data.pop('familyName')
