@@ -17,10 +17,6 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from defcon import Font
-from mutatorMath.ufo import build
-from mutatorMath.ufo.document import DesignSpaceDocumentWriter
-
 from glyphs2ufo.builder import set_redundant_data, set_custom_params,\
     clear_data, build_style_name, write_ufo, build_ufo_path, GLYPHS_PREFIX
 
@@ -37,6 +33,8 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
+    from defcon import Font
+    from mutatorMath.ufo import build
 
     designspace_path, instance_files = build_designspace(
         ufos, master_dir, out_dir, instance_data, italic)
@@ -65,6 +63,7 @@ def build_designspace(masters, master_dir, out_dir, instance_data,
     (instance_path, instance_data) tuples which map instance UFO filenames to
     Glyphs data for that instance.
     """
+    from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 
     for font in masters:
         write_ufo(font, master_dir)
