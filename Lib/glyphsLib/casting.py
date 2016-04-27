@@ -139,6 +139,7 @@ def get_type_structure():
             'leftKerningGroup': str,
             'leftMetricsKey': str,
             'note': str,  # undocumented
+            'production': str,
             'rightKerningGroup': str,
             'rightMetricsKey': str,
             'unicode': hex_int,
