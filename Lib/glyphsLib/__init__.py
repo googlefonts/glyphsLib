@@ -84,14 +84,3 @@ def build_instances(filename, master_dir, instance_dir, italic=False):
     instance_ufos = interpolate(
         master_ufos, master_dir, instance_dir, instance_data, italic)
     return instance_ufos
-
-
-def main(filename, master_dir='master_ufo', instance_dir='instance_ufo'):
-    build_masters(
-        filename, master_dir, italic=('Italic' in filename))
-    #build_instances(
-    #    filename, master_dir, instance_dir, italic=('Italic' in filename))
-
-
-if __name__ == '__main__':
-    main(*sys.argv[1:])
