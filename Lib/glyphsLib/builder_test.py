@@ -18,8 +18,8 @@ from __future__ import print_function, division, absolute_import
 import unittest
 from defcon import Font
 
-from glyphs2ufo import builder
-from glyphs2ufo.builder import set_redundant_data, build_style_name
+from glyphsLib import builder
+from glyphsLib.builder import set_redundant_data, build_style_name
 
 
 _warnings = []
