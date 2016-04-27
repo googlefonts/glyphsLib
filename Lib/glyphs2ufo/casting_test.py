@@ -16,7 +16,7 @@
 from __future__ import print_function, division, absolute_import
 
 import unittest
-from glyphs2ufo.casting import cast_data
+from glyphsLib.casting import cast_data
 
 
 class GlyphsDatetimeTest(unittest.TestCase):

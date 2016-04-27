@@ -19,10 +19,10 @@ from __future__ import print_function, division, absolute_import
 
 import sys
 
-from glyphs2ufo.builder import to_ufos, write_ufo
-from glyphs2ufo.casting import cast_data
-from glyphs2ufo.interpolation import interpolate, build_designspace
-from glyphs2ufo.parser import Parser
+from glyphsLib.builder import to_ufos, write_ufo
+from glyphsLib.casting import cast_data
+from glyphsLib.interpolation import interpolate, build_designspace
+from glyphsLib.parser import Parser
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",

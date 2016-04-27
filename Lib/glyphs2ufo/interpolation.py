@@ -17,7 +17,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 
-from glyphs2ufo.builder import set_redundant_data, set_custom_params,\
+from glyphsLib.builder import set_redundant_data, set_custom_params,\
     clear_data, build_style_name, write_ufo, build_ufo_path, GLYPHS_PREFIX
 
 __all__ = [
