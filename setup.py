@@ -17,12 +17,12 @@ from setuptools import setup
 
 
 setup(
-    name='glyphs2ufo',
+    name='glyphsLib',
     version='1.0',
-    packages=['glyphs2ufo'],
+    packages=['glyphsLib'],
     entry_points={
         "console_scripts": [
-            "glyphs2ufo = glyphs2ufo.__main__:main"
+            "glyphsLib = glyphsLib.__main__:main"
         ]
     },
     package_dir={'': 'Lib'}
