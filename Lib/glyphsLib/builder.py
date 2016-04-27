@@ -597,7 +597,7 @@ def load_glyph(glyph, layer, glyph_data):
     if last_change is not None:
         glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
     color_index = glyph_data.get('color')
-    if color_index is not None:
+    if color_index is not None and color_index >= 0:
         glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
         glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
     export = glyph_data.get('export')
