@@ -22,7 +22,7 @@ setup(
     packages=['glyphsLib'],
     entry_points={
         "console_scripts": [
-            "glyphsLib = glyphsLib.__main__:main"
+            "glyphs2ufo = glyphsLib.__main__:main"
         ]
     },
     package_dir={'': 'Lib'}
