@@ -1,0 +1,22 @@
+before_script:
+    - git submodule update --init --recursive
+
+stages:
+    - build
+    - deploy
+
+build:
+    stage: build
+    script:
+        - python setup.py sdist bdist_wheel
+    artifacts:
+        name: "${CI_BUILD_NAME}_${CI_BUILD_REF_NAME}"
+        paths:
+            - dist/
+
+deploy:
+    stage: deploy
+    script:
+        - scp dist/glyphsLib* pypi@pypi.daltonmaag.com:/var/pypi/repo
+    only:
+        - tags
