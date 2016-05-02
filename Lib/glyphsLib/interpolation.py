@@ -16,6 +16,7 @@
 from __future__ import print_function, division, absolute_import
 
 import os
+import shutil
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
     clear_data, build_style_name, write_ufo, build_ufo_path, GLYPHS_PREFIX
@@ -40,6 +41,10 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
         ufos, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
+    # make sure old UFO data is removed (may contain deleted glyphs)
+    for path, _ in instance_files:
+        if os.path.exists(path):
+            shutil.rmtree(path)
     build(designspace_path, outputUFOFormatVersion=3)
 
     instance_ufos = []
