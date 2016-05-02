@@ -777,8 +777,7 @@ def write_ufo(ufo, out_dir):
     out_path = build_ufo_path(
         out_dir, ufo.info.familyName, ufo.info.styleName)
 
-    # Defcon seems to fail trying to update UFOs
-    # TODO(jamesgk) maybe look into this
+    # make sure old UFO data is removed (may contain deleted glyphs)
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
 
