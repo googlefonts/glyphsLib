@@ -109,8 +109,8 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
-                         'leftMetricsKey', 'note', 'rightMetricsKey',
-                         'widthMetricsKey']
+                         'leftMetricsKey', 'note', 'production',
+                         'rightMetricsKey', 'widthMetricsKey']
         glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
@@ -603,6 +603,9 @@ def load_glyph(glyph, layer, glyph_data):
     export = glyph_data.get('export')
     if export is not None:
         glyph.lib[glyphlib_prefix + 'Export'] = export
+    production_name = glyph_data.get('production')
+    if production_name is not None:
+        glyph.lib[PUBLIC_PREFIX + 'postscriptName'] = production_name
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         glyph_metrics_key = None
