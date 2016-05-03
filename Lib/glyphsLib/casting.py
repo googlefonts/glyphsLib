@@ -147,6 +147,7 @@ def get_type_structure():
             'widthMetricsKey': str  # undocumented
         },
         'instances': {
+            'active': truthy,  # undocumented
             'customParameters': custom_params,
             'interpolationCustom': int,  # undocumented
             'interpolationWeight': int,  # undocumented

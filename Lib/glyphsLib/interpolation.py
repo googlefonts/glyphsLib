@@ -124,6 +124,9 @@ def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
     ofiles = []
     for instance in instances:
 
+        if not instance.pop('active', True):
+            continue
+
         # use family name in instance data if available
         instance_family = family_name
         custom_params = instance.get('customParameters', ())
