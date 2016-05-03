@@ -114,6 +114,7 @@ def get_type_structure():
             'ascender': int,
             'capHeight': int,
             'customParameters': custom_params,
+            'customValue': int,  # undocumented
             'descender': descender_val,
             'guideLines': {  # undocumented
                 'angle': num,
@@ -147,6 +148,7 @@ def get_type_structure():
         },
         'instances': {
             'customParameters': custom_params,
+            'interpolationCustom': int,  # undocumented
             'interpolationWeight': int,  # undocumented
             'interpolationWidth': int,  # undocumented
             'name': str,  # undocumented

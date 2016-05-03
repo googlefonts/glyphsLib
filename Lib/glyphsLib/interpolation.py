@@ -90,31 +90,25 @@ def add_masters_to_writer(writer, ufos):
     Returns the masters' base family name, as determined by taking the
     intersection of their individual family names."""
 
-    master_data = []
     base_family = ''
+    specify_info_source = True
 
-    # build list of <path, family, style, weight, width> tuples for each master
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
         if family in base_family or not base_family:
             base_family = family
         elif base_family not in family:
             raise ValueError('Inconsistent family names for masters')
-        master_data.append((
-            font.path, family, style,
-            font.lib.get(GLYPHS_PREFIX + 'weightValue', DEFAULT_LOC),
-            font.lib.get(GLYPHS_PREFIX + 'widthValue', DEFAULT_LOC)))
-
-    # add the masters to the writer in a separate loop, when we have a good
-    # candidate to copy metadata from ([base_family] Regular|Italic)
-    for path, family, style, weight, width in master_data:
-        is_base = family == base_family and style in ['Regular', 'Italic']
         writer.addSource(
-            path=path,
+            path=font.path,
             name='%s %s' % (family, style),
             familyName=family, styleName=style,
-            location={'weight': weight, 'width': width},
-            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base)
+            location={
+                s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
+                for s in ('weight', 'width', 'custom')},
+            copyFeatures=specify_info_source, copyGroups=specify_info_source,
+            copyInfo=specify_info_source)
+        specify_info_source = False
 
     return base_family
 
@@ -146,8 +140,8 @@ def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
         writer.startInstance(
             name=' '.join((instance_family, style_name)),
             location={
-                'weight': instance.pop('interpolationWeight', DEFAULT_LOC),
-                'width': instance.pop('interpolationWidth', DEFAULT_LOC)},
+                s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
+                for s in ('weight', 'width', 'custom')},
             familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
