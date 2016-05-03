@@ -22,8 +22,7 @@ import sys
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_style_name', 'build_ufo_path', 'write_ufo', 'clean_ufo',
-    'GLYPHS_PREFIX'
+    'build_ufo_path', 'write_ufo', 'clean_ufo', 'GLYPHS_PREFIX'
 ]
 
 
