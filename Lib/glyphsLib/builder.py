@@ -22,7 +22,8 @@ import sys
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_style_name', 'build_ufo_path', 'write_ufo', 'GLYPHS_PREFIX'
+    'build_style_name', 'build_ufo_path', 'write_ufo', 'clean_ufo',
+    'GLYPHS_PREFIX'
 ]
 
 
@@ -777,15 +778,16 @@ def write_ufo(ufo, out_dir):
     out_path = build_ufo_path(
         out_dir, ufo.info.familyName, ufo.info.styleName)
 
-    # make sure old UFO data is removed (may contain deleted glyphs)
-    if os.path.exists(out_path):
-        shutil.rmtree(out_path)
-
     print('>>> Writing %s' % out_path)
-    if ufo.path:
-        ufo.save()
-    else:
-        ufo.save(out_path)
+    clean_ufo(out_path)
+    ufo.save(out_path)
+
+
+def clean_ufo(path):
+    """Make sure old UFO data is removed, as it may contain deleted glyphs."""
+
+    if path.endswith('.ufo') and os.path.exists(path):
+        shutil.rmtree(path)
 
 
 def warn(message):
