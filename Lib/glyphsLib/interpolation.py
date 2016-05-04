@@ -28,8 +28,7 @@ __all__ = [
 DEFAULT_LOC = 100
 
 
-def interpolate(ufos, master_dir, out_dir, instance_data,
-                italic=False, debug=False):
+def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
@@ -37,7 +36,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
     from mutatorMath.ufo import build
 
     designspace_path, instance_files = build_designspace(
-        ufos, master_dir, out_dir, instance_data, italic)
+        ufos, master_dir, out_dir, instance_data)
 
     print('>>> Building instances')
     for path, _ in instance_files:
@@ -57,8 +56,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
     return instance_ufos
 
 
-def build_designspace(masters, master_dir, out_dir, instance_data,
-                      italic=False):
+def build_designspace(masters, master_dir, out_dir, instance_data):
     """Just create MutatorMath designspace without generating instances.
 
     Returns the path of the resulting designspace document and a list of
@@ -74,11 +72,12 @@ def build_designspace(masters, master_dir, out_dir, instance_data,
     tmp_path = os.path.join(master_dir, 'tmp.designspace')
     writer = DesignSpaceDocumentWriter(tmp_path)
 
-    base_family = add_masters_to_writer(writer, masters)
+    base_family, base_style = add_masters_to_writer(writer, masters)
     instance_files = add_instances_to_writer(
-        writer, base_family, instance_data, italic, out_dir)
+        writer, base_family, instance_data, out_dir)
 
-    basename = '%s%s.designspace' % (base_family, '-Italic' if italic else '')
+    basename = '%s%s.designspace' % (
+        base_family, ('-' + base_style) if base_style else '')
     writer.path = os.path.join(master_dir, basename.replace(' ', ''))
     writer.save()
     return writer.path, instance_files
@@ -87,10 +86,13 @@ def build_designspace(masters, master_dir, out_dir, instance_data,
 def add_masters_to_writer(writer, ufos):
     """Add master UFOs to a MutatorMath document writer.
 
-    Returns the masters' base family name, as determined by taking the
-    intersection of their individual family names."""
+    Returns the masters' base family and style names, as determined by taking
+    the intersection of their individual family/style names. This is used for
+    naming instances and the designspace path.
+    """
 
     base_family = ''
+    base_style = ''
     specify_info_source = True
 
     for font in ufos:
@@ -99,6 +101,8 @@ def add_masters_to_writer(writer, ufos):
             base_family = family
         elif base_family not in family:
             raise ValueError('Inconsistent family names for masters')
+        if style in base_style or not base_style:
+            base_style = style
         writer.addSource(
             path=font.path,
             name='%s %s' % (family, style),
@@ -110,10 +114,10 @@ def add_masters_to_writer(writer, ufos):
             copyInfo=specify_info_source)
         specify_info_source = False
 
-    return base_family
+    return base_family, base_style
 
 
-def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
+def add_instances_to_writer(writer, family_name, instances, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the

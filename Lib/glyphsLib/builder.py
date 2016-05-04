@@ -69,7 +69,7 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_ufos(data, italic=False, include_instances=False, debug=False):
+def to_ufos(data, include_instances=False, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -94,7 +94,7 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
     supplementary_bg_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    ufos, master_id_order = generate_base_fonts(data, italic)
+    ufos, master_id_order = generate_base_fonts(data)
 
     glyph_order = []
 
@@ -174,7 +174,7 @@ def clear_data(data):
     return True
 
 
-def generate_base_fonts(data, italic):
+def generate_base_fonts(data):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
@@ -197,10 +197,6 @@ def generate_base_fonts(data, italic):
     master_id_order = []
     for master in data['fontMaster']:
         ufo = Font()
-
-        ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(
-            master, 'width', 'weight', 'custom', italic)
 
         ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
@@ -232,6 +228,10 @@ def generate_base_fonts(data, italic):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
+
+        ufo.info.familyName = family_name
+        ufo.info.styleName = build_style_name(
+            master, 'width', 'weight', 'custom', italic_angle != 0)
 
         set_redundant_data(ufo)
         set_blue_values(ufo, master.pop('alignmentZones', []))

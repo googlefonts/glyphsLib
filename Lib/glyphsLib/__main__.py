@@ -43,9 +43,6 @@ def parse_options(args):
                         help="Output and generate interpolated instances UFO "
                              "to folder INSTANCES. "
                              "(default: %(const)s)")
-    parser.add_argument("-i", "--italic",
-                        help="The fonts are italic.",
-                        action="store_true")
     options = parser.parse_args(args)
     return options
 
@@ -54,10 +51,9 @@ def main(args=None):
     opt = parse_options(args)
     if opt.glyphs is not None:
         if opt.instances is None:
-            glyphsLib.build_masters(opt.glyphs, opt.masters, italic=opt.italic)
+            glyphsLib.build_masters(opt.glyphs, opt.masters)
         else:
-            glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances,
-                                      italic=opt.italic)
+            glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -48,39 +48,37 @@ def loads(value, dict_type=dict):
     return data
 
 
-def load_to_ufos(filename, italic=False, include_instances=False, debug=False):
+def load_to_ufos(filename, include_instances=False, debug=False):
     """Load an unpacked .glyphs object to UFO objects."""
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
     print('>>> Loading to UFOs')
-    return to_ufos(data, italic=italic, include_instances=include_instances,
-                   debug=debug)
+    return to_ufos(data, include_instances=include_instances, debug=debug)
 
 
-def build_masters(filename, master_dir, italic=False,
-                  designspace_instance_dir=None):
+def build_masters(filename, master_dir, designspace_instance_dir=None):
     """Write and return UFOs from the masters defined in a .glyphs file.
 
     If `designspace_instance_dir` is provided, a designspace document will be
     written alongside the master UFOs, though no instances will be built.
     """
 
-    ufos, instance_data = load_to_ufos(filename, italic, include_instances=True)
+    ufos, instance_data = load_to_ufos(filename, include_instances=True)
     if designspace_instance_dir is not None:
         build_designspace(ufos, master_dir, designspace_instance_dir,
-                          instance_data, italic)
+                          instance_data)
     else:
         for ufo in ufos:
             write_ufo(ufo, master_dir)
     return ufos
 
 
-def build_instances(filename, master_dir, instance_dir, italic=False):
+def build_instances(filename, master_dir, instance_dir):
     """Write and return UFOs from the instances defined in a .glyphs file."""
 
     master_ufos, instance_data = load_to_ufos(
-        filename, italic, include_instances=True)
+        filename, include_instances=True)
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data, italic)
+        master_ufos, master_dir, instance_dir, instance_data)
     return instance_ufos
