@@ -69,7 +69,7 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_ufos(data, italic=False, include_instances=False, debug=False):
+def to_ufos(data, include_instances=False, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -94,7 +94,7 @@ def to_ufos(data, italic=False, include_instances=False, debug=False):
     supplementary_bg_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    ufos, master_id_order = generate_base_fonts(data, italic)
+    ufos, master_id_order = generate_base_fonts(data)
 
     glyph_order = []
 
@@ -174,7 +174,7 @@ def clear_data(data):
     return True
 
 
-def generate_base_fonts(data, italic):
+def generate_base_fonts(data):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
@@ -198,10 +198,6 @@ def generate_base_fonts(data, italic):
     for master in data['fontMaster']:
         ufo = Font()
 
-        ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(
-            master, 'width', 'weight', 'custom', italic)
-
         ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
         ufo.info.versionMajor = version_major
@@ -222,13 +218,20 @@ def generate_base_fonts(data, italic):
         ufo.info.capHeight = master.pop('capHeight')
         ufo.info.descender = master.pop('descender')
         ufo.info.xHeight = master.pop('xHeight')
+
         horizontal_stems = master.pop('horizontalStems', None)
         vertical_stems = master.pop('verticalStems', None)
-
+        italic_angle = -master.pop('italicAngle', None)
         if horizontal_stems:
             ufo.info.postscriptStemSnapH = horizontal_stems
         if vertical_stems:
             ufo.info.postscriptStemSnapV = vertical_stems
+        if italic_angle:
+            ufo.info.italicAngle = italic_angle
+
+        ufo.info.familyName = family_name
+        ufo.info.styleName = build_style_name(
+            master, 'width', 'weight', 'custom', italic_angle != 0)
 
         set_redundant_data(ufo)
         set_blue_values(ufo, master.pop('alignmentZones', []))
@@ -306,7 +309,8 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
             ('license', 'NameLicense'), ('panose', 'OS2Panose'),
-            ('typo', 'OS2Typo'), ('win', 'OS2Win'), ('vendorID', 'OS2VendorID'),
+            ('typo', 'OS2Typo'), ('unicodeRanges', 'OS2UnicodeRanges'),
+            ('win', 'OS2Win'), ('vendorID', 'OS2VendorID'),
             ('versionString', 'NameVersion'), ('fsType', 'OS2Type'))
         for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
             name = re.sub(

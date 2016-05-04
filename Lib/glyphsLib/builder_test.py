@@ -39,7 +39,7 @@ def _check_warnings():
 
 class BuildStyleNameTest(unittest.TestCase):
     def _build(self, data, italic):
-        return build_style_name(data, ('width', 'weight'), italic)
+        return build_style_name(data, 'width', 'weight', 'custom', italic)
 
     def test_style_regular_weight(self):
         self.assertEquals(self._build({}, False), 'Regular')
@@ -80,14 +80,6 @@ class SetRedundantDataTest(unittest.TestCase):
         self.assertEquals(
             reg_ufo.info.openTypeOS2WeightClass,
             italic_ufo.info.openTypeOS2WeightClass)
-
-    def test_sets_regular_weight_class_and_warns_for_unknown_weight(self):
-        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
-        bogus_ufo = self._run_on_ufo('MyFont', 'abc123')
-        self.assertEquals(
-            reg_ufo.info.openTypeOS2WeightClass,
-            bogus_ufo.info.openTypeOS2WeightClass)
-        self.assertTrue(_check_warnings())
 
     def test_sets_weight_lib_entry_only_nonregular(self):
         reg_ufo = self._run_on_ufo('MyFont', 'Regular')
