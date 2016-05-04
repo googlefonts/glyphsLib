@@ -22,7 +22,7 @@ import sys
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_style_name', 'build_ufo_path', 'write_ufo', 'GLYPHS_PREFIX'
+    'build_ufo_path', 'write_ufo', 'clean_ufo', 'GLYPHS_PREFIX'
 ]
 
 
@@ -199,7 +199,8 @@ def generate_base_fonts(data, italic):
         ufo = Font()
 
         ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(master, ('width', 'weight'), italic)
+        ufo.info.styleName = build_style_name(
+            master, 'width', 'weight', 'custom', italic)
 
         ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
@@ -238,7 +239,7 @@ def generate_base_fonts(data, italic):
         set_custom_params(ufo, parsed=custom_params)
         # the misc attributes double as deprecated info attributes!
         # they are Glyphs-related, not OpenType-related, and don't go in info
-        misc = ['weightValue', 'widthValue']
+        misc = ('customValue', 'weightValue', 'widthValue')
         set_custom_params(ufo, data=master, misc_keys=misc, non_info=misc)
 
         master_id = master.pop('id')
@@ -270,8 +271,9 @@ def set_redundant_data(ufo):
         ufo.info.styleMapStyleName = ' '.join(s for s in (
             'bold' if weight == 'Bold' else '',
             'italic' if 'Italic' in style_name else '') if s) or 'regular'
-        ufo.info.styleMapFamilyName = ' '.join(s for s in (
-            family_name, width, weight if weight != 'Bold' else '') if s)
+        ufo.info.styleMapFamilyName = ' '.join(
+            [family_name] +
+            style_name.replace('Bold', '').replace('Italic', '').split())
     ufo.info.openTypeNamePreferredFamilyName = family_name
     ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
@@ -429,34 +431,28 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_style_name(data, attr_keys, italic):
-    """Build style name from width and weight strings in data, and whether the
-    style is italic.
+def build_style_name(data, width_key, weight_key, custom_key, italic):
+    """Build style name from width, weight, and custom style strings in data,
+    and whether the style is italic.
     """
 
     italic = 'Italic' if italic else ''
-    if len(attr_keys) == 2:
-        # assume keys are for width and weight
-        width = data.pop(attr_keys[0], '')
-        weight = data.pop(attr_keys[1], 'Regular')
-    else:
-        # assume one key for both width and weight
-        width, weight = parse_style_attrs(data.pop(attr_keys[0]))
-    if (italic or width) and weight == 'Regular':
+    width = data.pop(width_key, '')
+    weight = data.pop(weight_key, 'Regular')
+    custom = data.pop(custom_key, '')
+    if (italic or width or custom) and weight == 'Regular':
         weight = ''
-    return ' '.join(s for s in (width, weight, italic) if s)
+    return ' '.join(s for s in (width, weight, custom, italic) if s)
 
 
 def parse_style_attrs(name):
-    """Parse width and weight from a style name, and return them in a tuple."""
+    """Parse width and weight from a style name, and return them in a list."""
 
-    m = re.search('(%s)' % '|'.join(k for k in WIDTH_CODES.keys() if k), name)
-    width = m.group(0) if m else ''
-    weight = name.replace(width, '').replace('Italic', '').strip()
-    if weight not in WEIGHT_CODES:
-        warn('Unrecognized weight "%s"' % weight)
-        weight = ''
-    return width, weight
+    attrs = []
+    for codes in (WIDTH_CODES, WEIGHT_CODES):
+        m = re.search('(%s)' % '|'.join(k for k in codes.keys() if k), name)
+        attrs.append(m.group(0) if m else '')
+    return attrs
 
 
 def to_ufo_time(datetime_obj):
@@ -597,7 +593,7 @@ def load_glyph(glyph, layer, glyph_data):
     if last_change is not None:
         glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
     color_index = glyph_data.get('color')
-    if color_index is not None:
+    if color_index is not None and color_index >= 0:
         glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
         glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
     export = glyph_data.get('export')
@@ -777,15 +773,16 @@ def write_ufo(ufo, out_dir):
     out_path = build_ufo_path(
         out_dir, ufo.info.familyName, ufo.info.styleName)
 
-    # make sure old UFO data is removed (may contain deleted glyphs)
-    if os.path.exists(out_path):
-        shutil.rmtree(out_path)
-
     print('>>> Writing %s' % out_path)
-    if ufo.path:
-        ufo.save()
-    else:
-        ufo.save(out_path)
+    clean_ufo(out_path)
+    ufo.save(out_path)
+
+
+def clean_ufo(path):
+    """Make sure old UFO data is removed, as it may contain deleted glyphs."""
+
+    if path.endswith('.ufo') and os.path.exists(path):
+        shutil.rmtree(path)
 
 
 def warn(message):

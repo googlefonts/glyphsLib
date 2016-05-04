@@ -16,10 +16,9 @@
 from __future__ import print_function, division, absolute_import
 
 import os
-import shutil
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    clear_data, build_style_name, write_ufo, build_ufo_path, GLYPHS_PREFIX
+    clear_data, write_ufo, build_ufo_path, clean_ufo, GLYPHS_PREFIX
 
 __all__ = [
     'interpolate', 'build_designspace'
@@ -41,10 +40,8 @@ def interpolate(ufos, master_dir, out_dir, instance_data,
         ufos, master_dir, out_dir, instance_data, italic)
 
     print('>>> Building instances')
-    # make sure old UFO data is removed (may contain deleted glyphs)
     for path, _ in instance_files:
-        if os.path.exists(path):
-            shutil.rmtree(path)
+        clean_ufo(path)
     build(designspace_path, outputUFOFormatVersion=3)
 
     instance_ufos = []
@@ -93,31 +90,25 @@ def add_masters_to_writer(writer, ufos):
     Returns the masters' base family name, as determined by taking the
     intersection of their individual family names."""
 
-    master_data = []
     base_family = ''
+    specify_info_source = True
 
-    # build list of <path, family, style, weight, width> tuples for each master
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
         if family in base_family or not base_family:
             base_family = family
         elif base_family not in family:
             raise ValueError('Inconsistent family names for masters')
-        master_data.append((
-            font.path, family, style,
-            font.lib.get(GLYPHS_PREFIX + 'weightValue', DEFAULT_LOC),
-            font.lib.get(GLYPHS_PREFIX + 'widthValue', DEFAULT_LOC)))
-
-    # add the masters to the writer in a separate loop, when we have a good
-    # candidate to copy metadata from ([base_family] Regular|Italic)
-    for path, family, style, weight, width in master_data:
-        is_base = family == base_family and style in ['Regular', 'Italic']
         writer.addSource(
-            path=path,
+            path=font.path,
             name='%s %s' % (family, style),
             familyName=family, styleName=style,
-            location={'weight': weight, 'width': width},
-            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base)
+            location={
+                s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
+                for s in ('weight', 'width', 'custom')},
+            copyFeatures=specify_info_source, copyGroups=specify_info_source,
+            copyInfo=specify_info_source)
+        specify_info_source = False
 
     return base_family
 
@@ -133,6 +124,9 @@ def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
     ofiles = []
     for instance in instances:
 
+        if not instance.pop('active', True):
+            continue
+
         # use family name in instance data if available
         instance_family = family_name
         custom_params = instance.get('customParameters', ())
@@ -142,15 +136,15 @@ def add_instances_to_writer(writer, family_name, instances, italic, out_dir):
                 del custom_params[i]
                 break
 
-        style_name = build_style_name(instance, ('name',), italic)
+        style_name = instance.pop('name')
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
             name=' '.join((instance_family, style_name)),
             location={
-                'weight': instance.pop('interpolationWeight', DEFAULT_LOC),
-                'width': instance.pop('interpolationWidth', DEFAULT_LOC)},
+                s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
+                for s in ('weight', 'width', 'custom')},
             familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
