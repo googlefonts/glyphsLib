@@ -24,17 +24,10 @@ instance_dir = 'instance_ufos'
 ufos = glyphsLib.build_instances('MyFont.glyphs', master_dir, instance_dir)
 ```
 
-You must designate a font as italic when calling `glyphsLib`:
-
-```python
-glyphsLib.build_masters('MyFont-Italic.glyphs', master_dir, italic=True)
-```
-
 #### Load UFO objects without writing
 
 ```python
 ufos = glyphsLib.load_to_ufos('MyFont.glyphs')
-italic_ufos = glyphsLib.load_to_ufos('MyFont-Italic.glyphs', italic=True)
 ```
 
 #### Load Glyphs data as a Python dictionary
