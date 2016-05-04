@@ -58,7 +58,7 @@ CUSTOM_TRUTHY_PARAMS = frozenset((
 CUSTOM_INTLIST_PARAMS = frozenset((
     'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
     'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
-    'panose'))
+    'panose', 'unicodeRanges'))
 
 
 def cast_data(data, types=None):
