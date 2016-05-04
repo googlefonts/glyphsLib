@@ -123,6 +123,7 @@ def get_type_structure():
             },
             'horizontalStems': intlist,
             'id': str,
+            'italicAngle': num,  # undocumented
             'userData': user_data,
             'verticalStems': intlist,
             'weight': str,  # undocumented

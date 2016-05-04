@@ -222,13 +222,16 @@ def generate_base_fonts(data, italic):
         ufo.info.capHeight = master.pop('capHeight')
         ufo.info.descender = master.pop('descender')
         ufo.info.xHeight = master.pop('xHeight')
+
         horizontal_stems = master.pop('horizontalStems', None)
         vertical_stems = master.pop('verticalStems', None)
-
+        italic_angle = -master.pop('italicAngle', None)
         if horizontal_stems:
             ufo.info.postscriptStemSnapH = horizontal_stems
         if vertical_stems:
             ufo.info.postscriptStemSnapV = vertical_stems
+        if italic_angle:
+            ufo.info.italicAngle = italic_angle
 
         set_redundant_data(ufo)
         set_blue_values(ufo, master.pop('alignmentZones', []))
