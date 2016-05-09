@@ -221,7 +221,7 @@ def generate_base_fonts(data):
 
         horizontal_stems = master.pop('horizontalStems', None)
         vertical_stems = master.pop('verticalStems', None)
-        italic_angle = -master.pop('italicAngle', None)
+        italic_angle = -master.pop('italicAngle', 0)
         if horizontal_stems:
             ufo.info.postscriptStemSnapH = horizontal_stems
         if vertical_stems:
