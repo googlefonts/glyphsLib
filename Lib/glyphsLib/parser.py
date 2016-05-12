@@ -15,7 +15,7 @@
 
 from __future__ import print_function, division, absolute_import
 
-import re
+import re, sys
 
 
 class Parser:
@@ -114,17 +114,113 @@ class Parser:
         i += len(parsed)
         return res, i
 
+    # glyphs only supports octal escapes between \000 and \077
+    _unescape_re = re.compile(ur'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4,6})')
+
+    @staticmethod
+    def _unescape_fn(m):
+        if m.group(1):
+            return unichr(int(m.group(1)[1:], 8))
+        return unichr(int(m.group(2)[2:], 16))
+
     def _trim_value(self, value):
         """Trim double quotes off the ends of a value, un-escaping inner
         double quotes.
+        Also convert escapes to unicode.
         """
 
         if value[0] == '"':
             assert value[-1] == '"'
-            return value[1:-1].replace('\\"', '"')
-        return value
+            value = value[1:-1].replace('\\"', '"')
+        return Parser._unescape_re.sub(Parser._unescape_fn, value)
 
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
         raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
+
+
+class Writer(object):
+    """Write parsed data back to flat file.  Normalizes quoting
+    and indentation."""
+
+    # ints and floats are unquoted, as are strings of letters/digits and
+    # underscore with period or leading forward slash.  Everything else
+    # is quoted.
+    _sym_re = re.compile(
+        r'^(?:-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
+
+    def __init__(self, out=sys.stdout, indent=0, reorder=False):
+        self.out = out
+        self.indent = indent
+        self.reorder = reorder
+        self.curindent = 0
+
+    def write(self, data):
+        self.curindent = 0
+        self._write(data)
+        self.out.write('\n')
+        self.out.flush()
+
+    def _write(self, data):
+        if isinstance(data, dict):
+            self._write_dict(data)
+        elif isinstance(data, list):
+            self._write_list(data)
+        else:
+            self._write_atom(data)
+
+    def _write_dict(self, data):
+        if self.reorder:
+            keys = sorted(data.keys())
+        else:
+            keys = data.keys()
+        self.curindent += self.indent
+        pad = ' ' * self.curindent
+        out = self.out
+        out.write('{\n')
+        for k in keys:
+            out.write(pad)
+            self._write_atom(k)
+            out.write(' = ')
+            self._write(data[k])
+            out.write(';\n')
+        self.curindent -= self.indent
+        out.write(' ' * self.curindent)
+        out.write('}')
+
+    def _write_list(self, data):
+        first = True
+        self.curindent += self.indent
+        pad = ' ' * self.curindent
+        out = self.out
+        out.write('(')
+        for v in data:
+            out.write('\n' if first else ',\n')
+            out.write(pad)
+            first = False
+            self._write(v)
+        self.curindent -= self.indent
+        out.write('\n')
+        out.write(' ' * self.curindent)
+        out.write(')')
+
+    _escape_re = re.compile(u'[^\u0020-\u007e]')
+
+    @staticmethod
+    def _escape_fn(m):
+        v = ord(m.group()[0])
+        if v < 0x20:
+            return r'\%03o' % v
+        return r'\U%04X' % v
+
+    def _write_atom(self, data):
+      data = Writer._escape_re.sub(Writer._escape_fn, data)
+      out = self.out
+      if Writer._sym_re.match(data):
+          out.write(data)
+          return
+      data = data.replace('"', '\\"')
+      out.write('"')
+      out.write(data)
+      out.write('"')
