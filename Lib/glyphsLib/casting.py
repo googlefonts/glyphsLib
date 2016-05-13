@@ -62,6 +62,12 @@ CUSTOM_INTLIST_PARAMS = frozenset((
     'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
     'panose', 'unicodeRanges'))
 
+# mutate list in place
+def _mutate_list(fn, l):
+    assert isinstance(l, list)
+    for i in range(len(l)):
+        l[i] = fn(l[i])
+    return l
 
 class RWGlyphs(object):
     def convert(self, data, to_typed):
@@ -191,51 +197,46 @@ class RWNode(RWGlyphs):
 
     def read(self, src):
         """Cast a node from a string with format X Y TYPE [SMOOTH]."""
-        g = self._regex.match(src).groups()
-        return [num.read(g[0]), num.read(g[1]), g[2].lower(), bool(g[3])]
+        x, y, node_type, smooth = self._regex.match(src).groups()
+        return [num.read(x), num.read(y), node_type.lower(), bool(smooth)]
 
     def write(self, val):
         assert isinstance(val, list) and len(val) == 4
-        v2 = val[2]
+        x, y, node_type, smooth = val
         # glyphs has this lower case
-        if v2 != 'n/a':
-            v2 = v2.upper()
-        return '%s %s %s%s' % (val[0], val[1], v2, ' SMOOTH' if val[3] else '')
+        if node_type != 'n/a':
+            node_type = node_type.upper()
+        return '%s %s %s%s' % (x, y, node_type, ' SMOOTH' if smooth else '')
 
 
 class RWIntList(RWGlyphs):
     """Read/write a list of ints."""
 
     def read(self, src):
-        assert isinstance(src, list)
-        return map(int, src)
+        return _mutate_list(int, src)
 
     def write(self, val):
-        assert isinstance(val, list)
-        return map(str, val)
+        return _mutate_list(str, val)
 
 
 class RWPointList(RWGlyphs):
     """Read/write a list of points."""
 
     def read(self, src):
-        assert isinstance(src, list)
-        return map(point.read, src)
+        return _mutate_list(point.read, src)
 
     def write(self, val):
-        assert isinstance(val, list)
-        return map(point.write, val)
+        return _mutate_list(point.write, val)
 
 
 class RWNodeList(RWGlyphs):
     """Read/write a list of nodes."""
 
     def read(self, src):
-        assert isinstance(src, list)
-        return map(node.read, src)
+        return _mutate_list(node.read, src)
 
     def write(self, val):
-        return map(node.write, val)
+        return _mutate_list(node.write, val)
 
 
 class RWDateTime(RWGlyphs):

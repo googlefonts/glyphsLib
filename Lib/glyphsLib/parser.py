@@ -148,7 +148,7 @@ class Writer(object):
     # underscore with period or leading forward slash.  Everything else
     # is quoted.
     _sym_re = re.compile(
-        r'^(?:-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
+        r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
     def __init__(self, out=sys.stdout, indent=0, reorder=False):
         self.out = out
@@ -205,14 +205,16 @@ class Writer(object):
         out.write(' ' * self.curindent)
         out.write(')')
 
-    _escape_re = re.compile(u'[^\u0020-\u007e]')
+    _escape_re = re.compile(u'([^\u0020-\u007e])|"')
 
     @staticmethod
     def _escape_fn(m):
-        v = ord(m.group()[0])
-        if v < 0x20:
-            return r'\%03o' % v
-        return r'\U%04X' % v
+        if m.group(1):
+            v = ord(m.group(1)[0])
+            if v < 0x20:
+                return r'\%03o' % v
+            return r'\U%04X' % v
+        return r'\"'
 
     def _write_atom(self, data):
       data = Writer._escape_re.sub(Writer._escape_fn, data)
@@ -220,7 +222,6 @@ class Writer(object):
       if Writer._sym_re.match(data):
           out.write(data)
           return
-      data = data.replace('"', '\\"')
       out.write('"')
       out.write(data)
       out.write('"')
