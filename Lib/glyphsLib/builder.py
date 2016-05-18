@@ -300,6 +300,7 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         assert data is None, "Shouldn't provide parsed data and data to parse."
 
     for name, value in parsed:
+        name = normalize_custom_param_name(name)
 
         # deal with any Glyphs naming quirks here
         if name == 'disablesNiceNames':
@@ -331,6 +332,19 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         # everything else gets dumped in the lib
         else:
             ufo.lib[GLYPHS_PREFIX + name] = value
+
+
+def normalize_custom_param_name(name):
+    """Replace curved quotes with straight quotes in a custom parameter name.
+    We may want to do this for all keys in Glyphs data, but for now this is the
+    only known location of problematic (non-ascii) characters in keys.
+    """
+
+    replacements = (
+        (u'\u2018', "'"), (u'\u2019', "'"), (u'\u201C', '"'), (u'\u201D', '"'))
+    for orig, replacement in replacements:
+        name = name.replace(orig, replacement)
+    return name
 
 
 def set_blue_values(ufo, alignment_zones):
