@@ -485,9 +485,9 @@ _TYPE_STRUCTURE = {
     'instances': {
         'active': truthy,  # undocumented
         'customParameters': custom_params,
-        'interpolationCustom': integer,  # undocumented
-        'interpolationWeight': integer,  # undocumented
-        'interpolationWidth': integer,  # undocumented
+        'interpolationCustom': num,  # undocumented
+        'interpolationWeight': num,  # undocumented
+        'interpolationWidth': num,  # undocumented
         'name': string,  # undocumented
         'weightClass': string,  # undocumented
         'widthClass': string  # undocumented
