@@ -98,14 +98,19 @@ def add_masters_to_writer(writer, ufos):
         family, style = font.info.familyName, font.info.styleName
         if base_family is None:
             base_family = family
-        assert family == base_family, 'Masters must all have same family name'
+        else:
+            assert family == base_family, 'Masters must all have same family'
         if base_style is None:
             base_style = style.split()
-        base_style = [s for s in style.split() if s in base_style]
+        else:
+            base_style = [s for s in style.split() if s in base_style]
         master_data.append((font.path, family, style, {
             s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
             for s in ('weight', 'width', 'custom')}))
 
+    # pick a master to copy info, features, and groups from, trying to find the
+    # master with a base style shared between all masters (or just Regular) and
+    # defaulting to the first master if nothing is found
     base_style = ' '.join(base_style)
     info_source = 0
     for i, (path, family, style, location) in enumerate(master_data):
