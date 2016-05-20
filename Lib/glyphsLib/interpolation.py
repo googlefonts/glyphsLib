@@ -86,33 +86,44 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
 def add_masters_to_writer(writer, ufos):
     """Add master UFOs to a MutatorMath document writer.
 
-    Returns the masters' base family and style names, as determined by taking
-    the intersection of their individual family/style names. This is used for
+    Returns the masters' family name and shared style names. These are used for
     naming instances and the designspace path.
     """
 
-    base_family = ''
-    base_style = ''
-    specify_info_source = True
+    master_data = []
+    base_family = None
+    base_style = None
 
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
-        if family in base_family or not base_family:
+        if base_family is None:
             base_family = family
-        elif base_family not in family:
-            raise ValueError('Inconsistent family names for masters')
-        if style in base_style or not base_style:
-            base_style = style
+        else:
+            assert family == base_family, 'Masters must all have same family'
+        if base_style is None:
+            base_style = style.split()
+        else:
+            base_style = [s for s in style.split() if s in base_style]
+        master_data.append((font.path, family, style, {
+            s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
+            for s in ('weight', 'width', 'custom')}))
+
+    # pick a master to copy info, features, and groups from, trying to find the
+    # master with a base style shared between all masters (or just Regular) and
+    # defaulting to the first master if nothing is found
+    base_style = ' '.join(base_style)
+    info_source = 0
+    for i, (path, family, style, location) in enumerate(master_data):
+        if family == base_family and style == (base_style or 'Regular'):
+            info_source = i
+            break
+
+    for i, (path, family, style, location) in enumerate(master_data):
+        is_base = (i == info_source)
         writer.addSource(
-            path=font.path,
-            name='%s %s' % (family, style),
-            familyName=family, styleName=style,
-            location={
-                s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
-                for s in ('weight', 'width', 'custom')},
-            copyFeatures=specify_info_source, copyGroups=specify_info_source,
-            copyInfo=specify_info_source)
-        specify_info_source = False
+            path=path, name='%s %s' % (family, style),
+            familyName=family, styleName=style, location=location,
+            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base)
 
     return base_family, base_style
 
