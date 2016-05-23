@@ -561,9 +561,9 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
         if (existing_rule is not None and
             existing_rule[-1] != val and
             pair not in ufo.kerning):
-            warn('Duplicate kerning rules found for glyph pair "%s, %s" '
-                 '(%s and %s), removing pair from latter rule' %
-                 (pair + (existing_rule, rule)))
+            warn('Conflicting kerning rules found in %s master for glyph pair '
+                 '"%s, %s" (%s and %s), removing pair from latter rule' %
+                 ((ufo.info.styleName,) + pair + (existing_rule, rule)))
         else:
             new_glyphs.append(member)
             seen[pair] = rule
@@ -571,7 +571,7 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
     if new_glyphs != old_glyphs:
         del ufo.kerning[original_pair]
         for member in new_glyphs:
-            pair = (member, glyph) if is_left_class else(glyph, member)
+            pair = (member, glyph) if is_left_class else (glyph, member)
             ufo.kerning[pair] = val
 
 
