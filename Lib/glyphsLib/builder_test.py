@@ -1,3 +1,5 @@
+# coding=UTF-8
+#
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +17,15 @@
 
 from __future__ import print_function, division, absolute_import
 
+import collections
+import datetime
 import unittest
+
 from defcon import Font
 
 from glyphsLib import builder
-from glyphsLib.builder import set_redundant_data, build_style_name
+from glyphsLib.builder import build_style_name, set_custom_params,\
+    set_redundant_data, to_ufos, GLYPHS_PREFIX
 
 
 _warnings = []
@@ -64,6 +70,17 @@ class BuildStyleNameTest(unittest.TestCase):
         self.assertEquals(
             self._build({'weight': 'Thin', 'width': 'Condensed'}, True),
             'Condensed Thin Italic')
+
+
+class SetCustomParamsTest(unittest.TestCase):
+    def test_normalizes_curved_quotes_in_names(self):
+        ufo = Font()
+        data = {'customParameters': (
+            {'name': u'‘bad’', 'value': 1},
+            {'name': u'“also bad”', 'value': 2})}
+        set_custom_params(ufo, data=data)
+        self.assertIn(GLYPHS_PREFIX + "'bad'", ufo.lib)
+        self.assertIn(GLYPHS_PREFIX + '"also bad"', ufo.lib)
 
 
 class SetRedundantDataTest(unittest.TestCase):
@@ -128,6 +145,84 @@ class SetRedundantDataTest(unittest.TestCase):
             ('MyFont', 'Condensed Thin', 'MyFont Condensed Thin', 'regular'),
             ('MyFont', 'Condensed Thin Italic', 'MyFont Condensed Thin',
              'italic')))
+
+
+class ToUfosTest(unittest.TestCase):
+    def generate_minimal_data(self):
+        return {
+            'date': datetime.datetime.today(),
+            'familyName': 'MyFont',
+            'fontMaster': [{
+                'ascender': 0,
+                'capHeight': 0,
+                'descender': 0,
+                'id': 'id',
+                'xHeight': 0,
+            }],
+            'glyphs': [],
+            'unitsPerEm': 1000,
+            'versionMajor': 1,
+            'versionMinor': 0,
+        }
+
+    def test_minimal_data(self):
+        """Test the minimal data that must be provided to generate UFOs, and in
+        some cases that additional redundant data is not set.
+        """
+
+        data = self.generate_minimal_data()
+        family_name = data['familyName']
+        ufos = to_ufos(data)
+        self.assertEqual(len(ufos), 1)
+
+        ufo = ufos[0]
+        self.assertEqual(len(ufo), 0)
+        self.assertEqual(ufo.info.familyName, family_name)
+        self.assertEqual(ufo.info.styleName, 'Regular')
+        self.assertEqual(ufo.info.versionMajor, 1)
+        self.assertEqual(ufo.info.versionMinor, 0)
+        self.assertIsNone(ufo.info.openTypeNameVersion)
+        #TODO(jamesgk) try to generate minimally-populated UFOs in glyphsLib,
+        # assert that more fields are empty here (especially in name table)
+
+    def test_load_kerning(self):
+        """Test that kerning conflicts are resolved correctly.
+
+        Correct resolution is defined as such: the last time a pair is found in
+        a kerning rule, that rule is used for the pair.
+        """
+
+        data = self.generate_minimal_data()
+
+        # generate classes 'A': ['A', 'a'] and 'V': ['V', 'v']
+        for glyph_name in ('A', 'a', 'V', 'v'):
+            data['glyphs'].append({
+                'glyphname': glyph_name, 'layers': [],
+                'rightKerningGroup': glyph_name.upper(),
+                'leftKerningGroup': glyph_name.upper()})
+
+        # classes are referenced in Glyphs kerning using old MMK names
+        data['kerning'] = {
+            data['fontMaster'][0]['id']: collections.OrderedDict((
+                ('@MMK_L_A', collections.OrderedDict((
+                    ('@MMK_R_V', -250),
+                    ('v', -100),
+                ))),
+                ('a', collections.OrderedDict((
+                    ('@MMK_R_V', 100),
+                ))),
+            ))}
+
+        ufos = to_ufos(data)
+        ufo = ufos[0]
+
+        # these rules should be obvious
+        self.assertEqual(ufo.kerning['public.kern1.A', 'public.kern2.V'], -250)
+        self.assertEqual(ufo.kerning['a', 'public.kern2.V'], 100)
+
+        # this rule results from breaking up (kern1.A, v, -100)
+        # due to conflict with (a, kern2.V, 100)
+        self.assertEqual(ufo.kerning['A', 'v'], -100)
 
 
 if __name__ == '__main__':
