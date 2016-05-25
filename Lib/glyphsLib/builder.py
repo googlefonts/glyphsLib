@@ -497,54 +497,38 @@ def load_kerning(ufo, kerning_data):
     """Add .glyphs kerning to an UFO."""
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
+    class_glyph_pairs = []
+
     for left, pairs in kerning_data.items():
         match = re.match(r'@MMK_L_(.+)', left)
-        if match:
+        left_is_class = bool(match)
+        if left_is_class:
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
                 warn(warning_msg % left)
                 continue
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
-            if match:
+            right_is_class = bool(match)
+            if right_is_class:
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
                     warn(warning_msg % right)
                     continue
+            if left_is_class != right_is_class:
+                if left_is_class:
+                    pair = (left, right, True)
+                else:
+                    pair = (right, left, False)
+                class_glyph_pairs.append(pair)
             ufo.kerning[left, right] = kerning_val
-    remove_conflicting_kerning(ufo)
 
-
-def remove_conflicting_kerning(ufo):
-    """Remove any conflicting kerning rules.
-
-    If conflicts are detected in a class-to-glyph rule, the rule is replaced
-    with glyph-to-glyph rules for each of the class's members (minus the
-    offending members).
-    """
-
-    left_class_kerning = []
-    right_class_kerning = []
-
-    # collect kerning rules by type
-    for pair, value in ufo.kerning.items():
-        left, right = pair
-        left_is_class = left.startswith('public.kern1.')
-        right_is_class = right.startswith('public.kern2.')
-        if left_is_class and not right_is_class:
-            left_class_kerning.append(pair)
-        elif right_is_class and not left_is_class:
-            right_class_kerning.append(pair)
-
-    # remove conflicts
     seen = {}
-    for left, right in left_class_kerning:
-        remove_rule_if_conflict(ufo, seen, left, right, is_left_class=True)
-    for left, right in right_class_kerning:
-        remove_rule_if_conflict(ufo, seen, right, left, is_left_class=False)
+    for classname, glyph, is_left_class in reversed(class_glyph_pairs):
+        remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class)
 
 
-def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class=True):
+def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
     """Check if a class-to-glyph kerning rule has a conflict with any existing
     rule in `seen`, and remove any conflicts if they exist.
     """
