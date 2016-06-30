@@ -128,7 +128,7 @@ def add_masters_to_writer(writer, ufos):
     return base_family, base_style
 
 
-def add_instances_to_writer(writer, family_name, instances, out_dir):
+def add_instances_to_writer(writer, family_name, instance_data, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the
@@ -136,20 +136,23 @@ def add_instances_to_writer(writer, family_name, instances, out_dir):
     Glyphs data for this instance as a dict.
     """
 
+    default_family_name = instance_data.pop('defaultFamilyName')
     ofiles = []
-    for instance in instances:
+    for instance in instance_data.pop('data'):
 
         if not instance.pop('active', True):
             continue
 
-        # use family name in instance data if available
-        instance_family = family_name
+        # only use instances with the masters' family name
+        instance_family = default_family_name
         custom_params = instance.get('customParameters', ())
         for i in range(len(custom_params)):
             if custom_params[i]['name'] == 'familyName':
                 instance_family = custom_params[i]['value']
                 del custom_params[i]
                 break
+        if instance_family != family_name:
+            continue
 
         style_name = instance.pop('name')
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)

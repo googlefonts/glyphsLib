@@ -69,7 +69,7 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_ufos(data, include_instances=False, debug=False):
+def to_ufos(data, include_instances=False, family_name=None, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -78,6 +78,10 @@ def to_ufos(data, include_instances=False, debug=False):
 
     If debug is True, returns unused input data instead of the resulting UFOs.
     """
+
+    source_family_name = data.pop('familyName')
+    if family_name is None:
+        family_name = source_family_name
 
     feature_prefixes, classes, features = [], [], []
     for f in data.get('featurePrefixes', []):
@@ -94,7 +98,7 @@ def to_ufos(data, include_instances=False, debug=False):
     supplementary_bg_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    ufos, master_id_order = generate_base_fonts(data)
+    ufos, master_id_order = generate_base_fonts(data, family_name)
 
     glyph_order = []
 
@@ -142,7 +146,8 @@ def to_ufos(data, include_instances=False, debug=False):
         load_kerning(ufos[master_id], kerning)
 
     result = [ufos[master_id] for master_id in master_id_order]
-    instances = data.pop('instances', [])
+    instances = {'defaultFamilyName': source_family_name,
+                 'data': data.pop('instances', [])}
     if debug:
         return clear_data(data)
     elif include_instances:
@@ -174,12 +179,11 @@ def clear_data(data):
     return True
 
 
-def generate_base_fonts(data):
+def generate_base_fonts(data, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
     date_created = to_ufo_time(data.pop('date'))
-    family_name = data.pop('familyName')
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')

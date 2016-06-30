@@ -48,23 +48,31 @@ def loads(value, dict_type=dict):
     return data
 
 
-def load_to_ufos(filename, include_instances=False, debug=False):
+def load_to_ufos(filename, include_instances=False, family_name=None,
+                 debug=False):
     """Load an unpacked .glyphs object to UFO objects."""
 
     with open(filename, 'rb') as ifile:
         data = load(ifile)
     print('>>> Loading to UFOs')
-    return to_ufos(data, include_instances=include_instances, debug=debug)
+    return to_ufos(data, include_instances=include_instances,
+                   family_name=family_name, debug=debug)
 
 
-def build_masters(filename, master_dir, designspace_instance_dir=None):
+def build_masters(filename, master_dir, designspace_instance_dir=None,
+                  family_name=None):
     """Write and return UFOs from the masters defined in a .glyphs file.
 
-    If `designspace_instance_dir` is provided, a designspace document will be
-    written alongside the master UFOs, though no instances will be built.
+    Args:
+        master_dir: Directory where masters are written.
+        designspace_instance_dir: If provided, a designspace document will be
+            written alongside the master UFOs though no instances will be built.
+        family_name: If provided, the master UFOs will be given this name and
+            only instances with this name will be included in the designspace.
     """
 
-    ufos, instance_data = load_to_ufos(filename, include_instances=True)
+    ufos, instance_data = load_to_ufos(
+        filename, include_instances=True, family_name=family_name)
     if designspace_instance_dir is not None:
         build_designspace(ufos, master_dir, designspace_instance_dir,
                           instance_data)
@@ -74,11 +82,18 @@ def build_masters(filename, master_dir, designspace_instance_dir=None):
     return ufos
 
 
-def build_instances(filename, master_dir, instance_dir):
-    """Write and return UFOs from the instances defined in a .glyphs file."""
+def build_instances(filename, master_dir, instance_dir, family_name=None):
+    """Write and return UFOs from the instances defined in a .glyphs file.
+
+    Args:
+        master_dir: Directory where masters are written.
+        instance_dir: Directory where instances are written.
+        family_name: If provided, the master UFOs will be given this name and
+            only instances with this name will be built.
+    """
 
     master_ufos, instance_data = load_to_ufos(
-        filename, include_instances=True)
+        filename, include_instances=True, family_name=family_name)
     instance_ufos = interpolate(
         master_ufos, master_dir, instance_dir, instance_data)
     return instance_ufos
