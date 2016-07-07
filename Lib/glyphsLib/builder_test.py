@@ -224,6 +224,53 @@ class ToUfosTest(unittest.TestCase):
         # due to conflict with (a, kern2.V, 100)
         self.assertEqual(ufo.kerning['A', 'v'], -100)
 
+    def test_propagate_anchors(self):
+        """Test anchor propagation for some relatively complicated cases."""
+
+        data = self.generate_minimal_data()
+
+        glyphs = (
+            ('sad', [], [('bottom', 50, -50), ('top', 50, 150)]),
+            ('dotabove', [], [('top', 0, 150), ('_top', 0, 100)]),
+            ('dotbelow', [], [('bottom', 0, -50), ('_bottom', 0, 0)]),
+            ('dad', [('sad', 0, 0), ('dotabove', 50, 50)], []),
+            ('dadDotbelow', [('dad', 0, 0), ('dotbelow', 50, -50)], []),
+            ('yod', [], [('bottom', 50, -50)]),
+            ('yodyod', [('yod', 0, 0), ('yod', 100, 0)], []),
+        )
+        for name, component_data, anchor_data in glyphs:
+            anchors = [{'name': n, 'position': (x, y)}
+                       for n, x, y in anchor_data]
+            components = [{'name': n, 'transform': (1, 0, 0, 1, x, y)}
+                          for n, x, y in component_data]
+            data['glyphs'].append({
+                'glyphname': name,
+                'layers': [{'layerId': 'id', 'width': 0,
+                            'anchors': anchors, 'components': components}]})
+
+        ufos = to_ufos(data)
+        ufo = ufos[0]
+
+        glyph = ufo['dadDotbelow']
+        self.assertEqual(len(glyph.anchors), 2)
+        for anchor in glyph.anchors:
+            self.assertEqual(anchor.x, 50)
+            if anchor.name == 'bottom':
+                self.assertEqual(anchor.y, -100)
+            else:
+                self.assertEqual(anchor.name, 'top')
+                self.assertEqual(anchor.y, 200)
+
+        glyph = ufo['yodyod']
+        self.assertEqual(len(glyph.anchors), 2)
+        for anchor in glyph.anchors:
+            self.assertEqual(anchor.y, -50)
+            if anchor.name == 'bottom_1':
+                self.assertEqual(anchor.x, 50)
+            else:
+                self.assertEqual(anchor.name, 'bottom_2')
+                self.assertEqual(anchor.x, 150)
+
 
 if __name__ == '__main__':
     builder.warn = _add_warning
