@@ -20,6 +20,8 @@ import re
 import shutil
 import sys
 
+from glyphsLib.anchors import propagate_font_anchors
+
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
     'build_ufo_path', 'write_ufo', 'clean_ufo', 'GLYPHS_PREFIX'
@@ -137,7 +139,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         set_robofont_glyph_background(glyph, bg_name, bg_data)
 
     for ufo in ufos.values():
-        propagate_anchors(ufo)
+        propagate_font_anchors(ufo)
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
         ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
@@ -674,48 +676,6 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
             continue
         group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
-
-
-def propagate_anchors(ufo):
-    """Copy anchors from parent glyphs' components to the parent."""
-
-    from fontTools.misc.transform import Transform
-
-    def get_anchor(glyph, name):
-        return next((a for a in glyph.anchors if a.name == name), None)
-
-    for parent in ufo:
-        added_here = {}
-
-        # don't propagate anchors for mark glyphs
-        if any(a.name.startswith('_') for a in parent.anchors):
-            continue
-
-        # try to get anchors from base (first) components
-        glyph = parent
-        transformation = Transform()
-        while glyph.components:
-            component = glyph.components[0]
-            glyph = ufo[component.baseGlyph]
-            transformation = transformation.transform(component.transformation)
-            for anchor in glyph.anchors:
-                if get_anchor(parent, anchor.name) is None:
-                    added_here[anchor.name] = transformation.transformPoint(
-                        (anchor.x, anchor.y))
-
-        # adjust anchors to which a mark has been attached
-        for component in parent.components[1:]:
-            glyph = ufo[component.baseGlyph]
-            transformation = Transform(*component.transformation)
-            for anchor in glyph.anchors:
-                if (anchor.name in added_here and
-                    get_anchor(glyph, '_' + anchor.name) is not None):
-                    added_here[anchor.name] = transformation.transformPoint(
-                        (anchor.x, anchor.y))
-
-        for name, (x, y) in added_here.items():
-            anchor_dict = {'name': name, 'x': x, 'y': y}
-            parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
 def add_groups_to_ufo(ufo, kerning_groups):
