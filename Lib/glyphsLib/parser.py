@@ -15,14 +15,15 @@
 
 from __future__ import print_function, division, absolute_import
 
-import re, sys
+import collections
+import re
+import sys
 
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self, dict_type):
-        self.dict_type = dict_type
+    def __init__(self):
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
@@ -68,7 +69,7 @@ class Parser:
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
 
-        res = self.dict_type()
+        res = collections.OrderedDict()
         end_match = self.end_dict_re.match(text, i)
         while not end_match:
             m = self.attr_re.match(text, i)

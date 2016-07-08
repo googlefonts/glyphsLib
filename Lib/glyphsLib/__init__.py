@@ -29,18 +29,18 @@ __all__ = [
 ]
 
 
-def load(fp, dict_type=dict):
+def load(fp):
     """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return the unpacked root object (which usually is a dictionary).
+    Return the unpacked root object (an ordered dictionary).
     """
-    return loads(fp.read(), dict_type=dict_type)
+    return loads(fp.read())
 
 
-def loads(value, dict_type=dict):
+def loads(value):
     """Read a .glyphs file from a bytes object.
-    Return the unpacked root object (which usually is a dictionary).
+    Return the unpacked root object (an ordered dictionary).
     """
-    p = Parser(dict_type=dict_type)
+    p = Parser()
     print('>>> Parsing .glyphs file')
     data = p.parse(value)
     print('>>> Casting parsed values')
