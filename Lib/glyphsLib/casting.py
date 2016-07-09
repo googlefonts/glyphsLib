@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 import datetime
 import json
@@ -55,7 +56,7 @@ CUSTOM_FLOAT_PARAMS = frozenset((
 
 CUSTOM_TRUTHY_PARAMS = frozenset((
     'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
-    u'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour'))
+    'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour'))
 
 
 CUSTOM_INTLIST_PARAMS = frozenset((

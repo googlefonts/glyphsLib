@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 import unittest
 from glyphsLib.casting import cast_data

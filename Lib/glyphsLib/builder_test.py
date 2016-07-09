@@ -15,7 +15,8 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 import collections
 import datetime
@@ -76,8 +77,8 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_normalizes_curved_quotes_in_names(self):
         ufo = Font()
         data = {'customParameters': (
-            {'name': u'‘bad’', 'value': 1},
-            {'name': u'“also bad”', 'value': 2})}
+            {'name': '‘bad’', 'value': 1},
+            {'name': '“also bad”', 'value': 2})}
         set_custom_params(ufo, data=data)
         self.assertIn(GLYPHS_PREFIX + "'bad'", ufo.lib)
         self.assertIn(GLYPHS_PREFIX + '"also bad"', ufo.lib)

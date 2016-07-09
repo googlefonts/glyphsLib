@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 import collections
 import re
@@ -116,7 +117,7 @@ class Parser:
         return res, i
 
     # glyphs only supports octal escapes between \000 and \077
-    _unescape_re = re.compile(ur'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4,6})')
+    _unescape_re = re.compile(r'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4,6})')
 
     @staticmethod
     def _unescape_fn(m):
@@ -206,7 +207,7 @@ class Writer(object):
         out.write(' ' * self.curindent)
         out.write(')')
 
-    _escape_re = re.compile(u'([^\u0020-\u007e])|"')
+    _escape_re = re.compile('([^\u0020-\u007e])|"')
 
     @staticmethod
     def _escape_fn(m):
@@ -214,7 +215,7 @@ class Writer(object):
             v = ord(m.group(1)[0])
             if v < 0x20:
                 return r'\%03o' % v
-            return r'\U%04X' % v
+            return '\\U%04X' % v
         return r'\"'
 
     def _write_atom(self, data):

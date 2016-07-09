@@ -13,7 +13,8 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
 
 import os
 import re
@@ -347,7 +348,7 @@ def normalize_custom_param_name(name):
     """
 
     replacements = (
-        (u'\u2018', "'"), (u'\u2019', "'"), (u'\u201C', '"'), (u'\u201D', '"'))
+        ('\u2018', "'"), ('\u2019', "'"), ('\u201C', '"'), ('\u201D', '"'))
     for orig, replacement in replacements:
         name = name.replace(orig, replacement)
     return name
@@ -720,7 +721,7 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
     fea_str = '\n\n'.join(feature_defs)
 
     # make sure feature text is a unicode string, for defcon
-    full_text = u'\n\n'.join([prefix_str, class_str, fea_str])
+    full_text = '\n\n'.join([prefix_str, class_str, fea_str])
     ufo.features.text = full_text if full_text.strip() else ''
 
 
