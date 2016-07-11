@@ -116,8 +116,9 @@ class Parser:
         i += len(parsed)
         return res, i
 
-    # glyphs only supports octal escapes between \000 and \077
-    _unescape_re = re.compile(r'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4,6})')
+    # glyphs only supports octal escapes between \000 and \077 and hexadecimal
+    # escapes between \U0000 and \UFFFF
+    _unescape_re = re.compile(r'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4})')
 
     @staticmethod
     def _unescape_fn(m):
