@@ -360,10 +360,9 @@ def set_blue_values(ufo, alignment_zones):
     blue_values = []
     other_blues = []
 
-    for base, offset in sorted(alignment_zones):
-        pair = [base, base + offset]
-        val_list = blue_values if base >= 0 else other_blues
-        val_list.extend(sorted(pair))
+    for pos, size in sorted(alignment_zones):
+        val_list = blue_values if pos == 0 or size >= 0 else other_blues
+        val_list.extend(sorted((pos, pos + size)))
 
     ufo.info.postscriptBlueValues = blue_values
     ufo.info.postscriptOtherBlues = other_blues
