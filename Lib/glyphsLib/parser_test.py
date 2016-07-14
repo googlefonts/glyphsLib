@@ -53,7 +53,7 @@ class ParserTest(unittest.TestCase):
 
     def test_with_utf8(self):
         self.run_test(
-            '{mystr="Don’t crash";}',
+            b'{mystr="Don\xe2\x80\x99t crash";}',
             [('mystr', 'Don’t crash')])
 
 
