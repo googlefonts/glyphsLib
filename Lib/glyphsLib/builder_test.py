@@ -272,6 +272,20 @@ class ToUfosTest(unittest.TestCase):
                 self.assertEqual(anchor.name, 'bottom_2')
                 self.assertEqual(anchor.x, 150)
 
+    def test_set_blue_values(self):
+        """Test that blue values are set correctly from alignment zones."""
+
+        data_in = [(500, 15), (400, -15), (0, -15), (-200, 15), (-300, -15)]
+        expected_blue_values = [-200, -185, -15, 0, 500, 515]
+        expected_other_blues = [-315, -300, 385, 400]
+
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['alignmentZones'] = data_in
+        ufo = to_ufos(data)[0]
+
+        self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
+        self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
+
 
 if __name__ == '__main__':
     builder.warn = _add_warning
