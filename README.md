@@ -1,3 +1,5 @@
+[![Travis Build Status](https://travis-ci.org/googlei18n/glyphsLib.svg)](https://travis-ci.org/googlei18n/glyphsLib)
+
 # glyphsLib
 
 This library provides a bridge from Glyphs source files (.glyphs) to UFOs via
