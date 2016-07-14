@@ -15,6 +15,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
+from fontTools.misc.py23 import *
 
 import collections
 import re
@@ -38,6 +39,7 @@ class Parser:
     def parse(self, text):
         """Do the parsing."""
 
+        text = tounicode(text, encoding='utf-8')
         result, i = self._parse(text, 0)
         if text[i:].strip():
             self._fail('Unexpected trailing content', text, i)
