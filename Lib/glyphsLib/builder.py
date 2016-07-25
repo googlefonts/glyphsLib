@@ -211,7 +211,7 @@ def generate_base_fonts(data, family_name):
         ufo.info.versionMinor = version_minor
 
         if copyright:
-            ufo.info.copyright = unicode(copyright.decode("utf-8"))
+            ufo.info.copyright = copyright
         if designer:
             ufo.info.openTypeNameDesigner = designer
         if designer_url:
@@ -618,7 +618,6 @@ def load_glyph(glyph, layer, glyph_data):
         except KeyError:
             glyph_metrics_key = glyph_data.get(key)
         if glyph_metrics_key:
-            glyph_metrics_key = unicode(glyph_metrics_key.decode("utf-8"))
             glyph.lib[glyphlib_prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
