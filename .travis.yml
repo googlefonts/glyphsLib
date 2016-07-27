@@ -14,4 +14,4 @@ install:
   - pip install git+https://github.com/unified-font-object/ufoLib
 
 script:
-  - ./run_tests.sh
+  - python setup.py test

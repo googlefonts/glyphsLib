@@ -25,5 +25,6 @@ setup(
             "glyphs2ufo = glyphsLib.__main__:main"
         ]
     },
-    package_dir={'': 'Lib'}
+    package_dir={'': 'Lib'},
+    test_suite='glyphsLib',
 )
