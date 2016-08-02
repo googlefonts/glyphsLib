@@ -83,7 +83,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     """
 
     if data.pop('.appVersion', None) is None:
-        warn('This Glyphs source was generated with an outdated version of'
+        warn('This Glyphs source was generated with an outdated version of '
              'Glyphs. The resulting UFOs may be incorrect.')
 
     source_family_name = data.pop('familyName')
