@@ -187,6 +187,15 @@ class ToUfosTest(unittest.TestCase):
         #TODO(jamesgk) try to generate minimally-populated UFOs in glyphsLib,
         # assert that more fields are empty here (especially in name table)
 
+    def test_warn_no_version(self):
+        """Test that a warning is printed when app version is missing."""
+
+        data = self.generate_minimal_data()
+        del data['.appVersion']
+        builder.warn = _add_warning
+        to_ufos(data)
+        self.assertTrue(_check_warnings())
+
     def test_load_kerning(self):
         """Test that kerning conflicts are resolved correctly.
 
@@ -289,5 +298,4 @@ class ToUfosTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    builder.warn = _add_warning
     unittest.main()
