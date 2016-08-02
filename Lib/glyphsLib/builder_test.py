@@ -151,6 +151,7 @@ class SetRedundantDataTest(unittest.TestCase):
 class ToUfosTest(unittest.TestCase):
     def generate_minimal_data(self):
         return {
+            '.appVersion': 1,
             'date': datetime.datetime.today(),
             'familyName': 'MyFont',
             'fontMaster': [{
