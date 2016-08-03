@@ -420,6 +420,7 @@ _LAYER_TYPE_STRUCTURE.update({
 # The highest-level type hierarchy for glyphs data.
 # https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
 _TYPE_STRUCTURE = {
+    '.appVersion': integer,
     'DisplayStrings': default,
     'classes': {
         'automatic': truthy,
