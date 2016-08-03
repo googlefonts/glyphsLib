@@ -82,7 +82,9 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     If debug is True, returns unused input data instead of the resulting UFOs.
     """
 
-    if data.pop('.appVersion', None) is None:
+    # check that source was generated with at least stable version 2.3
+    # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
+    if data.pop('.appVersion', 0) < 895:
         warn('This Glyphs source was generated with an outdated version of '
              'Glyphs. The resulting UFOs may be incorrect.')
 
