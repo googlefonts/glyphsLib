@@ -18,7 +18,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import sys
+from io import open
 
 from glyphsLib.builder import to_ufos, write_ufo
 from glyphsLib.casting import cast_data
@@ -49,12 +49,15 @@ def loads(value):
     return data
 
 
-def load_to_ufos(filename, include_instances=False, family_name=None,
+def load_to_ufos(file_or_path, include_instances=False, family_name=None,
                  debug=False):
     """Load an unpacked .glyphs object to UFO objects."""
 
-    with open(filename, 'rb') as ifile:
-        data = load(ifile)
+    if hasattr(file_or_path, 'read'):
+        data = load(file_or_path)
+    else:
+        with open(file_or_path, 'r', encoding='utf-8') as ifile:
+            data = load(ifile)
     print('>>> Loading to UFOs')
     return to_ufos(data, include_instances=include_instances,
                    family_name=family_name, debug=debug)
