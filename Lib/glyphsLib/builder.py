@@ -143,7 +143,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
 
     for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
         glyph = ufos[layer_id][glyph_name]
-        set_robofont_glyph_background(glyph, bg_name, bg_data)
+        set_glyph_background(glyph, bg_name, bg_data)
 
     for ufo in ufos.values():
         propagate_font_anchors(ufo)
@@ -394,56 +394,40 @@ def set_guidelines(ufo_obj, glyphs_data, is_global=False):
         ufo_obj.guidelines = new_guidelines
 
 
-def set_robofont_glyph_background(glyph, key, background):
-    """Set glyph background as Glyphs does."""
+def set_components_attributes(glyph, layer):
+    # data related to components stored in lists of booleans
+    # each list's elements correspond to the components in order
+    for key in ['disableAlignment', 'locked']:
+        values = [c.pop(key, False) for c in layer.get('components', [])]
+        if any(values):
+            key = key[0].upper() + key[1:]
+            glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
 
+
+def set_glyph_background(glyph, key, background):
+    """Set glyph background."""
     if not background:
         return
 
-    new_background = {}
-    new_background['lib'] = background.pop('lib', {})
+    if glyph.layer.name != 'public.default':
+        layer_name = glyph.layer.name + '.background'
+    else:
+        layer_name = 'public.background'
 
-    anchors = []
-    for anchor in background.get('anchors', []):
-        x, y = anchor.pop('position')
-        anchors.append({'x': x, 'y': y, 'name': anchor.pop('name')})
-    new_background['anchors'] = anchors
+    font = glyph.font
+    if layer_name not in font.layers:
+        layer = font.newLayer(layer_name)
+    else:
+        layer = font.layers[layer_name]
+    new_glyph = layer.newGlyph(glyph.name)
 
-    components = []
-    for component in background.get('components', []):
-        new_component = {
-            'baseGlyph': component.pop('name'),
-            'transformation': component.pop('transform', (1, 0, 0, 1, 0, 0))}
-
-        for meta_attr in ['disableAlignment', 'locked']:
-            value = component.pop(meta_attr, False)
-            if value:
-                new_component[meta_attr] = True
-
-        components.append(new_component)
-    new_background['components'] = components
-
-    contours = []
-    for path in background.get('paths', []):
-        points = []
-        for x, y, node_type, smooth in path.pop('nodes', []):
-            point = {'x': x, 'y': y, 'smooth': smooth}
-            if node_type in ['line', 'curve']:
-                point['segmentType'] = node_type
-            points.append(point)
-        contours.append({'points': points})
-        path.pop('closed', None)  # not used, but remove for debug purposes
-    new_background['contours'] = contours
-
-    new_background['width'] = background.pop('width', glyph.width)
-    new_background['name'] = glyph.name
-    new_background['unicodes'] = []
-
-    libkey = ROBOFONT_PREFIX + 'layerData'
-    try:
-        glyph.lib[libkey][key] = new_background
-    except KeyError:
-        glyph.lib[libkey] = {key: new_background}
+    new_glyph.width = background.pop('width', glyph.width)
+    pen = new_glyph.getPointPen()
+    draw_paths(pen, background.get('paths', []))
+    draw_components(pen, background.get('components', []))
+    add_anchors_to_glyph(new_glyph, background.get('anchors', []))
+    set_guidelines(new_glyph, background)
+    set_components_attributes(new_glyph, background)
 
 
 def set_family_user_data(ufo, user_data):
@@ -574,21 +558,14 @@ def load_glyph_libdata(glyph, layer):
     """Add to a glyph's lib data."""
 
     set_guidelines(glyph, layer)
-    set_robofont_glyph_background(glyph, 'background', layer.get('background'))
+    set_glyph_background(glyph, 'background', layer.get('background'))
     for key in ['annotations', 'hints']:
         try:
             value = layer.pop(key)
         except KeyError:
             continue
         glyph.lib[GLYPHS_PREFIX + key] = value
-
-    # data related to components stored in lists of booleans
-    # each list's elements correspond to the components in order
-    for key in ['disableAlignment', 'locked']:
-        values = [c.pop(key, False) for c in layer.get('components', [])]
-        if any(values):
-            key = key[0].upper() + key[1:]
-            glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
+    set_components_attributes(glyph, layer)
 
 
 def load_glyph(glyph, layer, glyph_data):
