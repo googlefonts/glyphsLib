@@ -256,7 +256,7 @@ class ToUfosTest(unittest.TestCase):
                           for n, x, y in component_data]
             data['glyphs'].append({
                 'glyphname': name,
-                'layers': [{'layerId': 'id', 'width': 0,
+                'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
                             'anchors': anchors, 'components': components}]})
 
         ufos = to_ufos(data)
@@ -295,6 +295,31 @@ class ToUfosTest(unittest.TestCase):
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
+
+    def _run_guideline_test(self, data_in, expected):
+        data = self.generate_minimal_data()
+        data['glyphs'].append({
+            'glyphname': 'a',
+            'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
+                        'guideLines': data_in}]})
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo['a'].guidelines, expected)
+
+    def test_set_guidelines(self):
+        """Test that guidelines are set correctly."""
+
+        self._run_guideline_test(
+            [{'position': (1, 2), 'angle': 270}],
+            [{str('x'): 1, str('y'): 2, str('angle'): 90}])
+
+    def test_set_guidelines_duplicates(self):
+        """Test that duplicate guidelines are accepted."""
+
+        self._run_guideline_test(
+            [{'position': (1, 2), 'angle': 270},
+             {'position': (1, 2), 'angle': 270}],
+            [{str('x'): 1, str('y'): 2, str('angle'): 90},
+             {str('x'): 1, str('y'): 2, str('angle'): 90}])
 
 
 if __name__ == '__main__':
