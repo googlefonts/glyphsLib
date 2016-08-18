@@ -305,21 +305,22 @@ class ToUfosTest(unittest.TestCase):
         ufo = to_ufos(data)[0]
         self.assertEqual(ufo['a'].guidelines, expected)
 
-    def test_set_guidelines(self):
-        """Test that guidelines are set correctly."""
+    #TODO enable these when we switch to loading UFO3 guidelines
+    #def test_set_guidelines(self):
+    #    """Test that guidelines are set correctly."""
 
-        self._run_guideline_test(
-            [{'position': (1, 2), 'angle': 270}],
-            [{str('x'): 1, str('y'): 2, str('angle'): 90}])
+    #    self._run_guideline_test(
+    #        [{'position': (1, 2), 'angle': 270}],
+    #        [{str('x'): 1, str('y'): 2, str('angle'): 90}])
 
-    def test_set_guidelines_duplicates(self):
-        """Test that duplicate guidelines are accepted."""
+    #def test_set_guidelines_duplicates(self):
+    #    """Test that duplicate guidelines are accepted."""
 
-        self._run_guideline_test(
-            [{'position': (1, 2), 'angle': 270},
-             {'position': (1, 2), 'angle': 270}],
-            [{str('x'): 1, str('y'): 2, str('angle'): 90},
-             {str('x'): 1, str('y'): 2, str('angle'): 90}])
+    #    self._run_guideline_test(
+    #        [{'position': (1, 2), 'angle': 270},
+    #         {'position': (1, 2), 'angle': 270}],
+    #        [{str('x'): 1, str('y'): 2, str('angle'): 90},
+    #         {str('x'): 1, str('y'): 2, str('angle'): 90}])
 
 
 if __name__ == '__main__':
