@@ -15,9 +15,8 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-
+from fontTools.misc.py23 import basestring
 import datetime
-import json
 import re
 
 __all__ = [
