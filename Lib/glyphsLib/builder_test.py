@@ -26,7 +26,7 @@ from defcon import Font
 
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
-    set_redundant_data, to_ufos, GLYPHS_PREFIX
+    set_redundant_data, to_ufos, GLYPHS_PREFIX, draw_paths
 
 
 _warnings = []
@@ -321,6 +321,79 @@ class ToUfosTest(unittest.TestCase):
     #         {'position': (1, 2), 'angle': 270}],
     #        [{str('x'): 1, str('y'): 2, str('angle'): 90},
     #         {str('x'): 1, str('y'): 2, str('angle'): 90}])
+
+
+class _PointDataPen(object):
+
+    def __init__(self):
+        self.contours = []
+
+    def addPoint(self, pt, segmentType=None, smooth=False, **kwargs):
+        self.contours[-1].append((pt[0], pt[1], segmentType, smooth))
+
+    def beginPath(self):
+        self.contours.append([])
+
+    def endPath(self):
+        if not self.contours[-1]:
+            self.contours.pop()
+
+    def addComponent(self, *args, **kwargs):
+        pass
+
+
+class DrawPathsTest(unittest.TestCase):
+
+    def test_draw_paths_empty_nodes(self):
+        contours = [{'nodes': []}]
+
+        pen = _PointDataPen()
+        draw_paths(pen, contours)
+
+        self.assertEqual(pen.contours, [])
+
+    def test_draw_paths_open(self):
+        contours = [{
+            'closed': False,
+            'nodes': [
+                (0, 0, 'line', False),
+                (1, 1, 'offcurve', False),
+                (2, 2, 'offcurve', False),
+                (3, 3, 'curve', True),
+            ]}]
+
+        pen = _PointDataPen()
+        draw_paths(pen, contours)
+
+        self.assertEqual(pen.contours, [[
+            (0, 0, 'move', False),
+            (1, 1, None, False),
+            (2, 2, None, False),
+            (3, 3, 'curve', True),
+        ]])
+
+    def test_draw_paths_closed(self):
+        contours = [{
+            'closed': True,
+            'nodes': [
+                (0, 0, 'offcurve', False),
+                (1, 1, 'offcurve', False),
+                (2, 2, 'curve', True),
+                (3, 3, 'offcurve', False),
+                (4, 4, 'offcurve', False),
+                (5, 5, 'curve', True),
+            ]}]
+
+        pen = _PointDataPen()
+        draw_paths(pen, contours)
+
+        points = pen.contours[0]
+
+        first_x, first_y = points[0][:2]
+        self.assertEqual((first_x, first_y), (5, 5))
+
+        first_segment_type = points[0][2]
+        self.assertEqual(first_segment_type, 'curve')
 
 
 if __name__ == '__main__':
