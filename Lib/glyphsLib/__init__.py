@@ -73,17 +73,23 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
             written alongside the master UFOs though no instances will be built.
         family_name: If provided, the master UFOs will be given this name and
             only instances with this name will be included in the designspace.
+
+    Returns:
+        A list of master UFOs, and if designspace_instance_dir is provided, a
+        path to a designspace and a list of (path, data) tuples with instance
+        paths from the designspace and respective data from the Glyphs source.
     """
 
     ufos, instance_data = load_to_ufos(
         filename, include_instances=True, family_name=family_name)
     if designspace_instance_dir is not None:
-        build_designspace(ufos, master_dir, designspace_instance_dir,
-                          instance_data)
+        designspace_path, instance_data = build_designspace(
+            ufos, master_dir, designspace_instance_dir, instance_data)
+        return ufos, designspace_path, instance_data
     else:
         for ufo in ufos:
             write_ufo(ufo, master_dir)
-    return ufos
+        return ufos
 
 
 def build_instances(filename, master_dir, instance_dir, family_name=None):
