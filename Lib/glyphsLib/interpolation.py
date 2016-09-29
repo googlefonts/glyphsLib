@@ -22,7 +22,7 @@ from glyphsLib.builder import set_redundant_data, set_custom_params,\
     clear_data, write_ufo, build_ufo_path, clean_ufo, GLYPHS_PREFIX
 
 __all__ = [
-    'interpolate', 'build_designspace'
+    'interpolate', 'build_designspace', 'apply_instance_data'
 ]
 
 
@@ -33,7 +33,6 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
-    from defcon import Font
     from mutatorMath.ufo import build
 
     designspace_path, instance_files = build_designspace(
@@ -44,14 +43,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
         clean_ufo(path)
     build(designspace_path, outputUFOFormatVersion=3)
 
-    instance_ufos = []
-    for path, data in instance_files:
-        ufo = Font(path)
-        set_custom_params(ufo, data=data)
-        set_redundant_data(ufo)
-        ufo.save()
-        instance_ufos.append(ufo)
-
+    instance_ufos = apply_instance_data(instance_files)
     if debug:
         return clear_data(instance_data)
     return instance_ufos
@@ -173,3 +165,24 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
         writer.endInstance()
 
     return ofiles
+
+
+def apply_instance_data(instance_data):
+    """Open instances, apply data, and re-save.
+
+    Args:
+        instance_data: List of (path, data) tuples, one for each instance.
+        dst_ufo_list: List to add opened instances to.
+    Returns:
+        List of opened and updated instance UFOs.
+    """
+    from defcon import Font
+
+    instance_ufos = []
+    for path, data in instance_data:
+        ufo = Font(path)
+        set_custom_params(ufo, data=data)
+        set_redundant_data(ufo)
+        ufo.save()
+        instance_ufos.append(ufo)
+    return instance_ufos
