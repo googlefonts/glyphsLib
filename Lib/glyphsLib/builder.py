@@ -615,7 +615,10 @@ def load_glyph(glyph, layer, glyph_data):
         glyph.lib[glyphlib_prefix + 'Export'] = export
     production_name = glyph_data.get('production')
     if production_name is not None:
-        glyph.lib[PUBLIC_PREFIX + 'postscriptName'] = production_name
+        postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
+        if postscriptNamesKey not in glyph.font.lib:
+            glyph.font.lib[postscriptNamesKey] = dict()
+        glyph.font.lib[postscriptNamesKey][glyph.name] = production_name
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         glyph_metrics_key = None
