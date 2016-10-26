@@ -314,6 +314,14 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
     for name, value in parsed:
         name = normalize_custom_param_name(name)
 
+        # special cases
+        if name == 'Has WWS Names':
+            try:
+                ufo.info.openTypeOS2Selection.append(8)
+            except AttributeError:
+                ufo.info.openTypeOS2Selection = [8]
+            continue
+
         # deal with any Glyphs naming quirks here
         if name == 'disablesNiceNames':
             name = 'useNiceNames'
