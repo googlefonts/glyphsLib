@@ -170,13 +170,12 @@ def clear_data(data):
     This is used to determine what input data provided to to_ufos was not
     loaded into an UFO."""
 
-    data_type = type(data)
-    if data_type is dict:
+    if isinstance(data, dict):
         for key, val in data.items():
             if not clear_data(val):
                 del data[key]
         return data
-    elif data_type is list:
+    elif isinstance(data, list):
         i = 0
         while i < len(data):
             val = data[i]
