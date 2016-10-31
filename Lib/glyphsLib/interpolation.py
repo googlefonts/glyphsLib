@@ -116,7 +116,8 @@ def add_masters_to_writer(writer, ufos):
         writer.addSource(
             path=path, name='%s %s' % (family, style),
             familyName=family, styleName=style, location=location,
-            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base)
+            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base,
+            copyLib=is_base)
 
     return base_family, base_style
 
