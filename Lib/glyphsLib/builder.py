@@ -293,14 +293,16 @@ def set_redundant_data(ufo):
     ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
     ascender = ufo.info.ascender
-    ufo.info.openTypeHheaAscender = ascender
-    ufo.info.openTypeOS2TypoAscender = ascender
-    ufo.info.openTypeOS2WinAscent = ascender
+    if ascender is not None:
+        ufo.info.openTypeHheaAscender = ascender
+        ufo.info.openTypeOS2TypoAscender = ascender
+        ufo.info.openTypeOS2WinAscent = ascender
 
     descender = ufo.info.descender
-    ufo.info.openTypeHheaDescender = descender
-    ufo.info.openTypeOS2TypoDescender = descender
-    ufo.info.openTypeOS2WinDescent = abs(descender)
+    if descender is not None:
+        ufo.info.openTypeHheaDescender = descender
+        ufo.info.openTypeOS2TypoDescender = descender
+        ufo.info.openTypeOS2WinDescent = abs(descender)
 
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
