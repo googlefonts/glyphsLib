@@ -16,16 +16,15 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import os
 import re
-import shutil
 import sys
 
 from glyphsLib.anchors import propagate_font_anchors
+from glyphsLib.util import info, warn
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_ufo_path', 'write_ufo', 'clean_ufo', 'GLYPHS_PREFIX'
+    'GLYPHS_PREFIX'
 ]
 
 
@@ -745,34 +744,3 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
     # make sure feature text is a unicode string, for defcon
     full_text = '\n\n'.join([prefix_str, class_str, fea_str])
     ufo.features.text = full_text if full_text.strip() else ''
-
-
-def build_ufo_path(out_dir, family_name, style_name):
-    """Build string to use as a UFO path."""
-
-    return os.path.join(
-        out_dir, '%s-%s.ufo' % (
-            family_name.replace(' ', ''),
-            style_name.replace(' ', '')))
-
-
-def write_ufo(ufo, out_dir):
-    """Write a UFO."""
-
-    out_path = build_ufo_path(
-        out_dir, ufo.info.familyName, ufo.info.styleName)
-
-    print('>>> Writing %s' % out_path)
-    clean_ufo(out_path)
-    ufo.save(out_path)
-
-
-def clean_ufo(path):
-    """Make sure old UFO data is removed, as it may contain deleted glyphs."""
-
-    if path.endswith('.ufo') and os.path.exists(path):
-        shutil.rmtree(path)
-
-
-def warn(message):
-    print('WARNING: ' + message, file=sys.stderr)

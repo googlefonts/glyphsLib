@@ -19,6 +19,8 @@ from fontTools.misc.py23 import basestring
 import datetime
 import re
 
+from glyphsLib.util import error
+
 __all__ = [
     'cast_data',
     'uncast_data'
@@ -110,7 +112,7 @@ class RWString(RWGlyphs):
 
     def write(self, val):
         if not isinstance(val, basestring):
-            print('val (%s): "%s"' % (type(val).__name__, val))
+            error('val (%s): "%s"' % (type(val).__name__, val))
             raise ValueError('not a string')
         return val
 

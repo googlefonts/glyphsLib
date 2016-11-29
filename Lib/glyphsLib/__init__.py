@@ -20,10 +20,11 @@ from __future__ import (print_function, division, absolute_import,
 
 from io import open
 
-from glyphsLib.builder import to_ufos, write_ufo
+from glyphsLib.builder import to_ufos
 from glyphsLib.casting import cast_data
 from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import Parser
+from glyphsLib.util import info, write_ufo
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
@@ -42,9 +43,9 @@ def loads(value):
     Return the unpacked root object (an ordered dictionary).
     """
     p = Parser()
-    print('>>> Parsing .glyphs file')
+    info('Parsing .glyphs file')
     data = p.parse(value)
-    print('>>> Casting parsed values')
+    info('Casting parsed values')
     cast_data(data)
     return data
 
@@ -58,7 +59,7 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
     else:
         with open(file_or_path, 'r', encoding='utf-8') as ifile:
             data = load(ifile)
-    print('>>> Loading to UFOs')
+    info('Loading to UFOs')
     return to_ufos(data, include_instances=include_instances,
                    family_name=family_name, debug=debug)
 
