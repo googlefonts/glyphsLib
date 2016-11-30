@@ -17,10 +17,9 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import re
-import sys
 
 from glyphsLib.anchors import propagate_font_anchors
-from glyphsLib.util import info, warn
+from glyphsLib.util import warn
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
