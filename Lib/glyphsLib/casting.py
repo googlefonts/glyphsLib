@@ -17,14 +17,15 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 from fontTools.misc.py23 import basestring
 import datetime
+import logging
 import re
-
-from glyphsLib.util import error
 
 __all__ = [
     'cast_data',
     'uncast_data'
 ]
+
+logger = logging.getLogger(__name__)
 
 
 CUSTOM_INT_PARAMS = frozenset((
@@ -112,7 +113,7 @@ class RWString(RWGlyphs):
 
     def write(self, val):
         if not isinstance(val, basestring):
-            error('val (%s): "%s"' % (type(val).__name__, val))
+            logger.error('val (%s): "%s"' % (type(val).__name__, val))
             raise ValueError('not a string')
         return val
 

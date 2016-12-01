@@ -16,16 +16,18 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+import logging
 import os
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
     GLYPHS_PREFIX
-from glyphsLib.util import info, build_ufo_path, write_ufo, clean_ufo
+from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
 __all__ = [
     'interpolate', 'build_designspace', 'apply_instance_data'
 ]
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_LOC = 100
 
@@ -39,7 +41,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     designspace_path, instance_files = build_designspace(
         ufos, master_dir, out_dir, instance_data)
 
-    info('Building instances')
+    logger.info('Building instances')
     for path, _ in instance_files:
         clean_ufo(path)
     build(designspace_path, outputUFOFormatVersion=3)

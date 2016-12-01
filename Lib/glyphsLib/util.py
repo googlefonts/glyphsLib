@@ -17,19 +17,7 @@ import logging
 import os
 import shutil
 
-logger = logging.getLogger('glyphsLib')
-
-
-def info(msg):
-    logger.info(msg)
-
-
-def warn(msg):
-    logger.warn(msg)
-
-
-def error(msg):
-    logger.error(msg)
+logger = logging.getLogger(__name__)
 
 
 def build_ufo_path(out_dir, family_name, style_name):
@@ -47,7 +35,7 @@ def write_ufo(ufo, out_dir):
     out_path = build_ufo_path(
         out_dir, ufo.info.familyName, ufo.info.styleName)
 
-    info('Writing %s' % out_path)
+    logger.info('Writing %s' % out_path)
     clean_ufo(out_path)
     ufo.save(out_path)
 
