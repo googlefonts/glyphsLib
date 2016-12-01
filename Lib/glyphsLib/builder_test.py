@@ -29,19 +29,17 @@ from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, draw_paths
 
 
-_warnings = []
+class LoggingCapturer(object):
+    def __init__(self):
+        self.warnings = []
 
+    def warn(self, msg):
+        self.warnings.append(msg)
 
-def _add_warning(message):
-    global _warnings
-    _warnings.append(message)
-
-
-def _check_warnings():
-    global _warnings
-    checked = list(_warnings)
-    _warnings = []
-    return checked
+    def check_warnings(self):
+        checked = list(self.warnings)
+        self.warnings = []
+        return checked
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -192,9 +190,10 @@ class ToUfosTest(unittest.TestCase):
 
         data = self.generate_minimal_data()
         del data['.appVersion']
-        builder.warn = _add_warning
+        logger = LoggingCapturer()
+        builder.logger = logger
         to_ufos(data)
-        self.assertTrue(_check_warnings())
+        self.assertTrue(logger.check_warnings())
 
     def test_load_kerning(self):
         """Test that kerning conflicts are resolved correctly.
