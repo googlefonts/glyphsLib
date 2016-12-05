@@ -16,17 +16,17 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import os
+import logging
 import re
-import shutil
-import sys
 
 from glyphsLib.anchors import propagate_font_anchors
 
 __all__ = [
     'to_ufos', 'clear_data', 'set_redundant_data', 'set_custom_params',
-    'build_ufo_path', 'write_ufo', 'clean_ufo', 'GLYPHS_PREFIX'
+    'GLYPHS_PREFIX'
 ]
+
+logger = logging.getLogger(__name__)
 
 
 PUBLIC_PREFIX = 'public.'
@@ -85,8 +85,8 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     # check that source was generated with at least stable version 2.3
     # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
     if data.pop('.appVersion', 0) < 895:
-        warn('This Glyphs source was generated with an outdated version of '
-             'Glyphs. The resulting UFOs may be incorrect.')
+        logger.warn('This Glyphs source was generated with an outdated version '
+                    'of Glyphs. The resulting UFOs may be incorrect.')
 
     source_family_name = data.pop('familyName')
     if family_name is None:
@@ -117,8 +117,9 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         glyph_name = glyph.pop('glyphname')
         glyph_order.append(glyph_name)
         if not re.match(r'^([A-Za-z_][\w.]*|\.notdef)$', glyph_name):
-            warn('Illegal glyph name "%s". If this is used in the font\'s '
-                 'feature syntax, it could cause errors.' % glyph_name)
+            logger.warn(
+                'Illegal glyph name "%s". If this is used in the font\'s '
+                'feature syntax, it could cause errors.' % glyph_name)
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
@@ -524,7 +525,7 @@ def load_kerning(ufo, kerning_data):
         if left_is_class:
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
-                warn(warning_msg % left)
+                logger.warn(warning_msg % left)
                 continue
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
@@ -532,7 +533,7 @@ def load_kerning(ufo, kerning_data):
             if right_is_class:
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
-                    warn(warning_msg % right)
+                    logger.warn(warning_msg % right)
                     continue
             if left_is_class != right_is_class:
                 if left_is_class:
@@ -564,9 +565,10 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
         if (existing_rule is not None and
             existing_rule[-1] != val and
             pair not in ufo.kerning):
-            warn('Conflicting kerning rules found in %s master for glyph pair '
-                 '"%s, %s" (%s and %s), removing pair from latter rule' %
-                 ((ufo.info.styleName,) + pair + (existing_rule, rule)))
+            logger.warn(
+                'Conflicting kerning rules found in %s master for glyph pair '
+                '"%s, %s" (%s and %s), removing pair from latter rule' %
+                ((ufo.info.styleName,) + pair + (existing_rule, rule)))
         else:
             new_glyphs.append(member)
             seen[pair] = rule
@@ -745,34 +747,3 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
     # make sure feature text is a unicode string, for defcon
     full_text = '\n\n'.join([prefix_str, class_str, fea_str])
     ufo.features.text = full_text if full_text.strip() else ''
-
-
-def build_ufo_path(out_dir, family_name, style_name):
-    """Build string to use as a UFO path."""
-
-    return os.path.join(
-        out_dir, '%s-%s.ufo' % (
-            family_name.replace(' ', ''),
-            style_name.replace(' ', '')))
-
-
-def write_ufo(ufo, out_dir):
-    """Write a UFO."""
-
-    out_path = build_ufo_path(
-        out_dir, ufo.info.familyName, ufo.info.styleName)
-
-    print('>>> Writing %s' % out_path)
-    clean_ufo(out_path)
-    ufo.save(out_path)
-
-
-def clean_ufo(path):
-    """Make sure old UFO data is removed, as it may contain deleted glyphs."""
-
-    if path.endswith('.ufo') and os.path.exists(path):
-        shutil.rmtree(path)
-
-
-def warn(message):
-    print('WARNING: ' + message, file=sys.stderr)
