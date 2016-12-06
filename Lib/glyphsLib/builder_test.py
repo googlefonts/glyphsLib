@@ -24,22 +24,11 @@ import unittest
 
 from defcon import Font
 
+from fontTools.misc.loggingTools import CapturingLogHandler
+
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, draw_paths
-
-
-class LoggingCapturer(object):
-    def __init__(self):
-        self.warnings = []
-
-    def warn(self, msg):
-        self.warnings.append(msg)
-
-    def check_warnings(self):
-        checked = list(self.warnings)
-        self.warnings = []
-        return checked
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -190,10 +179,10 @@ class ToUfosTest(unittest.TestCase):
 
         data = self.generate_minimal_data()
         del data['.appVersion']
-        logger = LoggingCapturer()
-        builder.logger = logger
-        to_ufos(data)
-        self.assertTrue(logger.check_warnings())
+        with CapturingLogHandler(builder.logger, "WARNING") as captor:
+            to_ufos(data)
+        self.assertEqual(len([r for r in captor.records
+                              if "outdated version" in r.msg]), 1)
 
     def test_load_kerning(self):
         """Test that kerning conflicts are resolved correctly.
