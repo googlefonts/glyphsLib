@@ -8,11 +8,9 @@ branches:
     - master
     - /^v\d+\.\d+.*$/
 
-install:
-  - pip install -r requirements.txt
+install: pip install tox-travis
 
-script:
-  - python setup.py test
+script: tox
 
 deploy:
   # deploy to PyPI on tags
