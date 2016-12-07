@@ -3,3 +3,4 @@ include CONTRIBUTING.md
 include LICENSE
 
 include requirements.txt
+include tox.ini
