@@ -20,7 +20,7 @@ import logging
 import os
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    GLYPHS_PREFIX
+    clear_data, GLYPHS_PREFIX
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
 __all__ = [
