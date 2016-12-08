@@ -21,7 +21,7 @@ import os
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
     GLYPHS_PREFIX
-from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
+from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
     'interpolate', 'build_designspace', 'apply_instance_data'
@@ -90,6 +90,13 @@ def add_masters_to_writer(writer, ufos):
     base_family = None
     base_style = None
 
+    # only write dimension elements if defined in at least one of the masters
+    dimension_names = []
+    for s in ('weight', 'width', 'custom'):
+        key = GLYPHS_PREFIX + s + 'Value'
+        if any(key in font.lib for font in ufos):
+            dimension_names.append(s)
+
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
         if base_family is None:
@@ -102,7 +109,7 @@ def add_masters_to_writer(writer, ufos):
             base_style = [s for s in style.split() if s in base_style]
         master_data.append((font.path, family, style, {
             s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
-            for s in ('weight', 'width', 'custom')}))
+            for s in dimension_names}))
 
     # pick a master to copy info, features, and groups from, trying to find the
     # master with a base style shared between all masters (or just Regular) and
@@ -134,8 +141,17 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
     """
 
     default_family_name = instance_data.pop('defaultFamilyName')
+    instance_data = instance_data.pop('data')
     ofiles = []
-    for instance in instance_data.pop('data'):
+
+    # only write dimension elements if defined in at least one of the instances
+    dimension_names = []
+    for s in ('weight', 'width', 'custom'):
+        key = 'interpolation' + s.title()
+        if any(key in instance for instance in instance_data):
+            dimension_names.append(s)
+
+    for instance in instance_data:
 
         if not instance.pop('active', True):
             continue
@@ -159,7 +175,7 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             name=' '.join((instance_family, style_name)),
             location={
                 s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
-                for s in ('weight', 'width', 'custom')},
+                for s in dimension_names},
             familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
