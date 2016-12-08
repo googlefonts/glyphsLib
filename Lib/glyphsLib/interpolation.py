@@ -20,8 +20,8 @@ import logging
 import os
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    clear_data, GLYPHS_PREFIX
-from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
+    GLYPHS_PREFIX
+from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
     'interpolate', 'build_designspace', 'apply_instance_data'

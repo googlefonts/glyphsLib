@@ -45,3 +45,26 @@ def clean_ufo(path):
 
     if path.endswith('.ufo') and os.path.exists(path):
         shutil.rmtree(path)
+
+
+def clear_data(data):
+    """Clear empty list or dict attributes in data.
+
+    This is used to determine what input data provided to to_ufos was not
+    loaded into an UFO."""
+
+    if isinstance(data, dict):
+        for key, val in data.items():
+            if not clear_data(val):
+                del data[key]
+        return data
+    elif isinstance(data, list):
+        i = 0
+        while i < len(data):
+            val = data[i]
+            if not clear_data(val):
+                del data[i]
+            else:
+                i += 1
+        return data
+    return True
