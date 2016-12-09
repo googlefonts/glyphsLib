@@ -45,8 +45,7 @@ setup(
     install_requires=[
         "fonttools>=3.1.2",
         "defcon>=0.2.0",
-        # TODO(anthrotype): un-comment this out once MutatorMath is on PyPI
-        # "MutatorMath>=2.0.0",
+        "MutatorMath>=2.0.0",
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

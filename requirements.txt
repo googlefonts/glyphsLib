@@ -1,4 +1,3 @@
 fonttools==3.3.0
 defcon==0.2.0
-# TODO(anthrotype): un-comment this out once MutatorMath is published on PyPI
-# MutatorMath==2.0.0
+MutatorMath==2.0.0
