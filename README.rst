@@ -1,4 +1,4 @@
-|Travis Build Status|
+|Travis Build Status| |PyPI Version|
 
 glyphsLib
 =========
@@ -46,3 +46,5 @@ Load Glyphs data as a Python dictionary
 
 .. |Travis Build Status| image:: https://travis-ci.org/googlei18n/glyphsLib.svg
    :target: https://travis-ci.org/googlei18n/glyphsLib
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/glyphsLib.svg
+   :target: https://pypi.org/project/glyphsLib/
