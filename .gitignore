@@ -1,3 +1,13 @@
-build
+# Byte-compiled files
+__pycache__/
 *.pyc
-*.egg-info/
+
+# Packaging
+*.egg-info
+*.eggs
+build
+dist
+
+# Unit test
+.cache/
+.tox/

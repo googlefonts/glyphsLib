@@ -6,12 +6,22 @@ python:
 branches:
   only:
     - master
+    - /^v\d+\.\d+.*$/
 
-install:
-  - python setup.py install
-  - pip install git+https://github.com/typesupply/defcon
-  - pip install git+https://github.com/behdad/fonttools
-  - pip install git+https://github.com/unified-font-object/ufoLib
+install: pip install tox-travis
 
-script:
-  - python setup.py test
+script: tox
+
+deploy:
+  # deploy to PyPI on tags
+  provider: pypi
+  server: https://upload.pypi.org/legacy/
+  on:
+    repo: googlei18n/glyphsLib
+    tags: true
+    all_branches: true
+    python: 3.5
+  user: anthrotype
+  password:
+    secure: MFfm+XsmNZmrFzmIytS5MhoIcSHle695sv036Q5pKugtBBn187fSBR/zCfM0C2qRy7rFUyCXKJAhiVb94VCsr3B+lFM03A5uSWLzDXPk3qGGkut39+BQU3wQ3YZx5ozo/PHOWPTo9CdHHmFFgeWJDo+pj6t9rE8m2MYFEf6QC9VGE2Tn4pgMOqRsHqtiRoV0sTe0Ulkek1c9iWR6Lpw5Eq+BgdFFaqYx1vjMywGwrlzgu5Q37G7QZ6C4X1UbzERXcoexDC6Qlrt/DGKsh4NEENfsE43b7llVMpWwxs/FxKt4fJA1cMacDQdwLc7iIyplTzdKYfau2qg07hKAfC+q/jG7D/g8K/K9nROVGwJCaWM2cdnlvMFRfoznYx3l0Qb8Kqf0uFahdSY3k3f60Fi4kF2v5ZWUIRlBm6Lb15h+mfIefqUbKy4V9ptzsUMXYGC3nutWdqDPNF8KUoC/LCykgDQ17ZK7knPUl40Ivj2PuVy6fyUvxEGh2+2pE1Ku2Lk1m7eE/AW2s7Zx0gWQ+xR++kTgc6XQZuGJDWKeYwKCPFopENwPkHX76dJpV6U8ALirYYyro4noB8V3RmNsJbqfcCB/aVbrmT97eb5M7R0W3H5CNhnXWtjxqYp16KHzBqoPYNpuYQLpky5lNjpE0KI4RXF/eb3ywLL/MVs0Z1Vklfw=
+  distributions: sdist bdist_wheel
