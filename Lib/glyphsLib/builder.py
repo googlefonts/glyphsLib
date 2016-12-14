@@ -688,6 +688,24 @@ def add_groups_to_ufo(ufo, kerning_groups):
         ufo.groups[name] = glyphs
 
 
+def build_gdef(ufo):
+    """Build a table GDEF statement for ligature carets."""
+    carets = {}
+    for glyph in ufo:
+        for anchor in glyph.anchors:
+            name = anchor.get('name')
+            if name and name.startswith('caret_') and 'x' in anchor:
+                carets.setdefault(glyph.name, []).append(str(anchor['x']))
+    if not carets:
+        return None
+    lines = ['table GDEF {', '# automatic']
+    for glyph, caretPos in sorted(carets.items()):
+        lines.append('LigatureCaretByPos %s %s;' %
+                     (glyph, ' '.join(sorted(caretPos))))
+    lines.append('} GDEF;')
+    return '\n'.join(lines)
+
+
 def add_features_to_ufo(ufo, feature_prefixes, classes, features):
     """Write an UFO's OpenType feature file."""
 
@@ -721,7 +739,9 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features):
         lines.append('} %s;' % name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
+    gdef_str = build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
-    full_text = '\n\n'.join([prefix_str, class_str, fea_str])
+    full_text = '\n\n'.join(
+        filter(None, [prefix_str, class_str, fea_str, gdef_str])) + '\n'
     ufo.features.text = full_text if full_text.strip() else ''
