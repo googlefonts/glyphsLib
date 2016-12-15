@@ -21,7 +21,7 @@ import argparse
 
 import glyphsLib
 
-__version__ = "1.1.0"
+
 description = """\n
 Converts a Glyphs.app source file into UFO masters
 or UFO instances and MutatorMath designspace.
@@ -31,7 +31,7 @@ or UFO instances and MutatorMath designspace.
 def parse_options(args):
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--version", action="version",
-                        version='glyphsLib %s' % (__version__))
+                        version='glyphsLib %s' % (glyphsLib.__version__))
     parser.add_argument("-g", "--glyphs", metavar="GLYPHS", required=True,
                         help="Glyphs file to convert.")
     parser.add_argument("-m", "--masters", metavar="MASTERS",
