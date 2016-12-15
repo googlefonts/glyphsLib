@@ -270,6 +270,30 @@ class ToUfosTest(unittest.TestCase):
                 self.assertEqual(anchor.name, 'bottom_2')
                 self.assertEqual(anchor.x, 150)
 
+    def test_ligature_carets(self):
+        """Test that ligature carets get converted into features."""
+        data = self.generate_minimal_data()
+        glyphs = (
+            ('a_c.alt', [('caret_foo', 300, -50)]),
+            ('f_f_i', [('caret_1', 250, -50), ('caret_2', 550, 150)]),
+        )
+        for name, anchor_data in glyphs:
+            anchors = [{'name': n, 'position': (x, y)}
+                       for n, x, y in anchor_data]
+            data['glyphs'].append({
+                'glyphname': name,
+                'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
+                            'anchors': anchors, 'components': []}]})
+        ufos = to_ufos(data)
+        ufo = ufos[0]
+        self.assertEqual(ufo.features.text.splitlines(), [
+            'table GDEF {',
+            '# automatic',
+            'LigatureCaretByPos a_c.alt 300;',
+            'LigatureCaretByPos f_f_i 250 550;',
+            '} GDEF;',
+        ])
+
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
