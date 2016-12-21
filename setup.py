@@ -43,7 +43,7 @@ setup(
         'pytest>=2.8',
     ],
     install_requires=[
-        "fonttools>=3.1.2",
+        "fonttools>=3.4.0",
         "defcon>=0.2.0",
         "MutatorMath>=2.0.0",
     ],
