@@ -19,9 +19,10 @@ from __future__ import (print_function, division, absolute_import,
 from collections import namedtuple
 from fontTools import agl
 from glyphsLib import glyphdata_generated
+import unicodedata
 
 
-Glyph = namedtuple("Glyph", "name,production_name,unicode")
+Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 
 def get_glyph(name, data=glyphdata_generated):
@@ -33,4 +34,30 @@ def get_glyph(name, data=glyphdata_generated):
         unistr_result = unistr
     else:
         unistr_result = None
-    return Glyph(name, prodname, unistr_result)
+    category, subCategory = _get_category(name, unistr, data)
+    return Glyph(name, prodname, unistr_result, category, subCategory)
+
+
+def _get_unicode_category(unistr):
+    # We use data for a fixed Unicode version (3.2) so that our generated
+    # data files are independent of Python runtime that runs the rules.
+    # By switching to current Unicode data, we could save some entries
+    # in our exception tables, but the gains are not very large; only
+    # about one thousand entries.
+    return unicodedata.ucd_3_2_0.category(unistr[0]) if unistr else None
+
+
+def _get_category(name, unistr, data=glyphdata_generated):
+    cat = data.IRREGULAR_CATEGORIES.get(name)
+    if cat is not None:
+        return cat
+    if name.endswith("-ko"):
+        return ("Letter", "Syllable")
+    if name.endswith("-ethiopic") or name.endswith("-tifi"):
+        return ("Letter", None)
+    if name.startswith("box"):
+        return ("Symbol", "Geometry")
+    if name.startswith("uniF9"):
+        return ("Letter", "Compatibility")
+    ucat = _get_unicode_category(unistr)
+    return data.DEFAULT_CATEGORIES[ucat]

@@ -26,8 +26,8 @@ import urllib
 import textwrap
 import xml.etree.ElementTree as etree
 
-from collections import namedtuple
-from glyphsLib.glyphdata import get_glyph
+from collections import Counter, defaultdict, namedtuple
+from glyphsLib.glyphdata import get_glyph, _get_unicode_category, _get_category
 
 
 # Data tables which we put into the generated Python file.
@@ -35,7 +35,9 @@ from glyphsLib.glyphdata import get_glyph
 GlyphData = namedtuple('GlyphData', [
     'PRODUCTION_NAMES',
     'IRREGULAR_UNICODE_STRINGS',
-    'MISSING_UNICODE_STRINGS'
+    'MISSING_UNICODE_STRINGS',
+    'DEFAULT_CATEGORIES',
+    'IRREGULAR_CATEGORIES',
 ])
 
 
@@ -69,6 +71,7 @@ def fetch_all_glyphs():
 
 
 def build_data(glyphs):
+    default_categories, irregular_categories = build_categories(glyphs)
     prodnames = {}
     irregular_unicode_strings = {}
     missing_unicode_strings = set()
@@ -85,7 +88,32 @@ def build_data(glyphs):
             irregular_unicode_strings[name] = unistr
     return GlyphData(prodnames,
                      irregular_unicode_strings,
-                     missing_unicode_strings)
+                     missing_unicode_strings,
+                     default_categories,
+                     irregular_categories)
+
+
+def build_categories(glyphs):
+    counts = defaultdict(Counter)
+    unicode_strings = {}
+    for name, glyph in glyphs.items():
+        prodname = glyph.get("production", name)
+        unistr = unicode_strings[name] = fontTools.agl.toUnicode(prodname)
+        unicode_category = _get_unicode_category(unistr)
+        category = (glyph.get("category"), glyph.get("subCategory"))
+        counts[unicode_category][category] += 1
+    default_categories = {}
+    for key, value in counts.items():
+        cat, _count = value.most_common(1)[0]
+        default_categories[key] = cat
+    data = GlyphData({}, {}, set(), default_categories, {})
+    irregular_categories = {}
+    for name, glyph in glyphs.items():
+        inferred_category = _get_category(name, unicode_strings[name], data)
+        category = (glyph.get("category"), glyph.get("subCategory"))
+        if category != inferred_category:
+            irregular_categories[name] = category
+    return default_categories, irregular_categories
 
 
 def test_data(glyphs, data):
@@ -100,10 +128,14 @@ def test_data(glyphs, data):
         prod = glyph.get("production", name)
         unicode = glyph.get("unicode")
         unicode = unichr(int(unicode, 16)) if unicode else None
+        category = glyph.get("category")
+        subCategory = glyph.get("subCategory")
         g = get_glyph(name, data=data)
         assert name == g.name, (name, g.name)
         assert prod == g.production_name, (name, prod, g.production_name)
         assert unicode == g.unicode, (name, unicode, g.unicode)
+        assert category == g.category, (name, category, g.category)
+        assert subCategory == g.subCategory, (name, subCategory, g.subCategory)
 
 
 def generate_python_source(data, out):
@@ -151,9 +183,28 @@ def generate_python_source(data, out):
     out.write("MISSING_UNICODE_STRINGS = {\n")
     for name in sorted(data.MISSING_UNICODE_STRINGS):
         out.write('\t"%s",\n' % name)
-    out.write("}\n")
+    out.write("}\n\n")
 
+    out.write(
+        "# From the first character of the Unicode string of a glyph,\n"
+        "# one can compute the Unicode category. This Unicode category\n"
+        "# can frequently be mapped to the Glyphs category and subCategory.\n"
+        "DEFAULT_CATEGORIES = {\n")
+    for ucat, glyphsCat in sorted(data.DEFAULT_CATEGORIES.items()):
+        out.write('\t%s: %s,\n' %
+                  ('"%s"' % ucat if ucat else 'None', glyphsCat))
+    out.write("}\n\n")
 
+    out.write(
+        "# However, to some glyphs, Glyphs.app assigns a different category\n"
+        "# or sub-category than Unicode. The following table contains these\n"
+        "# exceptions.\n"
+        "IRREGULAR_CATEGORIES = {\n")
+    for glyphName, glyphsCat in sorted(data.IRREGULAR_CATEGORIES.items()):
+        out.write('\t"%s": %s,\n' % (glyphName, glyphsCat))
+    out.write("}\n\n")
+
+    
 if __name__ == "__main__":
     outpath = "Lib/glyphsLib/glyphdata_generated.py"
     glyphs = fetch_all_glyphs()
