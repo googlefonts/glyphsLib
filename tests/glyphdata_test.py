@@ -45,6 +45,16 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(uni("Gcommaaccent"), "Ģ")
         self.assertEqual(uni("o_f_f_i.foo"), "offi")
 
+    def test_category(self):
+        cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
+        self.assertEqual(cat(".notdef"), ("Separator", None))
+        self.assertEqual(cat("boxHeavyUp"), ("Symbol", "Geometry"))
+        self.assertEqual(cat("eacute"), ("Letter", "Lowercase"))
+        self.assertEqual(cat("Abreveacute"), ("Letter", "Uppercase"))
+        self.assertEqual(cat("C-fraktur"), ("Letter", "Uppercase"))
+        self.assertEqual(cat("s_t"), ("Letter", "Ligature"))
+        self.assertEqual(cat("hib-ko"), ("Letter", "Syllable"))
+
 
 if __name__ == "__main__":
     unittest.main()
