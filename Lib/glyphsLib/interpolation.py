@@ -132,7 +132,7 @@ def add_masters_to_writer(writer, ufos):
     return base_family, base_style
 
 
-def add_instances_to_writer(writer, family_name, instance_data, out_dir):
+def add_instances_to_writer(writer, master_family, instance_data, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the
@@ -140,7 +140,7 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
     Glyphs data for this instance as a dict.
     """
 
-    default_family_name = instance_data.pop('defaultFamilyName')
+    default_family = instance_data.pop('defaultFamilyName')
     instance_data = instance_data.pop('data')
     ofiles = []
 
@@ -157,27 +157,27 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             continue
 
         # only use instances with the masters' family name
-        instance_family = default_family_name
+        family = default_family
         custom_params = instance.get('customParameters', ())
         for i in range(len(custom_params)):
             if custom_params[i]['name'] == 'familyName':
-                instance_family = custom_params[i]['value']
+                family = custom_params[i]['value']
                 del custom_params[i]
                 break
-        if instance_family != family_name:
+        if family != master_family:
             continue
 
-        style_name = instance.pop('name')
-        ufo_path = build_ufo_path(out_dir, instance_family, style_name)
+        style = instance.pop('name')
+        ufo_path = build_ufo_path(out_dir, family, style)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
-            name=' '.join((instance_family, style_name)),
+            name=' '.join((family, style)),
             location={
                 s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
                 for s in dimension_names},
-            familyName=instance_family,
-            styleName=style_name,
+            familyName=family,
+            styleName=style,
             fileName=ufo_path)
 
         writer.writeInfo()
