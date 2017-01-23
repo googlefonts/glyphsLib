@@ -21,6 +21,7 @@ import re
 
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data
+import glyphsLib.glyphdata
 
 __all__ = [
     'to_ufos', 'set_redundant_data', 'set_custom_params',
@@ -601,6 +602,10 @@ def load_glyph(glyph, layer, glyph_data):
     if export is not None:
         glyph.lib[glyphlib_prefix + 'Export'] = export
     production_name = glyph_data.get('production')
+    if production_name is None:
+        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+        if glyphinfo:
+            production_name = glyphinfo.production_name
     if production_name is not None:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
         if postscriptNamesKey not in glyph.font.lib:
