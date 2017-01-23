@@ -282,15 +282,14 @@ class ToUfosTest(unittest.TestCase):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'foo')['production'] = 'f_o_o.alt1'
         ufo = to_ufos(data)[0]
-        postscriptNames = ufo['foo'].font.lib.get('public.postscriptNames')
+        postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'foo': 'f_o_o.alt1'})
 
     def test_postscript_name_from_glyph_name(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'C-fraktur')
         ufo = to_ufos(data)[0]
-        postscriptNames = ufo['C-fraktur'].font.lib.get(
-            'public.postscriptNames')
+        postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
 
     def test_ligature_carets(self):
