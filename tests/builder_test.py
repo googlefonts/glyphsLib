@@ -154,6 +154,14 @@ class ToUfosTest(unittest.TestCase):
             'versionMinor': 0,
         }
 
+    def add_glyph(self, data, glyphname):
+        glyph = {
+            'glyphname': glyphname,
+            'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0}]
+        }
+        data['glyphs'].append(glyph)
+        return glyph
+
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
         some cases that additional redundant data is not set.
@@ -269,6 +277,13 @@ class ToUfosTest(unittest.TestCase):
             else:
                 self.assertEqual(anchor.name, 'bottom_2')
                 self.assertEqual(anchor.x, 150)
+
+    def test_postscript_name_from_data(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'foo')['production'] = 'f_o_o.alt1'
+        ufo = to_ufos(data)[0]
+        postscriptNames = ufo['foo'].font.lib.get('public.postscriptNames')
+        self.assertEqual(postscriptNames, {'foo': 'f_o_o.alt1'})
 
     def test_ligature_carets(self):
         """Test that ligature carets get converted into features."""
