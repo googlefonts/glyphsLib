@@ -151,10 +151,10 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         set_robofont_glyph_background(glyph, bg_name, bg_data)
 
     for ufo in ufos.values():
+        ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
         propagate_font_anchors(ufo)
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
-        ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
 
     for master_id, kerning in data.pop('kerning', {}).items():
         load_kerning(ufos[master_id], kerning)
@@ -697,17 +697,58 @@ def add_groups_to_ufo(ufo, kerning_groups):
 
 def build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
-    carets = {}
+    bases, ligatures, marks, carets = set(), set(), set(), {}
     for glyph in ufo:
+        has_attaching_anchor = False
         for anchor in glyph.anchors:
             name = anchor.get('name')
+            if name and not name.startswith('_'):
+                has_attaching_anchor = True
             if name and name.startswith('caret_') and 'x' in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor['x']))
-    if not carets:
+        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+        if glyphinfo:
+            category, subCategory = glyphinfo.category, glyphinfo.subCategory
+        else:
+            category, subCategory = None, None
+
+        # Glyphs.app assigns glyph classes like this:
+        #
+        # * Base: any glyph that has an attaching anchor
+        #   (such as "top"; "_top" does not count) and is neither
+        #   classified as Ligature nor Mark using the definitions below;
+        #
+        # * Ligature: if subCategory is "Ligature" and the glyph has
+        #   at least one attaching anchor;
+        #
+        # * Mark: if category is "Mark" and subCategory is either
+        #   "Nonspacing" or "Spacing Combining";
+        #
+        # * Compound: never assigned by Glyphs.app.
+        #
+        # https://github.com/googlei18n/glyphsLib/issues/85
+        # https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
+        if subCategory == 'Ligature' and has_attaching_anchor:
+            ligatures.add(glyph.name)
+        elif category == 'Mark' and (subCategory == 'Nonspacing' or
+                                     subCategory == 'Spacing Combining'):
+            marks.add(glyph.name)
+        elif has_attaching_anchor:
+            bases.add(glyph.name)
+    if not any((bases, ligatures, marks, carets)):
         return None
-    lines = ['table GDEF {', '# automatic']
+    lines = ['table GDEF {', '  # automatic']
+    glyphOrder = ufo.lib[PUBLIC_PREFIX + 'glyphOrder']
+    glyphIndex = lambda glyph: glyphOrder.index(glyph)
+    fmt = lambda g: ('[%s]' % ' '.join(sorted(g, key=glyphIndex))) if g else ''
+    lines.extend([
+        '  GlyphClassDef',
+        '    %s, # Base' % fmt(bases),
+        '    %s, # Liga' % fmt(ligatures),
+        '    %s, # Mark' % fmt(marks),
+        '    ;'])
     for glyph, caretPos in sorted(carets.items()):
-        lines.append('LigatureCaretByPos %s %s;' %
+        lines.append('  LigatureCaretByPos %s %s;' %
                      (glyph, ' '.join(unicode(p) for p in sorted(caretPos))))
     lines.append('} GDEF;')
     return '\n'.join(lines)

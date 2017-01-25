@@ -162,6 +162,13 @@ class ToUfosTest(unittest.TestCase):
         data['glyphs'].append(glyph)
         return glyph
 
+    def add_anchor(self, data, glyphname, anchorname, x, y):
+        for glyph in data['glyphs']:
+            if glyph['glyphname'] == glyphname:
+                for layer in glyph['layers']:
+                    anchors = layer.setdefault('anchors', [])
+                    anchors.append({'name': anchorname, 'position': (x, y)})
+
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
         some cases that additional redundant data is not set.
@@ -292,29 +299,71 @@ class ToUfosTest(unittest.TestCase):
         postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
 
-    def test_ligature_carets(self):
-        """Test that ligature carets get converted into features."""
+    def test_GDEF(self):
         data = self.generate_minimal_data()
-        glyphs = (
-            ('a_c.alt', [('caret_foo', 300, -50)]),
-            ('f_f_i', [('caret_1', 250, -50), ('caret_2', 550, 150)]),
-        )
-        for name, anchor_data in glyphs:
-            anchors = [{'name': n, 'position': (x, y)}
-                       for n, x, y in anchor_data]
-            data['glyphs'].append({
-                'glyphname': name,
-                'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
-                            'anchors': anchors, 'components': []}]})
-        ufos = to_ufos(data)
-        ufo = ufos[0]
+        for glyph in ('space', 'A', 'A.alt',
+                      'wigglylinebelowcomb', 'wigglylinebelowcomb.alt',
+                      'fi', 'fi.alt', 't_e_s_t', 't_e_s_t.alt'):
+            self.add_glyph(data, glyph)
+        self.add_anchor(data, 'A', 'bottom', 300, -10)
+        self.add_anchor(data, 'wigglylinebelowcomb', '_bottom', 100, 40)
+        self.add_anchor(data, 'fi', 'caret_1', 150, 0)
+        self.add_anchor(data, 't_e_s_t.alt', 'caret_1', 200, 0)
+        self.add_anchor(data, 't_e_s_t.alt', 'caret_2', 400, 0)
+        self.add_anchor(data, 't_e_s_t.alt', 'caret_3', 600, 0)
+        ufo = to_ufos(data)[0]
         self.assertEqual(ufo.features.text.splitlines(), [
             'table GDEF {',
-            '# automatic',
-            'LigatureCaretByPos a_c.alt 300;',
-            'LigatureCaretByPos f_f_i 250 550;',
+            '  # automatic',
+            '  GlyphClassDef',
+            '    [A], # Base',
+            '    [fi t_e_s_t.alt], # Liga',
+            '    [wigglylinebelowcomb wigglylinebelowcomb.alt], # Mark',
+            '    ;',
+            '  LigatureCaretByPos fi 150;',
+            '  LigatureCaretByPos t_e_s_t.alt 200 400 600;',
             '} GDEF;',
         ])
+
+    def test_GDEF_base_with_attaching_anchor(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'A.alt')
+        self.add_anchor(data, 'A.alt', 'top', 400, 1000)
+        self.assertIn('[A.alt], # Base', to_ufos(data)[0].features.text)
+
+    def test_GDEF_base_with_nonattaching_anchor(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'A.alt')
+        self.add_anchor(data, 'A.alt', '_top', 400, 1000)
+        self.assertEqual('', to_ufos(data)[0].features.text)
+
+    def test_GDEF_ligature_with_attaching_anchor(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'fi')
+        self.add_anchor(data, 'fi', 'top', 400, 1000)
+        self.assertIn('[fi], # Liga', to_ufos(data)[0].features.text)
+
+    def test_GDEF_ligature_with_nonattaching_anchor(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'fi')
+        self.add_anchor(data, 'fi', '_top', 400, 1000)
+        self.assertEqual('', to_ufos(data)[0].features.text)
+
+    def test_GDEF_mark(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'eeMatra-gurmukhi')
+        self.assertIn('[eeMatra-gurmukhi], # Mark',
+                      to_ufos(data)[0].features.text)
+
+    def test_GDEF_fractional_caret_position(self):
+        # Some Glyphs sources happen to contain fractional caret positions.
+        # In the Adobe feature file syntax (and binary OpenType GDEF tables),
+        # caret positions must be integers.
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'fi')
+        self.add_anchor(data, 'fi', 'caret_1', 499.9876, 0)
+        self.assertIn('LigatureCaretByPos fi 500;',
+                      to_ufos(data)[0].features.text)
 
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
