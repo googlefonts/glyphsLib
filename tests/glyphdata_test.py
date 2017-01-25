@@ -52,8 +52,13 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("eacute"), ("Letter", "Lowercase"))
         self.assertEqual(cat("Abreveacute"), ("Letter", "Uppercase"))
         self.assertEqual(cat("C-fraktur"), ("Letter", "Uppercase"))
-        self.assertEqual(cat("s_t"), ("Letter", "Ligature"))
+        self.assertEqual(cat("fi"), ("Letter", "Ligature"))
+        self.assertEqual(cat("fi.alt"), ("Letter", "Ligature"))
         self.assertEqual(cat("hib-ko"), ("Letter", "Syllable"))
+        self.assertEqual(cat("one.foo"), ("Number", "Decimal Digit"))
+        self.assertEqual(cat("one_two.foo"), ("Number", "Ligature"))
+        self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
+        self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
 
 
 if __name__ == "__main__":

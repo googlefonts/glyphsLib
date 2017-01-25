@@ -64,13 +64,24 @@ def _get_category(name, unistr, data=glyphdata_generated):
     cat = data.IRREGULAR_CATEGORIES.get(name)
     if cat is not None:
         return cat
-    if name.endswith("-ko"):
+
+    basename = name.split(".", 1)[0]  # "A.alt27" --> "A"
+    if not basename:  # handle ".notdef", ".null"
+        basename = name
+    cat = data.IRREGULAR_CATEGORIES.get(basename)
+    if cat is not None:
+        return cat
+
+    if basename.endswith("-ko"):
         return ("Letter", "Syllable")
-    if name.endswith("-ethiopic") or name.endswith("-tifi"):
+    if basename.endswith("-ethiopic") or basename.endswith("-tifi"):
         return ("Letter", None)
-    if name.startswith("box"):
+    if basename.startswith("box"):
         return ("Symbol", "Geometry")
-    if name.startswith("uniF9"):
+    if basename.startswith("uniF9"):
         return ("Letter", "Compatibility")
     ucat = _get_unicode_category(unistr)
-    return data.DEFAULT_CATEGORIES[ucat]
+    cat = data.DEFAULT_CATEGORIES[ucat]
+    if "_" in basename:
+        return (cat[0], "Ligature")
+    return cat
