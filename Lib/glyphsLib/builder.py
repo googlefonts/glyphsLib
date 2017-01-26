@@ -16,6 +16,11 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+try:
+	from fontTools.misc.py23 import round
+except:
+	pass
+
 import logging
 import re
 
@@ -706,7 +711,7 @@ def build_gdef(ufo):
     lines = ['table GDEF {', '# automatic']
     for glyph, caretPos in sorted(carets.items()):
         lines.append('LigatureCaretByPos %s %s;' %
-                     (glyph, ' '.join(sorted(caretPos))))
+                     (glyph, ' '.join(sorted(round(p) for p in caretPos))))
     lines.append('} GDEF;')
     return '\n'.join(lines)
 
