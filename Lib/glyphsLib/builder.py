@@ -16,10 +16,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-try:
-	from fontTools.misc.py23 import round
-except:
-	pass
+from fontTools.misc.py23 import round
 
 import logging
 import re
