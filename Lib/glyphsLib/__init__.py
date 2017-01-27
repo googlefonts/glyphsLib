@@ -28,7 +28,7 @@ from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
 
 
-__version__ = "1.3.0.dev0"
+__version__ = "1.3.0"
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
