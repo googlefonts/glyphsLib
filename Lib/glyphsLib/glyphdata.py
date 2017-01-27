@@ -18,8 +18,13 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 from collections import namedtuple
 from fontTools import agl
+from fontTools.misc.py23 import unichr
 from glyphsLib import glyphdata_generated
+import sys
+import struct
 import unicodedata
+
+NARROW_PYTHON_BUILD = sys.maxunicode < 0x10FFFF
 
 
 Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
@@ -44,7 +49,15 @@ def _get_unicode_category(unistr):
     # By switching to current Unicode data, we could save some entries
     # in our exception tables, but the gains are not very large; only
     # about one thousand entries.
-    return unicodedata.ucd_3_2_0.category(unistr[0]) if unistr else None
+    if not unistr:
+        return None
+    if NARROW_PYTHON_BUILD:
+        utf32_str = unistr.encode("utf-32-be")
+        nchars = len(utf32_str)//4
+        first_char = unichr(struct.unpack('>%dL' % nchars, utf32_str)[0])
+    else:
+        first_char = unistr[0]
+    return unicodedata.ucd_3_2_0.category(first_char)
 
 
 def _get_category(name, unistr, data=glyphdata_generated):
