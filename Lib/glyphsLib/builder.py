@@ -16,7 +16,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from fontTools.misc.py23 import round
+from fontTools.misc.py23 import round, unicode
 
 import logging
 import re
@@ -702,13 +702,13 @@ def build_gdef(ufo):
         for anchor in glyph.anchors:
             name = anchor.get('name')
             if name and name.startswith('caret_') and 'x' in anchor:
-                carets.setdefault(glyph.name, []).append(str(anchor['x']))
+                carets.setdefault(glyph.name, []).append(round(anchor['x']))
     if not carets:
         return None
     lines = ['table GDEF {', '# automatic']
     for glyph, caretPos in sorted(carets.items()):
         lines.append('LigatureCaretByPos %s %s;' %
-                     (glyph, ' '.join(sorted(round(p) for p in caretPos))))
+                     (glyph, ' '.join(unicode(p) for p in sorted(caretPos))))
     lines.append('} GDEF;')
     return '\n'.join(lines)
 
