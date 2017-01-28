@@ -19,7 +19,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 from fontTools.misc.py23 import *
 
-import codecs
+import io
 import fontTools.agl
 import json
 import urllib
@@ -42,10 +42,14 @@ GlyphData = namedtuple('GlyphData', [
 
 
 def fetch_url(url):
-    stream = urllib.urlopen(url)
+    try:
+        from urllib.request import urlopen
+    except ImportError:
+        from urllib2 import urlopen
+    stream = urlopen(url)
     content = stream.read()
     stream.close()
-    return content
+    return content.decode('utf-8')
 
 
 def fetch(filename):
@@ -138,6 +142,15 @@ def test_data(glyphs, data):
         assert subCategory == g.subCategory, (name, subCategory, g.subCategory)
 
 
+def nonesorter(a):
+    # Python 2 sorts None before any string (even empty string), while
+    # Python 3 raises a TypeError when attempting to compare NoneType with str.
+    # Here we emulate python 2 and return "" when an item to be sorted is None
+    if isinstance(a, tuple):
+        return tuple(nonesorter(e) for e in a)
+    return "" if a is None else a
+
+
 def generate_python_source(data, out):
     out.write(
         "# -*- coding: utf-8 -*-\n"
@@ -171,7 +184,8 @@ def generate_python_source(data, out):
         "# than the string we would generate from the production name.\n")
     out.write("IRREGULAR_UNICODE_STRINGS = {\n")
     for key, value in sorted(data.IRREGULAR_UNICODE_STRINGS.items()):
-        out.write('\t"%s":"%s",\n' % (key, value.encode("unicode-escape")))
+        value_repr = value.encode("unicode-escape").decode('ascii')
+        out.write('\t"%s":"%s",\n' % (key, value_repr))
     out.write("}\n\n")
 
     out.write(
@@ -190,7 +204,8 @@ def generate_python_source(data, out):
         "# one can compute the Unicode category. This Unicode category\n"
         "# can frequently be mapped to the Glyphs category and subCategory.\n"
         "DEFAULT_CATEGORIES = {\n")
-    for ucat, glyphsCat in sorted(data.DEFAULT_CATEGORIES.items()):
+    for ucat, glyphsCat in sorted(
+            data.DEFAULT_CATEGORIES.items(), key=nonesorter):
         out.write('\t%s: %s,\n' %
                   ('"%s"' % ucat if ucat else 'None', glyphsCat))
     out.write("}\n\n")
@@ -200,7 +215,8 @@ def generate_python_source(data, out):
         "# or sub-category than Unicode. The following table contains these\n"
         "# exceptions.\n"
         "IRREGULAR_CATEGORIES = {\n")
-    for glyphName, glyphsCat in sorted(data.IRREGULAR_CATEGORIES.items()):
+    for glyphName, glyphsCat in sorted(
+            data.IRREGULAR_CATEGORIES.items(), key=nonesorter):
         out.write('\t"%s": %s,\n' % (glyphName, glyphsCat))
     out.write("}\n\n")
 
@@ -210,5 +226,5 @@ if __name__ == "__main__":
     glyphs = fetch_all_glyphs()
     data = build_data(glyphs)
     test_data(glyphs, data)
-    with codecs.open(outpath, "w", "utf-8") as out:
+    with io.open(outpath, "w", encoding="utf-8") as out:
         generate_python_source(data, out)
