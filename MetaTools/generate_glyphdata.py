@@ -111,10 +111,7 @@ def build_categories(glyphs):
         cat, _count = value.most_common(1)[0]
         default_categories[key] = cat
 
-    # Find irregular categories. Changing the category of one glyph
-    # can affect the category of others; for example, if we change the
-    # category of "ampersand" it will also affect the default inferred
-    # category for "ampersand.full". Whether it makes much sense for
+    # Find irregular categories. Whether it makes much sense for
     # Glyphs.app to disagree with Unicode about Unicode categories,
     # and whether it's a great idea to introduce inconsistencies (for
     # example, other than Unicode, Glyphs does not assign the same
@@ -123,9 +120,10 @@ def build_categories(glyphs):
     # encoded in GlyphsData.xml, so that glyphsLib produces the same
     # output as Glyphs.app.
     #
-    # To handle this correctly, we execute a simple fixed point
-    # algorithm.  Each iteration looks for glyphs whose category is
-    # different from what we'd have inferred from the current data
+    # Changing the category of one glyph can affect the category of
+    # others. To handle this correctly, we execute a simple fixed
+    # point algorithm. Each iteration looks for glyphs whose category
+    # is different from what we'd have inferred from the current data
     # tables; any irregularities get added to the irregular_categories
     # exception list. If the last iteration has discovered additional
     # irregularites, we do another round, trying to expand the exception
