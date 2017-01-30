@@ -48,6 +48,7 @@ class GlyphDataTest(unittest.TestCase):
     def test_category(self):
         cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
         self.assertEqual(cat(".notdef"), ("Separator", None))
+        self.assertEqual(cat("uni000D"), ("Separator", None))
         self.assertEqual(cat("boxHeavyUp"), ("Symbol", "Geometry"))
         self.assertEqual(cat("eacute"), ("Letter", "Lowercase"))
         self.assertEqual(cat("Abreveacute"), ("Letter", "Uppercase"))
@@ -59,6 +60,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("one_two.foo"), ("Number", "Ligature"))
         self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
         self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
+        self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
 
 
 if __name__ == "__main__":

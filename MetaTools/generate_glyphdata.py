@@ -106,17 +106,41 @@ def build_categories(glyphs):
         unicode_category = _get_unicode_category(unistr)
         category = (glyph.get("category"), glyph.get("subCategory"))
         counts[unicode_category][category] += 1
-    default_categories = {}
+    default_categories = {"Cc": ("Separator", None)}
     for key, value in counts.items():
         cat, _count = value.most_common(1)[0]
         default_categories[key] = cat
-    data = GlyphData({}, {}, set(), default_categories, {})
+
+    # Find irregular categories. Changing the category of one glyph
+    # can affect the category of others; for example, if we change the
+    # category of "ampersand" it will also affect the default inferred
+    # category for "ampersand.full". Whether it makes much sense for
+    # Glyphs.app to disagree with Unicode about Unicode categories,
+    # and whether it's a great idea to introduce inconsistencies (for
+    # example, other than Unicode, Glyphs does not assign the same
+    # category to "ampersand" and "ampersand.full"), is an entirely
+    # moot question. Our goal here is to return the same properties as
+    # encoded in GlyphsData.xml, so that glyphsLib produces the same
+    # output as Glyphs.app.
+    #
+    # To handle this correctly, we execute a simple fixed point
+    # algorithm.  Each iteration looks for glyphs whose category is
+    # different from what we'd have inferred from the current data
+    # tables; any irregularities get added to the irregular_categories
+    # exception list. If the last iteration has discovered additional
+    # irregularites, we do another round, trying to expand the exception
+    # list until we cannot find any more.
     irregular_categories = {}
-    for name, glyph in glyphs.items():
-        inferred_category = _get_category(name, unicode_strings[name], data)
-        category = (glyph.get("category"), glyph.get("subCategory"))
-        if category != inferred_category:
-            irregular_categories[name] = category
+    data = GlyphData({}, {}, set(), default_categories, irregular_categories)
+    changed = True
+    while changed:
+        changed = False
+        for name, glyph in glyphs.items():
+            inferred_category = _get_category(name, unicode_strings[name], data)
+            category = (glyph.get("category"), glyph.get("subCategory"))
+            if category != inferred_category:
+                irregular_categories[name] = category
+                changed = True
     return default_categories, irregular_categories
 
 
