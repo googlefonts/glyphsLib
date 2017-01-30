@@ -81,7 +81,7 @@ def _get_category(name, unistr, data=glyphdata_generated):
     if basename.startswith("uniF9"):
         return ("Letter", "Compatibility")
     ucat = _get_unicode_category(unistr)
-    cat = data.DEFAULT_CATEGORIES[ucat]
+    cat = data.DEFAULT_CATEGORIES.get(ucat, (None, None))
     if "_" in basename:
         return (cat[0], "Ligature")
     return cat
