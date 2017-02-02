@@ -113,13 +113,25 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     ufos, master_id_order = generate_base_fonts(data, family_name)
 
-    glyph_order = []
+    # get the 'glyphOrder' custom parameter as stored in the lib.plist.
+    # We assume it's the same for all ufos.
+    first_ufo = ufos[master_id_order[0]]
+    glyphOrder_key = PUBLIC_PREFIX + 'glyphOrder'
+    if glyphOrder_key in first_ufo.lib:
+        glyph_order = first_ufo.lib[glyphOrder_key]
+    else:
+        glyph_order = []
+    sorted_glyphset = set(glyph_order)
 
     for glyph in data['glyphs']:
         add_glyph_to_groups(kerning_groups, glyph)
 
         glyph_name = glyph.pop('glyphname')
-        glyph_order.append(glyph_name)
+        if glyph_name not in sorted_glyphset:
+            # glyphs not listed in the 'glyphOrder' custom parameter but still
+            # in the font are appended after the listed glyphs, in the order
+            # in which they appear in the source file
+            glyph_order.append(glyph_name)
         if not re.match(r'^([A-Za-z_][\w.]*|\.notdef)$', glyph_name):
             logger.warn(
                 'Illegal glyph name "%s". If this is used in the font\'s '
@@ -151,7 +163,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         set_robofont_glyph_background(glyph, bg_name, bg_data)
 
     for ufo in ufos.values():
-        ufo.lib[PUBLIC_PREFIX + 'glyphOrder'] = glyph_order
+        ufo.lib[glyphOrder_key] = glyph_order
         propagate_font_anchors(ufo)
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
@@ -327,12 +339,14 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         if name.startswith('openTypeOS2Win') and value < 0:
             value = -value
 
-        # most OpenType table entries go in the info object
-        if hasattr(ufo.info, name) and name not in non_info:
+        if name == 'glyphOrder':
+            # store the public.glyphOrder in lib.plist
+            ufo.lib[PUBLIC_PREFIX + name] = value
+        elif hasattr(ufo.info, name) and name not in non_info:
+            # most OpenType table entries go in the info object
             setattr(ufo.info, name, value)
-
-        # everything else gets dumped in the lib
         else:
+            # everything else gets dumped in the lib
             ufo.lib[GLYPHS_PREFIX + name] = value
 
 
