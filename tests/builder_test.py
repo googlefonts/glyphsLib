@@ -28,7 +28,7 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
-    set_redundant_data, to_ufos, GLYPHS_PREFIX, draw_paths
+    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -69,6 +69,11 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(ufo, data=data)
         self.assertIn(GLYPHS_PREFIX + "'bad'", ufo.lib)
         self.assertIn(GLYPHS_PREFIX + '"also bad"', ufo.lib)
+
+    def test_set_glyphOrder(self):
+        ufo = Font()
+        set_custom_params(ufo, parsed=[('glyphOrder', ['A', 'B'])])
+        self.assertEqual(ufo.lib[PUBLIC_PREFIX + 'glyphOrder'], ['A', 'B'])
 
 
 class SetRedundantDataTest(unittest.TestCase):
@@ -378,6 +383,27 @@ class ToUfosTest(unittest.TestCase):
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
+
+    def test_set_glyphOrder_no_custom_param(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'C')
+        self.add_glyph(data, 'B')
+        self.add_glyph(data, 'A')
+        self.add_glyph(data, 'Z')
+        glyphOrder = to_ufos(data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
+        self.assertEqual(glyphOrder, ['C', 'B', 'A', 'Z'])
+
+    def test_set_glyphOrder_with_custom_param(self):
+        data = self.generate_minimal_data()
+        data['customParameters'] = (
+            {'name': 'glyphOrder', 'value': ['A', 'B', 'C']},)
+        self.add_glyph(data, 'C')
+        self.add_glyph(data, 'B')
+        self.add_glyph(data, 'A')
+        # glyphs outside glyphOrder are appended at the end
+        self.add_glyph(data, 'Z')
+        glyphOrder = to_ufos(data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
+        self.assertEqual(glyphOrder, ['A', 'B', 'C', 'Z'])
 
     def _run_guideline_test(self, data_in, expected):
         data = self.generate_minimal_data()
