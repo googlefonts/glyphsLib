@@ -145,11 +145,10 @@ class RWNum(RWGlyphs):
 
     def read(self, src):
         float_val = float(src)
-        int_val = int(float_val)
-        return int_val if int_val == float_val else float_val
+        return int(float_val) if float_val.is_integer() else float_val
 
     def write(self, val):
-        assert isinstance(val, float) or isinstance(val, int)
+        assert isinstance(val, (float, int))
         return str(val)
 
 
