@@ -17,7 +17,8 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import unittest
-from glyphsLib.casting import cast_data
+from glyphsLib.casting import cast_data, num, custom_params
+from copy import deepcopy
 
 
 class GlyphsDatetimeTest(unittest.TestCase):
@@ -54,6 +55,50 @@ class GlyphsDatetimeTest(unittest.TestCase):
         self.compare_parsed_date_string(
             '2001-02-03 00:05:06 -0010',
             (2001, 2, 2, 23, 55, 6))
+
+
+class RWNumTest(unittest.TestCase):
+
+    def test_read(self):
+        self.assertEqual(num.read('1.0'), 1)
+        self.assertEqual(num.read('-10.0'), -10)
+        self.assertEqual(num.read('1.1'), 1.1)
+
+    def test_write(self):
+        self.assertEqual(num.write(1.0), '1')
+        self.assertEqual(num.write(-10), '-10')
+        self.assertEqual(num.write(1.1), '1.1')
+
+
+class RWCustomParamsTest(unittest.TestCase):
+
+    raw_params = [
+        {'name': 'openTypeOS2WinAscent', 'value': '1000'},
+        {'name': 'underlinePosition', 'value': '-77.5'},
+        {'name': 'postscriptBlueScale', 'value': '0.039625'},
+        {'name': 'isFixedPitch', 'value': '0'},
+        {'name': 'Don\u2019t use Production Names', 'value': '1'},
+        {'name': 'unicodeRanges', 'value': ['0', '1', '2']}
+    ]
+
+    cast_params = [
+        {'name': 'openTypeOS2WinAscent', 'value': 1000},
+        {'name': 'underlinePosition', 'value': -77.5},
+        {'name': 'postscriptBlueScale', 'value': 0.039625},
+        {'name': 'isFixedPitch', 'value': False},
+        {'name': 'Don\u2019t use Production Names', 'value': True},
+        {'name': 'unicodeRanges', 'value': [0, 1, 2]}
+    ]
+
+    def test_read(self):
+        src = deepcopy(self.raw_params)
+        expected = deepcopy(self.cast_params)
+        self.assertEqual(custom_params.read(src), expected)
+
+    def test_write(self):
+        src = deepcopy(self.cast_params)
+        expected = deepcopy(self.raw_params)
+        self.assertEqual(custom_params.write(src), expected)
 
 
 if __name__ == '__main__':
