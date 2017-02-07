@@ -15,7 +15,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import basestring
+from fontTools.misc.py23 import basestring, round
 import datetime
 import logging
 import re
@@ -306,7 +306,7 @@ class RWCustomParams(RWGlyphs):
             value = param['value']
 
             if name in CUSTOM_INT_PARAMS:
-                value = int(value)
+                value = round(float(value))
             elif name in CUSTOM_FLOAT_PARAMS:
                 value = float(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
@@ -324,7 +324,7 @@ class RWCustomParams(RWGlyphs):
             value = param['value']
 
             if name in CUSTOM_INT_PARAMS:
-                value = str(value)
+                value = str(round(value))
             elif name in CUSTOM_FLOAT_PARAMS:
                 value = str(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
