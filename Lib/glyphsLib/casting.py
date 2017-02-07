@@ -56,6 +56,8 @@ CUSTOM_INT_PARAMS = frozenset((
 CUSTOM_FLOAT_PARAMS = frozenset((
     'postscriptBlueScale',))
 
+CUSTOM_NUM_PARAMS = CUSTOM_INT_PARAMS | CUSTOM_FLOAT_PARAMS
+
 CUSTOM_TRUTHY_PARAMS = frozenset((
     'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
     'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour'))
@@ -145,11 +147,10 @@ class RWNum(RWGlyphs):
 
     def read(self, src):
         float_val = float(src)
-        int_val = int(float_val)
-        return int_val if int_val == float_val else float_val
+        return int(float_val) if float_val.is_integer() else float_val
 
     def write(self, val):
-        assert isinstance(val, float) or isinstance(val, int)
+        assert isinstance(val, (float, int))
         return str(val)
 
 
@@ -305,10 +306,8 @@ class RWCustomParams(RWGlyphs):
             name = param['name']
             value = param['value']
 
-            if name in CUSTOM_INT_PARAMS:
-                value = int(value)
-            elif name in CUSTOM_FLOAT_PARAMS:
-                value = float(value)
+            if name in CUSTOM_NUM_PARAMS:
+                value = num.read(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
                 value = truthy.read(value)
             elif name in CUSTOM_INTLIST_PARAMS:
@@ -323,10 +322,8 @@ class RWCustomParams(RWGlyphs):
             name = param['name']
             value = param['value']
 
-            if name in CUSTOM_INT_PARAMS:
-                value = str(value)
-            elif name in CUSTOM_FLOAT_PARAMS:
-                value = str(value)
+            if name in CUSTOM_NUM_PARAMS:
+                value = num.write(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
                 value = truthy.write(value)
             elif name in CUSTOM_INTLIST_PARAMS:
