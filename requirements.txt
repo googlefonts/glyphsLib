@@ -1,3 +1,3 @@
-fonttools==3.6.3
+fonttools==3.7.0
 defcon==0.2.1
 MutatorMath==2.0.2
