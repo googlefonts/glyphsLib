@@ -132,10 +132,6 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
             # in the font are appended after the listed glyphs, in the order
             # in which they appear in the source file
             glyph_order.append(glyph_name)
-        if not re.match(r'^([A-Za-z_][\w.]*|\.notdef)$', glyph_name):
-            logger.warn(
-                'Illegal glyph name "%s". If this is used in the font\'s '
-                'feature syntax, it could cause errors.' % glyph_name)
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
