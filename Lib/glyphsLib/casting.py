@@ -150,8 +150,15 @@ class RWNum(RWGlyphs):
         return int(float_val) if float_val.is_integer() else float_val
 
     def write(self, val):
-        assert isinstance(val, (float, int))
-        return str(val)
+        if isinstance(val, float):
+            if val.is_integer():
+                val = int(val)
+        elif isinstance(val, int):
+            pass
+        else:
+            raise TypeError(
+                "expected int or float, found " + type(val).__name__)
+        return repr(val)
 
 
 class RWHexInt(RWGlyphs):
