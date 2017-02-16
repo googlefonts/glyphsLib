@@ -60,7 +60,8 @@ CUSTOM_NUM_PARAMS = CUSTOM_INT_PARAMS | CUSTOM_FLOAT_PARAMS
 
 CUSTOM_TRUTHY_PARAMS = frozenset((
     'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
-    'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour'))
+    'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour',
+    'Use Typo Metrics', 'Has WWS Names'))
 
 
 CUSTOM_INTLIST_PARAMS = frozenset((
