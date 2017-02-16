@@ -75,6 +75,22 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(ufo, parsed=[('glyphOrder', ['A', 'B'])])
         self.assertEqual(ufo.lib[PUBLIC_PREFIX + 'glyphOrder'], ['A', 'B'])
 
+    def test_set_fsSelection_flags(self):
+        ufo = Font()
+        self.assertEqual(ufo.info.openTypeOS2Selection, None)
+
+        ufo = Font()
+        set_custom_params(ufo, parsed=[('Has WWS Names', False)])
+        self.assertEqual(ufo.info.openTypeOS2Selection, None)
+
+        set_custom_params(ufo, parsed=[('Use Typo Metrics', True)])
+        self.assertEqual(ufo.info.openTypeOS2Selection, [7])
+
+        ufo = Font()
+        set_custom_params(ufo, parsed=[('Has WWS Names', True),
+                                       ('Use Typo Metrics', True)])
+        self.assertEqual(ufo.info.openTypeOS2Selection, [8, 7])
+
 
 class SetRedundantDataTest(unittest.TestCase):
     def _run_on_ufo(self, family_name, style_name):
