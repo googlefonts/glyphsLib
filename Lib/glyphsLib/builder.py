@@ -301,15 +301,18 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
     else:
         assert data is None, "Shouldn't provide parsed data and data to parse."
 
+    fsSelection_flags = {'Use Typo Metrics', 'Has WWS Names'}
     for name, value in parsed:
         name = normalize_custom_param_name(name)
 
-        # special cases
-        if name == 'Has WWS Names':
-            try:
-                ufo.info.openTypeOS2Selection.append(8)
-            except AttributeError:
-                ufo.info.openTypeOS2Selection = [8]
+        if name in fsSelection_flags:
+            if value:
+                if ufo.info.openTypeOS2Selection is None:
+                    ufo.info.openTypeOS2Selection = []
+                if name == 'Use Typo Metrics':
+                    ufo.info.openTypeOS2Selection.append(7)
+                elif name == 'Has WWS Names':
+                    ufo.info.openTypeOS2Selection.append(8)
             continue
 
         # deal with any Glyphs naming quirks here
