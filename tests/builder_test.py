@@ -36,26 +36,26 @@ class BuildStyleNameTest(unittest.TestCase):
         return build_style_name(data, 'width', 'weight', 'custom', italic)
 
     def test_style_regular_weight(self):
-        self.assertEquals(self._build({}, False), 'Regular')
-        self.assertEquals(self._build({}, True), 'Italic')
-        self.assertEquals(
+        self.assertEqual(self._build({}, False), 'Regular')
+        self.assertEqual(self._build({}, True), 'Italic')
+        self.assertEqual(
             self._build({'weight': 'Regular'}, True), 'Italic')
 
     def test_style_nonregular_weight(self):
-        self.assertEquals(
+        self.assertEqual(
             self._build({'weight': 'Thin'}, False), 'Thin')
-        self.assertEquals(
+        self.assertEqual(
             self._build({'weight': 'Thin'}, True), 'Thin Italic')
 
     def test_style_nonregular_width(self):
-        self.assertEquals(
+        self.assertEqual(
             self._build({'width': 'Condensed'}, False), 'Condensed')
-        self.assertEquals(
+        self.assertEqual(
             self._build({'width': 'Condensed'}, True), 'Condensed Italic')
-        self.assertEquals(
+        self.assertEqual(
             self._build({'weight': 'Thin', 'width': 'Condensed'}, False),
             'Condensed Thin')
-        self.assertEquals(
+        self.assertEqual(
             self._build({'weight': 'Thin', 'width': 'Condensed'}, True),
             'Condensed Thin Italic')
 
@@ -87,7 +87,7 @@ class SetRedundantDataTest(unittest.TestCase):
     def test_sets_regular_weight_class_for_missing_weight(self):
         reg_ufo = self._run_on_ufo('MyFont', 'Regular')
         italic_ufo = self._run_on_ufo('MyFont', 'Italic')
-        self.assertEquals(
+        self.assertEqual(
             reg_ufo.info.openTypeOS2WeightClass,
             italic_ufo.info.openTypeOS2WeightClass)
 
@@ -112,8 +112,8 @@ class SetRedundantDataTest(unittest.TestCase):
     def _run_style_map_names_test(self, args):
         for family, style, expected_family, expected_style in args:
             ufo = self._run_on_ufo(family, style)
-            self.assertEquals(ufo.info.styleMapFamilyName, expected_family)
-            self.assertEquals(ufo.info.styleMapStyleName, expected_style)
+            self.assertEqual(ufo.info.styleMapFamilyName, expected_family)
+            self.assertEqual(ufo.info.styleMapStyleName, expected_style)
 
     def test_sets_legal_style_map_names(self):
         self._run_style_map_names_test((
