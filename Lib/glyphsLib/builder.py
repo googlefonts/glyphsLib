@@ -247,6 +247,8 @@ def generate_base_fonts(data, family_name):
         misc = ('customValue', 'weightValue', 'widthValue')
         set_custom_params(ufo, data=master, misc_keys=misc, non_info=misc)
 
+        set_default_params(ufo)
+
         master_id = master.pop('id')
         ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
         master_id_order.append(master_id)
@@ -347,6 +349,15 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         else:
             # everything else gets dumped in the lib
             ufo.lib[GLYPHS_PREFIX + name] = value
+
+
+def set_default_params(ufo):
+    """ Set Glyphs.app's default parameters when different from ufo2ft ones.
+    """
+    # ufo2ft defaults to fsType Bit 2 ("Preview & Print embedding"), while
+    # Glyphs.app defaults to Bit 3 ("Editable embedding")
+    if ufo.info.openTypeOS2Type is None:
+        ufo.info.openTypeOS2Type = [3]
 
 
 def normalize_custom_param_name(name):

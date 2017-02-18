@@ -20,7 +20,7 @@ import logging
 import os
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    GLYPHS_PREFIX
+    set_default_params, GLYPHS_PREFIX
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
@@ -202,6 +202,7 @@ def apply_instance_data(instance_data):
     for path, data in instance_data:
         ufo = Font(path)
         set_custom_params(ufo, data=data)
+        set_default_params(ufo)
         set_redundant_data(ufo)
         ufo.save()
         instance_ufos.append(ufo)

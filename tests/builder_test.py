@@ -28,7 +28,8 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
-    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths
+    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths,\
+    set_default_params
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -90,6 +91,11 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(ufo, parsed=[('Has WWS Names', True),
                                        ('Use Typo Metrics', True)])
         self.assertEqual(ufo.info.openTypeOS2Selection, [8, 7])
+
+    def test_set_defaults(self):
+        ufo = Font()
+        set_default_params(ufo)
+        self.assertEqual(ufo.info.openTypeOS2Type, [3])
 
 
 class SetRedundantDataTest(unittest.TestCase):
