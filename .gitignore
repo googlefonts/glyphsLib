@@ -12,3 +12,6 @@ dist
 # Unit test
 .cache/
 .tox/
+
+# Autosaved files
+*~
