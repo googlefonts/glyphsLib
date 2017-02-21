@@ -93,6 +93,19 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
 
+    def test_instanceOrder(self):
+        # The generated *.designspace file should place instances
+        # in the same order as they appear in the original source.
+        # https://github.com/googlei18n/glyphsLib/issues/113
+        masters, instances = makeFamily("DesignspaceTest InstanceOrder")
+        instances["data"] = [
+            {"name": "Black", "interpolationWeight": 900.0},
+            {"name": "Regular", "interpolationWeight": 400.0},
+            {"name": "Bold", "interpolationWeight": 700.0},
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestInstanceOrder.designspace")
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
