@@ -93,6 +93,38 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
 
+    def test_renameGlyphs(self):
+        masters, instances = makeFamily("DesignspaceTest RenameGlyphs")
+        instances["data"] = [
+            {"name": "Regular", "interpolationWeight": 400.0},
+            {
+                "name": "Renamed",
+                "interpolationWeight": 400.0,
+                "customParameters": [
+                    # If a glyph gets renamed _and_ removed, the renaming
+                    # should win; all renamed glyphs are removed anyway.
+                    {"name": "Rename Glyphs", "value": ["A.alt=A", "C.alt=C"]},
+                    {"name": "Remove Glyphs", "value": ["A.alt"]},
+                ],
+            },
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestRenameGlyphs.designspace")
+
+    def test_removeGlyphs(self):
+        masters, instances = makeFamily("DesignspaceTest RemoveGlyphs")
+        instances["data"] = [
+            {
+                "name": "Removed",
+                "interpolationWeight": 650.0,
+                "customParameters": [
+                    {"name": "Remove Glyphs", "value": ["A.alt", "B.alt"]},
+                ],
+            },
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestRemoveGlyphs.designspace")
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
