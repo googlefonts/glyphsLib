@@ -156,15 +156,13 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
         if not instance.pop('active', True):
             continue
 
-        # only use instances with the masters' family name
         instance_family = default_family_name
         custom_params = instance.get('customParameters', ())
         for i in range(len(custom_params)):
             if custom_params[i]['name'] == 'familyName':
                 instance_family = custom_params[i]['value']
-                del custom_params[i]
                 break
-        if instance_family != family_name:
+        if not instance_family:
             continue
 
         style_name = instance.pop('name')

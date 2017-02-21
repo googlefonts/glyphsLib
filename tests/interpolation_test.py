@@ -78,6 +78,21 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
+    def test_familyName(self):
+        masters, instances = makeFamily("DesignspaceTest FamilyName")
+        instances["data"] = [
+            {"name": "Regular", "interpolationWeight": 400.0},
+            {
+                "name": "Regular",
+                "interpolationWeight": 600.0,
+                "customParameters": [
+                    {"name": "familyName", "value": "Custom Family"},
+                ],
+            },
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestFamilyName.designspace")
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
