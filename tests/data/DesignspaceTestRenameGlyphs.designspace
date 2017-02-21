@@ -32,12 +32,22 @@
             <info />
             <kerning />
             <glyphs>
-                <glyph mute="1" name="A.alt" />
-                <glyph mute="1" name="C.alt" />
                 <glyph name="A">
                     <masters>
                         <master glyphname="A.alt" source="DesignspaceTest RenameGlyphs Regular" />
                         <master glyphname="A.alt" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph name="B.alt">
+                    <masters>
+                        <master glyphname="B" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="B" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph name="C.alt">
+                    <masters>
+                        <master glyphname="C" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="C" source="DesignspaceTest RenameGlyphs Black" />
                     </masters>
                 </glyph>
                 <glyph name="C">
@@ -46,6 +56,8 @@
                         <master glyphname="C.alt" source="DesignspaceTest RenameGlyphs Black" />
                     </masters>
                 </glyph>
+                <glyph mute="1" name="A.alt" />
+                <glyph mute="1" name="B" />
             </glyphs>
         </instance>
     </instances>

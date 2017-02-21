@@ -101,10 +101,9 @@ class DesignspaceTest(unittest.TestCase):
                 "name": "Renamed",
                 "interpolationWeight": 400.0,
                 "customParameters": [
-                    # If a glyph gets renamed _and_ removed, the renaming
-                    # should win; all renamed glyphs are removed anyway.
-                    {"name": "Rename Glyphs", "value": ["A.alt=A", "C.alt=C"]},
-                    {"name": "Remove Glyphs", "value": ["A.alt"]},
+                    {"name": "Rename Glyphs",
+                     "value": ["A.alt=A", "B.alt=B", "C.alt=C"]},
+                    {"name": "Remove Glyphs", "value": ["A.alt", "B"]},
                 ],
             },
         ]

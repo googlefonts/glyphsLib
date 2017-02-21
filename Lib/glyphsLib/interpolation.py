@@ -1,3 +1,5 @@
+# coding: utf-8
+#
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
@@ -187,16 +188,24 @@ def add_instances_to_writer(writer, family_name, master_names,
         writer.writeInfo()
         writer.writeKerning()
 
-        # Handle renamed and removed glyphs. All renamed glyphs are implicitly
-        # removed: if an instance renames "A.alt" to "A", the previous "A.alt"
-        # should not be part of the generated instance anymore.
-        removed_glyphs.update(renamed_glyphs.keys())
+        # Rename glyphs [w]ill exchange the glyphs mentioned in the
+        # value with each other. Takes a list of rename strings of the
+        # form ‘oldname=newname’, e.g. ‘e.bold=e, g.alt=g’. The glyph
+        # previously stored as newname will now be called oldname
+        # and vice versa.
+        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=194
+        for oldName, newName in sorted(renamed_glyphs.items()):
+            if oldName not in removed_glyphs:
+                writer.writeGlyph(
+                    name=oldName,
+                    masters=[(newName, m, None) for m in master_names])
+            if newName not in removed_glyphs:
+                writer.writeGlyph(
+                    name=newName,
+                    masters=[(oldName, m, None) for m in master_names])
+
         for glyph in sorted(removed_glyphs):
             writer.writeGlyph(name=glyph, mute=True)
-        for oldName, newName in sorted(renamed_glyphs.items()):
-            writer.writeGlyph(
-                name=newName,
-                masters=[(oldName, m, None) for m in master_names])
 
         writer.endInstance()
 
