@@ -1,3 +1,5 @@
+# coding: utf-8
+#
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +13,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
@@ -68,9 +69,10 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     tmp_path = os.path.join(master_dir, 'tmp.designspace')
     writer = DesignSpaceDocumentWriter(tmp_path)
 
-    base_family, base_style = add_masters_to_writer(writer, masters)
+    base_family, base_style, master_names = add_masters_to_writer(
+        writer, masters)
     instance_files = add_instances_to_writer(
-        writer, base_family, instance_data, out_dir)
+        writer, base_family, master_names, instance_data, out_dir)
 
     basename = '%s%s.designspace' % (
         base_family, ('-' + base_style) if base_style else '')
@@ -121,18 +123,22 @@ def add_masters_to_writer(writer, ufos):
             info_source = i
             break
 
+    master_names = []
     for i, (path, family, style, location) in enumerate(master_data):
         is_base = (i == info_source)
+        name = '%s %s' % (family, style)
+        master_names.append(name)
         writer.addSource(
-            path=path, name='%s %s' % (family, style),
+            path=path, name=name,
             familyName=family, styleName=style, location=location,
             copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base,
             copyLib=is_base)
 
-    return base_family, base_style
+    return base_family, base_style, master_names
 
 
-def add_instances_to_writer(writer, family_name, instance_data, out_dir):
+def add_instances_to_writer(writer, family_name, master_names,
+                            instance_data, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the
@@ -152,16 +158,17 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             dimension_names.append(s)
 
     for instance in instance_data:
-
         if not instance.pop('active', True):
             continue
 
+        renamed_glyphs = _get_renamed_glyphs(instance)
+        removed_glyphs = _get_removed_glyphs(instance)
         instance_family = default_family_name
         custom_params = instance.get('customParameters', ())
-        for i in range(len(custom_params)):
-            if custom_params[i]['name'] == 'familyName':
-                instance_family = custom_params[i]['value']
-                break
+        for param in custom_params:
+            param_name = param.get('name')
+            if param_name == 'familyName':
+                instance_family = param['value']
         if not instance_family:
             continue
 
@@ -180,9 +187,57 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
 
         writer.writeInfo()
         writer.writeKerning()
+
+        # Rename glyphs [w]ill exchange the glyphs mentioned in the
+        # value with each other. Takes a list of rename strings of the
+        # form ‘oldname=newname’, e.g. ‘e.bold=e, g.alt=g’. The glyph
+        # previously stored as newname will now be called oldname
+        # and vice versa.
+        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=194
+        for oldName, newName in sorted(renamed_glyphs.items()):
+            if oldName not in removed_glyphs:
+                writer.writeGlyph(
+                    name=oldName,
+                    masters=[(newName, m, None) for m in master_names])
+            if newName not in removed_glyphs:
+                writer.writeGlyph(
+                    name=newName,
+                    masters=[(oldName, m, None) for m in master_names])
+
+        for glyph in sorted(removed_glyphs):
+            writer.writeGlyph(name=glyph, mute=True)
+
         writer.endInstance()
 
     return ofiles
+
+
+def _get_renamed_glyphs(instance):
+    """Returns a mapping from master to instance glyphs, eg. {"A.alt": "A"}."""
+    result = {}
+    if not instance.get("active", True):
+        return result
+    custom_params = instance.get("customParameters", ())
+    for param in custom_params:
+        param_name = param.get("name")
+        if param_name == "Rename Glyphs":
+            for val in param.get("value", []):
+                from_glyph, to_glyph = val.split("=", 1)
+                result[from_glyph] = to_glyph
+    return result
+
+
+def _get_removed_glyphs(instance):
+    """Return the set of glyphs removed by an instance, eg. {"A", "B"}."""
+    result = set()
+    if not instance.get("active", True):
+        return result
+    custom_params = instance.get("customParameters", ())
+    for param in custom_params:
+        param_name = param.get("name")
+        if param_name == "Remove Glyphs":
+            result.update(param.get("value", []))
+    return result
 
 
 def apply_instance_data(instance_data):

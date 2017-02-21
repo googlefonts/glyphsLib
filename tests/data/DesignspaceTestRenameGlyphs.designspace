@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='utf-8'?>
+<designspace format="3">
+    <axes />
+    <sources>
+        <source familyname="DesignspaceTest RenameGlyphs" filename="DesignspaceTestRenameGlyphs-Regular.ufo" name="DesignspaceTest RenameGlyphs Regular" stylename="Regular">
+            <lib copy="1" />
+            <groups copy="1" />
+            <features copy="1" />
+            <info copy="1" />
+            <location>
+                <dimension name="weight" xvalue="400.000000" />
+            </location>
+        </source>
+        <source familyname="DesignspaceTest RenameGlyphs" filename="DesignspaceTestRenameGlyphs-Black.ufo" name="DesignspaceTest RenameGlyphs Black" stylename="Black">
+            <location>
+                <dimension name="weight" xvalue="900.000000" />
+            </location>
+        </source>
+    </sources>
+    <instances>
+        <instance familyname="DesignspaceTest RenameGlyphs" filename="out/DesignspaceTestRenameGlyphs-Regular.ufo" name="DesignspaceTest RenameGlyphs Regular" stylename="Regular">
+            <location>
+                <dimension name="weight" xvalue="400.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest RenameGlyphs" filename="out/DesignspaceTestRenameGlyphs-Renamed.ufo" name="DesignspaceTest RenameGlyphs Renamed" stylename="Renamed">
+            <location>
+                <dimension name="weight" xvalue="400.000000" />
+            </location>
+            <info />
+            <kerning />
+            <glyphs>
+                <glyph name="A">
+                    <masters>
+                        <master glyphname="A.alt" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="A.alt" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph name="B.alt">
+                    <masters>
+                        <master glyphname="B" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="B" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph name="C.alt">
+                    <masters>
+                        <master glyphname="C" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="C" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph name="C">
+                    <masters>
+                        <master glyphname="C.alt" source="DesignspaceTest RenameGlyphs Regular" />
+                        <master glyphname="C.alt" source="DesignspaceTest RenameGlyphs Black" />
+                    </masters>
+                </glyph>
+                <glyph mute="1" name="A.alt" />
+                <glyph mute="1" name="B" />
+            </glyphs>
+        </instance>
+    </instances>
+</designspace>
