@@ -16,7 +16,6 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-import codecs
 import difflib
 import os.path
 import shutil
@@ -25,6 +24,7 @@ import tempfile
 import unittest
 
 import defcon
+from fontTools.misc.py23 import open
 from glyphsLib.builder import GLYPHS_PREFIX
 from glyphsLib.interpolation import build_designspace
 
@@ -52,11 +52,11 @@ class DesignspaceTest(unittest.TestCase):
         master_dir = tempfile.mkdtemp()
         designspace, _ = build_designspace(
             masters, master_dir, os.path.join(master_dir, "out"), instances)
-        with codecs.open(designspace, "r", "utf-8") as f:
+        with open(designspace, mode="r", encoding="utf-8") as f:
             actual = f.readlines()
         path, _ = os.path.split(__file__)
         expectedPath = os.path.join(path, "data", expectedFile)
-        with codecs.open(expectedPath, "r", "utf-8") as f:
+        with open(expectedPath, mode="r", encoding="utf-8") as f:
             expected = f.readlines()
         if actual != expected:
             for line in difflib.unified_diff(
