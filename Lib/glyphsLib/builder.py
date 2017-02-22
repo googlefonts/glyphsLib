@@ -344,6 +344,10 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         if name.startswith('openTypeOS2Win') and value < 0:
             value = -value
 
+        # The value of these could be a float, and ufoLib/defcon expect an int.
+        if name in ('openTypeOS2WeightClass', 'openTypeOS2WidthClass'):
+            value = int(value)
+
         if name == 'glyphOrder':
             # store the public.glyphOrder in lib.plist
             ufo.lib[PUBLIC_PREFIX + name] = value
