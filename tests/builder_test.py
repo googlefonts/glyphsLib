@@ -62,40 +62,54 @@ class BuildStyleNameTest(unittest.TestCase):
 
 
 class SetCustomParamsTest(unittest.TestCase):
+    def setUp(self):
+        self.ufo = Font()
+
     def test_normalizes_curved_quotes_in_names(self):
-        ufo = Font()
         data = {'customParameters': (
             {'name': '‘bad’', 'value': 1},
             {'name': '“also bad”', 'value': 2})}
-        set_custom_params(ufo, data=data)
-        self.assertIn(GLYPHS_PREFIX + "'bad'", ufo.lib)
-        self.assertIn(GLYPHS_PREFIX + '"also bad"', ufo.lib)
+        set_custom_params(self.ufo, data=data)
+        self.assertIn(GLYPHS_PREFIX + "'bad'", self.ufo.lib)
+        self.assertIn(GLYPHS_PREFIX + '"also bad"', self.ufo.lib)
 
     def test_set_glyphOrder(self):
-        ufo = Font()
-        set_custom_params(ufo, parsed=[('glyphOrder', ['A', 'B'])])
-        self.assertEqual(ufo.lib[PUBLIC_PREFIX + 'glyphOrder'], ['A', 'B'])
+        set_custom_params(self.ufo, parsed=[('glyphOrder', ['A', 'B'])])
+        self.assertEqual(self.ufo.lib[PUBLIC_PREFIX + 'glyphOrder'], ['A', 'B'])
 
     def test_set_fsSelection_flags(self):
-        ufo = Font()
-        self.assertEqual(ufo.info.openTypeOS2Selection, None)
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        ufo = Font()
-        set_custom_params(ufo, parsed=[('Has WWS Names', False)])
-        self.assertEqual(ufo.info.openTypeOS2Selection, None)
+        set_custom_params(self.ufo, parsed=[('Has WWS Names', False)])
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        set_custom_params(ufo, parsed=[('Use Typo Metrics', True)])
-        self.assertEqual(ufo.info.openTypeOS2Selection, [7])
+        set_custom_params(self.ufo, parsed=[('Use Typo Metrics', True)])
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, [7])
 
-        ufo = Font()
-        set_custom_params(ufo, parsed=[('Has WWS Names', True),
+        self.ufo = Font()
+        set_custom_params(self.ufo, parsed=[('Has WWS Names', True),
                                        ('Use Typo Metrics', True)])
-        self.assertEqual(ufo.info.openTypeOS2Selection, [8, 7])
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, [8, 7])
+
+    def test_underlinePosition(self):
+        set_custom_params(self.ufo, parsed=[('underlinePosition', -2)])
+        self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -2)
+
+        set_custom_params(self.ufo, parsed=[('underlinePosition', 1)])
+        self.assertEqual(self.ufo.info.postscriptUnderlinePosition, 1)
+
+    def test_underlineThickness(self):
+        set_custom_params(self.ufo, parsed=[('underlineThickness', 100)])
+        self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
+        
+        set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
+        self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
     def test_set_defaults(self):
-        ufo = Font()
-        set_default_params(ufo)
-        self.assertEqual(ufo.info.openTypeOS2Type, [3])
+        set_default_params(self.ufo)
+        self.assertEqual(self.ufo.info.openTypeOS2Type, [3])
+        self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -100)
+        self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
 
 class SetRedundantDataTest(unittest.TestCase):
