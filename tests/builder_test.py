@@ -332,7 +332,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
     def test_weightClass_from_customParameter_weightClass(self):
-        # In the test input, the width is specified twice: once as weight,
+        # In the test input, the weight is specified twice: once as weight,
         # once as customParameters.weightClass. We expect that the latter wins
         # because the Glyphs handbook documents that the weightClass value
         # overrides the setting in the Weight drop-down list.
