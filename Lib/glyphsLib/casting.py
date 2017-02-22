@@ -50,8 +50,8 @@ CUSTOM_INT_PARAMS = frozenset((
     'postscriptUniqueID', 'postscriptWindowsCharacterSet', 'shoulderHeight',
     'smallCapHeight', 'typoAscender', 'typoDescender', 'typoLineGap',
     'underlinePosition', 'underlineThickness', 'unitsPerEm', 'vheaVertAscender',
-    'vheaVertDescender', 'vheaVertLineGap', 'winAscent', 'winDescent',
-    'xHeight', 'year'))
+    'vheaVertDescender', 'vheaVertLineGap', 'weightClass', 'widthClass',
+    'winAscent', 'winDescent', 'xHeight', 'year'))
 
 CUSTOM_FLOAT_PARAMS = frozenset((
     'postscriptBlueScale',))

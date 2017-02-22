@@ -340,7 +340,7 @@ class ToUfosTest(unittest.TestCase):
         data = self.generate_minimal_data()
         master = data['fontMaster'][0]
         master['weight'] = 'Bold'  # 700
-        master['customParameters'] = ({'name': 'weightClass', 'value': '698'},)
+        master['customParameters'] = ({'name': 'weightClass', 'value': 698},)
         ufo = to_ufos(data)[0]
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 698)  # 698, not 700
 
@@ -364,7 +364,7 @@ class ToUfosTest(unittest.TestCase):
         data = self.generate_minimal_data()
         master = data['fontMaster'][0]
         master['width'] = 'Extra Condensed'  # 2
-        master['customParameters'] = ({'name': 'widthClass', 'value': '7'},)
+        master['customParameters'] = ({'name': 'widthClass', 'value': 7},)
         ufo = to_ufos(data)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
 
