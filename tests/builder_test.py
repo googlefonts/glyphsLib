@@ -326,6 +326,54 @@ class ToUfosTest(unittest.TestCase):
         postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
 
+    def test_weightClass_default(self):
+        data = self.generate_minimal_data()
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+
+    def test_weightClass_from_customParameter_weightClass(self):
+        # In the test input, the width is specified twice: once as weight,
+        # once as customParameters.weightClass. We expect that the latter wins
+        # because the Glyphs handbook documents that the weightClass value
+        # overrides the setting in the Weight drop-down list.
+        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=202
+        data = self.generate_minimal_data()
+        master = data['fontMaster'][0]
+        master['weight'] = 'Bold'  # 700
+        master['customParameters'] = ({'name': 'weightClass', 'value': '698'},)
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 698)  # 698, not 700
+
+    def test_weightClass_from_weight(self):
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['weight'] = 'Bold'
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
+
+    def test_widthClass_default(self):
+        data = self.generate_minimal_data()
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
+
+    def test_widthClass_from_customParameter_widthClass(self):
+        # In the test input, the width is specified twice: once as width,
+        # once as customParameters.widthClass. We expect that the latter wins
+        # because the Glyphs handbook documents that the widthClass value
+        # overrides the setting in the Width drop-down list.
+        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=203
+        data = self.generate_minimal_data()
+        master = data['fontMaster'][0]
+        master['width'] = 'Extra Condensed'  # 2
+        master['customParameters'] = ({'name': 'widthClass', 'value': '7'},)
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
+
+    def test_widthClass_from_width(self):
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['width'] = 'Extra Condensed'
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 2)
+
     def test_GDEF(self):
         data = self.generate_minimal_data()
         for glyph in ('space', 'A', 'A.alt',
