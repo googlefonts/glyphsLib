@@ -152,8 +152,11 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             dimension_names.append(s)
 
     for instance in instance_data:
+        # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
+        # to mark instances as inactive. Those should not be instantiated.
         # https://github.com/googlei18n/glyphsLib/issues/129
-        if not instance.pop('exports', True):
+        if (not int(instance.pop('exports', 1))
+            or not int(instance.pop('active', 1))):
             continue
 
         instance_family = default_family_name
