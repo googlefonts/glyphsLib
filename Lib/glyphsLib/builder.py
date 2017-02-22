@@ -367,6 +367,14 @@ def set_default_params(ufo):
     if ufo.info.openTypeOS2Type is None:
         ufo.info.openTypeOS2Type = [3]
 
+    # Reference:
+    # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=200
+    if ufo.info.postscriptUnderlineThickness is None:
+        ufo.info.postscriptUnderlineThickness = 50
+    if ufo.info.postscriptUnderlinePosition is None:
+        ufo.info.postscriptUnderlinePosition = -100
+
+
 
 def normalize_custom_param_name(name):
     """Replace curved quotes with straight quotes in a custom parameter name.
