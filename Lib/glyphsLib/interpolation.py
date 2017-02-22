@@ -152,8 +152,8 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             dimension_names.append(s)
 
     for instance in instance_data:
-
-        if not instance.pop('active', True):
+        # https://github.com/googlei18n/glyphsLib/issues/129
+        if not instance.pop('exports', True):
             continue
 
         instance_family = default_family_name
