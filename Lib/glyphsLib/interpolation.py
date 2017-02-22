@@ -156,7 +156,7 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
         # to mark instances as inactive. Those should not be instantiated.
         # https://github.com/googlei18n/glyphsLib/issues/129
         if (not int(instance.pop('exports', 1))
-            or not int(instance.pop('active', 1))):
+                or not int(instance.pop('active', 1))):
             continue
 
         instance_family = default_family_name
