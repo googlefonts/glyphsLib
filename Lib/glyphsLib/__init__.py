@@ -39,20 +39,20 @@ logger = logging.getLogger(__name__)
 
 def load(fp):
     """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return the unpacked root object (an ordered dictionary).
+    Return a GSFont object.
     """
     return loads(fp.read())
 
 
 def loads(value):
     """Read a .glyphs file from a bytes object.
-    Return the unpacked root object (an ordered dictionary).
+    Return a GSFont object.
     """
     p = Parser()
     logger.info('Parsing .glyphs file')
+    print("____loads")
     data = p.parse(value)
     logger.info('Casting parsed values')
-    cast_data(data)
     return data
 
 
@@ -61,12 +61,12 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
     """Load an unpacked .glyphs object to UFO objects."""
 
     if hasattr(file_or_path, 'read'):
-        data = load(file_or_path)
+        font = load(file_or_path)
     else:
         with open(file_or_path, 'r', encoding='utf-8') as ifile:
-            data = load(ifile)
+            font = load(ifile)
     logger.info('Loading to UFOs')
-    return to_ufos(data, include_instances=include_instances,
+    return to_ufos(font, include_instances=include_instances,
                    family_name=family_name, debug=debug)
 
 
