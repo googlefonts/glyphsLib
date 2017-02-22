@@ -78,7 +78,9 @@ class RWCustomParamsTest(unittest.TestCase):
         {'name': 'postscriptBlueScale', 'value': '0.039625'},
         {'name': 'isFixedPitch', 'value': '0'},
         {'name': 'Don\u2019t use Production Names', 'value': '1'},
-        {'name': 'unicodeRanges', 'value': ['0', '1', '2']}
+        {'name': 'unicodeRanges', 'value': ['0', '1', '2']},
+        {'name': 'weightClass', 'value': '650'},
+        {'name': 'widthClass', 'value': '2'}
     ]
 
     cast_params = [
@@ -87,7 +89,9 @@ class RWCustomParamsTest(unittest.TestCase):
         {'name': 'postscriptBlueScale', 'value': 0.039625},
         {'name': 'isFixedPitch', 'value': False},
         {'name': 'Don\u2019t use Production Names', 'value': True},
-        {'name': 'unicodeRanges', 'value': [0, 1, 2]}
+        {'name': 'unicodeRanges', 'value': [0, 1, 2]},
+        {'name': 'weightClass', 'value': 650},
+        {'name': 'widthClass', 'value': 2}
     ]
 
     def test_read(self):

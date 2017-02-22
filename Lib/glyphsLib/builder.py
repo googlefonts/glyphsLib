@@ -263,8 +263,10 @@ def set_redundant_data(ufo):
     family_name, style_name = ufo.info.familyName, ufo.info.styleName
 
     width, weight = parse_style_attrs(style_name)
-    ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
-    ufo.info.openTypeOS2WeightClass = WEIGHT_CODES[weight]
+    if ufo.info.openTypeOS2WidthClass is None:
+        ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
+    if ufo.info.openTypeOS2WeightClass is None:
+        ufo.info.openTypeOS2WeightClass = WEIGHT_CODES[weight]
 
     if weight and weight != 'Regular':
         ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
@@ -326,6 +328,8 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
             ('license', 'NameLicense'), ('panose', 'OS2Panose'),
             ('typo', 'OS2Typo'), ('unicodeRanges', 'OS2UnicodeRanges'),
+            ('weightClass', 'OS2WeightClass'),
+            ('widthClass', 'OS2WidthClass'),
             ('win', 'OS2Win'), ('vendorID', 'OS2VendorID'),
             ('versionString', 'NameVersion'), ('fsType', 'OS2Type'))
         for glyphs_prefix, ufo_prefix in opentype_attr_prefix_pairs:
@@ -339,6 +343,10 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         # enforce that winAscent/Descent are positive, according to UFO spec
         if name.startswith('openTypeOS2Win') and value < 0:
             value = -value
+
+        # The value of these could be a float, and ufoLib/defcon expect an int.
+        if name in ('openTypeOS2WeightClass', 'openTypeOS2WidthClass'):
+            value = int(value)
 
         if name == 'glyphOrder':
             # store the public.glyphOrder in lib.plist
