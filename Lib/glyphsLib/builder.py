@@ -76,7 +76,7 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_ufos(data, include_instances=False, family_name=None, debug=False):
+def to_ufos(font, include_instances=False, family_name=None, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -88,30 +88,28 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
 
     # check that source was generated with at least stable version 2.3
     # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
-    if data.pop('.appVersion', 0) < 895:
+    if font.appVersion < 895:
         logger.warn('This Glyphs source was generated with an outdated version '
                     'of Glyphs. The resulting UFOs may be incorrect.')
 
-    source_family_name = data.pop('familyName')
+    source_family_name = font.familyName
     if family_name is None:
         family_name = source_family_name
 
     feature_prefixes, classes, features = [], [], []
-    for f in data.get('featurePrefixes', []):
-        feature_prefixes.append((f.pop('name'), f.pop('code'),
-                                 f.pop('automatic', None)))
-    for c in data.get('classes', []):
-        classes.append((c.pop('name'), c.pop('code'), c.pop('automatic', None)))
-    for f in data.get('features', []):
-        features.append((f.pop('name'), f.pop('code'), f.pop('automatic', None),
-                         f.pop('disabled', None), f.pop('notes', None)))
+    for f in font.featurePrefixes:
+        feature_prefixes.append((f.name, fcode, f.automatic))
+    for c in font.classes:
+        classes.append((c.name, c.code, c.automatic))
+    for f in font.features:
+        features.append((f.name, f.code, f.automatic, f.disabled, f.notes))
     kerning_groups = {}
 
     # stores background data from "associated layers"
     supplementary_bg_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
-    ufos, master_id_order = generate_base_fonts(data, family_name)
+    ufos, master_id_order = generate_base_fonts(font, family_name)
 
     # get the 'glyphOrder' custom parameter as stored in the lib.plist.
     # We assume it's the same for all ufos.
@@ -123,36 +121,30 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         glyph_order = []
     sorted_glyphset = set(glyph_order)
 
-    for glyph in data['glyphs']:
+    for glyph in font.glyphs:
         add_glyph_to_groups(kerning_groups, glyph)
-
-        glyph_name = glyph.pop('glyphname')
+        glyph_name = glyph.name
         if glyph_name not in sorted_glyphset:
             # glyphs not listed in the 'glyphOrder' custom parameter but still
             # in the font are appended after the listed glyphs, in the order
             # in which they appear in the source file
             glyph_order.append(glyph_name)
 
-        # pop glyph metadata only once, i.e. not when looping through layers
-        metadata_keys = ['unicode', 'color', 'export', 'lastChange',
-                         'leftMetricsKey', 'note', 'production',
-                         'rightMetricsKey', 'widthMetricsKey']
-        glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
-        for layer in glyph['layers']:
-            layer_id = layer.pop('layerId')
-            layer_name = layer.pop('name', None)
+        for layer in glyph.layers:
+            layer_id = layer.layerId
+            layer_name = layer.name
 
-            assoc_id = layer.pop('associatedMasterId', None)
-            if assoc_id is not None:
+            assoc_id = layer.associatedMasterId
+            if assoc_id != layer.layerId:
                 if layer_name is not None:
                     supplementary_bg_data.append(
                         (assoc_id, glyph_name, layer_name, layer))
                 continue
 
             ufo = ufos[layer_id]
-            glyph = ufo.newGlyph(glyph_name)
-            load_glyph(glyph, layer, glyph_data)
+            ufo_glyph = ufo.newGlyph(glyph_name)
+            load_glyph(ufo_glyph, layer, glyph)
 
     for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
         glyph = ufos[layer_id][glyph_name]
@@ -164,40 +156,40 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
 
-    for master_id, kerning in data.pop('kerning', {}).items():
+    for master_id, kerning in font.kerning.items():
         load_kerning(ufos[master_id], kerning)
 
     result = [ufos[master_id] for master_id in master_id_order]
     instances = {'defaultFamilyName': source_family_name,
-                 'data': data.pop('instances', [])}
+                 'data': font.instances}
     if debug:
-        return clear_data(data)
+        return clear_data(font)
     elif include_instances:
         return result, instances
     return result
 
 
-def generate_base_fonts(data, family_name):
+def generate_base_fonts(font, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
-    date_created = to_ufo_time(data.pop('date'))
-    units_per_em = data.pop('unitsPerEm')
-    version_major = data.pop('versionMajor')
-    version_minor = data.pop('versionMinor')
-    user_data = data.pop('userData', {})
-    copyright = data.pop('copyright', None)
-    designer = data.pop('designer', None)
-    designer_url = data.pop('designerURL', None)
-    manufacturer = data.pop('manufacturer', None)
-    manufacturer_url = data.pop('manufacturerURL', None)
+    date_created = to_ufo_time(font.date)
+    units_per_em = font.unitsPerEm
+    version_major = font.versionMajor
+    version_minor = font.versionMinor
+    user_data = font.userData
+    copyright = font.copyright
+    designer = font.designer
+    designer_url = font.designerURL
+    manufacturer = font.manufacturer
+    manufacturer_url = font.manufacturerURL
 
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
-    custom_params = parse_custom_params(data, misc)
+    custom_params = parse_custom_params(font, misc)
 
     ufos = {}
     master_id_order = []
-    for master in data['fontMaster']:
+    for master in font.masters:
         ufo = Font()
 
         ufo.info.openTypeHeadCreated = date_created
@@ -216,14 +208,14 @@ def generate_base_fonts(data, family_name):
         if manufacturer_url:
             ufo.info.openTypeNameManufacturerURL = manufacturer_url
 
-        ufo.info.ascender = master.pop('ascender')
-        ufo.info.capHeight = master.pop('capHeight')
-        ufo.info.descender = master.pop('descender')
-        ufo.info.xHeight = master.pop('xHeight')
+        ufo.info.ascender = master.ascender
+        ufo.info.capHeight = master.capHeight
+        ufo.info.descender = master.descender
+        ufo.info.xHeight = master.xHeight
 
-        horizontal_stems = master.pop('horizontalStems', None)
-        vertical_stems = master.pop('verticalStems', None)
-        italic_angle = -master.pop('italicAngle', 0)
+        horizontal_stems = master.horizontalStems
+        vertical_stems = master.verticalStems
+        italic_angle = -master.italicAngle
         if horizontal_stems:
             ufo.info.postscriptStemSnapH = horizontal_stems
         if vertical_stems:
@@ -236,9 +228,9 @@ def generate_base_fonts(data, family_name):
             master, 'width', 'weight', 'custom', italic_angle != 0)
 
         set_redundant_data(ufo)
-        set_blue_values(ufo, master.pop('alignmentZones', []))
+        set_blue_values(ufo, master.alignmentZones)
         set_family_user_data(ufo, user_data)
-        set_master_user_data(ufo, master.pop('userData', {}))
+        set_master_user_data(ufo, master.userData)
         set_robofont_guidelines(ufo, master, is_global=True)
 
         set_custom_params(ufo, parsed=custom_params)
@@ -249,7 +241,7 @@ def generate_base_fonts(data, family_name):
 
         set_default_params(ufo)
 
-        master_id = master.pop('id')
+        master_id = master.id
         ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
         master_id_order.append(master_id)
         ufos[master_id] = ufo
@@ -394,8 +386,9 @@ def set_blue_values(ufo, alignment_zones):
 
     blue_values = []
     other_blues = []
-
-    for pos, size in sorted(alignment_zones):
+    for zone in sorted(alignment_zones):
+        pos = zone.position
+        size = zone.size
         val_list = blue_values if pos == 0 or size >= 0 else other_blues
         val_list.extend(sorted((pos, pos + size)))
 
@@ -405,18 +398,17 @@ def set_blue_values(ufo, alignment_zones):
 
 def set_robofont_guidelines(ufo_obj, glyphs_data, is_global=False):
     """Set guidelines as Glyphs does."""
-
-    guidelines = glyphs_data.get('guideLines')
+    guidelines = glyphs_data.guideLines
     if not guidelines:
         return
-
     new_guidelines = []
     for guideline in guidelines:
-        x, y = guideline.pop('position')
-        angle = guideline.pop('angle', 0)
+        
+        x, y = guideline.position
+        angle = guideline.angle
         new_guideline = {'x': x, 'y': y, 'angle': angle, 'isGlobal': is_global}
 
-        locked = guideline.pop('locked', False)
+        locked = guideline.locked
         if locked:
             new_guideline['locked'] = True
 
@@ -431,19 +423,19 @@ def set_robofont_glyph_background(glyph, key, background):
         return
 
     new_background = {}
-    new_background['lib'] = background.pop('lib', {})
+    # new_background['lib'] = background.lib # glyphs objects never have a property 'lib'
 
     anchors = []
-    for anchor in background.get('anchors', []):
-        x, y = anchor.pop('position')
-        anchors.append({'x': x, 'y': y, 'name': anchor.pop('name')})
+    for anchor in background.anchors:
+        x, y = anchor.position
+        anchors.append({'x': x, 'y': y, 'name': anchor.name})
     new_background['anchors'] = anchors
 
     components = []
-    for component in background.get('components', []):
+    for component in background.components:
         new_component = {
-            'baseGlyph': component.pop('name'),
-            'transformation': component.pop('transform', (1, 0, 0, 1, 0, 0))}
+            'baseGlyph': component.name,
+            'transformation': component.transform}
 
         for meta_attr in ['disableAlignment', 'locked']:
             value = component.pop(meta_attr, False)
@@ -454,18 +446,21 @@ def set_robofont_glyph_background(glyph, key, background):
     new_background['components'] = components
 
     contours = []
-    for path in background.get('paths', []):
+    for path in background.paths:
         points = []
-        for x, y, node_type, smooth in path.pop('nodes', []):
+        for node in path.nodes:
+            (x, y) = node.position
+            node_type = node.type
+            smooth = node.smooth
             point = {'x': x, 'y': y, 'smooth': smooth}
             if node_type in ['line', 'curve']:
                 point['segmentType'] = node_type
             points.append(point)
         contours.append({'points': points})
-        path.pop('closed', None)  # not used, but remove for debug purposes
+        #path.pop('closed', None)  # not used, but remove for debug purposes
     new_background['contours'] = contours
 
-    new_background['width'] = background.pop('width', glyph.width)
+    new_background['width'] = glyph.width
     new_background['name'] = glyph.name
     new_background['unicodes'] = []
 
@@ -490,15 +485,15 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_style_name(data, width_key, weight_key, custom_key, italic):
+def build_style_name(master, width_key, weight_key, custom_key, italic):
     """Build style name from width, weight, and custom style strings in data,
     and whether the style is italic.
     """
 
     italic = 'Italic' if italic else ''
-    width = data.pop(width_key, '')
-    weight = data.pop(weight_key, 'Regular')
-    custom = data.pop(custom_key, '')
+    width = getattr(master, width_key)
+    weight = getattr(master, weight_key)
+    custom = getattr(master, custom_key)
     if (italic or width or custom) and weight == 'Regular':
         weight = ''
     return ' '.join(s for s in (width, weight, custom, italic) if s)
@@ -519,18 +514,19 @@ def to_ufo_time(datetime_obj):
     return datetime_obj.strftime('%Y/%m/%d %H:%M:%S')
 
 
-def parse_custom_params(data, misc_keys):
+def parse_custom_params(font, misc_keys):
     """Parse customParameters into a list of <name, val> pairs."""
 
     params = []
-    for p in data.get('customParameters', []):
-        params.append((p.pop('name'), p.pop('value')))
+    for p in font.customParameters:
+        params.append((p.name, p.value))
     for key in misc_keys:
         try:
-            val = data.pop(key)
+            val = getattr(font, key)
         except KeyError:
             continue
-        params.append((key, val))
+        if val is not None:
+            params.append((key, val))
     return params
 
 
@@ -605,10 +601,10 @@ def load_glyph_libdata(glyph, layer):
     """Add to a glyph's lib data."""
 
     set_robofont_guidelines(glyph, layer)
-    set_robofont_glyph_background(glyph, 'background', layer.get('background'))
+    set_robofont_glyph_background(glyph, 'background', layer.background)
     for key in ['annotations', 'hints']:
         try:
-            value = layer.pop(key)
+            value = getattr(layer, key)
         except KeyError:
             continue
         glyph.lib[GLYPHS_PREFIX + key] = value
@@ -616,61 +612,60 @@ def load_glyph_libdata(glyph, layer):
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
     for key in ['disableAlignment', 'locked']:
-        values = [c.pop(key, False) for c in layer.get('components', [])]
+        values = [c.pop(key, False) for c in layer.components]
         if any(values):
             key = key[0].upper() + key[1:]
             glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
 
 
-def load_glyph(glyph, layer, glyph_data):
+def load_glyph(ufo_glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
 
     glyphlib_prefix = GLYPHS_PREFIX + 'Glyphs.'
-
-    uval = glyph_data.get('unicode')
+    uval = glyph_data.unicode
     if uval is not None:
-        glyph.unicode = uval
-    note = glyph_data.get('note')
+        ufo_glyph.unicode = int(uval, 16)
+    note = glyph_data.note
     if note is not None:
-        glyph.note = note
-    last_change = glyph_data.get('lastChange')
+        ufo_glyph.note = note
+    last_change = glyph_data.lastChange
     if last_change is not None:
-        glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
-    color_index = glyph_data.get('color')
+        ufo_glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
+    color_index = glyph_data.color
     if color_index is not None and color_index >= 0:
-        glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
-        glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
-    export = glyph_data.get('export')
+        ufo_glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
+        ufo_glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
+    export = glyph_data.export
     if export is not None:
-        glyph.lib[glyphlib_prefix + 'Export'] = export
-    production_name = glyph_data.get('production')
+        ufo_glyph.lib[glyphlib_prefix + 'Export'] = export
+    production_name = glyph_data.production
     if production_name is None:
-        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+        glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
         if glyphinfo:
             production_name = glyphinfo.production_name
     if production_name is not None:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
-        if postscriptNamesKey not in glyph.font.lib:
-            glyph.font.lib[postscriptNamesKey] = dict()
-        glyph.font.lib[postscriptNamesKey][glyph.name] = production_name
+        if postscriptNamesKey not in ufo_glyph.font.lib:
+            ufo_glyph.font.lib[postscriptNamesKey] = dict()
+        ufo_glyph.font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         glyph_metrics_key = None
         try:
-            glyph_metrics_key = layer.pop(key)
+            glyph_metrics_key = getattr(layer, key)
         except KeyError:
-            glyph_metrics_key = glyph_data.get(key)
+            glyph_metrics_key = getattr(glyph_data, key)
         if glyph_metrics_key:
-            glyph.lib[glyphlib_prefix + key] = glyph_metrics_key
+            ufo_glyph.lib[glyphlib_prefix + key] = glyph_metrics_key
 
     # load width before background, which is loaded with lib data
-    glyph.width = layer.pop('width')
-    load_glyph_libdata(glyph, layer)
+    ufo_glyph.width = layer.width
+    load_glyph_libdata(ufo_glyph, layer)
 
-    pen = glyph.getPointPen()
-    draw_paths(pen, layer.get('paths', []))
-    draw_components(pen, layer.get('components', []))
-    add_anchors_to_glyph(glyph, layer.get('anchors', []))
+    pen = ufo_glyph.getPointPen()
+    draw_paths(pen, layer.paths)
+    draw_components(pen, layer.components)
+    add_anchors_to_glyph(ufo_glyph, layer.anchors)
 
 
 def draw_paths(pen, paths):
@@ -678,11 +673,12 @@ def draw_paths(pen, paths):
 
     for path in paths:
         pen.beginPath()
-        nodes = path.get('nodes', [])
+        nodes = path.nodes
+        
         if not nodes:
             pen.endPath()
             continue
-        if not path.pop('closed', False):
+        if not path.closed:
             x, y, node_type, smooth = nodes.pop(0)
             assert node_type == 'line', 'Open path starts with off-curve points'
             pen.addPoint((x, y), segmentType='move')
@@ -690,7 +686,10 @@ def draw_paths(pen, paths):
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
-        for x, y, node_type, smooth in nodes:
+        for node in nodes:
+            (x, y) = node.position
+            node_type = node.type
+            smooth = node.smooth
             if node_type not in ['line', 'curve']:
                 node_type = None
             pen.addPoint((x, y), segmentType=node_type, smooth=smooth)
@@ -701,30 +700,31 @@ def draw_components(pen, components):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
 
     for component in components:
-        pen.addComponent(component.pop('name'),
-                         component.pop('transform', (1, 0, 0, 1, 0, 0)))
+        pen.addComponent(component.name,
+                         component.transform)
 
 
 def add_anchors_to_glyph(glyph, anchors):
     """Add .glyphs anchors to a glyph."""
 
     for anchor in anchors:
-        x, y = anchor.pop('position')
-        anchor_dict = {'name': anchor.pop('name'), 'x': x, 'y': y}
+        x, y = anchor.position
+        anchor_dict = {'name': anchor.name, 'x': x, 'y': y}
         glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
 def add_glyph_to_groups(kerning_groups, glyph_data):
     """Add a glyph to its kerning groups, creating new groups if necessary."""
 
-    glyph_name = glyph_data['glyphname']
+    glyph_name = glyph_data.name
     group_keys = {
         '1': 'rightKerningGroup',
         '2': 'leftKerningGroup'}
     for side, group_key in group_keys.items():
-        if group_key not in glyph_data:
+        group = getattr(glyph_data, group_key)
+        if group is None or len(group) == 0:
             continue
-        group = 'public.kern%s.%s' % (side, glyph_data.pop(group_key))
+        group = 'public.kern%s.%s' % (side, group)
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
@@ -741,7 +741,7 @@ def build_gdef(ufo):
     for glyph in ufo:
         has_attaching_anchor = False
         for anchor in glyph.anchors:
-            name = anchor.get('name')
+            name = anchor.name
             if name and not name.startswith('_'):
                 has_attaching_anchor = True
             if name and name.startswith('caret_') and 'x' in anchor:
