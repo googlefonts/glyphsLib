@@ -19,13 +19,14 @@ from fontTools.misc.py23 import *
 
 import collections
 import re
-import sys
-
+import sys, traceback
+from glyphsLib.classes import *
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
     def __init__(self):
+        self.dict_type = GSFont
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
@@ -64,6 +65,14 @@ class Parser:
         if m:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
+            try:
+                reader = self.dict_type() # if the dict_type is a RW class from casting.py, then run it through the read method. If not, fall through to the except part
+                value = reader.read(value)
+            except:
+                try:  # might throw if there is a key that is not covered in `classesForName`
+                    value = self.dict_type(value)
+                except:
+                    pass
             return value, i
 
         else:
@@ -71,14 +80,19 @@ class Parser:
 
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
-
-        res = collections.OrderedDict()
+        old_dict_type = self.dict_type
+        new_type = self.dict_type
+        if type(new_type) == list:
+            new_type = new_type[0]
+        res = new_type()
         end_match = self.end_dict_re.match(text, i)
         while not end_match:
             m = self.attr_re.match(text, i)
             if not m:
                 self._fail('Unexpected dictionary content', text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
+            if hasattr(res, "classForName"):
+                self.dict_type = res.classForName(name)
             i += len(parsed)
             res[name], i = self._parse(text, i)
 
@@ -90,7 +104,7 @@ class Parser:
             i += len(parsed)
 
             end_match = self.end_dict_re.match(text, i)
-
+        self.dict_type = old_dict_type
         parsed = end_match.group(0)
         i += len(parsed)
         return res, i
@@ -100,6 +114,7 @@ class Parser:
 
         res = []
         end_match = self.end_list_re.match(text, i)
+        old_dict_type = self.dict_type
         while not end_match:
             list_item, i = self._parse(text, i)
             res.append(list_item)
@@ -115,6 +130,7 @@ class Parser:
                 i += len(parsed)
 
         parsed = end_match.group(0)
+        self.dict_type = old_dict_type
         i += len(parsed)
         return res, i
 

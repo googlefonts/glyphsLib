@@ -78,6 +78,11 @@ def _mutate_list(fn, l):
     return l
 
 class RWGlyphs(object):
+    def __init__(self, value = None):
+        if isinstance(value, (str, unicode)):
+            value = self.read(value)
+        self.value = value
+
     def convert(self, data, to_typed):
         return self.read(data) if to_typed else self.write(data)
 
@@ -126,6 +131,8 @@ class RWTruthy(RWGlyphs):
     """Reads/write a boolean."""
 
     def read(self, src):
+        if src is None:
+            return False
         return bool(int(src))
 
     def write(self, val):
@@ -146,7 +153,9 @@ class RWInteger(RWGlyphs):
 
 class RWNum(RWGlyphs):
     """Read/write an int or float."""
-
+    def __init__(self, arg):
+        super(RWNum, self).__init__(arg)
+    
     def read(self, src):
         float_val = float(src)
         return int(float_val) if float_val.is_integer() else float_val
@@ -177,13 +186,15 @@ class RWHexInt(RWGlyphs):
 class RWVector(RWGlyphs):
     """Read/write a vector in curly braces."""
 
-    def __init__(self, dimension):
+    def __init__(self, dimension, value = None):
         self.dimension = dimension
         self.regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
+        super(RWVector, self).__init__(value)
+        
 
     def read(self, src):
         """Parse a vector from a string with format {X, Y, Z, ...}."""
-        return [num.read(i) for i in self.regex.match(src).groups()]
+        return [num(i) for i in self.regex.match(src).groups()]
 
     def write(self, val):
         assert isinstance(val, list) and len(val) == self.dimension
@@ -192,35 +203,23 @@ class RWVector(RWGlyphs):
 
 class RWPoint(RWVector):
     """Read/write a two-element vector."""
-    def __init__(self):
-        RWVector.__init__(self, 2)
+    def __init__(self, value = None):
+        if value:
+            super(RWPoint, self).__init__(2, value)
+        else:
+            super(RWPoint, self).__init__(2, (0, 0))
 
 
 class RWTransform(RWVector):
     """Read/write a six-element vector."""
 
-    def __init__(self):
-        RWVector.__init__(self, 6)
+    def __init__(self, value = None):
+        if value:
+            super(RWTransform, self).__init__(6, value)
+        else:
+            super(RWTransform, self).__init__(6, (1, 0, 0, 1, 0, 0))
 
 
-class RWNode(RWGlyphs):
-    """Read/write a node on an outline."""
-
-    _regex = re.compile(
-        '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?')
-
-    def read(self, src):
-        """Cast a node from a string with format X Y TYPE [SMOOTH]."""
-        x, y, node_type, smooth = self._regex.match(src).groups()
-        return [num.read(x), num.read(y), node_type.lower(), bool(smooth)]
-
-    def write(self, val):
-        assert isinstance(val, list) and len(val) == 4
-        x, y, node_type, smooth = val
-        # glyphs has this lower case
-        if node_type != 'n/a':
-            node_type = node_type.upper()
-        return '%s %s %s%s' % (x, y, node_type, ' SMOOTH' if smooth else '')
 
 
 class RWIntList(RWGlyphs):
@@ -255,7 +254,12 @@ class RWNodeList(RWGlyphs):
 
 class RWDateTime(RWGlyphs):
     """Read/write a datetime.  Doesn't maintain time zone offset."""
-
+    def __init__(self, value = None):
+        if value:
+            self.value = self.read(value)
+        else:
+            self.value = None
+    
     def read(self, src):
         """Parse a datetime object from a string."""
         if not src:
@@ -270,7 +274,31 @@ class RWDateTime(RWGlyphs):
 
     def write(self, val):
         return str(val) + ' +0000'
-
+    def strftime(self, args):
+        try:
+            return self.value.strftime(val)
+        except:
+            return None
+            
+class RWColor(RWGlyphs):
+    def __init__(self, value = None):
+        if value:
+            self.value = self.read(value)
+        else:
+            self.value = None
+    
+    def read(self, src = None):
+        if line is None:
+            return None
+        if line[0] == "(":
+            line = line[1:-1]
+            color = line.split(",")
+            color = tuple([int(c) for c in color])
+        else:
+            color = int(line)
+        return color
+    def write(self, val):
+        raise "Not implemented"
 
 class RWKerning(RWGlyphs):
     """Read/write kerning data structure."""
@@ -369,25 +397,26 @@ class RWUserData(RWGlyphs):
 
 # Like singletons, but... not.  Used as type structure values.
 
-background = RWBackground()
-default = RWDefault()
-string = RWString()
-integer = RWInteger()
-truthy = RWTruthy()
-num = RWNum()
-hex_int = RWHexInt()
-point = RWPoint()
-transform = RWTransform()
-node = RWNode()
+background = RWBackground
+default = RWDefault
+string = RWString
+integer = RWInteger
+truthy = RWTruthy
+num = RWNum
+hex_int = RWHexInt
+point = RWPoint
+transform = RWTransform
+#node = RWNode()
 intlist = RWIntList()
 pointlist = RWPointList()
 nodelist = RWNodeList()
-glyphs_datetime = RWDateTime()
+glyphs_datetime = RWDateTime
+color = RWColor
 kerning = RWKerning()
-descender_val = RWDescenderVal()
-version_minor = RWVersionMinor()
-custom_params = RWCustomParams()
-user_data = RWUserData()
+descender_val = RWDescenderVal
+version_minor = RWVersionMinor
+custom_params = RWCustomParams
+user_data = RWUserData
 
 
 # Type hierarchy for a glyph background.
@@ -538,3 +567,33 @@ def _convert_data(data, to_typed, types):
                 _convert_data(cur_data, to_typed, cur_type)
         else:
             data[key] = cur_type.convert(data[key], to_typed)
+def actualPrecition(Float):
+    ActualPrecition = 3
+    Integer = round(Float * 1000.0)
+    while ActualPrecition >= 0:
+        if Integer != round(Integer / 10.0) * 10:
+            return ActualPrecition
+        
+        Integer = round(Integer / 10.0)
+        ActualPrecition -= 1
+    
+    if ActualPrecition < 0:
+        ActualPrecition = 0
+    return ActualPrecition
+
+
+def floatToString(Float, precision = 3):
+    try:
+        ActualPrecition = actualPrecition(Float)
+        precision = min(precision, ActualPrecition)
+        fractional = math.modf(math.fabs(Float))[0]
+        if precision >= 3 and fractional >= 0.001 and fractional <= 0.999:
+            return "%.3f" % Float
+        if precision == 2 and fractional >= 0.01 and fractional <= 0.99:
+            return "%.2f" % Float
+        if precision == 1 and fractional >= 0.1 and fractional <= 0.9:
+            return "%.1f" % Float
+        else:
+            return "%d" % Float
+    except:
+        print(traceback.format_exc())
