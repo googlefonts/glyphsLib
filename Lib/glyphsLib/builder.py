@@ -181,7 +181,11 @@ def generate_base_fonts(data, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
-    date_created = to_ufo_time(data.pop('date'))
+    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
+    # https://github.com/googlei18n/glyphsLib/issues/134
+    date_created = data.pop('date', None)
+    if date_created is not None:
+        date_created = to_ufo_time(date_created)
     units_per_em = data.pop('unitsPerEm')
     version_major = data.pop('versionMajor')
     version_minor = data.pop('versionMinor')
@@ -200,7 +204,8 @@ def generate_base_fonts(data, family_name):
     for master in data['fontMaster']:
         ufo = Font()
 
-        ufo.info.openTypeHeadCreated = date_created
+        if date_created is not None:
+            ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
         ufo.info.versionMajor = version_major
         ufo.info.versionMinor = version_minor

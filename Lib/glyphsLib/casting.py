@@ -257,6 +257,9 @@ class RWDateTime(RWGlyphs):
 
     def read(self, src):
         """Parse a datetime object from a string."""
+        if not src:
+            # sometimes source files may contain an empty date string
+            return None
         # parse timezone ourselves, since %z is not always supported
         # see: http://bugs.python.org/issue6641
         string, tz = src.rsplit(' ', 1)
