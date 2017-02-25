@@ -489,6 +489,12 @@ class ToUfosTest(unittest.TestCase):
         glyphOrder = to_ufos(data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
         self.assertEqual(glyphOrder, ['A', 'B', 'C', 'Z'])
 
+    def test_missing_date(self):
+        data = self.generate_minimal_data()
+        del data['date']
+        ufo = to_ufos(data)[0]
+        self.assertIsNone(ufo.info.openTypeHeadCreated)
+
     def _run_guideline_test(self, data_in, expected):
         data = self.generate_minimal_data()
         data['glyphs'].append({
