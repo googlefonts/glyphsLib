@@ -153,9 +153,7 @@ class RWInteger(RWGlyphs):
 
 class RWNum(RWGlyphs):
     """Read/write an int or float."""
-    def __init__(self, arg):
-        super(RWNum, self).__init__(arg)
-    
+
     def read(self, src):
         float_val = float(src)
         return int(float_val) if float_val.is_integer() else float_val
@@ -194,7 +192,8 @@ class RWVector(RWGlyphs):
 
     def read(self, src):
         """Parse a vector from a string with format {X, Y, Z, ...}."""
-        return [num(i) for i in self.regex.match(src).groups()]
+        n = num()
+        return [n.read(i) for i in self.regex.match(src).groups()]
 
     def write(self, val):
         assert isinstance(val, list) and len(val) == self.dimension
@@ -212,12 +211,15 @@ class RWPoint(RWVector):
 
 class RWTransform(RWVector):
     """Read/write a six-element vector."""
-
-    def __init__(self, value = None):
-        if value:
-            super(RWTransform, self).__init__(6, value)
+    
+    def __init__(self, dimension = 6, value = None):
+        super(RWTransform, self).__init__(6, value)
+    
+    def read(self, src = None):
+        if src:
+            return super(RWTransform, self).read(src)
         else:
-            super(RWTransform, self).__init__(6, (1, 0, 0, 1, 0, 0))
+            return (1, 0, 0, 1, 0, 0)
 
 
 
@@ -281,21 +283,16 @@ class RWDateTime(RWGlyphs):
             return None
             
 class RWColor(RWGlyphs):
-    def __init__(self, value = None):
-        if value:
-            self.value = self.read(value)
-        else:
-            self.value = None
-    
+
     def read(self, src = None):
-        if line is None:
+        if src is None:
             return None
-        if line[0] == "(":
-            line = line[1:-1]
-            color = line.split(",")
+        if src[0] == "(":
+            src = src[1:-1]
+            color = src.split(",")
             color = tuple([int(c) for c in color])
         else:
-            color = int(line)
+            color = int(src)
         return color
     def write(self, val):
         raise "Not implemented"

@@ -17,7 +17,7 @@
 
 import re, traceback
 
-from casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy
+from casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
 import collections
 
 __all__ = [
@@ -45,7 +45,11 @@ class GSBase(object):
                 if issubclass(dict_type, GSBase):
                     value = []
                 else:
-                    value = None
+                    try:
+                        value = dict_type().read(None)
+                    except:
+                        #print traceback.format_exc()
+                        value = None
                 setattr(self, key, value)
             except:
                 pass
@@ -140,7 +144,7 @@ class LayersIterator:
                 Index = 0
                 ExtraLayer = None
                 while ExtraLayerIndex >= 0:
-                    ExtraLayer = self._owner.pyobjc_instanceMethods.layers().objectAtIndex_(Index)
+                    ExtraLayer = self._owner._layers.values()[Index]
                     if ExtraLayer.layerId != ExtraLayer.associatedMasterId:
                         ExtraLayerIndex = ExtraLayerIndex - 1
                     Index = Index + 1
@@ -148,9 +152,9 @@ class LayersIterator:
             self.curInd += 1
             return Item
         else:
-            if self.curInd >= self._owner.countOfLayers():
+            if self.curInd >= len(self._owner._layers):
                 raise StopIteration
-            Item = self._owner.pyobjc_instanceMethods.layers().objectAtIndex_(self.curInd)
+            Item = self._owner._layers[self.curInd]
             self.curInd += 1
             return Item
         return None
@@ -304,7 +308,7 @@ class GSCustomParameter(GSBase):
         if self.name in CUSTOM_TRUTHY_PARAMS:
             value = truthy(value)
         if self.name in CUSTOM_INTLIST_PARAMS:
-            value = intlist(value)
+            value = intlist.read(value)
         elif self.name == 'DisableAllAutomaticBehaviour':
             value = truthy(value)
         self._value = value
@@ -313,11 +317,15 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
-    def __init__(self, line = None):
-        if line is not None:
-            p = point(line)
-            self.position = float(p.value[0].value)
-            self.size = float(p.value[1].value)
+    def read(self, src):
+        if src is not None:
+            p = point(src)
+            self.position = float(p.value[0])
+            self.size = float(p.value[1])
+        else:
+            self.position = 0
+            self.size = 20
+        return self
 
     def __repr__(self):
         return "<%s pos:%g size:%g>" % (self.__class__.__name__, self.position, self.size)
@@ -400,12 +408,10 @@ class GSFontMaster(GSBase):
                                 lambda self, value: CustomParametersProxy(self).setter(value))
 
 class GSNode(GSBase):
-
+    rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
     def __init__(self, line = None):
         if line is not None:
-            rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)' \
-                 '(?: (SMOOTH))?'
-            m = re.match(rx, line).groups()
+            m = re.match(self.rx, line).groups()
             self.position = (float(m[0]), float(m[1]))
             self.type = m[2].lower()
             self.smooth = bool(m[3])
@@ -472,6 +478,7 @@ class GSFeature(GSBase):
         "code": unicode,
         "name": str,
         "notes": unicode,
+        "disabled": truthy,
     }
     def getCode(self):
         return self._code
@@ -491,6 +498,7 @@ class GSClass(GSFeature):
         "code": unicode,
         "name": str,
         "notes": unicode,
+        "disabled": truthy,
     }
 
 
@@ -606,7 +614,7 @@ class GSGlyph(GSBase):
         "bottomMetricsKey": str,
         "category": str,
         "color": color,
-        "export":truthy,
+        "export": truthy,
         "glyphname": str,
         "lastChange": glyphs_datetime,
         "layers": GSLayer,
@@ -634,6 +642,7 @@ class GSGlyph(GSBase):
         self._layers = collections.OrderedDict()
         self.name = None
         self.parent = None
+        self.export = True
 
     def __repr__(self):
         return "<GSGlyph \"%s\" with %s layers>" % (self.name, len(self.layers))
@@ -783,3 +792,15 @@ class GSFont(GSBase):
 
     customParameters = property(lambda self: CustomParametersProxy(self),
                                 lambda self, value: CustomParametersProxy(self).setter(value))
+    @property
+    def kerning(self):
+        return self._kerning
+    @kerning.setter
+    def kerning(self, kerning):
+        self._kerning = kerning
+        n = num()
+        for master_id, master_map in kerning.items():
+            for left_glyph, glyph_map in master_map.items():
+                for right_glyph, value in glyph_map.items():
+                    glyph_map[right_glyph] = n.read(value)
+
