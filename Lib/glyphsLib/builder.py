@@ -98,7 +98,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
 
     feature_prefixes, classes, features = [], [], []
     for f in font.featurePrefixes:
-        feature_prefixes.append((f.name, fcode, f.automatic))
+        feature_prefixes.append((f.name, f.code, f.automatic))
     for c in font.classes:
         classes.append((c.name, c.code, c.automatic))
     for f in font.features:
@@ -437,9 +437,9 @@ def set_robofont_glyph_background(glyph, key, background):
             'baseGlyph': component.name,
             'transformation': component.transform}
 
-        for meta_attr in ['disableAlignment', 'locked']:
-            value = component.pop(meta_attr, False)
-            if value:
+        for meta_attr in ['alignment', 'locked']:
+            value = getattr(component, meta_attr)
+            if value is not None:
                 new_component[meta_attr] = True
 
         components.append(new_component)
@@ -611,8 +611,12 @@ def load_glyph_libdata(glyph, layer):
 
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
-    for key in ['disableAlignment', 'locked']:
-        values = [c.pop(key, False) for c in layer.components]
+    for key in ['alignment', 'locked']:
+        values = []
+        for c in layer.components:
+            value = getattr(c, key)
+            if value is not None:
+                values.append(value)
         if any(values):
             key = key[0].upper() + key[1:]
             glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
@@ -673,26 +677,24 @@ def draw_paths(pen, paths):
 
     for path in paths:
         pen.beginPath()
-        nodes = path.nodes
+        nodes = list(path.nodes) # the list is changed below, otherwise you can't draw more than once per session.
         
         if not nodes:
             pen.endPath()
             continue
         if not path.closed:
-            x, y, node_type, smooth = nodes.pop(0)
-            assert node_type == 'line', 'Open path starts with off-curve points'
-            pen.addPoint((x, y), segmentType='move')
+            node = nodes.pop(0)
+            assert node.type == 'line', 'Open path starts with off-curve points'
+            pen.addPoint(node.position, segmentType='move')
         else:
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
         for node in nodes:
-            (x, y) = node.position
             node_type = node.type
-            smooth = node.smooth
             if node_type not in ['line', 'curve']:
                 node_type = None
-            pen.addPoint((x, y), segmentType=node_type, smooth=smooth)
+            pen.addPoint(node.position, segmentType=node_type, smooth=node.smooth)
         pen.endPath()
 
 

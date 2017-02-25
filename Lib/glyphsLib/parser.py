@@ -94,7 +94,12 @@ class Parser:
             if hasattr(res, "classForName"):
                 self.dict_type = res.classForName(name)
             i += len(parsed)
-            res[name], i = self._parse(text, i)
+            result = self._parse(text, i)
+            try:
+                res[name], i = result
+            except:
+                res = {} # ugly, this fixes nested dicts in customparameters
+                res[name], i = result
 
             m = self.dict_delim_re.match(text, i)
             if not m:
