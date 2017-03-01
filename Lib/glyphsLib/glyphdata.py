@@ -32,16 +32,29 @@ Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 def get_glyph(name, data=glyphdata_generated):
     prodname = data.PRODUCTION_NAMES.get(name, name)
-    unistr = data.IRREGULAR_UNICODE_STRINGS.get(name)
-    if unistr is None:
-        unistr = agl.toUnicode(prodname)
-    if unistr != "" and name not in data.MISSING_UNICODE_STRINGS:
-        unistr_result = unistr
-    else:
-        unistr_result = None
+    unistr = _get_unicode(name, prodname, data)
     category, subCategory = _get_category(name, unistr, data)
-    return Glyph(name, prodname, unistr_result, category, subCategory)
+    return Glyph(name, prodname, unistr, category, subCategory)
 
+if NARROW_PYTHON_BUILD:
+    def unilen(text):
+        if isinstance(text, bytes):
+            text = text.decode("utf_8")
+        text_utf32 = text.encode("utf-32-be")
+        return len(text_utf32)//4
+else:
+    unilen = len
+
+def _get_unicode(name, prodname, data):
+    if name in data.MISSING_UNICODE_STRINGS:
+        return None
+    unistr = data.IRREGULAR_UNICODE_STRINGS.get(name)
+    if unistr is not None or '.' in name or '_' in name:
+        return unistr
+    unistr = agl.toUnicode(prodname)
+    if unilen(unistr) == 1:
+        return unistr
+    return None
 
 def _get_unicode_category(unistr):
     # We use data for a fixed Unicode version (3.2) so that our generated
