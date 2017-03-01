@@ -15,8 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re, traceback
-
+import re, traceback, uuid
 from casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
 import collections
 
@@ -158,6 +157,79 @@ class LayersIterator:
 			self.curInd += 1
 			return Item
 		return None
+		
+class FontGlyphsProxy (Proxy):
+	"""The list of glyphs. You can access it with the index or the glyph name.
+	Usage: 
+		Font.glyphs[index]
+		Font.glyphs[name]
+		for glyph in Font.glyphs:
+		...
+	"""
+	def __getitem__(self, Key):
+		if type(Key) == slice:
+			return self.values().__getitem__(Key)
+		
+		# by index
+		if type(Key) is int:
+			return self._owner._glyphs[Key]
+		
+		else:
+			raise KeyError # TODO: add other access methods
+		'''
+		# by glyph name
+		elif self._owner.glyphForName_(Key):
+			return self._owner.glyphForName_(Key)
+
+		# by string representation as u'ä'
+		elif len(Key) == 1 and self._owner.glyphForCharacter_(ord(Key)):
+			return self._owner.glyphForCharacter_(ord(Key))
+		
+		# by unicode
+		else:
+			return self._owner.glyphForUnicode_(Key.upper())
+		'''
+
+	def __setitem__(self, Key, Glyph):
+		if type(Key) is int:
+			self._owner._setupGlyph(Glyph)
+			self._owner._glyphs[Key] = Glyph
+		else:
+			raise KeyError # TODO: add other access methods
+	def __delitem__(self, Key):
+		if type(Key) is int:
+			del(self._owner._glyph[Key])
+		else:
+			raise KeyError # TODO: add other access methods
+	def __contains__(self, item):
+		if isString(item):
+			raise "not implemented"
+		return item in self._owner._glyphs
+	def values(self):
+		return self._owner._glyphs
+	def items(self):
+		Items = []
+		for Value in self._owner._glyphs:
+			Key = Value.name
+			Items.append((Key, Value))
+		return Items
+	def append(self, Glyph):
+		self._owner._setupGlyph(Glyph)
+		self._owner._glyphs.append(Glyph)
+	def extend(self, objects):
+		for glyph in objects:
+			self._owner._setupGlyph(glyph)
+		self._owner._glyphs.extend(list(objects))
+	def __len__(self):
+		return len(self._owner._glyphs)
+	def setter(self, values):
+		self._glyphs = values
+		for g in self._glyphs:
+			g.parent = self
+			for layer in g.layers.values():
+				if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
+					g._setupLayer(layer, layer.layerId)
+	
 
 class GlyphLayerProxy (Proxy):
 	def __getitem__(self, Key):
@@ -203,12 +275,18 @@ class GlyphLayerProxy (Proxy):
 		return LayersIterator(self._owner)
 	def __len__(self):
 		return len(self._owner._layers)
+	def keys(self):
+		return self._owner._layers.keys()
 	def values(self):
 		return self._owner._layers.values()
-	def append(self, Layer):
-		if not Layer.associatedMasterId:
-			Layer.associatedMasterId = self._owner.parent.masters[0].id
-		self._owner.setLayerForKey(Layer, uuid4())
+	def append(self, layer):
+		assert layer is not None
+		if not layer.associatedMasterId:
+			layer.associatedMasterId = self._owner.parent.masters[0].id
+		if not layer.layerId:
+			layer.layerId = uuid.uuid4()
+		self._owner._setupLayer(layer, layer.layerId)
+		self._owner._layers[layer.layerId] = layer
 	def extend(self, Layers):
 		for Layer in Layers:
 			self.append(Layer)
@@ -292,7 +370,13 @@ class GSCustomParameter(GSBase):
 		"name": str,
 		"value": str,  # TODO: check 'name' to determine proper class
 	}
-	
+	def __init__(self, line = None, name = "New Value", value = "New Parameter"):
+		if line:
+			super(GSCustomParameter, self).__init__(line)
+		else:
+			self.name = name
+			self.value = value
+		
 	def __repr__(self):
 		return "<%s %s: %s>" % (self.__class__.__name__, self.name, self._value)
 	
@@ -406,19 +490,20 @@ class GSFontMaster(GSBase):
 		
 	customParameters = property(lambda self: CustomParametersProxy(self),
 								lambda self, value: CustomParametersProxy(self).setter(value))
+	
 
 class GSNode(GSBase):
 	rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
-	def __init__(self, line = None):
+	def __init__(self, line = None, position = (0, 0), nodetype = 'line', smooth = False):
 		if line is not None:
 			m = re.match(self.rx, line).groups()
 			self.position = (float(m[0]), float(m[1]))
 			self.type = m[2].lower()
 			self.smooth = bool(m[3])
 		else:
-			self.position = (0, 0)
-			self.type = 'line'
-			self.smooth = False
+			self.position = position
+			self.type = nodetype
+			self.smooth = smooth
 	
 	def __repr__(self):
 		content = self.type
@@ -534,7 +619,9 @@ class GSInstance(GSBase):
 	def __init__(self):
 		self.exports = True
 		self.name = "Regular"
-		self.name = "Regular"
+		self.weight = "Regular"
+		self.width = "Regular"
+		self.custom = None
 		self.linkStyle = ""
 		self.interpolationWeight = 100
 		self.interpolationWidth = 100
@@ -646,7 +733,7 @@ class GSGlyph(GSBase):
 	
 	def __repr__(self):
 		return "<GSGlyph \"%s\" with %s layers>" % (self.name, len(self.layers))
-		
+	
 	layers = property(	lambda self: GlyphLayerProxy(self),
 						lambda self, value: GlyphLayerProxy(self).setter(value))
 	
@@ -720,7 +807,11 @@ class GSFont(GSBase):
 		self._versionMinor = 0
 		self.versionMajor = 1
 		self.appVersion = 0
+		self._glyphs = []
+		self._masters = []
+		self._instance = []
 		self._customParameters = []
+
 	
 	def __repr__(self):
 		return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
@@ -735,18 +826,13 @@ class GSFont(GSBase):
 	
 	versionMinor = property(getVersionMinor, setVersionMinor)
 	
-	@property
-	def glyphs(self):
-		return self._glyphs
-	@glyphs.setter
-	def glyphs(self, value):
-		self._glyphs = value
-		for g in self._glyphs:
-			g.parent = self
-			for layer in g.layers.values():
-				if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
-					
-					g._setupLayer(layer, layer.layerId)
+	glyphs = property(	lambda self: FontGlyphsProxy(self),
+						lambda self, value: FontGlyphsProxy(self).setter(value))
+	def _setupGlyph(self, glyph):
+		glyph.parent = self
+		for layer in glyph.layers.values():
+			if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
+				glyph._setupLayer(layer, layer.layerId)
 	
 	@property
 	def classes(self):

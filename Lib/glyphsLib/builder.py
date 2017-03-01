@@ -131,7 +131,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
             glyph_order.append(glyph_name)
 
 
-        for layer in glyph.layers:
+        for layer in glyph.layers.values():
             layer_id = layer.layerId
             layer_name = layer.name
 
