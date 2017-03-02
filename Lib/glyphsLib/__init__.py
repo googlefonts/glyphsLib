@@ -27,6 +27,7 @@ from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
 
+from glyphsLib.classes import GSFont
 
 __version__ = "1.5.2.dev0"
 
@@ -48,7 +49,7 @@ def loads(value):
     """Read a .glyphs file from a bytes object.
     Return a GSFont object.
     """
-    p = Parser()
+    p = Parser(dict_type = GSFont)
     logger.info('Parsing .glyphs file')
     print("____loads")
     data = p.parse(value)

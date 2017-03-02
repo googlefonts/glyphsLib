@@ -20,13 +20,12 @@ from fontTools.misc.py23 import *
 import collections
 import re
 import sys, traceback
-from glyphsLib.classes import *
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self):
-        self.dict_type = GSFont
+    def __init__(self, dict_type = collections.OrderedDict):
+        self.dict_type = dict_type
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
