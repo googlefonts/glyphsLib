@@ -43,7 +43,8 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(uni("fi"), "ﬁ")
         self.assertIsNone(uni("s_t"))  # no 'unicode' in GlyphsData
         self.assertEqual(uni("Gcommaaccent"), "Ģ")
-        self.assertEqual(uni("o_f_f_i.foo"), "offi")
+        self.assertIsNone(uni("o_f_f_i.foo")) # no single unicode via agl
+        self.assertIsNone(uni("a.sc")) # alternate glyph
 
     def test_category(self):
         cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
