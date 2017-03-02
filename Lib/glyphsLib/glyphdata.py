@@ -32,7 +32,7 @@ Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 def get_glyph(name, data=glyphdata_generated):
     prodname = data.PRODUCTION_NAMES.get(name, name)
-    unistr = _get_unicode(name, prodname, data)
+    unistr = _get_unicode(name, data)
     category, subCategory = _get_category(name, unistr, data)
     return Glyph(name, prodname, unistr, category, subCategory)
 
@@ -45,33 +45,17 @@ if NARROW_PYTHON_BUILD:
 else:
     unilen = len
 
-def _get_unicode(name, prodname, data):
+def _get_unicode(name, data=glyphdata_generated):
+    prodname = data.PRODUCTION_NAMES.get(name, name)
     if name in data.MISSING_UNICODE_STRINGS:
         return None
     unistr = data.IRREGULAR_UNICODE_STRINGS.get(name)
-    if unistr is not None or '.' in name or '_' in name:
+    if unistr is not None or "." in name:
         return unistr
     unistr = agl.toUnicode(prodname)
     if unilen(unistr) == 1:
         return unistr
     return None
-
-def _get_unicode_category(unistr):
-    # We use data for a fixed Unicode version (3.2) so that our generated
-    # data files are independent of Python runtime that runs the rules.
-    # By switching to current Unicode data, we could save some entries
-    # in our exception tables, but the gains are not very large; only
-    # about one thousand entries.
-    if not unistr:
-        return None
-    if NARROW_PYTHON_BUILD:
-        utf32_str = unistr.encode("utf-32-be")
-        nchars = len(utf32_str)//4
-        first_char = unichr(struct.unpack('>%dL' % nchars, utf32_str)[0])
-    else:
-        first_char = unistr[0]
-    return unicodedata.ucd_3_2_0.category(first_char)
-
 
 def _get_category(name, unistr, data=glyphdata_generated):
     cat = data.IRREGULAR_CATEGORIES.get(name)
@@ -93,7 +77,17 @@ def _get_category(name, unistr, data=glyphdata_generated):
         return ("Symbol", "Geometry")
     if basename.startswith("uniF9"):
         return ("Letter", "Compatibility")
-    ucat = _get_unicode_category(unistr)
+
+    if unistr is None:
+        if name != basename:
+            unistr = _get_unicode(basename, data)
+        if unistr is None and  "_" in basename:
+            # the first component will define the category
+            first_component_name = basename.split('_', 1)[0]
+            unistr = _get_unicode(first_component_name, data)
+    ucat = None
+    if unistr is not None:
+        ucat = unicodedata.ucd_3_2_0.category(unistr)
     cat = data.DEFAULT_CATEGORIES.get(ucat, (None, None))
     if "_" in basename:
         return (cat[0], "Ligature")
