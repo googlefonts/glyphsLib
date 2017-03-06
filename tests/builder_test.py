@@ -77,7 +77,7 @@ class SetCustomParamsTest(unittest.TestCase):
 
     def test_normalizes_curved_quotes_in_names(self):
         master = GSFontMaster()
-        master.customParameters = [GSCustomParameter(name='bad', value=1),
+        master.customParameters = [GSCustomParameter(name='‘bad’', value=1),
                                    GSCustomParameter(name='“also bad”', value=2)]
         set_custom_params(self.ufo, data=master)
         self.assertIn(GLYPHS_PREFIX + "'bad'", self.ufo.lib)
