@@ -271,10 +271,9 @@ class ToUfosTest(unittest.TestCase):
 
         # generate classes 'A': ['A', 'a'] and 'V': ['V', 'v']
         for glyph_name in ('A', 'a', 'V', 'v'):
-            font.glyphs.append({
-                'glyphname': glyph_name, 'layers': [],
-                'rightKerningGroup': glyph_name.upper(),
-                'leftKerningGroup': glyph_name.upper()})
+            glyph = self.add_glyph(font, glyph_name)
+            glyph.rightKerningGroup = glyph_name.upper()
+            glyph.leftKerningGroup = glyph_name.upper()
 
         # classes are referenced in Glyphs kerning using old MMK names
         font.kerning = {
