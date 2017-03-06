@@ -28,7 +28,8 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
-    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, GSComponent
+    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, \
+    GSComponent, GSAlignmentZone
 
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths,\
@@ -486,12 +487,16 @@ class ToUfosTest(unittest.TestCase):
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
-        font_in = [(500, 15), (400, -15), (0, -15), (-200, 15), (-300, -15)]
+        font_in = []
+        for data in [(500, 15), (400, -15), (0, -15), (-200, 15), (-300, -15)]:
+            az = GSAlignmentZone()
+            az.position, az.size = data
+            font_in.append(az)
         expected_blue_values = [-200, -185, -15, 0, 500, 515]
         expected_other_blues = [-315, -300, 385, 400]
 
         font = self.generate_minimal_font()
-        font['fontMaster'][0]['alignmentZones'] = data_in
+        font.masters[0].alignmentZones = font_in
         ufo = to_ufos(font)[0]
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
