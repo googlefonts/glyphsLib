@@ -415,6 +415,9 @@ class GSAlignmentZone(GSBase):
 		
 	def __repr__(self):
 		return "<%s pos:%g size:%g>" % (self.__class__.__name__, self.position, self.size)
+
+	def __lt__(self, other):
+		return (self.position, self.size) < (other.position, other.size)
 	
 	def plistValue(self):
 		return "\"{%s, %s}\"" % (floatToString(self.position), floatToString(self.size))
