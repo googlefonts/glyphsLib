@@ -27,7 +27,8 @@ from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor
+from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
+    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, GSComponent
 
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths,\
@@ -229,6 +230,16 @@ class ToUfosTest(unittest.TestCase):
                     anchor.name = anchorname
                     anchor.position = (x, y)
                     layer.anchors.append(anchor)
+
+    def add_component(self, font, glyphname, componentname,
+                      transform):
+        for glyph in font.glyphs:
+            if glyph.name == glyphname:
+                for layer in glyph.layers.values():
+                    component = GSComponent()
+                    component.name = componentname
+                    component.transform = transform
+                    layer.components.append(component)
 
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
