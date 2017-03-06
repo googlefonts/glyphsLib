@@ -224,7 +224,7 @@ class ToUfosTest(unittest.TestCase):
         for glyph in font.glyphs:
             if glyph.name == glyphname:
                 for layer in glyph.layers.values():
-                    layer.anchors = []
+                    layer.anchors = getattr(layer, 'anchors', [])
                     anchor = GSAnchor()
                     anchor.name = anchorname
                     anchor.position = (x, y)
