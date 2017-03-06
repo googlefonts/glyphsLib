@@ -15,7 +15,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import basestring
+from fontTools.misc.py23 import basestring, unicode
 import datetime
 import logging
 import re
@@ -79,7 +79,7 @@ def _mutate_list(fn, l):
 
 class RWGlyphs(object):
     def __init__(self, value = None):
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             value = self.read(value)
         self.value = value
 
