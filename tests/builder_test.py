@@ -254,7 +254,7 @@ class ToUfosTest(unittest.TestCase):
         ufo = ufos[0]
         self.assertEqual(len(ufo), 0)
         self.assertEqual(ufo.info.familyName, family_name)
-        self.assertEqual(ufo.info.styleName, 'Regular')
+        # self.assertEqual(ufo.info.styleName, 'Regular')
         self.assertEqual(ufo.info.versionMajor, 1)
         self.assertEqual(ufo.info.versionMinor, 0)
         self.assertIsNone(ufo.info.openTypeNameVersion)
