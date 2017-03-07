@@ -28,6 +28,7 @@ import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder import GLYPHS_PREFIX
 from glyphsLib.interpolation import build_designspace
+from glyphsLib.classes import GSInstance, GSCustomParameter
 
 
 def makeFamily(familyName):
@@ -42,6 +43,11 @@ def makeFamily(familyName):
             makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
+    for d in data:
+        inst = GSInstance()
+        inst.name = d["name"]
+        inst.interpolationWeight = d["interpolationWeight"]
+        instances["data"].append(inst)
     return [m1, m2], instances
 
 
@@ -56,7 +62,8 @@ def makeMaster(familyName, styleName, weight=None, width=None):
 
 
 def makeInstance(name, weight=None, width=None):
-    result = {"name": name}
+    inst = GSInstance()
+    inst.name = name
     params = []
     if weight is not None:
         # Glyphs 2.3 stores the instance weight in two to three places:
@@ -67,10 +74,13 @@ def makeInstance(name, weight=None, width=None):
         # 3. as numeric interpolationWeight (such as 66.0), which typically is
         #    the stem width but can be anything that works for interpolation.
         weightName, weightClass, interpolationWeight = weight
-        result["weightClass"] = weightName
+        inst.weightClass = weightName
         if weightClass is not None:
-            params.append({"name": "weightClass", "value": weightClass})
-        result["interpolationWeight"] = interpolationWeight
+            cp = GSCustomParameter()
+            cp.name = "weightClass"
+            cp.value = weightClass
+            params.append(cp)
+        inst.interpolationWeight = interpolationWeight
     if width is not None:
         # Glyphs 2.3 stores the instance width in two places:
         # 1. as a textual widthClass (such as “Condensed”);
@@ -78,13 +88,13 @@ def makeInstance(name, weight=None, width=None):
         #    a percentage of whatever the font designer considers “normal”
         #    but can be anything that works for interpolation.
         widthClass, interpolationWidth = width
-        result["widthClass"] = widthClass
-        result["interpolationWidth"] = interpolationWidth
+        inst.widthClass = widthClass
+        inst.interpolationWidth = interpolationWidth
     # TODO: Support custom axes; need to triple-check how these are encoded in
     # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
     if params:
-        result["customParameters"] = params
-    return result
+        inst.customParameters = params
+    return inst
 
 
 class DesignspaceTest(unittest.TestCase):
@@ -120,8 +130,8 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            if inst["name"] != "Semibold":
-                inst["active"] = False
+            if inst.name != "Semibold":
+                inst.active = False
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
@@ -130,17 +140,18 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            if inst["name"] != "Semibold":
-                inst["exports"] = False
+            if inst.name != "Semibold":
+                inst.exports = False
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
     def test_familyName(self):
         masters, instances = makeFamily("DesignspaceTest FamilyName")
         customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
-        customFamily["customParameters"].append({
-            "name": "familyName",
-            "value": "Custom Family"})
+        cp = GSCustomParameter()
+        cp.name = "familyName"
+        cp.value = "Custom Family"
+        customFamily.customParameters.append(cp)
         instances["data"] = [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             customFamily,
@@ -193,6 +204,7 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Bold", weight=("Bold", 700, 151)),
         ]
+
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
 
