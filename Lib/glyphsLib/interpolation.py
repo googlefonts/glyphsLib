@@ -146,10 +146,14 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
 
     # only write dimension elements if defined in at least one of the instances
     dimension_names = []
-    for s in ('weight', 'width', 'custom'):
+    for s in ('weight', 'width'):
         key = 'interpolation' + s.title()
-        if any(key in instance for instance in instance_data):
+        if any(getattr(instance, key, 100) != 100
+               for instance in instance_data):
             dimension_names.append(s)
+    if any(getattr(instance, 'interpolationCustom', 0) != 0
+           for instance in instance_data):
+        dimension_names.append('custom')
 
     for instance in instance_data:
         # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
