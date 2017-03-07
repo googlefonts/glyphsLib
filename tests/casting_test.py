@@ -17,15 +17,14 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import unittest
-from glyphsLib.casting import cast_data, num, node, custom_params
+from glyphsLib.casting import cast_data, num, node, custom_params, glyphs_datetime
 from copy import deepcopy
 
 
 class GlyphsDatetimeTest(unittest.TestCase):
     def compare_parsed_date_string(self, string, expected):
-        data = {'date': string}
-        cast_data(data)
-        dt = data['date']
+        gdt = glyphs_datetime(string)
+        dt = gdt.value
         year, month, day, hour, minute, second = expected
         self.assertEqual(dt.year, year)
         self.assertEqual(dt.month, month)
