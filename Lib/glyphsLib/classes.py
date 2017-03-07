@@ -641,6 +641,7 @@ class GSInstance(GSBase):
         self.isItalic = False
         self.widthClass = "Medium (normal)"
         self.weightClass = "Regular"
+        self._customParameters = []
 
     customParameters = property(lambda self: CustomParametersProxy(self),
                                 lambda self, value: CustomParametersProxy(self).setter(value))
