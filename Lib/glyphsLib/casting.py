@@ -339,14 +339,16 @@ class RWCustomParams(RWGlyphs):
 
     def read(self, src):
         assert isinstance(src, list)
+        n = num()
+        t = truthy()
         for param in src:
             name = param['name']
             value = param['value']
 
             if name in CUSTOM_NUM_PARAMS:
-                value = num.read(value)
+                value = n.read(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
-                value = truthy.read(value)
+                value = t.read(value)
             elif name in CUSTOM_INTLIST_PARAMS:
                 value = intlist.read(value)
 
@@ -354,15 +356,17 @@ class RWCustomParams(RWGlyphs):
         return src
 
     def write(self, val):
+        n = num()
+        t = truthy()
         assert isinstance(val, list)
         for param in val:
             name = param['name']
             value = param['value']
 
             if name in CUSTOM_NUM_PARAMS:
-                value = num.write(value)
+                value = n.write(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
-                value = truthy.write(value)
+                value = t.write(value)
             elif name in CUSTOM_INTLIST_PARAMS:
                 value = intlist.write(value)
             param['value'] = value
