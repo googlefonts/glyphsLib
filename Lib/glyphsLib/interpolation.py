@@ -243,8 +243,8 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     ofiles = []
     for instance in instances:
         familyName, postScriptFontName = family_name, None
-        for p in instance.get('customParameters', ()):
-            param, value = p['name'], p['value']
+        for p in instance.customParameters:
+            param, value = p.name, p.value
             if param == 'familyName':
                 familyName = value
             elif param == 'postscriptFontName':
@@ -253,7 +253,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         if not familyName:
             continue
 
-        styleName = instance.get('name')
+        styleName = instance.name
         ufo_path = build_ufo_path(out_dir, familyName, styleName)
         ofiles.append((ufo_path, instance))
         # MutatorMath.DesignSpaceDocumentWriter iterates over the location
