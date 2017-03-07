@@ -164,22 +164,22 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             continue
 
         instance_family = default_family_name
-        custom_params = instance.get('customParameters', ())
+        custom_params = instance.customParameters
         for i in range(len(custom_params)):
-            if custom_params[i]['name'] == 'familyName':
-                instance_family = custom_params[i]['value']
+            if custom_params[i].name == 'familyName':
+                instance_family = custom_params[i].value
                 break
         if not instance_family:
             continue
 
-        style_name = instance.pop('name')
+        style_name = instance.name
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
             name=' '.join((instance_family, style_name)),
             location={
-                s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
+                s: getattr(instance, 'interpolation' + s.title(), DEFAULT_LOC)
                 for s in dimension_names},
             familyName=instance_family,
             styleName=style_name,
