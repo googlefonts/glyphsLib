@@ -392,7 +392,7 @@ class ToUfosTest(unittest.TestCase):
     def test_weightClass_from_weight(self):
         font = self.generate_minimal_font()
         font.masters[0].weight = 'Bold'
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_widthClass_default(self):
