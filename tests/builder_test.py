@@ -554,8 +554,8 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_widthClass_default(self):
-        data = self.generate_minimal_data()
-        ufo = to_ufos(data)[0]
+        font = self.generate_minimal_font()
+        ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
 
     def test_widthClass_from_customParameter_widthClass(self):
@@ -564,17 +564,17 @@ class ToUfosTest(unittest.TestCase):
         # because the Glyphs handbook documents that the widthClass value
         # overrides the setting in the Width drop-down list.
         # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=203
-        data = self.generate_minimal_data()
+        font = self.generate_minimal_font()
         master = font.masters[0]
         master['width'] = 'Extra Condensed'  # 2
         master['customParameters'] = ({'name': 'widthClass', 'value': 7},)
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
 
     def test_widthClass_from_width(self):
-        data = self.generate_minimal_data()
+        font = self.generate_minimal_font()
         font.masters[0].width = 'Extra Condensed'
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 2)
 
     def test_GDEF(self):
