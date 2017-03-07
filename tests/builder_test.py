@@ -384,7 +384,8 @@ class ToUfosTest(unittest.TestCase):
         font = self.generate_minimal_font()
         master = font.masters[0]
         master.weight = 'Bold'  # 700
-        master.customParameters = ({'name': 'weightClass', 'value': 698},)
+        master.customParameters = [GSCustomParameter(
+            name='weightClass', value=698)]
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 698)  # 698, not 700
 
@@ -513,8 +514,8 @@ class ToUfosTest(unittest.TestCase):
 
     def test_set_glyphOrder_with_custom_param(self):
         font = self.generate_minimal_font()
-        font['customParameters'] = (
-            {'name': 'glyphOrder', 'value': ['A', 'B', 'C']},)
+        font['customParameters'] = [GSCustomParameter(
+            name='glyphOrder', value=['A', 'B', 'C'])]
         self.add_glyph(font, 'C')
         self.add_glyph(font, 'B')
         self.add_glyph(font, 'A')
