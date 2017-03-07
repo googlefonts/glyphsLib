@@ -566,8 +566,9 @@ class ToUfosTest(unittest.TestCase):
         # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=203
         font = self.generate_minimal_font()
         master = font.masters[0]
-        master['width'] = 'Extra Condensed'  # 2
-        master['customParameters'] = ({'name': 'widthClass', 'value': 7},)
+        master.width = 'Extra Condensed'  # 2
+        master.customParameters = [GSCustomParameter(
+            name='widthClass', value=7)]
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
 
