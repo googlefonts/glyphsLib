@@ -655,16 +655,12 @@ class ToUfosTest(unittest.TestCase):
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
-        font_in = []
-        for data in [(500, 15), (400, -15), (0, -15), (-200, 15), (-300, -15)]:
-            az = GSAlignmentZone()
-            az.position, az.size = data
-            font_in.append(az)
+        data_in = [GSAlignmentZone(pos=500, size=15), GSAlignmentZone(pos=400, size=-15), GSAlignmentZone(pos=0, size=-15), GSAlignmentZone(pos=-200, size=15), GSAlignmentZone(pos=-300, size=-15)]
         expected_blue_values = [-200, -185, -15, 0, 500, 515]
         expected_other_blues = [-315, -300, 385, 400]
 
         font = self.generate_minimal_font()
-        font.masters[0].alignmentZones = font_in
+        font.masters[0].alignmentZones = data_in
         ufo = to_ufos(font)[0]
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
