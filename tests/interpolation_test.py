@@ -64,7 +64,6 @@ def makeMaster(familyName, styleName, weight=None, width=None):
 def makeInstance(name, weight=None, width=None):
     inst = GSInstance()
     inst.name = name
-    params = []
     if weight is not None:
         # Glyphs 2.3 stores the instance weight in two to three places:
         # 1. as a textual weightClass (such as “Bold”);
@@ -76,10 +75,7 @@ def makeInstance(name, weight=None, width=None):
         weightName, weightClass, interpolationWeight = weight
         inst.weightClass = weightName
         if weightClass is not None:
-            cp = GSCustomParameter()
-            cp.name = "weightClass"
-            cp.value = weightClass
-            params.append(cp)
+            inst.customParameters["weightClass"] = weightClass
         inst.interpolationWeight = interpolationWeight
     if width is not None:
         # Glyphs 2.3 stores the instance width in two places:
@@ -148,10 +144,7 @@ class DesignspaceTest(unittest.TestCase):
     def test_familyName(self):
         masters, instances = makeFamily("DesignspaceTest FamilyName")
         customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
-        cp = GSCustomParameter()
-        cp.name = "familyName"
-        cp.value = "Custom Family"
-        customFamily.customParameters.append(cp)
+        customFamily.customParameters["familyName"] = "Custom Family"
         instances["data"] = [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             customFamily,
