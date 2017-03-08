@@ -105,10 +105,7 @@ class DesignspaceTest(unittest.TestCase):
         inst2 = GSInstance()
         inst2.name = "Regular"
         inst2.interpolationWeight = 600.0
-        cp = GSCustomParameter()
-        cp.name = "familyName"
-        cp.value = "Custom Family"
-        inst2.customParameters = [cp]
+        inst2.customParameters["familyName"] = "Custom Family"
         instances["data"].append(inst2)
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
