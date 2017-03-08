@@ -55,6 +55,10 @@ class GlyphsDatetimeTest(unittest.TestCase):
             '2001-02-03 00:05:06 -0010',
             (2001, 2, 2, 23, 55, 6))
 
+    def test_empty_string(self):
+        gdt = glyphs_datetime('')
+        self.assertEqual(gdt.value, None)
+
 
 class RWNumTest(unittest.TestCase):
 

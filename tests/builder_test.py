@@ -516,6 +516,12 @@ class ToUfosTest(unittest.TestCase):
         glyphOrder = to_ufos(font)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
         self.assertEqual(glyphOrder, ['A', 'B', 'C', 'Z'])
 
+    def test_missing_date(self):
+        font = self.generate_minimal_font()
+        font.date = None
+        ufo = to_ufos(font)[0]
+        self.assertIsNone(ufo.info.openTypeHeadCreated)
+
     def _run_guideline_test(self, data_in, expected):
         font = self.generate_minimal_font()
         font['glyphs'].append({
