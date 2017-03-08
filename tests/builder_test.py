@@ -435,8 +435,6 @@ class ToUfosTest(unittest.TestCase):
             ('yodyod', [('yod', 0, 0), ('yod', 100, 0)], []),
         )
         for name, component_data, anchor_data in glyphs:
-            components = [{'name': n, 'transform': (1, 0, 0, 1, x, y)}
-                          for n, x, y in component_data]
             glyph = self.add_glyph(font, name)
             for n, x, y, in anchor_data:
                 self.add_anchor(font, name, n, x, y)
