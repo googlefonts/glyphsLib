@@ -766,7 +766,7 @@ class GSGlyph(GSBase):
 
 class GSFont(GSBase):
 	_classesForName = {
-		".appVersion": str,
+		".appVersion": int,
 		"DisplayStrings": [str],
 		"classes": GSClass,
 		"copyright": unicode,

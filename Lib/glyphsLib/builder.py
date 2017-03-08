@@ -88,7 +88,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
 
     # check that source was generated with at least stable version 2.3
     # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
-    if int(font.appVersion) < 895:
+    if font.appVersion < 895:
         logger.warn('This Glyphs source was generated with an outdated version '
                     'of Glyphs. The resulting UFOs may be incorrect.')
 
