@@ -78,15 +78,6 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestBasic.designspace")
 
-    def test_inactive_from_active(self):
-        # Glyphs.app recognizes active=0 as a flag for inactive instances.
-        # https://github.com/googlei18n/glyphsLib/issues/129
-        masters, instances = makeFamily("DesignspaceTest Inactive")
-        for inst in instances["data"]:
-            inst.active = (1 if inst.name == "Semibold" else 0)
-        self.expect_designspace(masters, instances,
-                                "DesignspaceTestInactive.designspace")
-
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
         # https://github.com/googlei18n/glyphsLib/issues/129
