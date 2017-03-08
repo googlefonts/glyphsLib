@@ -321,11 +321,11 @@ class CustomParametersProxy(Proxy):
 		return None
 	
 	def __setitem__(self, key, value):
-		Value = self._owner.__getitem__(key)
+		Value = self.__getitem__(key)
 		if Value is not None:
 			Value.value = value
 		else:
-			parameter = GSCustomParameter(key, value)
+			parameter = GSCustomParameter(name=key, value=value)
 			self._owner._customParameters.append(parameter)
 	def __delitem__(self, key):
 		parameter = self.__getitem__(key)
