@@ -27,6 +27,7 @@ import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder import GLYPHS_PREFIX
 from glyphsLib.interpolation import build_designspace
+from glyphsLib.classes import GSInstance, GSCustomParameter
 
 
 def makeFamily(familyName):
@@ -37,13 +38,19 @@ def makeFamily(familyName):
     m2.lib[GLYPHS_PREFIX + "weightValue"] = 900.0
     instances = {
         "defaultFamilyName": familyName,
-        "data": [
-            {"name": "Regular", "interpolationWeight": 400.0},
-            {"name": "Semibold", "interpolationWeight": 600.0},
-            {"name": "Bold", "interpolationWeight": 700.0},
-            {"name": "Black", "interpolationWeight": 900.0},
-        ],
+        "data": [],
     }
+    data = [
+        {"name": "Regular", "interpolationWeight": 400.0},
+        {"name": "Semibold", "interpolationWeight": 600.0},
+        {"name": "Bold", "interpolationWeight": 700.0},
+        {"name": "Black", "interpolationWeight": 900.0},
+    ]
+    for d in data:
+        inst = GSInstance()
+        inst.name = d["name"]
+        inst.interpolationWeight = d["interpolationWeight"]
+        instances["data"].append(inst)
     return [m1, m2], instances
 
 
@@ -76,7 +83,7 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            inst["active"] = (1 if inst["name"] == "Semibold" else 0)
+            inst.active = (1 if inst.name == "Semibold" else 0)
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
@@ -85,22 +92,24 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            inst["exports"] = (1 if inst["name"] == "Semibold" else 0)
+            inst.exports = (1 if inst.name == "Semibold" else 0)
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
     def test_familyName(self):
         masters, instances = makeFamily("DesignspaceTest FamilyName")
-        instances["data"] = [
-            {"name": "Regular", "interpolationWeight": 400.0},
-            {
-                "name": "Regular",
-                "interpolationWeight": 600.0,
-                "customParameters": [
-                    {"name": "familyName", "value": "Custom Family"},
-                ],
-            },
-        ]
+        inst1 = GSInstance()
+        inst1.name = "Regular"
+        inst1.interpolationWeight = 400.0
+        instances["data"] = [inst1]
+        inst2 = GSInstance()
+        inst2.name = "Regular"
+        inst2.interpolationWeight = 600.0
+        cp = GSCustomParameter()
+        cp.name = "familyName"
+        cp.value = "Custom Family"
+        inst2.customParameters = [cp]
+        instances["data"].append(inst2)
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
 
@@ -109,11 +118,18 @@ class DesignspaceTest(unittest.TestCase):
         # in the same order as they appear in the original source.
         # https://github.com/googlei18n/glyphsLib/issues/113
         masters, instances = makeFamily("DesignspaceTest InstanceOrder")
-        instances["data"] = [
+        data = [
             {"name": "Black", "interpolationWeight": 900.0},
             {"name": "Regular", "interpolationWeight": 400.0},
             {"name": "Bold", "interpolationWeight": 700.0},
         ]
+        instances["data"] = []
+        for d in data:
+            inst = GSInstance()
+            inst.name = d["name"]
+            inst.interpolationWeight = d["interpolationWeight"]
+            instances["data"].append(inst)
+
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
 

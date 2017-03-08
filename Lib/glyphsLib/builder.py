@@ -88,7 +88,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
 
     # check that source was generated with at least stable version 2.3
     # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
-    if font.appVersion < 895:
+    if int(font.appVersion) < 895:
         logger.warn('This Glyphs source was generated with an outdated version '
                     'of Glyphs. The resulting UFOs may be incorrect.')
 
@@ -494,6 +494,8 @@ def build_style_name(master, width_key, weight_key, custom_key, italic):
     width = getattr(master, width_key)
     weight = getattr(master, weight_key)
     custom = getattr(master, custom_key)
+    if width == 'Regular':
+        width = ''
     if (italic or width or custom) and weight == 'Regular':
         weight = ''
     return ' '.join(s for s in (width, weight, custom, italic) if s)

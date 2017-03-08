@@ -15,9 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import re, traceback, uuid
-from casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
+from glyphsLib.casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
 import collections
+from fontTools.misc.py23 import unicode
 
 __all__ = [
 	"GSFont", "GSCustomParameter", "GSInstance", 
@@ -47,7 +49,7 @@ class GSBase(object):
 					try:
 						value = dict_type().read(None)
 					except:
-						#print traceback.format_exc()
+						#print(traceback.format_exc())
 						value = None
 				setattr(self, key, value)
 			except:
@@ -67,7 +69,7 @@ class GSBase(object):
 	
 	def __setitem__(self, key, value):
 		try:
-			if type(value) is str and key in self._classesForName:
+			if isinstance(value, bytes) and key in self._classesForName:
 				new_type = self._classesForName[key]
 				if new_type is unicode:
 					value = value.decode('utf-8')
@@ -79,7 +81,7 @@ class GSBase(object):
 			key = self._wrapperKeysTranslate.get(key, key)
 			setattr(self, key, value)
 		except:
-			print traceback.format_exc()
+			print(traceback.format_exc())
 
 class Proxy(object):
 	def __init__(self, owner):
@@ -418,6 +420,9 @@ class GSAlignmentZone(GSBase):
 		
 	def __repr__(self):
 		return "<%s pos:%g size:%g>" % (self.__class__.__name__, self.position, self.size)
+
+	def __lt__(self, other):
+		return (self.position, self.size) < (other.position, other.size)
 	
 	def plistValue(self):
 		return "\"{%s, %s}\"" % (floatToString(self.position), floatToString(self.size))
@@ -636,6 +641,7 @@ class GSInstance(GSBase):
 		self.isItalic = False
 		self.widthClass = "Medium (normal)"
 		self.weightClass = "Regular"
+		self._customParameters = []
 	
 	customParameters = property(lambda self: CustomParametersProxy(self),
 								lambda self, value: CustomParametersProxy(self).setter(value))
@@ -749,7 +755,7 @@ class GSGlyph(GSBase):
 			if self.parent and self.parent.masterForId(key): # TODO use proxy `self.parent.masters[key]`
 				layer.associatedMasterId = key
 		except:
-			print traceback.format_exc()
+			print(traceback.format_exc())
 	# def setLayerForKey(self, layer, key):
 	# 	if Layer and Key:
 	# 		Layer.parent = self
@@ -803,15 +809,15 @@ class GSFont(GSBase):
 					try:
 						value = value().read(None)
 					except:
-						#print traceback.format_exc()
+						#print(traceback.format_exc())
 						value = value()
 				setattr(self, key, value)
 			except:
-				print traceback.format_exc()
+				print(traceback.format_exc())
 		self.familyName = "Unnamed font"
 		self._versionMinor = 0
 		self.versionMajor = 1
-		self.appVersion = 0
+		self.appVersion = "0"
 		self._glyphs = []
 		self._masters = []
 		self._instance = []

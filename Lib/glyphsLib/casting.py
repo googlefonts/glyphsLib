@@ -15,7 +15,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import basestring
+from fontTools.misc.py23 import basestring, unicode
 import datetime
 import logging
 import re
@@ -78,7 +78,7 @@ def _mutate_list(fn, l):
 
 class RWGlyphs(object):
     def __init__(self, value = None):
-        if isinstance(value, (str, unicode)):
+        if isinstance(value, basestring):
             value = self.read(value)
         self.value = value
 
@@ -335,14 +335,16 @@ class RWCustomParams(RWGlyphs):
 
     def read(self, src):
         assert isinstance(src, list)
+        n = num()
+        t = truthy()
         for param in src:
             name = param['name']
             value = param['value']
 
             if name in CUSTOM_NUM_PARAMS:
-                value = num.read(value)
+                value = n.read(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
-                value = truthy.read(value)
+                value = t.read(value)
             elif name in CUSTOM_INTLIST_PARAMS:
                 value = intlist.read(value)
 
@@ -350,15 +352,17 @@ class RWCustomParams(RWGlyphs):
         return src
 
     def write(self, val):
+        n = num()
+        t = truthy()
         assert isinstance(val, list)
         for param in val:
             name = param['name']
             value = param['value']
 
             if name in CUSTOM_NUM_PARAMS:
-                value = num.write(value)
+                value = n.write(value)
             elif name in CUSTOM_TRUTHY_PARAMS:
-                value = truthy.write(value)
+                value = t.write(value)
             elif name in CUSTOM_INTLIST_PARAMS:
                 value = intlist.write(value)
             param['value'] = value

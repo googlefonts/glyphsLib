@@ -146,36 +146,40 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
 
     # only write dimension elements if defined in at least one of the instances
     dimension_names = []
-    for s in ('weight', 'width', 'custom'):
+    for s in ('weight', 'width'):
         key = 'interpolation' + s.title()
-        if any(key in instance for instance in instance_data):
+        if any(getattr(instance, key, 100) != 100
+               for instance in instance_data):
             dimension_names.append(s)
+    if any(getattr(instance, 'interpolationCustom', 0) != 0
+           for instance in instance_data):
+        dimension_names.append('custom')
 
     for instance in instance_data:
         # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
         # to mark instances as inactive. Those should not be instantiated.
         # https://github.com/googlei18n/glyphsLib/issues/129
-        if (not int(instance.pop('exports', 1))
-                or not int(instance.pop('active', 1))):
+        if (not int(getattr(instance, 'exports', 1)) or
+                not int(getattr(instance, 'active', 1))):
             continue
 
         instance_family = default_family_name
-        custom_params = instance.get('customParameters', ())
+        custom_params = instance.customParameters
         for i in range(len(custom_params)):
-            if custom_params[i]['name'] == 'familyName':
-                instance_family = custom_params[i]['value']
+            if custom_params[i].name == 'familyName':
+                instance_family = custom_params[i].value
                 break
         if not instance_family:
             continue
 
-        style_name = instance.pop('name')
+        style_name = instance.name
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
 
         writer.startInstance(
             name=' '.join((instance_family, style_name)),
             location={
-                s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
+                s: getattr(instance, 'interpolation' + s.title(), DEFAULT_LOC)
                 for s in dimension_names},
             familyName=instance_family,
             styleName=style_name,

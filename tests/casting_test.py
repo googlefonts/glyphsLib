@@ -17,15 +17,14 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import unittest
-from glyphsLib.casting import cast_data, num, custom_params
+from glyphsLib.casting import cast_data, num, custom_params, glyphs_datetime
 from copy import deepcopy
 
 
 class GlyphsDatetimeTest(unittest.TestCase):
     def compare_parsed_date_string(self, string, expected):
-        data = {'date': string}
-        cast_data(data)
-        dt = data['date']
+        gdt = glyphs_datetime(string)
+        dt = gdt.value
         year, month, day, hour, minute, second = expected
         self.assertEqual(dt.year, year)
         self.assertEqual(dt.month, month)
@@ -60,14 +59,16 @@ class GlyphsDatetimeTest(unittest.TestCase):
 class RWNumTest(unittest.TestCase):
 
     def test_read(self):
-        self.assertEqual(num.read('1.0'), 1)
-        self.assertEqual(num.read('-10.0'), -10)
-        self.assertEqual(num.read('1.1'), 1.1)
+        n = num()
+        self.assertEqual(n.read('1.0'), 1)
+        self.assertEqual(n.read('-10.0'), -10)
+        self.assertEqual(n.read('1.1'), 1.1)
 
     def test_write(self):
-        self.assertEqual(num.write(1.0), '1')
-        self.assertEqual(num.write(-10), '-10')
-        self.assertEqual(num.write(1.1), '1.1')
+        n = num()
+        self.assertEqual(n.write(1.0), '1')
+        self.assertEqual(n.write(-10), '-10')
+        self.assertEqual(n.write(1.1), '1.1')
 
 
 class RWCustomParamsTest(unittest.TestCase):
@@ -95,14 +96,16 @@ class RWCustomParamsTest(unittest.TestCase):
     ]
 
     def test_read(self):
+        cp = custom_params()
         src = deepcopy(self.raw_params)
         expected = deepcopy(self.cast_params)
-        self.assertEqual(custom_params.read(src), expected)
+        self.assertEqual(cp.read(src), expected)
 
     def test_write(self):
+        cp = custom_params()
         src = deepcopy(self.cast_params)
         expected = deepcopy(self.raw_params)
-        self.assertEqual(custom_params.write(src), expected)
+        self.assertEqual(cp.write(src), expected)
 
 
 if __name__ == '__main__':
