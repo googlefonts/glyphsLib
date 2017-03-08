@@ -401,14 +401,19 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
+
+    def __init__(self, line = None, pos = 0, size = 20):
+        if line:
+            super(GSAlignmentZone, self).__init__(line)
+        else:
+            self.position = pos
+            self.size = size
+
     def read(self, src):
         if src is not None:
             p = point(src)
             self.position = float(p.value[0])
             self.size = float(p.value[1])
-        else:
-            self.position = 0
-            self.size = 20
         return self
 
     def __repr__(self):
