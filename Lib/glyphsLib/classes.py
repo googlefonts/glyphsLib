@@ -729,10 +729,10 @@ class GSGlyph(GSBase):
 	_wrapperKeysTranslate = {
 		"glyphname" : "name"
 	}
-	def __init__(self):
+	def __init__(self, name = None):
 		super(GSGlyph, self).__init__()
 		self._layers = collections.OrderedDict()
-		self.name = None
+		self.name = name
 		self.parent = None
 		self.export = True
 	
