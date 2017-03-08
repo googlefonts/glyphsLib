@@ -20,6 +20,7 @@ from fontTools.misc.py23 import round, unicode
 
 import logging
 import re
+import datetime
 
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data
@@ -173,7 +174,12 @@ def generate_base_fonts(font, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data."""
     from defcon import Font
 
-    date_created = to_ufo_time(font.date)
+    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
+    # https://github.com/googlei18n/glyphsLib/issues/134
+    if isinstance(font.date, datetime.datetime):
+        date_created = to_ufo_time(font.date)
+    else:
+        date_created = None
     units_per_em = font.unitsPerEm
     version_major = font.versionMajor
     version_minor = font.versionMinor
@@ -192,7 +198,8 @@ def generate_base_fonts(font, family_name):
     for master in font.masters:
         ufo = Font()
 
-        ufo.info.openTypeHeadCreated = date_created
+        if date_created is not None:
+            ufo.info.openTypeHeadCreated = date_created
         ufo.info.unitsPerEm = units_per_em
         ufo.info.versionMajor = version_major
         ufo.info.versionMinor = version_minor
