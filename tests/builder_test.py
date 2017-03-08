@@ -300,7 +300,7 @@ class SetRedundantDataTest(unittest.TestCase):
 class ToUfosTest(unittest.TestCase):
     def generate_minimal_font(self):
         font = GSFont()
-        font.appVersion = '895'
+        font.appVersion = 895
         font.date = datetime.datetime.today()
         font.familyName = 'MyFont'
         
@@ -376,7 +376,7 @@ class ToUfosTest(unittest.TestCase):
         """Test that a warning is printed when app version is missing."""
 
         font = self.generate_minimal_font()
-        font.appVersion = '0'
+        font.appVersion = 0
         with CapturingLogHandler(builder.logger, "WARNING") as captor:
             to_ufos(font)
         self.assertEqual(len([r for r in captor.records
