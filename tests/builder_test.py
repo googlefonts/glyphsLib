@@ -335,7 +335,8 @@ class ToUfosTest(unittest.TestCase):
     def add_anchor(self, font, glyphname, anchorname, x, y):
         for glyph in font.glyphs:
             if glyph.name == glyphname:
-                for layer in glyph.layers.values():
+                for master in font.masters:
+                    layer = glyph.layers[master.id]
                     layer.anchors = getattr(layer, 'anchors', [])
                     anchor = GSAnchor()
                     anchor.name = anchorname
