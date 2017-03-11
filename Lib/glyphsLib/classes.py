@@ -255,7 +255,16 @@ class GlyphLayerProxy (Proxy):
 							ExtraLayerIndex = ExtraLayerIndex - 1
 						Index = Index + 1
 					return ExtraLayer
-		return self._owner._layers.get(Key, None)
+		layer = self._owner._layers.get(Key, None)
+		if layer is None:
+			keyIsMasterId = False
+			for master in self._owner.parent.masters:
+				if master.id == Key:
+					keyIsMasterId = True
+			if keyIsMasterId:
+				layer = GSLayer()
+				self.__setitem__(Key, layer)
+		return layer
 	
 	def __setitem__(self, key, layer):
 		if type(key) is int and self._owner.parent:
