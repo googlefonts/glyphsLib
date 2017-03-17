@@ -4,7 +4,7 @@ glyphsLib
 =========
 
 This library provides a bridge from Glyphs source files (.glyphs) to
-UFOs via `defcon <https://github.com/typesupply/defcon/tree/ufo3>`__.
+UFOs via `defcon <https://github.com/typesupply/defcon/>`__.
 
 The main methods for conversion are found in ``__init__.py``.
 Intermediate data can be accessed without actually writing UFOs, if
