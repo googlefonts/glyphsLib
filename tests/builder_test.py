@@ -27,6 +27,7 @@ from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
+from glyphsLib import glyphdata_generated
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths,\
     set_default_params
@@ -177,6 +178,9 @@ class SetRedundantDataTest(unittest.TestCase):
 
 
 class ToUfosTest(unittest.TestCase):
+    def setUp(self):
+        self.glyph_data = glyphdata_generated
+
     def generate_minimal_data(self):
         return {
             '.appVersion': 895,
@@ -217,7 +221,7 @@ class ToUfosTest(unittest.TestCase):
 
         data = self.generate_minimal_data()
         family_name = data['familyName']
-        ufos = to_ufos(data)
+        ufos = to_ufos(data, glyph_data=self.glyph_data)
         self.assertEqual(len(ufos), 1)
 
         ufo = ufos[0]
@@ -236,7 +240,7 @@ class ToUfosTest(unittest.TestCase):
         data = self.generate_minimal_data()
         del data['.appVersion']
         with CapturingLogHandler(builder.logger, "WARNING") as captor:
-            to_ufos(data)
+            to_ufos(data, glyph_data=self.glyph_data)
         self.assertEqual(len([r for r in captor.records
                               if "outdated version" in r.msg]), 1)
 
@@ -268,7 +272,7 @@ class ToUfosTest(unittest.TestCase):
                 ))),
             ))}
 
-        ufos = to_ufos(data)
+        ufos = to_ufos(data, glyph_data=self.glyph_data)
         ufo = ufos[0]
 
         # these rules should be obvious
@@ -303,7 +307,7 @@ class ToUfosTest(unittest.TestCase):
                 'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
                             'anchors': anchors, 'components': components}]})
 
-        ufos = to_ufos(data)
+        ufos = to_ufos(data, glyph_data=self.glyph_data)
         ufo = ufos[0]
 
         glyph = ufo['dadDotbelow']
@@ -329,20 +333,20 @@ class ToUfosTest(unittest.TestCase):
     def test_postscript_name_from_data(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'foo')['production'] = 'f_o_o.alt1'
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'foo': 'f_o_o.alt1'})
 
     def test_postscript_name_from_glyph_name(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'C-fraktur')
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
 
     def test_weightClass_default(self):
         data = self.generate_minimal_data()
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
     def test_weightClass_from_customParameter_weightClass(self):
@@ -361,12 +365,12 @@ class ToUfosTest(unittest.TestCase):
     def test_weightClass_from_weight(self):
         data = self.generate_minimal_data()
         data['fontMaster'][0]['weight'] = 'Bold'
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_widthClass_default(self):
         data = self.generate_minimal_data()
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
 
     def test_widthClass_from_customParameter_widthClass(self):
@@ -379,13 +383,13 @@ class ToUfosTest(unittest.TestCase):
         master = data['fontMaster'][0]
         master['width'] = 'Extra Condensed'  # 2
         master['customParameters'] = ({'name': 'widthClass', 'value': 7},)
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
 
     def test_widthClass_from_width(self):
         data = self.generate_minimal_data()
         data['fontMaster'][0]['width'] = 'Extra Condensed'
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 2)
 
     def test_GDEF(self):
@@ -400,7 +404,7 @@ class ToUfosTest(unittest.TestCase):
         self.add_anchor(data, 't_e_s_t.alt', 'caret_1', 200, 0)
         self.add_anchor(data, 't_e_s_t.alt', 'caret_2', 400, 0)
         self.add_anchor(data, 't_e_s_t.alt', 'caret_3', 600, 0)
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo.features.text.splitlines(), [
             'table GDEF {',
             '  # automatic',
@@ -418,31 +422,31 @@ class ToUfosTest(unittest.TestCase):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'A.alt')
         self.add_anchor(data, 'A.alt', 'top', 400, 1000)
-        self.assertIn('[A.alt], # Base', to_ufos(data)[0].features.text)
+        self.assertIn('[A.alt], # Base', to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_GDEF_base_with_nonattaching_anchor(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'A.alt')
         self.add_anchor(data, 'A.alt', '_top', 400, 1000)
-        self.assertEqual('', to_ufos(data)[0].features.text)
+        self.assertEqual('', to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_GDEF_ligature_with_attaching_anchor(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'fi')
         self.add_anchor(data, 'fi', 'top', 400, 1000)
-        self.assertIn('[fi], # Liga', to_ufos(data)[0].features.text)
+        self.assertIn('[fi], # Liga', to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_GDEF_ligature_with_nonattaching_anchor(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'fi')
         self.add_anchor(data, 'fi', '_top', 400, 1000)
-        self.assertEqual('', to_ufos(data)[0].features.text)
+        self.assertEqual('', to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_GDEF_mark(self):
         data = self.generate_minimal_data()
         self.add_glyph(data, 'eeMatra-gurmukhi')
         self.assertIn('[eeMatra-gurmukhi], # Mark',
-                      to_ufos(data)[0].features.text)
+                      to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_GDEF_fractional_caret_position(self):
         # Some Glyphs sources happen to contain fractional caret positions.
@@ -452,7 +456,7 @@ class ToUfosTest(unittest.TestCase):
         self.add_glyph(data, 'fi')
         self.add_anchor(data, 'fi', 'caret_1', 499.9876, 0)
         self.assertIn('LigatureCaretByPos fi 500;',
-                      to_ufos(data)[0].features.text)
+                      to_ufos(data, glyph_data=self.glyph_data)[0].features.text)
 
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
@@ -463,7 +467,7 @@ class ToUfosTest(unittest.TestCase):
 
         data = self.generate_minimal_data()
         data['fontMaster'][0]['alignmentZones'] = data_in
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
@@ -474,7 +478,7 @@ class ToUfosTest(unittest.TestCase):
         self.add_glyph(data, 'B')
         self.add_glyph(data, 'A')
         self.add_glyph(data, 'Z')
-        glyphOrder = to_ufos(data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
+        glyphOrder = to_ufos(data, glyph_data=self.glyph_data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
         self.assertEqual(glyphOrder, ['C', 'B', 'A', 'Z'])
 
     def test_set_glyphOrder_with_custom_param(self):
@@ -486,13 +490,13 @@ class ToUfosTest(unittest.TestCase):
         self.add_glyph(data, 'A')
         # glyphs outside glyphOrder are appended at the end
         self.add_glyph(data, 'Z')
-        glyphOrder = to_ufos(data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
+        glyphOrder = to_ufos(data, glyph_data=self.glyph_data)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
         self.assertEqual(glyphOrder, ['A', 'B', 'C', 'Z'])
 
     def test_missing_date(self):
         data = self.generate_minimal_data()
         del data['date']
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertIsNone(ufo.info.openTypeHeadCreated)
 
     def _run_guideline_test(self, data_in, expected):
@@ -501,7 +505,7 @@ class ToUfosTest(unittest.TestCase):
             'glyphname': 'a',
             'layers': [{'layerId': data['fontMaster'][0]['id'], 'width': 0,
                         'guideLines': data_in}]})
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(data, glyph_data=self.glyph_data)[0]
         self.assertEqual(ufo['a'].guidelines, expected)
 
     #TODO enable these when we switch to loading UFO3 guidelines

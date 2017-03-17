@@ -17,151 +17,18 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import *
 
 import io
-import fontTools.agl
 import json
-import urllib
 import textwrap
-import xml.etree.ElementTree as etree
 
-from collections import Counter, defaultdict, namedtuple
-from glyphsLib.glyphdata import get_glyph, _get_unicode_category, _get_category
-
-
-# Data tables which we put into the generated Python file.
-# See comments in generate_python_source() below for documentation.
-GlyphData = namedtuple('GlyphData', [
-    'PRODUCTION_NAMES',
-    'IRREGULAR_UNICODE_STRINGS',
-    'MISSING_UNICODE_STRINGS',
-    'DEFAULT_CATEGORIES',
-    'IRREGULAR_CATEGORIES',
-])
-
-
-def fetch_url(url):
-    try:
-        from urllib.request import urlopen
-    except ImportError:
-        from urllib2 import urlopen
-    stream = urlopen(url)
-    content = stream.read()
-    stream.close()
-    return content.decode('utf-8')
-
-
-def fetch(filename):
-    return fetch_url(
-        "https://raw.githubusercontent.com/schriftgestalt/GlyphsInfo/master/"
-        + filename)
+from glyphsLib.util import build_data, test_data, fetch, fetch_url, fetch_all_glyphs
 
 
 def fetch_data_version():
     last_commit_info = fetch_url(
         "https://api.github.com/repos/schriftgestalt/GlyphsInfo/commits/master")
     return json.loads(last_commit_info)["sha"]
-
-
-def fetch_all_glyphs():
-    glyphs = {}
-    for filename in ("GlyphData.xml", "GlyphData_Ideographs.xml"):
-        for glyph in etree.fromstring(fetch(filename)).findall("glyph"):
-            glyphName = glyph.attrib["name"]
-            assert glyphName not in glyphs, "multiple entries for " + glyphName
-            glyphs[glyphName] = glyph.attrib
-    return glyphs
-
-
-def build_data(glyphs):
-    default_categories, irregular_categories = build_categories(glyphs)
-    prodnames = {}
-    irregular_unicode_strings = {}
-    missing_unicode_strings = set()
-    for name, glyph in glyphs.items():
-        prodname = glyph.get("production", name)
-        if prodname != name:
-            prodnames[name] = prodname
-        inferred_unistr = fontTools.agl.toUnicode(prodname)
-        unistr = glyph.get("unicode")
-        unistr = unichr(int(unistr, 16)) if unistr else None
-        if unistr is None:
-            missing_unicode_strings.add(name)
-        elif unistr != inferred_unistr:
-            irregular_unicode_strings[name] = unistr
-    return GlyphData(prodnames,
-                     irregular_unicode_strings,
-                     missing_unicode_strings,
-                     default_categories,
-                     irregular_categories)
-
-
-def build_categories(glyphs):
-    counts = defaultdict(Counter)
-    unicode_strings = {}
-    for name, glyph in glyphs.items():
-        prodname = glyph.get("production", name)
-        unistr = unicode_strings[name] = fontTools.agl.toUnicode(prodname)
-        unicode_category = _get_unicode_category(unistr)
-        category = (glyph.get("category"), glyph.get("subCategory"))
-        counts[unicode_category][category] += 1
-    default_categories = {"Cc": ("Separator", None)}
-    for key, value in counts.items():
-        cat, _count = value.most_common(1)[0]
-        default_categories[key] = cat
-
-    # Find irregular categories. Whether it makes much sense for
-    # Glyphs.app to disagree with Unicode about Unicode categories,
-    # and whether it's a great idea to introduce inconsistencies (for
-    # example, other than Unicode, Glyphs does not assign the same
-    # category to "ampersand" and "ampersand.full"), is an entirely
-    # moot question. Our goal here is to return the same properties as
-    # encoded in GlyphsData.xml, so that glyphsLib produces the same
-    # output as Glyphs.app.
-    #
-    # Changing the category of one glyph can affect the category of
-    # others. To handle this correctly, we execute a simple fixed
-    # point algorithm. Each iteration looks for glyphs whose category
-    # is different from what we'd have inferred from the current data
-    # tables; any irregularities get added to the irregular_categories
-    # exception list. If the last iteration has discovered additional
-    # irregularites, we do another round, trying to expand the exception
-    # list until we cannot find any more.
-    irregular_categories = {}
-    data = GlyphData({}, {}, set(), default_categories, irregular_categories)
-    changed = True
-    while changed:
-        changed = False
-        for name, glyph in glyphs.items():
-            inferred_category = _get_category(name, unicode_strings[name], data)
-            category = (glyph.get("category"), glyph.get("subCategory"))
-            if category != inferred_category:
-                irregular_categories[name] = category
-                changed = True
-    return default_categories, irregular_categories
-
-
-def test_data(glyphs, data):
-    """Runs checks on the generated GlyphData
-
-    Makes sure that the implementation of glyphsLib.glyphdata.get_glyph(),
-    if it were to work on the generated GlyphData, will produce the exact
-    same results as the original data files.
-    """
-    for _, glyph in sorted(glyphs.items()):
-        name = glyph["name"]
-        prod = glyph.get("production", name)
-        unicode = glyph.get("unicode")
-        unicode = unichr(int(unicode, 16)) if unicode else None
-        category = glyph.get("category")
-        subCategory = glyph.get("subCategory")
-        g = get_glyph(name, data=data)
-        assert name == g.name, (name, g.name)
-        assert prod == g.production_name, (name, prod, g.production_name)
-        assert unicode == g.unicode, (name, unicode, g.unicode)
-        assert category == g.category, (name, category, g.category)
-        assert subCategory == g.subCategory, (name, subCategory, g.subCategory)
 
 
 def nonesorter(a):
@@ -173,7 +40,10 @@ def nonesorter(a):
     return "" if a is None else a
 
 
-def generate_python_source(data, out):
+def generate_python_source(glyphs, out):
+    data = build_data(glyphs)
+    test_data(glyphs, data)
+
     out.write(
         "# -*- coding: utf-8 -*-\n"
         "#\n"
@@ -242,11 +112,14 @@ def generate_python_source(data, out):
         out.write('\t"%s": %s,\n' % (glyphName, glyphsCat))
     out.write("}\n\n")
 
+    out.write(
+        "DEFAULT_GLYPH_DICT = %s\n\n" % glyphs
+    )
+
     
 if __name__ == "__main__":
     outpath = "Lib/glyphsLib/glyphdata_generated.py"
-    glyphs = fetch_all_glyphs()
-    data = build_data(glyphs)
-    test_data(glyphs, data)
+    xml_paths = (fetch(filename) for filename in ("GlyphData.xml", "GlyphData_Ideographs.xml"))
+    glyphs = fetch_all_glyphs(paths=xml_paths)
     with io.open(outpath, "w", encoding="utf-8") as out:
-        generate_python_source(data, out)
+        generate_python_source(glyphs, out)
