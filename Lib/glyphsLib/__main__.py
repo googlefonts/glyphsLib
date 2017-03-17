@@ -36,8 +36,10 @@ def parse_options(args):
                         help="Glyphs file to convert.")
     parser.add_argument("-m", "--masters", metavar="MASTERS",
                         default="master_ufo",
-                        help="Ouput masters UFO to folder MASTERS. "
+                        help="Output masters UFO to folder MASTERS. "
                              "(default: %(default)s)")
+    parser.add_argument("-c", "--custom-glyph-data", metavar="CUSTOM_GLYPH_DATA",
+                        help="Path to a custom GlyphData.xml file")
     parser.add_argument("-n", "--instances", metavar="INSTANCES", nargs="?",
                         const="instance_ufo", default=None,
                         help="Output and generate interpolated instances UFO "
@@ -51,9 +53,9 @@ def main(args=None):
     opt = parse_options(args)
     if opt.glyphs is not None:
         if opt.instances is None:
-            glyphsLib.build_masters(opt.glyphs, opt.masters)
+            glyphsLib.build_masters(opt.glyphs, opt.masters, opt.custom_glyph_data)
         else:
-            glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances)
+            glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances, opt.custom_glyph_data)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

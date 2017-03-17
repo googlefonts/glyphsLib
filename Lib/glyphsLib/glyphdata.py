@@ -80,6 +80,15 @@ def _get_category(name, unistr, data=glyphdata_generated):
         return ("Symbol", "Geometry")
     if basename.startswith("uniF9"):
         return ("Letter", "Compatibility")
+
+    glyph_info = glyphdata_generated.DEFAULT_GLYPH_DICT.get(name)
+    if glyph_info is None:
+        glyph_info = glyphdata_generated.DEFAULT_GLYPH_DICT.get(basename)
+    if glyph_info is not None:
+        category, subCategory = glyph_info.get('category'), glyph_info.get('subCategory')
+        if (category, subCategory) != (None, None):
+            return (category, subCategory)
+
     ucat = _get_unicode_category(unistr)
     cat = data.DEFAULT_CATEGORIES.get(ucat, (None, None))
     if "_" in basename:
