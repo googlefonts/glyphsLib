@@ -24,7 +24,6 @@ import re
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data
 import glyphsLib.glyphdata
-from glyphsLib import glyphdata_generated
 
 __all__ = [
     'to_ufos', 'set_redundant_data', 'set_custom_params',
@@ -77,7 +76,7 @@ WIDTH_CODES = {
     '': 5}
 
 
-def to_ufos(data, include_instances=False, family_name=None, debug=False, glyph_data=None):
+def to_ufos(data, include_instances=False, family_name=None, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -138,7 +137,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False, glyph_
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
                          'leftMetricsKey', 'note', 'production',
                          'rightMetricsKey', 'widthMetricsKey']
-        glyph_info = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
+        glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
             layer_id = layer.pop('layerId')
@@ -153,7 +152,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False, glyph_
 
             ufo = ufos[layer_id]
             glyph = ufo.newGlyph(glyph_name)
-            load_glyph(glyph, layer, glyph_info)
+            load_glyph(glyph, layer, glyph_data)
 
     for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
         glyph = ufos[layer_id][glyph_name]
@@ -162,11 +161,7 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False, glyph_
     for ufo in ufos.values():
         ufo.lib[glyphOrder_key] = glyph_order
         propagate_font_anchors(ufo)
-        add_features_to_ufo(ufo,
-                            feature_prefixes,
-                            classes,
-                            features,
-                            glyph_data=glyph_data)
+        add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
 
     for master_id, kerning in data.pop('kerning', {}).items():
@@ -654,11 +649,10 @@ def load_glyph(glyph, layer, glyph_data):
     if export is not None:
         glyph.lib[glyphlib_prefix + 'Export'] = export
     production_name = glyph_data.get('production')
-    extra_glyph_info = None
     if production_name is None:
-        extra_glyph_info = glyphdata_generated.DEFAULT_GLYPH_DICT.get(glyph.name)
-        if extra_glyph_info:
-            production_name = extra_glyph_info.get('production')
+        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+        if glyphinfo:
+            production_name = glyphinfo.production_name
     if production_name is not None:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
         if postscriptNamesKey not in glyph.font.lib:
@@ -676,15 +670,6 @@ def load_glyph(glyph, layer, glyph_data):
 
     # load width before background, which is loaded with lib data
     glyph.width = layer.pop('width')
-    if extra_glyph_info:
-        category, subCategory = extra_glyph_info.get('category'), extra_glyph_info.get('subCategory')
-        # https://github.com/googlei18n/glyphsLib/issues/115
-        # Zero the width on any Nonspacing Marks like Glyphs does on export
-        # TODO: Move this to ufo2ft?
-        # TODO: check for customParameter DisableAllAutomaticBehaviour.
-        if glyph.width > 0 and category == 'Mark' and subCategory == 'Nonspacing':
-            glyph.lib[glyphlib_prefix + 'originalWidth'] = glyph.width
-            glyph.width = 0
     load_glyph_libdata(glyph, layer)
 
     pen = glyph.getPointPen()
@@ -755,7 +740,7 @@ def add_groups_to_ufo(ufo, kerning_groups):
         ufo.groups[name] = glyphs
 
 
-def build_gdef(ufo, glyph_data):
+def build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
     bases, ligatures, marks, carets = set(), set(), set(), {}
     for glyph in ufo:
@@ -766,10 +751,11 @@ def build_gdef(ufo, glyph_data):
                 has_attaching_anchor = True
             if name and name.startswith('caret_') and 'x' in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor['x']))
-        category, subCategory = None, None
-        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name, data=glyph_data)
+        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
         if glyphinfo:
             category, subCategory = glyphinfo.category, glyphinfo.subCategory
+        else:
+            category, subCategory = None, None
 
         # Glyphs.app assigns glyph classes like this:
         #
@@ -813,7 +799,7 @@ def build_gdef(ufo, glyph_data):
     return '\n'.join(lines)
 
 
-def add_features_to_ufo(ufo, feature_prefixes, classes, features, glyph_data=None):
+def add_features_to_ufo(ufo, feature_prefixes, classes, features):
     """Write an UFO's OpenType feature file."""
 
     autostr = lambda automatic: '# automatic\n' if automatic else ''
@@ -846,7 +832,7 @@ def add_features_to_ufo(ufo, feature_prefixes, classes, features, glyph_data=Non
         lines.append('} %s;' % name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
-    gdef_str = build_gdef(ufo, glyph_data)
+    gdef_str = build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
     full_text = '\n\n'.join(

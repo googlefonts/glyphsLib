@@ -16,20 +16,13 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from glyphsLib import glyphdata_generated
-from glyphsLib import load, load_glyph_data
 from glyphsLib.glyphdata import get_glyph
-from io import open
-import os
 import unittest
 
 
 class GlyphDataTest(unittest.TestCase):
-    def setUp(self):
-        self.glyph_data = glyphdata_generated
-
     def test_production_name(self):
-        prod = lambda n: get_glyph(n, data=self.glyph_data).production_name
+        prod = lambda n: get_glyph(n).production_name
         self.assertEqual(prod(".notdef"), ".notdef")
         self.assertEqual(prod("eacute"), "eacute")
         self.assertEqual(prod("Abreveacute"), "uni1EAE")
@@ -41,7 +34,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("o_f_f_i.foo"), "o_f_f_i.foo")
 
     def test_unicode(self):
-        uni = lambda n: get_glyph(n, data=self.glyph_data).unicode
+        uni = lambda n: get_glyph(n).unicode
         self.assertIsNone(uni(".notdef"))
         self.assertEqual(uni("eacute"), "é")
         self.assertEqual(uni("Abreveacute"), "Ắ")
@@ -53,7 +46,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(uni("o_f_f_i.foo"), "offi")
 
     def test_category(self):
-        cat = lambda n: (get_glyph(n, data=self.glyph_data).category, get_glyph(n, data=self.glyph_data).subCategory)
+        cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
         self.assertEqual(cat(".notdef"), ("Separator", None))
         self.assertEqual(cat("uni000D"), ("Separator", None))
         self.assertEqual(cat("boxHeavyUp"), ("Symbol", "Geometry"))
@@ -68,43 +61,6 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
         self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
         self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
-
-
-class GlyphDataCustomXMLTest(unittest.TestCase):
-    """Read from a custom GlyphData.xml and test glyph categories
-    """
-    def setUp(self):
-        path, _ = os.path.split(__file__)
-        xmlpath = os.path.join(path, "data", 'GlyphData.xml')
-        self.custom_data = load_glyph_data(custom_glyph_xml=xmlpath)
-
-    def test_category(self):
-        cat = lambda n: (get_glyph(n, self.custom_data).category, get_glyph(n, self.custom_data).subCategory)
-        self.assertEqual(cat("a"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("au-khmer"), ("Letter", "Spacing"))
-
-
-class GlyphDataFromGlyphsTest(unittest.TestCase):
-    def setUp(self):
-        path, _ = os.path.split(__file__)
-        expectedPath = os.path.join(path, "data", 'TestGDEF.glyphs')
-        data = None
-        with open(expectedPath, 'r', encoding='utf-8') as ifile:
-            data = load(ifile)
-        if data:
-            self.glyphs_gdef = {}
-            for g in data['glyphs']:
-                self.glyphs_gdef[g.get('glyphname')] = (g.get('category'), g.get('subCategory'))
-
-    def get_glyphinfo(self, glyph):
-        return self.glyphs_gdef.get(glyph)
-
-    def test_category(self):
-        """Test overridden categories saved into the .glyphs source file
-        """
-        cat = lambda n: (self.get_glyphinfo(n)[0], self.get_glyphinfo(n)[1])
-        self.assertEqual(cat("testglyph"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("A"), (None, None))
 
 
 if __name__ == "__main__":
