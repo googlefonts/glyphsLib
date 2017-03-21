@@ -481,6 +481,7 @@ _TYPE_STRUCTURE = {
         'xHeight': integer
     },
     'glyphs': {
+        'category': string,
         'color': integer,  # undocumented
         'export': truthy,  # undocumented
         'glyphname': string,
@@ -492,6 +493,7 @@ _TYPE_STRUCTURE = {
         'production': string,
         'rightKerningGroup': string,
         'rightMetricsKey': string,
+        'subCategory': string,
         'unicode': hex_int,
         'widthMetricsKey': string  # undocumented
     },
