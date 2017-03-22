@@ -28,8 +28,8 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
-    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, draw_paths,\
-    set_default_params
+    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
+    GLYPHLIB_PREFIX, draw_paths, set_default_params
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -344,6 +344,49 @@ class ToUfosTest(unittest.TestCase):
         ufo = to_ufos(data)[0]
         postscriptNames = ufo.lib.get('public.postscriptNames')
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
+
+    def test_category(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'foo')['category'] = 'Mark'
+        self.add_glyph(data, 'bar')
+        ufo = to_ufos(data)[0]
+        category_key = GLYPHLIB_PREFIX + 'category'
+        self.assertEqual(ufo['foo'].lib.get(category_key), 'Mark')
+        self.assertFalse(category_key in ufo['bar'].lib)
+
+    def test_subCategory(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'foo')['subCategory'] = 'Nonspacing'
+        self.add_glyph(data, 'bar')
+        ufo = to_ufos(data)[0]
+        subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
+        self.assertEqual(ufo['foo'].lib.get(subCategory_key), 'Nonspacing')
+        self.assertFalse(subCategory_key in ufo['bar'].lib)
+
+    def test_mark_nonspacing_zero_width(self):
+        data = self.generate_minimal_data()
+
+        self.add_glyph(data, 'dieresiscomb')['layers'][0]['width'] = 100
+
+        foo = self.add_glyph(data, 'foo')
+        foo['category'] = 'Mark'
+        foo['subCategory'] = 'Nonspacing'
+        foo['layers'][0]['width'] = 200
+
+        bar = self.add_glyph(data, 'bar')
+        bar['category'] = 'Mark'
+        bar['subCategory'] = 'Nonspacing'
+        bar['layers'][0]['width'] = 0
+
+        ufo = to_ufos(data)[0]
+
+        originalWidth_key = GLYPHLIB_PREFIX + 'originalWidth'
+        self.assertEqual(ufo['dieresiscomb'].width, 0)
+        self.assertEqual(ufo['dieresiscomb'].lib.get(originalWidth_key), 100)
+        self.assertEqual(ufo['foo'].width, 0)
+        self.assertEqual(ufo['foo'].lib.get(originalWidth_key), 200)
+        self.assertEqual(ufo['bar'].width, 0)
+        self.assertFalse(originalWidth_key in ufo['bar'].lib)
 
     def test_weightClass_default(self):
         data = self.generate_minimal_data()
