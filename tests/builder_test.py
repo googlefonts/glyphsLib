@@ -502,6 +502,18 @@ class ToUfosTest(unittest.TestCase):
         self.assertIn('LigatureCaretByPos fi 500;',
                       to_ufos(data)[0].features.text)
 
+    def test_GDEF_custom_category_subCategory(self):
+        data = self.generate_minimal_data()
+        self.add_glyph(data, 'foo')['subCategory'] = 'Ligature'
+        self.add_anchor(data, 'foo', 'top', 400, 1000)
+        bar = self.add_glyph(data, 'bar')
+        bar['category'], bar['subCategory'] = 'Mark', 'Nonspacing'
+        baz = self.add_glyph(data, 'baz')
+        baz['category'], baz['subCategory'] = 'Mark', 'Spacing Combining'
+        features = to_ufos(data)[0].features.text
+        self.assertIn('[foo], # Liga', features)
+        self.assertIn('[bar baz], # Mark', features)
+
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
