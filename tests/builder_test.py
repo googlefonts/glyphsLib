@@ -29,7 +29,7 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
-    GLYPHLIB_PREFIX, draw_paths, set_default_params
+    GLYPHLIB_PREFIX, draw_paths, set_default_params, UFO2FT_FILTERS_KEY
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -101,9 +101,18 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_underlineThickness(self):
         set_custom_params(self.ufo, parsed=[('underlineThickness', 100)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
-        
+
         set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
+
+    def test_ufo2ft_filters(self):
+        filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
+        filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
+        set_custom_params(self.ufo, parsed=[filter1, filter2])
+
+        self.assertEqual(len(self.ufo.lib[UFO2FT_FILTERS_KEY]), 2)
+        self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY][0], filter1[1])
+        self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY][1], filter2[1])
 
     def test_set_defaults(self):
         set_default_params(self.ufo)

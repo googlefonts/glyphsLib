@@ -37,6 +37,7 @@ PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
+UFO2FT_FILTERS_KEY = 'com.github.googlei18n.ufo2ft.filters'
 
 GLYPHS_COLORS = (
     '0.85,0.26,0.06,1',
@@ -358,6 +359,10 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         if name == 'glyphOrder':
             # store the public.glyphOrder in lib.plist
             ufo.lib[PUBLIC_PREFIX + name] = value
+        elif name == 'Filter':
+            if UFO2FT_FILTERS_KEY not in ufo.lib.keys():
+                ufo.lib[UFO2FT_FILTERS_KEY] = []
+            ufo.lib[UFO2FT_FILTERS_KEY].append(value)
         elif hasattr(ufo.info, name) and name not in non_info:
             # most OpenType table entries go in the info object
             setattr(ufo.info, name, value)
