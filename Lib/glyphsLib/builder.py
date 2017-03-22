@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
+GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
 
 GLYPHS_COLORS = (
@@ -136,7 +137,8 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
                          'leftMetricsKey', 'note', 'production',
-                         'rightMetricsKey', 'widthMetricsKey']
+                         'rightMetricsKey', 'widthMetricsKey',
+                         'category', 'subCategory']
         glyph_data = {k: glyph.pop(k) for k in metadata_keys if k in glyph}
 
         for layer in glyph['layers']:
@@ -630,8 +632,6 @@ def load_glyph_libdata(glyph, layer):
 def load_glyph(glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
 
-    glyphlib_prefix = GLYPHS_PREFIX + 'Glyphs.'
-
     uval = glyph_data.get('unicode')
     if uval is not None:
         glyph.unicode = uval
@@ -640,20 +640,17 @@ def load_glyph(glyph, layer, glyph_data):
         glyph.note = note
     last_change = glyph_data.get('lastChange')
     if last_change is not None:
-        glyph.lib[glyphlib_prefix + 'lastChange'] = to_ufo_time(last_change)
+        glyph.lib[GLYPHLIB_PREFIX + 'lastChange'] = to_ufo_time(last_change)
     color_index = glyph_data.get('color')
     if color_index is not None and color_index >= 0:
-        glyph.lib[glyphlib_prefix + 'ColorIndex'] = color_index
+        glyph.lib[GLYPHLIB_PREFIX + 'ColorIndex'] = color_index
         glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
     export = glyph_data.get('export')
     if export is not None:
-        glyph.lib[glyphlib_prefix + 'Export'] = export
-    production_name = glyph_data.get('production')
-    if production_name is None:
-        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
-        if glyphinfo:
-            production_name = glyphinfo.production_name
-    if production_name is not None:
+        glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
+    glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+    production_name = glyph_data.get('production') or glyphinfo.production_name
+    if production_name != glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
         if postscriptNamesKey not in glyph.font.lib:
             glyph.font.lib[postscriptNamesKey] = dict()
@@ -666,10 +663,30 @@ def load_glyph(glyph, layer, glyph_data):
         except KeyError:
             glyph_metrics_key = glyph_data.get(key)
         if glyph_metrics_key:
-            glyph.lib[glyphlib_prefix + key] = glyph_metrics_key
+            glyph.lib[GLYPHLIB_PREFIX + key] = glyph_metrics_key
+
+    # if glyph contains custom 'category' and 'subCategory' overrides, store
+    # them in the UFO glyph's lib
+    category = glyph_data.get('category')
+    if category is None:
+        category = glyphinfo.category
+    else:
+        glyph.lib[GLYPHLIB_PREFIX + 'category'] = category
+    subCategory = glyph_data.get('subCategory')
+    if subCategory is None:
+        subCategory = glyphinfo.subCategory
+    else:
+        glyph.lib[GLYPHLIB_PREFIX + 'subCategory'] = subCategory
 
     # load width before background, which is loaded with lib data
-    glyph.width = layer.pop('width')
+    width = layer.pop('width')
+    if category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
+        # zero the width of Nonspacing Marks like Glyphs.app does on export
+        # TODO: check for customParameter DisableAllAutomaticBehaviour
+        glyph.lib[GLYPHLIB_PREFIX + 'originalWidth'] = width
+        glyph.width = 0
+    else:
+        glyph.width = width
     load_glyph_libdata(glyph, layer)
 
     pen = glyph.getPointPen()
@@ -743,6 +760,8 @@ def add_groups_to_ufo(ufo, kerning_groups):
 def build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
     bases, ligatures, marks, carets = set(), set(), set(), {}
+    category_key = GLYPHLIB_PREFIX + 'category'
+    subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
     for glyph in ufo:
         has_attaching_anchor = False
         for anchor in glyph.anchors:
@@ -751,11 +770,16 @@ def build_gdef(ufo):
                 has_attaching_anchor = True
             if name and name.startswith('caret_') and 'x' in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor['x']))
+        lib = glyph.lib
         glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
-        if glyphinfo:
-            category, subCategory = glyphinfo.category, glyphinfo.subCategory
-        else:
-            category, subCategory = None, None
+        # first check glyph.lib for category/subCategory overrides; else use
+        # global values from GlyphData
+        category = lib.get(category_key)
+        if category is None:
+            category = glyphinfo.category
+        subCategory = lib.get(subCategory_key)
+        if subCategory is None:
+            subCategory = glyphinfo.subCategory
 
         # Glyphs.app assigns glyph classes like this:
         #
