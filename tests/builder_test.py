@@ -335,6 +335,11 @@ class ToUfosTest(unittest.TestCase):
 
     def test_postscript_name_from_glyph_name(self):
         data = self.generate_minimal_data()
+        # in GlyphData (and AGLFN) without a 'production' name
+        self.add_glyph(data, 'A')
+        # not in GlyphData, no production name
+        self.add_glyph(data, 'foobar')
+        # in GlyphData with a 'production' name
         self.add_glyph(data, 'C-fraktur')
         ufo = to_ufos(data)[0]
         postscriptNames = ufo.lib.get('public.postscriptNames')
