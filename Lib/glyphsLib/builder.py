@@ -22,7 +22,7 @@ import logging
 import re
 
 from glyphsLib.anchors import propagate_font_anchors
-from glyphsLib.util import clear_data
+from glyphsLib.util import clear_data, cast_to_number_or_bool
 import glyphsLib.glyphdata
 
 __all__ = [
@@ -400,20 +400,19 @@ def parse_glyphs_filter(filter_str):
     result['name'] = elements[0]
     result['args'] = []
     result['kwargs'] = {}
-    result['include'] = []
-    result['exclude'] = []
-    for elem in elements[1:]:
+    for idx, elem in enumerate(elements[1:]):
         if ':' in elem:
             # Key value pair
             key, value = elem.split(':', 1)
-            if key.lower() == 'include':
-                result['include'] = re.split('[ ,]+', value)
-            elif key.lower() == 'exclude':
-                result['exclude'] = re.split('[ ,]+', value)
+            if key.lower() in ['include', 'exclude']:
+                if idx != len(elements[1:]) - 1:
+                    logger.error('{} can only present as the last argument in the filter. {} is ignored.'.format(key, elem))
+                    continue
+                result[key.lower()] = re.split('[ ,]+', value)
             else:
-                result['kwargs'][key] = value
+                result['kwargs'][key] = cast_to_number_or_bool(value)
         else:
-            result['args'].append(elem)
+            result['args'].append(cast_to_number_or_bool(elem))
     return result
 
 
