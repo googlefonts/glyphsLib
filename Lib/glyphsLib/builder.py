@@ -391,8 +391,8 @@ def parse_glyphs_filter(filter_str):
     """
     elements = filter_str.split(';')
 
-    if len(elements) == 0 or elements[0] == '':
-        logger.warn('Failed to parse glyphs filter, expecting a filter name: \
+    if elements[0] == '':
+        logger.error('Failed to parse glyphs filter, expecting a filter name: \
              %s', filter_str)
         return None
 

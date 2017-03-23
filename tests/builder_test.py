@@ -167,6 +167,21 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         result = parse_glyphs_filter(inputstr)
         self.assertEqual(result, expected)
 
+    def test_empty_string(self):
+        inputstr = ''
+        with CapturingLogHandler(builder.logger, "ERROR") as captor:
+            result = parse_glyphs_filter(inputstr)
+        self.assertGreater(len([r for r in captor.records if 'Failed to parse glyphs filter' in r.msg]), 0,
+            msg='Empty string should trigger an error message')
+
+
+    def test_no_name(self):
+        inputstr = ';OffsetX:2'
+        with CapturingLogHandler(builder.logger, "ERROR") as captor:
+            result = parse_glyphs_filter(inputstr)
+        self.assertGreater(len([r for r in captor.records if 'Failed to parse glyphs filter' in r.msg]), 0,
+            msg='Empty string with no filter name should trigger an error message')
+
 
 class SetRedundantDataTest(unittest.TestCase):
     def _run_on_ufo(self, family_name, style_name):
