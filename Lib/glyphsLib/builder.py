@@ -360,15 +360,61 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
             # store the public.glyphOrder in lib.plist
             ufo.lib[PUBLIC_PREFIX + name] = value
         elif name == 'Filter':
+            filter_struct = parse_glyphs_filter(value)
+            if not filter_struct:
+                continue
             if UFO2FT_FILTERS_KEY not in ufo.lib.keys():
                 ufo.lib[UFO2FT_FILTERS_KEY] = []
-            ufo.lib[UFO2FT_FILTERS_KEY].append(value)
+            ufo.lib[UFO2FT_FILTERS_KEY].append(filter_struct)
         elif hasattr(ufo.info, name) and name not in non_info:
             # most OpenType table entries go in the info object
             setattr(ufo.info, name, value)
         else:
             # everything else gets dumped in the lib
             ufo.lib[GLYPHS_PREFIX + name] = value
+
+
+def parse_glyphs_filter(filter_str):
+    """Parses glyphs custom filter string into a dict object that
+       ufo2ft can consume.
+
+        Reference:
+            ufo2ft: https://github.com/googlei18n/ufo2ft
+            Glyphs 2.3 Handbook July 2016, p184
+
+        Args:
+            filter_str - a string of glyphs app filter
+
+        Return:
+            A dictionary contains the structured filter.
+            Return None if parse failed.
+    """
+    elements = filter_str.split(';')
+
+    if len(elements) == 0 or elements[0] == '':
+        logger.warn('Failed to parse glyphs filter, expecting a filter name: \
+             %s', filter_str)
+        return None
+
+    result = {}
+    result['name'] = elements[0]
+    result['args'] = []
+    result['kwargs'] = {}
+    result['include'] = []
+    result['exclude'] = []
+    for elem in elements[1:]:
+        if ':' in elem:
+            # Key value pair
+            key, value = elem.split(':', 1)
+            if key.lower() == 'include':
+                result['include'] = re.split('[ ,]+', value)
+            elif key.lower() == 'exclude':
+                result['exclude'] = re.split('[ ,]+', value)
+            else:
+                result['kwargs'][key] = value
+        else:
+            result['args'].append(elem)
+    return result
 
 
 def set_default_params(ufo):
@@ -385,7 +431,6 @@ def set_default_params(ufo):
         ufo.info.postscriptUnderlineThickness = 50
     if ufo.info.postscriptUnderlinePosition is None:
         ufo.info.postscriptUnderlinePosition = -100
-
 
 
 def normalize_custom_param_name(name):
