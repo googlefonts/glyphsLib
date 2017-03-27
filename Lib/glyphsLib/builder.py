@@ -398,8 +398,6 @@ def parse_glyphs_filter(filter_str):
 
     result = {}
     result['name'] = elements[0]
-    result['args'] = []
-    result['kwargs'] = {}
     for idx, elem in enumerate(elements[1:]):
         if not elem:
             # skip empty arguments
@@ -413,8 +411,12 @@ def parse_glyphs_filter(filter_str):
                     continue
                 result[key.lower()] = re.split('[ ,]+', value)
             else:
+                if 'kwargs' not in result:
+                    result['kwargs'] = {}
                 result['kwargs'][key] = cast_to_number_or_bool(value)
         else:
+            if 'args' not in result:
+                result['args'] = []
             result['args'].append(cast_to_number_or_bool(elem))
     return result
 
