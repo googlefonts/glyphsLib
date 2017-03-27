@@ -128,7 +128,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         inputstr = 'Transformations;LSB:+23;RSB:-22;SlantCorrection:true;OffsetX:10;OffsetY:-10;Origin:0;exclude:uni0334,uni0335 uni0336'
         expected = {
             'name': 'Transformations',
-            'args': [],
             'kwargs': {
                 'LSB': 23,
                 'RSB': -22,
@@ -147,7 +146,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         expected = {
             'name': 'Roughenizer',
             'args': [34, 2, 0, 0.34],
-            'kwargs': {},
         }
         result = parse_glyphs_filter(inputstr)
         self.assertEqual(result, expected)
@@ -156,8 +154,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         inputstr = 'AddExtremes'
         expected = {
             'name': 'AddExtremes',
-            'args': [],
-            'kwargs': {},
         }
         result = parse_glyphs_filter(inputstr)
         self.assertEqual(result, expected)
@@ -181,7 +177,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         expected = {
             'name': 'thisisaname',
             'args': [34, -3.4],
-            'kwargs': {},
             'exclude': ['uni2222'],
         }
         with CapturingLogHandler(builder.logger, "ERROR") as captor:
