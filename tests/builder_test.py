@@ -169,7 +169,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         self.assertGreater(len([r for r in captor.records if 'Failed to parse glyphs filter' in r.msg]), 0,
             msg='Empty string should trigger an error message')
 
-
     def test_no_name(self):
         inputstr = ';OffsetX:2'
         with CapturingLogHandler(builder.logger, "ERROR") as captor:
@@ -190,6 +189,16 @@ class ParseGlyphsFilterTest(unittest.TestCase):
 
         self.assertGreater(len([r for r in captor.records if 'can only present as the last argument' in r.msg]), 0,
             msg='The parse_glyphs_filter should warn user that the exclude/include should only be the last argument in the filter string.')
+        self.assertEqual(result, expected)
+
+    def test_empty_args_trailing_semicolon(self):
+        inputstr = 'thisisaname;3;;a:b;;;'
+        expected = {
+            'name': 'thisisaname',
+            'args': [3],
+            'kwargs': {'a': 'b'}
+        }
+        result = parse_glyphs_filter(inputstr)
         self.assertEqual(result, expected)
 
 class SetRedundantDataTest(unittest.TestCase):
