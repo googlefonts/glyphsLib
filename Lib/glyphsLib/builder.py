@@ -401,6 +401,9 @@ def parse_glyphs_filter(filter_str):
     result['args'] = []
     result['kwargs'] = {}
     for idx, elem in enumerate(elements[1:]):
+        if not elem:
+            # skip empty arguments
+            continue
         if ':' in elem:
             # Key value pair
             key, value = elem.split(':', 1)
