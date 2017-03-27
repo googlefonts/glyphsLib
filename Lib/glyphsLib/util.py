@@ -83,6 +83,7 @@ def cast_to_number_or_bool(inputstr):
     try:
         return int(inputstr)
     except ValueError:
-        return float(inputstr)
-    except ValueError:
-        return inputstr
+        try:
+            return float(inputstr)
+        except ValueError:
+            return inputstr
