@@ -17,19 +17,20 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-
 import collections
 import datetime
 import unittest
+# unittest.mock is only available for python 3+
+from mock import patch
+import mock
 
 from defcon import Font
-
 from fontTools.misc.loggingTools import CapturingLogHandler
-
 from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
-    GLYPHLIB_PREFIX, draw_paths, set_default_params
+    GLYPHLIB_PREFIX, draw_paths, set_default_params, UFO2FT_FILTERS_KEY, \
+    parse_glyphs_filter
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -101,9 +102,19 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_underlineThickness(self):
         set_custom_params(self.ufo, parsed=[('underlineThickness', 100)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
-        
+
         set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
+
+    @patch('glyphsLib.builder.parse_glyphs_filter')
+    def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
+        filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
+        filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
+        set_custom_params(self.ufo, parsed=[filter1, filter2])
+
+        self.assertEqual(mock_parse_glyphs_filter.call_count, 2)
+        self.assertEqual(mock_parse_glyphs_filter.call_args_list[0], mock.call(filter1[1]))
+        self.assertEqual(mock_parse_glyphs_filter.call_args_list[1], mock.call(filter2[1]))
 
     def test_set_defaults(self):
         set_default_params(self.ufo)
@@ -111,6 +122,75 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -100)
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
+
+class ParseGlyphsFilterTest(unittest.TestCase):
+    def test_complete_parameter(self):
+        inputstr = 'Transformations;LSB:+23;RSB:-22;SlantCorrection:true;OffsetX:10;OffsetY:-10;Origin:0;exclude:uni0334,uni0335 uni0336'
+        expected = {
+            'name': 'Transformations',
+            'args': [],
+            'kwargs': {
+                'LSB': 23,
+                'RSB': -22,
+                'SlantCorrection': True,
+                'OffsetX': 10,
+                'OffsetY': -10,
+                'Origin': 0,
+            },
+            'exclude': ['uni0334', 'uni0335', 'uni0336'],
+        }
+        result = parse_glyphs_filter(inputstr)
+        self.assertEqual(result, expected)
+
+    def test_positional_parameter(self):
+        inputstr = 'Roughenizer;34;2;0;0.34'
+        expected = {
+            'name': 'Roughenizer',
+            'args': [34, 2, 0, 0.34],
+            'kwargs': {},
+        }
+        result = parse_glyphs_filter(inputstr)
+        self.assertEqual(result, expected)
+
+    def test_single_name(self):
+        inputstr = 'AddExtremes'
+        expected = {
+            'name': 'AddExtremes',
+            'args': [],
+            'kwargs': {},
+        }
+        result = parse_glyphs_filter(inputstr)
+        self.assertEqual(result, expected)
+
+    def test_empty_string(self):
+        inputstr = ''
+        with CapturingLogHandler(builder.logger, "ERROR") as captor:
+            result = parse_glyphs_filter(inputstr)
+        self.assertGreater(len([r for r in captor.records if 'Failed to parse glyphs filter' in r.msg]), 0,
+            msg='Empty string should trigger an error message')
+
+
+    def test_no_name(self):
+        inputstr = ';OffsetX:2'
+        with CapturingLogHandler(builder.logger, "ERROR") as captor:
+            result = parse_glyphs_filter(inputstr)
+        self.assertGreater(len([r for r in captor.records if 'Failed to parse glyphs filter' in r.msg]), 0,
+            msg='Empty string with no filter name should trigger an error message')
+
+    def test_duplicate_exclude_include(self):
+        inputstr = 'thisisaname;34;-3.4;exclude:uni1111;include:uni0022;exclude:uni2222'
+        expected = {
+            'name': 'thisisaname',
+            'args': [34, -3.4],
+            'kwargs': {},
+            'exclude': ['uni2222'],
+        }
+        with CapturingLogHandler(builder.logger, "ERROR") as captor:
+            result = parse_glyphs_filter(inputstr)
+
+        self.assertGreater(len([r for r in captor.records if 'can only present as the last argument' in r.msg]), 0,
+            msg='The parse_glyphs_filter should warn user that the exclude/include should only be the last argument in the filter string.')
+        self.assertEqual(result, expected)
 
 class SetRedundantDataTest(unittest.TestCase):
     def _run_on_ufo(self, family_name, style_name):

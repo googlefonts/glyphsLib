@@ -68,3 +68,21 @@ def clear_data(data):
                 i += 1
         return data
     return True
+
+
+def cast_to_number_or_bool(inputstr):
+    """Cast a string to int, float or bool. Return original string if it can't be
+    converted.
+
+    Scientific expression is converted into float.
+    """
+    if inputstr.strip().lower() == 'true':
+        return True
+    elif inputstr.strip().lower() == 'false':
+        return False
+    try:
+        return int(inputstr)
+    except ValueError:
+        return float(inputstr)
+    except ValueError:
+        return inputstr

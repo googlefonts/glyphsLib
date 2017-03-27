@@ -22,7 +22,7 @@ import logging
 import re
 
 from glyphsLib.anchors import propagate_font_anchors
-from glyphsLib.util import clear_data
+from glyphsLib.util import clear_data, cast_to_number_or_bool
 import glyphsLib.glyphdata
 
 __all__ = [
@@ -37,6 +37,7 @@ PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'
 ROBOFONT_PREFIX = 'com.typemytype.robofont.'
+UFO2FT_FILTERS_KEY = 'com.github.googlei18n.ufo2ft.filters'
 
 GLYPHS_COLORS = (
     '0.85,0.26,0.06,1',
@@ -358,12 +359,61 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         if name == 'glyphOrder':
             # store the public.glyphOrder in lib.plist
             ufo.lib[PUBLIC_PREFIX + name] = value
+        elif name == 'Filter':
+            filter_struct = parse_glyphs_filter(value)
+            if not filter_struct:
+                continue
+            if UFO2FT_FILTERS_KEY not in ufo.lib.keys():
+                ufo.lib[UFO2FT_FILTERS_KEY] = []
+            ufo.lib[UFO2FT_FILTERS_KEY].append(filter_struct)
         elif hasattr(ufo.info, name) and name not in non_info:
             # most OpenType table entries go in the info object
             setattr(ufo.info, name, value)
         else:
             # everything else gets dumped in the lib
             ufo.lib[GLYPHS_PREFIX + name] = value
+
+
+def parse_glyphs_filter(filter_str):
+    """Parses glyphs custom filter string into a dict object that
+       ufo2ft can consume.
+
+        Reference:
+            ufo2ft: https://github.com/googlei18n/ufo2ft
+            Glyphs 2.3 Handbook July 2016, p184
+
+        Args:
+            filter_str - a string of glyphs app filter
+
+        Return:
+            A dictionary contains the structured filter.
+            Return None if parse failed.
+    """
+    elements = filter_str.split(';')
+
+    if elements[0] == '':
+        logger.error('Failed to parse glyphs filter, expecting a filter name: \
+             %s', filter_str)
+        return None
+
+    result = {}
+    result['name'] = elements[0]
+    result['args'] = []
+    result['kwargs'] = {}
+    for idx, elem in enumerate(elements[1:]):
+        if ':' in elem:
+            # Key value pair
+            key, value = elem.split(':', 1)
+            if key.lower() in ['include', 'exclude']:
+                if idx != len(elements[1:]) - 1:
+                    logger.error('{} can only present as the last argument in the filter. {} is ignored.'.format(key, elem))
+                    continue
+                result[key.lower()] = re.split('[ ,]+', value)
+            else:
+                result['kwargs'][key] = cast_to_number_or_bool(value)
+        else:
+            result['args'].append(cast_to_number_or_bool(elem))
+    return result
 
 
 def set_default_params(ufo):
@@ -380,7 +430,6 @@ def set_default_params(ufo):
         ufo.info.postscriptUnderlineThickness = 50
     if ufo.info.postscriptUnderlinePosition is None:
         ufo.info.postscriptUnderlinePosition = -100
-
 
 
 def normalize_custom_param_name(name):
