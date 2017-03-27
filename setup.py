@@ -45,8 +45,8 @@ setup(
     ],
     install_requires=[
         "fonttools>=3.4.0",
-        "defcon>=0.2.0",
-        "MutatorMath>=2.0.0",
+        "defcon>=0.3.0",
+        "MutatorMath>=2.0.3",
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
