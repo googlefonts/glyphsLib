@@ -32,16 +32,16 @@ from glyphsLib.interpolation import build_designspace
 def makeFamily(familyName):
     m1, m2 = defcon.Font(), defcon.Font()
     m1.info.familyName, m1.info.styleName = familyName, "Regular"
-    m1.lib[GLYPHS_PREFIX + "weightValue"] = 400.0
+    m1.lib[GLYPHS_PREFIX + "weightValue"] = 90.0
     m2.info.familyName, m2.info.styleName = familyName, "Black"
-    m2.lib[GLYPHS_PREFIX + "weightValue"] = 900.0
+    m2.lib[GLYPHS_PREFIX + "weightValue"] = 190.0
     instances = {
         "defaultFamilyName": familyName,
         "data": [
-            {"name": "Regular", "interpolationWeight": 400.0},
-            {"name": "Semibold", "interpolationWeight": 600.0},
-            {"name": "Bold", "interpolationWeight": 700.0},
-            {"name": "Black", "interpolationWeight": 900.0},
+            {"name": "Regular", "interpolationWeight": 90, "weightClass": 400},
+            {"name": "Semibold", "interpolationWeight": 128, "weightClass": 600},
+            {"name": "Bold", "interpolationWeight": 151, "weightClass": 700},
+            {"name": "Black", "interpolationWeight": 190, "weightClass": 900},
         ],
     }
     return [m1, m2], instances

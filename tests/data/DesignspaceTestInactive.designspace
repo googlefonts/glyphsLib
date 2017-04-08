@@ -8,19 +8,19 @@
             <features copy="1" />
             <info copy="1" />
             <location>
-                <dimension name="weight" xvalue="400.000000" />
+                <dimension name="weight" xvalue="90.000000" />
             </location>
         </source>
         <source familyname="DesignspaceTest Inactive" filename="DesignspaceTestInactive-Black.ufo" name="DesignspaceTest Inactive Black" stylename="Black">
             <location>
-                <dimension name="weight" xvalue="900.000000" />
+                <dimension name="weight" xvalue="190.000000" />
             </location>
         </source>
     </sources>
     <instances>
         <instance familyname="DesignspaceTest Inactive" filename="out/DesignspaceTestInactive-Semibold.ufo" name="DesignspaceTest Inactive Semibold" stylename="Semibold">
             <location>
-                <dimension name="weight" xvalue="600.000000" />
+                <dimension name="weight" xvalue="128.000000" />
             </location>
             <info />
             <kerning />

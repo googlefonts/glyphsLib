@@ -8,12 +8,12 @@
             <features copy="1" />
             <info copy="1" />
             <location>
-                <dimension name="weight" xvalue="400.000000" />
+                <dimension name="weight" xvalue="90.000000" />
             </location>
         </source>
         <source familyname="DesignspaceTest FamilyName" filename="DesignspaceTestFamilyName-Black.ufo" name="DesignspaceTest FamilyName Black" stylename="Black">
             <location>
-                <dimension name="weight" xvalue="900.000000" />
+                <dimension name="weight" xvalue="190.000000" />
             </location>
         </source>
     </sources>
