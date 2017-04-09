@@ -20,14 +20,14 @@
     <instances>
         <instance familyname="DesignspaceTest FamilyName" filename="out/DesignspaceTestFamilyName-Regular.ufo" name="DesignspaceTest FamilyName Regular" stylename="Regular">
             <location>
-                <dimension name="weight" xvalue="400.000000" />
+                <dimension name="weight" xvalue="90.000000" />
             </location>
             <info />
             <kerning />
         </instance>
         <instance familyname="Custom Family" filename="out/CustomFamily-Regular.ufo" name="Custom Family Regular" stylename="Regular">
             <location>
-                <dimension name="weight" xvalue="600.000000" />
+                <dimension name="weight" xvalue="151.000000" />
             </location>
             <info />
             <kerning />

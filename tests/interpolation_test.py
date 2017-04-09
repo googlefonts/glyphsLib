@@ -38,13 +38,30 @@ def makeFamily(familyName):
     instances = {
         "defaultFamilyName": familyName,
         "data": [
-            {"name": "Regular", "interpolationWeight": 90, "weightClass": 400},
-            {"name": "Semibold", "interpolationWeight": 128, "weightClass": 600},
-            {"name": "Bold", "interpolationWeight": 151, "weightClass": 700},
-            {"name": "Black", "interpolationWeight": 190, "weightClass": 900},
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            makeInstance("Semibold", weight=("Semibold", 600, 128)),
+            makeInstance("Bold", weight=("Bold", 700, 151)),
+            makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
     return [m1, m2], instances
+
+
+def makeInstance(name, weight=None):
+    result = {"name": name}
+    params = []
+    if weight is not None:
+        weightName, weightClass, interpolationWeight = weight
+        # Glyphs files store both a textual weightClass (such as "Bold"),
+        # plus a numeric customParameters.weightClass (such as 700).
+        result["weightClass"] = weightName
+        params.append({"name": "weightClass", "value": weightClass})
+        result["interpolationWeight"] = interpolationWeight
+    # TODO: Support width, and custom axes; need to triple-check how these
+    # are encoded in Glyphs files.
+    if params:
+        result["customParameters"] = params
+    return result
 
 
 class DesignspaceTest(unittest.TestCase):
@@ -91,15 +108,13 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_familyName(self):
         masters, instances = makeFamily("DesignspaceTest FamilyName")
+        customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
+        customFamily["customParameters"].append({
+            "name": "familyName",
+            "value": "Custom Family"})
         instances["data"] = [
-            {"name": "Regular", "interpolationWeight": 400.0},
-            {
-                "name": "Regular",
-                "interpolationWeight": 600.0,
-                "customParameters": [
-                    {"name": "familyName", "value": "Custom Family"},
-                ],
-            },
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            customFamily,
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
@@ -110,9 +125,9 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/113
         masters, instances = makeFamily("DesignspaceTest InstanceOrder")
         instances["data"] = [
-            {"name": "Black", "interpolationWeight": 900.0},
-            {"name": "Regular", "interpolationWeight": 400.0},
-            {"name": "Bold", "interpolationWeight": 700.0},
+            makeInstance("Black", weight=("Black", 900, 190)),
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            makeInstance("Bold", weight=("Bold", 700, 151)),
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
