@@ -20,21 +20,21 @@
     <instances>
         <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" stylename="Black">
             <location>
-                <dimension name="weight" xvalue="900.000000" />
+                <dimension name="weight" xvalue="190.000000" />
             </location>
             <info />
             <kerning />
         </instance>
         <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylename="Regular">
             <location>
-                <dimension name="weight" xvalue="400.000000" />
+                <dimension name="weight" xvalue="90.000000" />
             </location>
             <info />
             <kerning />
         </instance>
         <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" name="DesignspaceTest InstanceOrder Bold" stylename="Bold">
             <location>
-                <dimension name="weight" xvalue="700.000000" />
+                <dimension name="weight" xvalue="151.000000" />
             </location>
             <info />
             <kerning />
