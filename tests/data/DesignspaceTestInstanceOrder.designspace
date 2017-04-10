@@ -1,6 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <designspace format="3">
-    <axes />
+    <axes>
+        <axis default="400.0" maximum="900.0" minimum="400.0" name="weight" tag="wght">
+            <map input="400.0" output="90" />
+            <map input="700.0" output="151" />
+            <map input="900.0" output="190" />
+        </axis>
+    </axes>
     <sources>
         <source familyname="DesignspaceTest InstanceOrder" filename="DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylename="Regular">
             <lib copy="1" />

@@ -1,6 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <designspace format="3">
-    <axes />
+    <axes>
+        <axis default="400.0" maximum="600.0" minimum="400.0" name="weight" tag="wght">
+            <map input="400.0" output="90" />
+            <map input="600.0" output="151" />
+        </axis>
+    </axes>
     <sources>
         <source familyname="DesignspaceTest FamilyName" filename="DesignspaceTestFamilyName-Regular.ufo" name="DesignspaceTest FamilyName Regular" stylename="Regular">
             <lib copy="1" />

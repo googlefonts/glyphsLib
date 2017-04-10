@@ -16,6 +16,7 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+from collections import OrderedDict, namedtuple
 import logging
 import os
 
@@ -68,9 +69,13 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     tmp_path = os.path.join(master_dir, 'tmp.designspace')
     writer = DesignSpaceDocumentWriter(tmp_path)
 
-    base_family, base_style = add_masters_to_writer(writer, masters)
+    instances = list(filter(is_instance_active, instance_data.get('data', [])))
+    axes = get_axes(masters, instances)
+    write_axes(axes, writer)
+    base_family, base_style = add_masters_to_writer(masters, axes, writer)
+    base_family = instance_data.get('defaultFamilyName', base_family)
     instance_files = add_instances_to_writer(
-        writer, base_family, instance_data, out_dir)
+        writer, base_family, axes, instances, out_dir)
 
     basename = '%s%s.designspace' % (
         base_family, ('-' + base_style) if base_style else '')
@@ -79,23 +84,88 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     return writer.path, instance_files
 
 
-def add_masters_to_writer(writer, ufos):
+# TODO: Use AxisDescriptor from fonttools once designSpaceDocument has been
+# made part of fonttools. https://github.com/fonttools/fonttools/issues/911
+# https://github.com/LettError/designSpaceDocument#axisdescriptor-object
+AxisDescriptor = namedtuple('AxisDescriptor', [
+    'minimum', 'maximum', 'default', 'name', 'tag', 'labelNames', 'map'])
+
+
+def get_axes(masters, instances):
+    # According to Georg Seifert, Glyphs 3 will have a better model
+    # for describing variation axes.  The plan is to store the axis
+    # information globally in the Glyphs file. In addition to actual
+    # variation axes, this new structure will probably also contain
+    # stylistic information for design axes that are not variable but
+    # should still be stored into the OpenType STAT table.
+    #
+    # We currently take the minima and maxima from the instances, and
+    # have hard-coded the default value for each axis.  We could be
+    # smarter: for the minima and maxima, we could look at the masters
+    # (whose locations are only stored in interpolation space, not in
+    # user space) and reverse-interpolate these locations to user space.
+    # Likewise, we could try to infer the default axis value from the
+    # masters. But it's probably not worth this effort, given that
+    # the upcoming version of Glyphs is going to store explicit
+    # axis desriptions in its file format.
+    axes = OrderedDict()
+    for name, tag, userLocParam, defaultUserLoc in (
+            ('weight', 'wght', 'weightClass', 400),
+            ('width', 'wdth', 'widthClass', 100),
+            ('custom', 'XXXX', None, DEFAULT_LOC)):
+        key = GLYPHS_PREFIX + name + 'Value'
+        interpolLocKey = 'interpolation' + name.title()
+        if any(key in master.lib for master in masters):
+            labelNames = {"en": name.title()}
+            mapping = []
+            for instance in instances:
+                interpolLoc = instance.get(interpolLocKey, DEFAULT_LOC)
+                userLoc = interpolLoc
+                for param in instance.get('customParameters', []):
+                    if param.get('name') == userLocParam:
+                        userLoc = float(param.get('value', DEFAULT_LOC))
+                        break
+                mapping.append((userLoc, interpolLoc))
+            mapping.sort()
+            if mapping:
+                minimum = min([userLoc for userLoc, _ in mapping])
+                maximum = max([userLoc for userLoc, _ in mapping])
+                default = min(maximum, max(minimum, defaultUserLoc))  # clamp
+            else:
+                minimum = maximum = default = defaultUserLoc
+            axes[name] = AxisDescriptor(
+                minimum=minimum, maximum=maximum, default=default,
+                name=name, tag=tag, labelNames=labelNames, map=mapping)
+    return axes
+
+
+def is_instance_active(instance):
+    # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
+    # to mark instances as inactive. Inactive instances should get ignored.
+    # https://github.com/googlei18n/glyphsLib/issues/129
+    return instance.get('exports', 1) and int(instance.get('active', 1))
+
+
+def write_axes(axes, writer):
+    # TODO: MutatorMath's DesignSpaceDocumentWriter does not support
+    # axis label names. Once DesignSpaceDocument has been made part
+    # of fonttools, we can write them out.
+    # https://github.com/fonttools/fonttools/issues/911
+    for axis in axes.values():
+        writer.addAxis(tag=axis.tag, name=axis.name,
+                       minimum=axis.minimum, maximum=axis.maximum,
+                       default=axis.default, warpMap=axis.map)
+
+
+def add_masters_to_writer(ufos, axes, writer):
     """Add master UFOs to a MutatorMath document writer.
 
     Returns the masters' family name and shared style names. These are used for
     naming instances and the designspace path.
     """
-
     master_data = []
     base_family = None
     base_style = None
-
-    # only write dimension elements if defined in at least one of the masters
-    dimension_names = []
-    for s in ('weight', 'width', 'custom'):
-        key = GLYPHS_PREFIX + s + 'Value'
-        if any(key in font.lib for font in ufos):
-            dimension_names.append(s)
 
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
@@ -108,8 +178,8 @@ def add_masters_to_writer(writer, ufos):
         else:
             base_style = [s for s in style.split() if s in base_style]
         master_data.append((font.path, family, style, {
-            s: font.lib.get(GLYPHS_PREFIX + s + 'Value', DEFAULT_LOC)
-            for s in dimension_names}))
+            axis: font.lib.get(GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOC)
+            for axis in axes}))
 
     # pick a master to copy info, features, and groups from, trying to find the
     # master with a base style shared between all masters (or just Regular) and
@@ -132,34 +202,16 @@ def add_masters_to_writer(writer, ufos):
     return base_family, base_style
 
 
-def add_instances_to_writer(writer, family_name, instance_data, out_dir):
+def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     """Add instances from Glyphs data to a MutatorMath document writer.
 
     Returns a list of <ufo_path, font_data> pairs, corresponding to the
     instances which will be output by the document writer. The font data is the
     Glyphs data for this instance as a dict.
     """
-
-    default_family_name = instance_data.pop('defaultFamilyName')
-    instance_data = instance_data.pop('data')
     ofiles = []
-
-    # only write dimension elements if defined in at least one of the instances
-    dimension_names = []
-    for s in ('weight', 'width', 'custom'):
-        key = 'interpolation' + s.title()
-        if any(key in instance for instance in instance_data):
-            dimension_names.append(s)
-
-    for instance in instance_data:
-        # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
-        # to mark instances as inactive. Those should not be instantiated.
-        # https://github.com/googlei18n/glyphsLib/issues/129
-        if (not int(instance.pop('exports', 1))
-                or not int(instance.pop('active', 1))):
-            continue
-
-        instance_family = default_family_name
+    for instance in instances:
+        instance_family = family_name
         custom_params = instance.get('customParameters', ())
         for i in range(len(custom_params)):
             if custom_params[i]['name'] == 'familyName':
@@ -176,7 +228,7 @@ def add_instances_to_writer(writer, family_name, instance_data, out_dir):
             name=' '.join((instance_family, style_name)),
             location={
                 s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
-                for s in dimension_names},
+                for s in axes},
             familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
