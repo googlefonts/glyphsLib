@@ -6,6 +6,7 @@
             <map input="600.0" output="128" />
             <map input="700.0" output="151" />
             <map input="900.0" output="190" />
+            <labelname xml:lang="en">Weight</labelname>
         </axis>
     </axes>
     <sources>

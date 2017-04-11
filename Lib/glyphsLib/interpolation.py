@@ -19,6 +19,7 @@ from __future__ import (print_function, division, absolute_import,
 from collections import OrderedDict, namedtuple
 import logging
 import os
+import xml.etree.ElementTree as etree
 
 from glyphsLib.builder import set_redundant_data, set_custom_params,\
     set_default_params, GLYPHS_PREFIX
@@ -149,12 +150,20 @@ def is_instance_active(instance):
 def write_axes(axes, writer):
     # TODO: MutatorMath's DesignSpaceDocumentWriter does not support
     # axis label names. Once DesignSpaceDocument has been made part
-    # of fonttools, we can write them out.
+    # of fonttools, we can write them out in a less hacky way than here.
+    # The current implementation is rather terrible, but it works;
+    # extending the writer isn't worth the effort because we'll move away
+    # from it as soon as DesignSpaceDocument has landed in fonttools.
     # https://github.com/fonttools/fonttools/issues/911
     for axis in axes.values():
         writer.addAxis(tag=axis.tag, name=axis.name,
                        minimum=axis.minimum, maximum=axis.maximum,
                        default=axis.default, warpMap=axis.map)
+        axisElement = writer.root.findall('.axes/axis')[-1]
+        for lang, name in sorted(axis.labelNames.items()):
+            labelname = etree.Element('labelname')
+            labelname.attrib['xml:lang'], labelname.text = lang, name
+            axisElement.append(labelname)
 
 
 def add_masters_to_writer(ufos, axes, writer):
