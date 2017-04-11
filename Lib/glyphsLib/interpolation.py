@@ -186,9 +186,17 @@ def add_masters_to_writer(ufos, axes, writer):
             base_style = style.split()
         else:
             base_style = [s for s in style.split() if s in base_style]
-        master_data.append((font.path, family, style, {
-            axis: font.lib.get(GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOC)
-            for axis in axes}))
+        # MutatorMath.DesignSpaceDocumentWriter iterates over the location
+        # dictionary, which is non-deterministic so it can cause test failures.
+        # We therefore use an OrderedDict to which we insert in axis order.
+        # Since glyphsLib will switch to DesignSpaceDocument once that is
+        # integrated into fonttools, it's not worth fixing upstream.
+        # https://github.com/googlei18n/glyphsLib/issues/165
+        location = OrderedDict()
+        for axis in axes:
+            location[axis] = font.lib.get(
+                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOC)
+        master_data.append((font.path, family, style, location))
 
     # pick a master to copy info, features, and groups from, trying to find the
     # master with a base style shared between all masters (or just Regular) and
@@ -232,12 +240,19 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         style_name = instance.pop('name')
         ufo_path = build_ufo_path(out_dir, instance_family, style_name)
         ofiles.append((ufo_path, instance))
-
+        # MutatorMath.DesignSpaceDocumentWriter iterates over the location
+        # dictionary, which is non-deterministic so it can cause test failures.
+        # We therefore use an OrderedDict to which we insert in axis order.
+        # Since glyphsLib will switch to DesignSpaceDocument once that is
+        # integrated into fonttools, it's not worth fixing upstream.
+        # https://github.com/googlei18n/glyphsLib/issues/165
+        location = OrderedDict()
+        for axis in axes:
+            location[axis] = instance.get(
+                'interpolation' + axis.title(), DEFAULT_LOC)
         writer.startInstance(
             name=' '.join((instance_family, style_name)),
-            location={
-                s: instance.pop('interpolation' + s.title(), DEFAULT_LOC)
-                for s in axes},
+            location=location,
             familyName=instance_family,
             styleName=style_name,
             fileName=ufo_path)
