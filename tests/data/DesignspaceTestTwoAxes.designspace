@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='utf-8'?>
+<designspace format="3">
+    <axes>
+        <axis default="400" maximum="900.0" minimum="100.0" name="weight" tag="wght">
+            <map input="100.0" output="26" />
+            <map input="400.0" output="90" />
+            <map input="600.0" output="128" />
+            <map input="900.0" output="190" />
+            <labelname xml:lang="en">Weight</labelname>
+        </axis>
+        <axis default="100" maximum="100" minimum="70" name="width" tag="wdth">
+            <map input="70" output="70" />
+            <map input="100" output="100" />
+            <labelname xml:lang="en">Width</labelname>
+        </axis>
+    </axes>
+    <sources>
+        <source familyname="TwoAxes" filename="TwoAxes-Regular.ufo" name="TwoAxes Regular" stylename="Regular">
+            <lib copy="1" />
+            <groups copy="1" />
+            <features copy="1" />
+            <info copy="1" />
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+        </source>
+        <source familyname="TwoAxes" filename="TwoAxes-Black.ufo" name="TwoAxes Black" stylename="Black">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="190.000000" />
+            </location>
+        </source>
+        <source familyname="TwoAxes" filename="TwoAxes-Thin.ufo" name="TwoAxes Thin" stylename="Thin">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="26.000000" />
+            </location>
+        </source>
+        <source familyname="TwoAxes" filename="TwoAxes-ExtraCond.ufo" name="TwoAxes ExtraCond" stylename="ExtraCond">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+        </source>
+        <source familyname="TwoAxes" filename="TwoAxes-ExtraCondBlack.ufo" name="TwoAxes ExtraCond Black" stylename="ExtraCond Black">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="190.000000" />
+            </location>
+        </source>
+        <source familyname="TwoAxes" filename="TwoAxes-ExtraCondThin.ufo" name="TwoAxes ExtraCond Thin" stylename="ExtraCond Thin">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="26.000000" />
+            </location>
+        </source>
+    </sources>
+    <instances>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Thin.ufo" name="DesignspaceTest TwoAxes Thin" stylename="Thin">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="26.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Regular.ufo" name="DesignspaceTest TwoAxes Regular" stylename="Regular">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Semibold.ufo" name="DesignspaceTest TwoAxes Semibold" stylename="Semibold">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="128.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Black.ufo" name="DesignspaceTest TwoAxes Black" stylename="Black">
+            <location>
+                <dimension name="width" xvalue="100.000000" />
+                <dimension name="weight" xvalue="190.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedThin.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Thin" stylename="ExtraCondensed Thin">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="26.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensed.ufo" name="DesignspaceTest TwoAxes ExtraCondensed" stylename="ExtraCondensed">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedBlack.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Black" stylename="ExtraCondensed Black">
+            <location>
+                <dimension name="width" xvalue="70.000000" />
+                <dimension name="weight" xvalue="190.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+    </instances>
+</designspace>

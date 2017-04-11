@@ -30,11 +30,8 @@ from glyphsLib.interpolation import build_designspace
 
 
 def makeFamily(familyName):
-    m1, m2 = defcon.Font(), defcon.Font()
-    m1.info.familyName, m1.info.styleName = familyName, "Regular"
-    m1.lib[GLYPHS_PREFIX + "weightValue"] = 90.0
-    m2.info.familyName, m2.info.styleName = familyName, "Black"
-    m2.lib[GLYPHS_PREFIX + "weightValue"] = 190.0
+    m1 = makeMaster(familyName, "Regular", weight=90.0)
+    m2 = makeMaster(familyName, "Black", weight=190.0)
     instances = {
         "defaultFamilyName": familyName,
         "data": [
@@ -47,18 +44,43 @@ def makeFamily(familyName):
     return [m1, m2], instances
 
 
-def makeInstance(name, weight=None):
+def makeMaster(familyName, styleName, weight=None, width=None):
+    m = defcon.Font()
+    m.info.familyName, m.info.styleName = familyName, styleName
+    if weight is not None:
+        m.lib[GLYPHS_PREFIX + "weightValue"] = weight
+    if width is not None:
+        m.lib[GLYPHS_PREFIX + "widthValue"] = width
+    return m
+
+
+def makeInstance(name, weight=None, width=None):
     result = {"name": name}
     params = []
     if weight is not None:
+        # Glyphs 2.3 stores the instance weight in two to three places:
+        # 1. as a textual weightClass (such as “Bold”);
+        # 2. (optional) as numeric customParameters.weightClass (such as 700),
+        #    which corresponds to OS/2.usWeightClass where 100 means Thin,
+        #    400 means Regular, 700 means Bold, and 900 means Black;
+        # 3. as numeric interpolationWeight (such as 66.0), which typically is
+        #    the stem width but can be anything that works for interpolation.
         weightName, weightClass, interpolationWeight = weight
-        # Glyphs files store both a textual weightClass (such as "Bold"),
-        # plus a numeric customParameters.weightClass (such as 700).
         result["weightClass"] = weightName
-        params.append({"name": "weightClass", "value": weightClass})
+        if weightClass is not None:
+            params.append({"name": "weightClass", "value": weightClass})
         result["interpolationWeight"] = interpolationWeight
-    # TODO: Support width, and custom axes; need to triple-check how these
-    # are encoded in Glyphs files.
+    if width is not None:
+        # Glyphs 2.3 stores the instance width in two places:
+        # 1. as a textual widthClass (such as “Condensed”);
+        # 2. as numeric interpolationWidth (such as 79), which typically is
+        #    a percentage of whatever the font designer considers “normal”
+        #    but can be anything that works for interpolation.
+        widthClass, interpolationWidth = width
+        result["widthClass"] = widthClass
+        result["interpolationWidth"] = interpolationWidth
+    # TODO: Support custom axes; need to triple-check how these are encoded in
+    # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
     if params:
         result["customParameters"] = params
     return result
@@ -131,6 +153,38 @@ class DesignspaceTest(unittest.TestCase):
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
+
+    def test_twoAxes(self):
+        # In NotoSansArabic-MM.glyphs, the regular width only contains
+        # parameters for the weight axis. For the width axis, glyphsLib
+        # should use 100 as default value (just like Glyphs.app does).
+        masters = [
+            makeMaster("TwoAxes", "Regular", weight=90),
+            makeMaster("TwoAxes", "Black", weight=190),
+            makeMaster("TwoAxes", "Thin", weight=26),
+            makeMaster("TwoAxes", "ExtraCond", weight=90, width=70),
+            makeMaster("TwoAxes", "ExtraCond Black", weight=190, width=70),
+            makeMaster("TwoAxes", "ExtraCond Thin", weight=26, width=70),
+        ]
+
+        _, instances = makeFamily("DesignspaceTest TwoAxes")
+        instances["data"] = [
+            makeInstance("Thin", weight=("Thin", 100, 26)),
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            makeInstance("Semibold", weight=("Semibold", 600, 128)),
+            makeInstance("Black", weight=("Black", 900, 190)),
+            makeInstance("ExtraCondensed Thin",
+                         weight=("Thin", 100, 26),
+                         width=("Extra Condensed", 70)),
+            makeInstance("ExtraCondensed",
+                         weight=("Regular", 400, 90),
+                         width=("Extra Condensed", 70)),
+            makeInstance("ExtraCondensed Black",
+                         weight=("Black", 900, 190),
+                         width=("Extra Condensed", 70)),
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestTwoAxes.designspace")
 
 
 if __name__ == "__main__":
