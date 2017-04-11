@@ -127,7 +127,7 @@ def get_axes(masters, instances):
                         userLoc = float(param.get('value', DEFAULT_LOC))
                         break
                 mapping.append((userLoc, interpolLoc))
-            mapping.sort()
+            mapping = sorted(set(mapping))  # avoid duplicates
             if mapping:
                 minimum = min([userLoc for userLoc, _ in mapping])
                 maximum = max([userLoc for userLoc, _ in mapping])
