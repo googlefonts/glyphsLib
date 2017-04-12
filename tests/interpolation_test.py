@@ -159,10 +159,7 @@ class DesignspaceTest(unittest.TestCase):
         master = makeMaster("PSNameTest", "Master")
         thin, black = makeInstance("Thin"), makeInstance("Black")
         instances = {"data": [thin, black]}
-        black.setdefault("customParameters", []).append({
-            "name": "postscriptFontName",
-            "value": "PSNameTest-Superfat",
-        })
+        black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
         d = etree.fromstringlist(self.build_designspace([master], instances))
         def psname(doc, style):
             inst = doc.find('instances/instance[@stylename="%s"]' % style)
