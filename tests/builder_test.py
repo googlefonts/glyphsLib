@@ -452,7 +452,7 @@ class ToUfosTest(unittest.TestCase):
     def test_mark_nonspacing_zero_width(self):
         data = generate_minimal_font()
 
-        add_glyph(data, 'dieresiscomb')['layers'][0]['width'] = 100
+        add_glyph(data, 'dieresiscomb').layers[0].width = 100
 
         foo = add_glyph(data, 'foo')
         foo['category'] = 'Mark'
