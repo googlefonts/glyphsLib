@@ -768,9 +768,9 @@ def load_glyph(ufo_glyph, layer, glyph_data):
     export = glyph_data.export
     if export is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
-    glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
     production_name = glyph_data.production or glyphinfo.production_name
-    if production_name != glyph.name:
+    if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
         if postscriptNamesKey not in ufo_glyph.font.lib:
             ufo_glyph.font.lib[postscriptNamesKey] = dict()
@@ -791,12 +791,12 @@ def load_glyph(ufo_glyph, layer, glyph_data):
     if category is None:
         category = glyphinfo.category
     else:
-        glyph.lib[GLYPHLIB_PREFIX + 'category'] = category
+        ufo_glyph.lib[GLYPHLIB_PREFIX + 'category'] = category
     subCategory = glyph_data.subCategory
     if subCategory is None:
         subCategory = glyphinfo.subCategory
     else:
-        glyph.lib[GLYPHLIB_PREFIX + 'subCategory'] = subCategory
+        ufo_glyph.lib[GLYPHLIB_PREFIX + 'subCategory'] = subCategory
 
     # load width before background, which is loaded with lib data
     width = layer.width
