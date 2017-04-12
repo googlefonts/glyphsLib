@@ -591,7 +591,7 @@ class ToUfosTest(unittest.TestCase):
     def test_GDEF_custom_category_subCategory(self):
         data = generate_minimal_font()
         add_glyph(data, 'foo')['subCategory'] = 'Ligature'
-        self.add_anchor(data, 'foo', 'top', 400, 1000)
+        add_anchor(data, 'foo', 'top', 400, 1000)
         bar = add_glyph(data, 'bar')
         bar['category'], bar['subCategory'] = 'Mark', 'Nonspacing'
         baz = add_glyph(data, 'baz')
