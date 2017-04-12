@@ -22,6 +22,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as etree
 
 import defcon
 from fontTools.misc.py23 import open
@@ -87,12 +88,17 @@ def makeInstance(name, weight=None, width=None):
 
 
 class DesignspaceTest(unittest.TestCase):
-    def expect_designspace(self, masters, instances, expectedFile):
+    def build_designspace(self, masters, instances):
         master_dir = tempfile.mkdtemp()
         designspace, _ = build_designspace(
             masters, master_dir, os.path.join(master_dir, "out"), instances)
         with open(designspace, mode="r", encoding="utf-8") as f:
-            actual = f.readlines()
+            result = f.readlines()
+        shutil.rmtree(master_dir)
+        return result
+
+    def expect_designspace(self, masters, instances, expectedFile):
+        actual = self.build_designspace(masters, instances)
         path, _ = os.path.split(__file__)
         expectedPath = os.path.join(path, "data", expectedFile)
         with open(expectedPath, mode="r", encoding="utf-8") as f:
@@ -103,7 +109,6 @@ class DesignspaceTest(unittest.TestCase):
                     fromfile=expectedPath, tofile=designspace):
                 sys.stderr.write(line)
             self.fail("*.designspace file is different from expected")
-        shutil.rmtree(master_dir)
 
     def test_basic(self):
         masters, instances = makeFamily("DesignspaceTest Basic")
@@ -140,6 +145,21 @@ class DesignspaceTest(unittest.TestCase):
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
+
+    def test_postscriptFontName(self):
+        master = makeMaster("PSNameTest", "Master")
+        thin, black = makeInstance("Thin"), makeInstance("Black")
+        instances = {"data": [thin, black]}
+        black.setdefault("customParameters", []).append({
+            "name": "postscriptFontName",
+            "value": "PSNameTest-Superfat",
+        })
+        d = etree.fromstringlist(self.build_designspace([master], instances))
+        def psname(doc, style):
+            inst = doc.find('instances/instance[@stylename="%s"]' % style)
+            return inst.attrib.get('postscriptfontname')
+        self.assertIsNone(psname(d, "Thin"))
+        self.assertEqual(psname(d, "Black"), "PSNameTest-Superfat")
 
     def test_instanceOrder(self):
         # The generated *.designspace file should place instances

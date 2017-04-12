@@ -228,17 +228,19 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     """
     ofiles = []
     for instance in instances:
-        instance_family = family_name
-        custom_params = instance.get('customParameters', ())
-        for i in range(len(custom_params)):
-            if custom_params[i]['name'] == 'familyName':
-                instance_family = custom_params[i]['value']
-                break
-        if not instance_family:
+        familyName, postScriptFontName = family_name, None
+        for p in instance.get('customParameters', ()):
+            param, value = p['name'], p['value']
+            if param == 'familyName':
+                familyName = value
+            elif param == 'postscriptFontName':
+                # Glyphs uses "postscriptFontName", not "postScriptFontName"
+                postScriptFontName = value
+        if not familyName:
             continue
 
-        style_name = instance.pop('name')
-        ufo_path = build_ufo_path(out_dir, instance_family, style_name)
+        styleName = instance.get('name')
+        ufo_path = build_ufo_path(out_dir, familyName, styleName)
         ofiles.append((ufo_path, instance))
         # MutatorMath.DesignSpaceDocumentWriter iterates over the location
         # dictionary, which is non-deterministic so it can cause test failures.
@@ -251,10 +253,11 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
             location[axis] = instance.get(
                 'interpolation' + axis.title(), DEFAULT_LOC)
         writer.startInstance(
-            name=' '.join((instance_family, style_name)),
+            name=' '.join((familyName, styleName)),
             location=location,
-            familyName=instance_family,
-            styleName=style_name,
+            familyName=familyName,
+            styleName=styleName,
+            postScriptFontName=postScriptFontName,
             fileName=ufo_path)
 
         writer.writeInfo()
