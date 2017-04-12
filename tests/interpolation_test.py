@@ -88,8 +88,6 @@ def makeInstance(name, weight=None, width=None):
         inst.interpolationWidth = interpolationWidth
     # TODO: Support custom axes; need to triple-check how these are encoded in
     # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
-    if params:
-        inst.customParameters = params
     return inst
 
 
