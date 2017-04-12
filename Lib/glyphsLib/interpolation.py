@@ -131,11 +131,13 @@ def get_axes(masters, regular_master, instances):
             labelNames = {"en": name.title()}
             mapping = []
             for instance in instances:
-                interpolLoc = instance.get(interpolLocKey, DEFAULT_LOCS[name])
+                interpolLoc = getattr(instance, interpolLocKey,
+                                      DEFAULT_LOCS[name])
                 userLoc = interpolLoc
-                for param in instance.get('customParameters', []):
-                    if param.get('name') == userLocParam:
-                        userLoc = float(param.get('value', DEFAULT_LOCS[name]))
+                for param in instance.customParameters:
+                    if param.name == userLocParam:
+                        userLoc = float(getattr(param, 'value',
+                                                DEFAULT_LOCS[name]))
                         break
                 mapping.append((userLoc, interpolLoc))
                 if interpolLoc == regularInterpolLoc:
@@ -157,7 +159,7 @@ def is_instance_active(instance):
     # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
     # to mark instances as inactive. Inactive instances should get ignored.
     # https://github.com/googlei18n/glyphsLib/issues/129
-    return instance.get('exports', True) and instance.get('active', True)
+    return instance.exports and getattr(instance, 'active', True)
 
 
 def write_axes(axes, writer):
@@ -264,8 +266,8 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         # https://github.com/googlei18n/glyphsLib/issues/165
         location = OrderedDict()
         for axis in axes:
-            location[axis] = instance.get(
-                'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+            location[axis] = getattr(
+                instance, 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
