@@ -43,11 +43,6 @@ def makeFamily(familyName):
             makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
-    for d in data:
-        inst = GSInstance()
-        inst.name = d["name"]
-        inst.interpolationWeight = d["interpolationWeight"]
-        instances["data"].append(inst)
     return [m1, m2], instances
 
 
