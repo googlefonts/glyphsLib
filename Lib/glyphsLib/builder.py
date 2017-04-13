@@ -800,7 +800,9 @@ def load_glyph(ufo_glyph, layer, glyph_data):
 
     # load width before background, which is loaded with lib data
     width = layer.width
-    if category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
+    if width is None:
+        pass
+    elif category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
         # zero the width of Nonspacing Marks like Glyphs.app does on export
         # TODO: check for customParameter DisableAllAutomaticBehaviour
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'originalWidth'] = width
