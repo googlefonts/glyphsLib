@@ -41,9 +41,8 @@ def generate_minimal_font():
     master.descender = 0
     master.id = 'id'
     master.xHeight = 0
-    font.masters = [master]
+    font.masters.append(master)
     
-    font.glyphs = []
     font.unitsPerEm = 1000
     font.versionMajor = 1
     font.versionMinor = 0
@@ -55,10 +54,10 @@ def add_glyph(font, glyphname):
     glyph.name = glyphname
     font.glyphs.append(glyph)
     layer = GSLayer()
-    glyph.layers.append(layer)
     layer.layerId = font.masters[0].id
     layer.associatedMasterId = font.masters[0].id
     layer.width = 0
+    glyph.layers.append(layer)
     return glyph
 
 def add_anchor(font, glyphname, anchorname, x, y):

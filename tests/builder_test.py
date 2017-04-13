@@ -455,14 +455,14 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(data, 'dieresiscomb').layers[0].width = 100
 
         foo = add_glyph(data, 'foo')
-        foo['category'] = 'Mark'
-        foo['subCategory'] = 'Nonspacing'
-        foo['layers'][0]['width'] = 200
+        foo.category = 'Mark'
+        foo.subCategory = 'Nonspacing'
+        foo.layers[0].width = 200
 
         bar = add_glyph(data, 'bar')
-        bar['category'] = 'Mark'
-        bar['subCategory'] = 'Nonspacing'
-        bar['layers'][0]['width'] = 0
+        bar.category = 'Mark'
+        bar.subCategory = 'Nonspacing'
+        bar.layers[0].width = 0
 
         ufo = to_ufos(data)[0]
 
