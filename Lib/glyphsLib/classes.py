@@ -133,7 +133,11 @@ class LayersIterator:
         self._owner = owner
     def __iter__(self):
         return self
+
     def next(self):
+        return self.__next__()
+
+    def __next__(self):
         if self._owner.parent:
             if self.curInd < len(self._owner.parent.masters):
                 FontMaster = self._owner.parent.masters[self.curInd]
