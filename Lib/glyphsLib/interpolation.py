@@ -31,7 +31,14 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_LOC = 100
+# Glyphs.app's default values for the masters' {weight,width,custom}Value
+# and for the instances' interpolation{Weight,Width,Custom} properties.
+# When these values are set, they are omitted from the .glyphs source file.
+DEFAULT_LOCS = {
+    'weight': 100,
+    'width': 100,
+    'custom': 0,
+}
 
 
 def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
@@ -113,18 +120,18 @@ def get_axes(masters, instances):
     for name, tag, userLocParam, defaultUserLoc in (
             ('weight', 'wght', 'weightClass', 400),
             ('width', 'wdth', 'widthClass', 100),
-            ('custom', 'XXXX', None, DEFAULT_LOC)):
+            ('custom', 'XXXX', None, 0)):
         key = GLYPHS_PREFIX + name + 'Value'
         interpolLocKey = 'interpolation' + name.title()
         if any(key in master.lib for master in masters):
             labelNames = {"en": name.title()}
             mapping = []
             for instance in instances:
-                interpolLoc = instance.get(interpolLocKey, DEFAULT_LOC)
+                interpolLoc = instance.get(interpolLocKey, DEFAULT_LOCS[name])
                 userLoc = interpolLoc
                 for param in instance.get('customParameters', []):
                     if param.get('name') == userLocParam:
-                        userLoc = float(param.get('value', DEFAULT_LOC))
+                        userLoc = float(param.get('value', DEFAULT_LOCS[name]))
                         break
                 mapping.append((userLoc, interpolLoc))
             mapping = sorted(set(mapping))  # avoid duplicates
@@ -195,7 +202,7 @@ def add_masters_to_writer(ufos, axes, writer):
         location = OrderedDict()
         for axis in axes:
             location[axis] = font.lib.get(
-                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOC)
+                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOCS[axis])
         master_data.append((font.path, family, style, location))
 
     # pick a master to copy info, features, and groups from, trying to find the
@@ -251,7 +258,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         location = OrderedDict()
         for axis in axes:
             location[axis] = instance.get(
-                'interpolation' + axis.title(), DEFAULT_LOC)
+                'interpolation' + axis.title(), DEFAULT_LOCS[axis])
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
