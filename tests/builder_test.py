@@ -432,39 +432,39 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(postscriptNames, {'C-fraktur': 'uni212D'})
 
     def test_category(self):
-        data = generate_minimal_font()
-        add_glyph(data, 'foo')['category'] = 'Mark'
-        add_glyph(data, 'bar')
-        ufo = to_ufos(data)[0]
+        font = generate_minimal_font()
+        add_glyph(font, 'foo')['category'] = 'Mark'
+        add_glyph(font, 'bar')
+        ufo = to_ufos(font)[0]
         category_key = GLYPHLIB_PREFIX + 'category'
         self.assertEqual(ufo['foo'].lib.get(category_key), 'Mark')
         self.assertFalse(category_key in ufo['bar'].lib)
 
     def test_subCategory(self):
-        data = generate_minimal_font()
-        add_glyph(data, 'foo')['subCategory'] = 'Nonspacing'
-        add_glyph(data, 'bar')
-        ufo = to_ufos(data)[0]
+        font = generate_minimal_font()
+        add_glyph(font, 'foo')['subCategory'] = 'Nonspacing'
+        add_glyph(font, 'bar')
+        ufo = to_ufos(font)[0]
         subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
         self.assertEqual(ufo['foo'].lib.get(subCategory_key), 'Nonspacing')
         self.assertFalse(subCategory_key in ufo['bar'].lib)
 
     def test_mark_nonspacing_zero_width(self):
-        data = generate_minimal_font()
+        font = generate_minimal_font()
 
-        add_glyph(data, 'dieresiscomb').layers[0].width = 100
+        add_glyph(font, 'dieresiscomb').layers[0].width = 100
 
-        foo = add_glyph(data, 'foo')
+        foo = add_glyph(font, 'foo')
         foo.category = 'Mark'
         foo.subCategory = 'Nonspacing'
         foo.layers[0].width = 200
 
-        bar = add_glyph(data, 'bar')
+        bar = add_glyph(font, 'bar')
         bar.category = 'Mark'
         bar.subCategory = 'Nonspacing'
         bar.layers[0].width = 0
 
-        ufo = to_ufos(data)[0]
+        ufo = to_ufos(font)[0]
 
         originalWidth_key = GLYPHLIB_PREFIX + 'originalWidth'
         self.assertEqual(ufo['dieresiscomb'].width, 0)
@@ -589,14 +589,14 @@ class ToUfosTest(unittest.TestCase):
                       to_ufos(font)[0].features.text)
 
     def test_GDEF_custom_category_subCategory(self):
-        data = generate_minimal_font()
-        add_glyph(data, 'foo')['subCategory'] = 'Ligature'
-        add_anchor(data, 'foo', 'top', 400, 1000)
-        bar = add_glyph(data, 'bar')
+        font = generate_minimal_font()
+        add_glyph(font, 'foo')['subCategory'] = 'Ligature'
+        add_anchor(font, 'foo', 'top', 400, 1000)
+        bar = add_glyph(font, 'bar')
         bar['category'], bar['subCategory'] = 'Mark', 'Nonspacing'
-        baz = add_glyph(data, 'baz')
+        baz = add_glyph(font, 'baz')
         baz['category'], baz['subCategory'] = 'Mark', 'Spacing Combining'
-        features = to_ufos(data)[0].features.text
+        features = to_ufos(font)[0].features.text
         self.assertIn('[foo], # Liga', features)
         self.assertIn('[bar baz], # Mark', features)
 
