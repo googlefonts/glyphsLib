@@ -499,6 +499,7 @@ _TYPE_STRUCTURE = {
     },
     'instances': {
         'active': truthy,  # undocumented
+        'exports': truthy,  # undocumented
         'customParameters': custom_params,
         'interpolationCustom': num,  # undocumented
         'interpolationWeight': num,  # undocumented
