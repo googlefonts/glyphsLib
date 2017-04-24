@@ -120,7 +120,8 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            inst["active"] = (1 if inst["name"] == "Semibold" else 0)
+            if inst["name"] != "Semibold":
+                inst["active"] = False
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
@@ -129,7 +130,8 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            inst["exports"] = (1 if inst["name"] == "Semibold" else 0)
+            if inst["name"] != "Semibold":
+                inst["exports"] = False
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
