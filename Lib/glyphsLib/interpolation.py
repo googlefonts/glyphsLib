@@ -151,7 +151,7 @@ def is_instance_active(instance):
     # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
     # to mark instances as inactive. Inactive instances should get ignored.
     # https://github.com/googlei18n/glyphsLib/issues/129
-    return instance.get('exports', 1) and int(instance.get('active', 1))
+    return instance.get('exports', True) and instance.get('active', True)
 
 
 def write_axes(axes, writer):
