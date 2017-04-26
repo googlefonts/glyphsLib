@@ -173,6 +173,10 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     result = [ufos[master_id] for master_id in master_id_order]
     instances = {'defaultFamilyName': source_family_name,
                  'data': data.pop('instances', [])}
+    for key in ("Variation Font Origin",):
+        value = data.get(key)
+        if value:
+            instances[key] = value
     if debug:
         return clear_data(data)
     elif include_instances:

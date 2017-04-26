@@ -228,6 +228,31 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestTwoAxes.designspace")
 
+    def test_variationFontOrigin(self):
+        # Glyphs 2.4.1 introduced a custom parameter “Variation Font Origin”
+        # to specify which master should be considered the origin.
+        # https://glyphsapp.com/blog/glyphs-2-4-1-released
+        masters = [
+            makeMaster("Family", "Thin", weight=26),
+            makeMaster("Family", "Regular", weight=100),
+            makeMaster("Family", "Medium", weight=111),
+            makeMaster("Family", "Black", weight=190),
+        ]
+        instances = {
+            "data": [
+                makeInstance("Black", weight=("Black", 900, 190)),
+                makeInstance("Medium", weight=("Medium", 444.4, 111)),
+                makeInstance("Regular", weight=("Regular", 400, 100)),
+                makeInstance("Thin", weight=("Thin", 100, 26)),
+            ],
+            "Variation Font Origin": "Medium",
+        }
+        doc = etree.fromstringlist(self.build_designspace(masters, instances))
+        medium = doc.find('sources/source[@stylename="Medium"]')
+        self.assertEqual(medium.find("lib").attrib["copy"], "1")
+        weightAxis = doc.find('axes/axis[@tag="wght"]')
+        self.assertEqual(weightAxis.attrib["default"], "444.4")
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
