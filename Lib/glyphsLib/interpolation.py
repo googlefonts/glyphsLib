@@ -78,15 +78,15 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     writer = DesignSpaceDocumentWriter(tmp_path)
 
     instances = list(filter(is_instance_active, instance_data.get('data', [])))
-    axes = get_axes(masters, instances)
+    regular = find_regular_master(masters)
+    axes = get_axes(masters, regular, instances)
     write_axes(axes, writer)
-    base_family, base_style = add_masters_to_writer(masters, axes, writer)
-    base_family = instance_data.get('defaultFamilyName', base_family)
+    add_masters_to_writer(masters, regular, axes, writer)
+    base_family = instance_data.get('defaultFamilyName', regular.info.familyName)
     instance_files = add_instances_to_writer(
         writer, base_family, axes, instances, out_dir)
 
-    basename = '%s%s.designspace' % (
-        base_family, ('-' + base_style) if base_style else '')
+    basename = '%s.designspace' % base_family
     writer.path = os.path.join(master_dir, basename.replace(' ', ''))
     writer.save()
     return writer.path, instance_files
@@ -99,7 +99,7 @@ AxisDescriptor = namedtuple('AxisDescriptor', [
     'minimum', 'maximum', 'default', 'name', 'tag', 'labelNames', 'map'])
 
 
-def get_axes(masters, instances):
+def get_axes(masters, regular_master, instances):
     # According to Georg Seifert, Glyphs 3 will have a better model
     # for describing variation axes.  The plan is to store the axis
     # information globally in the Glyphs file. In addition to actual
@@ -173,26 +173,31 @@ def write_axes(axes, writer):
             axisElement.append(labelname)
 
 
-def add_masters_to_writer(ufos, axes, writer):
-    """Add master UFOs to a MutatorMath document writer.
-
-    Returns the masters' family name and shared style names. These are used for
-    naming instances and the designspace path.
+def find_regular_master(masters):
+    """Find the "regular" master among the master UFOs.
     """
-    master_data = []
-    base_family = None
-    base_style = None
+    assert len(masters) > 0
+    base_family = masters[0].info.familyName
+    assert all(m.info.familyName == base_family for m in masters), \
+        'Masters must all have same family'
+    base_style = masters[0].info.styleName.split()
+    for font in masters:
+        style = font.info.styleName.split()
+        base_style = [s for s in style if s in base_style]
+    base_style = ' '.join(base_style)
+    if not base_style:
+        base_style = 'Regular'
+    for font in masters:
+        if font.info.styleName == base_style:
+            return font
+    return masters[0]
 
+
+def add_masters_to_writer(ufos, regular, axes, writer):
+    """Add master UFOs to a MutatorMath document writer.
+    """
     for font in ufos:
         family, style = font.info.familyName, font.info.styleName
-        if base_family is None:
-            base_family = family
-        else:
-            assert family == base_family, 'Masters must all have same family'
-        if base_style is None:
-            base_style = style.split()
-        else:
-            base_style = [s for s in style.split() if s in base_style]
         # MutatorMath.DesignSpaceDocumentWriter iterates over the location
         # dictionary, which is non-deterministic so it can cause test failures.
         # We therefore use an OrderedDict to which we insert in axis order.
@@ -203,27 +208,12 @@ def add_masters_to_writer(ufos, axes, writer):
         for axis in axes:
             location[axis] = font.lib.get(
                 GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOCS[axis])
-        master_data.append((font.path, family, style, location))
-
-    # pick a master to copy info, features, and groups from, trying to find the
-    # master with a base style shared between all masters (or just Regular) and
-    # defaulting to the first master if nothing is found
-    base_style = ' '.join(base_style)
-    info_source = 0
-    for i, (path, family, style, location) in enumerate(master_data):
-        if family == base_family and style == (base_style or 'Regular'):
-            info_source = i
-            break
-
-    for i, (path, family, style, location) in enumerate(master_data):
-        is_base = (i == info_source)
+        is_regular = (font is regular)
         writer.addSource(
-            path=path, name='%s %s' % (family, style),
+            path=font.path, name='%s %s' % (family, style),
             familyName=family, styleName=style, location=location,
-            copyFeatures=is_base, copyGroups=is_base, copyInfo=is_base,
-            copyLib=is_base)
-
-    return base_family, base_style
+            copyFeatures=is_regular, copyGroups=is_regular, copyInfo=is_regular,
+            copyLib=is_regular)
 
 
 def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
