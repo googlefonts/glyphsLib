@@ -181,6 +181,13 @@ def write_axes(axes, writer):
 
 def find_regular_master(masters, regularName=None):
     """Find the "regular" master among the master UFOs.
+
+    Tries to find the master with the passed 'regularName'.
+    If there is no such master or if regularName is None,
+    tries to find a base style shared between all masters
+    (defaulting to "Regular"), and then tries to find a master
+    with that style name. If there is no master with that name,
+    returns the first master in the list.
     """
     assert len(masters) > 0
     base_family = masters[0].info.familyName
