@@ -78,7 +78,9 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     writer = DesignSpaceDocumentWriter(tmp_path)
 
     instances = list(filter(is_instance_active, instance_data.get('data', [])))
-    regular = find_regular_master(masters)
+    regular = find_regular_master(
+        masters=masters,
+        regularName=instance_data.get('Variation Font Origin'))
     axes = get_axes(masters, regular, instances)
     write_axes(axes, writer)
     add_masters_to_writer(masters, regular, axes, writer)
@@ -177,13 +179,16 @@ def write_axes(axes, writer):
             axisElement.append(labelname)
 
 
-def find_regular_master(masters):
+def find_regular_master(masters, regularName=None):
     """Find the "regular" master among the master UFOs.
     """
     assert len(masters) > 0
     base_family = masters[0].info.familyName
     assert all(m.info.familyName == base_family for m in masters), \
         'Masters must all have same family'
+    for font in masters:
+        if font.info.styleName == regularName:
+            return font
     base_style = masters[0].info.styleName.split()
     for font in masters:
         style = font.info.styleName.split()
