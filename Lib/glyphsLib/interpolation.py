@@ -193,9 +193,10 @@ def find_regular_master(masters, regularName=None):
     base_family = masters[0].info.familyName
     assert all(m.info.familyName == base_family for m in masters), \
         'Masters must all have same family'
-    for font in masters:
-        if font.info.styleName == regularName:
-            return font
+    if regularName is not None:
+        for font in masters:
+            if font.info.styleName == regularName:
+                return font
     base_style = masters[0].info.styleName.split()
     for font in masters:
         style = font.info.styleName.split()
