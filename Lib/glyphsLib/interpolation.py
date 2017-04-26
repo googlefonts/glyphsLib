@@ -124,6 +124,8 @@ def get_axes(masters, regular_master, instances):
         key = GLYPHS_PREFIX + name + 'Value'
         interpolLocKey = 'interpolation' + name.title()
         if any(key in master.lib for master in masters):
+            regularInterpolLoc = regular_master.lib.get(key, DEFAULT_LOCS[name])
+            regularUserLoc = defaultUserLoc
             labelNames = {"en": name.title()}
             mapping = []
             for instance in instances:
@@ -134,11 +136,13 @@ def get_axes(masters, regular_master, instances):
                         userLoc = float(param.get('value', DEFAULT_LOCS[name]))
                         break
                 mapping.append((userLoc, interpolLoc))
+                if interpolLoc == regularInterpolLoc:
+                    regularUserLoc = userLoc
             mapping = sorted(set(mapping))  # avoid duplicates
             if mapping:
                 minimum = min([userLoc for userLoc, _ in mapping])
                 maximum = max([userLoc for userLoc, _ in mapping])
-                default = min(maximum, max(minimum, defaultUserLoc))  # clamp
+                default = min(maximum, max(minimum, regularUserLoc))  # clamp
             else:
                 minimum = maximum = default = defaultUserLoc
             axes[name] = AxisDescriptor(

@@ -106,7 +106,7 @@ class DesignspaceTest(unittest.TestCase):
         if actual != expected:
             for line in difflib.unified_diff(
                     expected, actual,
-                    fromfile=expectedPath, tofile=designspace):
+                    fromfile=expectedPath, tofile=None):
                 sys.stderr.write(line)
             self.fail("*.designspace file is different from expected")
 
@@ -147,6 +147,26 @@ class DesignspaceTest(unittest.TestCase):
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
+
+    def test_noRegularMaster(self):
+        # Currently, fonttools.varLib fails to build variable fonts
+        # if the default axis value does not happen to be at the
+        # location of one of the interpolation masters.
+        # glyhpsLib tries to work around this downstream limitation.
+        masters = [
+            makeMaster("NoRegularMaster", "Thin", weight=26),
+            makeMaster("NoRegularMaster", "Black", weight=190),
+        ]
+        instances = {"data": [
+            makeInstance("Black", weight=("Black", 900, 190)),
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            makeInstance("Bold", weight=("Thin", 100, 26)),
+        ]}
+        doc = etree.fromstringlist(self.build_designspace(masters, instances))
+        weightAxis = doc.find('axes/axis[@tag="wght"]')
+        self.assertEqual(weightAxis.attrib["minimum"], "100.0")
+        self.assertEqual(weightAxis.attrib["default"], "100.0")  # not 400
+        self.assertEqual(weightAxis.attrib["maximum"], "900.0")
 
     def test_postscriptFontName(self):
         master = makeMaster("PSNameTest", "Master")
