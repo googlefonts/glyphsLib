@@ -286,7 +286,6 @@ def apply_instance_data(instance_data):
 
     Args:
         instance_data: List of (path, data) tuples, one for each instance.
-        dst_ufo_list: List to add opened instances to.
     Returns:
         List of opened and updated instance UFOs.
     """
