@@ -226,7 +226,7 @@ class DesignspaceTest(unittest.TestCase):
         instances = {
             "data": [
                 makeInstance("Black", weight=("Black", 900, 190)),
-                makeInstance("Medium", weight=("Medium", 444.4, 111)),
+                makeInstance("Medium", weight=("Medium", 444, 111)),
                 makeInstance("Regular", weight=("Regular", 400, 100)),
                 makeInstance("Thin", weight=("Thin", 100, 26)),
             ],
@@ -236,7 +236,7 @@ class DesignspaceTest(unittest.TestCase):
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
-        self.assertEqual(weightAxis.attrib["default"], "444.4")
+        self.assertEqual(weightAxis.attrib["default"], "444.0")
 
 
 if __name__ == "__main__":
