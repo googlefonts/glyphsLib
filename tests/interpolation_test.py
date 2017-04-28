@@ -106,7 +106,7 @@ class DesignspaceTest(unittest.TestCase):
         if actual != expected:
             for line in difflib.unified_diff(
                     expected, actual,
-                    fromfile=expectedPath, tofile=None):
+                    fromfile=expectedPath, tofile="<generated>"):
                 sys.stderr.write(line)
             self.fail("*.designspace file is different from expected")
 
