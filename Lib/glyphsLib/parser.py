@@ -19,12 +19,14 @@ from fontTools.misc.py23 import *
 
 import collections
 import re
-import sys, traceback
+import sys
+import traceback
+
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self, dict_type = collections.OrderedDict):
+    def __init__(self, dict_type=collections.OrderedDict):
         self.dict_type = dict_type
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
@@ -65,7 +67,7 @@ class Parser:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
             try:
-                reader = self.dict_type() # if the dict_type is a RW class from casting.py, then run it through the read method. If not, fall through to the except part
+                reader = self.dict_type()  # if the dict_type is a RW class from casting.py, then run it through the read method. If not, fall through to the except part
                 value = reader.read(value)
             except:
                 try:  # might throw if there is a key that is not covered in `classesForName`
@@ -97,13 +99,13 @@ class Parser:
             try:
                 res[name], i = result
             except:
-                res = {} # ugly, this fixes nested dicts in customparameters
+                res = {}  # ugly, this fixes nested dicts in customparameters
                 res[name], i = result
 
             m = self.dict_delim_re.match(text, i)
             if not m:
                 self._fail('Missing delimiter in dictionary before content',
-                            text, i)
+                           text, i)
             parsed = m.group(0)
             i += len(parsed)
 
@@ -129,7 +131,7 @@ class Parser:
                 m = self.list_delim_re.match(text, i)
                 if not m:
                     self._fail('Missing delimiter in list before content',
-                                text, i)
+                               text, i)
                 parsed = m.group(0)
                 i += len(parsed)
 
@@ -242,11 +244,11 @@ class Writer(object):
         return r'\"'
 
     def _write_atom(self, data):
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
-      out = self.out
-      if Writer._sym_re.match(data):
-          out.write(data)
-          return
-      out.write('"')
-      out.write(data)
-      out.write('"')
+        data = Writer._escape_re.sub(Writer._escape_fn, data)
+        out = self.out
+        if Writer._sym_re.match(data):
+            out.write(data)
+            return
+        out.write('"')
+        out.write(data)
+        out.write('"')
