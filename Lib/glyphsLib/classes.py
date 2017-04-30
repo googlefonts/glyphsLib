@@ -833,7 +833,7 @@ class GSFont(GSBase):
         self.appVersion = 0
         self._glyphs = []
         self._masters = []
-        self._instance = []
+        self._instances = []
         self._customParameters = []
 
 
