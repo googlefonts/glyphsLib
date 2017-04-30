@@ -19,7 +19,11 @@ from __future__ import print_function
 import re
 import traceback
 import uuid
-from glyphsLib.casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
+from glyphsLib.casting import (
+    num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS,
+    CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS,
+    floatToString, truthy, intlist, kerning
+)
 import collections
 from fontTools.misc.py23 import unicode
 
@@ -134,7 +138,9 @@ class Proxy(object):
         method = self.setterMethod()
         if type(values) == list:
             method(values)
-        elif type(values) == tuple or values.__class__.__name__ == "__NSArrayM" or type(values) == type(self):
+        elif (type(values) == tuple or
+                values.__class__.__name__ == "__NSArrayM" or
+                type(values) == type(self)):
             method(list(values))
         elif values is None:
             method(list())
@@ -258,7 +264,9 @@ class FontGlyphsProxy (Proxy):
         for g in self._glyphs:
             g.parent = self
             for layer in g.layers.values():
-                if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
+                if (not hasattr(layer, "associatedMasterId") or
+                        layer.associatedMasterId is None or
+                        len(layer.associatedMasterId) == 0):
                     g._setupLayer(layer, layer.layerId)
 
 
@@ -300,7 +308,7 @@ class GlyphLayerProxy (Proxy):
             if key < 0:
                 key = self.__len__() + key
             master = self._owner.parent.masters[key]
-            key = FontMaster.id
+            key = master.id
         self._owner._setupLayer(layer, key)
         self._owner._layers[key] = layer
 
@@ -345,7 +353,9 @@ class GlyphLayerProxy (Proxy):
 
     def setter(self, values):
         newLayers = {}
-        if type(values) == list or type(values) == tuple or type(values) == type(self):
+        if (type(values) == list or
+                type(values) == tuple or
+                type(values) == type(self)):
             for layer in values:
                 newLayers[layer.layerId] = layer
         elif type(values) == dict:  # or isinstance(values, NSDictionary)
@@ -441,7 +451,8 @@ class GSCustomParameter(GSBase):
             self.value = value
 
     def __repr__(self):
-        return "<%s %s: %s>" % (self.__class__.__name__, self.name, self._value)
+        return "<%s %s: %s>" % \
+            (self.__class__.__name__, self.name, self._value)
 
     def getValue(self):
         return self._value
@@ -480,13 +491,15 @@ class GSAlignmentZone(GSBase):
         return self
 
     def __repr__(self):
-        return "<%s pos:%g size:%g>" % (self.__class__.__name__, self.position, self.size)
+        return "<%s pos:%g size:%g>" % \
+            (self.__class__.__name__, self.position, self.size)
 
     def __lt__(self, other):
         return (self.position, self.size) < (other.position, other.size)
 
     def plistValue(self):
-        return "\"{%s, %s}\"" % (floatToString(self.position), floatToString(self.size))
+        return '"{%s, %s}"' % \
+            (floatToString(self.position), floatToString(self.size))
 
 
 class GSGuideLine(GSBase):
@@ -536,7 +549,8 @@ class GSFontMaster(GSBase):
         self.weightValue = 100
 
     def __repr__(self):
-        return "<GSFontMaster \"%s\" width %s weight %s>" % (self.name, self.widthValue, self.weightValue)
+        return '<GSFontMaster "%s" width %s weight %s>' % \
+            (self.name, self.widthValue, self.weightValue)
 
     @property
     def name(self):
@@ -545,11 +559,14 @@ class GSFontMaster(GSBase):
         name = self.customParameters["Master Name"]
         if name is None:
             names = [self._weight, self._width]
-            if self._custom and len(self._custom) and self._custom not in names:
+            if (self._custom and len(self._custom) and
+                    self._custom not in names):
                 names.append(self._custom)
-            if self._custom1 and len(self._custom1) and self._custom1 not in names:
+            if (self._custom1 and len(self._custom1) and
+                    self._custom1 not in names):
                 names.append(self._custom1)
-            if self._custom2 and len(self._custom2) and self._custom2 not in names:
+            if (self._custom2 and len(self._custom2) and
+                    self._custom2 not in names):
                 names.append(self._custom2)
 
             if len(names) > 1:
@@ -561,14 +578,16 @@ class GSFontMaster(GSBase):
         self._name = name
         return name
 
-    customParameters = property(lambda self: CustomParametersProxy(self),
-                                lambda self, value: CustomParametersProxy(self).setter(value))
+    customParameters = property(
+        lambda self: CustomParametersProxy(self),
+        lambda self, value: CustomParametersProxy(self).setter(value))
 
 
 class GSNode(GSBase):
     rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
 
-    def __init__(self, line=None, position=(0, 0), nodetype='line', smooth=False):
+    def __init__(self, line=None, position=(0, 0), nodetype='line',
+                 smooth=False):
         if line is not None:
             m = re.match(self.rx, line).groups()
             self.position = (float(m[0]), float(m[1]))
@@ -583,13 +602,17 @@ class GSNode(GSBase):
         content = self.type
         if self.smooth:
             content += " smooth"
-        return "<%s %g %g %s>" % (self.__class__.__name__, self.position[0], self.position[1], content)
+        return "<%s %g %g %s>" % \
+            (self.__class__.__name__, self.position[0], self.position[1],
+             content)
 
     def plistValue(self):
         content = self.type.upper()
         if self.smooth:
             content += " SMOOTH"
-        return "\"%s %s %s\"" % (floatToString(self.position[0]), floatToString(self.position[1]), content)
+        return '"%s %s %s"' % \
+            (floatToString(self.position[0]), floatToString(self.position[1]),
+             content)
 
 
 class GSPath(GSBase):
@@ -646,8 +669,8 @@ class GSFeature(GSBase):
 
     def setCode(self, code):
         replacements = (
-            ('\\012', '\n'), ('\\011', '\t'), ('\\U2018', "'"), ('\\U2019', "'"),
-            ('\\U201C', '"'), ('\\U201D', '"'))
+            ('\\012', '\n'), ('\\011', '\t'), ('\\U2018', "'"),
+            ('\\U2019', "'"), ('\\U201C', '"'), ('\\U201D', '"'))
         for escaped, unescaped in replacements:
             code = code.replace(escaped, unescaped)
         self._code = code
@@ -711,8 +734,9 @@ class GSInstance(GSBase):
         self.weightClass = "Regular"
         self._customParameters = []
 
-    customParameters = property(lambda self: CustomParametersProxy(self),
-                                lambda self, value: CustomParametersProxy(self).setter(value))
+    customParameters = property(
+        lambda self: CustomParametersProxy(self),
+        lambda self, value: CustomParametersProxy(self).setter(value))
 
 
 class GSBackgroundLayer(GSBase):
@@ -767,7 +791,8 @@ class GSLayer(GSBase):
 
     @property
     def name(self):
-        if self.associatedMasterId and self.associatedMasterId == self.layerId and self.parent:
+        if (self.associatedMasterId and
+                self.associatedMasterId == self.layerId and self.parent):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name
@@ -816,7 +841,7 @@ class GSGlyph(GSBase):
         self.export = True
 
     def __repr__(self):
-        return "<GSGlyph \"%s\" with %s layers>" % (self.name, len(self.layers))
+        return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
 
     layers = property(lambda self: GlyphLayerProxy(self),
                       lambda self, value: GlyphLayerProxy(self).setter(value))
@@ -825,7 +850,8 @@ class GSGlyph(GSBase):
         layer.parent = self
         layer.layerId = key
         try:
-            if self.parent and self.parent.masterForId(key):  # TODO use proxy `self.parent.masters[key]`
+            # TODO use proxy `self.parent.masters[key]`
+            if self.parent and self.parent.masterForId(key):
                 layer.associatedMasterId = key
         except:
             print(traceback.format_exc())
@@ -917,7 +943,9 @@ class GSFont(GSBase):
     def _setupGlyph(self, glyph):
         glyph.parent = self
         for layer in glyph.layers.values():
-            if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
+            if (not hasattr(layer, "associatedMasterId") or
+                    layer.associatedMasterId is None or
+                    len(layer.associatedMasterId) == 0):
                 glyph._setupLayer(layer, layer.layerId)
 
     @property
@@ -966,8 +994,9 @@ class GSFont(GSBase):
         for i in self._instances:
             i.parent = self
 
-    customParameters = property(lambda self: CustomParametersProxy(self),
-                                lambda self, value: CustomParametersProxy(self).setter(value))
+    customParameters = property(
+        lambda self: CustomParametersProxy(self),
+        lambda self, value: CustomParametersProxy(self).setter(value))
 
     @property
     def kerning(self):
