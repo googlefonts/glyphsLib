@@ -15,12 +15,11 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import *
+from fontTools.misc.py23 import tounicode, unichr
 
 import collections
 import re
 import sys
-import traceback
 
 
 class Parser:
@@ -67,10 +66,15 @@ class Parser:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
             try:
-                reader = self.dict_type()  # if the dict_type is a RW class from casting.py, then run it through the read method. If not, fall through to the except part
+                # if the dict_type is a RW class from casting.py,
+                # then run it through the read method.
+                # If not, fall through to the except part
+                reader = self.dict_type()
                 value = reader.read(value)
             except:
-                try:  # might throw if there is a key that is not covered in `classesForName`
+                try:
+                    # might throw if there is a key that is not
+                    # covered in `classesForName`
                     value = self.dict_type(value)
                 except:
                     pass
