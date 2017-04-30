@@ -34,7 +34,7 @@ def generate_minimal_font():
     font.appVersion = 895
     font.date = datetime.datetime.today()
     font.familyName = 'MyFont'
-    
+
     master = GSFontMaster()
     master.ascender = 0
     master.capHeight = 0
@@ -42,12 +42,13 @@ def generate_minimal_font():
     master.id = 'id'
     master.xHeight = 0
     font.masters.append(master)
-    
+
     font.unitsPerEm = 1000
     font.versionMajor = 1
     font.versionMinor = 0
-    
+
     return font
+
 
 def add_glyph(font, glyphname):
     glyph = GSGlyph()
@@ -60,6 +61,7 @@ def add_glyph(font, glyphname):
     glyph.layers.append(layer)
     return glyph
 
+
 def add_anchor(font, glyphname, anchorname, x, y):
     for glyph in font.glyphs:
         if glyph.name == glyphname:
@@ -70,6 +72,7 @@ def add_anchor(font, glyphname, anchorname, x, y):
                 anchor.name = anchorname
                 anchor.position = (x, y)
                 layer.anchors.append(anchor)
+
 
 def add_component(font, glyphname, componentname,
                   transform):
@@ -91,11 +94,10 @@ class GlyphLayersTest(unittest.TestCase):
         self.assertIsNotNone(master)
         layer = glyph.layers[master.id]
         self.assertIsNotNone(layer)
-        
+
         layer = glyph.layers["XYZ123"]
         self.assertIsNone(layer)
-        
-        
-        
+
+
 if __name__ == '__main__':
     unittest.main()
