@@ -262,7 +262,7 @@ class FontGlyphsProxy(Proxy):
     def setter(self, values):
         self._owner._glyphs = values
         for g in self._owner._glyphs:
-            g.parent = self
+            g.parent = self._owner
             for layer in g.layers.values():
                 if (not hasattr(layer, "associatedMasterId") or
                         layer.associatedMasterId is None or
@@ -849,12 +849,10 @@ class GSGlyph(GSBase):
     def _setupLayer(self, layer, key):
         layer.parent = self
         layer.layerId = key
-        try:
-            # TODO use proxy `self.parent.masters[key]`
-            if self.parent and self.parent.masterForId(key):
-                layer.associatedMasterId = key
-        except:
-            print(traceback.format_exc())
+        # TODO use proxy `self.parent.masters[key]`
+        if self.parent and self.parent.masterForId(key):
+            layer.associatedMasterId = key
+
     # def setLayerForKey(self, layer, key):
     #     if Layer and Key:
     #         Layer.parent = self
