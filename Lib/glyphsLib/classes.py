@@ -106,9 +106,9 @@ class Proxy(object):
         return "(%s)" % (', '.join(strings))
 
     def __len__(self):
-        Values = self.values()
-        if Values is not None:
-            return len(Values)
+        values = self.values()
+        if values is not None:
+            return len(values)
         return 0
 
     def pop(self, i):
@@ -120,13 +120,13 @@ class Proxy(object):
             raise(KeyError)
 
     def __iter__(self):
-        Values = self.values()
-        if Values is not None:
-            for element in Values:
+        values = self.values()
+        if values is not None:
+            for element in values:
                 yield element
 
-    def index(self, Value):
-        return self.values().index(Value)
+    def index(self, value):
+        return self.values().index(value)
 
     def __copy__(self):
         return list(self)
@@ -195,40 +195,40 @@ class FontGlyphsProxy (Proxy):
         for glyph in Font.glyphs:
         ...
     """
-    def __getitem__(self, Key):
-        if type(Key) == slice:
-            return self.values().__getitem__(Key)
+    def __getitem__(self, key):
+        if type(key) == slice:
+            return self.values().__getitem__(key)
 
         # by index
-        if type(Key) is int:
-            return self._owner._glyphs[Key]
+        if type(key) is int:
+            return self._owner._glyphs[key]
 
         else:
             raise KeyError  # TODO: add other access methods
         '''
         # by glyph name
-        elif self._owner.glyphForName_(Key):
-            return self._owner.glyphForName_(Key)
+        elif self._owner.glyphForName_(key):
+            return self._owner.glyphForName_(key)
 
         # by string representation as u'ä'
-        elif len(Key) == 1 and self._owner.glyphForCharacter_(ord(Key)):
-            return self._owner.glyphForCharacter_(ord(Key))
+        elif len(key) == 1 and self._owner.glyphForCharacter_(ord(key)):
+            return self._owner.glyphForCharacter_(ord(key))
 
         # by unicode
         else:
-            return self._owner.glyphForUnicode_(Key.upper())
+            return self._owner.glyphForUnicode_(key.upper())
         '''
 
-    def __setitem__(self, Key, Glyph):
-        if type(Key) is int:
-            self._owner._setupGlyph(Glyph)
-            self._owner._glyphs[Key] = Glyph
+    def __setitem__(self, key, glyph):
+        if type(key) is int:
+            self._owner._setupGlyph(glyph)
+            self._owner._glyphs[key] = glyph
         else:
             raise KeyError  # TODO: add other access methods
 
-    def __delitem__(self, Key):
-        if type(Key) is int:
-            del(self._owner._glyph[Key])
+    def __delitem__(self, key):
+        if type(key) is int:
+            del(self._owner._glyph[key])
         else:
             raise KeyError  # TODO: add other access methods
 
@@ -241,15 +241,15 @@ class FontGlyphsProxy (Proxy):
         return self._owner._glyphs
 
     def items(self):
-        Items = []
-        for Value in self._owner._glyphs:
-            Key = Value.name
-            Items.append((Key, Value))
-        return Items
+        items = []
+        for value in self._owner._glyphs:
+            key = value.name
+            items.append((key, value))
+        return items
 
-    def append(self, Glyph):
-        self._owner._setupGlyph(Glyph)
-        self._owner._glyphs.append(Glyph)
+    def append(self, glyph):
+        self._owner._setupGlyph(glyph)
+        self._owner._glyphs.append(glyph)
 
     def extend(self, objects):
         for glyph in objects:
@@ -260,8 +260,8 @@ class FontGlyphsProxy (Proxy):
         return len(self._owner._glyphs)
 
     def setter(self, values):
-        self._glyphs = values
-        for g in self._glyphs:
+        self._owner._glyphs = values
+        for g in self._owner._glyphs:
             g.parent = self
             for layer in g.layers.values():
                 if (not hasattr(layer, "associatedMasterId") or
