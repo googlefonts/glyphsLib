@@ -25,7 +25,7 @@ from glyphsLib.casting import (
     floatToString, truthy, intlist, kerning
 )
 import collections
-from fontTools.misc.py23 import unicode
+from fontTools.misc.py23 import unicode, basestring
 
 __all__ = [
     "GSFont", "GSCustomParameter", "GSInstance",
@@ -200,24 +200,25 @@ class FontGlyphsProxy(Proxy):
             return self.values().__getitem__(key)
 
         # by index
-        if type(key) is int:
+        if isinstance(key, int):
             return self._owner._glyphs[key]
 
-        else:
-            raise KeyError  # TODO: add other access methods
-        '''
-        # by glyph name
-        elif self._owner.glyphForName_(key):
-            return self._owner.glyphForName_(key)
-
-        # by string representation as u'ä'
-        elif len(key) == 1 and self._owner.glyphForCharacter_(ord(key)):
-            return self._owner.glyphForCharacter_(ord(key))
-
-        # by unicode
-        else:
-            return self._owner.glyphForUnicode_(key.upper())
-        '''
+        if isinstance(key, basestring):
+            # by glyph name
+            for glyph in self._owner._glyphs:
+                if glyph.name == key:
+                    return glyph
+            # by string representation as u'ä'
+            if len(key) == 1:
+                for glyph in self._owner._glyphs:
+                    if glyph.unicode == "%04X" % (ord(key)):
+                        return glyph
+            # by unicode
+            else:
+                for glyph in self._owner._glyphs:
+                    if glyph.unicode == key.upper():
+                        return glyph
+        return None
 
     def __setitem__(self, key, glyph):
         if type(key) is int:
