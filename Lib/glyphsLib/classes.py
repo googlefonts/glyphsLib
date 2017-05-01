@@ -187,7 +187,7 @@ class LayersIterator:
         return None
 
 
-class FontGlyphsProxy (Proxy):
+class FontGlyphsProxy(Proxy):
     """The list of glyphs. You can access it with the index or the glyph name.
     Usage:
         Font.glyphs[index]
@@ -270,7 +270,7 @@ class FontGlyphsProxy (Proxy):
                     g._setupLayer(layer, layer.layerId)
 
 
-class GlyphLayerProxy (Proxy):
+class GlyphLayerProxy(Proxy):
     def __getitem__(self, Key):
         if type(Key) == slice:
             return self.values().__getitem__(Key)
