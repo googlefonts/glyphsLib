@@ -904,6 +904,7 @@ class GSFont(GSBase):
         "features": GSFeature,
         "fontMaster": GSFontMaster,
         "glyphs": GSGlyph,
+        "grid": int,
         "gridLength": int,
         "gridSubDivision": int,
         "instances": GSInstance,
@@ -919,6 +920,7 @@ class GSFont(GSBase):
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
         "fontMaster": "masters",
+        "unitsPerEm": "upm",
     }
 
     def __init__(self):
@@ -946,6 +948,7 @@ class GSFont(GSBase):
         self._masters = []
         self._instances = []
         self._customParameters = []
+        self.filepath = None
 
     def __repr__(self):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
@@ -1037,3 +1040,11 @@ class GSFont(GSBase):
     @property
     def selection(self):
         return (glyph for glyph in self.glyphs if glyph.selected)
+
+    @property
+    def note(self):
+        return self.customParameters["note"]
+
+    @note.setter
+    def note(self, value):
+        self.customParameters["note"] = value
