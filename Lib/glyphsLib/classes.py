@@ -665,6 +665,11 @@ class GSFeature(GSBase):
         "disabled": truthy,
     }
 
+    def __init__(self, name="xxxx", code=""):
+        super(GSFeature, self).__init__()
+        self.name = name
+        self.code = code
+
     def getCode(self):
         return self._code
 
@@ -677,6 +682,10 @@ class GSFeature(GSBase):
         self._code = code
     code = property(getCode, setCode)
 
+    def __repr__(self):
+        return '<%s "%s">' % \
+            (self.__class__.__name__, self.name)
+
 
 class GSClass(GSFeature):
     _classesForName = {
@@ -686,6 +695,20 @@ class GSClass(GSFeature):
         "notes": unicode,
         "disabled": truthy,
     }
+
+    def __init__(self, name="xxxx", code=None):
+        super(GSClass, self).__init__()
+        self.name = name
+        if code is not None:
+            self.code = code
+
+    def __repr__(self):
+        return '<%s "%s">' % \
+            (self.__class__.__name__, self.name)
+
+
+class GSFeaturePrefix(GSClass):
+    pass
 
 
 class GSAnnotation(GSBase):
@@ -876,7 +899,7 @@ class GSFont(GSBase):
         "disablesAutomaticAlignment": truthy,
         "disablesNiceNames": truthy,
         "familyName": str,
-        "featurePrefixes": GSClass,
+        "featurePrefixes": GSFeaturePrefix,
         "features": GSFeature,
         "fontMaster": GSFontMaster,
         "glyphs": GSGlyph,
