@@ -517,7 +517,7 @@ class GSFontMaster(GSBase):
         "alignmentZones": GSAlignmentZone,
         "ascender": float,
         "capHeight": float,
-        "custom": str,
+        "custom": unicode,
         "customParameters": GSCustomParameter,
         "customValue": float,
         "descender": float,
@@ -534,6 +534,9 @@ class GSFontMaster(GSBase):
         "widthValue": float,
         "xHeight": float,
     }
+    _wrapperKeysTranslate = {
+        "guideLines": "guides"
+    }
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
@@ -541,7 +544,7 @@ class GSFontMaster(GSBase):
         self._customParameters = []
         self._weight = "Regular"
         self._width = "Regular"
-        self._custom = None
+        self._custom = ""
         self._custom1 = None
         self._custom2 = None
         self.italicAngle = 0
@@ -581,6 +584,30 @@ class GSFontMaster(GSBase):
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
+
+    @property
+    def weight(self):
+        if self._weight:
+            return self._weight
+        return "Regular"
+
+    @weight.setter
+    def weight(self, value):
+        self._weight = value
+
+    @property
+    def width(self):
+        if self._width:
+            return self._width
+        return "Regular"
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+
+    customName = property(
+        lambda self: self._custom,
+        lambda self, value: setattr(self, "_custom", value))
 
 
 class GSNode(GSBase):
