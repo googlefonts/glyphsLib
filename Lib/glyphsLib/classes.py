@@ -443,7 +443,7 @@ class CustomParametersProxy(Proxy):
 
 class GSCustomParameter(GSBase):
     _classesForName = {
-        "name": str,
+        "name": unicode,
         "value": str,  # TODO: check 'name' to determine proper class
     }
 
@@ -468,6 +468,8 @@ class GSCustomParameter(GSBase):
             value = truthy(value)
         if self.name in CUSTOM_INTLIST_PARAMS:
             value = intlist.read(value)
+        elif self.name == 'note':
+            value = unicode(value)
         elif self.name == 'DisableAllAutomaticBehaviour':
             value = truthy(value)
         self._value = value
@@ -899,7 +901,7 @@ class GSFont(GSBase):
         "designerURL": unicode,
         "disablesAutomaticAlignment": truthy,
         "disablesNiceNames": truthy,
-        "familyName": str,
+        "familyName": unicode,
         "featurePrefixes": GSFeaturePrefix,
         "features": GSFeature,
         "fontMaster": GSFontMaster,
@@ -911,7 +913,7 @@ class GSFont(GSBase):
         "keepAlternatesTogether": truthy,
         "kerning": dict,
         "manufacturer": unicode,
-        "manufacturerURL": str,
+        "manufacturerURL": unicode,
         "unitsPerEm": int,
         "userData": dict,
         "versionMajor": int,
