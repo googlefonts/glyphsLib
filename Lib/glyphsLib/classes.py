@@ -378,7 +378,7 @@ class CustomParametersProxy(Proxy):
         else:
             for customParameter in self._owner._customParameters:
                 if customParameter.name == key:
-                    return customParameter
+                    return customParameter.value
         return None
 
     def __setitem__(self, key, value):
@@ -390,9 +390,12 @@ class CustomParametersProxy(Proxy):
             self._owner._customParameters.append(parameter)
 
     def __delitem__(self, key):
-        parameter = self.__getitem__(key)
-        if parameter is not None:
-            self._owner._customParameters.remove(parameter)
+        if isinstance(key, int):
+            del self._owner._customParameters[key]
+        elif isinstance(key, basestring):
+            for parameter in self._owner._customParameters:
+                if parameter.name == key:
+                    self._owner._customParameters.remove(parameter)
         else:
             raise KeyError
 
@@ -444,12 +447,9 @@ class GSCustomParameter(GSBase):
         "value": str,  # TODO: check 'name' to determine proper class
     }
 
-    def __init__(self, line=None, name="New Value", value="New Parameter"):
-        if line:
-            super(GSCustomParameter, self).__init__(line)
-        else:
-            self.name = name
-            self.value = value
+    def __init__(self, name="New Value", value="New Parameter"):
+        self.name = name
+        self.value = value
 
     def __repr__(self):
         return "<%s %s: %s>" % \
