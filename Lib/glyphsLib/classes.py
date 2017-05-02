@@ -462,11 +462,11 @@ class GSCustomParameter(GSBase):
         """Cast some known data in custom parameters."""
         if self.name in CUSTOM_INT_PARAMS:
             value = int(value)
-        if self.name in CUSTOM_FLOAT_PARAMS:
+        elif self.name in CUSTOM_FLOAT_PARAMS:
             value = float(value)
-        if self.name in CUSTOM_TRUTHY_PARAMS:
+        elif self.name in CUSTOM_TRUTHY_PARAMS:
             value = truthy(value)
-        if self.name in CUSTOM_INTLIST_PARAMS:
+        elif self.name in CUSTOM_INTLIST_PARAMS:
             value = intlist.read(value)
         elif self.name == 'note':
             value = unicode(value)
