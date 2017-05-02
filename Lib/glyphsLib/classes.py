@@ -863,6 +863,7 @@ class GSGlyph(GSBase):
         self.name = name
         self.parent = None
         self.export = True
+        self.selected = False
 
     def __repr__(self):
         return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
@@ -1032,3 +1033,7 @@ class GSFont(GSBase):
             for left_glyph, glyph_map in master_map.items():
                 for right_glyph, value in glyph_map.items():
                     glyph_map[right_glyph] = n.read(value)
+
+    @property
+    def selection(self):
+        return (glyph for glyph in self.glyphs if glyph.selected)
