@@ -17,8 +17,10 @@
 
 from __future__ import print_function
 import re, traceback, uuid
-from glyphsLib.casting import num, transform, point, glyphs_datetime, color, CUSTOM_INT_PARAMS, CUSTOM_FLOAT_PARAMS, CUSTOM_TRUTHY_PARAMS, CUSTOM_INTLIST_PARAMS, floatToString, truthy, intlist, kerning
 import collections
+from glyphsLib.types import transform, point, glyphs_datetime, color, floatToString, readIntlist, writeIntlist, needsQuotes, feature_syntax_encode
+from glyphsLib.parser import Parser
+import collections, StringIO
 from fontTools.misc.py23 import unicode
 
 __all__ = [
@@ -381,6 +383,45 @@ class GSCustomParameter(GSBase):
 		"name": str,
 		"value": str,  # TODO: check 'name' to determine proper class
 	}
+	_CUSTOM_INT_PARAMS = frozenset((
+			'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
+			'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
+			'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+			'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
+			'openTypeHheaDescender', 'openTypeHheaLineGap',
+			'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
+			'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
+			'openTypeOS2SubscriptYOffset', 'openTypeOS2SubscriptYSize',
+			'openTypeOS2SuperscriptXOffset', 'openTypeOS2SuperscriptXSize',
+			'openTypeOS2SuperscriptYOffset', 'openTypeOS2SuperscriptYSize',
+			'openTypeOS2TypoAscender', 'openTypeOS2TypoDescender',
+			'openTypeOS2TypoLineGap', 'openTypeOS2WeightClass', 'openTypeOS2WidthClass',
+			'openTypeOS2WinAscent', 'openTypeOS2WinDescent', 'openTypeVheaCaretOffset',
+			'openTypeVheaCaretSlopeRise', 'openTypeVheaCaretSlopeRun',
+			'openTypeVheaVertTypoAscender', 'openTypeVheaVertTypoDescender',
+			'openTypeVheaVertTypoLineGap', 'postscriptBlueFuzz', 'postscriptBlueShift',
+			'postscriptDefaultWidthX', 'postscriptSlantAngle',
+			'postscriptUnderlinePosition', 'postscriptUnderlineThickness',
+			'postscriptUniqueID', 'postscriptWindowsCharacterSet', 'shoulderHeight',
+			'smallCapHeight', 'typoAscender', 'typoDescender', 'typoLineGap',
+			'underlinePosition', 'underlineThickness', 'unitsPerEm', 'vheaVertAscender',
+			'vheaVertDescender', 'vheaVertLineGap', 'weightClass', 'widthClass',
+			'winAscent', 'winDescent', 'xHeight', 'year', 'Grid Spacing'))
+	_CUSTOM_FLOAT_PARAMS = frozenset((
+			'postscriptBlueScale'))
+			
+	_CUSTOM_BOOL_PARAMS = frozenset((
+			'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
+			'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour',
+			'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning'))
+		
+	_CUSTOM_INTLIST_PARAMS = frozenset((
+			'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
+			'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
+			'panose', 'unicodeRanges'))
+	
+	_CUSTOM_DICT_PARAMS = frozenset((
+	    'GASP Table'))
 	def __init__(self, line = None, name = "New Value", value = "New Parameter"):
 		if line:
 			super(GSCustomParameter, self).__init__(line)
@@ -396,16 +437,17 @@ class GSCustomParameter(GSBase):
 	
 	def setValue(self, value):
 		"""Cast some known data in custom parameters."""
-		if self.name in CUSTOM_INT_PARAMS:
+		if self.name in self._CUSTOM_INT_PARAMS:
 			value = int(value)
-		if self.name in CUSTOM_FLOAT_PARAMS:
+		elif self.name in self._CUSTOM_FLOAT_PARAMS:
 			value = float(value)
-		if self.name in CUSTOM_TRUTHY_PARAMS:
-			value = truthy(value)
-		if self.name in CUSTOM_INTLIST_PARAMS:
-			value = intlist.read(value)
-		elif self.name == 'DisableAllAutomaticBehaviour':
-			value = truthy(value)
+		elif self.name in self._CUSTOM_BOOL_PARAMS:
+			value = bool(int(value))
+		elif self.name in self._CUSTOM_INTLIST_PARAMS:
+			value = readIntlist(value)
+		elif self.name in self._CUSTOM_DICT_PARAMS:
+			parser = Parser()
+			value = parser.parse(value)
 		self._value = value
 	
 	value = property(getValue, setValue)
@@ -440,11 +482,25 @@ class GSGuideLine(GSBase):
 	_classesForName = {
 		"alignment": str,
 		"angle": float,
-		"locked": truthy,
+		"locked": bool,
 		"position": point,
-		"showMeasurement": truthy,
+		"showMeasurement": bool,
 	}
-
+class GSPartProperty(GSBase):
+	_classesForName = {
+		"name": unicode,
+		"bottomName": unicode,
+		"bottomValue": int,
+		"topName": unicode,
+		"topValue": int,
+	}
+	_keyOrder = (
+		"name",
+		"bottomName",
+		"bottomValue",
+		"topName",
+		"topValue",
+	)
 
 class GSFontMaster(GSBase):
 	_classesForName = {
@@ -461,7 +517,7 @@ class GSFontMaster(GSBase):
 		"italicAngle": float,
 		"userData": dict,
 		"verticalStems": int,
-		"visible": truthy,
+		"visible": bool,
 		"weight": str,
 		"weightValue": float,
 		"width": str,
@@ -539,20 +595,26 @@ class GSNode(GSBase):
 class GSPath(GSBase):
 	_classesForName = {
 		"nodes": GSNode,
-		"closed": truthy
+		"closed": bool
 	}
 
+	def __init__(self):
+		self._closed = True
+		self.nodes = []
 
 class GSComponent(GSBase):
 	_classesForName = {
 		"alignment": int,
 		"anchor": str,
-		"locked": truthy,
+		"locked": bool,
 		"name": str,
 		"piece": dict,
 		"transform": transform,
 	}
 
+	def __init__(self):
+		super(GSComponent, self).__init__()
+		self.transform = [1, 0, 0, 1, 0, 0]
 
 class GSAnchor(GSBase):
 	_classesForName = {
@@ -563,7 +625,7 @@ class GSAnchor(GSBase):
 
 class GSHint(GSBase):
 	_classesForName = {
-		"horizontal": truthy,
+		"horizontal": bool,
 		"options": int, # bitfield
 		"origin": point, # Index path to node
 		"other1": point, # Index path to node for third node
@@ -578,11 +640,11 @@ class GSHint(GSBase):
 
 class GSFeature(GSBase):
 	_classesForName = {
-		"automatic": truthy,
+		"automatic": bool,
 		"code": unicode,
 		"name": str,
 		"notes": unicode,
-		"disabled": truthy,
+		"disabled": bool,
 	}
 	def getCode(self):
 		return self._code
@@ -598,11 +660,11 @@ class GSFeature(GSBase):
 
 class GSClass(GSFeature):
 	_classesForName = {
-		"automatic": truthy,
+		"automatic": bool,
 		"code": unicode,
 		"name": str,
 		"notes": unicode,
-		"disabled": truthy,
+		"disabled": bool,
 	}
 
 
@@ -610,7 +672,7 @@ class GSAnnotation(GSBase):
 	_classesForName = {
 		"angle": float,
 		"position": point,
-		"text": str,
+		"text": unicode,
 		"type": str,
 		"width": float, # the width of the text field or size of the cicle
 	}
@@ -619,15 +681,15 @@ class GSAnnotation(GSBase):
 class GSInstance(GSBase):
 	_classesForName = {
 		"customParameters": GSCustomParameter,
-		"exports": truthy,
+		"exports": bool,
 		"instanceInterpolations": dict,
 		"interpolationCustom": float,
 		"interpolationWeight": float,
 		"interpolationWidth": float,
-		"isBold": truthy,
-		"isItalic": truthy,
+		"isBold": bool,
+		"isItalic": bool,
 		"linkStyle": str,
-		"manualInterpolation": truthy,
+		"manualInterpolation": bool,
 		"name": str,
 		"weightClass": str,
 		"widthClass": str,
@@ -665,7 +727,7 @@ class GSBackgroundLayer(GSBase):
 		"guideLines": GSGuideLine,
 		"hints": GSHint,
 		"paths": GSPath,
-		"visible": truthy,
+		"visible": bool,
 	}
 
 
@@ -687,7 +749,7 @@ class GSLayer(GSBase):
 		"rightMetricsKey": str,
 		"userData": dict,
 		"vertWidth": float,
-		"visible": truthy,
+		"visible": bool,
 		"width": float,
 		"widthMetricsKey": str,
 	}
@@ -721,14 +783,14 @@ class GSGlyph(GSBase):
 		"bottomMetricsKey": str,
 		"category": str,
 		"color": color,
-		"export": truthy,
+		"export": bool,
 		"glyphname": str,
 		"lastChange": glyphs_datetime,
 		"layers": GSLayer,
 		"leftKerningGroup": str,
 		"leftMetricsKey": str,
 		"note": unicode,
-		"partsSettings": dict,
+		"partsSettings": GSPartProperty,
 		"production": str,
 		"rightKerningGroup": str,
 		"rightMetricsKey": str,
@@ -775,7 +837,7 @@ class GSGlyph(GSBase):
 
 class GSFont(GSBase):
 	_classesForName = {
-		".appVersion": int,
+		".appVersion": str,
 		"DisplayStrings": [str],
 		"classes": GSClass,
 		"copyright": unicode,
@@ -783,8 +845,8 @@ class GSFont(GSBase):
 		"date": glyphs_datetime,
 		"designer": unicode,
 		"designerURL": unicode,
-		"disablesAutomaticAlignment": truthy,
-		"disablesNiceNames": truthy,
+		"disablesAutomaticAlignment": bool,
+		"disablesNiceNames": bool,
 		"familyName": str,
 		"featurePrefixes": GSClass,
 		"features": GSFeature,
@@ -793,8 +855,8 @@ class GSFont(GSBase):
 		"gridLength": int,
 		"gridSubDivision": int,
 		"instances": GSInstance,
-		"keepAlternatesTogether": truthy,
 		"kerning": dict,
+		"keepAlternatesTogether": bool,
 		"manufacturer": unicode,
 		"manufacturerURL": str,
 		"unitsPerEm": int,
@@ -807,22 +869,8 @@ class GSFont(GSBase):
 		"fontMaster" : "masters",
 	}
 	def __init__(self):
-		#super(GSBase, self).__init__()
-		for key in self._classesForName.keys():
-			try:
-				value = self._classesForName[key]
-				
-				if isinstance(value, list) or issubclass(value, GSBase):
-					value = []
-				else:
-					try:
-						value = value().read(None)
-					except:
-						#print(traceback.format_exc())
-						value = value()
-				setattr(self, key, value)
-			except:
-				print(traceback.format_exc())
+		super(GSFont, self).__init__()
+		
 		self.familyName = "Unnamed font"
 		self._versionMinor = 0
 		self.versionMajor = 1
@@ -904,9 +952,8 @@ class GSFont(GSBase):
 	@kerning.setter
 	def kerning(self, kerning):
 		self._kerning = kerning
-		n = num()
 		for master_id, master_map in kerning.items():
 			for left_glyph, glyph_map in master_map.items():
 				for right_glyph, value in glyph_map.items():
-					glyph_map[right_glyph] = n.read(value)
+					glyph_map[right_glyph] = float(value)
 		
