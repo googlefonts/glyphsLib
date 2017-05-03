@@ -272,36 +272,36 @@ class FontGlyphsProxy(Proxy):
 
 
 class GlyphLayerProxy(Proxy):
-    def __getitem__(self, Key):
-        if type(Key) == slice:
-            return self.values().__getitem__(Key)
-        if type(Key) is int:
-            if Key < 0:
-                Key = self.__len__() + Key
+    def __getitem__(self, key):
+        if type(key) == slice:
+            return self.values().__getitem__(key)
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
             if self._owner.parent:
                 masterCount = len(self._owner.parent.masters)
-                if Key < masterCount:
-                    FontMaster = self._owner.parent.masters[Key]
-                    return self._owner._layers.get(FontMaster.id, None)
+                if key < masterCount:
+                    fontMaster = self._owner.parent.masters[key]
+                    return self._owner._layers.get(fontMaster.id, None)
                 else:
-                    ExtraLayerIndex = Key - masterCount
-                    Index = 0
-                    ExtraLayer = None
-                    while ExtraLayerIndex >= 0:
-                        ExtraLayer = self._owner._layers[Index]
-                        if ExtraLayer.layerId != ExtraLayer.associatedMasterId:
-                            ExtraLayerIndex = ExtraLayerIndex - 1
-                        Index = Index + 1
-                    return ExtraLayer
-        layer = self._owner._layers.get(Key, None)
+                    extraLayerIndex = key - masterCount
+                    index = 0
+                    extraLayer = None
+                    while extraLayerIndex >= 0:
+                        extraLayer = self._owner._layers[index]
+                        if extraLayer.layerId != extraLayer.associatedMasterId:
+                            extraLayerIndex = extraLayerIndex - 1
+                        index = index + 1
+                    return extraLayer
+        layer = self._owner._layers.get(key, None)
         if layer is None:
             keyIsMasterId = False
             for master in self._owner.parent.masters:
-                if master.id == Key:
+                if master.id == key:
                     keyIsMasterId = True
             if keyIsMasterId:
                 layer = GSLayer()
-                self.__setitem__(Key, layer)
+                self.__setitem__(key, layer)
         return layer
 
     def __setitem__(self, key, layer):
