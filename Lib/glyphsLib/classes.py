@@ -873,7 +873,8 @@ class GSFont(GSBase):
 		".appVersion" : "appVersion",
 		"fontMaster" : "masters",
 	}
-	def __init__(self):
+	
+	def __init__(self, path = None):
 		super(GSFont, self).__init__()
 		
 		self.familyName = "Unnamed font"
@@ -885,6 +886,16 @@ class GSFont(GSBase):
 		self._instance = []
 		self._customParameters = []
 
+		if path:
+			assert isinstance(path, (str, unicode)), "Please supply a file path"
+			assert path.endswith(".glyphs"), "Please supply a file path to a .glyphs file"
+			fp = open(path)
+			p = Parser()
+			#logger.info('Parsing .glyphs file')
+			print("____loads")
+			p.parse_into_object(self, fp.read())
+			fp.close()
+		
 	
 	def __repr__(self):
 		return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
