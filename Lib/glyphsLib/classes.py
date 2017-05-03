@@ -24,6 +24,7 @@ from glyphsLib.types import (
     writeIntlist, needsQuotes, feature_syntax_encode
 )
 from glyphsLib.parser import Parser
+from glyphsLib.glyphsFileWriter import GlyphsWriter
 import collections, StringIO
 from fontTools.misc.py23 import unicode, basestring
 
@@ -48,6 +49,7 @@ def isString(string):
 
 class GSBase(object):
     _classesForName = {}
+    _defaultsForName = {}
     _wrapperKeysTranslate = {}
 
     def __init__(self):
@@ -92,6 +94,17 @@ class GSBase(object):
             setattr(self, key, value)
         except:
             print(traceback.format_exc())
+
+    def shouldWriteValueForKey(self, key):
+        getKey = self._wrapperKeysTranslate.get(key, key)
+        value = getattr(self, getKey)
+        klass = self._classesForName[key]
+        default = self._defaultsForName.get(key, None)
+        if default is not None:
+            return default != value
+        if klass in (int, float, bool) and value == 0:
+            return False
+        return True
 
 
 class Proxy(object):
@@ -353,7 +366,7 @@ class GlyphLayerProxy(Proxy):
         self.append(Layer)
 
     def setter(self, values):
-        newLayers = {}
+        newLayers = collections.OrderedDict()
         if (type(values) == list or
                 type(values) == tuple or
                 type(values) == type(self)):
@@ -444,7 +457,7 @@ class CustomParametersProxy(Proxy):
 class GSCustomParameter(GSBase):
     _classesForName = {
         "name": unicode,
-        "value": str,  # TODO: check 'name' to determine proper class
+        "value": None,
     }
 
     _CUSTOM_INT_PARAMS = frozenset((
@@ -497,6 +510,71 @@ class GSCustomParameter(GSBase):
     def __repr__(self):
         return "<%s %s: %s>" % \
             (self.__class__.__name__, self.name, self._value)
+
+    def plistValue(self):
+        name = self.name
+        if needsQuotes(name):
+            name = '"%s"' % name
+        value = self.value
+        if self.name in self._CUSTOM_INT_PARAMS:
+            value = str(value)
+        elif self.name in self._CUSTOM_FLOAT_PARAMS:
+            value = floatToString(value)
+        elif self.name in self._CUSTOM_BOOL_PARAMS:
+            value = '1' if value else '0'
+        elif self.name in self._CUSTOM_INTLIST_PARAMS:
+            values = writeIntlist(value)
+            if len(values) > 0:
+                value = ",\n".join(values)
+                value = "(\n%s\n)" % value
+            else:
+                value = "(\n)"
+        #elif self.name == "TTFStems":
+
+        elif isinstance(value, (str, unicode)):
+            value = feature_syntax_encode(value)
+        elif isinstance(value, list):
+            values = []
+            for v in value:
+                if isinstance(v, (int, float)):
+                    v = str(v)
+                elif isinstance(v, dict):
+                    string = StringIO.StringIO()
+                    writer = GlyphsWriter(fp=string)
+                    writer.writeDict(v)
+                    v = u''
+                    for buf in string.buflist:
+                        # StringIO does not handle none 7-bit codes very well.
+                        # And I can’t write unicode as normal file objects
+                        # don’t like that.
+                        if isinstance(buf, str):
+                            v = v + unicode(buf, "utf-8")
+                        else:
+                            v = v + buf
+                else:
+                    v = str(v)
+                    if needsQuotes(v):
+                        v = '"%s"' % v
+                values.append(v)
+            value = ",\n".join(values)
+            value = "(\n%s\n)" % value
+        elif isinstance(value, dict):
+            values = []
+            keys = value.keys()
+            keys.sort()
+            for key in keys:
+                v = value[key]
+                if needsQuotes(key):
+                    key = '"%s"' % key
+                if needsQuotes(v):
+                    v = '"%s"' % v
+                values.append("%s = %s;" % (key, v))
+            value = "\n".join(values)
+            value = "{\n%s\n}" % value
+        else:
+            raise TypeError
+
+        return "{\nname = %s;\nvalue = %s;\n}" % (name, value.encode("utf-8"))
 
     def getValue(self):
         return self._value
@@ -571,6 +649,9 @@ class GSPartProperty(GSBase):
          "topValue",
     )
 
+    def plistValue(self):
+        return "{\nname = %s;\nbottomName = %s;\nbottomValue = %i;\ntopName = %s;\ntopValue = %i;\n}" % (self.name,  self.bottomName, self.bottomValue, self.topName, self.topValue)
+
 
 class GSFontMaster(GSBase):
     _classesForName = {
@@ -593,6 +674,10 @@ class GSFontMaster(GSBase):
         "width": str,
         "widthValue": float,
         "xHeight": float,
+    }
+    _defaultsForName = {
+        "weightValue": 100,
+        "widthValue": 100,
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides"
@@ -708,10 +793,18 @@ class GSPath(GSBase):
         "nodes": GSNode,
         "closed": bool
     }
+    _defaultsForName = {
+        "closed": True,
+    }
 
     def __init__(self):
         self._closed = True
         self.nodes = []
+
+    def shouldWriteValueForKey(self, key):
+        if key == "closed":
+            return True
+        return super(GSPath, self).shouldWriteValueForKey(key)
 
 
 class GSComponent(GSBase):
@@ -722,6 +815,9 @@ class GSComponent(GSBase):
         "name": str,
         "piece": dict,
         "transform": transform,
+    }
+    _defaultsForName = {
+        "transform": [1, 0, 0, 1, 0, 0],
     }
 
     def __init__(self):
@@ -832,6 +928,30 @@ class GSInstance(GSBase):
         "weightClass": str,
         "widthClass": str,
     }
+    _defaultsForName = {
+        "exports": True,
+        "interpolationWeight": 100,
+        "interpolationWidth": 100,
+        "weightClass": "Regular",
+        "widthClass": "Medium (normal)",
+    }
+    _keyOrder = (
+        "exports",
+        "customParameters",
+        "interpolationCustom",
+        "interpolationCustom1",
+        "interpolationCustom2",
+        "interpolationWeight",
+        "interpolationWidth",
+        "instanceInterpolations",
+        "isBold",
+        "isItalic",
+        "linkStyle",
+        "manualInterpolation",
+        "name",
+        "weightClass",
+        "widthClass",
+    )
 
     def interpolateFont():
         pass
@@ -991,6 +1111,9 @@ class GSLayer(GSBase):
         "width": float,
         "widthMetricsKey": str,
     }
+    _defaultsForName = {
+        "name": "Regular",
+    }
 
     def __repr__(self):
         name = self.name
@@ -1005,6 +1128,11 @@ class GSLayer(GSBase):
         except:
             parent = 'orphan'
         return "<%s \"%s\" (%s)>" % (self.__class__.__name__, name, parent)
+
+    def shouldWriteValueForKey(self, key):
+        if key == "associatedMasterId":
+            return self.layerId != self.associatedMasterId
+        return super(GSLayer, self).shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -1049,6 +1177,34 @@ class GSGlyph(GSBase):
     _wrapperKeysTranslate = {
         "glyphname": "name"
     }
+    _defaultsForName = {
+        "export": True,
+    }
+    _keyOrder = (
+        "color",
+        "export",
+        "glyphname",
+        "production",
+        "lastChange",
+        "layers",
+        "leftKerningGroup",
+        "leftMetricsKey",
+        "widthMetricsKey",
+        "vertWidthMetricsKey",
+        "note",
+        "rightKerningGroup",
+        "rightMetricsKey",
+        "topKerningGroup",
+        "topMetricsKey",
+        "bottomKerningGroup",
+        "bottomMetricsKey",
+        "unicode",
+        "script",
+        "category",
+        "subCategory",
+        "userData",
+        "partsSettings"
+    )
 
     def __init__(self, name=None):
         super(GSGlyph, self).__init__()
@@ -1102,7 +1258,7 @@ class GSFont(GSBase):
         "gridSubDivision": int,
         "instances": GSInstance,
         "keepAlternatesTogether": bool,
-        "kerning": dict,
+        "kerning": collections.OrderedDict,
         "manufacturer": unicode,
         "manufacturerURL": unicode,
         "unitsPerEm": int,
@@ -1114,6 +1270,16 @@ class GSFont(GSBase):
         ".appVersion": "appVersion",
         "fontMaster": "masters",
         "unitsPerEm": "upm",
+    }
+    _defaultsForName = {
+        "classes": [],
+        "customParameters": [],
+        "disablesAutomaticAlignment": False,
+        "disablesNiceNames": False,
+        "gridLength": 1,
+        "gridSubDivision": 1,
+        "unitsPerEm": 1000,
+        "kerning": {},
     }
 
     def __init__(self, path=None):
@@ -1141,6 +1307,15 @@ class GSFont(GSBase):
 
     def __repr__(self):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
+
+    def shouldWriteValueForKey(self, key):
+        if key in ("unitsPerEm","versionMinor"):
+            return True
+        return super(GSFont, self).shouldWriteValueForKey(key)
+
+    def save(self, path):
+        writer = glyphsFileWriter.GlyphsWriter(path)
+        writer.write(self)
 
     def getVersionMinor(self):
         return self._versionMinor
