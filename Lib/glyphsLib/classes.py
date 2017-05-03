@@ -226,9 +226,9 @@ class FontGlyphsProxy (Proxy):
 	def __len__(self):
 		return len(self._owner._glyphs)
 	def setter(self, values):
-		self._glyphs = values
-		for g in self._glyphs:
-			g.parent = self
+		self._owner._glyphs = values
+		for g in self._owner._glyphs:
+			g.parent = self._owner
 			for layer in g.layers.values():
 				if not hasattr(layer, "associatedMasterId") or layer.associatedMasterId is None or len(layer.associatedMasterId) == 0:
 					g._setupLayer(layer, layer.layerId)
