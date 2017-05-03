@@ -629,6 +629,8 @@ class GSGuideLine(GSBase):
         "locked": bool,
         "position": point,
         "showMeasurement": bool,
+        "filter": str,
+        "name": unicode,
     }
 
 
@@ -920,6 +922,8 @@ class GSInstance(GSBase):
         "exports": bool,
         "instanceInterpolations": dict,
         "interpolationCustom": float,
+        "interpolationCustom1": float,
+        "interpolationCustom2": float,
         "interpolationWeight": float,
         "interpolationWidth": float,
         "isBold": bool,
