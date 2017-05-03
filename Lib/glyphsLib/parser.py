@@ -46,6 +46,20 @@ class Parser:
             self._fail('Unexpected trailing content', text, i)
         return result
 
+    def parse_into_object(self, res, text):
+        """Do the parsing."""
+
+        text = tounicode(text, encoding='utf-8')
+
+        m = self.start_dict_re.match(text, 0)
+        if m:
+            i = self._parse_dict_into_object(res, text, 1)
+        else:
+            self._fail('not correct file format')
+        if text[i:].strip():
+            self._fail('Unexpected trailing content', text, i)
+        return i
+
     def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
 
