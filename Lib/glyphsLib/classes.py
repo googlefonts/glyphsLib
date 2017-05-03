@@ -1168,7 +1168,11 @@ class GSFont(GSBase):
 
     @property
     def note(self):
-        return self.customParameters["note"]
+        value = self.customParameters["note"]
+        if value:
+            return value
+        else:
+            return ""
 
     @note.setter
     def note(self, value):
