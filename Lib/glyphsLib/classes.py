@@ -760,7 +760,7 @@ class GSInstance(GSBase):
         "isItalic": truthy,
         "linkStyle": str,
         "manualInterpolation": truthy,
-        "name": str,
+        "name": unicode,
         "weightClass": str,
         "widthClass": str,
     }
@@ -775,9 +775,9 @@ class GSInstance(GSBase):
         self.width = "Regular"
         self.custom = None
         self.linkStyle = ""
-        self.interpolationWeight = 100
-        self.interpolationWidth = 100
-        self.interpolationCustom = 0
+        self.interpolationWeight = 100.0
+        self.interpolationWidth = 100.0
+        self.interpolationCustom = 0.0
         self.visible = True
         self.isBold = False
         self.isItalic = False
@@ -788,6 +788,104 @@ class GSInstance(GSBase):
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
+
+    weightValue = property(
+        lambda self: self.interpolationWeight,
+        lambda self, value: setattr(self, "interpolationWeight", value))
+
+    widthValue = property(
+        lambda self: self.interpolationWidth,
+        lambda self, value: setattr(self, "interpolationWidth", value))
+
+    customValue = property(
+        lambda self: self.interpolationCustom,
+        lambda self, value: setattr(self, "interpolationCustom", value))
+
+    @property
+    def familyName(self):
+        value = self.customParameters["familyName"]
+        if value:
+            return value
+        return self.parent.familyName
+
+    @familyName.setter
+    def familyName(self, value):
+        self.customParameters["famiyName"] = value
+
+    @property
+    def preferredFamily(self):
+        value = self.customParameters["preferredFamily"]
+        if value:
+            return value
+        return self.parent.familyName
+
+    @preferredFamily.setter
+    def preferredFamily(self, value):
+        self.customParameters["preferredFamily"] = value
+
+    @property
+    def preferredSubfamilyName(self):
+        value = self.customParameters["preferredSubfamilyName"]
+        if value:
+            return value
+        return self.name
+
+    @preferredSubfamilyName.setter
+    def preferredSubfamilyName(self, value):
+        self.customParameters["preferredSubfamilyName"] = value
+
+    @property
+    def windowsFamily(self):
+        value = self.customParameters["styleMapFamilyName"]
+        if value:
+            return value
+        if self.name not in ("Regular", "Bold", "Italic", "Bold Italic"):
+            return self.familyName + " " + self.name
+        else:
+            return self.familyName
+
+    @windowsFamily.setter
+    def windowsFamily(self, value):
+        self.customParameters["styleMapFamilyName"] = value
+
+    @property
+    def windowsStyle(self):
+        if self.name in ("Regular", "Bold", "Italic", "Bold Italic"):
+            return self.name
+        else:
+            return "Regular"
+
+    @property
+    def windowsLinkedToStyle(self):
+        value = self.linkStyle
+        return value
+        if self.name in ("Regular", "Bold", "Italic", "Bold Italic"):
+            return self.name
+        else:
+            return "Regular"
+
+    @property
+    def fontName(self):
+        value = self.customParameters["postscriptFontName"]
+        if value:
+            return value
+        # TODO: strip invalid characters
+        return "".join(self.familyName.split(" ")) + "-" + self.name
+
+    @fontName.setter
+    def fontName(self, value):
+        self.customParameters["postscriptFontName"] = value
+
+    @property
+    def fullName(self):
+        value = self.customParameters["postscriptFullName"]
+        if value:
+            return value
+        return self.familyName + " " + self.name
+
+    @fullName.setter
+    def fullName(self, value):
+        self.customParameters["postscriptFullName"] = value
 
 
 class GSBackgroundLayer(GSBase):
