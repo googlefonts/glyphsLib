@@ -566,6 +566,8 @@ class GSGuideLine(GSBase):
 		"locked": bool,
 		"position": point,
 		"showMeasurement": bool,
+		"filter": str,
+		"name": unicode,
 	}
 class GSPartProperty(GSBase):
 	_classesForName = {
@@ -781,6 +783,8 @@ class GSInstance(GSBase):
 		"exports": bool,
 		"instanceInterpolations": dict,
 		"interpolationCustom": float,
+		"interpolationCustom1": float,
+		"interpolationCustom2": float,
 		"interpolationWeight": float,
 		"interpolationWidth": float,
 		"isBold": bool,
@@ -1048,7 +1052,9 @@ class GSFont(GSBase):
 		self._masters = []
 		self._instance = []
 		self._customParameters = []
-
+		self.gridLength = 1;
+		self.gridSubDivision = 1;
+		
 		if path:
 			assert isinstance(path, (str, unicode)), "Please supply a file path"
 			assert path.endswith(".glyphs"), "Please supply a file path to a .glyphs file"
