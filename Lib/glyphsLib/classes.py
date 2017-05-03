@@ -160,6 +160,7 @@ class Proxy(object):
             raise TypeError
 
 
+'''
 class LayersIterator:
     def __init__(self, owner):
         self.curInd = 0
@@ -197,6 +198,7 @@ class LayersIterator:
             self.curInd += 1
             return Item
         return None
+'''
 
 
 class FontGlyphsProxy(Proxy):
@@ -290,6 +292,9 @@ class GlyphLayerProxy(Proxy):
         if isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
+            # This is how it is handled in Glyphs.app. For now, just use
+            # whatever order we have
+            '''
             if self._owner.parent:
                 masterCount = len(self._owner.parent.masters)
                 if key < masterCount:
@@ -305,6 +310,8 @@ class GlyphLayerProxy(Proxy):
                             extraLayerIndex = extraLayerIndex - 1
                         index = index + 1
                     return extraLayer
+            '''
+            return self._owner._layers[key]
         layer = self._owner._layers.get(key, None)
         if layer is None:
             keyIsMasterId = False
@@ -333,8 +340,8 @@ class GlyphLayerProxy(Proxy):
             key = Layer.layerId
         del(self._owner._layers[key])
 
-    def __iter__(self):
-        return LayersIterator(self._owner)
+    # def __iter__(self):
+    #    return LayersIterator(self._owner)
 
     def __len__(self):
         return len(self._owner._layers)
