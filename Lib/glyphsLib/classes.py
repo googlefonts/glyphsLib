@@ -547,9 +547,10 @@ class GSFontMaster(GSBase):
         self._custom = ""
         self._custom1 = None
         self._custom2 = None
-        self.italicAngle = 0
-        self.widthValue = 100
-        self.weightValue = 100
+        self.italicAngle = 0.0
+        self.widthValue = 100.0
+        self.weightValue = 100.0
+        self.customValue = 0.0
 
     def __repr__(self):
         return '<GSFontMaster "%s" width %s weight %s>' % \
@@ -587,7 +588,7 @@ class GSFontMaster(GSBase):
 
     @property
     def weight(self):
-        if self._weight:
+        if self._weight is not None:
             return self._weight
         return "Regular"
 
@@ -597,7 +598,7 @@ class GSFontMaster(GSBase):
 
     @property
     def width(self):
-        if self._width:
+        if self._width is not None:
             return self._width
         return "Regular"
 
