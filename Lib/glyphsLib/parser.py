@@ -261,11 +261,11 @@ class Writer(object):
         return r'\"'
 
     def _write_atom(self, data):
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
-      out = self.out
-      if Writer._sym_re.match(data):
-          out.write(data)
-          return
-      out.write('"')
-      out.write(data)
-      out.write('"')
+        data = Writer._escape_re.sub(Writer._escape_fn, data)
+        out = self.out
+        if Writer._sym_re.match(data):
+            out.write(data)
+            return
+        out.write('"')
+        out.write(data)
+        out.write('"')
