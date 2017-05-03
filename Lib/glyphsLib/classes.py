@@ -52,19 +52,18 @@ class GSBase(object):
 
     def __init__(self):
         for key in self._classesForName.keys():
-            try:
-                dict_type = self._classesForName[key]
-                if issubclass(dict_type, GSBase):
-                    value = []
-                else:
-                    try:
-                        value = dict_type().read(None)
-                    except:
-                        # print(traceback.format_exc())
-                        value = None
-                setattr(self, key, value)
-            except:
-                pass
+            if not hasattr(self, key):
+                try:
+                    klass = self._classesForName[key]
+                    if issubclass(klass, GSBase):
+                        value = []
+                    else:
+                        value = self._defaultsForName.get(key, None)
+                        if not value:
+                            value = klass()
+                    setattr(self, key, value)
+                except:
+                    pass
 
     def __repr__(self):
         content = ""
