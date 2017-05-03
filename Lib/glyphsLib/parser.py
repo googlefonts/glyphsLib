@@ -75,7 +75,21 @@ class Parser:
                 try:
                     # might throw if there is a key that is not
                     # covered in `classesForName`
-                    value = self.dict_type(value)
+                    if parsed[-1] != '"':
+                        try:
+                            float_val = float(value)
+                            if float_val.is_integer():
+                                self.dict_type = int
+                            else:
+                                self.dict_type = float
+                        except:
+                            pass
+                    if self.dict_type is None: # for custom parameters
+                        self.dict_type = unicode
+                    if self.dict_type == bool:
+                        value = bool(int(value)) # bool(u'0') returns True
+                    else:
+                        value = self.dict_type(value)
                 except:
                     pass
             return value, i
@@ -87,11 +101,20 @@ class Parser:
         """Parse a dictionary from source text starting at i."""
         old_dict_type = self.dict_type
         new_type = self.dict_type
-        if type(new_type) == list:
+        if new_type is None:
+            # customparameter.value needs to be set from the found value
+            new_type = dict
+        elif type(new_type) == list:
             new_type = new_type[0]
         res = new_type()
+        i = self._parse_dict_into_object(res, text, i)
+        self.dict_type = old_dict_type
+        return res, i
+
+    def _parse_dict_into_object(self, res, text, i):
         end_match = self.end_dict_re.match(text, i)
         while not end_match:
+            old_dict_type = self.dict_type
             m = self.attr_re.match(text, i)
             if not m:
                 self._fail('Unexpected dictionary content', text, i)
@@ -114,10 +137,10 @@ class Parser:
             i += len(parsed)
 
             end_match = self.end_dict_re.match(text, i)
-        self.dict_type = old_dict_type
+            self.dict_type = old_dict_type
         parsed = end_match.group(0)
         i += len(parsed)
-        return res, i
+        return i
 
     def _parse_list(self, text, i):
         """Parse a list from source text starting at i."""

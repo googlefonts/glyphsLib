@@ -22,7 +22,6 @@ from io import open
 import logging
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.casting import cast_data
 from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
