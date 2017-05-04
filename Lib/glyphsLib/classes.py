@@ -463,6 +463,7 @@ class GSCustomParameter(GSBase):
         'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
         'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
         'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+        'openTypeHheaCaretOffset',
         'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
         'openTypeHheaDescender', 'openTypeHheaLineGap',
         'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
@@ -498,7 +499,7 @@ class GSCustomParameter(GSBase):
     _CUSTOM_INTLIST_PARAMS = frozenset((
         'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
         'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
-        'panose', 'unicodeRanges'))
+        'panose', 'unicodeRanges', 'codePageRanges', 'openTypeHeadFlags'))
     _CUSTOM_DICT_PARAMS = frozenset((
         'GASP Table'))
 
