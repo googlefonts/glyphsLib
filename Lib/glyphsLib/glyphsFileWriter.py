@@ -16,6 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import unicode_literals
 import sys
 import traceback
 import glyphsLib, glyphsLib.classes
@@ -23,6 +24,7 @@ import glyphsLib, glyphsLib.classes
 from .types import floatToString, needsQuotes, feature_syntax_encode
 import datetime
 import collections
+from fontTools.misc.py23 import unicode
 
 '''
     Usage
@@ -119,8 +121,6 @@ class GlyphsWriter(object):
         elif type(value) == datetime.datetime:
             self.file.write("\"%s +0000\"" % str(value))
         else:
-            if isinstance(value, unicode):
-                value = value.encode("utf-8")
             value = feature_syntax_encode(value)
             self.file.write(value)
 

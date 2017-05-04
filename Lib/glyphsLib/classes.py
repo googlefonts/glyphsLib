@@ -549,15 +549,7 @@ class GSCustomParameter(GSBase):
                     string = StringIO()
                     writer = GlyphsWriter(fp=string)
                     writer.writeDict(v)
-                    v = ''
-                    for buf in string.buflist:
-                        # StringIO does not handle none 7-bit codes very well.
-                        # And I can’t write unicode as normal file objects
-                        # don’t like that.
-                        if isinstance(buf, str):
-                            v = v + unicode(buf, "utf-8")
-                        else:
-                            v = v + buf
+                    v = string.getvalue()
                 else:
                     v = str(v)
                     if needsQuotes(v):
@@ -580,7 +572,7 @@ class GSCustomParameter(GSBase):
         else:
             raise TypeError
 
-        return "{\nname = %s;\nvalue = %s;\n}" % (name, value.encode("utf-8"))
+        return "{\nname = %s;\nvalue = %s;\n}" % (name, value)
 
     def getValue(self):
         return self._value
