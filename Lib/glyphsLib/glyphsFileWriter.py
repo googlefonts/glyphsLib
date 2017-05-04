@@ -56,12 +56,11 @@ class GlyphsWriter(object):
         if hasattr(dictValue, "_keyOrder"):
             keys = dictValue._keyOrder
         elif hasattr(dictValue, "_classesForName"):
-            keys = dictValue._classesForName.keys()
-            keys.sort()
+            keys = sorted(dictValue._classesForName.keys())
         else:
             keys = dictValue.keys()
             if not isinstance(dictValue, collections.OrderedDict):
-                keys.sort()
+                keys = sorted(keys)
         for key in keys:
             if hasattr(dictValue, "_classesForName"):
                 forType = dictValue._classesForName[key]

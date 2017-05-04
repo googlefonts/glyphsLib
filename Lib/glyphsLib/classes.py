@@ -25,8 +25,8 @@ from glyphsLib.types import (
 )
 from glyphsLib.parser import Parser
 from glyphsLib.glyphsFileWriter import GlyphsWriter
-import collections, StringIO
-from fontTools.misc.py23 import unicode, basestring
+import collections
+from fontTools.misc.py23 import unicode, basestring, StringIO
 
 __all__ = [
     "GSFont", "GSCustomParameter", "GSInstance",
@@ -546,10 +546,10 @@ class GSCustomParameter(GSBase):
                 if isinstance(v, (int, float)):
                     v = str(v)
                 elif isinstance(v, dict):
-                    string = StringIO.StringIO()
+                    string = StringIO()
                     writer = GlyphsWriter(fp=string)
                     writer.writeDict(v)
-                    v = u''
+                    v = ''
                     for buf in string.buflist:
                         # StringIO does not handle none 7-bit codes very well.
                         # And I can’t write unicode as normal file objects
@@ -567,8 +567,7 @@ class GSCustomParameter(GSBase):
             value = "(\n%s\n)" % value
         elif isinstance(value, dict):
             values = []
-            keys = value.keys()
-            keys.sort()
+            keys = sorted(value.keys())
             for key in keys:
                 v = value[key]
                 if needsQuotes(key):
