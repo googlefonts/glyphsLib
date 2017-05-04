@@ -1314,7 +1314,7 @@ class GSFont(GSBase):
         return super(GSFont, self).shouldWriteValueForKey(key)
 
     def save(self, path):
-        writer = glyphsFileWriter.GlyphsWriter(path)
+        writer = GlyphsWriter(path)
         writer.write(self)
 
     def getVersionMinor(self):
