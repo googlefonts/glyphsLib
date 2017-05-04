@@ -33,7 +33,6 @@ __all__ = [
 ]
 
 
-
 def hint_target(line=None):
     if line is None:
         return None
@@ -529,7 +528,7 @@ class GSCustomParameter(GSBase):
                 value = "(\n%s\n)" % value
             else:
                 value = "(\n)"
-        #elif self.name == "TTFStems":
+        # elif self.name == "TTFStems":
 
         elif isinstance(value, (str, unicode)):
             value = feature_syntax_encode(value)
@@ -633,6 +632,7 @@ class GSGuideLine(GSBase):
         "showMeasurement": bool,
     }
 
+
 class GSPartProperty(GSBase):
     _classesForName = {
          "name": unicode,
@@ -650,7 +650,10 @@ class GSPartProperty(GSBase):
     )
 
     def plistValue(self):
-        return "{\nname = %s;\nbottomName = %s;\nbottomValue = %i;\ntopName = %s;\ntopValue = %i;\n}" % (self.name,  self.bottomName, self.bottomValue, self.topName, self.topValue)
+        return ("{\nname = %s;\nbottomName = %s;\nbottomValue = %i;"
+                "\ntopName = %s;\ntopValue = %i;\n}" %
+                (self.name,  self.bottomName, self.bottomValue,
+                 self.topName, self.topValue))
 
 
 class GSFontMaster(GSBase):
@@ -1296,11 +1299,13 @@ class GSFont(GSBase):
         self.filepath = None
 
         if path:
-            assert isinstance(path, (str, unicode)), "Please supply a file path"
-            assert path.endswith(".glyphs"), "Please supply a file path to a .glyphs file"
+            assert isinstance(path, (str, unicode)), \
+                "Please supply a file path"
+            assert path.endswith(".glyphs"), \
+                "Please supply a file path to a .glyphs file"
             fp = open(path)
             p = Parser()
-            #logger.info('Parsing .glyphs file')
+            # logger.info('Parsing .glyphs file')
             print("____loads")
             p.parse_into_object(self, fp.read())
             fp.close()
@@ -1309,7 +1314,7 @@ class GSFont(GSBase):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
 
     def shouldWriteValueForKey(self, key):
-        if key in ("unitsPerEm","versionMinor"):
+        if key in ("unitsPerEm", "versionMinor"):
             return True
         return super(GSFont, self).shouldWriteValueForKey(key)
 
