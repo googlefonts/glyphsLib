@@ -617,6 +617,34 @@ class GSGlyphFromFileTest(unittest.TestCase):
         glyph = self.glyph
         self.assertEqual(glyph.parent, font)
 
+    def test_layers(self):
+        glyph = self.glyph
+        self.assertIsNotNone(glyph.layers)
+        amount = len(glyph.layers)
+        newLayer = GSLayer()
+        newLayer.name = '1'
+        glyph.layers.append(newLayer)
+        self.assertIn('<GSLayer "1" (a)>', str(glyph.layers[-1]))
+        self.assertEqual(newLayer, glyph.layers[-1])
+        del glyph.layers[-1]
+        newLayer1 = GSLayer()
+        newLayer1.name = '2'
+        newLayer2 = GSLayer()
+        newLayer2.name = '3'
+        glyph.layers.extend([newLayer1, newLayer2])
+        self.assertEqual(newLayer1, glyph.layers[-2])
+        self.assertEqual(newLayer2, glyph.layers[-1])
+        newLayer = GSLayer()
+        newLayer.name = '4'
+        # indices here don't make sense because layer get appended using a UUID
+        glyph.layers.insert(0, newLayer)
+        # so the latest layer got appended at the end also
+        self.assertEqual(newLayer, glyph.layers[-1])
+        glyph.layers.remove(glyph.layers[-1])
+        glyph.layers.remove(glyph.layers[-1])
+        glyph.layers.remove(glyph.layers[-1])
+        self.assertEqual(amount, len(glyph.layers))
+
 
 class GSCustomParameterTest(unittest.TestCase):
 
