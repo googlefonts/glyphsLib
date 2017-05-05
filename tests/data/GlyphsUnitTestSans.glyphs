@@ -1,5 +1,9 @@
 {
 .appVersion = "939";
+DisplayStrings = (
+"A\U00C4/a.sc",
+n/_part.shoulder
+);
 date = "2015-06-08 08:53:00 +0000";
 familyName = "Glyphs Unit Test Sans";
 fontMaster = (
