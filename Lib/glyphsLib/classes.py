@@ -1287,7 +1287,7 @@ class GSFont(GSBase):
     }
 
     def __init__(self, path=None):
-        super(GSBase, self).__init__()
+        super(GSFont, self).__init__()
 
         self.familyName = "Unnamed font"
         self._versionMinor = 0
