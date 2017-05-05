@@ -15,9 +15,9 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import tounicode, unichr
+from fontTools.misc.py23 import tounicode, unichr, unicode
 
-import collections
+from collections import OrderedDict
 import re
 import sys
 
@@ -25,7 +25,7 @@ import sys
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self, dict_type=collections.OrderedDict):
+    def __init__(self, dict_type=OrderedDict):
         self.dict_type = dict_type
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
@@ -60,6 +60,20 @@ class Parser:
             self._fail('Unexpected trailing content', text, i)
         return i
 
+    def _guess_dict_type(self, parsed, value):
+        if parsed[-1] != '"':
+            try:
+                float_val = float(value)
+                if float_val.is_integer():
+                    dict_type = int
+                else:
+                    dict_type = float
+            except:
+                dict_type = unicode
+        else:
+            dict_type = unicode
+        return dict_type
+
     def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
 
@@ -79,33 +93,25 @@ class Parser:
         if m:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
-            try:
-                # if the dict_type is a RW class from casting.py,
-                # then run it through the read method.
-                # If not, fall through to the except part
+            if hasattr(self.dict_type, "read"):
                 reader = self.dict_type()
                 value = reader.read(value)
-            except:
-                try:
-                    # might throw if there is a key that is not
-                    # covered in `classesForName`
-                    if parsed[-1] != '"':
-                        try:
-                            float_val = float(value)
-                            if float_val.is_integer():
-                                self.dict_type = int
-                            else:
-                                self.dict_type = float
-                        except:
-                            pass
-                    if self.dict_type is None: # for custom parameters
-                        self.dict_type = unicode
-                    if self.dict_type == bool:
-                        value = bool(int(value)) # bool(u'0') returns True
-                    else:
-                        value = self.dict_type(value)
-                except:
-                    pass
+                return value, i
+
+
+            if self.dict_type is None:  # for custom parameters
+                self.dict_type = self._guess_dict_type(parsed, value)
+
+            if self.dict_type == bool:
+                value = bool(int(value))  # bool(u'0') returns True
+                return value, i
+
+            if self.dict_type in (dict, OrderedDict):
+                if not self.start_dict_re.match(value):
+                    self.dict_type = self._guess_dict_type(parsed, value)
+
+            value = self.dict_type(value)
+
             return value, i
 
         else:
