@@ -26,7 +26,7 @@ from glyphsLib.types import (
 from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, basestring, StringIO
+from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
 
 __all__ = [
     "GSFont", "GSCustomParameter", "GSInstance",
@@ -1159,7 +1159,7 @@ class GSGlyph(GSBase):
         "category": str,
         "color": color,
         "export": bool,
-        "glyphname": str,
+        "glyphname": unicode,
         "lastChange": glyphs_datetime,
         "layers": GSLayer,
         "leftKerningGroup": str,
@@ -1173,7 +1173,7 @@ class GSGlyph(GSBase):
         "subCategory": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
-        "unicode": str,
+        "unicode": unicode,
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": str,
@@ -1257,6 +1257,11 @@ class GSGlyph(GSBase):
         for layer in list(self._layers):
             if layer == key:
                 del self._layers[key]
+
+    @property
+    def string(self):
+        if self.unicode:
+            return unichr(int(self.unicode, 16))
 
 
 class GSFont(GSBase):
