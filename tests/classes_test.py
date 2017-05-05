@@ -15,21 +15,22 @@
 # limitations under the License.
 
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import (
+    print_function, division, absolute_import, unicode_literals)
 
-import collections
 import os
 import datetime
 import unittest
 import copy
 from fontTools.misc.py23 import unicode
 
-from fontTools.misc.loggingTools import CapturingLogHandler
-
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
-    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, \
-    GSComponent, GSAlignmentZone
+import glyphsLib
+from glyphsLib.classes import (
+    GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
+    GSAnchor, GSComponent, GSAlignmentZone, GSClass, GSFeature,
+    GSFeaturePrefix, GSGuideLine
+)
+from glyphsLib.types import point
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -373,6 +374,284 @@ class GSFontFromFileTest(unittest.TestCase):
     # TODO: setKerningForPair(), kerningForPair(), removeKerningForPair()
     # TODO: updateFeatures()
     # TODO: copy(font)
+
+
+class GSFontMasterFromFileTest(unittest.TestCase):
+    def setUp(self):
+        with open(TESTFILE_PATH) as fp:
+            self.font = glyphsLib.load(fp)
+        self.master = self.font.masters[0]
+
+    def test_attributes(self):
+        master = self.master
+        self.assertIsNotNone(master.__repr__())
+        self.assertIsNotNone(master.id)
+        self.assertIsNotNone(master.name)
+        self.assertIsNotNone(master.weight)
+        self.assertIsNotNone(master.width)
+        # weightValue
+        obj = master.weightValue
+        old_obj = obj
+        self.assertIsInstance(obj, float)
+        master.weightValue = 0.5
+        self.assertEqual(master.weightValue, 0.5)
+        obj = old_obj
+        self.assertIsInstance(master.weightValue, float)
+        self.assertIsInstance(master.widthValue, float)
+        self.assertIsInstance(master.customValue, float)
+        self.assertIsInstance(master.ascender, float)
+        self.assertIsInstance(master.capHeight, float)
+        self.assertIsInstance(master.xHeight, float)
+        self.assertIsInstance(master.descender, float)
+        self.assertIsInstance(master.italicAngle, float)
+        for attr in ["weightValue", "widthValue", "customValue", "ascender",
+                     "capHeight", "xHeight", "descender", "italicAngle"]:
+            value = getattr(master, attr)
+            self.assertIsInstance(value, float)
+            setattr(master, attr, 0.5)
+            self.assertEqual(getattr(master, attr), 0.5)
+            setattr(master, attr, value)
+        self.assertIsInstance(master.customName, unicode)
+
+        # verticalStems
+        oldStems = master.verticalStems
+        master.verticalStems = [10, 15, 20]
+        self.assertEqual(len(master.verticalStems), 3)
+        master.verticalStems = oldStems
+
+        # horizontalStems
+        oldStems = master.horizontalStems
+        master.horizontalStems = [10, 15, 20]
+        self.assertEqual(len(master.horizontalStems), 3)
+        master.horizontalStems = oldStems
+
+        # alignmentZones
+        self.assertIsInstance(master.alignmentZones, list)
+
+        # TODO blueValues
+        # self.assertIsInstance(master.blueValues, list)
+
+        # TODO otherBlues
+        # self.assertIsInstance(master.otherBlues, list)
+
+        # guideLines
+        self.assertIsInstance(master.guideLines, list)
+        master.guideLines = []
+        self.assertEqual(len(master.guideLines), 0)
+        newGuide = GSGuideLine()
+        newGuide.position = point("{100, 100}")
+        newGuide.angle = -10.0
+        master.guideLines.append(newGuide)
+        self.assertIsNotNone(master.guideLines[0].__repr__())
+        self.assertEqual(len(master.guideLines), 1)
+        del master.guideLines[0]
+        self.assertEqual(len(master.guideLines), 0)
+
+        # guides
+        self.assertIsInstance(master.guides, list)
+        master.guides = []
+        self.assertEqual(len(master.guides), 0)
+        newGuide = GSGuideLine()
+        newGuide.position = point("{100, 100}")
+        newGuide.angle = -10.0
+        master.guides.append(newGuide)
+        self.assertIsNotNone(master.guides[0].__repr__())
+        self.assertEqual(len(master.guides), 1)
+        del master.guides[0]
+        self.assertEqual(len(master.guides), 0)
+
+        # userData
+        self.assertIsNotNone(master.userData)
+        master.userData["TestData"] = 42
+        self.assertEqual(master.userData["TestData"], 42)
+        del master.userData["TestData"]
+        # TODO
+        # self.assertIsNone(master.userData["TestData"])
+
+        # customParameters
+        master.customParameters['trademark'] = \
+            'ThisFont is a trademark by MyFoundry.com'
+        self.assertGreaterEqual(len(master.customParameters), 1)
+        del(master.customParameters['trademark'])
+
+
+class GSAlignmentZoneFromFileTest(unittest.TestCase):
+
+    def setUp(self):
+        with open(TESTFILE_PATH) as fp:
+            self.font = glyphsLib.load(fp)
+        self.master = self.font.masters[0]
+
+    def test_attributes(self):
+        master = self.master
+        for i, zone in enumerate([
+                (800, 10),
+                (700, 10),
+                (470, 10),
+                (0, -10),
+                (-200, -10)]):
+            pos, size = zone
+            self.assertEqual(master.alignmentZones[i].position, pos)
+            self.assertEqual(master.alignmentZones[i].size, size)
+        master.alignmentZones = []
+        self.assertEqual(len(master.alignmentZones), 0)
+        master.alignmentZones.append(GSAlignmentZone(100, 10))
+        self.assertIsNotNone(master.alignmentZones[-1].__repr__())
+        zone = copy.copy(master.alignmentZones[-1])
+        self.assertEqual(len(master.alignmentZones), 1)
+        self.assertEqual(master.alignmentZones[-1].position, 100)
+        self.assertEqual(master.alignmentZones[-1].size, 10)
+        del master.alignmentZones[-1]
+        self.assertEqual(len(master.alignmentZones), 0)
+
+
+class GSInstanceFromFileTest(unittest.TestCase):
+
+    def setUp(self):
+        with open(TESTFILE_PATH) as fp:
+            self.font = glyphsLib.load(fp)
+        self.instance = self.font.instances[0]
+
+    def test_attributes(self):
+        instance = self.instance
+        self.assertIsNotNone(instance.__repr__())
+
+        # TODO: active
+        # self.assertIsInstance(instance.active, bool)
+
+        # name
+        self.assertIsInstance(instance.name, unicode)
+
+        # weight
+        self.assertIsInstance(instance.weight, unicode)
+
+        # width
+        self.assertIsInstance(instance.width, unicode)
+
+        # weightValue
+        # widthValue
+        # customValue
+        for attr in ["weightValue", "widthValue", "customValue"]:
+            value = getattr(instance, attr)
+            self.assertIsInstance(value, float)
+            setattr(instance, attr, 0.5)
+            self.assertEqual(getattr(instance, attr), 0.5)
+            setattr(instance, attr, value)
+        # isItalic
+        # isBold
+        for attr in ["isItalic", "isBold"]:
+            value = getattr(instance, attr)
+            self.assertIsInstance(value, bool)
+            setattr(instance, attr, not value)
+            self.assertEqual(getattr(instance, attr), not value)
+            setattr(instance, attr, value)
+
+        # linkStyle
+        self.assertIsInstance(instance.linkStyle, unicode)
+
+        # familyName
+        # preferredFamily
+        # preferredSubfamilyName
+        # windowsFamily
+        # windowsStyle
+        # windowsLinkedToStyle
+        # fontName
+        # fullName
+        for attr in [
+            "familyName",
+            "preferredFamily",
+            "preferredSubfamilyName",
+            "windowsFamily",
+            "windowsStyle",
+            "windowsLinkedToStyle",
+            "fontName",
+            "fullName",
+        ]:
+            # self.assertIsInstance(getattr(instance, attr), unicode)
+            if not hasattr(instance, attr):
+                print("instance does not have %s" % attr)
+                if (hasattr(instance, "parent") and
+                        hasattr(instance.parent, attr)):
+                    value = getattr(instance.parent)
+                    print(value, type(value))
+
+        # customParameters
+        instance.customParameters['trademark'] = \
+            'ThisFont is a trademark by MyFoundry.com'
+        self.assertGreaterEqual(len(instance.customParameters), 1)
+        del(instance.customParameters['trademark'])
+
+        # instanceInterpolations
+        self.assertIsInstance(dict(instance.instanceInterpolations), dict)
+
+        # manualInterpolation
+        self.assertIsInstance(instance.manualInterpolation, bool)
+        value = instance.manualInterpolation
+        instance.manualInterpolation = not instance.manualInterpolation
+        self.assertEqual(instance.manualInterpolation, not value)
+        instance.manualInterpolation = value
+
+        # interpolatedFont
+        # TODO
+        # self.assertIsInstance(instance.interpolatedFont, type(Glyphs.font))
+
+        # TODO generate()
+
+
+class GSGlyphFromFileTest(unittest.TestCase):
+
+    def setUp(self):
+        with open(TESTFILE_PATH) as fp:
+            self.font = glyphsLib.load(fp)
+        self.glyph = self.font.glyphs['a']
+
+    # TODO duplicate
+    # def test_duplicate(self):
+    #     font = self.font
+    #     glyph1 = self.glyph
+    #     glyph2 = glyph1.duplicate()
+    #     glyph3 = glyph1.duplicate('a.test')
+
+    def test_parent(self):
+        font = self.font
+        glyph = self.glyph
+        self.assertEqual(glyph.parent, font)
+
+
+class GSCustomParameterTest(unittest.TestCase):
+
+    def test_plistValue_string(self):
+        test_string = "Some Value"
+        param = GSCustomParameter("New Parameter", test_string)
+        self.assertEqual(
+            param.plistValue(),
+            '{\nname = "New Parameter";\nvalue = "Some Value";\n}'
+        )
+
+    def test_plistValue_list(self):
+        test_list = [
+            1,
+            2.5,
+            {"key1": "value1"},
+        ]
+        param = GSCustomParameter("New Parameter", test_list)
+        self.assertEqual(
+            param.plistValue(),
+            '{\nname = "New Parameter";\nvalue = (\n1,\n2.5,'
+            '\n{\nkey1 = value1;\n}\n);\n}'
+        )
+
+    def test_plistValue_dict(self):
+        test_dict = {
+            "key1": "value1",
+            "key2": "value2",
+        }
+        param = GSCustomParameter("New Parameter", test_dict)
+        self.assertEqual(
+            param.plistValue(),
+            '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'
+            '\nkey2 = value2;\n};\n}'
+        )
 
 
 if __name__ == '__main__':
