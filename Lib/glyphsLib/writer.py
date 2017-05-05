@@ -18,12 +18,10 @@
 
 from __future__ import unicode_literals
 import sys
-import traceback
-import glyphsLib, glyphsLib.classes
-# from .classes import GSBase, Proxy
-from .types import floatToString, needsQuotes, feature_syntax_encode
+import glyphsLib.classes
+from glyphsLib.types import floatToString, needsQuotes, feature_syntax_encode
 import datetime
-import collections
+from collections import OrderedDict
 from fontTools.misc.py23 import unicode
 
 '''
@@ -61,13 +59,13 @@ class GlyphsWriter(object):
             keys = sorted(dictValue._classesForName.keys())
         else:
             keys = dictValue.keys()
-            if not isinstance(dictValue, collections.OrderedDict):
+            if not isinstance(dictValue, OrderedDict):
                 keys = sorted(keys)
         for key in keys:
             if hasattr(dictValue, "_classesForName"):
                 forType = dictValue._classesForName[key]
             try:
-                if isinstance(dictValue, (dict, collections.OrderedDict)):
+                if isinstance(dictValue, (dict, OrderedDict)):
                     value = dictValue[key]
                 else:
                     getKey = key
@@ -107,7 +105,7 @@ class GlyphsWriter(object):
         elif hasattr(value, "plistValue"):
             value = value.plistValue()
             self.file.write(value)
-        elif isinstance(value, (dict, collections.OrderedDict, glyphsLib.classes.GSBase)):
+        elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
         elif type(value) == float:
             self.file.write(floatToString(value, 5))
