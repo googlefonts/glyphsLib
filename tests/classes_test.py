@@ -645,6 +645,29 @@ class GSGlyphFromFileTest(unittest.TestCase):
         glyph.layers.remove(glyph.layers[-1])
         self.assertEqual(amount, len(glyph.layers))
 
+    def test_name(self):
+        glyph = self.glyph
+        self.assertIsInstance(glyph.name, unicode)
+        value = glyph.name
+        glyph.name = "Ə"
+        self.assertEqual(glyph.name, "Ə")
+        glyph.name = value
+
+    def test_unicode(self):
+        glyph = self.glyph
+        self.assertIsInstance(glyph.unicode, unicode)
+        value = glyph.unicode
+        # TODO:
+        # glyph.unicode = "004a"
+        # self.assertEqual(glyph.unicode, "004A")
+        glyph.unicode = "004B"
+        self.assertEqual(glyph.unicode, "004B")
+        glyph.unicode = value
+
+    def test_string(self):
+        glyph = self.font.glyphs["adieresis"]
+        self.assertEqual(glyph.string, "ä")
+
 
 class GSCustomParameterTest(unittest.TestCase):
 
