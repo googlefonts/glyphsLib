@@ -24,7 +24,7 @@ from glyphsLib.types import (
     writeIntlist, needsQuotes, feature_syntax_encode
 )
 from glyphsLib.parser import Parser
-from glyphsLib.glyphsFileWriter import GlyphsWriter
+from glyphsLib.writer import GlyphsWriter
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO
 
