@@ -680,8 +680,8 @@ class GSFontMaster(GSBase):
         "xHeight": float,
     }
     _defaultsForName = {
-        "weightValue": 100,
-        "widthValue": 100,
+        "weightValue": 100.0,
+        "widthValue": 100.0,
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides"
@@ -697,8 +697,6 @@ class GSFontMaster(GSBase):
         self._custom1 = None
         self._custom2 = None
         self.italicAngle = 0.0
-        self.widthValue = 100.0
-        self.weightValue = 100.0
         self.customValue = 0.0
 
     def __repr__(self):
