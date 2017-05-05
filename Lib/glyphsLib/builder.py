@@ -173,10 +173,13 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
     result = [ufos[master_id] for master_id in master_id_order]
     instances = {'defaultFamilyName': source_family_name,
                  'data': data.pop('instances', [])}
-    for key in ("Variation Font Origin",):
-        value = data.get(key)
-        if value:
-            instances[key] = value
+
+    # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
+    # shared by all the master ufos; here we just get it from the first one
+    varfont_origin_key = "Variation Font Origin"
+    varfont_origin = first_ufo.lib.get(GLYPHS_PREFIX + varfont_origin_key)
+    if varfont_origin:
+        instances[varfont_origin_key] = varfont_origin
     if debug:
         return clear_data(data)
     elif include_instances:
