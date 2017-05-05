@@ -58,10 +58,10 @@ class GSBase(object):
                     klass = self._classesForName[key]
                     if issubclass(klass, GSBase):
                         value = []
+                    elif key in self._defaultsForName:
+                        value = self._defaultsForName.get(key)
                     else:
-                        value = self._defaultsForName.get(key, None)
-                        if not value:
-                            value = klass()
+                        value = klass()
                     setattr(self, key, value)
                 except:
                     pass
@@ -1182,7 +1182,21 @@ class GSGlyph(GSBase):
         "glyphname": "name"
     }
     _defaultsForName = {
+        "category": None,
+        "color": None,
         "export": True,
+        "lastChange": None,
+        "leftKerningGroup": None,
+        "leftMetricsKey": None,
+        "name": None,
+        "note": None,
+        "rightKerningGroup": None,
+        "rightMetricsKey": None,
+        "script": None,
+        "subCategory": None,
+        "userData": None,
+        "widthMetricsKey": None,
+        "unicode": None,
     }
     _keyOrder = (
         "color",
