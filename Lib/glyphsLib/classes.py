@@ -1243,7 +1243,7 @@ class GSGlyph(GSBase):
 class GSFont(GSBase):
     _classesForName = {
         ".appVersion": str,
-        "DisplayStrings": [str],
+        "DisplayStrings": unicode,
         "classes": GSClass,
         "copyright": unicode,
         "customParameters": GSCustomParameter,
