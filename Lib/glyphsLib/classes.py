@@ -25,7 +25,7 @@ from glyphsLib.types import (
 )
 from glyphsLib.parser import Parser
 from glyphsLib.glyphsFileWriter import GlyphsWriter
-import collections
+from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO
 
 __all__ = [
@@ -372,7 +372,7 @@ class GlyphLayerProxy(Proxy):
         self.append(Layer)
 
     def setter(self, values):
-        newLayers = collections.OrderedDict()
+        newLayers = OrderedDict()
         if (type(values) == list or
                 type(values) == tuple or
                 type(values) == type(self)):
@@ -1214,7 +1214,7 @@ class GSGlyph(GSBase):
 
     def __init__(self, name=None):
         super(GSGlyph, self).__init__()
-        self._layers = collections.OrderedDict()
+        self._layers = OrderedDict()
         self.name = name
         self.parent = None
         self.export = True
@@ -1264,7 +1264,7 @@ class GSFont(GSBase):
         "gridSubDivision": int,
         "instances": GSInstance,
         "keepAlternatesTogether": bool,
-        "kerning": collections.OrderedDict,
+        "kerning": OrderedDict,
         "manufacturer": unicode,
         "manufacturerURL": unicode,
         "unitsPerEm": int,
@@ -1285,7 +1285,7 @@ class GSFont(GSBase):
         "gridLength": 1,
         "gridSubDivision": 1,
         "unitsPerEm": 1000,
-        "kerning": {},
+        "kerning": OrderedDict(),
     }
 
     def __init__(self, path=None):
