@@ -19,7 +19,6 @@ from fontTools.misc.py23 import tounicode, unichr, unicode
 
 from collections import OrderedDict
 import re
-import sys
 
 
 class Parser:
