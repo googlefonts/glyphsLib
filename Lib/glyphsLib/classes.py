@@ -311,7 +311,7 @@ class GlyphLayerProxy(Proxy):
                         index = index + 1
                     return extraLayer
             '''
-            return self._owner._layers[key]
+            return list(self._owner._layers.values())[key]
         layer = self._owner._layers.get(key, None)
         if layer is None:
             keyIsMasterId = False
@@ -1252,6 +1252,11 @@ class GSGlyph(GSBase):
     #         if self.parent.fontMasterForId(Key):
     #             Layer.associatedMasterId = Key
     #         self._layers[key] = layer
+
+    def removeLayerForKey_(self, key):
+        for layer in list(self._layers):
+            if layer == key:
+                del self._layers[key]
 
 
 class GSFont(GSBase):
