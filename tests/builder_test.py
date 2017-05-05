@@ -641,13 +641,12 @@ class ToUfosTest(unittest.TestCase):
         self.assertIsNone(ufo.info.openTypeHeadCreated)
 
     def test_variation_font_origin(self):
-        data = self.generate_minimal_data()
+        font = generate_minimal_font()
         name = 'Variation Font Origin'
         value = 'Light'
-        data['customParameters'] = (
-            {'name': name, 'value': value},)
+        font.customParameters[name] = value
 
-        ufos, instances = to_ufos(data, include_instances=True)
+        ufos, instances = to_ufos(font, include_instances=True)
 
         for ufo in ufos:
             key = GLYPHS_PREFIX + name
