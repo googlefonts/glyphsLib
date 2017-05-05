@@ -156,7 +156,7 @@ with open('README.rst', 'r') as f:
 
 setup(
     name='glyphsLib',
-    version='1.7.3.dev0',
+    version='1.7.3',
     author="James Godfrey-Kittle",
     author_email="jamesgk@google.com",
     description="A bridge from Glyphs source files (.glyphs) to UFOs",
