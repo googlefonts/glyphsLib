@@ -71,7 +71,7 @@ class point(object):
             else:
                 return 0
         else:
-            raise KeyError
+            raise IndexError
 
     def __setitem__(self, key, value):
         if type(key) is int and key < self.dimension:
@@ -79,7 +79,7 @@ class point(object):
                 self.value.append(0)
             self.value[key] = value
         else:
-            raise KeyError
+            raise IndexError
 
     def __len__(self):
         return self.dimension
