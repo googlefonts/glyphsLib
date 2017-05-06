@@ -586,7 +586,7 @@ class GSCustomParameter(GSBase):
         elif self.name in self._CUSTOM_BOOL_PARAMS:
             value = bool(value)
         elif self.name in self._CUSTOM_INTLIST_PARAMS:
-            value = readIntlist.read(value)
+            value = readIntlist(value)
         elif self.name in self._CUSTOM_DICT_PARAMS:
             parser = Parser()
             value = parser.parse(value)
