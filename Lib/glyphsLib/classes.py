@@ -833,6 +833,11 @@ class GSAnchor(GSBase):
         "position": point,
     }
 
+    def __repr__(self):
+        return '<%s "%s" x=%.1f y=%.1f>' % \
+                (self.__class__.__name__, self.name, self.position[0],
+                 self.position[1])
+
 
 class GSHint(GSBase):
     _classesForName = {
