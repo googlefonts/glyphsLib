@@ -1271,7 +1271,7 @@ class GSGlyph(GSBase):
 
 class GSFont(GSBase):
     _classesForName = {
-        ".appVersion": str,
+        ".appVersion": int,
         "DisplayStrings": unicode,
         "classes": GSClass,
         "copyright": unicode,
