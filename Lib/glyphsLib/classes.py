@@ -388,6 +388,67 @@ class GlyphLayerProxy(Proxy):
         self._owner._layers = newLayers
 
 
+class LayerAnchorsProxy(Proxy):
+
+    def __getitem__(self, key):
+        if isinstance(key, (slice, int)):
+            return self.values().__getitem__(key)
+        elif isinstance(key, (str, unicode)):
+            for i, a in enumerate(self._owner._anchors):
+                if a.name == key:
+                    return self._owner._anchors[i]
+        else:
+            raise KeyError
+
+    def __setitem__(self, key, anchor):
+        if isinstance(key, str):
+            anchor.name = key
+            for i, a in enumerate(self._owner._anchors):
+                if a.name == key:
+                    self._owner._anchors[i] = anchor
+                    return
+            self._owner._anchors.append(anchor)
+        else:
+            raise TypeError
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            del self._owner._anchors[key]
+        elif isinstance(key, (str, unicode)):
+            for i, a in enumerate(self._owner._anchors):
+                if a.name == key:
+                    del self._owner._anchors[i]
+                    return
+
+    def values(self):
+        return self._owner._anchors
+
+    def append(self, anchor):
+        for i, a in enumerate(self._owner._anchors):
+            if a.name == anchor.name:
+                self._owner._anchors[i] = anchor
+                return
+        if anchor.name:
+            self._owner._anchors.append(anchor)
+        else:
+            raise ValueError("Anchor must have name")
+
+    def extend(self, anchors):
+        self._owner._anchors.extend(anchors)
+
+    def remove(self, anchor):
+        return self._owner._anchors.remove(anchor)
+
+    def insert(self, Index, Layer):
+        self.append(Layer)
+
+    def __len__(self):
+        return len(self._owner._anchors)
+
+    def setter(self, values):
+        self._owner._anchors = values
+
+
 class CustomParametersProxy(Proxy):
     def __getitem__(self, key):
         if type(key) == slice:
@@ -833,6 +894,10 @@ class GSAnchor(GSBase):
         "position": point,
     }
 
+    def __init__(self):
+        super(GSAnchor, self).__init__()
+        self.selected = False
+
     def __repr__(self):
         return '<%s "%s" x=%.1f y=%.1f>' % \
                 (self.__class__.__name__, self.name, self.position[0],
@@ -1123,6 +1188,14 @@ class GSLayer(GSBase):
     _defaultsForName = {
         "name": "Regular",
     }
+    _wrapperKeysTranslate = {
+        "guideLines": "guides",
+    }
+
+    def __init__(self):
+        super(GSLayer, self).__init__()
+        self._anchors = []
+        self._selection = []
 
     def __repr__(self):
         name = self.name
@@ -1155,6 +1228,11 @@ class GSLayer(GSBase):
     @name.setter
     def name(self, value):
         self._name = value
+
+    anchors = property(
+        lambda self: LayerAnchorsProxy(self),
+        lambda self, value: LayerAnchorsProxy(self).setter(value))
+
 
 
 class GSGlyph(GSBase):
