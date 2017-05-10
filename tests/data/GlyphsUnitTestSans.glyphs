@@ -740,6 +740,12 @@ nodes = (
 }
 );
 };
+guideLines = (
+{
+angle = 55.123;
+position = "{171, 279}";
+}
+);
 layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
 paths = (
 {
