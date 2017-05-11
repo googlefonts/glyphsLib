@@ -32,6 +32,7 @@ CUSTOM_INT_PARAMS = frozenset((
     'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
     'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
     'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+    'openTypeHheaCaretOffset',
     'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
     'openTypeHheaDescender', 'openTypeHheaLineGap',
     'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
