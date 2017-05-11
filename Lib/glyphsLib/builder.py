@@ -77,6 +77,47 @@ WIDTH_CODES = {
     'SemiCondensed': 4,
     '': 5}
 
+# https://www.microsoft.com/typography/otspec/os2.htm#cpr
+CODEPAGE_RANGES = {
+    1252: 0,
+    1250: 1,
+    1251: 2,
+    1253: 3,
+    1254: 4,
+    1255: 5,
+    1256: 6,
+    1257: 7,
+    1258: 8,
+    # 9-15: Reserved for Alternate ANSI
+    874: 16,
+    932: 17,
+    936: 18,
+    949: 19,
+    950: 20,
+    1361: 21,
+    # 22-28: Reserved for Alternate ANSI and OEM
+    # 29: Macintosh Character Set (US Roman)
+    # 30: OEM Character Set
+    # 31: Symbol Character Set
+    # 32-47: Reserved for OEM
+    869: 48,
+    866: 49,
+    865: 50,
+    864: 51,
+    863: 52,
+    862: 53,
+    861: 54,
+    860: 55,
+    857: 56,
+    855: 57,
+    852: 58,
+    775: 59,
+    737: 60,
+    708: 61,
+    850: 62,
+    437: 63,
+}
+
 
 def to_ufos(data, include_instances=False, family_name=None, debug=False):
     """Take .glyphs file data and load it into UFOs.
@@ -339,10 +380,15 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
             name = 'useNiceNames'
             value = int(not value)
 
+        # convert code page numbers to OS/2 ulCodePageRange bits
+        if name == 'codePageRanges':
+            value = [CODEPAGE_RANGES[v] for v in value]
+
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
             ('license', 'NameLicense'), ('panose', 'OS2Panose'),
             ('typo', 'OS2Typo'), ('unicodeRanges', 'OS2UnicodeRanges'),
+            ('codePageRanges', 'OS2CodePageRanges'),
             ('weightClass', 'OS2WeightClass'),
             ('widthClass', 'OS2WidthClass'),
             ('win', 'OS2Win'), ('vendorID', 'OS2VendorID'),
