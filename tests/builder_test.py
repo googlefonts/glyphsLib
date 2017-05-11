@@ -122,6 +122,15 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -100)
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
+    def test_set_codePageRanges(self):
+        set_custom_params(self.ufo, parsed=[('codePageRanges', [1252, 1250])])
+        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
+
+    def test_set_openTypeOS2CodePageRanges(self):
+        set_custom_params(self.ufo, parsed=[
+            ('openTypeOS2CodePageRanges', [0, 1])])
+        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
+
 
 class ParseGlyphsFilterTest(unittest.TestCase):
     def test_complete_parameter(self):

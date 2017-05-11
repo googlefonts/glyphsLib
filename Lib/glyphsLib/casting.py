@@ -32,6 +32,7 @@ CUSTOM_INT_PARAMS = frozenset((
     'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
     'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
     'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
+    'openTypeHheaCaretOffset',
     'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
     'openTypeHheaDescender', 'openTypeHheaLineGap',
     'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
@@ -67,7 +68,7 @@ CUSTOM_TRUTHY_PARAMS = frozenset((
 CUSTOM_INTLIST_PARAMS = frozenset((
     'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
     'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
-    'panose', 'unicodeRanges'))
+    'panose', 'unicodeRanges', 'codePageRanges'))
 
 # mutate list in place
 def _mutate_list(fn, l):
