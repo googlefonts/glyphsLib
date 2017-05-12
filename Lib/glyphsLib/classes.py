@@ -407,6 +407,7 @@ class GSCustomParameter(GSBase):
 			'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
 			'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
 			'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
+			'openTypeHheaCaretOffset', 
 			'openTypeHheaDescender', 'openTypeHheaLineGap',
 			'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
 			'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
