@@ -339,7 +339,7 @@ class FontClassesProxy(Proxy):
 
 class GlyphLayerProxy(Proxy):
     def __getitem__(self, key):
-        if type(key) == slice:
+        if isinstance(key, slice):
             return self.values().__getitem__(key)
         if isinstance(key, int):
             if key < 0:
@@ -376,7 +376,7 @@ class GlyphLayerProxy(Proxy):
         return layer
 
     def __setitem__(self, key, layer):
-        if type(key) is int and self._owner.parent:
+        if isinstance(key, int) and self._owner.parent:
             if key < 0:
                 key = self.__len__() + key
             master = self._owner.parent.masters[key]
@@ -385,7 +385,7 @@ class GlyphLayerProxy(Proxy):
         self._owner._layers[key] = layer
 
     def __delitem__(self, key):
-        if type(key) is int and self._owner.parent:
+        if isinstance(key, int) and self._owner.parent:
             if key < 0:
                 key = self.__len__() + key
             Layer = self.__getitem__(key)
@@ -413,15 +413,15 @@ class GlyphLayerProxy(Proxy):
         self._owner._setupLayer(layer, layer.layerId)
         self._owner._layers[layer.layerId] = layer
 
-    def extend(self, Layers):
-        for Layer in Layers:
-            self.append(Layer)
+    def extend(self, layers):
+        for layer in layers:
+            self.append(layer)
 
-    def remove(self, Layer):
-        return self._owner.removeLayerForKey_(Layer.layerId)
+    def remove(self, layer):
+        return self._owner.removeLayerForKey_(layer.layerId)
 
-    def insert(self, Index, Layer):
-        self.append(Layer)
+    def insert(self, index, layer):
+        self.append(layer)
 
     def setter(self, values):
         newLayers = OrderedDict()
@@ -598,9 +598,9 @@ class PathNodesProxy(IndexedObjectsProxy):
 
 class CustomParametersProxy(Proxy):
     def __getitem__(self, key):
-        if type(key) == slice:
+        if isinstance(key, slice):
             return self.values().__getitem__(key)
-        if type(key) is int:
+        if isinstance(key, int):
             return self._owner._customParameters[key]
         else:
             for customParameter in self._owner._customParameters:
@@ -642,7 +642,7 @@ class CustomParametersProxy(Proxy):
     def extend(self, parameters):
         for parameter in parameters:
             parameter.parent = self._owner
-            self._owner._customParameters.append(parameter)
+        self._owner._customParameters.extend(parameters)
 
     def remove(self, parameter):
         if isString(parameter):
@@ -1117,7 +1117,7 @@ class GSComponent(GSBase):
         "transform": transform,
     }
     _defaultsForName = {
-        "transform": [1, 0, 0, 1, 0, 0],
+        "transform": (1, 0, 0, 1, 0, 0),
     }
     _parent = None
 
