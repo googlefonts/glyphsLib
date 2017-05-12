@@ -1020,14 +1020,20 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
-    rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
+    _rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'\
+          '(?: (SMOOTH))?'
+    MOVE = "move"
+    LINE = "line"
+    CURVE = "curve"
+    OFFCURVE = "offcurve"
+    QCURVE = "qcurve"
     _userData = {}
     _parent = None
 
     def __init__(self, line=None, position=(0, 0), nodetype='line',
                  smooth=False):
         if line is not None:
-            m = re.match(self.rx, line).groups()
+            m = re.match(self._rx, line).groups()
             self.position = (float(m[0]), float(m[1]))
             self.type = m[2].lower()
             self.smooth = bool(m[3])
@@ -1166,6 +1172,25 @@ class GSHint(GSBase):
         "target": hint_target,  # Index path to node or 'up'/'down'
         "type": str,
     }
+
+    # Hint types
+    TOPGHOST = -1
+    STEM = 0
+    BOTTOMGHOST = 1
+    TTANCHOR = 2
+    TTSTEM = 3
+    TTALIGN = 4
+    TTINTERPOLATE = 5
+    TTDIAGONAL = 6
+    TTDELTA = 8
+    CORNER = 16
+    CAP = 17
+    # Hint options
+    TTROUND = 0
+    TTROUNDUP = 1
+    TTROUNDDOWN = 2
+    TTDONROUND = 4
+    TRIPLE = 128
 
 
 class GSFeature(GSBase):
