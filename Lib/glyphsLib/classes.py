@@ -275,6 +275,8 @@ class FontGlyphsProxy(Proxy):
         return len(self._owner._glyphs)
 
     def setter(self, values):
+        if isinstance(values, Proxy):
+            values = list(values)
         self._owner._glyphs = values
         for g in self._owner._glyphs:
             g.parent = self._owner
@@ -457,6 +459,7 @@ class LayerAnchorsProxy(Proxy):
                 if a.name == key:
                     self._owner._anchors[i] = anchor
                     return
+            anchor._parent = self._owner
             self._owner._anchors.append(anchor)
         else:
             raise TypeError
@@ -467,6 +470,7 @@ class LayerAnchorsProxy(Proxy):
         elif isinstance(key, (str, unicode)):
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
+                    self._owner._anchors[i]._parent = None
                     del self._owner._anchors[i]
                     return
 
@@ -476,6 +480,7 @@ class LayerAnchorsProxy(Proxy):
     def append(self, anchor):
         for i, a in enumerate(self._owner._anchors):
             if a.name == anchor.name:
+                anchor._parent = self._owner
                 self._owner._anchors[i] = anchor
                 return
         if anchor.name:
@@ -484,19 +489,28 @@ class LayerAnchorsProxy(Proxy):
             raise ValueError("Anchor must have name")
 
     def extend(self, anchors):
+        for anchor in anchors:
+            anchor._parent = self._owner
         self._owner._anchors.extend(anchors)
 
     def remove(self, anchor):
+        if isinstance(anchor, (str, unicode)):
+            anchor = self.values()[anchor]
         return self._owner._anchors.remove(anchor)
 
-    def insert(self, Index, Layer):
-        self.append(Layer)
+    def insert(self, index, anchor):
+        anchor._parent = self._owner
+        self._owner._anchors.insert(index, anchor)
 
     def __len__(self):
         return len(self._owner._anchors)
 
-    def setter(self, values):
-        self._owner._anchors = values
+    def setter(self, anchors):
+        if isinstance(anchors, Proxy):
+            anchors = list(anchors)
+        self._owner._anchors = anchors
+        for anchor in anchors:
+            anchor._parent = self._owner
 
 
 class IndexedObjectsProxy(Proxy):
@@ -861,6 +875,19 @@ class GSGuideLine(GSBase):
         "filter": str,
         "name": unicode,
     }
+    _parent = None
+
+    def __init__(self):
+        super(GSGuideLine, self).__init__()
+
+    def __repr__(self):
+        return "<%s x=%.1f y=%.1f angle=%.1f>" % \
+            (self.__class__.__name__, self.position[0], self.position[1],
+             self.angle)
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSPartProperty(GSBase):
@@ -995,6 +1022,7 @@ class GSFontMaster(GSBase):
 class GSNode(GSBase):
     rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
     _userData = {}
+    _parent = None
 
     def __init__(self, line=None, position=(0, 0), nodetype='line',
                  smooth=False):
@@ -1020,6 +1048,10 @@ class GSNode(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value))
 
+    @property
+    def parent(self):
+        return self._parent
+
     def plistValue(self):
         content = self.type.upper()
         if self.smooth:
@@ -1037,15 +1069,42 @@ class GSPath(GSBase):
     _defaultsForName = {
         "closed": True,
     }
+    _parent = None
 
     def __init__(self):
         self._closed = True
         self.nodes = []
 
+    @property
+    def parent(self):
+        return self._parent
+
     def shouldWriteValueForKey(self, key):
         if key == "closed":
             return True
         return super(GSPath, self).shouldWriteValueForKey(key)
+
+    nodes = property(
+        lambda self: PathNodesProxy(self),
+        lambda self, value: PathNodesProxy(self).setter(value))
+
+    # TODO
+    @property
+    def segments(self):
+        raise NotImplementedError
+
+    @segments.setter
+    def segments(self, value):
+        raise NotImplementedError
+
+    # TODO
+    @property
+    def direction(self):
+        raise NotImplementedError
+
+    @direction.setter
+    def direction(self, value):
+        raise NotImplementedError
 
 
 class GSComponent(GSBase):
@@ -1060,10 +1119,18 @@ class GSComponent(GSBase):
     _defaultsForName = {
         "transform": [1, 0, 0, 1, 0, 0],
     }
+    _parent = None
 
     def __init__(self):
         super(GSComponent, self).__init__()
-        self.transform = [1, 0, 0, 1, 0, 0]
+
+    def __repr__(self):
+        return '<GSComponent "%s" x=%.1f y=%.1f>' % \
+            (self.name, self.transform[4], self.transform[5])
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSAnchor(GSBase):
@@ -1071,15 +1138,19 @@ class GSAnchor(GSBase):
         "name": str,
         "position": point,
     }
+    _parent = None
 
     def __init__(self):
         super(GSAnchor, self).__init__()
-        self.selected = False
 
     def __repr__(self):
         return '<%s "%s" x=%.1f y=%.1f>' % \
                 (self.__class__.__name__, self.name, self.position[0],
                  self.position[1])
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSHint(GSBase):
@@ -1160,6 +1231,11 @@ class GSAnnotation(GSBase):
         "type": str,
         "width": float,  # the width of the text field or size of the cicle
     }
+    _parent = None
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSInstance(GSBase):
@@ -1374,6 +1450,10 @@ class GSLayer(GSBase):
     def __init__(self):
         super(GSLayer, self).__init__()
         self._anchors = []
+        self._annotations = []
+        self._components = []
+        self._guideLines = []
+        self._paths = []
         self._selection = []
 
     def __repr__(self):
@@ -1411,6 +1491,22 @@ class GSLayer(GSBase):
     anchors = property(
         lambda self: LayerAnchorsProxy(self),
         lambda self, value: LayerAnchorsProxy(self).setter(value))
+
+    paths = property(
+        lambda self: LayerPathsProxy(self),
+        lambda self, value: LayerPathsProxy(self).setter(value))
+
+    components = property(
+        lambda self: LayerComponentsProxy(self),
+        lambda self, value: LayerComponentsProxy(self).setter(value))
+
+    guideLines = property(
+        lambda self: LayerGuideLinesProxy(self),
+        lambda self, value: LayerGuideLinesProxy(self).setter(value))
+
+    annotations = property(
+        lambda self: LayerAnnotationProxy(self),
+        lambda self, value: LayerAnnotationProxy(self).setter(value))
 
     userData = property(
         lambda self: UserDataProxy(self),
@@ -1592,6 +1688,7 @@ class GSFont(GSBase):
         self._masters = []
         self._instances = []
         self._customParameters = []
+        self._classes = []
         self.filepath = None
 
         if path:
