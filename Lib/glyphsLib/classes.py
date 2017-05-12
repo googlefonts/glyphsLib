@@ -571,6 +571,41 @@ class CustomParametersProxy(Proxy):
         return self.__setter__
 
 
+class UserDataProxy(Proxy):
+
+    def __getitem__(self, key):
+        return self._owner._userData.get(key)
+
+    def __setitem__(self, key, value):
+        if self._owner._userData is not None:
+            self._owner._userData[key] = value
+        else:
+            self._owner._userData = {key: value}
+
+    def __delitem__(self, key):
+        if key in self._owner._userData:
+            del self._owner._userData[key]
+
+    def __contains__(self, item):
+        return item in self._owner._userData.values()
+
+    def __iter__(self):
+        for value in self._owner._userData.values():
+            yield value
+
+    def values(self):
+        return self._owner._userData.values()
+
+    def keys(self):
+        return self._owner._userData.keys()
+
+    def get(self, key):
+        return self._owner._userData.get(key)
+
+    def setter(self, values):
+        self._owner._userData = values
+
+
 class GSCustomParameter(GSBase):
     _classesForName = {
         "name": unicode,
@@ -797,6 +832,7 @@ class GSFontMaster(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides"
     }
+    _userData = {}
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
@@ -844,6 +880,10 @@ class GSFontMaster(GSBase):
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
 
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value))
+
     @property
     def weight(self):
         if self._weight is not None:
@@ -871,6 +911,7 @@ class GSFontMaster(GSBase):
 
 class GSNode(GSBase):
     rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?'
+    _userData = {}
 
     def __init__(self, line=None, position=(0, 0), nodetype='line',
                  smooth=False):
@@ -891,6 +932,10 @@ class GSNode(GSBase):
         return "<%s %g %g %s>" % \
             (self.__class__.__name__, self.position[0], self.position[1],
              content)
+
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value))
 
     def plistValue(self):
         content = self.type.upper()
@@ -1241,6 +1286,7 @@ class GSLayer(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
     }
+    _userData = {}
 
     def __init__(self):
         super(GSLayer, self).__init__()
@@ -1283,6 +1329,9 @@ class GSLayer(GSBase):
         lambda self: LayerAnchorsProxy(self),
         lambda self, value: LayerAnchorsProxy(self).setter(value))
 
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value))
 
 
 class GSGlyph(GSBase):
@@ -1356,6 +1405,7 @@ class GSGlyph(GSBase):
         "userData",
         "partsSettings"
     )
+    _userData = {}
 
     def __init__(self, name=None):
         super(GSGlyph, self).__init__()
@@ -1395,6 +1445,10 @@ class GSGlyph(GSBase):
     def string(self):
         if self.unicode:
             return unichr(int(self.unicode, 16))
+
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value))
 
 
 class GSFont(GSBase):
@@ -1442,6 +1496,7 @@ class GSFont(GSBase):
         "unitsPerEm": 1000,
         "kerning": OrderedDict(),
     }
+    _userData = {}
 
     def __init__(self, path=None):
         super(GSFont, self).__init__()
@@ -1554,6 +1609,10 @@ class GSFont(GSBase):
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
+
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value))
 
     @property
     def kerning(self):
