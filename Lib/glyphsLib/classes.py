@@ -499,6 +499,89 @@ class LayerAnchorsProxy(Proxy):
         self._owner._anchors = values
 
 
+class IndexedObjectsProxy(Proxy):
+    def __getitem__(self, key):
+        if isinstance(key, (slice, int)):
+            return self.values().__getitem__(key)
+        else:
+            raise KeyError
+
+    def __setitem__(self, key, value):
+        if isinstance(key, int):
+            self.values()[key] = value
+            value._parent = self._owner
+        else:
+            raise KeyError
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            del self.values()[key]
+        else:
+            raise KeyError
+
+    def values(self):
+        return getattr(self._owner, self._objects_name)
+
+    def append(self, value):
+        self.values().append(value)
+        value._parent = self._owner
+
+    def extend(self, values):
+        self.values().extend(values)
+        for value in values:
+            value._parent = self._owner
+
+    def remove(self, value):
+        self.values().remove(value)
+
+    def insert(self, index, value):
+        self.values().insert(index, value)
+        value._parent = self._owner
+
+    def __len__(self):
+        return len(self.values())
+
+    def setter(self, values):
+        setattr(self._owner, self._objects_name, list(values))
+        for value in self.values():
+            value._parent = self._owner
+
+
+class LayerPathsProxy(IndexedObjectsProxy):
+    _objects_name = "_paths"
+
+    def __init__(self, owner):
+        super(LayerPathsProxy, self).__init__(owner)
+
+
+class LayerComponentsProxy(IndexedObjectsProxy):
+    _objects_name = "_components"
+
+    def __init__(self, owner):
+        super(LayerComponentsProxy, self).__init__(owner)
+
+
+class LayerAnnotationProxy(IndexedObjectsProxy):
+    _objects_name = "_annotations"
+
+    def __init__(self, owner):
+        super(LayerAnnotationProxy, self).__init__(owner)
+
+
+class LayerGuideLinesProxy(IndexedObjectsProxy):
+    _objects_name = "_guideLines"
+
+    def __init__(self, owner):
+        super(LayerGuideLinesProxy, self).__init__(owner)
+
+
+class PathNodesProxy(IndexedObjectsProxy):
+    _objects_name = "_nodes"
+
+    def __init__(self, owner):
+        super(PathNodesProxy, self).__init__(owner)
+
+
 class CustomParametersProxy(Proxy):
     def __getitem__(self, key):
         if type(key) == slice:
