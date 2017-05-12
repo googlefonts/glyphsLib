@@ -453,7 +453,7 @@ class LayerAnchorsProxy(Proxy):
             raise KeyError
 
     def __setitem__(self, key, anchor):
-        if isinstance(key, str):
+        if isinstance(key, (str, unicode)):
             anchor.name = key
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
