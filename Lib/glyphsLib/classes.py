@@ -285,6 +285,56 @@ class FontGlyphsProxy(Proxy):
                     g._setupLayer(layer, layer.layerId)
 
 
+class FontClassesProxy(Proxy):
+
+    def __getitem__(self, key):
+        if isinstance(key, (slice, int)):
+            return self.values().__getitem__(key)
+        if isinstance(key, (str, unicode)):
+            for index, klass in enumerate(self.values()):
+                if klass.name == key:
+                    return self.values()[index]
+        raise KeyError
+
+    def __setitem__(self, key, value):
+        if isinstance(key, int):
+            self.values()[key] = value
+        elif isinstance(key, (str, unicode)):
+            for index, klass in enumerate(self.values()):
+                if klass.name == key:
+                    self.values()[index] = value
+        else:
+            raise KeyError
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            del self.values()[key]
+        elif isinstance(key, (str, unicode)):
+            for index, klass in enumerate(self.values()):
+                if klass.name == key:
+                    del self.values()[index]
+
+    def append(self, item):
+        self.values().append(item)
+
+    def insert(self, key, item):
+        self.values().insert(key, item)
+
+    def extend(self, items):
+        self.values().extend(items)
+
+    def remove(self, item):
+        self.values().remove(item)
+
+    def values(self):
+        return self._owner._classes
+
+    def setter(self, values):
+        if isinstance(values, Proxy):
+            values = list(values)
+        self._owner._classes = values
+
+
 class GlyphLayerProxy(Proxy):
     def __getitem__(self, key):
         if type(key) == slice:
@@ -1496,6 +1546,10 @@ class GSFont(GSBase):
         self._instances = value
         for i in self._instances:
             i.parent = self
+
+    classes = property(
+        lambda self: FontClassesProxy(self),
+        lambda self, value: FontClassesProxy(self).setter(value))
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
