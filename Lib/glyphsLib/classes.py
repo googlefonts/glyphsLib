@@ -301,10 +301,12 @@ class FontClassesProxy(Proxy):
     def __setitem__(self, key, value):
         if isinstance(key, int):
             self.values()[key] = value
+            value._parent = self._owner
         elif isinstance(key, (str, unicode)):
             for index, klass in enumerate(self.values()):
                 if klass.name == key:
                     self.values()[index] = value
+                    value._parent = self._owner
         else:
             raise KeyError
 
@@ -318,12 +320,16 @@ class FontClassesProxy(Proxy):
 
     def append(self, item):
         self.values().append(item)
+        item._parent = self._owner
 
     def insert(self, key, item):
         self.values().insert(key, item)
+        item._parent = self._owner
 
     def extend(self, items):
         self.values().extend(items)
+        for value in items:
+            value._parent = self._owner
 
     def remove(self, item):
         self.values().remove(item)
@@ -335,6 +341,8 @@ class FontClassesProxy(Proxy):
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._classes = values
+        for value in values:
+            value._parent = self._owner
 
 
 class GlyphLayerProxy(Proxy):
@@ -1041,6 +1049,7 @@ class GSNode(GSBase):
             self.position = position
             self.type = nodetype
             self.smooth = smooth
+        self._parent = None
 
     def __repr__(self):
         content = self.type
@@ -1232,6 +1241,7 @@ class GSClass(GSFeature):
         "notes": unicode,
         "disabled": bool,
     }
+    _parent = None
 
     def __init__(self, name="xxxx", code=None):
         super(GSClass, self).__init__()
@@ -1242,6 +1252,10 @@ class GSClass(GSFeature):
     def __repr__(self):
         return '<%s "%s">' % \
             (self.__class__.__name__, self.name)
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSFeaturePrefix(GSClass):
