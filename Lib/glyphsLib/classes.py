@@ -1127,7 +1127,7 @@ class GSComponent(GSBase):
         "alignment": int,
         "anchor": str,
         "locked": bool,
-        "name": str,
+        "name": unicode,
         "piece": dict,
         "transform": transform,
     }
@@ -1150,7 +1150,7 @@ class GSComponent(GSBase):
 
 class GSAnchor(GSBase):
     _classesForName = {
-        "name": str,
+        "name": unicode,
         "position": point,
     }
     _parent = None
