@@ -1136,8 +1136,21 @@ class GSComponent(GSBase):
     }
     _parent = None
 
-    def __init__(self):
+    # TODO: glyph arg is required
+    def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
         super(GSComponent, self).__init__()
+        if transform is None:
+            if scale != (1, 1) or offset != (0, 0):
+                xx, yy = scale
+                dx, dy = offset
+                self.transform = (xx, 0, 0, yy, dx, dy)
+        else:
+            self.transform = transform
+
+        if isinstance(glyph, (str, unicode)):
+            self.name = glyph
+        elif isinstance(glyph, GSGlyph):
+            self.name = glyph.name
 
     def __repr__(self):
         return '<GSComponent "%s" x=%.1f y=%.1f>' % \
