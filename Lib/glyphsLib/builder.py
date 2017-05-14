@@ -599,8 +599,8 @@ def set_robofont_glyph_background(glyph, key, background):
 def set_family_user_data(ufo, user_data):
     """Set family-wide user data as Glyphs does."""
 
-    for key, val in user_data.items():
-        ufo.lib[key] = val
+    for key in user_data.keys():
+        ufo.lib[key] = user_data[key]
 
 
 def set_master_user_data(ufo, user_data):
