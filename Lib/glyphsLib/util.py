@@ -16,6 +16,7 @@
 import logging
 import os
 import shutil
+from fontTools.misc.textTools import num2binary
 
 logger = logging.getLogger(__name__)
 
@@ -87,3 +88,8 @@ def cast_to_number_or_bool(inputstr):
             return float(inputstr)
         except ValueError:
             return inputstr
+
+
+def bin_to_int_list(value):
+    string = num2binary(value)
+    return [i for i, v in enumerate(reversed(string)) if v == "1"]
