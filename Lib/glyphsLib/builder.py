@@ -22,7 +22,7 @@ import logging
 import re
 
 from glyphsLib.anchors import propagate_font_anchors
-from glyphsLib.util import clear_data, cast_to_number_or_bool
+from glyphsLib.util import clear_data, cast_to_number_or_bool, bin_to_int_list
 import glyphsLib.glyphdata
 
 __all__ = [
@@ -383,6 +383,19 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         # convert code page numbers to OS/2 ulCodePageRange bits
         if name == 'codePageRanges':
             value = [CODEPAGE_RANGES[v] for v in value]
+
+        # convert Glyphs' GASP Table to UFO openTypeGaspRangeRecords
+        if name == 'GASP Table':
+            name = 'openTypeGaspRangeRecords'
+            # XXX maybe the parser should cast the gasp values to int?
+            value = {int(k): int(v) for k, v in value.items()}
+            gasp_records = []
+            # gasp range records must be sorted in ascending rangeMaxPPEM
+            for max_ppem, gasp_behavior in sorted(value.items()):
+                gasp_records.append({
+                    'rangeMaxPPEM': max_ppem,
+                    'rangeGaspBehavior': bin_to_int_list(gasp_behavior)})
+            value = gasp_records
 
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
