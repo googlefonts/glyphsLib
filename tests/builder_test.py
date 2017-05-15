@@ -131,6 +131,23 @@ class SetCustomParamsTest(unittest.TestCase):
             ('openTypeOS2CodePageRanges', [0, 1])])
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
 
+    def test_gasp_table(self):
+        gasp_table = {'65535': '15',
+                      '20': '7',
+                      '8': '10'}
+        set_custom_params(self.ufo, parsed=[('GASP Table', gasp_table)])
+
+        ufo_range_records = self.ufo.info.openTypeGaspRangeRecords
+        self.assertIsNotNone(ufo_range_records)
+        self.assertEqual(len(ufo_range_records), 3)
+        rec1, rec2, rec3 = ufo_range_records
+        self.assertEqual(rec1['rangeMaxPPEM'], 8)
+        self.assertEqual(rec1['rangeGaspBehavior'], [1, 3])
+        self.assertEqual(rec2['rangeMaxPPEM'], 20)
+        self.assertEqual(rec2['rangeGaspBehavior'], [0, 1, 2])
+        self.assertEqual(rec3['rangeMaxPPEM'], 65535)
+        self.assertEqual(rec3['rangeGaspBehavior'], [0, 1, 2, 3])
+
 
 class ParseGlyphsFilterTest(unittest.TestCase):
     def test_complete_parameter(self):
