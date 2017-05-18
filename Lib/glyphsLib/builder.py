@@ -174,8 +174,6 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
             # in the font are appended after the listed glyphs, in the order
             # in which they appear in the source file
             glyph_order.append(glyph_name)
-        # unlikely, but you never know...
-        assert glyph_name not in glyphs, "duplicate glyph: %s" % glyph_name
         glyphs[glyph_name] = glyph
 
     loaded_glyphs = set()
