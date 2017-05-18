@@ -166,15 +166,26 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
         glyph_order = []
     sorted_glyphset = set(glyph_order)
 
+    glyphs = {}
     for glyph in data['glyphs']:
-        add_glyph_to_groups(kerning_groups, glyph)
-
-        glyph_name = glyph.pop('glyphname')
+        glyph_name = glyph['glyphname']
         if glyph_name not in sorted_glyphset:
             # glyphs not listed in the 'glyphOrder' custom parameter but still
             # in the font are appended after the listed glyphs, in the order
             # in which they appear in the source file
             glyph_order.append(glyph_name)
+        # unlikely, but you never know...
+        assert glyph_name not in glyphs, "duplicate glyph: %s" % glyph_name
+        glyphs[glyph_name] = glyph
+
+    loaded_glyphs = set()
+    for glyph_name in glyph_order:
+        if glyph_name in loaded_glyphs:
+            logger.warning(
+                "glyphOrder contains duplicate glyph: '%s'" % glyph_name)
+            continue
+        glyph = glyphs[glyph_name]
+        add_glyph_to_groups(kerning_groups, glyph)
 
         # pop glyph metadata only once, i.e. not when looping through layers
         metadata_keys = ['unicode', 'color', 'export', 'lastChange',
@@ -197,6 +208,8 @@ def to_ufos(data, include_instances=False, family_name=None, debug=False):
             ufo = ufos[layer_id]
             glyph = ufo.newGlyph(glyph_name)
             load_glyph(glyph, layer, glyph_data)
+
+        loaded_glyphs.add(glyph_name)
 
     for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
         glyph = ufos[layer_id][glyph_name]
