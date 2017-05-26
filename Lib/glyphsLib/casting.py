@@ -207,7 +207,7 @@ class RWNode(RWGlyphs):
     """Read/write a node on an outline."""
 
     _regex = re.compile(
-        '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|OFFCURVE|n/a)(?: (SMOOTH))?')
+        '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)(?: (SMOOTH))?')
 
     def read(self, src):
         """Cast a node from a string with format X Y TYPE [SMOOTH]."""
