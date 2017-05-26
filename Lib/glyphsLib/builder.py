@@ -585,7 +585,7 @@ def set_robofont_glyph_background(glyph, key, background):
         points = []
         for x, y, node_type, smooth in path.pop('nodes', []):
             point = {'x': x, 'y': y, 'smooth': smooth}
-            if node_type in ['line', 'curve']:
+            if node_type in ['line', 'curve', 'qcurve']:
                 point['segmentType'] = node_type
             points.append(point)
         contours.append({'points': points})
@@ -833,7 +833,7 @@ def draw_paths(pen, paths):
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
         for x, y, node_type, smooth in nodes:
-            if node_type not in ['line', 'curve']:
+            if node_type not in ['line', 'curve', 'qcurve']:
                 node_type = None
             pen.addPoint((x, y), segmentType=node_type, smooth=smooth)
         pen.endPath()

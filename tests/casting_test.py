@@ -17,7 +17,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import unittest
-from glyphsLib.casting import cast_data, num, custom_params
+from glyphsLib.casting import cast_data, num, node, custom_params
 from copy import deepcopy
 
 
@@ -73,6 +73,17 @@ class RWNumTest(unittest.TestCase):
         self.assertEqual(num.write(1.0), '1')
         self.assertEqual(num.write(-10), '-10')
         self.assertEqual(num.write(1.1), '1.1')
+
+
+class RWNodeTest(unittest.TestCase):
+
+    def test_read(self):
+        self.assertEqual(node.read('0 0 QCURVE SMOOTH'), [0, 0, 'qcurve', True])
+        self.assertEqual(node.read('0 0 QCURVE'), [0, 0, 'qcurve', False])
+
+    def test_write(self):
+        self.assertEqual(node.write([0, 0, 'qcurve', True]), '0 0 QCURVE SMOOTH')
+        self.assertEqual(node.write([0, 0, 'qcurve', False]), '0 0 QCURVE' )
 
 
 class RWCustomParamsTest(unittest.TestCase):
