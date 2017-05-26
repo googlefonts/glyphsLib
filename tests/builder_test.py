@@ -780,6 +780,28 @@ class DrawPathsTest(unittest.TestCase):
         first_segment_type = points[0][2]
         self.assertEqual(first_segment_type, 'curve')
 
+    def test_draw_paths_qcurve(self):
+        contours = [{
+            'closed': True,
+            'nodes': [
+                (143, 695, 'offcurve', False),
+                (37, 593, 'offcurve', False),
+                (37, 434, 'offcurve', False),
+                (143, 334, 'offcurve', False),
+                (223, 334, 'qcurve', True),
+            ]}]
+
+        pen = _PointDataPen()
+        draw_paths(pen, contours)
+
+        points = pen.contours[0]
+
+        first_x, first_y = points[0][:2]
+        self.assertEqual((first_x, first_y), (223, 334))
+
+        first_segment_type = points[0][2]
+        self.assertEqual(first_segment_type, 'qcurve')
+
 
 if __name__ == '__main__':
     unittest.main()
