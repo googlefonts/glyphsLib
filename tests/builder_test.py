@@ -19,6 +19,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 import collections
 import datetime
+import random
 import unittest
 # unittest.mock is only available for python 3+
 from mock import patch
@@ -388,6 +389,61 @@ class ToUfosTest(unittest.TestCase):
         # this rule results from breaking up (kern1.A, v, -100)
         # due to conflict with (a, kern2.V, 100)
         self.assertEqual(ufo.kerning['A', 'v'], -100)
+
+    def test_duplicate_in_glyphOrder(self):
+        data = self.generate_minimal_data()
+        data['glyphs'].append({'glyphname': 'a', 'layers': []})
+        data['customParameters'] = ({'name': 'glyphOrder', 'value': ['a']*2},)
+        with CapturingLogHandler(builder.logger, "WARNING") as captor:
+            to_ufos(data)
+        captor.assertRegex("duplicate glyph: 'a'")
+
+    @staticmethod
+    def add_glyphs_with_kerning_groups(data, glyph_names):
+        # add the named glyphs to data using initial letter as kerning group
+        for glyph_name in glyph_names:
+            data['glyphs'].append({
+                'glyphname': glyph_name, 'layers': [],
+                'rightKerningGroup': glyph_name[0],
+                'leftKerningGroup': glyph_name[0]})
+
+    def test_kerning_groups_without_glyphOrder(self):
+        """Test that glyph names are appended to UFO kerning groups following
+        the original order of glyphs in the Glyphs source data when the
+        'glyphOrder' custom parameter is not present.
+        """
+
+        data = self.generate_minimal_data()
+        order = ['o', 'oacute', 'ograve', 'obreve', 'y', 'yacute', 'ygrave']
+        shuffled = random.sample(order, len(order))
+        self.add_glyphs_with_kerning_groups(data, shuffled)
+
+        ufo = to_ufos(data)[0]
+
+        for side in (1, 2):
+            for key in ('o', 'y'):
+                group = "public.kern%d.%s" % (side, key)
+                self.assertEqual(ufo.groups[group],
+                                 [g for g in shuffled if g.startswith(key)])
+
+    def test_kerning_groups_with_glyphOrder(self):
+        """Test that glyph names are appended to UFO kerning groups following
+        the optional 'glyphOrder' custom parameter.
+        """
+
+        data = self.generate_minimal_data()
+        order = ['o', 'oacute', 'ograve', 'obreve', 'y', 'yacute', 'ygrave']
+        data['customParameters'] = ({'name': 'glyphOrder', 'value': order},)
+        shuffled = random.sample(order, len(order))
+        self.add_glyphs_with_kerning_groups(data, shuffled)
+
+        ufo = to_ufos(data)[0]
+
+        for side in (1, 2):
+            for key in ('o', 'y'):
+                group = "public.kern%d.%s" % (side, key)
+                self.assertEqual(ufo.groups[group],
+                                 [g for g in order if g.startswith(key)])
 
     def test_propagate_anchors(self):
         """Test anchor propagation for some relatively complicated cases."""
