@@ -124,11 +124,11 @@ class ParserGlyphTest(unittest.TestCase):
             "script",
             "subCategory",
             "unicode",
-            "userData",
             "widthMetricsKey",
         ]
         for attr in defaults_as_none:
             self.assertIsNone(getattr(glyph, attr))
+        self.assertIsNotNone(glyph.userData)
         defaults_as_true = [
             "export",
         ]
