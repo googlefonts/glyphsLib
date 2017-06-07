@@ -712,15 +712,6 @@ class DrawPathsTest(unittest.TestCase):
         self.assertEqual(pen.contours, [])
 
     def test_draw_paths_open(self):
-        contours = [{
-            'closed': False,
-            'nodes': [
-                (0, 0, 'line', False),
-                (1, 1, 'offcurve', False),
-                (2, 2, 'offcurve', False),
-                (3, 3, 'curve', True),
-            ]}]
-        
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='line'),
@@ -750,16 +741,6 @@ class DrawPathsTest(unittest.TestCase):
             GSNode(position=(5, 5), nodetype='curve', smooth=True),
         ]
         path.closed = True
-        contours = [{
-            'closed': True,
-            'nodes': [
-                (0, 0, 'offcurve', False),
-                (1, 1, 'offcurve', False),
-                (2, 2, 'curve', True),
-                (3, 3, 'offcurve', False),
-                (4, 4, 'offcurve', False),
-                (5, 5, 'curve', True),
-            ]}]
 
         pen = _PointDataPen()
         draw_paths(pen, [path])
@@ -773,18 +754,18 @@ class DrawPathsTest(unittest.TestCase):
         self.assertEqual(first_segment_type, 'curve')
 
     def test_draw_paths_qcurve(self):
-        contours = [{
-            'closed': True,
-            'nodes': [
-                (143, 695, 'offcurve', False),
-                (37, 593, 'offcurve', False),
-                (37, 434, 'offcurve', False),
-                (143, 334, 'offcurve', False),
-                (223, 334, 'qcurve', True),
-            ]}]
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(143, 695), nodetype='offcurve'),
+            GSNode(position=(37, 593), nodetype='offcurve'),
+            GSNode(position=(37, 434), nodetype='offcurve'),
+            GSNode(position=(143, 334), nodetype='offcurve'),
+            GSNode(position=(223, 334), nodetype='qcurve', smooth=True),
+        ]
+        path.closed = True
 
         pen = _PointDataPen()
-        draw_paths(pen, contours)
+        draw_paths(pen, [path])
 
         points = pen.contours[0]
 
