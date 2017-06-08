@@ -970,6 +970,13 @@ class GSFontMaster(GSBase):
         return '<GSFontMaster "%s" width %s weight %s>' % \
             (self.name, self.widthValue, self.weightValue)
 
+    def shouldWriteValueForKey(self, key):
+        if key in ("width", "weight"):
+            if getattr(self, key) == "Regular":
+                return False
+            return True
+        return super(GSFontMaster, self).shouldWriteValueForKey(key)
+
     @property
     def name(self):
         if self._name is not None:
@@ -1157,6 +1164,12 @@ class GSComponent(GSBase):
     def __repr__(self):
         return '<GSComponent "%s" x=%.1f y=%.1f>' % \
             (self.name, self.transform[4], self.transform[5])
+
+    def shouldWriteValueForKey(self, key):
+        if key == "piece":
+            value = getattr(self, key)
+            return len(value) > 0
+        return super(GSComponent, self).shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -1470,6 +1483,12 @@ class GSBackgroundLayer(GSBase):
         "visible": bool,
     }
 
+    def shouldWriteValueForKey(self, key):
+        if key == "backgroundImage":
+            value = getattr(self, key)
+            return len(value) > 0
+        return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
+
 
 class GSLayer(GSBase):
     _classesForName = {
@@ -1526,10 +1545,13 @@ class GSLayer(GSBase):
         return "<%s \"%s\" (%s)>" % (self.__class__.__name__, name, parent)
 
     def shouldWriteValueForKey(self, key):
-        if key == "associatedMasterId":
+        if key in ("associatedMasterId", "name"):
             return self.layerId != self.associatedMasterId
         if key in ("width"):
             return True
+        if key == "backgroundImage":
+            value = getattr(self, key)
+            return len(value) > 0
         return super(GSLayer, self).shouldWriteValueForKey(key)
 
     @property

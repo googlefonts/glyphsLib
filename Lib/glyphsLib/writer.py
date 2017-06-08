@@ -80,11 +80,9 @@ class GlyphsWriter(object):
                            (list, glyphsLib.classes.Proxy, str, unicode)) and
                     len(value) == 0):
                 continue
-            try:
-                if not dictValue.shouldWriteValueForKey(key):
-                    continue
-            except AttributeError:
-                pass
+            if (hasattr(dictValue, "shouldWriteValueForKey") and
+                    not dictValue.shouldWriteValueForKey(key)):
+                continue
             self.writeKey(key)
             self.writeValue(value, key, forType=forType)
             self.file.write(";\n")
