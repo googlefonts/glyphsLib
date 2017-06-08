@@ -1783,6 +1783,7 @@ class GSFont(GSBase):
             print("____loads")
             p.parse_into_object(self, fp.read())
             fp.close()
+            self.filepath = path
 
     def __repr__(self):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
