@@ -21,7 +21,7 @@ import traceback
 import uuid
 from glyphsLib.types import (
     transform, point, glyphs_datetime, color, floatToString, readIntlist,
-    writeIntlist, needsQuotes, feature_syntax_encode
+    writeIntlist, needsQuotes, feature_syntax_encode, baseType
 )
 from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
@@ -29,7 +29,7 @@ from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
 
 __all__ = [
-    "GSFont", "GSCustomParameter", "GSInstance",
+    "GSFont", "GSCustomParameter", "GSInstance", "GSBase",
 ]
 
 
@@ -102,6 +102,8 @@ class GSBase(object):
         if default is not None:
             return default != value
         if klass in (int, float, bool) and value == 0:
+            return False
+        if isinstance(value, baseType) and value.value is None:
             return False
         return True
 
@@ -1493,6 +1495,7 @@ class GSLayer(GSBase):
     }
     _defaultsForName = {
         "name": "Regular",
+        "weight": 600,
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides",
@@ -1525,6 +1528,8 @@ class GSLayer(GSBase):
     def shouldWriteValueForKey(self, key):
         if key == "associatedMasterId":
             return self.layerId != self.associatedMasterId
+        if key in ("width"):
+            return True
         return super(GSLayer, self).shouldWriteValueForKey(key)
 
     @property

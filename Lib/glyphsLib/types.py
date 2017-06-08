@@ -136,6 +136,11 @@ class color(baseType):
     def __repr__(self):
         return self.value.__repr__()
 
+    def plistValue(self):
+        if self.value is not None:
+            return str(self.value)
+        return None
+
 
 # mutate list in place
 def _mutate_list(fn, l):
@@ -184,7 +189,7 @@ def floatToString(Float, precision=3):
         elif precision >= 1 and fractional >= 0.1 and fractional <= 0.9:
             return "%.1f" % Float
         else:
-            return "%d" % Float
+            return "%.0f" % Float
     except:
         print(traceback.format_exc())
 
