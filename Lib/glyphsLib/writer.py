@@ -74,7 +74,11 @@ class GlyphsWriter(object):
                     value = getattr(dictValue, getKey)
             except AttributeError:
                 continue
-            if value is None or (isinstance(value, (list, glyphsLib.classes.Proxy, str, unicode)) and len(value) == 0):
+            if value is None:
+                continue
+            if (isinstance(value,
+                           (list, glyphsLib.classes.Proxy, str, unicode)) and
+                    len(value) == 0):
                 continue
             try:
                 if not dictValue.shouldWriteValueForKey(key):
@@ -104,7 +108,8 @@ class GlyphsWriter(object):
             self.writeArray(value)
         elif hasattr(value, "plistValue"):
             value = value.plistValue()
-            self.file.write(value)
+            if value is not None:
+                self.file.write(value)
         elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
         elif type(value) == float:
