@@ -101,9 +101,21 @@ class GlyphsWriter(object):
             idx += 1
         self.file.write(")")
 
+    def writeUserData(self, userDataValue):
+        self.file.write("{\n")
+        for key in userDataValue.keys():
+            value = userDataValue[key]
+            self.writeKey(key)
+            self.writeValue(value, key)
+            self.file.write(";\n")
+        self.file.write("}")
+
     def writeValue(self, value, forKey=None, forType=None):
         if isinstance(value, (list, glyphsLib.classes.Proxy)):
-            self.writeArray(value)
+            if isinstance(value, glyphsLib.classes.UserDataProxy):
+                self.writeUserData(value)
+            else:
+                self.writeArray(value)
         elif hasattr(value, "plistValue"):
             value = value.plistValue()
             if value is not None:
