@@ -1770,7 +1770,11 @@ class GSFont(GSBase):
             return True
         return super(GSFont, self).shouldWriteValueForKey(key)
 
-    def save(self, path):
+    def save(self, path=None):
+        if self.filepath:
+            path = self.filepath
+        elif path is None:
+            raise ValueError
         writer = GlyphsWriter(path)
         writer.write(self)
 
