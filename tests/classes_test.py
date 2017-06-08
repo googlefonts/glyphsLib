@@ -407,9 +407,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
 
     def test_filepath(self):
         font = self.font
-        # TODO
-        # self.assertIsNotNone(font.filepath)
-        self.assertIsNone(font.filepath)
+        self.assertIsNotNone(font.filepath)
 
     # TODO: tool, tools
     # TODO: save(), close()
