@@ -496,7 +496,7 @@ class GlyphLayerProxy(Proxy):
                         index = index + 1
                     return extraLayer
             '''
-            return list(self._owner._layers.values())[key]
+            return list(self.values())[key]
         layer = self._owner._layers.get(key, None)
         if layer is None:
             keyIsMasterId = False
@@ -535,7 +535,7 @@ class GlyphLayerProxy(Proxy):
         return self._owner._layers.keys()
 
     def values(self):
-        return self._owner._layers.values()
+        return sorted(self._owner._layers.values())
 
     def append(self, layer):
         assert layer is not None
@@ -1702,6 +1702,16 @@ class GSLayer(GSBase):
         except:
             parent = 'orphan'
         return "<%s \"%s\" (%s)>" % (self.__class__.__name__, name, parent)
+
+    def __lt__(self, other):
+        if self.master and other.master:
+            return self.master.weightValue < other.master.weightValue or self.master.widthValue < other.master.widthValue
+
+    @property # not implemented in Glyphs.app (at the moment), just a shortcut for sorting through __lt__
+    def master(self):
+        if self.associatedMasterId and self.associatedMasterId == self.layerId and self.parent:
+            master = self.parent.parent.masterForId(self.associatedMasterId)
+            return master
 
     def shouldWriteValueForKey(self, key):
         if key in ("associatedMasterId", "name"):
