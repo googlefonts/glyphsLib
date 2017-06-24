@@ -137,6 +137,26 @@ def isString(string):
     return isinstance(string, (str, unicode))
 
 
+class GSApplication(object):
+
+	def __init__(self):
+		self.font = None
+		self.fonts = []
+
+	def open(self, path):
+		newFont = glyphsLib.load(open(path, 'r'))
+		newFont.filepath = path
+		self.fonts.append(newFont)
+		self.font = newFont
+		return newFont
+
+	def __repr__(self):
+		return '<glyphsLib>'
+
+Glyphs = GSApplication()
+
+
+
 class GSBase(object):
     _classesForName = {}
     _defaultsForName = {}
