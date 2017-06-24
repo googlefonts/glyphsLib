@@ -53,13 +53,18 @@ class point(object):
     default = [1, 0]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
-    def __init__(self, value = None, value2 = None):
+    def __init__(self, value = None, value2 = None, rect = None):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         elif value is not None and value2 is None:
             self.value = [float(i) for i in self.regex.match(value).groups()]
         else:
             self.value = self.default
+
+        self.rect = rect
+
+    def __repr__(self):
+    	return '<point x=%s y=%s>' % (self.value[0], self.value[1])
 
     def plistValue(self):
         assert (isinstance(self.value, list) and
@@ -92,7 +97,9 @@ class point(object):
     @x.setter
     def x(self, value):
         self.value[0] = value
-    width = x # compatibility with height attribute of rect
+        # Update parent rect
+        if self.rect:
+        	self.rect.value[0] = value
 
     @property
     def y(self):
@@ -100,7 +107,34 @@ class point(object):
     @y.setter
     def y(self, value):
         self.value[1] = value
-    height = y # compatibility with size attribute of rect
+        # Update parent rect
+        if self.rect:
+        	self.rect.value[1] = value
+
+
+class size(point):
+    def __repr__(self):
+    	return '<size width=%s height=%s>' % (self.value[0], self.value[1])
+
+    @property
+    def width(self):
+        return self.value[0]
+    @width.setter
+    def width(self, value):
+        self.value[0] = value
+        # Update parent rect
+        if self.rect:
+        	self.rect.value[2] = value
+
+    @property
+    def height(self):
+        return self.value[1]
+    @height.setter
+    def height(self, value):
+        self.value[1] = value
+        # Update parent rect
+        if self.rect:
+        	self.rect.value[3] = value
 
 
 class rect(object):
@@ -124,6 +158,9 @@ class rect(object):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
         return '"{{%s, %s}, {%s, %s}}"' % (floatToString(v, 3) for v in self.value)
 
+    def __repr__(self):
+    	return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
+
     def __getitem__(self, key):
         print('size.__getitem__(%s) = %s' % (key, self.value[key]))
         return self.value[key]
@@ -140,7 +177,7 @@ class rect(object):
 
     @property
     def origin(self):
-        return point(self.value[0], self.value[1])
+        return point(self.value[0], self.value[1], rect = self)
     @origin.setter
     def origin(self, value):
         self.value[0] = value.x
@@ -148,11 +185,11 @@ class rect(object):
 
     @property
     def size(self):
-        return point(self.value[2], self.value[3])
+        return size(self.value[2], self.value[3], rect = self)
     @size.setter
     def size(self, value):
-        self.value[2] = value.x
-        self.value[3] = value.y
+        self.value[2] = value.width
+        self.value[3] = value.height
 
 
 class transform(point):
