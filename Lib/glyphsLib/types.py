@@ -53,13 +53,13 @@ class point(object):
     default = [1, 0]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
-	def __init__(self, value = None, value2 = None):
-		if value is not None and value2 is not None:
-			self.value = [value, value2]
-		elif value is not None and value2 is None:
-			self.value = [float(i) for i in self.regex.match(value).groups()]
-		else:
-			self.value = self.default
+    def __init__(self, value = None, value2 = None):
+        if value is not None and value2 is not None:
+            self.value = [value, value2]
+        elif value is not None and value2 is None:
+            self.value = [float(i) for i in self.regex.match(value).groups()]
+        else:
+            self.value = self.default
 
     def plistValue(self):
         assert (isinstance(self.value, list) and
@@ -86,42 +86,73 @@ class point(object):
     def __len__(self):
         return self.dimension
 
+    @property
+    def x(self):
+        return self.value[0]
+    @x.setter
+    def x(self, value):
+        self.value[0] = value
+    width = x # compatibility with height attribute of rect
+
+    @property
+    def y(self):
+        return self.value[1]
+    @y.setter
+    def y(self, value):
+        self.value[1] = value
+    height = y # compatibility with size attribute of rect
+
 
 class rect(object):
-	"""Read/write a rect of two points in curly braces."""
-	#crop = "{{0, 0}, {427, 259}}";
+    """Read/write a rect of two points in curly braces."""
+    #crop = "{{0, 0}, {427, 259}}";
 
-	dimension = 4
-	default = [0, 0, 0, 0]
-	regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
+    dimension = 4
+    default = [0, 0, 0, 0]
+    regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
 
-	def __init__(self, value = None, value2 = None):
+    def __init__(self, value = None, value2 = None):
 
-		if value is not None and value2 is not None:
-			self.value = [value[0], value[1], value2[0], value2[1]]
-		elif value is not None and value2 is None:
-			self.value = [float(i) for i in self.regex.match(value).groups()]
-		else:
-			self.value = self.default
+        if value is not None and value2 is not None:
+            self.value = [value[0], value[1], value2[0], value2[1]]
+        elif value is not None and value2 is None:
+            self.value = [float(i) for i in self.regex.match(value).groups()]
+        else:
+            self.value = self.default
 
-	def plistValue(self):
-		assert isinstance(self.value, list) and len(self.value) == self.dimension
-		return '"{{%s, %s}, {%s, %s}}"' % (floatToString(v, 3) for v in self.value)
+    def plistValue(self):
+        assert isinstance(self.value, list) and len(self.value) == self.dimension
+        return '"{{%s, %s}, {%s, %s}}"' % (floatToString(v, 3) for v in self.value)
 
-	def __getitem__(self, key):
-		print('size.__getitem__(%s) = %s' % (key, self.value[key]))
-		return self.value[key]
+    def __getitem__(self, key):
+        print('size.__getitem__(%s) = %s' % (key, self.value[key]))
+        return self.value[key]
 
-	def __setitem__(self, key, value):
-		if type(key) is int and key < self.dimension:
-			while self.dimension > len(self.value):
-				self.value.append(0)
-			self.value[key] = value
-		else:
-			raise KeyError
-	def __len__(self):
-		return self.dimension
+    def __setitem__(self, key, value):
+        if type(key) is int and key < self.dimension:
+            while self.dimension > len(self.value):
+                self.value.append(0)
+            self.value[key] = value
+        else:
+            raise KeyError
+    def __len__(self):
+        return self.dimension
 
+    @property
+    def origin(self):
+        return point(self.value[0], self.value[1])
+    @origin.setter
+    def origin(self, value):
+        self.value[0] = value.x
+        self.value[1] = value.y
+
+    @property
+    def size(self):
+        return point(self.value[2], self.value[3])
+    @size.setter
+    def size(self, value):
+        self.value[2] = value.x
+        self.value[3] = value.y
 
 
 class transform(point):
