@@ -29,7 +29,32 @@ from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
 
 __all__ = [
-    "GSFont", "GSCustomParameter", "GSInstance", "GSBase",
+	"Glyphs",
+	"GSFont",
+	"GSFontMaster",
+	"GSAlignmentZone",
+	"GSInstance",
+	"GSCustomParameter",
+	"GSClass",
+#	"GSFeaturePrefix",
+	"GSFeature",
+	"GSGlyph",
+	"GSLayer",
+	"GSAnchor",
+	"GSComponent",
+#	"GSSmartComponentAxis",
+	"GSPath",
+	"GSNode",
+	"GSGuideLine",
+	"GSAnnotation",
+	"GSHint",
+#	"GSBackgroundImage",
+
+	# Constants
+	"MOVE", "LINE", "CURVE", "OFFCURVE", "GSMOVE", "GSLINE", "GSCURVE", "GSOFFCURVE", "GSSHARP", "GSSMOOTH",
+	"TAG", "TOPGHOST", "STEM", "BOTTOMGHOST", "TTANCHOR", "TTSTEM", "TTALIGN", "TTINTERPOLATE", "TTDIAGONAL", "TTDELTA", "CORNER", "CAP", "TTDONTROUND", "TTROUND", "TTROUNDUP", "TTROUNDDOWN", "TRIPLE",
+	"TEXT", "ARROW", "CIRCLE", "PLUS", "MINUS",
+	"LTR", "RTL", "LTRTTB", "RTLTTB", "GSTopLeft", "GSTopCenter", "GSTopRight", "GSCenterLeft", "GSCenterCenter", "GSCenterRight", "GSBottomLeft", "GSBottomCenter", "GSBottomRight",
 ]
 
 # CONSTANTS
