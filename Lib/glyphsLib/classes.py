@@ -49,7 +49,7 @@ __all__ = [
 	"GSGuideLine",
 	"GSAnnotation",
 	"GSHint",
-#	"GSBackgroundImage",
+	"GSBackgroundImage",
 
 	# Constants
 	"MOVE", "LINE", "CURVE", "OFFCURVE", "GSMOVE", "GSLINE", "GSCURVE", "GSOFFCURVE", "GSSHARP", "GSSMOOTH",
@@ -1594,11 +1594,47 @@ class GSInstance(GSBase):
         self.customParameters["postscriptFullName"] = value
 
 
+class GSBackgroundImage(GSBase):
+	_classesForName = {
+		"crop": size,
+		"imagePath": unicode,
+		"locked": bool,
+		"transform": transform,
+		"alpha": int,
+	}
+
+	def __init__(self, path = None):
+		super(GSBackgroundImage, self).__init__()
+		self.imagePath = path
+
+	def __repr__(self):
+		return "<GSBackgroundImage '%s'>" % self.imagePath
+
+	# .path
+	@property
+	def path(self):
+		return self.imagePath
+	@path.setter
+	def path(self, value):
+		if os.dirname(os.abspath(value)) == os.dirname(os.abspath(self.parent.parent.parent.filepath)):
+			self.imagePath = os.path.basename(value)
+		else:
+			self.imagePath = value
+
+	# .position
+	@property
+	def position(self):
+		return point(self.transform[4], self.transform[5])
+	@position.setter
+	def position(self, value):
+		self.transform[4] = value[0]
+		self.transform[5] = value[1]
+
 class GSBackgroundLayer(GSBase):
     _classesForName = {
         "anchors": GSAnchor,
         "annotations": GSAnnotation,
-        "backgroundImage": dict,  # TODO
+        "backgroundImage": GSBackgroundImage,
         "components": GSComponent,
         "guideLines": GSGuideLine,
         "hints": GSHint,
@@ -1619,7 +1655,7 @@ class GSLayer(GSBase):
         "annotations": GSAnnotation,
         "associatedMasterId": str,
         "background": GSBackgroundLayer,
-        "backgroundImage": dict,  # TODO
+        "backgroundImage": GSBackgroundImage,
         "color": color,
         "components": GSComponent,
         "guideLines": GSGuideLine,
