@@ -58,6 +58,83 @@ __all__ = [
 	"LTR", "RTL", "LTRTTB", "RTLTTB", "GSTopLeft", "GSTopCenter", "GSTopRight", "GSCenterLeft", "GSCenterCenter", "GSCenterRight", "GSBottomLeft", "GSBottomCenter", "GSBottomRight",
 ]
 
+# CONSTANTS
+GSMOVE_ = 17
+GSLINE_ = 1
+GSCURVE_ = 35
+GSOFFCURVE_ = 65
+GSSHARP = 0
+GSSMOOTH = 100
+
+GSMOVE = "move"
+GSLINE = "line"
+GSCURVE = "curve"
+GSQCURVE = "qcurve"
+GSOFFCURVE = "offcurve"
+
+MOVE = "move"
+LINE = "line"
+CURVE = "curve"
+OFFCURVE = "offcurve"
+
+TAG = -2
+TOPGHOST = -1
+STEM = 0
+BOTTOMGHOST = 1
+TTANCHOR = 2
+TTSTEM = 3
+TTALIGN = 4
+TTINTERPOLATE = 5
+TTDIAGONAL = 6
+TTDELTA = 7
+CORNER = 16
+CAP = 17
+
+TTDONTROUND = 4
+TTROUND = 0
+TTROUNDUP = 1
+TTROUNDDOWN = 2
+TRIPLE = 128
+
+#annotations:
+TEXT = 1
+ARROW = 2
+CIRCLE = 3
+PLUS = 4
+MINUS = 5
+
+# Reverse lookup for __repr__
+hintConstants = {
+	-2: 'Tag',
+	-1: 'TopGhost',
+	0: 'Stem',
+	1: 'BottomGhost',
+	2: 'TTAnchor',
+	3: 'TTStem',
+	4: 'TTAlign',
+	5: 'TTInterpolate',
+	6: 'TTDiagonal',
+	7: 'TTDelta',
+	16: 'Corner',
+	17: 'Cap',
+}
+
+GSTopLeft = 6
+GSTopCenter = 7
+GSTopRight = 8
+GSCenterLeft = 3
+GSCenterCenter = 4
+GSCenterRight = 5
+GSBottomLeft = 0
+GSBottomCenter = 1
+GSBottomRight = 2
+
+# Writing direction
+LTR = 0
+RTL = 1
+LTRTTB = 3
+RTLTTB = 2
+
 
 def hint_target(line=None):
     if line is None:
