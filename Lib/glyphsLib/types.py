@@ -53,11 +53,13 @@ class point(object):
     default = [1, 0]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
-    def __init__(self, value=None):
-        if value:
-            self.value = [float(i) for i in self.regex.match(value).groups()]
-        else:
-            self.value = self.default
+	def __init__(self, value = None, value2 = None):
+		if value is not None and value2 is not None:
+			self.value = [value, value2]
+		elif value is not None and value2 is None:
+			self.value = [float(i) for i in self.regex.match(value).groups()]
+		else:
+			self.value = self.default
 
     def plistValue(self):
         assert (isinstance(self.value, list) and
