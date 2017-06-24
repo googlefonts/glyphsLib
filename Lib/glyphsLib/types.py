@@ -22,7 +22,7 @@ import math
 from fontTools.misc.py23 import unicode
 
 __all__ = [
-    'transform', 'point'
+    'transform', 'point', 'size'
 ]
 
 
@@ -83,6 +83,44 @@ class point(object):
 
     def __len__(self):
         return self.dimension
+
+
+class size(object):
+	"""Read/write a size of two points in curly braces."""
+	#crop = "{{0, 0}, {427, 259}}";
+
+	dimension = 4
+	default = [0, 0, 0, 0]
+	regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
+
+	def __init__(self, value = None, value2 = None):
+
+		print('value:', value, 'value2:', value2)
+
+		if value is not None and value2 is not None:
+			self.value = [value[0], value[1], value2[0], value2[1]]
+		elif value is not None and value2 is None:
+			self.value = [float(i) for i in self.regex.match(value).groups()]
+		else:
+			self.value = self.default
+
+	def plistValue(self):
+		assert isinstance(self.value, list) and len(self.value) == self.dimension
+		return '"{{%s, %s}, {%s, %s}}"' % (floatToString(v, 3) for v in self.value)
+
+	def __getitem__(self, key):
+		print('size.__getitem__(%s) = %s' % (key, self.value[key]))
+		return self.value[key]
+
+	def __setitem__(self, key, value):
+		if type(key) is int and key < self.dimension:
+			while self.dimension > len(self.value):
+				self.value.append(0)
+			self.value[key] = value
+		else:
+			raise KeyError
+	def __len__(self):
+		return self.dimension
 
 
 class transform(point):
