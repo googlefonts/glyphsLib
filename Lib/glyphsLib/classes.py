@@ -19,8 +19,9 @@ from __future__ import print_function, unicode_literals
 import re
 import traceback
 import uuid
+import glyphsLib
 from glyphsLib.types import (
-    transform, point, glyphs_datetime, color, floatToString, readIntlist,
+    transform, point, size, glyphs_datetime, color, floatToString, readIntlist,
     writeIntlist, needsQuotes, feature_syntax_encode, baseType
 )
 from glyphsLib.parser import Parser

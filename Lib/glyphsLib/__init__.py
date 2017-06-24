@@ -26,7 +26,7 @@ from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
 
-from glyphsLib.classes import GSFont
+from glyphsLib.classes import Glyphs, GSFont
 
 __version__ = "1.7.6.dev0"
 
