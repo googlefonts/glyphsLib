@@ -22,7 +22,7 @@ import math
 from fontTools.misc.py23 import unicode
 
 __all__ = [
-    'transform', 'point', 'size'
+    'transform', 'point', 'rect'
 ]
 
 
@@ -85,8 +85,8 @@ class point(object):
         return self.dimension
 
 
-class size(object):
-	"""Read/write a size of two points in curly braces."""
+class rect(object):
+	"""Read/write a rect of two points in curly braces."""
 	#crop = "{{0, 0}, {427, 259}}";
 
 	dimension = 4
@@ -94,8 +94,6 @@ class size(object):
 	regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
 
 	def __init__(self, value = None, value2 = None):
-
-		print('value:', value, 'value2:', value2)
 
 		if value is not None and value2 is not None:
 			self.value = [value[0], value[1], value2[0], value2[1]]
@@ -121,6 +119,7 @@ class size(object):
 			raise KeyError
 	def __len__(self):
 		return self.dimension
+
 
 
 class transform(point):
