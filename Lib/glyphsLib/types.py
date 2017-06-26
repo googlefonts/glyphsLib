@@ -198,6 +198,9 @@ class transform(point):
     default = [1, 0, 0, 1, 0, 0]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
+    def __repr__(self):
+    	return '<affine transformation %s>' % (' '.join(map(str, self.value)))
+
     def plistValue(self):
         assert (isinstance(self.value, list) and
                 len(self.value) == self.dimension)
