@@ -28,6 +28,7 @@ from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
+from affine import Affine
 
 __all__ = [
     "Glyphs",
@@ -1661,6 +1662,15 @@ class GSBackgroundImage(GSBase):
     def position(self, value):
         self.transform[4] = value[0]
         self.transform[5] = value[1]
+
+    # .rotation
+    @property
+    def rotation(self):
+        return self._R
+    @rotation.setter
+    def rotation(self, value):
+        affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(value))[:6]
+        self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
 
 
 class GSBackgroundLayer(GSBase):
