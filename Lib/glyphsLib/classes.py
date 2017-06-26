@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from __future__ import print_function, unicode_literals
-import re
+import re, math
 import traceback
 import uuid
 import glyphsLib
@@ -30,32 +30,32 @@ from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
 
 __all__ = [
-	"Glyphs",
-	"GSFont",
-	"GSFontMaster",
-	"GSAlignmentZone",
-	"GSInstance",
-	"GSCustomParameter",
-	"GSClass",
-#	"GSFeaturePrefix",
-	"GSFeature",
-	"GSGlyph",
-	"GSLayer",
-	"GSAnchor",
-	"GSComponent",
-#	"GSSmartComponentAxis",
-	"GSPath",
-	"GSNode",
-	"GSGuideLine",
-	"GSAnnotation",
-	"GSHint",
-	"GSBackgroundImage",
+    "Glyphs",
+    "GSFont",
+    "GSFontMaster",
+    "GSAlignmentZone",
+    "GSInstance",
+    "GSCustomParameter",
+    "GSClass",
+#    "GSFeaturePrefix",
+    "GSFeature",
+    "GSGlyph",
+    "GSLayer",
+    "GSAnchor",
+    "GSComponent",
+#    "GSSmartComponentAxis",
+    "GSPath",
+    "GSNode",
+    "GSGuideLine",
+    "GSAnnotation",
+    "GSHint",
+    "GSBackgroundImage",
 
-	# Constants
-	"MOVE", "LINE", "CURVE", "OFFCURVE", "GSMOVE", "GSLINE", "GSCURVE", "GSOFFCURVE", "GSSHARP", "GSSMOOTH",
-	"TAG", "TOPGHOST", "STEM", "BOTTOMGHOST", "TTANCHOR", "TTSTEM", "TTALIGN", "TTINTERPOLATE", "TTDIAGONAL", "TTDELTA", "CORNER", "CAP", "TTDONTROUND", "TTROUND", "TTROUNDUP", "TTROUNDDOWN", "TRIPLE",
-	"TEXT", "ARROW", "CIRCLE", "PLUS", "MINUS",
-	"LTR", "RTL", "LTRTTB", "RTLTTB", "GSTopLeft", "GSTopCenter", "GSTopRight", "GSCenterLeft", "GSCenterCenter", "GSCenterRight", "GSBottomLeft", "GSBottomCenter", "GSBottomRight",
+    # Constants
+    "MOVE", "LINE", "CURVE", "OFFCURVE", "GSMOVE", "GSLINE", "GSCURVE", "GSOFFCURVE", "GSSHARP", "GSSMOOTH",
+    "TAG", "TOPGHOST", "STEM", "BOTTOMGHOST", "TTANCHOR", "TTSTEM", "TTALIGN", "TTINTERPOLATE", "TTDIAGONAL", "TTDELTA", "CORNER", "CAP", "TTDONTROUND", "TTROUND", "TTROUNDUP", "TTROUNDDOWN", "TRIPLE",
+    "TEXT", "ARROW", "CIRCLE", "PLUS", "MINUS",
+    "LTR", "RTL", "LTRTTB", "RTLTTB", "GSTopLeft", "GSTopCenter", "GSTopRight", "GSCenterLeft", "GSCenterCenter", "GSCenterRight", "GSBottomLeft", "GSBottomCenter", "GSBottomRight",
 ]
 
 # CONSTANTS
@@ -105,18 +105,18 @@ MINUS = 5
 
 # Reverse lookup for __repr__
 hintConstants = {
-	-2: 'Tag',
-	-1: 'TopGhost',
-	0: 'Stem',
-	1: 'BottomGhost',
-	2: 'TTAnchor',
-	3: 'TTStem',
-	4: 'TTAlign',
-	5: 'TTInterpolate',
-	6: 'TTDiagonal',
-	7: 'TTDelta',
-	16: 'Corner',
-	17: 'Cap',
+    -2: 'Tag',
+    -1: 'TopGhost',
+    0: 'Stem',
+    1: 'BottomGhost',
+    2: 'TTAnchor',
+    3: 'TTStem',
+    4: 'TTAlign',
+    5: 'TTInterpolate',
+    6: 'TTDiagonal',
+    7: 'TTDelta',
+    16: 'Corner',
+    17: 'Cap',
 }
 
 GSTopLeft = 6
@@ -149,21 +149,52 @@ def isString(string):
     return isinstance(string, (str, unicode))
 
 
+def transformStructToScaleAndRotation(transform):
+    Det = transform[0] * transform[3] - transform[1] * transform[2]
+    _sX = math.sqrt(math.pow(transform[0], 2) + math.pow(transform[1], 2))
+    _sY = math.sqrt(math.pow(transform[2], 2) + math.pow(transform[3], 2))
+    if Det < 0:
+        _sY = -_sY
+    _R = math.atan2(transform[1] * _sY, transform[0] * _sX) * 180 / math.pi
+
+    if Det < 0 and (math.fabs(_R) > 135 or _R < -90):
+        _sX = -_sX
+        _sY = -_sY
+        if _R < 0:
+            _R += 180
+        else:
+            _R -= 180
+
+    quadrant = 0
+    if _R < -90:
+        quadrant = 180
+        _R += quadrant
+    if _R > 90:
+        quadrant = -180
+        _R += quadrant
+    _R = _R * _sX / _sY
+    _R -= quadrant
+    if _R < -179:
+        _R += 360
+
+    return _sX, _sY, _R
+
+
 class GSApplication(object):
 
-	def __init__(self):
-		self.font = None
-		self.fonts = []
+    def __init__(self):
+        self.font = None
+        self.fonts = []
 
-	def open(self, path):
-		newFont = glyphsLib.load(open(path, 'r'))
-		newFont.filepath = path
-		self.fonts.append(newFont)
-		self.font = newFont
-		return newFont
+    def open(self, path):
+        newFont = glyphsLib.load(open(path, 'r'))
+        newFont.filepath = path
+        self.fonts.append(newFont)
+        self.font = newFont
+        return newFont
 
-	def __repr__(self):
-		return '<glyphsLib>'
+    def __repr__(self):
+        return '<glyphsLib>'
 
 Glyphs = GSApplication()
 
@@ -1595,40 +1626,42 @@ class GSInstance(GSBase):
 
 
 class GSBackgroundImage(GSBase):
-	_classesForName = {
-		"crop": rect,
-		"imagePath": unicode,
-		"locked": bool,
-		"transform": transform,
-		"alpha": int,
-	}
+    _classesForName = {
+        "crop": rect,
+        "imagePath": unicode,
+        "locked": bool,
+        "transform": transform,
+        "alpha": int,
+    }
 
-	def __init__(self, path = None):
-		super(GSBackgroundImage, self).__init__()
-		self.imagePath = path
+    def __init__(self, path = None):
+        super(GSBackgroundImage, self).__init__()
+        self.imagePath = path
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform)
 
-	def __repr__(self):
-		return "<GSBackgroundImage '%s'>" % self.imagePath
+    def __repr__(self):
+        return "<GSBackgroundImage '%s'>" % self.imagePath
 
-	# .path
-	@property
-	def path(self):
-		return self.imagePath
-	@path.setter
-	def path(self, value):
-		if os.dirname(os.abspath(value)) == os.dirname(os.abspath(self.parent.parent.parent.filepath)):
-			self.imagePath = os.path.basename(value)
-		else:
-			self.imagePath = value
+    # .path
+    @property
+    def path(self):
+        return self.imagePath
+    @path.setter
+    def path(self, value):
+        if os.dirname(os.abspath(value)) == os.dirname(os.abspath(self.parent.parent.parent.filepath)):
+            self.imagePath = os.path.basename(value)
+        else:
+            self.imagePath = value
 
-	# .position
-	@property
-	def position(self):
-		return point(self.transform[4], self.transform[5])
-	@position.setter
-	def position(self, value):
-		self.transform[4] = value[0]
-		self.transform[5] = value[1]
+    # .position
+    @property
+    def position(self):
+        return point(self.transform[4], self.transform[5])
+    @position.setter
+    def position(self, value):
+        self.transform[4] = value[0]
+        self.transform[5] = value[1]
+
 
 class GSBackgroundLayer(GSBase):
     _classesForName = {
