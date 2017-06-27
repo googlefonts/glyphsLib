@@ -1663,14 +1663,35 @@ class GSBackgroundImage(GSBase):
         self.transform[4] = value[0]
         self.transform[5] = value[1]
 
+    # .scale
+    @property
+    def scale(self):
+        return (self._sX, self._sY)
+    @scale.setter
+    def scale(self, value):
+        if type(value) in [int, float]:
+            self._sX = value
+            self._sY = value
+        elif type(value) in [tuple, list] and len(value) == 2:
+            self._sX, self._sY = value
+        else:
+            raise ValueError
+        self.updateAffineTransform()
+
     # .rotation
     @property
     def rotation(self):
         return self._R
     @rotation.setter
     def rotation(self, value):
-        affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(value))[:6]
+        self._R = value
+        self.updateAffineTransform()
+
+
+    def updateAffineTransform(self):
+        affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(self._R))[:6]
         self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
+
 
 
 class GSBackgroundLayer(GSBase):
