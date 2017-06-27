@@ -2082,7 +2082,7 @@ class GSFont(GSBase):
     def classes(self, value):
         self._classes = value
         for g in self._classes:
-            g.parent = self
+            g._parent = self
 
     @property
     def features(self):
@@ -2092,7 +2092,7 @@ class GSFont(GSBase):
     def features(self, value):
         self._features = value
         for g in self._features:
-            g.parent = self
+            g._parent = self
 
     @property
     def masters(self):
