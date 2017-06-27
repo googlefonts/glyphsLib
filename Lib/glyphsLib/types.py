@@ -156,7 +156,7 @@ class rect(object):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % (floatToString(v, 3) for v in self.value)
+        return '"{{%s, %s}, {%s, %s}}"' % (floatToString(self.value[0], 3), floatToString(self.value[1], 3), floatToString(self.value[2], 3), floatToString(self.value[3], 3))
 
     def __repr__(self):
     	return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))

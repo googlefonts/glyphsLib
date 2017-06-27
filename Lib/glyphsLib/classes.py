@@ -1745,7 +1745,7 @@ class GSBackgroundLayer(GSBase):
 
     def shouldWriteValueForKey(self, key):
         if key == "backgroundImage":
-            value = getattr(self, key)
+            return hasattr(self, key)
             return len(value) > 0
         return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
 
@@ -1820,7 +1820,7 @@ class GSLayer(GSBase):
         if key in ("width"):
             return True
         if key == "backgroundImage":
-            value = getattr(self, key)
+            return hasattr(self, key)
             return len(value) > 0
         return super(GSLayer, self).shouldWriteValueForKey(key)
 
