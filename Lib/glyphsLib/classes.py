@@ -1453,56 +1453,17 @@ class GSFeature(GSBase):
         return '<%s "%s">' % \
             (self.__class__.__name__, self.name)
 
-
-class GSClass(GSFeature):
-    _classesForName = {
-        "automatic": bool,
-        "code": unicode,
-        "name": str,
-        "notes": unicode,
-        "disabled": bool,
-    }
-    _parent = None
-
-    def __init__(self, name="xxxx", code=None):
-        super(GSClass, self).__init__()
-        self.name = name
-        if code is not None:
-            self.code = code
-
-    def __repr__(self):
-        return '<%s "%s">' % \
-            (self.__class__.__name__, self.name)
-
     @property
     def parent(self):
         return self._parent
+
+
+class GSClass(GSFeature):
+    pass
 
 
 class GSFeaturePrefix(GSFeature):
-    _classesForName = {
-        "automatic": bool,
-        "code": unicode,
-        "name": str,
-        "notes": unicode,
-        "disabled": bool,
-    }
-    _parent = None
-
-    def __init__(self, name="xxxx", code=None):
-        super(GSFeature, self).__init__()
-        self.name = name
-        if code is not None:
-            self.code = code
-
-    def __repr__(self):
-        return '<%s "%s">' % \
-            (self.__class__.__name__, self.name)
-
-    @property
-    def parent(self):
-        return self._parent
-
+    pass
 
 class GSAnnotation(GSBase):
     _classesForName = {
