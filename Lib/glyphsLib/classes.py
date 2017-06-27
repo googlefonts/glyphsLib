@@ -38,7 +38,7 @@ __all__ = [
     "GSInstance",
     "GSCustomParameter",
     "GSClass",
-#    "GSFeaturePrefix",
+    "GSFeaturePrefix",
     "GSFeature",
     "GSGlyph",
     "GSLayer",
@@ -1479,8 +1479,29 @@ class GSClass(GSFeature):
         return self._parent
 
 
-class GSFeaturePrefix(GSClass):
-    pass
+class GSFeaturePrefix(GSFeature):
+    _classesForName = {
+        "automatic": bool,
+        "code": unicode,
+        "name": str,
+        "notes": unicode,
+        "disabled": bool,
+    }
+    _parent = None
+
+    def __init__(self, name="xxxx", code=None):
+        super(GSFeature, self).__init__()
+        self.name = name
+        if code is not None:
+            self.code = code
+
+    def __repr__(self):
+        return '<%s "%s">' % \
+            (self.__class__.__name__, self.name)
+
+    @property
+    def parent(self):
+        return self._parent
 
 
 class GSAnnotation(GSBase):
