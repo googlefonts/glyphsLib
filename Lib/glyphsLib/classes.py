@@ -28,7 +28,7 @@ from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
-from affine import Affine
+from glyphsLib.affine import Affine
 
 __all__ = [
     "Glyphs",
