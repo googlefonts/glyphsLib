@@ -1100,7 +1100,7 @@ class GSAnchorFromFileTest(GSObjectsTestCase):
     def test_repr(self):
         anchor = self.anchor
         self.assertEqual(anchor.__repr__(),
-                         '<GSAnchor "bottom" x=184.0 y=0.0>')
+                         '<GSAnchor "bottom" x=218.0 y=0.0>')
 
     def test_name(self):
         anchor = self.anchor
