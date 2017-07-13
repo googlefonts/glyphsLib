@@ -2046,11 +2046,12 @@ class GSFont(GSBase):
         return super(GSFont, self).shouldWriteValueForKey(key)
 
     def save(self, path=None):
-        if self.filepath:
-            path = self.filepath
-        elif path is None:
+        if path:
+            writer = GlyphsWriter(path)
+        elif self.filepath:
+            writer = GlyphsWriter(self.filepath)
+        else:
             raise ValueError
-        writer = GlyphsWriter(path)
         writer.write(self)
 
     def getVersionMinor(self):
