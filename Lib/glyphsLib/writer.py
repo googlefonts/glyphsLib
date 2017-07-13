@@ -135,7 +135,7 @@ class GlyphsWriter(object):
             self.file.write("\"%s +0000\"" % str(value))
         else:
             value = feature_syntax_encode(value)
-            self.file.write(value)
+            self.file.write(value.encode('utf8'))
 
     def writeKey(self, key):
         if needsQuotes(key):
