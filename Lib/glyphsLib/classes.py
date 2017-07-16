@@ -619,9 +619,17 @@ class GlyphLayerProxy(Proxy):
                     return extraLayer
             '''
             return list(self.values())[key]
-        elif isString(key):
-            if self._owner._layers.has_key(key):
-                return self._owner._layers[key]
+        # Create empty layer if layer ID points to a master
+        layer = self._owner._layers.get(key, None)
+        if layer is None:
+            keyIsMasterId = False
+            for master in self._owner.parent.masters:
+                if master.id == key:
+                    keyIsMasterId = True
+            if keyIsMasterId:
+                layer = GSLayer()
+                self.__setitem__(key, layer)
+        return layer
 
     def __setitem__(self, key, layer):
         if isinstance(key, int) and self._owner.parent:
