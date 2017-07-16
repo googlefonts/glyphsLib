@@ -623,10 +623,11 @@ class GlyphLayerProxy(Proxy):
         if isinstance(key, int) and self._owner.parent:
             if key < 0:
                 key = self.__len__() + key
-            master = self._owner.parent.masters[key]
-            key = master.id
-        self._owner._setupLayer(layer, key)
-        self._owner._layers[key] = layer
+            self._owner._setupLayer(layer, self._owner.parent.masters[0].id)
+            self._owner._layers[key] = layer
+        # TODO: replace by ID
+        else:
+            raise KeyError
 
     def __delitem__(self, key):
         if isinstance(key, int) and self._owner.parent:
