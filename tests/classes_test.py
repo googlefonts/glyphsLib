@@ -118,7 +118,7 @@ class GSFontTest(unittest.TestCase):
 
         self.assertEqual(len(font.glyphs), 0)
         self.assertEqual(len(font.masters), 0)
-        self.assertEqual(font.masters, [])
+        self.assertEqual(list(font.masters), list(()))
         self.assertEqual(len(font.instances), 0)
         self.assertEqual(font.instances, [])
         self.assertEqual(len(font.customParameters), 0)
