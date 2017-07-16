@@ -382,22 +382,19 @@ class FontFontMasterProxy(Proxy):
 
     def __setitem__(self, Key, FontMaster):
         FontMaster.parent = self._owner
-        FontMaster.id = str(uuid.uuid4()).upper()
-        OldFontMaster = None
         if type(Key) is int:
             OldFontMaster = self.__getitem__(Key)
             if Key < 0:
                 Key = self.__len__() + Key
+            FontMaster.id = OldFontMaster.id
             self._owner._masters[Key] = FontMaster
         elif isString(Key):
             OldFontMaster = self.__getitem__(Key)
+            FontMaster.id = OldFontMaster.id
             Index = self._owner._masters.index(OldFontMaster)
             self._owner._masters[Index] = FontMaster
         else:
             raise(KeyError)
-
-        # Replace all layer IDs with ID of new master
-        # TODO
 
 
     def __delitem__(self, Key):
