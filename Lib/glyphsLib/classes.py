@@ -407,16 +407,16 @@ class FontFontMasterProxy(Proxy):
 
     def append(self, FontMaster):
         FontMaster.parent = self._owner
-        FontMaster.id = uuid.uuid4().upper()
+        FontMaster.id = str(uuid.uuid4()).upper()
         self._owner._masters.append(FontMaster)
 
         # Cycle through all glyphs and append layer
         for glyph in self._owner.glyphs:
-            print(glyph.layers[FontMaster.id])
+#            print(glyph.layers[FontMaster.id])
             if not glyph.layers[FontMaster.id]:
                 newLayer = GSLayer()
-                glyphs.layers.append(newLayer)
-                glyphs._setupLayer(newLayer, id)
+                glyph.layers.append(newLayer)
+                glyph._setupLayer(newLayer, id)
                 print('added layer %s to %s' % (newLayer, glyph))
 
 
@@ -594,7 +594,7 @@ class GlyphLayerProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, slice):
             return self.values().__getitem__(key)
-        if isinstance(key, int):
+        elif isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
             # This is how it is handled in Glyphs.app. For now, just use
@@ -617,16 +617,9 @@ class GlyphLayerProxy(Proxy):
                     return extraLayer
             '''
             return list(self.values())[key]
-        layer = self._owner._layers.get(key, None)
-        if layer is None:
-            keyIsMasterId = False
-            for master in self._owner.parent.masters:
-                if master.id == key:
-                    keyIsMasterId = True
-            if keyIsMasterId:
-                layer = GSLayer()
-                self.__setitem__(key, layer)
-        return layer
+        elif isString(key):
+            if self._owner._layers.has_key(key):
+                return self._owner._layers[key]
 
     def __setitem__(self, key, layer):
         if isinstance(key, int) and self._owner.parent:
