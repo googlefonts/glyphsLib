@@ -382,7 +382,10 @@ class FontFontMasterProxy(Proxy):
 
     def __setitem__(self, Key, FontMaster):
         FontMaster.parent = self._owner
+        FontMaster.id = str(uuid.uuid4()).upper()
+        OldFontMaster = None
         if type(Key) is int:
+            OldFontMaster = self.__getitem__(Key)
             if Key < 0:
                 Key = self.__len__() + Key
             self._owner._masters[Key] = FontMaster
@@ -392,6 +395,10 @@ class FontFontMasterProxy(Proxy):
             self._owner._masters[Index] = FontMaster
         else:
             raise(KeyError)
+
+        # Replace all layer IDs with ID of new master
+        # TODO
+
 
     def __delitem__(self, Key):
         if type(Key) is int:
@@ -414,8 +421,8 @@ class FontFontMasterProxy(Proxy):
         for glyph in self._owner.glyphs:
             if not glyph.layers[FontMaster.id]:
                 newLayer = GSLayer()
+                glyph._setupLayer(newLayer, FontMaster.id)
                 glyph.layers.append(newLayer)
-                glyph._setupLayer(newLayer, id)
 
 
     def remove(self, FontMaster):
@@ -2014,6 +2021,7 @@ class GSGlyph(GSBase):
                       lambda self, value: GlyphLayerProxy(self).setter(value))
 
     def _setupLayer(self, layer, key):
+        assert type(key) == str
         layer.parent = self
         layer.layerId = key
         # TODO use proxy `self.parent.masters[key]`
