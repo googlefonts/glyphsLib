@@ -412,12 +412,10 @@ class FontFontMasterProxy(Proxy):
 
         # Cycle through all glyphs and append layer
         for glyph in self._owner.glyphs:
-#            print(glyph.layers[FontMaster.id])
             if not glyph.layers[FontMaster.id]:
                 newLayer = GSLayer()
                 glyph.layers.append(newLayer)
                 glyph._setupLayer(newLayer, id)
-                print('added layer %s to %s' % (newLayer, glyph))
 
 
     def remove(self, FontMaster):
@@ -655,7 +653,7 @@ class GlyphLayerProxy(Proxy):
         if not layer.associatedMasterId:
             layer.associatedMasterId = self._owner.parent.masters[0].id
         if not layer.layerId:
-            layer.layerId = uuid.uuid4()
+            layer.layerId = str(uuid.uuid4()).upper()
         self._owner._setupLayer(layer, layer.layerId)
         self._owner._layers[layer.layerId] = layer
 
