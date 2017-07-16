@@ -594,6 +594,7 @@ class FontClassesProxy(Proxy):
 
 class GlyphLayerProxy(Proxy):
     def __getitem__(self, key):
+        self._ensureMasterLayers()
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -619,17 +620,9 @@ class GlyphLayerProxy(Proxy):
                     return extraLayer
             '''
             return list(self.values())[key]
-        # Create empty layer if layer ID points to a master
-        layer = self._owner._layers.get(key, None)
-        if layer is None:
-            keyIsMasterId = False
-            for master in self._owner.parent.masters:
-                if master.id == key:
-                    keyIsMasterId = True
-            if keyIsMasterId:
-                layer = GSLayer()
-                self.__setitem__(key, layer)
-        return layer
+        elif isString(key):
+            if self._owner._layers.has_key(key):
+                return self._owner._layers[key]
 
     def __setitem__(self, key, layer):
         if isinstance(key, int) and self._owner.parent:
@@ -656,16 +649,19 @@ class GlyphLayerProxy(Proxy):
     #    return LayersIterator(self._owner)
 
     def __len__(self):
-        return len(self._owner._layers)
+        return len(self.values())
 
     def keys(self):
+        self._ensureMasterLayers()
         return self._owner._layers.keys()
 
     def values(self):
+        self._ensureMasterLayers()
         return sorted(self._owner._layers.values())
 
     def append(self, layer):
         assert layer is not None
+        self._ensureMasterLayers()
         if not layer.associatedMasterId:
             layer.associatedMasterId = self._owner.parent.masters[0].id
         if not layer.layerId:
@@ -681,6 +677,7 @@ class GlyphLayerProxy(Proxy):
         return self._owner.removeLayerForKey_(layer.layerId)
 
     def insert(self, index, layer):
+        self._ensureMasterLayers()
         self.append(layer)
 
     def setter(self, values):
@@ -699,6 +696,15 @@ class GlyphLayerProxy(Proxy):
             self._owner._setupLayer(layer, key)
         self._owner._layers = newLayers
 
+    def _ensureMasterLayers(self):
+        # Ensure existence of master-linked layers (even for iteration, len() etc.) if accidentally deleted
+        for master in self._owner.parent.masters:
+            if self._owner.parent.masters[master.id] is None:
+                newLayer = GSLayer()
+                newLayer.associatedMasterId = master.id
+                newLayer.layerId = master.id
+                self._owner._setupLayer(newLayer, master.id)
+                self.__setitem__(master.id, newLayer)
 
 class LayerAnchorsProxy(Proxy):
 
