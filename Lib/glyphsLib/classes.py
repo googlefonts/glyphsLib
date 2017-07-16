@@ -358,6 +358,94 @@ class LayersIterator:
 '''
 
 
+class FontFontMasterProxy(Proxy):
+    """The list of masters. You can access it with the index or the master ID.
+    Usage:
+        Font.masters[index]
+        Font.masters[id]
+        for master in Font.masters:
+        ...
+    """
+    def __getitem__(self, Key):
+        if type(Key) == slice:
+            return self.values().__getitem__(Key)
+        if type(Key) is int:
+            if Key < 0:
+                Key = self.__len__() + Key
+            return self.values()[Key]
+        elif isString(Key):
+            for master in self.values():
+                if master.id == Key:
+                    return master
+        else:
+            raise(KeyError)
+
+    def __setitem__(self, Key, FontMaster):
+        FontMaster.parent = self._owner
+        if type(Key) is int:
+            if Key < 0:
+                Key = self.__len__() + Key
+            self._owner._masters[Key] = FontMaster
+        elif isString(Key):
+            OldFontMaster = self.__getitem__(Key)
+            Index = self._owner._masters.index(OldFontMaster)
+            self._owner._masters[Index] = FontMaster
+        else:
+            raise(KeyError)
+
+    def __delitem__(self, Key):
+        if type(Key) is int:
+            if Key < 0:
+                Key = self.__len__() + Key
+            return self.remove(self._owner._masters[Key])
+        else:
+            OldFontMaster = self.__getitem__(Key)
+            return self.remove(OldFontMaster)
+
+    def values(self):
+        return self._owner._masters
+
+    def append(self, FontMaster):
+        FontMaster.parent = self._owner
+        FontMaster.id = uuid.uuid4().upper()
+        self._owner._masters.append(FontMaster)
+
+        # Cycle through all glyphs and append layer
+        for glyph in self._owner.glyphs:
+            print(glyph.layers[FontMaster.id])
+            if not glyph.layers[FontMaster.id]:
+                newLayer = GSLayer()
+                glyphs.layers.append(newLayer)
+                glyphs._setupLayer(newLayer, id)
+                print('added layer %s to %s' % (newLayer, glyph))
+
+
+    def remove(self, FontMaster):
+
+        # First remove all layers in all glyphs that reference this master
+        for glyph in self._owner.glyphs:
+            for layer in glyph.layers:
+                if layer.associatedMasterId == FontMaster.id or layer.layerId == FontMaster.id:
+                    glyph.layers.remove(layer)
+
+        self._owner._masters.remove(FontMaster)
+
+    def insert(self, Index, FontMaster):
+        FontMaster.parent = self._owner
+        self._owner._masters.insert(Index, FontMaster)
+
+    def extend(self, FontMasters):
+        for FontMaster in FontMasters:
+            self.append(FontMaster)
+
+    def setter(self, values):
+        if isinstance(values, Proxy):
+            values = list(values)
+        self._owner._masters = values
+        for m in self._owner._masters:
+            m.parent = self._owner
+
+
 class FontGlyphsProxy(Proxy):
     """The list of glyphs. You can access it with the index or the glyph name.
     Usage:
@@ -1995,7 +2083,7 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
-        "fontMaster": "masters",
+        "fontMaster": "_masters",
         "unitsPerEm": "upm",
     }
     _defaultsForName = {
@@ -2069,7 +2157,7 @@ class GSFont(GSBase):
 
     def _setupGlyph(self, glyph):
         glyph.parent = self
-        for layer in glyph.layers.values():
+        for layer in glyph.layers:
             if (not hasattr(layer, "associatedMasterId") or
                     layer.associatedMasterId is None or
                     len(layer.associatedMasterId) == 0):
@@ -2095,15 +2183,18 @@ class GSFont(GSBase):
         for g in self._features:
             g._parent = self
 
-    @property
-    def masters(self):
-        return self._masters
+    # @property
+    # def masters(self):
+    #     return self._masters
 
-    @masters.setter
-    def masters(self, value):
-        self._masters = value
-        for m in self._masters:
-            m.parent = self
+    # @masters.setter
+    # def masters(self, value):
+    #     self._masters = value
+    #     for m in self._masters:
+    #         m.parent = self
+
+    masters = property(lambda self: FontFontMasterProxy(self),
+                      lambda self, value: FontFontMasterProxy(self).setter(value))
 
     def masterForId(self, key):
         for master in self._masters:
