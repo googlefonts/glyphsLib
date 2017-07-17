@@ -1201,7 +1201,11 @@ class GSNodeFromFileTest(GSObjectsTestCase):
         self.assertEqual(self.path.nodes[0].index, 0)
         self.assertEqual(self.path.nodes[-1].index, 43)
 
-    # TODO: nextNode, prevNode
+    def test_nextNode(self):
+        self.assertEqual(type(self.path.nodes[-1]), GSNode)
+        self.assertEqual(self.path.nodes[-1].nextNode, self.path.nodes[0])
+
+    # TODO: prevNode
 
 
     # TODO
