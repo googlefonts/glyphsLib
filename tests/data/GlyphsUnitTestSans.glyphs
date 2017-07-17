@@ -1,11 +1,53 @@
 {
-.appVersion = "939";
+.appVersion = "1043";
 DisplayStrings = (
-"A\U00C4/a.sc",
-n/_part.shoulder
+A
+);
+classes = (
+{
+code = A;
+name = c2sc_source;
+},
+{
+code = a.sc;
+name = c2sc_target;
+},
+{
+code = "";
+name = numbers;
+},
+{
+code = a;
+name = smcp_source;
+},
+{
+code = a.sc;
+name = smcp_target;
+}
 );
 date = "2015-06-08 08:53:00 +0000";
 familyName = "Glyphs Unit Test Sans";
+featurePrefixes = (
+{
+code = "# Dancing Shoes 0.1.4 OpenType feature code generator by Yanone, Copyright 2009\012# Code generated for AFDKO version 2.5\012\012\012languagesystem DFLT dflt; # Default, Default\012languagesystem latn dflt; # Latin, Default\012\012\012\012\012";
+name = Languagesystems;
+}
+);
+features = (
+{
+automatic = 1;
+code = "feature c2sc;\012feature smcp;\012";
+name = aalt;
+},
+{
+code = "# Small Capitals From Capitals\012\012    sub @c2sc_source by @c2sc_target; ";
+name = c2sc;
+},
+{
+code = "# Small Capitals\012\012    sub @smcp_source by @smcp_target; ";
+name = smcp;
+}
+);
 fontMaster = (
 {
 alignmentZones = (
@@ -216,7 +258,7 @@ xHeight = 490;
 glyphs = (
 {
 glyphname = A;
-lastChange = "2016-03-05 11:48:13 +0000";
+lastChange = "2017-07-17 13:57:06 +0000";
 layers = (
 {
 anchors = (
@@ -347,12 +389,16 @@ nodes = (
 }
 );
 };
+backgroundImage = {
+crop = "{{0, 0}, {489, 637}}";
+imagePath = A.jpg;
+};
 layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
 paths = (
 {
 closed = 1;
 nodes = (
-"321 700 LINE",
+"321 700 LINE {\nname = \"Hello World\";\n}",
 "275 700 LINE",
 "45 0 LINE",
 "65 0 LINE",
@@ -426,7 +472,7 @@ unicode = 00C4;
 },
 {
 glyphname = a;
-lastChange = "2016-03-18 09:51:27 +0000";
+lastChange = "2017-07-17 13:49:10 +0000";
 layers = (
 {
 anchors = (
@@ -740,18 +786,12 @@ nodes = (
 }
 );
 };
-guideLines = (
-{
-angle = 55.123;
-position = "{171, 279}";
-}
-);
 layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
 paths = (
 {
 closed = 1;
 nodes = (
-"352 147 LINE SMOOTH",
+"352 147 LINE SMOOTH {\nname = Hello;\n}",
 "352 68 OFFCURVE",
 "314 7 OFFCURVE",
 "212 7 CURVE SMOOTH",
@@ -1763,8 +1803,8 @@ weightClass = Thin;
 {
 interpolationWeight = 30;
 instanceInterpolations = {
-"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.178082;
-"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.821918;
+"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.17808;
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.82192;
 };
 name = "Extra Light";
 weightClass = ExtraLight;
@@ -1772,8 +1812,8 @@ weightClass = ExtraLight;
 {
 interpolationWeight = 55;
 instanceInterpolations = {
-"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.520548;
-"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.479452;
+"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.52055;
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.47945;
 };
 name = Light;
 weightClass = Light;
@@ -1788,8 +1828,8 @@ name = Regular;
 {
 interpolationWeight = 133;
 instanceInterpolations = {
-"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 0.330769;
-"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.669231;
+"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.66923;
+"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 0.33077;
 };
 name = Medium;
 weightClass = Medium;
@@ -1797,8 +1837,8 @@ weightClass = Medium;
 {
 interpolationWeight = 179;
 instanceInterpolations = {
-"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 0.684615;
-"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.315385;
+"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.31538;
+"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 0.68462;
 };
 name = Bold;
 weightClass = Bold;
@@ -1814,8 +1854,8 @@ weightClass = Black;
 {
 interpolationWeight = 75;
 instanceInterpolations = {
-"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.794521;
-"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.205479;
+"3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.79452;
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.20548;
 };
 name = Web;
 }
