@@ -1340,6 +1340,11 @@ class GSNode(GSBase):
             (floatToString(self.position[0]), floatToString(self.position[1]),
              content)
 
+    @property
+    def index(self):
+        assert self.parent
+        return self.parent.nodes.index(self)
+
 
 class GSPath(GSBase):
     _classesForName = {

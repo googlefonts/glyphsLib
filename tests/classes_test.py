@@ -1196,8 +1196,12 @@ class GSNodeFromFileTest(GSObjectsTestCase):
     def test_smooth(self):
         self.assertBool(self.node.smooth)
 
+    def test_index(self):
+        self.assertInteger(self.node.index)
+        self.assertEqual(self.path.nodes[0].index, 0)
+        self.assertEqual(self.path.nodes[-1].index, 43)
 
-    # TODO: index, nextNode, prevNode
+    # TODO: nextNode, prevNode
 
 
     # TODO
