@@ -1307,11 +1307,11 @@ class GSNode(GSBase):
                  smooth=False):
         if line is not None:
             m = re.match(self._rx, line).groups()
-            self.position = (float(m[0]), float(m[1]))
+            self.position = point(float(m[0]), float(m[1]))
             self.type = m[2].lower()
             self.smooth = bool(m[3])
         else:
-            self.position = position
+            self.position = point(position[0], position[1])
             self.type = nodetype
             self.smooth = smooth
         self._parent = None
@@ -1321,7 +1321,7 @@ class GSNode(GSBase):
         if self.smooth:
             content += " smooth"
         return "<%s %g %g %s>" % \
-            (self.__class__.__name__, self.position[0], self.position[1],
+            (self.__class__.__name__, self.position.x, self.position.y,
              content)
 
     userData = property(

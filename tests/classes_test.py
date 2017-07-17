@@ -1186,10 +1186,8 @@ class GSNodeFromFileTest(GSObjectsTestCase):
     def test_repr(self):
         self.assertIsNotNone(self.node.__repr__())
 
-    # TODO point?
     def test_position(self):
-        # self.assertIsInstance(self.node.position, point)
-        self.assertIsInstance(self.node.position, tuple)
+        self.assertIsInstance(self.node.position, point)
 
     def test_type(self):
         self.assertTrue(self.node.type in
