@@ -1418,10 +1418,17 @@ class GSPath(GSBase):
     def segments(self, value):
         raise NotImplementedError
 
-    # TODO
     @property
     def direction(self):
-        raise NotImplementedError
+        direction = 0
+        for i in range(len(self.nodes)):
+            thisNode = self.nodes[i]
+            nextNode = thisNode.nextNode
+            direction += (nextNode.position.x - thisNode.position.x) * (nextNode.position.y + thisNode.position.y)
+        if direction < 0:
+            return -1
+        else:
+            return 1
 
     @direction.setter
     def direction(self, value):

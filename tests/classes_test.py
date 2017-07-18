@@ -1173,6 +1173,8 @@ class GSPathFromFileTest(GSObjectsTestCase):
     # addNodesAtExtremes()
     # applyTransform()
 
+    def test_direction(self):
+        self.assertEqual(self.path.direction, -1)
 
 class GSNodeFromFileTest(GSObjectsTestCase):
 
