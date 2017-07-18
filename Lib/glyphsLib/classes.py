@@ -1374,6 +1374,13 @@ class GSNode(GSBase):
         elif index < len(self.parent.nodes):
             return self.parent.nodes[index - 1]
 
+    def makeNodeFirst(self):
+        assert self.parent
+        nodes = self.parent.nodes
+        index = self.index
+        newNodes = nodes[index:len(nodes)] + nodes[0:index]
+        self.parent.nodes = newNodes
+
 
 class GSPath(GSBase):
     _classesForName = {

@@ -1212,8 +1212,14 @@ class GSNodeFromFileTest(GSObjectsTestCase):
     def test_name(self):
         self.assertEqual(self.node.name, 'Hello')
 
+    def test_makeNodeFirst(self):
+        oldAmount = len(self.path.nodes)
+        oldSecondNode = self.path.nodes[1]
+        self.path.nodes[1].makeNodeFirst()
+        self.assertEqual(oldAmount, len(self.path.nodes))
+        self.assertEqual(oldSecondNode, self.path.nodes[0])
+
     # TODO
-    # makeNodeFirst()
     # toggleConnection()
 
 
