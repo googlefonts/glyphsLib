@@ -1427,6 +1427,13 @@ class GSPath(GSBase):
     def direction(self, value):
         raise NotImplementedError
 
+    # TODO
+    def reverse(self):
+        raise NotImplementedError
+
+        # I tried, but it's more complicated than that :(
+        self.nodes = reversed(self.nodes)
+
 
 class GSComponent(GSBase):
     _classesForName = {
