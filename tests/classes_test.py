@@ -1176,6 +1176,16 @@ class GSPathFromFileTest(GSObjectsTestCase):
     def test_direction(self):
         self.assertEqual(self.path.direction, -1)
 
+    def test_segments(self):
+        self.assertEqual(len(self.path.segments), 20)
+
+    def test_bounds(self):
+        bounds = self.path.bounds
+        self.assertEqual(bounds.origin.x, 80)
+        self.assertEqual(bounds.origin.y, -10)
+        self.assertEqual(bounds.size.width, 289)
+        self.assertEqual(bounds.size.height, 490)
+
 class GSNodeFromFileTest(GSObjectsTestCase):
 
     def setUp(self):
