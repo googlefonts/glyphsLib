@@ -1481,10 +1481,6 @@ class GSPath(GSBase):
         else:
             return 1
 
-    @direction.setter
-    def direction(self, value):
-        raise NotImplementedError
-
     def reverse(self):
         segments = list(reversed(self.segments))
         for s, segment in enumerate(segments):
