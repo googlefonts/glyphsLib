@@ -1444,7 +1444,18 @@ class GSPath(GSBase):
 
     @segments.setter
     def segments(self, value):
-        raise NotImplementedError
+        if type(value) in (list, tuple):
+            self.setSegments(segments)
+        else:
+            raise TypeError
+
+    def setSegments(self, segments):
+        self.nodes = []
+        for segment in segments:
+            if len(segment.nodes) == 2 or len(segment.nodes) == 4:
+                self.nodes.extend(segment.nodes[1:])
+            else:
+                raise ValueError
 
     @property
     def bounds(self):
@@ -1495,9 +1506,7 @@ class GSPath(GSBase):
             elif len(segment.nodes) == 4 and segment.nodes[-1].type == 'line':
                 segment.nodes[-1].type = 'curve'
                 nextSegment.nodes[0].type = 'curve'
-        self.nodes = []
-        for segment in segments:
-            self.nodes.extend(segment.nodes[1:])
+        self.setSegments(segments)
 
 
 class segment(list):
