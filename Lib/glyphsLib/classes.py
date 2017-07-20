@@ -1411,29 +1411,36 @@ class GSPath(GSBase):
 
     @property
     def segments(self):
-        segments = []
+        self._segments = []
+        self._segmentLength = 0
 
-        i = 0
-        while i < len(self.nodes):
+        nodeCount = 0
+        segmentCount = 0
+        while nodeCount < len(self.nodes):
             newSegment = segment()
+            newSegment.parent = self
+            newSegment.index = segmentCount
             
-            if i == 0:
+            if nodeCount == 0:
                 newSegment.appendNode(self.nodes[-1])
             else:
-                newSegment.appendNode(self.nodes[i-1])
+                newSegment.appendNode(self.nodes[nodeCount-1])
 
-            if self.nodes[i].type == 'offcurve':
-                newSegment.appendNode(self.nodes[i])
-                newSegment.appendNode(self.nodes[i+1])
-                newSegment.appendNode(self.nodes[i+2])
-                i += 3
-            elif self.nodes[i].type == 'line':
-                newSegment.appendNode(self.nodes[i])
-                i += 1
+            if self.nodes[nodeCount].type == 'offcurve':
+                newSegment.appendNode(self.nodes[nodeCount])
+                newSegment.appendNode(self.nodes[nodeCount+1])
+                newSegment.appendNode(self.nodes[nodeCount+2])
+                nodeCount += 3
+            elif self.nodes[nodeCount].type == 'line':
+                newSegment.appendNode(self.nodes[nodeCount])
+                nodeCount += 1
 
-            segments.append(newSegment)
+            self._segments.append(newSegment)
+            self._segmentLength += 1
+            segmentCount += 1
 
-        return segments     
+        self._segments
+        return self._segments     
 
     @segments.setter
     def segments(self, value):
@@ -1493,6 +1500,24 @@ class segment(list):
             self.nodes = []
         self.nodes.append(node)
         self.append(point(node.position.x, node.position.y))
+
+    @property
+    def nextSegment(self):
+        assert self.parent
+        index = self.index
+        if index == (len(self.parent._segments) - 1):
+            return self.parent._segments[0]
+        elif index < len(self.parent._segments):
+            return self.parent._segments[index + 1]
+
+    @property
+    def prevSegment(self):
+        assert self.parent
+        index = self.index
+        if index == 0:
+            return self.parent._segments[-1]
+        elif index < len(self.parent._segments):
+            return self.parent._segments[index - 1]
 
     def bbox(self):
         if len(self) == 2:
