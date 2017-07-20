@@ -1165,11 +1165,11 @@ class GSPathFromFileTest(GSObjectsTestCase):
         # del path.nodes[-1]
         # self.assertEqual(amount, len(path.nodes))
 
-    # TODO: GSPath.segments, GSPath.closed, GSPath.direction, GSPath.bounds
+    # TODO: GSPath.closed
 
     # bezierPath?
 
-    # TODO: GSPath.reverse()
+    # TODO:
     # addNodesAtExtremes()
     # applyTransform()
 
@@ -1177,7 +1177,11 @@ class GSPathFromFileTest(GSObjectsTestCase):
         self.assertEqual(self.path.direction, -1)
 
     def test_segments(self):
+        oldSegments = self.path.segments
         self.assertEqual(len(self.path.segments), 20)
+        self.path.reverse()
+        self.assertEqual(len(self.path.segments), 20)
+        self.assertEqual(oldSegments[0].nodes[0], self.path.segments[0].nodes[0])
 
     def test_bounds(self):
         bounds = self.path.bounds
