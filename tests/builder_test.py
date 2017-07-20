@@ -20,9 +20,13 @@ from __future__ import (print_function, division, absolute_import,
 import collections
 import datetime
 import unittest
-# unittest.mock is only available for python 3+
-from mock import patch
-import mock
+# unittest.mock is only available for python 3.3+
+try:
+    from unittest import mock
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+    import mock
 
 from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
