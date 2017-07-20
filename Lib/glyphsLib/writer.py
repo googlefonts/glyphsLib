@@ -22,7 +22,7 @@ import glyphsLib.classes
 from glyphsLib.types import floatToString, needsQuotes, feature_syntax_encode
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode
+from fontTools.misc.py23 import unicode, open
 
 '''
     Usage
@@ -125,7 +125,7 @@ class GlyphsWriter(object):
         elif type(value) == float:
             self.file.write(floatToString(value, 5))
         elif type(value) == int:
-            self.file.write(str(value))
+            self.file.write(unicode(value))
         elif type(value) == bool:
             if value:
                 self.file.write("1")
@@ -135,7 +135,7 @@ class GlyphsWriter(object):
             self.file.write("\"%s +0000\"" % str(value))
         else:
             value = feature_syntax_encode(value)
-            self.file.write(value.encode('utf8'))
+            self.file.write(unicode(value))
 
     def writeKey(self, key):
         if needsQuotes(key):
