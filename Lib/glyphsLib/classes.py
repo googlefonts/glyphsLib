@@ -621,7 +621,7 @@ class GlyphLayerProxy(Proxy):
             '''
             return list(self.values())[key]
         elif isString(key):
-            if self._owner._layers.has_key(key):
+            if key in self._owner._layers:
                 return self._owner._layers[key]
 
     def __setitem__(self, key, layer):
