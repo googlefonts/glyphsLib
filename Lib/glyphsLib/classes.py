@@ -1485,12 +1485,23 @@ class GSPath(GSBase):
     def direction(self, value):
         raise NotImplementedError
 
-    # TODO
     def reverse(self):
-        raise NotImplementedError
-
-        # I tried, but it's more complicated than that :(
-        self.nodes = reversed(self.nodes)
+        segments = list(reversed(self.segments))
+        for s, segment in enumerate(segments):
+            segment.nodes = list(reversed(segment.nodes))
+            if s == len(segments) - 1:
+                nextSegment = segments[0]
+            else:
+                nextSegment = segments[s+1]
+            if len(segment.nodes) == 2 and segment.nodes[-1].type == 'curve':
+                segment.nodes[-1].type = 'line'
+                nextSegment.nodes[0].type = 'line'
+            elif len(segment.nodes) == 4 and segment.nodes[-1].type == 'line':
+                segment.nodes[-1].type = 'curve'
+                nextSegment.nodes[0].type = 'curve'
+        self.nodes = []
+        for segment in segments:
+            self.nodes.extend(segment.nodes[1:])
 
 
 class segment(list):
