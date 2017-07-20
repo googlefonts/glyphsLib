@@ -1418,17 +1418,17 @@ class GSPath(GSBase):
             newSegment = segment()
             
             if i == 0:
-                newSegment.append(point(self.nodes[-1].position.x, self.nodes[-1].position.y))
+                newSegment.appendNode(self.nodes[-1])
             else:
-                newSegment.append(point(self.nodes[i-1].position.x, self.nodes[i-1].position.y))
+                newSegment.appendNode(self.nodes[i-1])
 
             if self.nodes[i].type == 'offcurve':
-                newSegment.append(point(self.nodes[i].position.x, self.nodes[i].position.y))
-                newSegment.append(point(self.nodes[i + 1].position.x, self.nodes[i + 1].position.y))
-                newSegment.append(point(self.nodes[i + 2].position.x, self.nodes[i + 2].position.y))
+                newSegment.appendNode(self.nodes[i])
+                newSegment.appendNode(self.nodes[i+1])
+                newSegment.appendNode(self.nodes[i+2])
                 i += 3
             elif self.nodes[i].type == 'line':
-                newSegment.append(point(self.nodes[i].position.x, self.nodes[i].position.y))
+                newSegment.appendNode(self.nodes[i])
                 i += 1
 
             segments.append(newSegment)
@@ -1488,6 +1488,12 @@ class GSPath(GSBase):
 
 class segment(list):
     
+    def appendNode(self, node):
+        if not hasattr(self, 'nodes'): # instead of defining this in __init__(), because I hate super()
+            self.nodes = []
+        self.nodes.append(node)
+        self.append(point(node.position.x, node.position.y))
+
     def bbox(self):
         if len(self) == 2:
             left = min(self[0].x, self[1].x)
