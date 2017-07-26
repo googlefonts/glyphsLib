@@ -1235,8 +1235,10 @@ class GSNodeFromFileTest(GSObjectsTestCase):
         self.assertEqual(oldAmount, len(self.path.nodes))
         self.assertEqual(oldSecondNode, self.path.nodes[0])
 
-    # TODO
-    # toggleConnection()
+    def test_toggleConnection(self):
+        oldConnection = self.node.smooth
+        self.node.toggleConnection()
+        self.assertEqual(oldConnection, not self.node.smooth)
 
 
 class GSCustomParameterTest(unittest.TestCase):

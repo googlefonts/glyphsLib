@@ -1383,9 +1383,8 @@ class GSNode(GSBase):
         newNodes = nodes[index:len(nodes)] + nodes[0:index]
         self.parent.nodes = newNodes
 
-    # TODO
     def toggleConnection(self):
-        raise NotImplementedError
+        self.smooth = not self.smooth
 
     # TODO
     @property
