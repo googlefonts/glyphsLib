@@ -137,6 +137,11 @@ LTRTTB = 3
 RTLTTB = 2
 
 
+class OnlyInGlyphsAppError(NotImplementedError):
+    def __init__(self):
+        NotImplementedError.__init__(self, "This property/method is only available in the real UI-based version of Glyphs.app.") 
+
+
 def hint_target(line=None):
     if line is None:
         return None
@@ -1394,7 +1399,7 @@ class GSNode(GSBase):
     # TODO
     @property
     def selected(self):
-        raise NotImplementedError
+        raise OnlyInGlyphsAppError
 
 
 class GSPath(GSBase):
@@ -1509,11 +1514,11 @@ class GSPath(GSBase):
 
     @property
     def selected(self):
-        raise NotImplementedError
+        raise OnlyInGlyphsAppError
 
     @property
     def bezierPath(self):
-        raise NotImplementedError
+        raise OnlyInGlyphsAppError
 
     def reverse(self):
         segments = list(reversed(self.segments))
