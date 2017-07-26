@@ -1392,6 +1392,11 @@ class GSNode(GSBase):
     def connection(self):
         raise NotImplementedError
 
+    # TODO
+    @property
+    def selected(self):
+        raise NotImplementedError
+
 
 class GSPath(GSBase):
     _classesForName = {
