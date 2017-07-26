@@ -1376,6 +1376,8 @@ class GSNode(GSBase):
 
     def makeNodeFirst(self):
         assert self.parent
+        if self.type == 'offcurve':
+            raise ValueError('Off-curve points cannot become start points.')
         nodes = self.parent.nodes
         index = self.index
         newNodes = nodes[index:len(nodes)] + nodes[0:index]
