@@ -1507,6 +1507,14 @@ class GSPath(GSBase):
         else:
             return 1
 
+    @property
+    def selected(self):
+        raise NotImplementedError
+
+    @property
+    def bezierPath(self):
+        raise NotImplementedError
+
     def reverse(self):
         segments = list(reversed(self.segments))
         for s, segment in enumerate(segments):
@@ -1522,6 +1530,14 @@ class GSPath(GSBase):
                 segment.nodes[-1].type = 'curve'
                 nextSegment.nodes[0].type = 'curve'
         self.setSegments(segments)
+
+    # TODO
+    def addNodesAtExtremes(self):
+        raise NotImplementedError
+
+    # TODO
+    def applyTransform(self):
+        raise NotImplementedError
 
 
 class segment(list):
