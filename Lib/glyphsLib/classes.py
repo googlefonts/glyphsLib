@@ -1381,6 +1381,15 @@ class GSNode(GSBase):
         newNodes = nodes[index:len(nodes)] + nodes[0:index]
         self.parent.nodes = newNodes
 
+    # TODO
+    def toggleConnection(self):
+        raise NotImplementedError
+
+    # TODO
+    @property
+    def connection(self):
+        raise NotImplementedError
+
 
 class GSPath(GSBase):
     _classesForName = {
