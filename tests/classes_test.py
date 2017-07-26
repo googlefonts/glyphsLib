@@ -1230,8 +1230,8 @@ class GSNodeFromFileTest(GSObjectsTestCase):
 
     def test_makeNodeFirst(self):
         oldAmount = len(self.path.nodes)
-        oldSecondNode = self.path.nodes[1]
-        self.path.nodes[1].makeNodeFirst()
+        oldSecondNode = self.path.nodes[3]
+        self.path.nodes[3].makeNodeFirst()
         self.assertEqual(oldAmount, len(self.path.nodes))
         self.assertEqual(oldSecondNode, self.path.nodes[0])
 
