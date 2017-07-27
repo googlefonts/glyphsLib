@@ -65,7 +65,7 @@ class point(object):
         self.rect = rect
 
     def __repr__(self):
-    	return '<point x=%s y=%s>' % (self.value[0], self.value[1])
+        return '<point x=%s y=%s>' % (self.value[0], self.value[1])
 
     def plistValue(self):
         assert (isinstance(self.value, list) and
@@ -100,7 +100,7 @@ class point(object):
         self.value[0] = value
         # Update parent rect
         if self.rect:
-        	self.rect.value[0] = value
+            self.rect.value[0] = value
 
     @property
     def y(self):
@@ -110,12 +110,12 @@ class point(object):
         self.value[1] = value
         # Update parent rect
         if self.rect:
-        	self.rect.value[1] = value
+            self.rect.value[1] = value
 
 
 class size(point):
     def __repr__(self):
-    	return '<size width=%s height=%s>' % (self.value[0], self.value[1])
+        return '<size width=%s height=%s>' % (self.value[0], self.value[1])
 
     @property
     def width(self):
@@ -125,7 +125,7 @@ class size(point):
         self.value[0] = value
         # Update parent rect
         if self.rect:
-        	self.rect.value[2] = value
+            self.rect.value[2] = value
 
     @property
     def height(self):
@@ -135,7 +135,7 @@ class size(point):
         self.value[1] = value
         # Update parent rect
         if self.rect:
-        	self.rect.value[3] = value
+            self.rect.value[3] = value
 
 
 class rect(object):
@@ -160,7 +160,7 @@ class rect(object):
         return '"{{%s, %s}, {%s, %s}}"' % (floatToString(self.value[0], 3), floatToString(self.value[1], 3), floatToString(self.value[2], 3), floatToString(self.value[3], 3))
 
     def __repr__(self):
-    	return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
+        return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
 
     def __getitem__(self, key):
         print('size.__getitem__(%s) = %s' % (key, self.value[key]))
@@ -200,7 +200,7 @@ class transform(point):
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
     def __repr__(self):
-    	return '<affine transformation %s>' % (' '.join(map(str, self.value)))
+        return '<affine transformation %s>' % (' '.join(map(str, self.value)))
 
     def plistValue(self):
         assert (isinstance(self.value, list) and
