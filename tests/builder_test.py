@@ -33,7 +33,8 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
     GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, \
-    GSComponent, GSAlignmentZone
+    GSComponent, GSAlignmentZone, GSGuideLine
+from glyphsLib.types import point
 
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
@@ -661,29 +662,37 @@ class ToUfosTest(unittest.TestCase):
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()
-        font['glyphs'].append({
-            'glyphname': 'a',
-            'layers': [{'layerId': font.masters[0].id, 'width': 0,
-                        'guideLines': data_in}]})
+        glyph = GSGlyph(name='a')
+        font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = font.masters[0].id
+        layer.width = 0
+        for guide_data in data_in:
+            pt = point(value=guide_data['position'][0],
+                       value2=guide_data['position'][1])
+            guide = GSGuideLine()
+            guide.position = pt
+            guide.angle = guide_data['angle']
+            layer.guideLines.append(guide)
+        glyph.layers.append(layer)
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo['a'].guidelines, expected)
 
-    #TODO enable these when we switch to loading UFO3 guidelines
-    #def test_set_guidelines(self):
-    #    """Test that guidelines are set correctly."""
+    def test_set_guidelines(self):
+        """Test that guidelines are set correctly."""
 
-    #    self._run_guideline_test(
-    #        [{'position': (1, 2), 'angle': 270}],
-    #        [{str('x'): 1, str('y'): 2, str('angle'): 90}])
+        self._run_guideline_test(
+            [{'position': (1, 2), 'angle': 270}],
+            [{str('x'): 1, str('y'): 2, str('angle'): 90}])
 
-    #def test_set_guidelines_duplicates(self):
-    #    """Test that duplicate guidelines are accepted."""
+    def test_set_guidelines_duplicates(self):
+        """Test that duplicate guidelines are accepted."""
 
-    #    self._run_guideline_test(
-    #        [{'position': (1, 2), 'angle': 270},
-    #         {'position': (1, 2), 'angle': 270}],
-    #        [{str('x'): 1, str('y'): 2, str('angle'): 90},
-    #         {str('x'): 1, str('y'): 2, str('angle'): 90}])
+        self._run_guideline_test(
+            [{'position': (1, 2), 'angle': 270},
+             {'position': (1, 2), 'angle': 270}],
+            [{str('x'): 1, str('y'): 2, str('angle'): 90},
+             {str('x'): 1, str('y'): 2, str('angle'): 90}])
 
 
 class _PointDataPen(object):
