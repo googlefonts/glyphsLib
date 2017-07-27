@@ -405,6 +405,12 @@ backgroundImage = {
 crop = "{{0, 0}, {489, 637}}";
 imagePath = A.jpg;
 };
+guideLines = (
+{
+angle = 71.7587;
+position = "{45, 0}";
+}
+);
 layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
 paths = (
 {
