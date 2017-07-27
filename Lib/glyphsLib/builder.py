@@ -285,7 +285,7 @@ def generate_base_fonts(font, family_name):
         set_blue_values(ufo, master.alignmentZones)
         set_family_user_data(ufo, user_data)
         set_master_user_data(ufo, master.userData)
-        set_robofont_guidelines(ufo, master, is_global=True)
+        set_guidelines(ufo, master, is_global=True)
 
         set_custom_params(ufo, parsed=custom_params)
         # the misc attributes double as deprecated info attributes!
@@ -521,8 +521,8 @@ def set_blue_values(ufo, alignment_zones):
     ufo.info.postscriptOtherBlues = other_blues
 
 
-def set_robofont_guidelines(ufo_obj, glyphs_data, is_global=False):
-    """Set guidelines as Glyphs does."""
+def set_guidelines(ufo_obj, glyphs_data, is_global=False):
+    """Set guidelines."""
     guidelines = glyphs_data.guideLines
     if not guidelines:
         return
@@ -531,14 +531,12 @@ def set_robofont_guidelines(ufo_obj, glyphs_data, is_global=False):
 
         x, y = guideline.position
         angle = guideline.angle
-        new_guideline = {'x': x, 'y': y, 'angle': angle, 'isGlobal': is_global}
-
-        locked = guideline.locked
-        if locked:
-            new_guideline['locked'] = True
-
+        new_guideline = {'x': x, 'y': y, 'angle': (360 - angle) % 360}
         new_guidelines.append(new_guideline)
-    ufo_obj.lib[ROBOFONT_PREFIX + 'guides'] = new_guidelines
+    if is_global:
+        ufo_obj.info.guidelines = new_guidelines
+    else:
+        ufo_obj.guidelines = new_guidelines
 
 
 def set_robofont_glyph_background(glyph, key, background):
@@ -730,7 +728,7 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
 def load_glyph_libdata(glyph, layer):
     """Add to a glyph's lib data."""
 
-    set_robofont_guidelines(glyph, layer)
+    set_guidelines(glyph, layer)
     set_robofont_glyph_background(glyph, 'background', layer.background)
     for key in ['annotations', 'hints']:
         try:
