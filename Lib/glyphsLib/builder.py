@@ -149,7 +149,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
     kerning_groups = {}
 
     # stores background data from "associated layers"
-    supplementary_bg_data = []
+    supplementary_layer_data = []
 
     #TODO(jamesgk) maybe create one font at a time to reduce memory usage
     ufos, master_id_order = generate_base_fonts(font, family_name)
@@ -181,7 +181,7 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
             assoc_id = layer.associatedMasterId
             if assoc_id != layer.layerId:
                 if layer_name is not None:
-                    supplementary_bg_data.append(
+                    supplementary_layer_data.append(
                         (assoc_id, glyph_name, layer_name, layer))
                 continue
 
@@ -189,9 +189,15 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
             ufo_glyph = ufo.newGlyph(glyph_name)
             load_glyph(ufo_glyph, layer, glyph)
 
-    for layer_id, glyph_name, bg_name, bg_data in supplementary_bg_data:
-        glyph = ufos[layer_id][glyph_name]
-        set_robofont_glyph_background(glyph, bg_name, bg_data)
+    for layer_id, glyph_name, layer_name, layer_data \
+            in supplementary_layer_data:
+        ufo_font = ufos[layer_id]
+        if layer_name not in ufo_font.layers:
+            ufo_layer = ufo_font.newLayer(layer_name)
+        else:
+            ufo_layer = ufo_font.layers[layer_name]
+        ufo_glyph = ufo_layer.newGlyph(glyph_name)
+        load_glyph(ufo_glyph, layer_data, layer_data.parent)
 
     for ufo in ufos.values():
         ufo.lib[glyphOrder_key] = glyph_order
