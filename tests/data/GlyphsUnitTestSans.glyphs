@@ -334,6 +334,18 @@ name = top;
 position = "{329, 700}";
 }
 );
+hints = (
+{
+horizontal = 1;
+origin = "{1, 1}";
+target = "{1, 0}";
+},
+{
+horizontal = 1;
+origin = "{0, 1}";
+target = "{0, 4}";
+}
+);
 layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
 paths = (
 {
