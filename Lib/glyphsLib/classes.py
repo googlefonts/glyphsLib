@@ -1147,14 +1147,18 @@ class GSGuideLine(GSBase):
         "name": unicode,
     }
     _parent = None
+    _defaultsForName = {
+        "position": point(0, 0),
+    }
 
     def __init__(self):
         super(GSGuideLine, self).__init__()
 
     def __repr__(self):
         return "<%s x=%.1f y=%.1f angle=%.1f>" % \
-            (self.__class__.__name__, self.position[0], self.position[1],
+            (self.__class__.__name__, self.position.x, self.position.y,
              self.angle)
+
 
     @property
     def parent(self):
@@ -1739,6 +1743,9 @@ class GSAnchor(GSBase):
         "position": point,
     }
     _parent = None
+    _defaultsForName = {
+        "position": point(0, 0),
+    }
 
     def __init__(self):
         super(GSAnchor, self).__init__()
@@ -1794,23 +1801,25 @@ class GSHint(GSBase):
         if key == "stem":
             if self.stem == -2:
                 return None
+        if key in ['origin', 'other1', 'other2', 'place', 'scale'] and getattr(self, key).value == getattr(self, key).default:
+            return None
         return super(GSHint, self).shouldWriteValueForKey(key)
 
     def Hint__origin__pos(self):
         if (self.originNode):
-            if self.horizontal():
+            if self.horizontal:
                 return self.originNode.position.y
             else:
                 return self.originNode.position.x
-        return self.origin()
+        return self.origin
 
     def Hint__width__pos(self):
         if (self.targetNode):
-            if self.horizontal():
+            if self.horizontal:
                 return self.targetNode.position.y
             else:
                 return self.targetNode.position.x
-        return self.width()
+        return self.width
 
     def __repr__(self):
         if self.horizontal:
@@ -1819,9 +1828,9 @@ class GSHint(GSBase):
             direction = "vertical"
         if self.type == 'BOTTOMGHOST' or self.type == 'TOPGHOST':
             return "<GSHint %s origin=(%s)>" % (self.type, self.Hint__origin__pos())
-        elif self.type == STEM:
+        elif self.type == 'STEM':
             return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (direction, self.Hint__origin__pos(), self.Hint__width__pos())
-        elif self.type == CORNER or self.type == CAP:
+        elif self.type == 'CORNER' or self.type == 'CAP':
             return "<GSHint %s %s>" % (self.type, self.name)
         else:
             return "<GSHint %s %s>" % (self.type, direction)

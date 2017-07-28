@@ -51,7 +51,7 @@ class baseType(object):
 class point(object):
     """Read/write a vector in curly braces."""
     dimension = 2
-    default = [1, 0]
+    default = [None, None]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
 
     def __init__(self, value = None, value2 = None, rect = None):
@@ -70,7 +70,9 @@ class point(object):
     def plistValue(self):
         assert (isinstance(self.value, list) and
                 len(self.value) == self.dimension)
-        return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
+        if self.value is not self.default:
+            return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
+    
 
     def __getitem__(self, key):
         if type(key) is int and key < self.dimension:
