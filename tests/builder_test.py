@@ -694,6 +694,27 @@ class ToUfosTest(unittest.TestCase):
             [{str('x'): 1, str('y'): 2, str('angle'): 90},
              {str('x'): 1, str('y'): 2, str('angle'): 90}])
 
+    # TODO test more than just name
+    def test_supplementary_layers(self):
+        """Test sub layers."""
+        font = generate_minimal_font()
+        glyph = GSGlyph(name="a")
+        font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = font.masters[0].id
+        layer.width = 0
+        glyph.layers.append(layer)
+        sublayer = GSLayer()
+        sublayer.associatedMasterId = font.masters[0].id
+        sublayer.width = 0
+        sublayer.name = "SubLayer"
+        glyph.layers.append(sublayer)
+        ufo = to_ufos(font)[0]
+        self.assertEqual(
+            [l.name for l in ufo.layers],
+            ["public.default", "SubLayer"]
+        )
+
 
 class _PointDataPen(object):
 
