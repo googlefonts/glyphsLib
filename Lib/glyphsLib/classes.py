@@ -2151,12 +2151,12 @@ class GSLayer(GSBase):
         return "<%s \"%s\" (%s)>" % (self.__class__.__name__, name, parent)
 
     def __lt__(self, other):
-        if self.master and other.master:
+        if self.master and other.master and self.associatedMasterId == self.layerId:
             return self.master.weightValue < other.master.weightValue or self.master.widthValue < other.master.widthValue
 
-    @property # not implemented in Glyphs.app (at the moment), just a shortcut for sorting through __lt__
+    @property
     def master(self):
-        if self.associatedMasterId and self.associatedMasterId == self.layerId and self.parent:
+        if self.associatedMasterId and self.parent:
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
 
