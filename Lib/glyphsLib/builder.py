@@ -542,59 +542,28 @@ def set_guidelines(ufo_obj, glyphs_data):
     ufo_obj.guidelines = new_guidelines
 
 
-def set_robofont_glyph_background(glyph, key, background):
-    """Set glyph background as Glyphs does."""
+def set_glyph_background(glyph, background):
+    """Set glyph background."""
 
     if not background:
         return
 
-    new_background = {}
-    # new_background['lib'] = background.lib # glyphs objects never have a property 'lib'
-
-    anchors = []
-    for anchor in background.anchors:
-        x, y = anchor.position
-        anchors.append({'x': x, 'y': y, 'name': anchor.name})
-    new_background['anchors'] = anchors
-
-    components = []
-    for component in background.components:
-        new_component = {
-            'baseGlyph': component.name,
-            'transformation': component.transform}
-
-        for meta_attr in ['alignment', 'locked']:
-            value = getattr(component, meta_attr)
-            if value is not None:
-                new_component[meta_attr] = True
-
-        components.append(new_component)
-    new_background['components'] = components
-
-    contours = []
-    for path in background.paths:
-        points = []
-        for node in path.nodes:
-            (x, y) = node.position
-            node_type = node.type
-            smooth = node.smooth
-            point = {'x': x, 'y': y, 'smooth': smooth}
-            if node_type in ['line', 'curve', 'qcurve']:
-                point['segmentType'] = node_type
-            points.append(point)
-        contours.append({'points': points})
-        #path.pop('closed', None)  # not used, but remove for debug purposes
-    new_background['contours'] = contours
-
-    new_background['width'] = glyph.width
-    new_background['name'] = glyph.name
-    new_background['unicodes'] = []
-
-    libkey = ROBOFONT_PREFIX + 'layerData'
-    try:
-        glyph.lib[libkey][key] = new_background
-    except KeyError:
-        glyph.lib[libkey] = {key: new_background}
+    if glyph.layer.name != 'public.default':
+        layer_name = glyph.layer.name + '.background'
+    else:
+        layer_name = 'public.background'
+    font = glyph.font
+    if layer_name not in font.layers:
+        layer = font.newLayer(layer_name)
+    else:
+        layer = font.layers[layer_name]
+    new_glyph = layer.newGlyph(glyph.name)
+    new_glyph.width = glyph.width
+    pen = new_glyph.getPointPen()
+    draw_paths(pen, background.paths)
+    draw_components(pen, background.components)
+    add_anchors_to_glyph(new_glyph, background.anchors)
+    set_guidelines(new_glyph, background)
 
 
 def set_family_user_data(ufo, user_data):
@@ -732,7 +701,7 @@ def load_glyph_libdata(glyph, layer):
     """Add to a glyph's lib data."""
 
     set_guidelines(glyph, layer)
-    set_robofont_glyph_background(glyph, 'background', layer.background)
+    set_glyph_background(glyph, layer.background)
     for key in ['annotations', 'hints']:
         try:
             value = getattr(layer, key)
