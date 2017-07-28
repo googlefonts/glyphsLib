@@ -285,7 +285,7 @@ def generate_base_fonts(font, family_name):
         set_blue_values(ufo, master.alignmentZones)
         set_family_user_data(ufo, user_data)
         set_master_user_data(ufo, master.userData)
-        set_guidelines(ufo, master, is_global=True)
+        set_guidelines(ufo, master)
 
         set_custom_params(ufo, parsed=custom_params)
         # the misc attributes double as deprecated info attributes!
@@ -521,7 +521,7 @@ def set_blue_values(ufo, alignment_zones):
     ufo.info.postscriptOtherBlues = other_blues
 
 
-def set_guidelines(ufo_obj, glyphs_data, is_global=False):
+def set_guidelines(ufo_obj, glyphs_data):
     """Set guidelines."""
     guidelines = glyphs_data.guideLines
     if not guidelines:
@@ -533,10 +533,7 @@ def set_guidelines(ufo_obj, glyphs_data, is_global=False):
         angle = guideline.angle
         new_guideline = {'x': x, 'y': y, 'angle': (360 - angle) % 360}
         new_guidelines.append(new_guideline)
-    if is_global:
-        ufo_obj.info.guidelines = new_guidelines
-    else:
-        ufo_obj.guidelines = new_guidelines
+    ufo_obj.guidelines = new_guidelines
 
 
 def set_robofont_glyph_background(glyph, key, background):
