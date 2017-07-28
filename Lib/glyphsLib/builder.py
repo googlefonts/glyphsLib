@@ -607,7 +607,10 @@ def set_master_user_data(ufo, user_data):
     """Set master-specific user data as Glyphs does."""
 
     if user_data:
-        ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
+        data = {}
+        for key in user_data.keys():
+            data[key] = user_data[key]
+        ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = data
 
 
 def build_style_name(master, width_key, weight_key, custom_key, italic):
