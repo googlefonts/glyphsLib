@@ -1786,6 +1786,36 @@ class GSHint(GSBase):
     TTDONROUND = 4
     TRIPLE = 128
 
+    def Hint__origin__pos(self):
+        if (self.originNode):
+            if self.horizontal():
+                return self.originNode.position.y
+            else:
+                return self.originNode.position.x
+        return self.origin()
+
+    def Hint__width__pos(self):
+        if (self.targetNode):
+            if self.horizontal():
+                return self.targetNode.position.y
+            else:
+                return self.targetNode.position.x
+        return self.width()
+
+    def __repr__(self):
+        if self.horizontal:
+            direction = "horizontal"
+        else:
+            direction = "vertical"
+        if self.type == 'BOTTOMGHOST' or self.type == 'TOPGHOST':
+            return "<GSHint %s origin=(%s)>" % (self.type, self.Hint__origin__pos())
+        elif self.type == STEM:
+            return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (direction, self.Hint__origin__pos(), self.Hint__width__pos())
+        elif self.type == CORNER or self.type == CAP:
+            return "<GSHint %s %s>" % (self.type, self.name)
+        else:
+            return "<GSHint %s %s>" % (self.type, direction)
+
 
 class GSFeature(GSBase):
     _classesForName = {
