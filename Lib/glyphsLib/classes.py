@@ -1767,6 +1767,10 @@ class GSHint(GSBase):
         "type": str,
     }
 
+    _defaultsForName = {
+        "stem": -2,
+    }
+
     # Hint types
     TOPGHOST = -1
     STEM = 0
@@ -1785,6 +1789,12 @@ class GSHint(GSBase):
     TTROUNDDOWN = 2
     TTDONROUND = 4
     TRIPLE = 128
+
+    def shouldWriteValueForKey(self, key):
+        if key == "stem":
+            if self.stem == -2:
+                return None
+        return super(GSHint, self).shouldWriteValueForKey(key)
 
     def Hint__origin__pos(self):
         if (self.originNode):
