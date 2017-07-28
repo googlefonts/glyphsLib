@@ -734,7 +734,21 @@ def load_glyph_libdata(glyph, layer):
             value = getattr(layer, key)
         except KeyError:
             continue
-        glyph.lib[GLYPHS_PREFIX + key] = value
+        if key == 'annotations':
+            annotations = []
+            for an in list(value.values()):
+                annot = {}
+                for attr in ['angle', 'position', 'text', 'type', 'width']:
+                    val = getattr(an, attr, None)
+                    if attr == 'position' and val:
+                        val = list(val)
+                    if val:
+                        annot[attr] = val
+                annotations.append(annot)
+            value = annotations
+
+        if value:
+            glyph.lib[GLYPHS_PREFIX + key] = value
 
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
