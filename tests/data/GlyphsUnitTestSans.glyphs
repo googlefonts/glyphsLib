@@ -611,6 +611,31 @@ name = top;
 position = "{248, 480}";
 }
 );
+annotations = (
+{
+position = "{427, 535}";
+text = "This is a text annotation";
+type = Text;
+},
+{
+angle = 41.22902;
+position = "{436, 446}";
+type = Arrow;
+},
+{
+position = "{334.937, 407.08}";
+type = Circle;
+width = 65.05341;
+},
+{
+position = "{301, 49}";
+type = Plus;
+},
+{
+position = "{372, 172}";
+type = Minus;
+}
+);
 background = {
 paths = (
 {
