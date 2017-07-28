@@ -848,7 +848,7 @@ class LayerAnnotationProxy(IndexedObjectsProxy):
 
 
 class LayerGuideLinesProxy(IndexedObjectsProxy):
-    _objects_name = "_guideLines"
+    _objects_name = "guides"
 
     def __init__(self, owner):
         super(LayerGuideLinesProxy, self).__init__(owner)
@@ -1209,7 +1209,7 @@ class GSFontMaster(GSBase):
         "widthValue": 100.0,
     }
     _wrapperKeysTranslate = {
-        "guideLines": "guides"
+        "guideLines": "guides",
     }
     _userData = {}
 
@@ -1293,6 +1293,10 @@ class GSFontMaster(GSBase):
     customName = property(
         lambda self: self._custom,
         lambda self, value: setattr(self, "_custom", value))
+
+    guideLines = property(
+        lambda self: self.guides,
+        lambda self, value: setattr(self, "guides", value))
 
 
 class GSNode(GSBase):
@@ -2221,7 +2225,7 @@ class GSLayer(GSBase):
         self._anchors = []
         self._annotations = []
         self._components = []
-        self._guideLines = []
+        self.guides = []
         self._paths = []
         self._selection = []
 
