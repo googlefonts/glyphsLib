@@ -1253,7 +1253,7 @@ class GSFontMaster(GSBase):
                     self._custom2 not in names):
                 names.append(self._custom2)
 
-            if len(names) > 1:
+            if len(names) > 1 and "Regular" in names:
                 names.remove("Regular")
 
             if abs(self.italicAngle) > 0.01:
