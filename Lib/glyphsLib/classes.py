@@ -2450,6 +2450,10 @@ class GSGlyph(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value))
 
+    glyphname = property(
+        lambda self: self.name,
+        lambda self, value: setattr(self, "name", value))
+
 
 class GSFont(GSBase):
     _classesForName = {
