@@ -746,6 +746,21 @@ def load_glyph_libdata(glyph, layer):
                         annot[attr] = val
                 annotations.append(annot)
             value = annotations
+        elif key == 'hints':
+            hints = []
+            for hi in value:
+                hint = {}
+                for attr in ['horizontal', 'options', 'stem', 'type']:
+                    val = getattr(hi, attr, None)
+                    hint[attr] = val
+                for attr in ['origin', 'other1', 'other2', 'place', 'scale',
+                             'target']:
+                    val = getattr(hi, attr, None)
+                    if not any(v is None for v in val):
+                        hint[attr] = list(val)
+                hints.append(hint)
+            value = hints
+
 
         if value:
             glyph.lib[GLYPHS_PREFIX + key] = value
