@@ -88,8 +88,12 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     instance_files = add_instances_to_writer(
         writer, base_family, axes, instances, out_dir)
 
-    basename = '%s.designspace' % base_family
-    writer.path = os.path.join(master_dir, basename.replace(' ', ''))
+    # append base style shared by all masters to designspace file name
+    base_style = find_base_style(masters)
+    if base_style:
+        base_style = "-" + base_style
+    ds_name = (base_family + base_style).replace(' ', '') + '.designspace'
+    writer.path = os.path.join(master_dir, ds_name)
     writer.save()
     return writer.path, instance_files
 
@@ -179,6 +183,18 @@ def write_axes(axes, writer):
             axisElement.append(labelname)
 
 
+def find_base_style(masters):
+    """Find a base style shared between all masters.
+    Return empty string if none is found.
+    """
+    base_style = masters[0].info.styleName.split()
+    for font in masters:
+        style = font.info.styleName.split()
+        base_style = [s for s in style if s in base_style]
+    base_style = ' '.join(base_style)
+    return base_style
+
+
 def find_regular_master(masters, regularName=None):
     """Find the "regular" master among the master UFOs.
 
@@ -197,11 +213,7 @@ def find_regular_master(masters, regularName=None):
         for font in masters:
             if font.info.styleName == regularName:
                 return font
-    base_style = masters[0].info.styleName.split()
-    for font in masters:
-        style = font.info.styleName.split()
-        base_style = [s for s in style if s in base_style]
-    base_style = ' '.join(base_style)
+    base_style = find_base_style(masters)
     if not base_style:
         base_style = 'Regular'
     for font in masters:
