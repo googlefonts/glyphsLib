@@ -34,7 +34,6 @@ def makeFamily(familyName):
     m1 = makeMaster(familyName, "Regular", weight=90.0)
     m2 = makeMaster(familyName, "Black", weight=190.0)
     instances = {
-        "defaultFamilyName": familyName,
         "data": [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("Semibold", 600, 128)),
