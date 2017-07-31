@@ -279,6 +279,5 @@ class DesignspaceTest(unittest.TestCase):
             shutil.rmtree(master_dir)
 
 
-
 if __name__ == "__main__":
     sys.exit(unittest.main())
