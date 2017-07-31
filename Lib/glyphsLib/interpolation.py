@@ -70,6 +70,10 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     """
     from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 
+    base_family = masters[0].info.familyName
+    assert all(m.info.familyName == base_family for m in masters), \
+        'Masters must all have same family'
+
     for font in masters:
         write_ufo(font, master_dir)
 
@@ -84,7 +88,6 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     axes = get_axes(masters, regular, instances)
     write_axes(axes, writer)
     add_masters_to_writer(masters, regular, axes, writer)
-    base_family = instance_data.get('defaultFamilyName', regular.info.familyName)
     instance_files = add_instances_to_writer(
         writer, base_family, axes, instances, out_dir)
 
@@ -206,9 +209,6 @@ def find_regular_master(masters, regularName=None):
     returns the first master in the list.
     """
     assert len(masters) > 0
-    base_family = masters[0].info.familyName
-    assert all(m.info.familyName == base_family for m in masters), \
-        'Masters must all have same family'
     if regularName is not None:
         for font in masters:
             if font.info.styleName == regularName:
@@ -254,7 +254,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     """
     ofiles = []
     for instance in instances:
-        familyName, postScriptFontName = family_name, None
+        familyName, postScriptFontName = None, None
         for p in instance.get('customParameters', ()):
             param, value = p['name'], p['value']
             if param == 'familyName':
@@ -262,8 +262,8 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
             elif param == 'postscriptFontName':
                 # Glyphs uses "postscriptFontName", not "postScriptFontName"
                 postScriptFontName = value
-        if not familyName:
-            continue
+        if familyName is None:
+            familyName = family_name
 
         styleName = instance.get('name')
         ufo_path = build_ufo_path(out_dir, familyName, styleName)
