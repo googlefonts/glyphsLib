@@ -34,7 +34,6 @@ def makeFamily(familyName):
     m1 = makeMaster(familyName, "Regular", weight=90.0)
     m2 = makeMaster(familyName, "Black", weight=190.0)
     instances = {
-        "defaultFamilyName": familyName,
         "data": [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("Semibold", 600, 128)),
@@ -200,31 +199,32 @@ class DesignspaceTest(unittest.TestCase):
         # In NotoSansArabic-MM.glyphs, the regular width only contains
         # parameters for the weight axis. For the width axis, glyphsLib
         # should use 100 as default value (just like Glyphs.app does).
+        familyName = "DesignspaceTest TwoAxes"
         masters = [
-            makeMaster("TwoAxes", "Regular", weight=90),
-            makeMaster("TwoAxes", "Black", weight=190),
-            makeMaster("TwoAxes", "Thin", weight=26),
-            makeMaster("TwoAxes", "ExtraCond", weight=90, width=70),
-            makeMaster("TwoAxes", "ExtraCond Black", weight=190, width=70),
-            makeMaster("TwoAxes", "ExtraCond Thin", weight=26, width=70),
+            makeMaster(familyName, "Regular", weight=90),
+            makeMaster(familyName, "Black", weight=190),
+            makeMaster(familyName, "Thin", weight=26),
+            makeMaster(familyName, "ExtraCond", weight=90, width=70),
+            makeMaster(familyName, "ExtraCond Black", weight=190, width=70),
+            makeMaster(familyName, "ExtraCond Thin", weight=26, width=70),
         ]
-
-        _, instances = makeFamily("DesignspaceTest TwoAxes")
-        instances["data"] = [
-            makeInstance("Thin", weight=("Thin", 100, 26)),
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Semibold", weight=("Semibold", 600, 128)),
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("ExtraCondensed Thin",
-                         weight=("Thin", 100, 26),
-                         width=("Extra Condensed", 70)),
-            makeInstance("ExtraCondensed",
-                         weight=("Regular", 400, 90),
-                         width=("Extra Condensed", 70)),
-            makeInstance("ExtraCondensed Black",
-                         weight=("Black", 900, 190),
-                         width=("Extra Condensed", 70)),
-        ]
+        instances = {
+            "data": [
+                makeInstance("Thin", weight=("Thin", 100, 26)),
+                makeInstance("Regular", weight=("Regular", 400, 90)),
+                makeInstance("Semibold", weight=("Semibold", 600, 128)),
+                makeInstance("Black", weight=("Black", 900, 190)),
+                makeInstance("ExtraCondensed Thin",
+                             weight=("Thin", 100, 26),
+                             width=("Extra Condensed", 70)),
+                makeInstance("ExtraCondensed",
+                             weight=("Regular", 400, 90),
+                             width=("Extra Condensed", 70)),
+                makeInstance("ExtraCondensed Black",
+                             weight=("Black", 900, 190),
+                             width=("Extra Condensed", 70)),
+            ]
+        }
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestTwoAxes.designspace")
 
