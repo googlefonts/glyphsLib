@@ -255,6 +255,30 @@ class DesignspaceTest(unittest.TestCase):
         weightAxis = doc.find('axes/axis[@tag="wght"]')
         self.assertEqual(weightAxis.attrib["default"], "444.4")
 
+    def test_designspace_name(self):
+        master_dir = tempfile.mkdtemp()
+        try:
+            designspace_path, _ = build_designspace(
+                [
+                    makeMaster("Family Name", "Regular", weight=100),
+                    makeMaster("Family Name", "Bold", weight=190),
+                ], master_dir, os.path.join(master_dir, "out"), {})
+            # no shared base style name, only write the family name
+            self.assertEqual(os.path.basename(designspace_path),
+                             "FamilyName.designspace")
+
+            designspace_path, _ = build_designspace(
+                [
+                    makeMaster("Family Name", "Italic", weight=100),
+                    makeMaster("Family Name", "Bold Italic", weight=190),
+                ], master_dir, os.path.join(master_dir, "out"), {})
+            # 'Italic' is the base style; append to designspace name
+            self.assertEqual(os.path.basename(designspace_path),
+                             "FamilyName-Italic.designspace")
+        finally:
+            shutil.rmtree(master_dir)
+
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
