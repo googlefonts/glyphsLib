@@ -89,11 +89,13 @@ def makeInstance(name, weight=None, width=None):
 class DesignspaceTest(unittest.TestCase):
     def build_designspace(self, masters, instances):
         master_dir = tempfile.mkdtemp()
-        designspace, _ = build_designspace(
-            masters, master_dir, os.path.join(master_dir, "out"), instances)
-        with open(designspace, mode="r", encoding="utf-8") as f:
-            result = f.readlines()
-        shutil.rmtree(master_dir)
+        try:
+            designspace, _ = build_designspace(
+                masters, master_dir, os.path.join(master_dir, "out"), instances)
+            with open(designspace, mode="r", encoding="utf-8") as f:
+                result = f.readlines()
+        finally:
+            shutil.rmtree(master_dir)
         return result
 
     def expect_designspace(self, masters, instances, expectedFile):
