@@ -1736,6 +1736,10 @@ class GSComponent(GSBase):
         affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(self._R))[:6]
         self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
 
+    @property
+    def layer(self):
+        return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
+
 
 class GSAnchor(GSBase):
     _classesForName = {
