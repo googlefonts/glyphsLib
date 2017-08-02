@@ -1082,6 +1082,14 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertEqual(bounds.size.width, 289)
         self.assertEqual(bounds.size.height, 490)
 
+    def test_moreBounds(self):
+        self.component.scale = 1.1
+        bounds = self.component.bounds
+        self.assertEqual(bounds.origin.x, 88)
+        self.assertEqual(bounds.origin.y, -11)
+        self.assertEqual(round(bounds.size.width * 10), round(317.9 * 10))
+        self.assertEqual(round(bounds.size.height * 10), round(539 * 10))
+
     # def test_automaticAlignment(self):
     #     self.assertBool(self.component.automaticAlignment)
 
