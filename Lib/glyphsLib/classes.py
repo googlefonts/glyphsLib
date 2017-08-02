@@ -1734,6 +1734,17 @@ class GSComponent(GSBase):
         self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
 
     @property
+    def componentName(self):
+        return self.name
+    @componentName.setter
+    def componentName(self, value):
+        self.name = value
+
+    @property
+    def component(self):
+        return self.parent.parent.parent.glyphs[self.name]
+
+    @property
     def layer(self):
         return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
 
