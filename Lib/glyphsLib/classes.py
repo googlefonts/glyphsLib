@@ -16,7 +16,7 @@
 # limitations under the License.
 
 from __future__ import print_function, unicode_literals
-import re, math
+import re, math, inspect
 import traceback
 import uuid
 import glyphsLib
@@ -214,17 +214,14 @@ class GSBase(object):
     def __init__(self):
         for key in self._classesForName.keys():
             if not hasattr(self, key):
-                try:
-                    klass = self._classesForName[key]
-                    if issubclass(klass, GSBase):
-                        value = []
-                    elif key in self._defaultsForName:
-                        value = self._defaultsForName.get(key)
-                    else:
-                        value = klass()
-                    setattr(self, key, value)
-                except:
-                    pass
+                klass = self._classesForName[key]
+                if inspect.isclass(klass) and issubclass(klass, GSBase):
+                    value = []
+                elif key in self._defaultsForName:
+                    value = self._defaultsForName.get(key)
+                else:
+                    value = klass()
+                setattr(self, key, value)
 
     def __repr__(self):
         content = ""
@@ -239,20 +236,17 @@ class GSBase(object):
         return hasattr(self, key) and getattr(self, key) is not None
 
     def __setitem__(self, key, value):
-        try:
-            if isinstance(value, bytes) and key in self._classesForName:
-                new_type = self._classesForName[key]
-                if new_type is unicode:
-                    value = value.decode('utf-8')
-                else:
-                    try:
-                        value = new_type().read(value)
-                    except:
-                        value = new_type(value)
-            key = self._wrapperKeysTranslate.get(key, key)
-            setattr(self, key, value)
-        except:
-            print(traceback.format_exc())
+        if isinstance(value, bytes) and key in self._classesForName:
+            new_type = self._classesForName[key]
+            if new_type is unicode:
+                value = value.decode('utf-8')
+            else:
+                try:
+                    value = new_type().read(value)
+                except:
+                    value = new_type(value)
+        key = self._wrapperKeysTranslate.get(key, key)
+        setattr(self, key, value)
 
     def shouldWriteValueForKey(self, key):
         getKey = self._wrapperKeysTranslate.get(key, key)
