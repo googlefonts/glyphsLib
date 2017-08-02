@@ -1710,6 +1710,7 @@ class GSComponent(GSBase):
         return (self._sX, self._sY)
     @scale.setter
     def scale(self, value):
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
         if type(value) in [int, float]:
             self._sX = value
             self._sY = value
@@ -1726,12 +1727,13 @@ class GSComponent(GSBase):
         return self._R
     @rotation.setter
     def rotation(self, value):
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
         self._R = value
         self.updateAffineTransform()
 
     def updateAffineTransform(self):
         affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(self._R))[:6]
-        self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
+        self.transform = transform(affine[0], affine[1], affine[3], affine[4], affine[2], affine[5])
 
     @property
     def componentName(self):
