@@ -30,7 +30,7 @@ from glyphsLib.classes import (
     GSFeaturePrefix, GSGuideLine, GSHint, GSNode,
     LayerComponentsProxy, LayerGuideLinesProxy,
 )
-from glyphsLib.types import point
+from glyphsLib.types import point, transform
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -1065,8 +1065,8 @@ class GSComponentFromFileTest(GSObjectsTestCase):
     # TODO rotation, componentName, component
 
     def test_transform(self):
-        self.assertIsInstance(self.component.transform, tuple)
-        self.assertEqual(len(self.component.transform), 6)
+        self.assertIsInstance(self.component.transform, transform)
+        self.assertEqual(len(self.component.transform.value), 6)
 
     # TODO: bounds
 
