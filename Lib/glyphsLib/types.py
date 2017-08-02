@@ -165,7 +165,6 @@ class rect(object):
         return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
 
     def __getitem__(self, key):
-        print('size.__getitem__(%s) = %s' % (key, self.value[key]))
         return self.value[key]
 
     def __setitem__(self, key, value):
@@ -198,8 +197,17 @@ class rect(object):
 class transform(point):
     """Read/write a six-element vector."""
     dimension = 6
-    default = [1, 0, 0, 1, 0, 0]
+    default = [None, None, None, None, None, None]
     regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
+
+    def __init__(self, value = None, value2 = None, value3 = None, value4 = None, value5 = None, value6 = None):
+
+        if value is not None and value2 is not None and value3 is not None and value4 is not None and value5 is not None and value6 is not None:
+            self.value = [value, value2, value3, value4, value5, value6]
+        elif value is not None and value2 is None:
+            self.value = [float(i) for i in self.regex.match(value).groups()]
+        else:
+            self.value = self.default
 
     def __repr__(self):
         return '<affine transformation %s>' % (' '.join(map(str, self.value)))
