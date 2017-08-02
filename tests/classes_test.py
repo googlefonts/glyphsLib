@@ -30,7 +30,7 @@ from glyphsLib.classes import (
     GSFeaturePrefix, GSGuideLine, GSHint, GSNode,
     LayerComponentsProxy, LayerGuideLinesProxy,
 )
-from glyphsLib.types import point, transform
+from glyphsLib.types import point, transform, rect, size
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -1058,17 +1058,29 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         layer.components.remove(layer.components[0])
         self.assertEqual(len(layer.components), 2)
 
-    # def test_position(self):
-    #     self.assertIsInstance(self.component.position, point)
+    def test_position(self):
+        self.assertIsInstance(self.component.position, point)
 
+    def test_componentName(self):
+        self.assertUnicode(self.component.componentName)
 
-    # TODO rotation, componentName, component
+    def test_component(self):
+        self.assertIsInstance(self.component.component, GSGlyph)
+
+    def test_rotation(self):
+        self.assertFloat(self.component.rotation)
 
     def test_transform(self):
         self.assertIsInstance(self.component.transform, transform)
         self.assertEqual(len(self.component.transform.value), 6)
 
-    # TODO: bounds
+    def test_bounds(self):
+        self.assertIsInstance(self.component.bounds, rect)
+        bounds = self.component.bounds
+        self.assertEqual(bounds.origin.x, 80)
+        self.assertEqual(bounds.origin.y, -10)
+        self.assertEqual(bounds.size.width, 289)
+        self.assertEqual(bounds.size.height, 490)
 
     # def test_automaticAlignment(self):
     #     self.assertBool(self.component.automaticAlignment)
