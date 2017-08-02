@@ -1664,26 +1664,27 @@ class GSComponent(GSBase):
         "transform": transform,
     }
     _defaultsForName = {
-        "transform": (1, 0, 0, 1, 0, 0),
+        "transform": transform(1, 0, 0, 1, 0, 0),
     }
     _parent = None
 
     # TODO: glyph arg is required
     def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
         super(GSComponent, self).__init__()
+
         if transform is None:
             if scale != (1, 1) or offset != (0, 0):
                 xx, yy = scale
                 dx, dy = offset
-                self.transform = (xx, 0, 0, yy, dx, dy)
+                self.transform = transform(xx, 0, 0, yy, dx, dy)
         else:
             self.transform = transform
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform)
 
         if isinstance(glyph, (str, unicode)):
             self.name = glyph
         elif isinstance(glyph, GSGlyph):
             self.name = glyph.name
+
 
     def __repr__(self):
         return '<GSComponent "%s" x=%.1f y=%.1f>' % \
@@ -1711,6 +1712,7 @@ class GSComponent(GSBase):
     # .scale
     @property
     def scale(self):
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
         return (self._sX, self._sY)
     @scale.setter
     def scale(self, value):
@@ -1726,6 +1728,7 @@ class GSComponent(GSBase):
     # .rotation
     @property
     def rotation(self):
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
         return self._R
     @rotation.setter
     def rotation(self, value):
@@ -1739,6 +1742,29 @@ class GSComponent(GSBase):
     @property
     def layer(self):
         return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
+
+    def applyTransformation(self, x, y):
+        x *= self.scale[0]
+        y *= self.scale[1]
+        x += self.position.x
+        y += self.position.y
+        # TODO:
+        # Integrate rotation
+        return x, y
+
+    @property
+    def bounds(self):
+        bounds = self.layer.bounds
+        if bounds is not None:
+            left, bottom, width, height = self.layer.bounds
+            right = left + width
+            top = bottom + height
+
+            left, bottom = self.applyTransformation(left, bottom)
+            right, top = self.applyTransformation(right, top)
+
+            if left is not None and bottom is not None and right is not None and top is not None:
+                return rect(point(left, bottom), point(right - left, top - bottom))
 
 
 class GSAnchor(GSBase):
@@ -2071,11 +2097,14 @@ class GSBackgroundImage(GSBase):
         "transform": transform,
         "alpha": int,
     }
+    _defaultsForName = {
+        "transform": transform(1, 0, 0, 1, 0, 0),
+    }
 
     def __init__(self, path = None):
         super(GSBackgroundImage, self).__init__()
         self.imagePath = path
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -2259,6 +2288,36 @@ class GSLayer(GSBase):
     userData = property(
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value))
+
+    @property
+    def bounds(self):
+        left, bottom, right, top = None, None, None, None
+
+        for item in self.paths.values() + self.components.values():
+
+            newLeft, newBottom, newWidth, newHeight = item.bounds
+            newRight = newLeft + newWidth
+            newTop = newBottom + newHeight
+
+            if left is None:
+                left = newLeft
+            else:
+                left = min(left, newLeft)
+            if bottom is None:
+                bottom = newBottom
+            else:
+                bottom = min(bottom, newBottom)
+            if right is None:
+                right = newRight
+            else:
+                right = max(right, newRight)
+            if top is None:
+                top = newTop
+            else:
+                top = max(top, newTop)
+
+        if left is not None and bottom is not None and right is not None and top is not None:
+            return rect(point(left, bottom), point(right - left, top - bottom))
 
 
 class GSGlyph(GSBase):
