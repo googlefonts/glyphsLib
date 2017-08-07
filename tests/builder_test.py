@@ -30,7 +30,7 @@ from glyphsLib import builder
 from glyphsLib.builder import build_style_name, set_custom_params,\
     set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
     GLYPHLIB_PREFIX, draw_paths, set_default_params, UFO2FT_FILTERS_KEY, \
-    parse_glyphs_filter
+    parse_glyphs_filter, parse_style_attrs
 
 
 class BuildStyleNameTest(unittest.TestCase):
@@ -901,6 +901,23 @@ class DrawPathsTest(unittest.TestCase):
 
         first_segment_type = points[0][2]
         self.assertEqual(first_segment_type, 'qcurve')
+
+
+class ParseStyleAttrsTest(unittest.TestCase):
+
+    def test_parse_style_attrs(self):
+        self.assertEqual(parse_style_attrs("Regular"), ["", "Regular"])
+        self.assertEqual(parse_style_attrs("Italic"), ["", ""])
+        self.assertEqual(parse_style_attrs("Bold"), ["", "Bold"])
+        self.assertEqual(parse_style_attrs("Bold Italic"), ["", "Bold"])
+        self.assertEqual(parse_style_attrs("Italic Bold"), ["", "Bold"])
+        self.assertEqual(parse_style_attrs("ExtraBold"), ["", "ExtraBold"])
+        self.assertEqual(parse_style_attrs("Extra Bold"), ["", "Extra Bold"])
+        self.assertEqual(parse_style_attrs("Condensed"), ["Condensed", ""])
+        self.assertEqual(
+            parse_style_attrs("Condensed Bold"), ["Condensed", "Bold"])
+        self.assertEqual(
+            parse_style_attrs("FooBoldBar"), ["", ""])  # not bold
 
 
 if __name__ == '__main__':
