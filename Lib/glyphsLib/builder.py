@@ -350,16 +350,14 @@ def set_redundant_data(ufo):
     if width:
         ufo.lib[GLYPHS_PREFIX + 'width'] = width
 
-    if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
-        ufo.info.styleMapStyleName = style_name.lower()
-        ufo.info.styleMapFamilyName = family_name
-    else:
-        ufo.info.styleMapStyleName = ' '.join(s for s in (
-            'bold' if weight == 'Bold' else '',
-            'italic' if 'Italic' in style_name else '') if s) or 'regular'
-        ufo.info.styleMapFamilyName = ' '.join(
-            [family_name] +
-            style_name.replace('Bold', '').replace('Italic', '').split())
+    ufo.info.styleMapStyleName = ' '.join(s for s in (
+        'bold' if weight == 'Bold' else '',
+        'italic' if 'Italic' in style_name else '') if s) or 'regular'
+    ufo.info.styleMapFamilyName = ' '.join(
+        [family_name] +
+        [s for s in style_name.split()
+         if s not in {'Regular', 'Bold', 'Italic'}])
+
     ufo.info.openTypeNamePreferredFamilyName = family_name
     ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
