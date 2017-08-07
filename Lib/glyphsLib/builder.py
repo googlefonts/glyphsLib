@@ -654,9 +654,12 @@ def parse_style_attrs(name):
     """Parse width and weight from a style name, and return them in a list."""
 
     attrs = []
+    # matches subpattern either at beginning/end or surrounded by space
+    tmpl = r'(?:^|\s+)(%s)(?:$|\s+)'
     for codes in (WIDTH_CODES, WEIGHT_CODES):
-        m = re.search('(%s)' % '|'.join(k for k in codes.keys() if k), name)
-        attrs.append(m.group(0) if m else '')
+        pattern = tmpl % '|'.join(re.escape(k) for k in codes.keys() if k)
+        m = re.search(pattern, name)
+        attrs.append(m.group(1) if m else '')
     return attrs
 
 
