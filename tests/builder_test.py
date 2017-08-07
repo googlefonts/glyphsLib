@@ -283,7 +283,10 @@ class SetRedundantDataTest(unittest.TestCase):
             ('MyFont', 'Thin Italic', 'MyFont Thin', 'italic'),
             ('MyFont', 'Condensed Thin', 'MyFont Condensed Thin', 'regular'),
             ('MyFont', 'Condensed Thin Italic', 'MyFont Condensed Thin',
-             'italic')))
+             'italic'),
+            ('MyFont', 'SemiBold', 'MyFont SemiBold', 'regular'),
+            ('MyFont', 'ExtraBold Italic', 'MyFont ExtraBold', 'italic'),
+        ))
 
 
 class ToUfosTest(unittest.TestCase):
