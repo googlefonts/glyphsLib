@@ -15,7 +15,7 @@
         </axis>
     </axes>
     <sources>
-        <source familyname="TwoAxes" filename="TwoAxes-Regular.ufo" name="TwoAxes Regular" stylename="Regular">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-Regular.ufo" name="DesignspaceTest TwoAxes Regular" stylename="Regular">
             <lib copy="1" />
             <groups copy="1" />
             <features copy="1" />
@@ -25,31 +25,31 @@
                 <dimension name="width" xvalue="100.000000" />
             </location>
         </source>
-        <source familyname="TwoAxes" filename="TwoAxes-Black.ufo" name="TwoAxes Black" stylename="Black">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-Black.ufo" name="DesignspaceTest TwoAxes Black" stylename="Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
                 <dimension name="width" xvalue="100.000000" />
             </location>
         </source>
-        <source familyname="TwoAxes" filename="TwoAxes-Thin.ufo" name="TwoAxes Thin" stylename="Thin">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-Thin.ufo" name="DesignspaceTest TwoAxes Thin" stylename="Thin">
             <location>
                 <dimension name="weight" xvalue="26.000000" />
                 <dimension name="width" xvalue="100.000000" />
             </location>
         </source>
-        <source familyname="TwoAxes" filename="TwoAxes-ExtraCond.ufo" name="TwoAxes ExtraCond" stylename="ExtraCond">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-ExtraCond.ufo" name="DesignspaceTest TwoAxes ExtraCond" stylename="ExtraCond">
             <location>
                 <dimension name="weight" xvalue="90.000000" />
                 <dimension name="width" xvalue="70.000000" />
             </location>
         </source>
-        <source familyname="TwoAxes" filename="TwoAxes-ExtraCondBlack.ufo" name="TwoAxes ExtraCond Black" stylename="ExtraCond Black">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-ExtraCondBlack.ufo" name="DesignspaceTest TwoAxes ExtraCond Black" stylename="ExtraCond Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
                 <dimension name="width" xvalue="70.000000" />
             </location>
         </source>
-        <source familyname="TwoAxes" filename="TwoAxes-ExtraCondThin.ufo" name="TwoAxes ExtraCond Thin" stylename="ExtraCond Thin">
+        <source familyname="DesignspaceTest TwoAxes" filename="DesignspaceTestTwoAxes-ExtraCondThin.ufo" name="DesignspaceTest TwoAxes ExtraCond Thin" stylename="ExtraCond Thin">
             <location>
                 <dimension name="weight" xvalue="26.000000" />
                 <dimension name="width" xvalue="70.000000" />

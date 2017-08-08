@@ -70,6 +70,10 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     """
     from mutatorMath.ufo.document import DesignSpaceDocumentWriter
 
+    base_family = masters[0].info.familyName
+    assert all(m.info.familyName == base_family for m in masters), \
+        'Masters must all have same family'
+
     for font in masters:
         write_ufo(font, master_dir)
 
@@ -84,12 +88,15 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     axes = get_axes(masters, regular, instances)
     write_axes(axes, writer)
     add_masters_to_writer(masters, regular, axes, writer)
-    base_family = instance_data.get('defaultFamilyName', regular.info.familyName)
     instance_files = add_instances_to_writer(
         writer, base_family, axes, instances, out_dir)
 
-    basename = '%s.designspace' % base_family
-    writer.path = os.path.join(master_dir, basename.replace(' ', ''))
+    # append base style shared by all masters to designspace file name
+    base_style = find_base_style(masters)
+    if base_style:
+        base_style = "-" + base_style
+    ds_name = (base_family + base_style).replace(' ', '') + '.designspace'
+    writer.path = os.path.join(master_dir, ds_name)
     writer.save()
     return writer.path, instance_files
 
@@ -181,6 +188,18 @@ def write_axes(axes, writer):
             axisElement.append(labelname)
 
 
+def find_base_style(masters):
+    """Find a base style shared between all masters.
+    Return empty string if none is found.
+    """
+    base_style = masters[0].info.styleName.split()
+    for font in masters:
+        style = font.info.styleName.split()
+        base_style = [s for s in style if s in base_style]
+    base_style = ' '.join(base_style)
+    return base_style
+
+
 def find_regular_master(masters, regularName=None):
     """Find the "regular" master among the master UFOs.
 
@@ -192,18 +211,11 @@ def find_regular_master(masters, regularName=None):
     returns the first master in the list.
     """
     assert len(masters) > 0
-    base_family = masters[0].info.familyName
-    assert all(m.info.familyName == base_family for m in masters), \
-        'Masters must all have same family'
     if regularName is not None:
         for font in masters:
             if font.info.styleName == regularName:
                 return font
-    base_style = masters[0].info.styleName.split()
-    for font in masters:
-        style = font.info.styleName.split()
-        base_style = [s for s in style if s in base_style]
-    base_style = ' '.join(base_style)
+    base_style = find_base_style(masters)
     if not base_style:
         base_style = 'Regular'
     for font in masters:
@@ -244,7 +256,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     """
     ofiles = []
     for instance in instances:
-        familyName, postScriptFontName = family_name, None
+        familyName, postScriptFontName = None, None
         for p in instance.customParameters:
             param, value = p.name, p.value
             if param == 'familyName':
@@ -252,8 +264,8 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
             elif param == 'postscriptFontName':
                 # Glyphs uses "postscriptFontName", not "postScriptFontName"
                 postScriptFontName = value
-        if not familyName:
-            continue
+        if familyName is None:
+            familyName = family_name
 
         styleName = instance.name
         ufo_path = build_ufo_path(out_dir, familyName, styleName)

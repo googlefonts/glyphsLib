@@ -59,6 +59,17 @@ def generate_minimal_font():
     return font
 
 
+def generate_instance_from_dict(instance_dict):
+    instance = GSInstance()
+    instance.name = instance_dict['name']
+    for custom_parameter in instance_dict.get('customParameters', []):
+        cp = GSCustomParameter()
+        cp.name = custom_parameter['name']
+        cp.value = custom_parameter['value']
+        instance.customParameters.append(cp)
+    return instance
+
+
 def add_glyph(font, glyphname):
     glyph = GSGlyph()
     glyph.name = glyphname

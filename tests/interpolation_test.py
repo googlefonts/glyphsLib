@@ -35,7 +35,6 @@ def makeFamily(familyName):
     m1 = makeMaster(familyName, "Regular", weight=90.0)
     m2 = makeMaster(familyName, "Black", weight=190.0)
     instances = {
-        "defaultFamilyName": familyName,
         "data": [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("Semibold", 600, 128)),
@@ -89,11 +88,13 @@ def makeInstance(name, weight=None, width=None):
 class DesignspaceTest(unittest.TestCase):
     def build_designspace(self, masters, instances):
         master_dir = tempfile.mkdtemp()
-        designspace, _ = build_designspace(
-            masters, master_dir, os.path.join(master_dir, "out"), instances)
-        with open(designspace, mode="r", encoding="utf-8") as f:
-            result = f.readlines()
-        shutil.rmtree(master_dir)
+        try:
+            designspace, _ = build_designspace(
+                masters, master_dir, os.path.join(master_dir, "out"), instances)
+            with open(designspace, mode="r", encoding="utf-8") as f:
+                result = f.readlines()
+        finally:
+            shutil.rmtree(master_dir)
         return result
 
     def expect_designspace(self, masters, instances, expectedFile):
@@ -186,31 +187,32 @@ class DesignspaceTest(unittest.TestCase):
         # In NotoSansArabic-MM.glyphs, the regular width only contains
         # parameters for the weight axis. For the width axis, glyphsLib
         # should use 100 as default value (just like Glyphs.app does).
+        familyName = "DesignspaceTest TwoAxes"
         masters = [
-            makeMaster("TwoAxes", "Regular", weight=90),
-            makeMaster("TwoAxes", "Black", weight=190),
-            makeMaster("TwoAxes", "Thin", weight=26),
-            makeMaster("TwoAxes", "ExtraCond", weight=90, width=70),
-            makeMaster("TwoAxes", "ExtraCond Black", weight=190, width=70),
-            makeMaster("TwoAxes", "ExtraCond Thin", weight=26, width=70),
+            makeMaster(familyName, "Regular", weight=90),
+            makeMaster(familyName, "Black", weight=190),
+            makeMaster(familyName, "Thin", weight=26),
+            makeMaster(familyName, "ExtraCond", weight=90, width=70),
+            makeMaster(familyName, "ExtraCond Black", weight=190, width=70),
+            makeMaster(familyName, "ExtraCond Thin", weight=26, width=70),
         ]
-
-        _, instances = makeFamily("DesignspaceTest TwoAxes")
-        instances["data"] = [
-            makeInstance("Thin", weight=("Thin", 100, 26)),
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Semibold", weight=("Semibold", 600, 128)),
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("ExtraCondensed Thin",
-                         weight=("Thin", 100, 26),
-                         width=("Extra Condensed", 70)),
-            makeInstance("ExtraCondensed",
-                         weight=("Regular", 400, 90),
-                         width=("Extra Condensed", 70)),
-            makeInstance("ExtraCondensed Black",
-                         weight=("Black", 900, 190),
-                         width=("Extra Condensed", 70)),
-        ]
+        instances = {
+            "data": [
+                makeInstance("Thin", weight=("Thin", 100, 26)),
+                makeInstance("Regular", weight=("Regular", 400, 90)),
+                makeInstance("Semibold", weight=("Semibold", 600, 128)),
+                makeInstance("Black", weight=("Black", 900, 190)),
+                makeInstance("ExtraCondensed Thin",
+                             weight=("Thin", 100, 26),
+                             width=("Extra Condensed", 70)),
+                makeInstance("ExtraCondensed",
+                             weight=("Regular", 400, 90),
+                             width=("Extra Condensed", 70)),
+                makeInstance("ExtraCondensed Black",
+                             weight=("Black", 900, 190),
+                             width=("Extra Condensed", 70)),
+            ]
+        }
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestTwoAxes.designspace")
 
@@ -238,6 +240,29 @@ class DesignspaceTest(unittest.TestCase):
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
         self.assertEqual(weightAxis.attrib["default"], "444.0")
+
+    def test_designspace_name(self):
+        master_dir = tempfile.mkdtemp()
+        try:
+            designspace_path, _ = build_designspace(
+                [
+                    makeMaster("Family Name", "Regular", weight=100),
+                    makeMaster("Family Name", "Bold", weight=190),
+                ], master_dir, os.path.join(master_dir, "out"), {})
+            # no shared base style name, only write the family name
+            self.assertEqual(os.path.basename(designspace_path),
+                             "FamilyName.designspace")
+
+            designspace_path, _ = build_designspace(
+                [
+                    makeMaster("Family Name", "Italic", weight=100),
+                    makeMaster("Family Name", "Bold Italic", weight=190),
+                ], master_dir, os.path.join(master_dir, "out"), {})
+            # 'Italic' is the base style; append to designspace name
+            self.assertEqual(os.path.basename(designspace_path),
+                             "FamilyName-Italic.designspace")
+        finally:
+            shutil.rmtree(master_dir)
 
 
 if __name__ == "__main__":

@@ -126,6 +126,11 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
     https://github.com/schriftgestalt/GlyphsSDK/blob/master/GlyphsFileFormat.md
     and returns a list of UFOs, one per master.
 
+    If include_instances is True, also returns the parsed instance data.
+
+    If family_name is provided, the master UFOs will be given this name and
+    only instances with this name will be returned.
+
     If debug is True, returns unused input data instead of the resulting UFOs.
     """
 
@@ -137,7 +142,19 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
 
     source_family_name = font.familyName
     if family_name is None:
+        # use the source family name, and include all the instances
         family_name = source_family_name
+        do_filter_instances_by_family = False
+    else:
+        # use a custom 'family_name' to name master UFOs, and only build
+        # instances with matching 'familyName' custom parameter
+        do_filter_instances_by_family = True
+        if family_name == source_family_name:
+            # if the 'family_name' provided is the same as the source, only
+            # include instances which do _not_ specify a custom 'familyName'
+            instance_family_name = None
+        else:
+            instance_family_name = family_name
 
     feature_prefixes, classes, features = [], [], []
     for f in font.featurePrefixes:
@@ -209,18 +226,23 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
         load_kerning(ufos[master_id], kerning)
 
     result = [ufos[master_id] for master_id in master_id_order]
-    instances = {'defaultFamilyName': source_family_name,
-                 'data': font.instances}
+
+    instances = font.instances
+    if do_filter_instances_by_family:
+        instances = list(filter_instances_by_family(instances,
+                                                    instance_family_name))
+    instance_data = {'data': instances}
+
     # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
     # shared by all the master ufos; here we just get it from the first one
     varfont_origin_key = "Variation Font Origin"
     varfont_origin = first_ufo.lib.get(GLYPHS_PREFIX + varfont_origin_key)
     if varfont_origin:
-        instances[varfont_origin_key] = varfont_origin
+        instance_data[varfont_origin_key] = varfont_origin
     if debug:
         return clear_data(font)
     elif include_instances:
-        return result, instances
+        return result, instance_data
     return result
 
 
@@ -695,6 +717,20 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
         for member in new_glyphs:
             pair = (member, glyph) if is_left_class else (glyph, member)
             ufo.kerning[pair] = val
+
+
+def filter_instances_by_family(instances, family_name=None):
+    """Yield instances whose 'familyName' custom parameter is
+    equal to 'family_name'.
+    """
+    for instance in instances:
+        familyName = None
+        for p in instance.customParameters:
+            param, value = p.name, p.value
+            if param == 'familyName':
+                familyName = value
+        if familyName == family_name:
+            yield instance
 
 
 def load_glyph_libdata(glyph, layer):

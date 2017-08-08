@@ -41,7 +41,8 @@ from glyphsLib.builder import build_style_name, set_custom_params,\
     GLYPHLIB_PREFIX, draw_paths, set_default_params, UFO2FT_FILTERS_KEY, \
     parse_glyphs_filter
 
-from classes_test import generate_minimal_font, add_glyph, add_anchor, add_component
+from classes_test import generate_minimal_font, generate_instance_from_dict, \
+    add_glyph, add_anchor, add_component
 
 class BuildStyleNameTest(unittest.TestCase):
     def _build(self, data, italic):
@@ -659,6 +660,110 @@ class ToUfosTest(unittest.TestCase):
             self.assertEqual(ufo.lib[key], value)
         self.assertIn(name, instances)
         self.assertEqual(instances[name], value)
+
+    def test_family_name_none(self):
+        font = generate_minimal_font()
+        instances_list = [
+            {
+                'name': 'Regular1'
+            },
+            {
+                'name': 'Regular2',
+                'customParameters': [
+                    {
+                        'name': 'familyName',
+                        'value': 'CustomFamily'
+                    },
+                ]
+            }
+        ]
+        font.instances = [generate_instance_from_dict(i)
+                          for i in instances_list]
+
+        # 'family_name' defaults to None
+        ufos, instance_data = to_ufos(font, include_instances=True)
+        instances = instance_data['data']
+
+        # all instances are included, both with/without 'familyName' parameter
+        self.assertEqual(len(instances), 2)
+        self.assertEqual(instances[0].name, 'Regular1')
+        self.assertEqual(instances[1].name, 'Regular2')
+        self.assertEqual(len(instances[0].customParameters), 0)
+        self.assertEqual(len(instances[1].customParameters), 1)
+        self.assertEqual(instances[1].customParameters[0].value, 'CustomFamily')
+
+        # the masters' family name is unchanged
+        for ufo in ufos:
+            self.assertEqual(ufo.info.familyName, 'MyFont')
+
+    def test_family_name_same_as_default(self):
+        font = generate_minimal_font()
+        instances_list = [
+            {
+                'name': 'Regular1'
+            },
+            {
+                'name': 'Regular2',
+                'customParameters': [
+                    {
+                        'name': 'familyName',
+                        'value': 'CustomFamily'
+                    },
+                ]
+            }
+        ]
+        font.instances = [generate_instance_from_dict(i)
+                          for i in instances_list]
+        # 'MyFont' is the source family name, as returned from
+        # 'generate_minimal_data'
+        ufos, instance_data = to_ufos(font,
+                                      include_instances=True,
+                                      family_name='MyFont')
+        instances = instance_data['data']
+
+        # only instances which don't have 'familyName' custom parameter
+        # are included in returned list
+        self.assertEqual(len(instances), 1)
+        self.assertEqual(instances[0].name, 'Regular1')
+        self.assertEqual(len(instances[0].customParameters), 0)
+
+        # the masters' family name is unchanged
+        for ufo in ufos:
+            self.assertEqual(ufo.info.familyName, 'MyFont')
+
+    def test_family_name_custom(self):
+        font = generate_minimal_font()
+        instances_list = [
+            {
+                'name': 'Regular1'
+            },
+            {
+                'name': 'Regular2',
+                'customParameters': [
+                    {
+                        'name': 'familyName',
+                        'value': 'CustomFamily'
+                    },
+                ]
+            }
+        ]
+        font.instances = [generate_instance_from_dict(i)
+                          for i in instances_list]
+        ufos, instance_data = to_ufos(font,
+                                      include_instances=True,
+                                      family_name='CustomFamily')
+        instances = instance_data['data']
+
+        # only instances with familyName='CustomFamily' are included
+        self.assertEqual(len(instances), 1)
+        self.assertEqual(instances[0].name, 'Regular2')
+        self.assertEqual(len(instances[0].customParameters), 1)
+        self.assertEqual(instances[0].customParameters[0].value,
+                         'CustomFamily')
+
+        # the masters' family is also modified to use custom 'family_name'
+        for ufo in ufos:
+            self.assertEqual(ufo.info.familyName, 'CustomFamily')
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()

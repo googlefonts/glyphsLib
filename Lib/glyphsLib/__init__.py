@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +26,7 @@ from glyphsLib.util import write_ufo
 
 from glyphsLib.classes import *
 
-__version__ = "1.7.6.dev0"
+__version__ = "1.7.7.dev0"
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
