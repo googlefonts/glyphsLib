@@ -350,6 +350,10 @@ def set_redundant_data(ufo):
     if width:
         ufo.lib[GLYPHS_PREFIX + 'width'] = width
 
+    # TODO when building instances, we should use the 'isBold', 'isItalic'
+    # and 'linkStyle' properties instead of parsing the 'styleName'.
+    # For masters, which are not meant to be exported as such, these
+    # attributes probably shouldn't be set.
     ufo.info.styleMapStyleName = ' '.join(s for s in (
         'bold' if weight == 'Bold' else '',
         'italic' if 'Italic' in style_name else '') if s) or 'regular'
@@ -357,9 +361,6 @@ def set_redundant_data(ufo):
         [family_name] +
         [s for s in style_name.split()
          if s not in {'Regular', 'Bold', 'Italic'}])
-
-    ufo.info.openTypeNamePreferredFamilyName = family_name
-    ufo.info.openTypeNamePreferredSubfamilyName = style_name
 
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
