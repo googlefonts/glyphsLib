@@ -765,7 +765,7 @@ def load_glyph_libdata(glyph, layer):
                 for attr in ['origin', 'other1', 'other2', 'place', 'scale',
                              'target']:
                     val = getattr(hi, attr, None)
-                    if not any(v is None for v in val):
+                    if val is not None and not any(v is None for v in val):
                         hint[attr] = list(val)
                 hints.append(hint)
             value = hints
