@@ -306,9 +306,9 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for path, data in instance_data:
         ufo = Font(path)
-        set_custom_params(ufo, data=data)
         set_default_params(ufo)
         set_redundant_data(ufo)
+        set_custom_params(ufo, data=data)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos
