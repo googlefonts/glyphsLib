@@ -55,27 +55,40 @@ GLYPHS_COLORS = (
 
 WEIGHT_CODES = {
     'Thin': 250,
+    'ExtraLight': 250,
+    'UltraLight': 250,
     'Light': 300,
     'SemiLight': 350,
     'DemiLight': 350,
     '': 400,
+    'Normal': 400,
     'Regular': 400,
     'Medium': 500,
     'DemiBold': 600,
     'SemiBold': 600,
     'Bold': 700,
+    'UltraBold': 800,
     'ExtraBold': 800,
-    'Extra Bold': 800,
-    'Black': 900}
+    'Extra Bold': 800,  # XXX why is this treated specially from the rest?
+    'Black': 900,
+    'Heavy': 900,
+}
 
 WIDTH_CODES = {
+    'Ultra Condensed': 1,
     'Extra Condensed': 2,
-    'Cd': 3,
+    'Cd': 3,  # XXX what about the short versions of the others?
     'Cond': 3,
     'Condensed': 3,
     'Narrow': 4,
     'SemiCondensed': 4,
-    '': 5}
+    '': 5,
+    'Medium (normal)': 5,
+    'Semi Expanded': 6,
+    'Expanded': 7,
+    'Extra Expanded': 8,
+    'Ultra Expanded': 9,
+}
 
 # https://www.microsoft.com/typography/otspec/os2.htm#cpr
 CODEPAGE_RANGES = {
