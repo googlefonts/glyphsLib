@@ -419,7 +419,15 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
 
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
-            ('license', 'NameLicense'), ('panose', 'OS2Panose'),
+            ('license', 'NameLicense'),
+            ('licenseURL', 'NameLicenseURL'),
+            ('preferredFamilyName', 'NamePreferredFamilyName'),
+            ('preferredSubfamilyName', 'NamePreferredSubfamilyName'),
+            ('compatibleFullName', 'NameCompatibleFullName'),
+            ('sampleText', 'NameSampleText'),
+            ('WWSFamilyName', 'NameWWSFamilyName'),
+            ('WWSSubfamilyName', 'NameWWSSubfamilyName'),
+            ('panose', 'OS2Panose'),
             ('typo', 'OS2Typo'), ('unicodeRanges', 'OS2UnicodeRanges'),
             ('codePageRanges', 'OS2CodePageRanges'),
             ('weightClass', 'OS2WeightClass'),
