@@ -33,32 +33,37 @@ from glyphsLib.builder import build_style_name, set_custom_params,\
 
 
 class BuildStyleNameTest(unittest.TestCase):
-    def _build(self, data, italic):
-        return build_style_name(data, 'width', 'weight', 'custom', italic)
 
     def test_style_regular_weight(self):
-        self.assertEqual(self._build({}, False), 'Regular')
-        self.assertEqual(self._build({}, True), 'Italic')
-        self.assertEqual(
-            self._build({'weight': 'Regular'}, True), 'Italic')
+        self.assertEqual(build_style_name(is_italic=False), 'Regular')
+        self.assertEqual(build_style_name(is_italic=True), 'Italic')
 
     def test_style_nonregular_weight(self):
         self.assertEqual(
-            self._build({'weight': 'Thin'}, False), 'Thin')
+            build_style_name(weight='Thin', is_italic=False), 'Thin')
         self.assertEqual(
-            self._build({'weight': 'Thin'}, True), 'Thin Italic')
+            build_style_name(weight='Thin', is_italic=True), 'Thin Italic')
 
     def test_style_nonregular_width(self):
         self.assertEqual(
-            self._build({'width': 'Condensed'}, False), 'Condensed')
+            build_style_name(width='Condensed', is_italic=False), 'Condensed')
         self.assertEqual(
-            self._build({'width': 'Condensed'}, True), 'Condensed Italic')
+            build_style_name(width='Condensed', is_italic=True),
+            'Condensed Italic')
         self.assertEqual(
-            self._build({'weight': 'Thin', 'width': 'Condensed'}, False),
+            build_style_name(weight='Thin', width='Condensed',
+                             is_italic=False),
             'Condensed Thin')
         self.assertEqual(
-            self._build({'weight': 'Thin', 'width': 'Condensed'}, True),
+            build_style_name(weight='Thin', width='Condensed',
+                             is_italic=True),
             'Condensed Thin Italic')
+
+    def test_style_custom(self):
+        self.assertEqual(
+            build_style_name(custom='Text', is_italic=False), 'Text')
+        self.assertEqual(
+            build_style_name(weight='Text', is_italic=True), 'Text Italic')
 
 
 class SetCustomParamsTest(unittest.TestCase):
