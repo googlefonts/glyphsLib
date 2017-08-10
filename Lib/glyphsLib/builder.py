@@ -26,8 +26,7 @@ from glyphsLib.util import clear_data, cast_to_number_or_bool, bin_to_int_list
 import glyphsLib.glyphdata
 
 __all__ = [
-    'to_ufos', 'set_redundant_data', 'set_custom_params',
-    'GLYPHS_PREFIX'
+    'to_ufos', 'set_custom_params', 'GLYPHS_PREFIX',
 ]
 
 logger = logging.getLogger(__name__)
@@ -320,12 +319,23 @@ def generate_base_fonts(data, family_name):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
+            is_italic = True
+        else:
+            is_italic = False
+
+        width = master.pop('width', '')
+        weight = master.pop('weight', '')
+        custom = master.pop('custom', '')
+        if weight:
+            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+        if width:
+            ufo.lib[GLYPHS_PREFIX + 'width'] = width
+        if custom:
+            ufo.lib[GLYPHS_PREFIX + 'custom'] = custom
 
         ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(
-            master, 'width', 'weight', 'custom', italic_angle != 0)
+        ufo.info.styleName = build_style_name(width, weight, custom, is_italic)
 
-        set_redundant_data(ufo)
         set_blue_values(ufo, master.pop('alignmentZones', []))
         set_family_user_data(ufo, user_data)
         set_master_user_data(ufo, master.pop('userData', {}))
@@ -345,35 +355,6 @@ def generate_base_fonts(data, family_name):
         ufos[master_id] = ufo
 
     return ufos, master_id_order
-
-
-def set_redundant_data(ufo):
-    """Set redundant metadata in a UFO, e.g. data based on other data."""
-
-    family_name, style_name = ufo.info.familyName, ufo.info.styleName
-
-    width, weight = parse_style_attrs(style_name)
-    if ufo.info.openTypeOS2WidthClass is None:
-        ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
-    if ufo.info.openTypeOS2WeightClass is None:
-        ufo.info.openTypeOS2WeightClass = WEIGHT_CODES[weight]
-
-    if weight and weight != 'Regular':
-        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-    if width:
-        ufo.lib[GLYPHS_PREFIX + 'width'] = width
-
-    # TODO when building instances, we should use the 'isBold', 'isItalic'
-    # and 'linkStyle' properties instead of parsing the 'styleName'.
-    # For masters, which are not meant to be exported as such, these
-    # attributes probably shouldn't be set.
-    ufo.info.styleMapStyleName = ' '.join(s for s in (
-        'bold' if weight == 'Bold' else '',
-        'italic' if 'Italic' in style_name else '') if s) or 'regular'
-    ufo.info.styleMapFamilyName = ' '.join(
-        [family_name] +
-        [s for s in style_name.split()
-         if s not in {'Regular', 'Bold', 'Italic'}])
 
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
@@ -658,31 +639,14 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = user_data
 
 
-def build_style_name(data, width_key, weight_key, custom_key, italic):
-    """Build style name from width, weight, and custom style strings in data,
+def build_style_name(width='', weight='', custom='', is_italic=False):
+    """Build style name from width, weight, and custom style strings
     and whether the style is italic.
     """
 
-    italic = 'Italic' if italic else ''
-    width = data.pop(width_key, '')
-    weight = data.pop(weight_key, 'Regular')
-    custom = data.pop(custom_key, '')
-    if (italic or width or custom) and weight == 'Regular':
-        weight = ''
-    return ' '.join(s for s in (width, weight, custom, italic) if s)
-
-
-def parse_style_attrs(name):
-    """Parse width and weight from a style name, and return them in a list."""
-
-    attrs = []
-    # matches subpattern either at beginning/end or surrounded by space
-    tmpl = r'(?:^|\s+)(%s)(?:$|\s+)'
-    for codes in (WIDTH_CODES, WEIGHT_CODES):
-        pattern = tmpl % '|'.join(re.escape(k) for k in codes.keys() if k)
-        m = re.search(pattern, name)
-        attrs.append(m.group(1) if m else '')
-    return attrs
+    return ' '.join(
+        s for s in (custom, width, weight, 'Italic' if is_italic else '') if s
+    ) or 'Regular'
 
 
 def to_ufo_time(datetime_obj):
