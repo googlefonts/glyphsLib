@@ -21,8 +21,7 @@ import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    set_default_params, GLYPHS_PREFIX
+from glyphsLib.builder import set_custom_params, GLYPHS_PREFIX
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
@@ -278,6 +277,8 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         for axis in axes:
             location[axis] = instance.get(
                 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+        # TODO: define styleMap* names based on isBold, isItalic and linkStyle
+        # instance properties, and pass as args to mutatorMath
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
@@ -306,8 +307,8 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for path, data in instance_data:
         ufo = Font(path)
-        set_default_params(ufo)
-        set_redundant_data(ufo)
+        # TODO: save `weightClass` and `widthClass` to lib, and
+        # use those to set openTypeOS2{Weight,Width}Class
         set_custom_params(ufo, data=data)
         ufo.save()
         instance_ufos.append(ufo)
