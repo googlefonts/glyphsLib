@@ -325,6 +325,30 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     return ofiles
 
 
+def _set_class_from_instance(ufo, data, key, codes):
+    class_name = data.get(key)
+    if class_name:
+        ufo.lib[GLYPHS_PREFIX + key] = class_name
+    if class_name in codes:
+        class_code = codes[class_name]
+        ufo_key = "".join(['openTypeOS2', key[0].upper(), key[1:]])
+        setattr(ufo.info, ufo_key, class_code)
+
+
+def set_weight_class(ufo, instance_data):
+    """ Store `weightClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WeightClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "weightClass", WEIGHT_CODES)
+
+
+def set_width_class(ufo, instance_data):
+    """ Store `widthClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WidthClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "widthClass", WIDTH_CODES)
+
+
 def apply_instance_data(instance_data):
     """Open instances, apply data, and re-save.
 
@@ -338,8 +362,8 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for path, data in instance_data:
         ufo = Font(path)
-        # TODO: save `weightClass` and `widthClass` to lib, and
-        # use those to set openTypeOS2{Weight,Width}Class
+        set_weight_class(ufo, data)
+        set_width_class(ufo, data)
         set_custom_params(ufo, data=data)
         ufo.save()
         instance_ufos.append(ufo)
