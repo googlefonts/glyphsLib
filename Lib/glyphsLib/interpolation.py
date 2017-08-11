@@ -39,6 +39,37 @@ DEFAULT_LOCS = {
     'custom': 0,
 }
 
+WEIGHT_CODES = {
+    'Thin': 250,
+    'ExtraLight': 250,
+    'UltraLight': 250,
+    'Light': 300,
+    None: 400,  # default value normally omitted in source
+    'Normal': 400,
+    'Regular': 400,
+    'Medium': 500,
+    'DemiBold': 600,
+    'SemiBold': 600,
+    'Bold': 700,
+    'UltraBold': 800,
+    'ExtraBold': 800,
+    'Black': 900,
+    'Heavy': 900,
+}
+
+WIDTH_CODES = {
+    'Ultra Condensed': 1,
+    'Extra Condensed': 2,
+    'Condensed': 3,
+    'SemiCondensed': 4,
+    None: 5,  # default value normally omitted in source
+    'Medium (normal)': 5,
+    'Semi Expanded': 6,
+    'Expanded': 7,
+    'Extra Expanded': 8,
+    'Ultra Expanded': 9,
+}
+
 
 def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     """Create MutatorMath designspace and generate instances.
