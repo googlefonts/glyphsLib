@@ -23,7 +23,7 @@
         </source>
     </sources>
     <instances>
-        <instance familyname="DesignspaceTest Inactive" filename="out/DesignspaceTestInactive-Semibold.ufo" name="DesignspaceTest Inactive Semibold" stylename="Semibold">
+        <instance familyname="DesignspaceTest Inactive" filename="out/DesignspaceTestInactive-Semibold.ufo" name="DesignspaceTest Inactive Semibold" stylemapfamilyname="DesignspaceTest Inactive Semibold" stylemapstylename="regular" stylename="Semibold">
             <location>
                 <dimension name="weight" xvalue="128.000000" />
             </location>

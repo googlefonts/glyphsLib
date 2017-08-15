@@ -507,7 +507,10 @@ _TYPE_STRUCTURE = {
         'interpolationWidth': num,  # undocumented
         'name': string,  # undocumented
         'weightClass': string,  # undocumented
-        'widthClass': string  # undocumented
+        'widthClass': string,  # undocumented
+        'isBold': truthy,  # undocumented
+        'isItalic': truthy,  # undocumented
+        'linkStyle': string,  # undocumented
     },
     'kerning': kerning,
     'manufacturer': string,

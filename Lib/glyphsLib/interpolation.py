@@ -16,13 +16,12 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict, namedtuple, deque
 import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    set_default_params, GLYPHS_PREFIX
+from glyphsLib.builder import set_custom_params, GLYPHS_PREFIX
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
@@ -38,6 +37,37 @@ DEFAULT_LOCS = {
     'weight': 100,
     'width': 100,
     'custom': 0,
+}
+
+WEIGHT_CODES = {
+    'Thin': 250,
+    'ExtraLight': 250,
+    'UltraLight': 250,
+    'Light': 300,
+    None: 400,  # default value normally omitted in source
+    'Normal': 400,
+    'Regular': 400,
+    'Medium': 500,
+    'DemiBold': 600,
+    'SemiBold': 600,
+    'Bold': 700,
+    'UltraBold': 800,
+    'ExtraBold': 800,
+    'Black': 900,
+    'Heavy': 900,
+}
+
+WIDTH_CODES = {
+    'Ultra Condensed': 1,
+    'Extra Condensed': 2,
+    'Condensed': 3,
+    'SemiCondensed': 4,
+    None: 5,  # default value normally omitted in source
+    'Medium (normal)': 5,
+    'Semi Expanded': 6,
+    'Expanded': 7,
+    'Extra Expanded': 8,
+    'Ultra Expanded': 9,
 }
 
 
@@ -278,12 +308,21 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         for axis in axes:
             location[axis] = instance.get(
                 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=familyName,
+            style_name=styleName,
+            is_bold=instance.get('isBold', False),
+            is_italic=instance.get('isItalic', False),
+            linked_style=instance.get('linkStyle')
+        )
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
             familyName=familyName,
             styleName=styleName,
             postScriptFontName=postScriptFontName,
+            styleMapFamilyName=styleMapFamilyName,
+            styleMapStyleName=styleMapStyleName,
             fileName=ufo_path)
 
         writer.writeInfo()
@@ -291,6 +330,76 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         writer.endInstance()
 
     return ofiles
+
+
+def _get_linked_style(style_name, is_bold, is_italic):
+    # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
+    # depending on the values of is_bold and is_italic
+    linked_style = deque()
+    is_regular = not (is_bold or is_italic)
+    for part in reversed(style_name.split()):
+        if part == 'Regular' and is_regular:
+            is_regular = False
+        elif part == 'Bold' and is_bold:
+            is_bold = False
+        elif part == 'Italic' and is_italic:
+            is_italic = False
+        else:
+            linked_style.appendleft(part)
+    return ' '.join(linked_style)
+
+
+def build_stylemap_names(family_name, style_name, is_bold=False,
+                         is_italic=False, linked_style=None):
+    """Build UFO `styleMapFamilyName` and `styleMapStyleName` for an instance,
+    based on the family and style names, and the entries in the "Style Linking"
+    section of the "Instances" tab in the "Font Info".
+
+    The value of `styleMapStyleName` can be either "regular", "bold", "italic"
+    or "bold italic", depending on the values of `is_bold` and `is_italic`.
+
+    The `styleMapFamilyName` is a combination of the `family_name` and the
+    `linked_style`.
+
+    If `linked_style` is unset or set to 'Regular', the linked style is equal
+    to the style_name with the last occurrences of the strings 'Regular',
+    'Bold' and 'Italic' stripped from it.
+    """
+
+    styleMapStyleName = ' '.join(s for s in (
+        'bold' if is_bold else '',
+        'italic' if is_italic else '') if s) or 'regular'
+    if not linked_style or linked_style == 'Regular':
+        linked_style = _get_linked_style(style_name, is_bold, is_italic)
+    if linked_style:
+        styleMapFamilyName = family_name + ' ' + linked_style
+    else:
+        styleMapFamilyName = family_name
+    return styleMapFamilyName, styleMapStyleName
+
+
+def _set_class_from_instance(ufo, data, key, codes):
+    class_name = data.get(key)
+    if class_name:
+        ufo.lib[GLYPHS_PREFIX + key] = class_name
+    if class_name in codes:
+        class_code = codes[class_name]
+        ufo_key = "".join(['openTypeOS2', key[0].upper(), key[1:]])
+        setattr(ufo.info, ufo_key, class_code)
+
+
+def set_weight_class(ufo, instance_data):
+    """ Store `weightClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WeightClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "weightClass", WEIGHT_CODES)
+
+
+def set_width_class(ufo, instance_data):
+    """ Store `widthClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WidthClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "widthClass", WIDTH_CODES)
 
 
 def apply_instance_data(instance_data):
@@ -306,9 +415,9 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for path, data in instance_data:
         ufo = Font(path)
+        set_weight_class(ufo, data)
+        set_width_class(ufo, data)
         set_custom_params(ufo, data=data)
-        set_default_params(ufo)
-        set_redundant_data(ufo)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos

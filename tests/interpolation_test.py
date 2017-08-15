@@ -27,7 +27,9 @@ import xml.etree.ElementTree as etree
 import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder import GLYPHS_PREFIX
-from glyphsLib.interpolation import build_designspace
+from glyphsLib.interpolation import (
+    build_designspace, set_weight_class, set_width_class, build_stylemap_names
+)
 
 
 def makeFamily(familyName):
@@ -37,7 +39,7 @@ def makeFamily(familyName):
         "data": [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("Semibold", 600, 128)),
-            makeInstance("Bold", weight=("Bold", 700, 151)),
+            makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
             makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
@@ -54,35 +56,50 @@ def makeMaster(familyName, styleName, weight=None, width=None):
     return m
 
 
-def makeInstance(name, weight=None, width=None):
+def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
+                 linked_style=None):
     result = {"name": name}
     params = []
     if weight is not None:
         # Glyphs 2.3 stores the instance weight in two to three places:
-        # 1. as a textual weightClass (such as “Bold”);
+        # 1. as a textual weightClass (such as “Bold”; no value defaults to
+        #    "Regular");
         # 2. (optional) as numeric customParameters.weightClass (such as 700),
         #    which corresponds to OS/2.usWeightClass where 100 means Thin,
         #    400 means Regular, 700 means Bold, and 900 means Black;
         # 3. as numeric interpolationWeight (such as 66.0), which typically is
-        #    the stem width but can be anything that works for interpolation.
+        #    the stem width but can be anything that works for interpolation
+        #    (no value defaults to 100).
         weightName, weightClass, interpolationWeight = weight
-        result["weightClass"] = weightName
+        if weightName is not None:
+            result["weightClass"] = weightName
         if weightClass is not None:
             params.append({"name": "weightClass", "value": weightClass})
-        result["interpolationWeight"] = interpolationWeight
+        if interpolationWeight is not None:
+            result["interpolationWeight"] = interpolationWeight
     if width is not None:
         # Glyphs 2.3 stores the instance width in two places:
-        # 1. as a textual widthClass (such as “Condensed”);
+        # 1. as a textual widthClass (such as “Condensed”; no value defaults
+        #    to "Medium (normal)");
         # 2. as numeric interpolationWidth (such as 79), which typically is
         #    a percentage of whatever the font designer considers “normal”
-        #    but can be anything that works for interpolation.
+        #    but can be anything that works for interpolation (no value
+        #    defaults to 100).
         widthClass, interpolationWidth = width
-        result["widthClass"] = widthClass
-        result["interpolationWidth"] = interpolationWidth
+        if widthClass is not None:
+            result["widthClass"] = widthClass
+        if interpolationWidth is not None:
+            result["interpolationWidth"] = interpolationWidth
     # TODO: Support custom axes; need to triple-check how these are encoded in
     # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
     if params:
         result["customParameters"] = params
+    if is_bold is not None:
+        result["isBold"] = is_bold
+    if is_italic is not None:
+        result["isItalic"] = is_italic
+    if linked_style is not None:
+        result["linkStyle"] = linked_style
     return result
 
 
@@ -192,7 +209,7 @@ class DesignspaceTest(unittest.TestCase):
         instances["data"] = [
             makeInstance("Black", weight=("Black", 900, 190)),
             makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Bold", weight=("Bold", 700, 151)),
+            makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
@@ -277,6 +294,308 @@ class DesignspaceTest(unittest.TestCase):
                              "FamilyName-Italic.designspace")
         finally:
             shutil.rmtree(master_dir)
+
+
+WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
+WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
+
+
+class SetWeightWidthClassesTest(unittest.TestCase):
+
+    def test_no_weigth_class(self):
+        ufo = defcon.Font()
+        # name here says "Bold", however no excplit weightClass
+        # is assigned
+        set_weight_class(ufo, makeInstance("Bold"))
+        # the default OS/2 weight class is set
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+        # no value is stored in the UFO lib when instance in glyphs
+        # source contains no `weightClass` (because same as default)
+        self.assertTrue(WEIGHT_CLASS_KEY not in ufo.lib)
+
+    def test_weight_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Bold",
+            weight=("Bold", None, 150)
+        )
+
+        set_weight_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
+
+    def test_explicit_default_weight(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Regular",
+            weight=("Regular", None, 100)
+        )
+
+        set_weight_class(ufo, data)
+        # the default OS/2 weight class is set
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
+
+    def test_no_width_class(self):
+        ufo = defcon.Font()
+        # no explicit widthClass set, instance name doesn't matter
+        set_width_class(ufo, makeInstance("Normal"))
+        # the default OS/2 width class is set
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
+        # no value is stored in the UFO lib when instance in glyphs
+        # source contains no `widthClass` (because same as default)
+        self.assertTrue(WIDTH_CLASS_KEY not in ufo.lib)
+
+    def test_width_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Condensed",
+            width=("Condensed", 80)
+        )
+
+        set_width_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
+
+    def test_explicit_default_width(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Regular",
+            width=("Medium (normal)", 100)
+        )
+
+        set_width_class(ufo, data)
+        # the default OS/2 width class is set
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
+
+    def test_weight_and_width_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "SemiCondensed ExtraBold",
+            weight=("ExtraBold", None, 160),
+            width=("SemiCondensed", 90)
+        )
+
+        set_weight_class(ufo, data)
+        set_width_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 800)
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
+
+    def test_unknown_weight_class(self):
+        ufo = defcon.Font()
+        # "DemiLight" is not among the predefined weight classes listed in
+        # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
+        # Resources/weights.plist
+        # NOTE It is not possible from the user interface to set a custom
+        # string as instance 'weightClass' since the choice is constrained
+        # by a drop-down menu.
+        data = makeInstance(
+            "DemiLight Italic",
+            weight=("DemiLight", 350, 70)
+        )
+
+        set_weight_class(ufo, data)
+
+        # we do not set any OS/2 weight class; user needs to provide
+        # a 'weightClass' custom parameter in this special case
+        self.assertTrue(ufo.info.openTypeOS2WeightClass is None)
+
+
+class BuildStyleMapNamesTest(unittest.TestCase):
+
+    def test_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_regular_isBold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_regular_isItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_non_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="ExtraBold",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans ExtraBold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=False,  # not style-linked, despite the name
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=False,    # not style-linked, despite the name
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_incomplete_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_italicbold_isBoldItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic Bold",  # reversed
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_linked_style_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed",
+            is_bold=False,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_linked_style_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_linked_style_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_linked_style_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold italic", map_style)
 
 
 if __name__ == "__main__":
