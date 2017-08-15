@@ -28,7 +28,7 @@ import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder import GLYPHS_PREFIX
 from glyphsLib.interpolation import (
-    build_designspace, set_weight_class, set_width_class,
+    build_designspace, set_weight_class, set_width_class, build_stylemap_names
 )
 
 
@@ -400,6 +400,195 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         # we do not set any OS/2 weight class; user needs to provide
         # a 'weightClass' custom parameter in this special case
         self.assertTrue(ufo.info.openTypeOS2WeightClass is None)
+
+
+class BuildStyleMapNamesTest(unittest.TestCase):
+
+    def test_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_regular_isBold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_regular_isItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_non_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="ExtraBold",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans ExtraBold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=False,  # not style-linked, despite the name
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=False,    # not style-linked, despite the name
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_incomplete_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_italicbold_isBoldItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic Bold",  # reversed
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_linked_style_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed",
+            is_bold=False,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_linked_style_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_linked_style_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_linked_style_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold italic", map_style)
 
 
 if __name__ == "__main__":
