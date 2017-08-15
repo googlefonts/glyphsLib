@@ -671,6 +671,39 @@ class ToUfosTest(unittest.TestCase):
         for ufo in ufos:
             self.assertEqual(ufo.info.familyName, 'CustomFamily')
 
+    def test_lib_no_weight(self):
+        data = self.generate_minimal_data()
+        ufo = to_ufos(data)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'weight' in ufo.lib)
+
+    def test_lib_weight(self):
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['weight'] = 'Bold'
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'weight'], 'Bold')
+
+    def test_lib_no_width(self):
+        data = self.generate_minimal_data()
+        ufo = to_ufos(data)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'width' in ufo.lib)
+
+    def test_lib_width(self):
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['width'] = 'Condensed'
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'width'], 'Condensed')
+
+    def test_lib_no_custom(self):
+        data = self.generate_minimal_data()
+        ufo = to_ufos(data)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'custom' in ufo.lib)
+
+    def test_lib_custom(self):
+        data = self.generate_minimal_data()
+        data['fontMaster'][0]['custom'] = 'FooBar'
+        ufo = to_ufos(data)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
+
     def _run_guideline_test(self, data_in, expected):
         data = self.generate_minimal_data()
         data['glyphs'].append({
