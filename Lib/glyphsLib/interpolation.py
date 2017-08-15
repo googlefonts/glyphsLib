@@ -308,14 +308,21 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         for axis in axes:
             location[axis] = instance.get(
                 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
-        # TODO: define styleMap* names based on isBold, isItalic and linkStyle
-        # instance properties, and pass as args to mutatorMath
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=familyName,
+            style_name=styleName,
+            is_bold=instance.get('isBold', False),
+            is_italic=instance.get('isItalic', False),
+            linked_style=instance.get('linkStyle')
+        )
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
             familyName=familyName,
             styleName=styleName,
             postScriptFontName=postScriptFontName,
+            styleMapFamilyName=styleMapFamilyName,
+            styleMapStyleName=styleMapStyleName,
             fileName=ufo_path)
 
         writer.writeInfo()
