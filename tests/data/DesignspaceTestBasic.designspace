@@ -26,28 +26,28 @@
         </source>
     </sources>
     <instances>
-        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Regular.ufo" name="DesignspaceTest Basic Regular" stylename="Regular">
+        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Regular.ufo" name="DesignspaceTest Basic Regular" stylemapfamilyname="DesignspaceTest Basic" stylemapstylename="regular" stylename="Regular">
             <location>
                 <dimension name="weight" xvalue="90.000000" />
             </location>
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Semibold.ufo" name="DesignspaceTest Basic Semibold" stylename="Semibold">
+        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Semibold.ufo" name="DesignspaceTest Basic Semibold" stylemapfamilyname="DesignspaceTest Basic Semibold" stylemapstylename="regular" stylename="Semibold">
             <location>
                 <dimension name="weight" xvalue="128.000000" />
             </location>
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Bold.ufo" name="DesignspaceTest Basic Bold" stylename="Bold">
+        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Bold.ufo" name="DesignspaceTest Basic Bold" stylemapfamilyname="DesignspaceTest Basic" stylemapstylename="bold" stylename="Bold">
             <location>
                 <dimension name="weight" xvalue="151.000000" />
             </location>
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Black.ufo" name="DesignspaceTest Basic Black" stylename="Black">
+        <instance familyname="DesignspaceTest Basic" filename="out/DesignspaceTestBasic-Black.ufo" name="DesignspaceTest Basic Black" stylemapfamilyname="DesignspaceTest Basic Black" stylemapstylename="regular" stylename="Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
             </location>

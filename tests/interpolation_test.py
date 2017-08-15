@@ -39,7 +39,7 @@ def makeFamily(familyName):
         "data": [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("Semibold", 600, 128)),
-            makeInstance("Bold", weight=("Bold", 700, 151)),
+            makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
             makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
@@ -56,7 +56,8 @@ def makeMaster(familyName, styleName, weight=None, width=None):
     return m
 
 
-def makeInstance(name, weight=None, width=None):
+def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
+                 linked_style=None):
     result = {"name": name}
     params = []
     if weight is not None:
@@ -93,6 +94,12 @@ def makeInstance(name, weight=None, width=None):
     # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
     if params:
         result["customParameters"] = params
+    if is_bold is not None:
+        result["isBold"] = is_bold
+    if is_italic is not None:
+        result["isitalic"] = is_italic
+    if linked_style is not None:
+        result["linkStyle"] = linked_style
     return result
 
 
@@ -202,7 +209,7 @@ class DesignspaceTest(unittest.TestCase):
         instances["data"] = [
             makeInstance("Black", weight=("Black", 900, 190)),
             makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Bold", weight=("Bold", 700, 151)),
+            makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
