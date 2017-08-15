@@ -97,7 +97,7 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
     if is_bold is not None:
         result["isBold"] = is_bold
     if is_italic is not None:
-        result["isitalic"] = is_italic
+        result["isItalic"] = is_italic
     if linked_style is not None:
         result["linkStyle"] = linked_style
     return result
