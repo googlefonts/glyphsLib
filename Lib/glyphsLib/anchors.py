@@ -58,7 +58,8 @@ def propagate_glyph_anchors(ufo, parent, processed):
     for component in mark_components:
         adjust_anchors(to_add, ufo, component)
 
-    for name, (x, y) in to_add.items():
+    # we sort propagated anchors to append in a deterministic order
+    for name, (x, y) in sorted(to_add.items()):
         anchor_dict = {'name': name, 'x': x, 'y': y}
         parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
