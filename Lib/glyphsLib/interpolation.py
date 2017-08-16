@@ -16,12 +16,14 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from collections import OrderedDict, namedtuple, deque
+from collections import OrderedDict, namedtuple
 import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder import set_custom_params, GLYPHS_PREFIX
+from glyphsLib.builder import (
+    set_custom_params, GLYPHS_PREFIX, build_stylemap_names
+)
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
@@ -330,52 +332,6 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         writer.endInstance()
 
     return ofiles
-
-
-def _get_linked_style(style_name, is_bold, is_italic):
-    # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
-    # depending on the values of is_bold and is_italic
-    linked_style = deque()
-    is_regular = not (is_bold or is_italic)
-    for part in reversed(style_name.split()):
-        if part == 'Regular' and is_regular:
-            is_regular = False
-        elif part == 'Bold' and is_bold:
-            is_bold = False
-        elif part == 'Italic' and is_italic:
-            is_italic = False
-        else:
-            linked_style.appendleft(part)
-    return ' '.join(linked_style)
-
-
-def build_stylemap_names(family_name, style_name, is_bold=False,
-                         is_italic=False, linked_style=None):
-    """Build UFO `styleMapFamilyName` and `styleMapStyleName` for an instance,
-    based on the family and style names, and the entries in the "Style Linking"
-    section of the "Instances" tab in the "Font Info".
-
-    The value of `styleMapStyleName` can be either "regular", "bold", "italic"
-    or "bold italic", depending on the values of `is_bold` and `is_italic`.
-
-    The `styleMapFamilyName` is a combination of the `family_name` and the
-    `linked_style`.
-
-    If `linked_style` is unset or set to 'Regular', the linked style is equal
-    to the style_name with the last occurrences of the strings 'Regular',
-    'Bold' and 'Italic' stripped from it.
-    """
-
-    styleMapStyleName = ' '.join(s for s in (
-        'bold' if is_bold else '',
-        'italic' if is_italic else '') if s) or 'regular'
-    if not linked_style or linked_style == 'Regular':
-        linked_style = _get_linked_style(style_name, is_bold, is_italic)
-    if linked_style:
-        styleMapFamilyName = family_name + ' ' + linked_style
-    else:
-        styleMapFamilyName = family_name
-    return styleMapFamilyName, styleMapStyleName
 
 
 def _set_class_from_instance(ufo, data, key, codes):
