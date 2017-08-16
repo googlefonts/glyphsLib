@@ -548,6 +548,11 @@ class ToUfosTest(unittest.TestCase):
 
         glyph = ufo['dadDotbelow']
         self.assertEqual(len(glyph.anchors), 2)
+        # check propagated anchors are appended in a deterministic order
+        self.assertEqual(
+            [anchor.name for anchor in glyph.anchors],
+            ['bottom', 'top']
+        )
         for anchor in glyph.anchors:
             self.assertEqual(anchor.x, 50)
             if anchor.name == 'bottom':
