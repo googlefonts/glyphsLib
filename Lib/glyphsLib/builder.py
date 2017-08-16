@@ -20,6 +20,7 @@ from fontTools.misc.py23 import round, unicode
 
 import logging
 import re
+from collections import deque
 
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data, cast_to_number_or_bool, bin_to_int_list
@@ -296,8 +297,17 @@ def generate_base_fonts(data, family_name):
         if custom:
             ufo.lib[GLYPHS_PREFIX + 'custom'] = custom
 
+        styleName = build_style_name(width, weight, custom, is_italic)
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=family_name,
+            style_name=styleName,
+            is_bold=(styleName == 'Bold'),
+            is_italic=is_italic
+        )
         ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(width, weight, custom, is_italic)
+        ufo.info.styleName = styleName
+        ufo.info.styleMapFamilyName = styleMapFamilyName
+        ufo.info.styleMapStyleName = styleMapStyleName
 
         set_blue_values(ufo, master.pop('alignmentZones', []))
         set_family_user_data(ufo, user_data)
@@ -318,6 +328,52 @@ def generate_base_fonts(data, family_name):
         ufos[master_id] = ufo
 
     return ufos, master_id_order
+
+
+def _get_linked_style(style_name, is_bold, is_italic):
+    # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
+    # depending on the values of is_bold and is_italic
+    linked_style = deque()
+    is_regular = not (is_bold or is_italic)
+    for part in reversed(style_name.split()):
+        if part == 'Regular' and is_regular:
+            is_regular = False
+        elif part == 'Bold' and is_bold:
+            is_bold = False
+        elif part == 'Italic' and is_italic:
+            is_italic = False
+        else:
+            linked_style.appendleft(part)
+    return ' '.join(linked_style)
+
+
+def build_stylemap_names(family_name, style_name, is_bold=False,
+                         is_italic=False, linked_style=None):
+    """Build UFO `styleMapFamilyName` and `styleMapStyleName` based on the
+    family and style names, and the entries in the "Style Linking" section
+    of the "Instances" tab in the "Font Info".
+
+    The value of `styleMapStyleName` can be either "regular", "bold", "italic"
+    or "bold italic", depending on the values of `is_bold` and `is_italic`.
+
+    The `styleMapFamilyName` is a combination of the `family_name` and the
+    `linked_style`.
+
+    If `linked_style` is unset or set to 'Regular', the linked style is equal
+    to the style_name with the last occurrences of the strings 'Regular',
+    'Bold' and 'Italic' stripped from it.
+    """
+
+    styleMapStyleName = ' '.join(s for s in (
+        'bold' if is_bold else '',
+        'italic' if is_italic else '') if s) or 'regular'
+    if not linked_style or linked_style == 'Regular':
+        linked_style = _get_linked_style(style_name, is_bold, is_italic)
+    if linked_style:
+        styleMapFamilyName = family_name + ' ' + linked_style
+    else:
+        styleMapFamilyName = family_name
+    return styleMapFamilyName, styleMapStyleName
 
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
