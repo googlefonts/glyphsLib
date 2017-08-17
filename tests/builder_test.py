@@ -37,47 +37,233 @@ from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
 from glyphsLib.types import point
 
 from glyphsLib.builder import build_style_name, set_custom_params,\
-    set_redundant_data, to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, \
-    GLYPHLIB_PREFIX, draw_paths, set_default_params, UFO2FT_FILTERS_KEY, \
-    parse_glyphs_filter
+    to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX, draw_paths, \
+    set_default_params, parse_glyphs_filter, build_stylemap_names
 
 from classes_test import generate_minimal_font, generate_instance_from_dict, \
     add_glyph, add_anchor, add_component
 
 class BuildStyleNameTest(unittest.TestCase):
-    def _build(self, data, italic):
-        return build_style_name(data, 'width', 'weight', 'custom', italic)
 
     def test_style_regular_weight(self):
-        inst = GSInstance()
-        self.assertEqual(self._build(inst, False), 'Regular')
-        self.assertEqual(self._build(inst, True), 'Italic')
-        inst.weight = 'Regular'
-        self.assertEqual(
-            self._build(inst, True), 'Italic')
+        self.assertEqual(build_style_name(is_italic=False), 'Regular')
+        self.assertEqual(build_style_name(is_italic=True), 'Italic')
 
     def test_style_nonregular_weight(self):
-        inst = GSInstance()
-        inst.weight = 'Thin'
         self.assertEqual(
-            self._build(inst, False), 'Thin')
+            build_style_name(weight='Thin', is_italic=False), 'Thin')
         self.assertEqual(
-            self._build(inst, True), 'Thin Italic')
+            build_style_name(weight='Thin', is_italic=True), 'Thin Italic')
 
     def test_style_nonregular_width(self):
-        inst = GSInstance()
-        inst.width = 'Condensed'
         self.assertEqual(
-            self._build(inst, False), 'Condensed')
+            build_style_name(width='Condensed', is_italic=False), 'Condensed')
         self.assertEqual(
-            self._build(inst, True), 'Condensed Italic')
-        inst.weight = 'Thin'
+            build_style_name(width='Condensed', is_italic=True),
+            'Condensed Italic')
         self.assertEqual(
-            self._build(inst, False),
+            build_style_name(weight='Thin', width='Condensed',
+                             is_italic=False),
             'Condensed Thin')
         self.assertEqual(
-            self._build(inst, True),
+            build_style_name(weight='Thin', width='Condensed',
+                             is_italic=True),
             'Condensed Thin Italic')
+
+    def test_style_custom(self):
+        self.assertEqual(
+            build_style_name(custom='Text', is_italic=False), 'Text')
+        self.assertEqual(
+            build_style_name(weight='Text', is_italic=True), 'Text Italic')
+
+
+class BuildStyleMapNamesTest(unittest.TestCase):
+
+    def test_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_regular_isBold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_regular_isItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Regular",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Regular", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_non_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="ExtraBold",
+            is_bold=False,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans ExtraBold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=False,  # not style-linked, despite the name
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold_italic_no_style_link(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=False,    # not style-linked, despite the name
+            is_italic=False,  # not style-linked, despite the name
+            linked_style=None
+        )
+        self.assertEqual("NotoSans Bold Italic", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_incomplete_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Bold",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic",  # will be stripped...
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_italicbold_isBoldItalic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Italic Bold",  # reversed
+            is_bold=True,
+            is_italic=True,
+            linked_style=None
+        )
+        self.assertEqual("NotoSans", map_family)
+        self.assertEqual("bold italic", map_style)
+
+    def test_linked_style_regular(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed",
+            is_bold=False,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("regular", map_style)
+
+    def test_linked_style_bold(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold",
+            is_bold=True,
+            is_italic=False,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold", map_style)
+
+    def test_linked_style_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Italic",
+            is_bold=False,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("italic", map_style)
+
+    def test_linked_style_bold_italic(self):
+        map_family, map_style = build_stylemap_names(
+            family_name="NotoSans",
+            style_name="Condensed Bold Italic",
+            is_bold=True,
+            is_italic=True,
+            linked_style="Cd"
+        )
+        self.assertEqual("NotoSans Cd", map_family)
+        self.assertEqual("bold italic", map_style)
 
 
 class SetCustomParamsTest(unittest.TestCase):
@@ -240,69 +426,6 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         result = parse_glyphs_filter(inputstr)
         self.assertEqual(result, expected)
 
-class SetRedundantDataTest(unittest.TestCase):
-    def _run_on_ufo(self, family_name, style_name):
-        ufo = Font()
-        ufo.info.familyName = family_name
-        ufo.info.styleName = style_name
-        set_redundant_data(ufo)
-        return ufo
-
-    def test_sets_regular_weight_class_for_missing_weight(self):
-        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
-        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
-        self.assertEqual(
-            reg_ufo.info.openTypeOS2WeightClass,
-            italic_ufo.info.openTypeOS2WeightClass)
-
-    def test_sets_weight_lib_entry_only_nonregular(self):
-        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
-        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
-        thin_ufo = self._run_on_ufo('MyFont', 'Thin')
-        self.assertFalse(reg_ufo.lib)
-        self.assertFalse(italic_ufo.lib)
-        self.assertTrue(thin_ufo.lib)
-
-    def test_sets_width_lib_entry_only_condensed(self):
-        reg_ufo = self._run_on_ufo('MyFont', 'Regular')
-        italic_ufo = self._run_on_ufo('MyFont', 'Italic')
-        cond_ufo = self._run_on_ufo('MyFont', 'Condensed')
-        cond_italic_ufo = self._run_on_ufo('MyFont', 'Condensed Italic')
-        self.assertFalse(reg_ufo.lib)
-        self.assertFalse(italic_ufo.lib)
-        self.assertTrue(cond_ufo.lib)
-        self.assertTrue(cond_italic_ufo.lib)
-
-    def _run_style_map_names_test(self, args):
-        for family, style, expected_family, expected_style in args:
-            ufo = self._run_on_ufo(family, style)
-            self.assertEqual(ufo.info.styleMapFamilyName, expected_family)
-            self.assertEqual(ufo.info.styleMapStyleName, expected_style)
-
-    def test_sets_legal_style_map_names(self):
-        self._run_style_map_names_test((
-            ('MyFont', '', 'MyFont', 'regular'),
-            ('MyFont', 'Regular', 'MyFont', 'regular'),
-            ('MyFont', 'Bold', 'MyFont', 'bold'),
-            ('MyFont', 'Italic', 'MyFont', 'italic'),
-            ('MyFont', 'Bold Italic', 'MyFont', 'bold italic')))
-
-    def test_moves_width_to_family(self):
-        self._run_style_map_names_test((
-            ('MyFont', 'Condensed', 'MyFont Condensed', 'regular'),
-            ('MyFont', 'Condensed Bold', 'MyFont Condensed', 'bold'),
-            ('MyFont', 'Condensed Italic', 'MyFont Condensed', 'italic'),
-            ('MyFont', 'Condensed Bold Italic', 'MyFont Condensed',
-             'bold italic')))
-
-    def test_moves_nonbold_weight_to_family(self):
-        self._run_style_map_names_test((
-            ('MyFont', 'Thin', 'MyFont Thin', 'regular'),
-            ('MyFont', 'Thin Italic', 'MyFont Thin', 'italic'),
-            ('MyFont', 'Condensed Thin', 'MyFont Condensed Thin', 'regular'),
-            ('MyFont', 'Condensed Thin Italic', 'MyFont Condensed Thin',
-             'italic')))
-
 
 class ToUfosTest(unittest.TestCase):
 
@@ -400,6 +523,11 @@ class ToUfosTest(unittest.TestCase):
 
         glyph = ufo['dadDotbelow']
         self.assertEqual(len(glyph.anchors), 2)
+        # check propagated anchors are appended in a deterministic order
+        self.assertEqual(
+            [anchor.name for anchor in glyph.anchors],
+            ['bottom', 'top']
+        )
         for anchor in glyph.anchors:
             self.assertEqual(anchor.x, 50)
             if anchor.name == 'bottom':
@@ -479,54 +607,6 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(ufo['foo'].lib.get(originalWidth_key), 200)
         self.assertEqual(ufo['bar'].width, 0)
         self.assertFalse(originalWidth_key in ufo['bar'].lib)
-
-    def test_weightClass_default(self):
-        font = generate_minimal_font()
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-
-    def test_weightClass_from_customParameter_weightClass(self):
-        # In the test input, the weight is specified twice: once as weight,
-        # once as customParameters.weightClass. We expect that the latter wins
-        # because the Glyphs handbook documents that the weightClass value
-        # overrides the setting in the Weight drop-down list.
-        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=202
-        font = generate_minimal_font()
-        master = font.masters[0]
-        master.weight = 'Bold'  # 700
-        master.customParameters["weightClass"] = 698
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WeightClass, 698)  # 698, not 700
-
-    def test_weightClass_from_weight(self):
-        font = generate_minimal_font()
-        font.masters[0].weight = 'Bold'
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
-
-    def test_widthClass_default(self):
-        font = generate_minimal_font()
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-
-    def test_widthClass_from_customParameter_widthClass(self):
-        # In the test input, the width is specified twice: once as width,
-        # once as customParameters.widthClass. We expect that the latter wins
-        # because the Glyphs handbook documents that the widthClass value
-        # overrides the setting in the Width drop-down list.
-        # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=203
-        font = generate_minimal_font()
-        master = font.masters[0]
-        master.width = 'Extra Condensed'  # 2
-        master.customParameters['widthClass'] = 7
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WidthClass, 7)  # 7, not 2
-
-    def test_widthClass_from_width(self):
-        font = generate_minimal_font()
-        font.masters[0].width = 'Extra Condensed'
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.info.openTypeOS2WidthClass, 2)
 
     def test_GDEF(self):
         font = generate_minimal_font()
@@ -764,6 +844,39 @@ class ToUfosTest(unittest.TestCase):
         # the masters' family is also modified to use custom 'family_name'
         for ufo in ufos:
             self.assertEqual(ufo.info.familyName, 'CustomFamily')
+
+    def test_lib_no_weight(self):
+        font = generate_minimal_font()
+        ufo = to_ufos(font)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'weight' in ufo.lib)
+
+    def test_lib_weight(self):
+        font = generate_minimal_font()
+        font.masters[0].weight = 'Bold'
+        ufo = to_ufos(font)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'weight'], 'Bold')
+
+    def test_lib_no_width(self):
+        font = generate_minimal_font()
+        ufo = to_ufos(font)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'width' in ufo.lib)
+
+    def test_lib_width(self):
+        font = generate_minimal_font()
+        font.masters[0].width = 'Condensed'
+        ufo = to_ufos(font)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'width'], 'Condensed')
+
+    def test_lib_no_custom(self):
+        font = generate_minimal_font()
+        ufo = to_ufos(font)[0]
+        self.assertFalse(GLYPHS_PREFIX + 'custom' in ufo.lib)
+
+    def test_lib_custom(self):
+        font = generate_minimal_font()
+        font.masters[0].custom = 'FooBar'
+        ufo = to_ufos(font)[0]
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()

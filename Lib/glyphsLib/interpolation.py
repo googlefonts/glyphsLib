@@ -21,8 +21,9 @@ import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder import set_redundant_data, set_custom_params,\
-    set_default_params, GLYPHS_PREFIX
+from glyphsLib.builder import (
+    set_custom_params, GLYPHS_PREFIX, build_stylemap_names
+)
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [
@@ -38,6 +39,37 @@ DEFAULT_LOCS = {
     'weight': 100,
     'width': 100,
     'custom': 0,
+}
+
+WEIGHT_CODES = {
+    'Thin': 250,
+    'ExtraLight': 250,
+    'UltraLight': 250,
+    'Light': 300,
+    None: 400,  # default value normally omitted in source
+    'Normal': 400,
+    'Regular': 400,
+    'Medium': 500,
+    'DemiBold': 600,
+    'SemiBold': 600,
+    'Bold': 700,
+    'UltraBold': 800,
+    'ExtraBold': 800,
+    'Black': 900,
+    'Heavy': 900,
+}
+
+WIDTH_CODES = {
+    'Ultra Condensed': 1,
+    'Extra Condensed': 2,
+    'Condensed': 3,
+    'SemiCondensed': 4,
+    None: 5,  # default value normally omitted in source
+    'Medium (normal)': 5,
+    'Semi Expanded': 6,
+    'Expanded': 7,
+    'Extra Expanded': 8,
+    'Ultra Expanded': 9,
 }
 
 
@@ -280,12 +312,21 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         for axis in axes:
             location[axis] = getattr(
                 instance, 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=familyName,
+            style_name=styleName,
+            is_bold=instance.isBold,
+            is_italic=instance.isItalic,
+            linked_style=instance.linkStyle,
+        )
         writer.startInstance(
             name=' '.join((familyName, styleName)),
             location=location,
             familyName=familyName,
             styleName=styleName,
             postScriptFontName=postScriptFontName,
+            styleMapFamilyName=styleMapFamilyName,
+            styleMapStyleName=styleMapStyleName,
             fileName=ufo_path)
 
         writer.writeInfo()
@@ -293,6 +334,30 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         writer.endInstance()
 
     return ofiles
+
+
+def _set_class_from_instance(ufo, data, key, codes):
+    class_name = getattr(data, key)
+    if class_name:
+        ufo.lib[GLYPHS_PREFIX + key] = class_name
+    if class_name in codes:
+        class_code = codes[class_name]
+        ufo_key = "".join(['openTypeOS2', key[0].upper(), key[1:]])
+        setattr(ufo.info, ufo_key, class_code)
+
+
+def set_weight_class(ufo, instance_data):
+    """ Store `weightClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WeightClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "weightClass", WEIGHT_CODES)
+
+
+def set_width_class(ufo, instance_data):
+    """ Store `widthClass` instance attributes in the UFO lib, and set the
+    ufo.info.openTypeOS2WidthClass accordingly.
+    """
+    _set_class_from_instance(ufo, instance_data, "widthClass", WIDTH_CODES)
 
 
 def apply_instance_data(instance_data):
@@ -308,9 +373,9 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for path, data in instance_data:
         ufo = Font(path)
+        set_weight_class(ufo, data)
+        set_width_class(ufo, data)
         set_custom_params(ufo, data=data)
-        set_default_params(ufo)
-        set_redundant_data(ufo)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos

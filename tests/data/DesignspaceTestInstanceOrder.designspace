@@ -25,21 +25,21 @@
         </source>
     </sources>
     <instances>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" stylename="Black">
+        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" stylemapfamilyname="DesignspaceTest InstanceOrder Black" stylemapstylename="regular" stylename="Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
             </location>
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylename="Regular">
+        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="regular" stylename="Regular">
             <location>
                 <dimension name="weight" xvalue="90.000000" />
             </location>
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" name="DesignspaceTest InstanceOrder Bold" stylename="Bold">
+        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" name="DesignspaceTest InstanceOrder Bold" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="bold" stylename="Bold">
             <location>
                 <dimension name="weight" xvalue="151.000000" />
             </location>

@@ -57,7 +57,7 @@
         </source>
     </sources>
     <instances>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Thin.ufo" name="DesignspaceTest TwoAxes Thin" stylename="Thin">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Thin.ufo" name="DesignspaceTest TwoAxes Thin" stylemapfamilyname="DesignspaceTest TwoAxes Thin" stylemapstylename="regular" stylename="Thin">
             <location>
                 <dimension name="weight" xvalue="26.000000" />
                 <dimension name="width" xvalue="100.000000" />
@@ -65,7 +65,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Regular.ufo" name="DesignspaceTest TwoAxes Regular" stylename="Regular">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Regular.ufo" name="DesignspaceTest TwoAxes Regular" stylemapfamilyname="DesignspaceTest TwoAxes" stylemapstylename="regular" stylename="Regular">
             <location>
                 <dimension name="weight" xvalue="90.000000" />
                 <dimension name="width" xvalue="100.000000" />
@@ -73,7 +73,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Semibold.ufo" name="DesignspaceTest TwoAxes Semibold" stylename="Semibold">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Semibold.ufo" name="DesignspaceTest TwoAxes Semibold" stylemapfamilyname="DesignspaceTest TwoAxes Semibold" stylemapstylename="regular" stylename="Semibold">
             <location>
                 <dimension name="weight" xvalue="128.000000" />
                 <dimension name="width" xvalue="100.000000" />
@@ -81,7 +81,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Black.ufo" name="DesignspaceTest TwoAxes Black" stylename="Black">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-Black.ufo" name="DesignspaceTest TwoAxes Black" stylemapfamilyname="DesignspaceTest TwoAxes Black" stylemapstylename="regular" stylename="Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
                 <dimension name="width" xvalue="100.000000" />
@@ -89,7 +89,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedThin.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Thin" stylename="ExtraCondensed Thin">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedThin.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Thin" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed Thin" stylemapstylename="regular" stylename="ExtraCondensed Thin">
             <location>
                 <dimension name="weight" xvalue="26.000000" />
                 <dimension name="width" xvalue="70.000000" />
@@ -97,7 +97,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensed.ufo" name="DesignspaceTest TwoAxes ExtraCondensed" stylename="ExtraCondensed">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensed.ufo" name="DesignspaceTest TwoAxes ExtraCondensed" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed" stylemapstylename="regular" stylename="ExtraCondensed">
             <location>
                 <dimension name="weight" xvalue="90.000000" />
                 <dimension name="width" xvalue="70.000000" />
@@ -105,7 +105,7 @@
             <info />
             <kerning />
         </instance>
-        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedBlack.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Black" stylename="ExtraCondensed Black">
+        <instance familyname="DesignspaceTest TwoAxes" filename="out/DesignspaceTestTwoAxes-ExtraCondensedBlack.ufo" name="DesignspaceTest TwoAxes ExtraCondensed Black" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed Black" stylemapstylename="regular" stylename="ExtraCondensed Black">
             <location>
                 <dimension name="weight" xvalue="190.000000" />
                 <dimension name="width" xvalue="70.000000" />

@@ -20,14 +20,14 @@ from fontTools.misc.py23 import round, unicode
 
 import logging
 import re
+from collections import deque
 
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data, cast_to_number_or_bool, bin_to_int_list
 import glyphsLib.glyphdata
 
 __all__ = [
-    'to_ufos', 'set_redundant_data', 'set_custom_params',
-    'GLYPHS_PREFIX'
+    'to_ufos', 'set_custom_params', 'GLYPHS_PREFIX',
 ]
 
 logger = logging.getLogger(__name__)
@@ -52,30 +52,6 @@ GLYPHS_COLORS = (
     '0.98,0.36,0.67,1',
     '0.75,0.75,0.75,1',
     '0.25,0.25,0.25,1')
-
-WEIGHT_CODES = {
-    'Thin': 250,
-    'Light': 300,
-    'SemiLight': 350,
-    'DemiLight': 350,
-    '': 400,
-    'Regular': 400,
-    'Medium': 500,
-    'DemiBold': 600,
-    'SemiBold': 600,
-    'Bold': 700,
-    'ExtraBold': 800,
-    'Extra Bold': 800,
-    'Black': 900}
-
-WIDTH_CODES = {
-    'Extra Condensed': 2,
-    'Cd': 3,
-    'Cond': 3,
-    'Condensed': 3,
-    'Narrow': 4,
-    'SemiCondensed': 4,
-    '': 5}
 
 # https://www.microsoft.com/typography/otspec/os2.htm#cpr
 CODEPAGE_RANGES = {
@@ -304,12 +280,32 @@ def generate_base_fonts(font, family_name):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
+            is_italic = True
+        else:
+            is_italic = False
 
+        width = master.width
+        weight = master.weight
+        custom = master.custom
+        if weight:
+            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+        if width:
+            ufo.lib[GLYPHS_PREFIX + 'width'] = width
+        if custom:
+            ufo.lib[GLYPHS_PREFIX + 'custom'] = custom
+
+        styleName = build_style_name(width, weight, custom, is_italic)
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=family_name,
+            style_name=styleName,
+            is_bold=(styleName == 'Bold'),
+            is_italic=is_italic
+        )
         ufo.info.familyName = family_name
-        ufo.info.styleName = build_style_name(
-            master, 'width', 'weight', 'custom', italic_angle != 0)
+        ufo.info.styleName = styleName
+        ufo.info.styleMapFamilyName = styleMapFamilyName
+        ufo.info.styleMapStyleName = styleMapStyleName
 
-        set_redundant_data(ufo)
         set_blue_values(ufo, master.alignmentZones)
         set_family_user_data(ufo, user_data)
         set_master_user_data(ufo, master.userData)
@@ -331,34 +327,50 @@ def generate_base_fonts(font, family_name):
     return ufos, master_id_order
 
 
-def set_redundant_data(ufo):
-    """Set redundant metadata in a UFO, e.g. data based on other data."""
+def _get_linked_style(style_name, is_bold, is_italic):
+    # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
+    # depending on the values of is_bold and is_italic
+    linked_style = deque()
+    is_regular = not (is_bold or is_italic)
+    for part in reversed(style_name.split()):
+        if part == 'Regular' and is_regular:
+            is_regular = False
+        elif part == 'Bold' and is_bold:
+            is_bold = False
+        elif part == 'Italic' and is_italic:
+            is_italic = False
+        else:
+            linked_style.appendleft(part)
+    return ' '.join(linked_style)
 
-    family_name, style_name = ufo.info.familyName, ufo.info.styleName
 
-    width, weight = parse_style_attrs(style_name)
-    if ufo.info.openTypeOS2WidthClass is None:
-        ufo.info.openTypeOS2WidthClass = WIDTH_CODES[width]
-    if ufo.info.openTypeOS2WeightClass is None:
-        ufo.info.openTypeOS2WeightClass = WEIGHT_CODES[weight]
+def build_stylemap_names(family_name, style_name, is_bold=False,
+                         is_italic=False, linked_style=None):
+    """Build UFO `styleMapFamilyName` and `styleMapStyleName` based on the
+    family and style names, and the entries in the "Style Linking" section
+    of the "Instances" tab in the "Font Info".
 
-    if weight and weight != 'Regular':
-        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-    if width:
-        ufo.lib[GLYPHS_PREFIX + 'width'] = width
+    The value of `styleMapStyleName` can be either "regular", "bold", "italic"
+    or "bold italic", depending on the values of `is_bold` and `is_italic`.
 
-    if style_name.lower() in ['regular', 'bold', 'italic', 'bold italic']:
-        ufo.info.styleMapStyleName = style_name.lower()
-        ufo.info.styleMapFamilyName = family_name
+    The `styleMapFamilyName` is a combination of the `family_name` and the
+    `linked_style`.
+
+    If `linked_style` is unset or set to 'Regular', the linked style is equal
+    to the style_name with the last occurrences of the strings 'Regular',
+    'Bold' and 'Italic' stripped from it.
+    """
+
+    styleMapStyleName = ' '.join(s for s in (
+        'bold' if is_bold else '',
+        'italic' if is_italic else '') if s) or 'regular'
+    if not linked_style or linked_style == 'Regular':
+        linked_style = _get_linked_style(style_name, is_bold, is_italic)
+    if linked_style:
+        styleMapFamilyName = family_name + ' ' + linked_style
     else:
-        ufo.info.styleMapStyleName = ' '.join(s for s in (
-            'bold' if weight == 'Bold' else '',
-            'italic' if 'Italic' in style_name else '') if s) or 'regular'
-        ufo.info.styleMapFamilyName = ' '.join(
-            [family_name] +
-            style_name.replace('Bold', '').replace('Italic', '').split())
-    ufo.info.openTypeNamePreferredFamilyName = family_name
-    ufo.info.openTypeNamePreferredSubfamilyName = style_name
+        styleMapFamilyName = family_name
+    return styleMapFamilyName, styleMapStyleName
 
 
 def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
@@ -417,7 +429,15 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
 
         opentype_attr_prefix_pairs = (
             ('hhea', 'Hhea'), ('description', 'NameDescription'),
-            ('license', 'NameLicense'), ('panose', 'OS2Panose'),
+            ('license', 'NameLicense'),
+            ('licenseURL', 'NameLicenseURL'),
+            ('preferredFamilyName', 'NamePreferredFamilyName'),
+            ('preferredSubfamilyName', 'NamePreferredSubfamilyName'),
+            ('compatibleFullName', 'NameCompatibleFullName'),
+            ('sampleText', 'NameSampleText'),
+            ('WWSFamilyName', 'NameWWSFamilyName'),
+            ('WWSSubfamilyName', 'NameWWSSubfamilyName'),
+            ('panose', 'OS2Panose'),
             ('typo', 'OS2Typo'), ('unicodeRanges', 'OS2UnicodeRanges'),
             ('codePageRanges', 'OS2CodePageRanges'),
             ('weightClass', 'OS2WeightClass'),
@@ -605,30 +625,14 @@ def set_master_user_data(ufo, user_data):
         ufo.lib[GLYPHS_PREFIX + 'fontMaster.userData'] = data
 
 
-def build_style_name(master, width_key, weight_key, custom_key, italic):
-    """Build style name from width, weight, and custom style strings in data,
+def build_style_name(width='', weight='', custom='', is_italic=False):
+    """Build style name from width, weight, and custom style strings
     and whether the style is italic.
     """
 
-    italic = 'Italic' if italic else ''
-    width = getattr(master, width_key)
-    weight = getattr(master, weight_key)
-    custom = getattr(master, custom_key)
-    if width == 'Regular':
-        width = ''
-    if (italic or width or custom) and weight == 'Regular':
-        weight = ''
-    return ' '.join(s for s in (width, weight, custom, italic) if s)
-
-
-def parse_style_attrs(name):
-    """Parse width and weight from a style name, and return them in a list."""
-
-    attrs = []
-    for codes in (WIDTH_CODES, WEIGHT_CODES):
-        m = re.search('(%s)' % '|'.join(k for k in codes.keys() if k), name)
-        attrs.append(m.group(0) if m else '')
-    return attrs
+    return ' '.join(
+        s for s in (custom, width, weight, 'Italic' if is_italic else '') if s
+    ) or 'Regular'
 
 
 def to_ufo_time(datetime_obj):
