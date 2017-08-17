@@ -294,7 +294,12 @@ def generate_base_fonts(font, family_name):
         if custom:
             ufo.lib[GLYPHS_PREFIX + 'custom'] = custom
 
-        styleName = build_style_name(width, weight, custom, is_italic)
+        styleName = build_style_name(
+            width if width != 'Regular' else '',
+            weight,
+            custom,
+            is_italic
+        )
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=family_name,
             style_name=styleName,
