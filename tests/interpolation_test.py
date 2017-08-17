@@ -295,9 +295,8 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_weight_class(ufo, makeInstance("Bold"))
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-        # no value is stored in the UFO lib when instance in glyphs
-        # source contains no `weightClass` (because same as default)
-        self.assertTrue(WEIGHT_CLASS_KEY not in ufo.lib)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_weight_class(self):
         ufo = defcon.Font()
@@ -330,9 +329,8 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_width_class(ufo, makeInstance("Normal"))
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-        # no value is stored in the UFO lib when instance in glyphs
-        # source contains no `widthClass` (because same as default)
-        self.assertTrue(WIDTH_CLASS_KEY not in ufo.lib)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_width_class(self):
         ufo = defcon.Font()

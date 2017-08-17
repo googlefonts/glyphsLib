@@ -848,7 +848,7 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_weight(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(GLYPHS_PREFIX + 'weight' in ufo.lib)
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'weight'], 'Regular')
 
     def test_lib_weight(self):
         font = generate_minimal_font()
@@ -859,7 +859,7 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_width(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(GLYPHS_PREFIX + 'width' in ufo.lib)
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'width'], 'Regular')
 
     def test_lib_width(self):
         font = generate_minimal_font()
