@@ -877,7 +877,7 @@ def draw_paths(pen, paths):
         if not path.closed:
             node = nodes.pop(0)
             assert node.type == 'line', 'Open path starts with off-curve points'
-            pen.addPoint(node.position, segmentType='move')
+            pen.addPoint(tuple(node.position), segmentType='move')
         else:
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
@@ -886,7 +886,7 @@ def draw_paths(pen, paths):
             node_type = node.type
             if node_type not in ['line', 'curve', 'qcurve']:
                 node_type = None
-            pen.addPoint(node.position, segmentType=node_type, smooth=node.smooth)
+            pen.addPoint(tuple(node.position), segmentType=node_type, smooth=node.smooth)
         pen.endPath()
 
 
