@@ -20,9 +20,9 @@ from io import open
 import logging
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.casting import cast_data
+from glyphsLib.casting import cast_data, uncast_data
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import Parser
+from glyphsLib.parser import Parser, Writer
 from glyphsLib.util import write_ufo
 
 
@@ -30,6 +30,7 @@ __version__ = "1.8.0"
 
 __all__ = [
     "build_masters", "build_instances", "load_to_ufos", "load", "loads",
+    "store",
 ]
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,16 @@ def loads(value):
     logger.info('Casting parsed values')
     cast_data(data)
     return data
+
+
+def store(data, fp):
+    """Write a .glyphs file.  'data' is the root of the (cast) glyphs data,
+    'fp' is a writable file object."""
+    logger.info('Uncasting values')
+    uncast_data(data)
+    logger.info('Writing .glyphs file')
+    w = Writer(fp)
+    w.write(data)
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,

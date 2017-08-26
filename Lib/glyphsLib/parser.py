@@ -210,7 +210,8 @@ class Writer(object):
         out.write(' ' * self.curindent)
         out.write(')')
 
-    _escape_re = re.compile('([^\u0020-\u007e])|"')
+    # escape DEL and controls except for TAB
+    _escape_re = re.compile('([^\u0020-\u007e\u0009])|"')
 
     @staticmethod
     def _escape_fn(m):
