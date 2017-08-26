@@ -25,16 +25,15 @@ import sys
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self):
-        value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
-        self.start_dict_re = re.compile(r'\s*{')
-        self.end_dict_re = re.compile(r'\s*}')
-        self.dict_delim_re = re.compile(r'\s*;')
-        self.start_list_re = re.compile(r'\s*\(')
-        self.end_list_re = re.compile(r'\s*\)')
-        self.list_delim_re = re.compile(r'\s*,')
-        self.attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
-        self.value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
+    value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
+    start_dict_re = re.compile(r'\s*{')
+    end_dict_re = re.compile(r'\s*}')
+    dict_delim_re = re.compile(r'\s*;')
+    start_list_re = re.compile(r'\s*\(')
+    end_list_re = re.compile(r'\s*\)')
+    list_delim_re = re.compile(r'\s*,')
+    attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
+    value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
 
     def parse(self, text):
         """Do the parsing."""
