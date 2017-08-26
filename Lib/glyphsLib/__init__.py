@@ -42,14 +42,14 @@ def load(fp):
     return loads(fp.read())
 
 
-def loads(value):
+def loads(s):
     """Read a .glyphs file from a bytes object.
     Return a GSFont object.
     """
     p = Parser(dict_type = GSFont)
     logger.info('Parsing .glyphs file')
     print("____loads")
-    data = p.parse(value)
+    data = p.parse(s)
     logger.info('Casting parsed values')
     return data
 
