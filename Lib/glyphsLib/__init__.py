@@ -20,49 +20,19 @@ from io import open
 import logging
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.casting import cast_data, uncast_data
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import Parser, Writer
+from glyphsLib.parser import load, loads, dump, dumps
 from glyphsLib.util import write_ufo
 
 
 __version__ = "1.8.0"
 
 __all__ = [
-    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
-    "store",
+    "build_masters", "build_instances", "load_to_ufos",
+    "load", "loads", "dump", "dumps",
 ]
 
 logger = logging.getLogger(__name__)
-
-
-def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return the unpacked root object (an ordered dictionary).
-    """
-    return loads(fp.read())
-
-
-def loads(value):
-    """Read a .glyphs file from a bytes object.
-    Return the unpacked root object (an ordered dictionary).
-    """
-    p = Parser()
-    logger.info('Parsing .glyphs file')
-    data = p.parse(value)
-    logger.info('Casting parsed values')
-    cast_data(data)
-    return data
-
-
-def store(data, fp):
-    """Write a .glyphs file.  'data' is the root of the (cast) glyphs data,
-    'fp' is a writable file object."""
-    logger.info('Uncasting values')
-    uncast_data(data)
-    logger.info('Writing .glyphs file')
-    w = Writer(fp)
-    w.write(data)
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,

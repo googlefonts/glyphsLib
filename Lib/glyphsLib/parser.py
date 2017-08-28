@@ -20,21 +20,30 @@ from fontTools.misc.py23 import *
 import collections
 import re
 import sys
+from io import open
+import logging
+from copy import deepcopy
 
+from .casting import cast_data, uncast_data
+
+__all__ = [
+    "load", "loads", "dump", "dumps", # TODO Add GlyphsEncoder / GlyphsDecoder ala json module
+]
+
+logger = logging.getLogger(__name__)
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self):
-        value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
-        self.start_dict_re = re.compile(r'\s*{')
-        self.end_dict_re = re.compile(r'\s*}')
-        self.dict_delim_re = re.compile(r'\s*;')
-        self.start_list_re = re.compile(r'\s*\(')
-        self.end_list_re = re.compile(r'\s*\)')
-        self.list_delim_re = re.compile(r'\s*,')
-        self.attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
-        self.value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
+    value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
+    start_dict_re = re.compile(r'\s*{')
+    end_dict_re = re.compile(r'\s*}')
+    dict_delim_re = re.compile(r'\s*;')
+    start_list_re = re.compile(r'\s*\(')
+    end_list_re = re.compile(r'\s*\)')
+    list_delim_re = re.compile(r'\s*,')
+    attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
+    value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
 
     def parse(self, text):
         """Do the parsing."""
@@ -223,7 +232,7 @@ class Writer(object):
         return r'\"'
 
     def _write_atom(self, data):
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
+      data = Writer._escape_re.sub(self._escape_fn, data)
       out = self.out
       if Writer._sym_re.match(data):
           out.write(data)
@@ -231,3 +240,47 @@ class Writer(object):
       out.write('"')
       out.write(data)
       out.write('"')
+
+
+def load(fp):
+    """Read a .glyphs file. 'fp' should be a (readable) file object.
+    Return the unpacked root object (an ordered dictionary).
+    """
+    return loads(fp.read())
+
+
+def loads(s):
+    """Read a .glyphs file from a bytes object.
+    Return the unpacked root object (an ordered dictionary).
+    """
+    p = Parser()
+    logger.info('Parsing .glyphs file')
+    data = p.parse(s)
+    logger.info('Casting parsed values')
+    cast_data(data)
+    return data
+
+def dump(obj, fp, **kwargs):
+    """Write object tree to a .glyphs file. 'fp' should be a (writable) file object.
+    """
+    logger.info('Making copy of values')
+    obj = deepcopy(obj)
+    logger.info('Uncasting values')
+    uncast_data(obj)
+    w = Writer(out=fp, **kwargs)
+    logger.info('Writing .glyphs file')
+    w.write(obj)
+
+def dumps(obj):
+    """Serialize object tree to a .glyphs file format.
+    Returns bytes object."""
+    fp = BytesIO()
+    dump(obj, fp, **kwargs)
+    return fp.getvalue()
+
+def main(args=None):
+    for arg in args:
+        dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
