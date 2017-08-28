@@ -22,8 +22,9 @@ import re
 import sys
 from io import open
 import logging
+from copy import deepcopy
 
-from .casting import cast_data
+from .casting import cast_data, uncast_data
 
 __all__ = [
     "load", "loads", "dump", "dumps", # TODO Add GlyphsEncoder / GlyphsDecoder ala json module
@@ -218,7 +219,8 @@ class Writer(object):
         out.write(' ' * self.curindent)
         out.write(')')
 
-    _escape_re = re.compile('([^\u0020-\u007e])|"')
+    # escape DEL and controls except for TAB
+    _escape_re = re.compile('([^\u0020-\u007e\u0009])|"')
 
     @staticmethod
     def _escape_fn(m):
@@ -230,7 +232,7 @@ class Writer(object):
         return r'\"'
 
     def _write_atom(self, data):
-      data = Writer._escape_re.sub(self._escape_fn, str(data))
+      data = Writer._escape_re.sub(self._escape_fn, data)
       out = self.out
       if Writer._sym_re.match(data):
           out.write(data)
@@ -261,6 +263,10 @@ def loads(s):
 def dump(obj, fp, **kwargs):
     """Write object tree to a .glyphs file. 'fp' should be a (writable) file object.
     """
+    logger.info('Making copy of values')
+    obj = deepcopy(obj)
+    logger.info('Uncasting values')
+    uncast_data(obj)
     w = Writer(out=fp, **kwargs)
     logger.info('Writing .glyphs file')
     w.write(obj)
