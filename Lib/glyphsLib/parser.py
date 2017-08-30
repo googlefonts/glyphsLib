@@ -153,7 +153,7 @@ class Parser:
 
 
     def _trim_value(self, value):
-        return unescape_text(value) if self.unescape else value
+        return Parser.unescape_text(value) if self.unescape else value
 
 
     def _fail(self, message, text, i):
