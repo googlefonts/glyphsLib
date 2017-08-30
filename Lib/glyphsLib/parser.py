@@ -153,7 +153,7 @@ class Parser:
 
 
     def _trim_value(self, value):
-        return Parser.unescape_text(value) if self.unescape else value
+        return self.unescape_text(value) if self.unescape else value
 
 
     def _fail(self, message, text, i):
@@ -249,7 +249,7 @@ class Writer(object):
       return data if Writer._sym_re.match(data) else '"' + data + '"'
 
     def _write_atom(self, data):
-      self.out.write(Writer.escape_text(data) if self.escape else data)
+      self.out.write(self.escape_text(data) if self.escape else data)
 
 
 def load(fp):
