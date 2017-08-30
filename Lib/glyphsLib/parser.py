@@ -289,11 +289,6 @@ def dumps(obj):
     return fp.getvalue()
 
 
-def _load_dump(filenames):
-    for filename in filenames:
-        dump(load(open(filename, 'r', encoding='utf-8')), sys.stdout)
-
-
 def _parse_write_no_escape(filenames):
     p = Parser(unescape=False)
     w = Writer(out=sys.stdout, escape=False)  # can resuse stdout, poor api design though
