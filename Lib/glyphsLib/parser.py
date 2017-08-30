@@ -45,6 +45,10 @@ class Parser:
     attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
     value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
 
+    def __init__(self, unescape=True):
+      self.unescape = unescape
+
+
     def parse(self, text):
         """Do the parsing."""
 
@@ -137,21 +141,25 @@ class Parser:
             return unichr(int(m.group(1)[1:], 8))
         return unichr(int(m.group(2)[2:], 16))
 
-    def _trim_value(self, value):
+    @staticmethod
+    def unescape_text(text):
         """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.
-        Also convert escapes to unicode.
-        """
+        double quotes.  Also convert escapes to unicode."""
 
-        if value[0] == '"':
-            assert value[-1] == '"'
-            value = value[1:-1].replace('\\"', '"')
-        return Parser._unescape_re.sub(Parser._unescape_fn, value)
+        if text[0] == '"':
+            assert text[-1] == '"'
+            text = text[1:-1].replace('\\"', '"')
+        return Parser._unescape_re.sub(Parser._unescape_fn, text)
+
+
+    def _trim_value(self, value):
+        return self.unescape_text(value) if self.unescape else value
+
 
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
-        raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
+        raise ValueError('%s (%d):\n%s' % (message, i, text[i:i + 79]))
 
 
 class Writer(object):
@@ -164,10 +172,13 @@ class Writer(object):
     _sym_re = re.compile(
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
-    def __init__(self, out=sys.stdout, indent=0, reorder=False):
+    def __init__(
+        self, out=sys.stdout, indent=0, reorder=False, escape=True):
+
         self.out = out
         self.indent = indent
         self.reorder = reorder
+        self.escape = escape
         self.curindent = 0
 
     def write(self, data):
@@ -231,15 +242,14 @@ class Writer(object):
             return '\\U%04X' % v
         return r'\"'
 
+    @staticmethod
+    def escape_text(text):
+      """Quote and escape if it doesn't look like a 'symbol'."""
+      data = Writer._escape_re.sub(Writer._escape_fn, data)
+      return data if Writer._sym_re.match(data) else '"' + data + '"'
+
     def _write_atom(self, data):
-      data = Writer._escape_re.sub(self._escape_fn, data)
-      out = self.out
-      if Writer._sym_re.match(data):
-          out.write(data)
-          return
-      out.write('"')
-      out.write(data)
-      out.write('"')
+      self.out.write(self.escape_text(data) if self.escape else data)
 
 
 def load(fp):
@@ -278,9 +288,14 @@ def dumps(obj):
     dump(obj, fp, **kwargs)
     return fp.getvalue()
 
-def main(args=None):
-    for arg in args:
-        dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+
+def _parse_write_no_escape(filenames):
+    p = Parser(unescape=False)
+    w = Writer(out=sys.stdout, escape=False)  # can resuse stdout, poor api design though
+    for filename in filenames:
+        with open(filename, 'r', encoding='utf-8') as f:
+            w.write(p.parse(f.read()))
+
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    _parse_write_no_escape(sys.argv[1:])
