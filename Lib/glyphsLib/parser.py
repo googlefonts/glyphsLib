@@ -173,11 +173,11 @@ class Writer(object):
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
     def __init__(
-        self, out=sys.stdout, indent=0, reorder=False, escape=True):
+            self, out=sys.stdout, indent=0, sort_keys=False, escape=True):
 
         self.out = out
         self.indent = indent
-        self.reorder = reorder
+        self.sort_keys = sort_keys
         self.escape = escape
         self.curindent = 0
 
@@ -196,7 +196,7 @@ class Writer(object):
             self._write_atom(data)
 
     def _write_dict(self, data):
-        if self.reorder:
+        if self.sort_keys:
             keys = sorted(data.keys())
         else:
             keys = data.keys()
