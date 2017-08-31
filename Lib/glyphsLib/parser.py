@@ -244,12 +244,12 @@ class Writer(object):
 
     @staticmethod
     def escape_text(text):
-      """Quote and escape if it doesn't look like a 'symbol'."""
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
-      return data if Writer._sym_re.match(data) else '"' + data + '"'
+        """Quote and escape if it doesn't look like a 'symbol'."""
+        data = Writer._escape_re.sub(Writer._escape_fn, text)
+        return data if Writer._sym_re.match(data) else '"' + data + '"'
 
     def _write_atom(self, data):
-      self.out.write(self.escape_text(data) if self.escape else data)
+        self.out.write(self.escape_text(data) if self.escape else data)
 
 
 def load(fp):
@@ -270,6 +270,7 @@ def loads(s):
     cast_data(data)
     return data
 
+
 def dump(obj, fp, **kwargs):
     """Write object tree to a .glyphs file. 'fp' should be a (writable) file object.
     """
@@ -281,7 +282,8 @@ def dump(obj, fp, **kwargs):
     logger.info('Writing .glyphs file')
     w.write(obj)
 
-def dumps(obj):
+
+def dumps(obj, **kwargs):
     """Serialize object tree to a .glyphs file format.
     Returns bytes object."""
     fp = BytesIO()
