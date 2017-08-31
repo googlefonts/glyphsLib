@@ -19,6 +19,8 @@ from __future__ import (print_function, division, absolute_import,
 from io import open
 import logging
 
+from fontTools.misc.py23 import tostr
+
 from glyphsLib.builder import to_ufos
 from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import load, loads, dump, dumps
@@ -27,10 +29,14 @@ from glyphsLib.util import write_ufo
 
 __version__ = "1.8.0"
 
-__all__ = [
+# Doing `import *` from a module that uses unicode_literals, produces
+# "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
+# Thus we need to encode the unicode literals as ascii bytes.
+# https://bugs.python.org/issue21720
+__all__ = [tostr(s) for s in (
     "build_masters", "build_instances", "load_to_ufos",
     "load", "loads", "dump", "dumps",
-]
+)]
 
 logger = logging.getLogger(__name__)
 
