@@ -78,9 +78,10 @@ class WriterTest(unittest.TestCase):
     ])
 
     def test_text_input_output(self):
-        w = Writer(UnicodeIO())
-        w.write(WriterTest.SAMPLE_DATA)
-        result = w.file.getvalue()
+        f = UnicodeIO()
+        w = Writer()
+        w.write(WriterTest.SAMPLE_DATA, f)
+        result = f.getvalue()
 
         self.assertIsInstance(result, unicode)
         self.assertEqual(
@@ -101,9 +102,10 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_text_input_binary_output(self):
-        w = Writer(BytesIO())
-        w.write(WriterTest.SAMPLE_DATA)
-        result = w.file.getvalue()
+        f = BytesIO()
+        w = Writer()
+        w.write(WriterTest.SAMPLE_DATA, f)
+        result = f.getvalue()
 
         self.assertIsInstance(result, bytes)
         self.assertEqual(
@@ -124,20 +126,22 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_binary_input_text_output(self):
-        w = Writer(UnicodeIO())
-        w.write({'name': b'\xc3\xbc'})
-        result = w.file.getvalue()
+        f = UnicodeIO()
+        w = Writer()
+        w.write({'name': b'\xc3\xbc'}, f)
+        result = f.getvalue()
         # XXX Glyphs.app writes non-ASCII strings unescaped as UTF-8, whereas
         # glyphsLib currently escapes all non ASCII characters with \\UXXXX.
         # self.assertEqual(result, '{\nname = "ü";\n}\n')
         self.assertEqual(result, '{\nname = "\\U00FC";\n}\n')
 
     def test_indent_0(self):
-        w = Writer(UnicodeIO(), indent=0)
-        w.write(WriterTest.SAMPLE_DATA)
+        f = UnicodeIO()
+        w = Writer(indent=0)
+        w.write(WriterTest.SAMPLE_DATA, f)
 
         self.assertEqual(
-            w.file.getvalue().split('\n'),
+            f.getvalue().split('\n'),
             [
                 '{',
                 'a = b;',
@@ -154,11 +158,12 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_indent_2(self):
-        w = Writer(UnicodeIO(), indent=2)
-        w.write(WriterTest.SAMPLE_DATA)
+        f = UnicodeIO()
+        w = Writer(indent=2)
+        w.write(WriterTest.SAMPLE_DATA, f)
 
         self.assertEqual(
-            w.file.getvalue().split('\n'),
+            f.getvalue().split('\n'),
             [
                 '{',
                 '  a = b;',
@@ -175,11 +180,12 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_indent_4(self):
-        w = Writer(UnicodeIO(), indent=4)
-        w.write(WriterTest.SAMPLE_DATA)
+        f = UnicodeIO()
+        w = Writer(indent=4)
+        w.write(WriterTest.SAMPLE_DATA, f)
 
         self.assertEqual(
-            w.file.getvalue().split('\n'),
+            f.getvalue().split('\n'),
             [
                 '{',
                 '    a = b;',
@@ -196,11 +202,12 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_indent_tab(self):
-        w = Writer(UnicodeIO(), indent='\t')
-        w.write(WriterTest.SAMPLE_DATA)
+        f = UnicodeIO()
+        w = Writer(indent='\t')
+        w.write(WriterTest.SAMPLE_DATA, f)
 
         self.assertEqual(
-            w.file.getvalue().split('\n'),
+            f.getvalue().split('\n'),
             [
                 '{',
                 '\ta = b;',
@@ -221,11 +228,12 @@ class WriterTest(unittest.TestCase):
         del data['a']
         data['b'] = 'a'
 
-        w = Writer(UnicodeIO(), sort_keys=True)
-        w.write(data)
+        f = UnicodeIO()
+        w = Writer(sort_keys=True)
+        w.write(data, f)
 
         self.assertEqual(
-            w.file.getvalue().split('\n'),
+            f.getvalue().split('\n'),
             [
                 '{',
                 'b = a;',
@@ -242,25 +250,28 @@ class WriterTest(unittest.TestCase):
             ])
 
     def test_escape_octal(self):
-        w = Writer(UnicodeIO())
-        w.write({'CR': '\u000D'})
+        f = UnicodeIO()
+        w = Writer()
+        w.write({'CR': '\u000D'}, f)
 
-        self.assertEqual(w.file.getvalue(), '{\nCR = "\\015";\n}\n')
+        self.assertEqual(f.getvalue(), '{\nCR = "\\015";\n}\n')
 
     def test_escape_inner_quotes(self):
-        w = Writer(UnicodeIO())
-        w.write({'s': 'string with inner "quotes"'})
+        f = UnicodeIO()
+        w = Writer()
+        w.write({'s': 'string with inner "quotes"'}, f)
 
         self.assertEqual(
-            w.file.getvalue(),
+            f.getvalue(),
             '{\ns = "string with inner \\"quotes\\"";\n}\n')
 
     def test_no_escape(self):
         s = '"quoted string with escaped inner \\"quotes\\""'
-        w = Writer(UnicodeIO(), escape=False)
-        w.write({'s': s})
+        f = UnicodeIO()
+        w = Writer(escape=False)
+        w.write({'s': s}, f)
 
-        self.assertEqual(w.file.getvalue(), '{\ns = %s;\n}\n' % s)
+        self.assertEqual(f.getvalue(), '{\ns = %s;\n}\n' % s)
 
 
 if __name__ == '__main__':
