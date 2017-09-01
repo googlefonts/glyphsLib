@@ -162,6 +162,10 @@ class Parser:
         raise ValueError('%s (%d):\n%s' % (message, i, text[i:i + 79]))
 
 
+class Token(unicode):
+    pass
+
+
 class Writer(object):
     """Write parsed data back to flat file.  Normalizes quoting
     and indentation."""
@@ -172,23 +176,51 @@ class Writer(object):
     _sym_re = re.compile(
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
-    def __init__(
-            self, out=sys.stdout, indent=0, sort_keys=False, escape=True):
+    def __init__(self, fp, indent=None, sort_keys=False, escape=True):
+        # figure out whether file object expects bytes or unicodes
+        try:
+            fp.write(b'')
+        except TypeError:
+            fp.write(u'')  # this better not fail...
+            # file already accepts unicodes; use it directly
+            self.file = fp
+        else:
+            # file expects bytes; wrap it in a UTF-8 codecs.StreamWriter
+            import codecs
+            self.file = codecs.getwriter('utf-8')(fp)
 
-        self.out = out
-        self.indent = indent
         self.sort_keys = sort_keys
         self.escape = escape
-        self.curindent = 0
+        if not indent:
+            self._indentstr = ''
+        elif isinstance(indent, basestring):
+            self._indentstr = indent
+        elif isinstance(indent, int) and indent > 0:
+            self._indentstr = indent * ' '
+        else:
+            raise TypeError("expected non-negative integer or string, "
+                            "found: %r (%s)" % (indent, type(indent)))
+        self._curindent = 0
+        self._needindent = True
 
     def write(self, data):
-        self.curindent = 0
+        assert self._curindent == 0
         self._write(data)
-        self.out.write('\n')
-        self.out.flush()
+        self._newline()
+        self.file.flush()
+
+    def _newline(self):
+        self.file.write('\n')
+        self._needindent = True
 
     def _write(self, data):
-        if isinstance(data, dict):
+        # write indentation (if any) only once at the beginning of each line
+        if self._indentstr and self._needindent:
+            self.file.write(self._curindent * self._indentstr)
+            self._needindent = False
+        if isinstance(data, Token):
+            self.file.write(data)
+        elif isinstance(data, dict):
             self._write_dict(data)
         elif isinstance(data, list):
             self._write_list(data)
@@ -200,35 +232,29 @@ class Writer(object):
             keys = sorted(data.keys())
         else:
             keys = data.keys()
-        self.curindent += self.indent
-        pad = ' ' * self.curindent
-        out = self.out
-        out.write('{\n')
+        self._write(Token('{'))
+        self._newline()
+        self._curindent += 1
         for k in keys:
-            out.write(pad)
-            self._write_atom(k)
-            out.write(' = ')
+            self._write(k)
+            self._write(Token(' = '))
             self._write(data[k])
-            out.write(';\n')
-        self.curindent -= self.indent
-        out.write(' ' * self.curindent)
-        out.write('}')
+            self._write(Token(';'))
+            self._newline()
+        self._curindent -= 1
+        self._write(Token('}'))
 
     def _write_list(self, data):
-        first = True
-        self.curindent += self.indent
-        pad = ' ' * self.curindent
-        out = self.out
-        out.write('(')
-        for v in data:
-            out.write('\n' if first else ',\n')
-            out.write(pad)
-            first = False
+        self._write(Token('('))
+        self._curindent += 1
+        for i, v in enumerate(data):
+            if i != 0:
+                self._write(Token(','))
+            self._newline()
             self._write(v)
-        self.curindent -= self.indent
-        out.write('\n')
-        out.write(' ' * self.curindent)
-        out.write(')')
+        self._newline()
+        self._curindent -= 1
+        self._write(Token(')'))
 
     # escape DEL and controls except for TAB
     _escape_re = re.compile('([^\u0020-\u007e\u0009])|"')
@@ -249,21 +275,23 @@ class Writer(object):
         return data if Writer._sym_re.match(data) else '"' + data + '"'
 
     def _write_atom(self, data):
-        self.out.write(self.escape_text(data) if self.escape else data)
+        text = tounicode(data, encoding='utf-8')
+        self.file.write(self.escape_text(text) if self.escape else text)
 
 
-def load(fp):
+def load(fp, **kwargs):
     """Read a .glyphs file. 'fp' should be a (readable) file object.
     Return the unpacked root object (an ordered dictionary).
     """
-    return loads(fp.read())
+    return loads(fp.read(), **kwargs)
 
 
-def loads(s):
-    """Read a .glyphs file from a bytes object.
+def loads(s, **kwargs):
+    """Read a .glyphs file from a unicode string or a UTF-8 encoded bytes
+    object.
     Return the unpacked root object (an ordered dictionary).
     """
-    p = Parser()
+    p = Parser(**kwargs)
     logger.info('Parsing .glyphs file')
     data = p.parse(s)
     logger.info('Casting parsed values')
@@ -278,22 +306,22 @@ def dump(obj, fp, **kwargs):
     obj = deepcopy(obj)
     logger.info('Uncasting values')
     uncast_data(obj)
-    w = Writer(out=fp, **kwargs)
+    w = Writer(fp, **kwargs)
     logger.info('Writing .glyphs file')
     w.write(obj)
 
 
 def dumps(obj, **kwargs):
     """Serialize object tree to a .glyphs file format.
-    Returns bytes object."""
-    fp = BytesIO()
+    Returns a (unicode) string object."""
+    fp = UnicodeIO()
     dump(obj, fp, **kwargs)
     return fp.getvalue()
 
 
 def _parse_write_no_escape(filenames):
     p = Parser(unescape=False)
-    w = Writer(out=sys.stdout, escape=False)  # can resuse stdout, poor api design though
+    w = Writer(sys.stdout, escape=False)  # can resuse stdout, poor api design though
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as f:
             w.write(p.parse(f.read()))
