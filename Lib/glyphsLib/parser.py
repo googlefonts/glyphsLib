@@ -176,7 +176,19 @@ class Writer(object):
     _sym_re = re.compile(
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
-    def __init__(self, indent=None, sort_keys=False, escape=True):
+    def __init__(self, fp, indent=None, sort_keys=False, escape=True):
+        # figure out whether file object expects bytes or unicodes
+        try:
+            fp.write(b'')
+        except TypeError:
+            fp.write(u'')  # this better not fail...
+            # file already accepts unicodes; use it directly
+            self.file = fp
+        else:
+            # file expects bytes; wrap it in a UTF-8 codecs.StreamWriter
+            import codecs
+            self.file = codecs.getwriter('utf-8')(fp)
+
         self.sort_keys = sort_keys
         self.escape = escape
         if not indent:
@@ -190,26 +202,12 @@ class Writer(object):
                             "found: %r (%s)" % (indent, type(indent)))
         self._curindent = 0
         self._needindent = True
-        self.file = None
 
-    def write(self, data, fp):
+    def write(self, data):
         assert self._curindent == 0
-        assert self.file is None
-        # figure out whether file object expects bytes or unicodes
-        try:
-            fp.write(b'')
-        except TypeError:
-            fp.write(u'')  # this better not fail...
-            # file already accepts unicodes; use it directly
-            self.file = fp
-        else:
-            # file expects bytes; wrap it in a UTF-8 codecs.StreamWriter
-            import codecs
-            self.file = codecs.getwriter('utf-8')(fp)
         self._write(data)
         self._newline()
         self.file.flush()
-        self.file = None
 
     def _newline(self):
         self.file.write('\n')
@@ -308,9 +306,9 @@ def dump(obj, fp, **kwargs):
     obj = deepcopy(obj)
     logger.info('Uncasting values')
     uncast_data(obj)
-    w = Writer(**kwargs)
+    w = Writer(fp, **kwargs)
     logger.info('Writing .glyphs file')
-    w.write(obj, fp)
+    w.write(obj)
 
 
 def dumps(obj, **kwargs):
@@ -323,10 +321,10 @@ def dumps(obj, **kwargs):
 
 def _parse_write_no_escape(filenames):
     p = Parser(unescape=False)
-    w = Writer(escape=False)
+    w = Writer(sys.stdout, escape=False)  # can resuse stdout, poor api design though
     for filename in filenames:
         with open(filename, 'r', encoding='utf-8') as f:
-            w.write(p.parse(f.read()), sys.stdout)
+            w.write(p.parse(f.read()))
 
 
 if __name__ == '__main__':
