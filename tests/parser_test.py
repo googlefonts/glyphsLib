@@ -127,10 +127,7 @@ class WriterTest(unittest.TestCase):
         w = Writer(UnicodeIO())
         w.write({'name': b'\xc3\xbc'})
         result = w.file.getvalue()
-        # XXX Glyphs.app writes non-ASCII strings unescaped as UTF-8, whereas
-        # glyphsLib currently escapes all non ASCII characters with \\UXXXX.
-        # self.assertEqual(result, '{\nname = "ü";\n}\n')
-        self.assertEqual(result, '{\nname = "\\U00FC";\n}\n')
+        self.assertEqual(result, '{\nname = "ü";\n}\n')
 
     def test_indent_0(self):
         w = Writer(UnicodeIO(), indent=0)
@@ -261,6 +258,12 @@ class WriterTest(unittest.TestCase):
         w.write({'s': s})
 
         self.assertEqual(w.file.getvalue(), '{\ns = %s;\n}\n' % s)
+
+    def test_ensure_ascii(self):
+        w = Writer(UnicodeIO(), ensure_ascii=True)
+        w.write({'s': 'a \n \t ü'})
+        result = w.file.getvalue()
+        self.assertEqual(result, '{\ns = "a \\012 \t \\U00FC";\n}\n')
 
 
 if __name__ == '__main__':
