@@ -176,7 +176,8 @@ class Writer(object):
     _sym_re = re.compile(
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
-    def __init__(self, fp, indent=None, sort_keys=False, escape=True):
+    def __init__(self, fp, indent=None, sort_keys=False, escape=True,
+                 ensure_ascii=False):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b'')
@@ -191,6 +192,7 @@ class Writer(object):
 
         self.sort_keys = sort_keys
         self.escape = escape
+        self.ensure_ascii = ensure_ascii
         if not indent:
             self._indentstr = ''
         elif isinstance(indent, basestring):
@@ -256,27 +258,46 @@ class Writer(object):
         self._curindent -= 1
         self._write(Token(')'))
 
-    # escape DEL and controls except for TAB
-    _escape_re = re.compile('([^\u0020-\u007e\u0009])|"')
+    # escape DEL and controls (except for TAB), or duoble quotes
+    _escape_ctrl_or_quotes_re = re.compile('([\u0000-\u0008\u000A-\u001f\u007f])|"')
 
     @staticmethod
-    def _escape_fn(m):
+    def _escape_ctrl_or_quotes_fn(m):
         if m.group(1):
-            v = ord(m.group(1)[0])
-            if v < 0x20:
-                return r'\%03o' % v
-            return '\\U%04X' % v
+            v = byteord(m.group(1))
+            return r'\%03o' % v
         return r'\"'
 
+    # escape non ASCII characters (but keep TAB)
+    _escape_non_ascii_re = re.compile('[^\u0020-\u007e\u0009]')
+
     @staticmethod
-    def escape_text(text):
-        """Quote and escape if it doesn't look like a 'symbol'."""
-        data = Writer._escape_re.sub(Writer._escape_fn, text)
+    def _escape_non_ascii_fn(m):
+        # TODO: handle non-BMP characters consistently. Currently, on python2
+        # 'narrow' builds we encode them as surrogate pairs, while on 'wide'
+        # builds or python3 as a single unicode character.
+        v = byteord(m.group(0))
+        return '\\U%04X' % v
+
+    @staticmethod
+    def escape_text(text, ensure_ascii=False):
+        """Escape control characters and inner double quotes; enclose string
+        with double quotes if it doesn't look like a 'symbol'.
+
+        If 'ensure_ascii' is True, also escape all non-ASCII characters.
+        """
+        data = Writer._escape_ctrl_or_quotes_re.sub(
+            Writer._escape_ctrl_or_quotes_fn, text)
+        if ensure_ascii:
+            data = Writer._escape_non_ascii_re.sub(
+                Writer._escape_non_ascii_fn, data)
         return data if Writer._sym_re.match(data) else '"' + data + '"'
 
     def _write_atom(self, data):
         text = tounicode(data, encoding='utf-8')
-        self.file.write(self.escape_text(text) if self.escape else text)
+        if self.escape:
+            text = self.escape_text(text, self.ensure_ascii)
+        self.file.write(text)
 
 
 def load(fp, **kwargs):
