@@ -134,7 +134,8 @@ class GlyphsWriter(object):
         elif type(value) == datetime.datetime:
             self.file.write("\"%s +0000\"" % str(value))
         else:
-            value = feature_syntax_encode(value)
+            if forKey != "unicode":
+                value = feature_syntax_encode(value)
             self.file.write(unicode(value))
 
     def writeKey(self, key):

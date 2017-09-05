@@ -656,7 +656,7 @@ class GlyphLayerProxy(Proxy):
 
     def values(self):
         self._ensureMasterLayers()
-        return sorted(self._owner._layers.values())
+        return self._owner._layers.values()
 
     def append(self, layer):
         assert layer is not None
@@ -1010,7 +1010,7 @@ class GSCustomParameter(GSBase):
     _CUSTOM_BOOL_PARAMS = frozenset((
         'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
         'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour',
-        'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning'))
+        'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning', 'Disable Subroutines', 'Don\'t use Production Names'))
     _CUSTOM_INTLIST_PARAMS = frozenset((
         'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
         'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
@@ -1045,7 +1045,8 @@ class GSCustomParameter(GSBase):
             else:
                 value = "(\n)"
         # elif self.name == "TTFStems":
-
+        elif isinstance(value, int):
+            pass
         elif isinstance(value, (str, unicode)):
             value = feature_syntax_encode(value)
         elif isinstance(value, list):
@@ -2212,7 +2213,6 @@ class GSLayer(GSBase):
         "widthMetricsKey": unicode,
     }
     _defaultsForName = {
-        "name": "Regular",
         "weight": 600,
     }
     _wrapperKeysTranslate = {
@@ -2457,7 +2457,7 @@ class GSGlyph(GSBase):
 
 class GSFont(GSBase):
     _classesForName = {
-        ".appVersion": int,
+        ".appVersion": str,
         "DisplayStrings": unicode,
         "classes": GSClass,
         "copyright": unicode,
