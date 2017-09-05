@@ -1059,6 +1059,11 @@ class GSCustomParameter(GSBase):
                     writer = GlyphsWriter(fp=string)
                     writer.writeDict(v)
                     v = string.getvalue()
+                elif isinstance(v, list):
+                    string = StringIO()
+                    writer = GlyphsWriter(fp=string)
+                    writer.writeArray(v)
+                    v = string.getvalue()
                 else:
                     v = str(v)
                     if needsQuotes(v):
@@ -1177,10 +1182,19 @@ class GSPartProperty(GSBase):
     )
 
     def plistValue(self):
+        name = self.name
+        if needsQuotes(name):
+            name = '"%s"' % name
+        bottomName = self.bottomName
+        if needsQuotes(bottomName):
+            bottomName = '"%s"' % bottomName
+        topName = self.topName
+        if needsQuotes(topName):
+            topName = '"%s"' % topName
         return ("{\nname = %s;\nbottomName = %s;\nbottomValue = %i;"
                 "\ntopName = %s;\ntopValue = %i;\n}" %
-                (self.name,  self.bottomName, self.bottomValue,
-                 self.topName, self.topValue))
+                (name,  bottomName, self.bottomValue,
+                 topName, self.topValue))
 
 
 class GSFontMaster(GSBase):
@@ -1189,8 +1203,14 @@ class GSFontMaster(GSBase):
         "ascender": float,
         "capHeight": float,
         "custom": unicode,
-        "customParameters": GSCustomParameter,
         "customValue": float,
+        "custom1": unicode,
+        "customValue1": float,
+        "custom2": unicode,
+        "customValue2": float,
+        "custom3": unicode,
+        "customValue3": float,
+        "customParameters": GSCustomParameter,
         "descender": float,
         "guideLines": GSGuideLine,
         "horizontalStems": int,
@@ -1212,6 +1232,33 @@ class GSFontMaster(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
     }
+    _keyOrder = (
+        "alignmentZones",
+        "ascender",
+        "capHeight",
+        "custom",
+        "customValue",
+        "custom1",
+        "customValue1",
+        "custom2",
+        "customValue2",
+        "custom3",
+        "customValue3",
+        "customParameters",
+        "descender",
+        "guideLines",
+        "horizontalStems",
+        "id",
+        "italicAngle",
+        "userData",
+        "verticalStems",
+        "visible",
+        "weight",
+        "weightValue",
+        "width",
+        "widthValue",
+        "xHeight"
+    )
     _userData = {}
 
     def __init__(self):
@@ -1814,12 +1861,28 @@ class GSHint(GSBase):
         "stem": int,  # index of stem
         "target": hint_target,  # Index path to node or 'up'/'down'
         "type": str,
+        "name": unicode,
+        "settings": dict
     }
 
     _defaultsForName = {
         "stem": -2,
     }
 
+    _keyOrder = (
+        "horizontal",
+        "origin",
+        "place",
+        "target",
+        "other1",
+        "other2",
+        "scale",
+        "type",
+        "stem",
+        "name",
+        "options",
+        "settings"
+    )
     # Hint types
     TOPGHOST = -1
     STEM = 0
@@ -1844,6 +1907,8 @@ class GSHint(GSBase):
             if self.stem == -2:
                 return None
         if key in ['origin', 'other1', 'other2', 'place', 'scale'] and getattr(self, key).value == getattr(self, key).default:
+            return None
+        if key == "settings" and (self.settings is None or len(self.settings) == 0):
             return None
         return super(GSHint, self).shouldWriteValueForKey(key)
 
@@ -2208,6 +2273,7 @@ class GSLayer(GSBase):
         "rightMetricsKey": unicode,
         "userData": dict,
         "vertWidth": float,
+        "vertOrigin": float,
         "visible": bool,
         "width": float,
         "widthMetricsKey": unicode,
@@ -2218,6 +2284,28 @@ class GSLayer(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
     }
+    _keyOrder = (
+        "anchors",
+        "annotations",
+        "associatedMasterId",
+        "background",
+        "backgroundImage",
+        "color",
+        "components",
+        "guideLines",
+        "hints",
+        "layerId",
+        "leftMetricsKey",
+        "widthMetricsKey",
+        "rightMetricsKey",
+        "name",
+        "paths",
+        "userData",
+        "visible",
+        "vertOrigin",
+        "vertWidth",
+        "width",
+    )
     _userData = {}
 
     def __init__(self):

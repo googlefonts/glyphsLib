@@ -103,7 +103,8 @@ class GlyphsWriter(object):
 
     def writeUserData(self, userDataValue):
         self.file.write("{\n")
-        for key in userDataValue.keys():
+        keys = sorted(userDataValue.keys())
+        for key in keys:
             value = userDataValue[key]
             self.writeKey(key)
             self.writeValue(value, key)
