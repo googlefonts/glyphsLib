@@ -704,6 +704,27 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
             repr(list(glyph.layers.values())),
         )
 
+    def test_layers_missing_master(self):
+        '''
+        font.glyph['a'] has its layers in a different order
+        than the font.masters and an extra layer.
+        Adding a master but not adding it as a layer to the glyph should not
+        affect glyph.layers unexpectedly.
+        '''
+        glyph = self.glyph
+        num_layers = len(glyph.layers)
+        self.assertEqual(set(l.layerId for l in glyph.layers),
+                         set(l.layerId for l in glyph.layers.values()))
+        self.assertNotEqual([l.layerId for l in glyph.layers],
+                            [l.layerId for l in glyph.layers.values()])
+        new_fontMaster = GSFontMaster()
+        self.font.masters.insert(0, new_fontMaster)
+        self.assertEqual(num_layers, len(glyph.layers))
+        self.assertEqual(set(l.layerId for l in glyph.layers),
+                         set(l.layerId for l in glyph.layers.values()))
+        self.assertNotEqual([l.layerId for l in glyph.layers],
+                            [l.layerId for l in glyph.layers.values()])
+
     def test_name(self):
         glyph = self.glyph
         self.assertIsInstance(glyph.name, unicode)
