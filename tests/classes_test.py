@@ -693,6 +693,16 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         glyph.layers.remove(glyph.layers[-1])
         glyph.layers.remove(glyph.layers[-1])
         self.assertEqual(amount, len(glyph.layers))
+        self.assertEqual(
+            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, '
+            '<GSLayer "Bold" (a)>, <GSLayer "{155, 100}" (a)>]',
+            repr(list(glyph.layers)),
+        )
+        self.assertEqual(
+            '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, '
+            '<GSLayer "Light" (a)>, <GSLayer "{155, 100}" (a)>]',
+            repr(list(glyph.layers.values())),
+        )
 
     def test_name(self):
         glyph = self.glyph
