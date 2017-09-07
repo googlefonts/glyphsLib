@@ -600,9 +600,7 @@ class GlyphLayerProxy(Proxy):
         elif isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
-            # This is how it is handled in Glyphs.app. For now, just use
-            # whatever order we have
-            '''
+            # This is how it is handled in Glyphs.app.
             if self._owner.parent:
                 masterCount = len(self._owner.parent.masters)
                 if key < masterCount:
@@ -613,12 +611,11 @@ class GlyphLayerProxy(Proxy):
                     index = 0
                     extraLayer = None
                     while extraLayerIndex >= 0:
-                        extraLayer = self._owner._layers[index]
+                        extraLayer = list(self._owner._layers.values())[index]
                         if extraLayer.layerId != extraLayer.associatedMasterId:
                             extraLayerIndex = extraLayerIndex - 1
                         index = index + 1
                     return extraLayer
-            '''
             return list(self.values())[key]
         elif isString(key):
             if key in self._owner._layers:
