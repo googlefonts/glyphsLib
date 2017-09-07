@@ -153,6 +153,17 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
 
+    def test_fileName(self):
+        masters, instances = makeFamily("DesignspaceTest FamilyName")
+        customFileName= makeInstance("Regular", weight=("Bold", 600, 151))
+        customFileName.customParameters["fileName"] = "Custom FileName"
+        instances["data"] = [
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            customFileName,
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestFileName.designspace")
+
     def test_noRegularMaster(self):
         # Currently, fonttools.varLib fails to build variable fonts
         # if the default axis value does not happen to be at the
