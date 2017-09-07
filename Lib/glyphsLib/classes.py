@@ -643,8 +643,8 @@ class GlyphLayerProxy(Proxy):
             key = Layer.layerId
         del(self._owner._layers[key])
 
-    # def __iter__(self):
-    #    return LayersIterator(self._owner)
+    def __iter__(self):
+        return LayersIterator(self._owner)
 
     def __len__(self):
         return len(self.values())
