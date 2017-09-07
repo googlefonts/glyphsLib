@@ -346,6 +346,8 @@ class LayersIterator:
                     index = index + 1
                 item = extraLayer
             self.curInd += 1
+            if item is None:
+                return self.__next__()
             return item
         else:
             if self.curInd >= len(self._owner._layers):
