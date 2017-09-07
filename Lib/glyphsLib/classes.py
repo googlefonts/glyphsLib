@@ -698,6 +698,8 @@ class GlyphLayerProxy(Proxy):
 
     def _ensureMasterLayers(self):
         # Ensure existence of master-linked layers (even for iteration, len() etc.) if accidentally deleted
+        if not self._owner.parent:
+            return
         for master in self._owner.parent.masters:
             if self._owner.parent.masters[master.id] is None:
                 newLayer = GSLayer()
