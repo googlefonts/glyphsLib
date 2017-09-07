@@ -316,7 +316,6 @@ class Proxy(object):
             raise TypeError
 
 
-'''
 class LayersIterator:
     def __init__(self, owner):
         self.curInd = 0
@@ -330,31 +329,31 @@ class LayersIterator:
 
     def __next__(self):
         if self._owner.parent:
-            if self.curInd < len(self._owner.parent.masters):
-                FontMaster = self._owner.parent.masters[self.curInd]
-                Item = self._owner._layers.get(FontMaster.id, None)
+            masterCount = len(self._owner.parent.masters)
+            if self.curInd < masterCount:
+                fontMaster = self._owner.parent.masters[self.curInd]
+                item = self._owner._layers.get(fontMaster.id, None)
             else:
                 if self.curInd >= len(self._owner.layers):
                     raise StopIteration
-                ExtraLayerIndex = self.curInd - len(self._owner.parent.masters)
-                Index = 0
-                ExtraLayer = None
-                while ExtraLayerIndex >= 0:
-                    ExtraLayer = self._owner._layers.values()[Index]
-                    if ExtraLayer.layerId != ExtraLayer.associatedMasterId:
-                        ExtraLayerIndex = ExtraLayerIndex - 1
-                    Index = Index + 1
-                Item = ExtraLayer
+                extraLayerIndex = self.curInd - masterCount
+                index = 0
+                extraLayer = None
+                while extraLayerIndex >= 0:
+                    extraLayer = list(self._owner._layers.values())[index]
+                    if extraLayer.layerId != extraLayer.associatedMasterId:
+                        extraLayerIndex = extraLayerIndex - 1
+                    index = index + 1
+                item = extraLayer
             self.curInd += 1
-            return Item
+            return item
         else:
             if self.curInd >= len(self._owner._layers):
                 raise StopIteration
-            Item = self._owner._layers[self.curInd]
+            item = self._owner._layers[self.curInd]
             self.curInd += 1
-            return Item
+            return item
         return None
-'''
 
 
 class FontFontMasterProxy(Proxy):
