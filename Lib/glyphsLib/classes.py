@@ -603,24 +603,8 @@ class GlyphLayerProxy(Proxy):
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
-            if key < 0:
-                key = self.__len__() + key
-            # This is how it is handled in Glyphs.app.
             if self._owner.parent:
-                masterCount = len(self._owner.parent.masters)
-                if key < masterCount:
-                    fontMaster = self._owner.parent.masters[key]
-                    return self._owner._layers.get(fontMaster.id, None)
-                else:
-                    extraLayerIndex = key - masterCount
-                    index = 0
-                    extraLayer = None
-                    while extraLayerIndex >= 0:
-                        extraLayer = list(self._owner._layers.values())[index]
-                        if extraLayer.layerId != extraLayer.associatedMasterId:
-                            extraLayerIndex = extraLayerIndex - 1
-                        index = index + 1
-                    return extraLayer
+                return list(self)[key]
             return list(self.values())[key]
         elif isString(key):
             if key in self._owner._layers:
