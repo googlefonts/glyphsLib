@@ -320,6 +320,7 @@ class LayersIterator:
     def __init__(self, owner):
         self.curInd = 0
         self._owner = owner
+        self._orderedLayers = None
 
     def __iter__(self):
         return self
@@ -329,33 +330,37 @@ class LayersIterator:
 
     def __next__(self):
         if self._owner.parent:
-            masterCount = len(self._owner.parent.masters)
-            if self.curInd < masterCount:
-                fontMaster = self._owner.parent.masters[self.curInd]
-                item = self._owner._layers.get(fontMaster.id, None)
-            else:
-                if self.curInd >= len(self._owner.layers):
-                    raise StopIteration
-                extraLayerIndex = self.curInd - masterCount
-                index = 0
-                extraLayer = None
-                while extraLayerIndex >= 0:
-                    extraLayer = list(self._owner._layers.values())[index]
-                    if extraLayer.layerId != extraLayer.associatedMasterId:
-                        extraLayerIndex = extraLayerIndex - 1
-                    index = index + 1
-                item = extraLayer
-            self.curInd += 1
-            if item is None:
-                return self.__next__()
-            return item
+            if self.curInd >= len(self._owner.layers):
+                raise StopIteration
+            item = self.orderedLayers[self.curInd]
         else:
             if self.curInd >= len(self._owner._layers):
                 raise StopIteration
             item = self._owner._layers[self.curInd]
-            self.curInd += 1
-            return item
-        return None
+        self.curInd += 1
+        return item
+
+    @property
+    def orderedLayers(self):
+        if not self._orderedLayers:
+            glyphLayerIds = [
+                l.associatedMasterId
+                for l in self._owner._layers.values()
+            ]
+            masterIds = [m.id for m in self._owner.parent.masters]
+            intersectedLayerIds = set(glyphLayerIds) & set(masterIds)
+            orderedLayers = [
+                self._owner._layers.get(m.id)
+                for m in self._owner.parent.masters
+                if m.id in intersectedLayerIds
+            ]
+            orderedLayers += [
+                self._owner._layers.get(l.layerId)
+                for l in self._owner._layers.values()
+                if l.layerId not in intersectedLayerIds
+            ]
+            self._orderedLayers = orderedLayers
+        return self._orderedLayers
 
 
 class FontFontMasterProxy(Proxy):
