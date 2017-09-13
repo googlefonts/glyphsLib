@@ -73,7 +73,8 @@ WIDTH_CODES = {
 }
 
 
-def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
+def interpolate(ufos, master_dir, out_dir, instance_data, debug=False,
+                round_geometry=True):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
@@ -85,7 +86,8 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     logger.info('Building instances')
     for path, _ in instance_files:
         clean_ufo(path)
-    build(designspace_path, outputUFOFormatVersion=3)
+    build(designspace_path, outputUFOFormatVersion=3,
+          roundGeometry=round_geometry)
 
     instance_ufos = apply_instance_data(instance_files)
     if debug:

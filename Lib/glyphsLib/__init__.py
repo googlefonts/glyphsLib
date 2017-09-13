@@ -84,7 +84,8 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         return ufos
 
 
-def build_instances(filename, master_dir, instance_dir, family_name=None):
+def build_instances(filename, master_dir, instance_dir, family_name=None,
+                    round_geometry=True):
     """Write and return UFOs from the instances defined in a .glyphs file.
 
     Args:
@@ -97,5 +98,6 @@ def build_instances(filename, master_dir, instance_dir, family_name=None):
     master_ufos, instance_data = load_to_ufos(
         filename, include_instances=True, family_name=family_name)
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data)
+        master_ufos, master_dir, instance_dir, instance_data,
+        round_geometry=round_geometry)
     return instance_ufos
