@@ -139,7 +139,7 @@ RTLTTB = 2
 
 class OnlyInGlyphsAppError(NotImplementedError):
     def __init__(self):
-        NotImplementedError.__init__(self, "This property/method is only available in the real UI-based version of Glyphs.app.") 
+        NotImplementedError.__init__(self, "This property/method is only available in the real UI-based version of Glyphs.app.")
 
 
 def hint_target(line=None):
@@ -1479,7 +1479,7 @@ class GSPath(GSBase):
             newSegment = segment()
             newSegment.parent = self
             newSegment.index = segmentCount
-            
+
             if nodeCount == 0:
                 newSegment.appendNode(self.nodes[-1])
             else:
@@ -1499,7 +1499,7 @@ class GSPath(GSBase):
             segmentCount += 1
 
         self._segments
-        return self._segments     
+        return self._segments
 
     @segments.setter
     def segments(self, value):
@@ -1595,7 +1595,7 @@ class GSPath(GSBase):
 
 
 class segment(list):
-    
+
     def appendNode(self, node):
         if not hasattr(self, 'nodes'): # instead of defining this in __init__(), because I hate super()
             self.nodes = []
@@ -1632,12 +1632,12 @@ class segment(list):
             return left, bottom, right, top
         else:
             raise ValueError
-                
+
     def bezierMinMax(self, x0, y0, x1, y1, x2, y2, x3, y3):
         tvalues = []
         xvalues = []
         yvalues = []
-    
+
         for i in range(2):
             if i == 0:
                 b = 6 * x0 - 12 * x1 + 6 * x2
@@ -1647,7 +1647,7 @@ class segment(list):
                 b = 6 * y0 - 12 * y1 + 6 * y2
                 a = -3 * y0 + 9 * y1 - 9 * y2 + 3 * y3
                 c = 3 * y1 - 3 * y0
-    
+
             if abs(a) < 1e-12:
                 if abs(b) < 1e-12:
                     continue
@@ -1655,7 +1655,7 @@ class segment(list):
                 if 0 < t and t < 1:
                     tvalues.append(t)
                 continue
-    
+
             b2ac = b * b - 4 * c * a
             if b2ac < 0:
                 continue
@@ -1666,7 +1666,7 @@ class segment(list):
             t2 = (-b - sqrtb2ac) / (2 * a)
             if 0 < t2 and t2 < 1:
                 tvalues.append(t2)
-    
+
         for j in range(len(tvalues) - 1, -1, -1):
             t = tvalues[j]
             mt = 1 - t
@@ -1680,12 +1680,12 @@ class segment(list):
                 yvalues[j] = newyValue
             else:
                 yvalues.append(newyValue)
-    
+
         xvalues.append(x0)
         xvalues.append(x3)
         yvalues.append(y0)
         yvalues.append(y3)
-    
+
         return min(xvalues), min(yvalues), max(xvalues), max(yvalues)
 
 
@@ -2645,16 +2645,6 @@ class GSFont(GSBase):
                 glyph._setupLayer(layer, layer.layerId)
 
     @property
-    def classes(self):
-        return self._classes
-
-    @classes.setter
-    def classes(self, value):
-        self._classes = value
-        for g in self._classes:
-            g._parent = self
-
-    @property
     def features(self):
         return self._features
 
@@ -2664,18 +2654,8 @@ class GSFont(GSBase):
         for g in self._features:
             g._parent = self
 
-    # @property
-    # def masters(self):
-    #     return self._masters
-
-    # @masters.setter
-    # def masters(self, value):
-    #     self._masters = value
-    #     for m in self._masters:
-    #         m.parent = self
-
     masters = property(lambda self: FontFontMasterProxy(self),
-                      lambda self, value: FontFontMasterProxy(self).setter(value))
+                       lambda self, value: FontFontMasterProxy(self).setter(value))
 
     def masterForId(self, key):
         for master in self._masters:
