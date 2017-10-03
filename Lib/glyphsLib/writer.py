@@ -37,18 +37,21 @@ class GlyphsWriter(object):
 
     def __init__(self, filePath=None, fp=None):
 
+        self.close = False
         if fp is not None:
             self.file = fp
         elif filePath is None:
             self.file = sys.stdout
         else:
             self.file = open(filePath, "w")
+            self.close = True
 
     def write(self, baseObject):
 
         self.writeDict(baseObject)
         self.file.write("\n")
-        self.file.close()
+        if self.close:
+            self.file.close()
 
     def writeDict(self, dictValue):
         self.file.write("{\n")
