@@ -342,7 +342,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
 
     def test_ints(self):
         attributes = [
-            "versionMajor", "versionMajor", "upm", "grid", "gridSubDivision",
+            "versionMajor", "versionMajor", "upm", "grid", "gridSubDivisions",
         ]
         font = self.font
         for attr in attributes:

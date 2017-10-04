@@ -15,11 +15,9 @@
 # limitations under the License.
 
 import unittest
-import datetime
 from textwrap import dedent
 from collections import OrderedDict
 
-import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import glyphs_datetime
 
@@ -33,8 +31,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """
         expected = text.splitlines()
         actual = test_helpers.write_to_lines(glyphs_object)
-        # print(expected)
-        # print(actual)
         self.assertLinesEqual(
             expected, actual,
             "The writer has not produced the expected output")
@@ -122,7 +118,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # grid
         font.grid = 35
         # gridSubDivisions
-        # FIXME: (jany) In this library it is called "gridSubDivision" (no s)
         font.gridSubDivisions = 5
         # gridLength
         font.gridLength = 2
@@ -206,6 +201,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             grid = 35;
             gridLength = 2;
+            gridSubDivision = 5;
             instances = (
             {
             name = MuchBold;

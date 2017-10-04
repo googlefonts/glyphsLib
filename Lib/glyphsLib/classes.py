@@ -2576,6 +2576,7 @@ class GSFont(GSBase):
         ".appVersion": "appVersion",
         "fontMaster": "_masters",
         "unitsPerEm": "upm",
+        "gridSubDivision": "gridSubDivisions"
     }
     _defaultsForName = {
         "classes": [],
