@@ -26,6 +26,7 @@ from glyphsLib.types import glyphs_datetime
 import test_helpers
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
+
     def assertWrites(self, glyphs_object, text):
         """Assert that the given object, when given to the writer,
         produces the given text.
@@ -34,6 +35,19 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         actual = test_helpers.write_to_lines(glyphs_object)
         # print(expected)
         # print(actual)
+        self.assertLinesEqual(
+            expected, actual,
+            "The writer has not produced the expected output")
+
+    def assertWritesValue(self, glyphs_value, text):
+        """Assert that the writer produces the given text for the given value."""
+        expected = dedent("""\
+        {{
+        writtenValue = {0};
+        }}
+        """).format(text).splitlines()
+        # We wrap the value in a dict to use the same test helper
+        actual = test_helpers.write_to_lines({'writtenValue': glyphs_value})
         self.assertLinesEqual(
             expected, actual,
             "The writer has not produced the expected output")
@@ -338,6 +352,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_alignment_zone(self):
+        zone = classes.GSAlignmentZone(23, 40)
+        self.assertWritesValue(zone, '"{23, 40}"')
 
 # Might be impractical because of formatting (whitespace changes)
 # class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
