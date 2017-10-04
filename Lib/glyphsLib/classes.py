@@ -1299,6 +1299,12 @@ class GSFontMaster(GSBase):
         self._name = name
         return name
 
+    @name.setter
+    def name(self, value):
+        # FIXME: (jany) TO REVIEW
+        self.customParameters['Master Name'] = value
+        self._name = value
+
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))

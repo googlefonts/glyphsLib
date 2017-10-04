@@ -26,7 +26,7 @@ from glyphsLib.types import glyphs_datetime
 import test_helpers
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def assertWritten(self, glyphs_object, text):
+    def assertWrites(self, glyphs_object, text):
         """Assert that the given object, when given to the writer,
         produces the given text.
         """
@@ -151,7 +151,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # .appVersion (extra property that is not in the docs!)
         font.appVersion = 895
         # TODO: (jany) check that node and ascender are correctly stored
-        self.assertWritten(font, dedent("""\
+        self.assertWrites(font, dedent("""\
             {
             .appVersion = 895;
             classes = (
@@ -225,7 +225,119 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
-    # TODO: (jany) same for each GS class
+    def test_write_font_master_attributes(self):
+        """Test the writer on all GSFontMaster attributes"""
+        master = classes.GSFontMaster()
+        # List of properties from https://docu.glyphsapp.com/#gsfontmaster
+        # id
+        master.id = "MASTER-ID"
+        # name
+        master.name = "Hairline Megawide"
+        # weight
+        master.weight = "Thin"
+        # width
+        master.width = "Wide"
+        # weightValue
+        master.weightValue = 0.01
+        # widthValue
+        master.widthValue = 0.99
+        # customValue
+        # customName
+        # FIXME: (jany) Why is it called "custom" here instead of "customName"?
+        master.custom = "cuteness"
+        # FIXME: (jany) A value of 0.0 is not written to the file.
+        master.customValue = 0.001
+        # FIXME: (jany) Why are there 3 more customValues?
+        master.custom1 = "color"
+        master.customValue1 = 0.1
+        master.custom2 = "depth"
+        master.customValue2 = 0.2
+        master.custom3 = "surealism"
+        master.customValue3 = 0.3
+        # ascender
+        master.ascender = 234.5
+        # capHeight
+        master.capHeight = 200.6
+        # xHeight
+        master.xHeight = 59.1
+        # descender
+        master.descender = -89.2
+        # italicAngle
+        master.italicAngle = 12.2
+        # verticalStems
+        master.verticalStems = [1, 2, 3]
+        # horizontalStems
+        master.horizontalStems = [4, 5, 6]
+        # alignmentZones
+        zone = classes.GSAlignmentZone(0, -30)
+        master.alignmentZones = [
+            zone
+        ]
+        # blueValues: not handled because it is read-only
+        # otherBlues: not handled because it is read-only
+        # guides
+        # FIXME: (jany) Here it is called "guideLines" instead of "guides"
+        guide = classes.GSGuideLine()
+        guide.name = "middle"
+        master.guideLines.append(guide)
+        # userData
+        master.userData['rememberToMakeTea'] = True
+        # customParameters
+        master.customParameters['underlinePosition'] = -135
+        self.assertWrites(master, dedent("""\
+            {
+            alignmentZones = (
+            "{0, -30}"
+            );
+            ascender = 234.5;
+            capHeight = 200.6;
+            custom = cuteness;
+            customValue = 0.001;
+            custom1 = color;
+            customValue1 = 0.1;
+            custom2 = depth;
+            customValue2 = 0.2;
+            custom3 = surealism;
+            customValue3 = 0.3;
+            customParameters = (
+            {
+            name = "Master Name";
+            value = "Hairline Megawide";
+            },
+            {
+            name = underlinePosition;
+            value = -135;
+            }
+            );
+            descender = -89.2;
+            guideLines = (
+            {
+            name = middle;
+            }
+            );
+            horizontalStems = (
+            4,
+            5,
+            6
+            );
+            id = "MASTER-ID";
+            italicAngle = 12.2;
+            userData = {
+            rememberToMakeTea = 1;
+            };
+            verticalStems = (
+            1,
+            2,
+            3
+            );
+            weight = Thin;
+            weightValue = 0.01;
+            width = Wide;
+            widthValue = 0.99;
+            xHeight = 59.1;
+            }
+        """))
+
 
 # Might be impractical because of formatting (whitespace changes)
 # class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
