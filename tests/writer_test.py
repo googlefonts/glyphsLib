@@ -450,6 +450,36 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_custom_parameter(self):
+        # Name without quotes
+        self.assertWritesValue(
+            classes.GSCustomParameter('myParam', 'myValue'),
+            "{\nname = myParam;\nvalue = myValue;\n}")
+        # Name with quotes
+        self.assertWritesValue(
+            classes.GSCustomParameter('my param', 'myValue'),
+            "{\nname = \"my param\";\nvalue = myValue;\n}")
+        # Value with quotes
+        self.assertWritesValue(
+            classes.GSCustomParameter('myParam', 'my value'),
+            "{\nname = myParam;\nvalue = \"my value\";\n}")
+        # Int param (ascender): should convert the value to string
+        self.assertWritesValue(
+            classes.GSCustomParameter('ascender', 12),
+            "{\nname = ascender;\nvalue = 12;\n}")
+        # Float param (postscriptBlueScale): should convert the value to string
+        self.assertWritesValue(
+            classes.GSCustomParameter('postscriptBlueScale', 0.125),
+            "{\nname = postscriptBlueScale;\nvalue = 0.125;\n}")
+        # Bool param (isFixedPitch): should convert the boolean value to 0/1
+        self.assertWritesValue(
+            classes.GSCustomParameter('isFixedPitch', True),
+            "{\nname = isFixedPitch;\nvalue = 1;\n}")
+        # Intlist param: should map list of int to list of strings
+        self.assertWritesValue(
+            classes.GSCustomParameter('fsType', [1, 2]),
+            "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}")
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs

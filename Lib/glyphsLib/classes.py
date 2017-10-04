@@ -1016,6 +1016,10 @@ class GSCustomParameter(GSBase):
             (self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
+        # FIXME: (jany) This function looks like a re-implementation
+        #   of the writer, it may be simpler to cast the values in case
+        #   of known parameters and call
+        #   writer.writeDict({'name':name, 'value': value})
         name = self.name
         if needsQuotes(name):
             name = '"%s"' % name
