@@ -103,9 +103,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # familyName
         font.familyName = "Sans Rien"
         # upm
-        # FIXME: (jany) In this library it is called "unitsPerEm"
-        # font.upm = 2000
-        font.unitsPerEm = 2000
+        font.upm = 2000
         # note
         font.note = "Was bored, made this"
         # kerning
@@ -138,11 +136,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # customParameters
         font.customParameters['ascender'] = 300
         # selection
-        # FIXME: (jany) Not handled by this library.
-        #   Not sure that it makes sense to handle it, because the selection
-        #   sounds like a very impermanent thing that will not be expected to
-        #   be restored after an export/import to UFO.
-        #   Maybe it would still be nice to have? TODO: ask a designer?
+        # FIXME: (jany) Not writable here: instead, check that individual
+        #   glyphs store their "selected" status correctly
         # font.selection = ?
         # selectedLayers
         # FIXME: (jany) Same as `selection`
@@ -225,6 +220,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             manufacturer = Manu;
             manufacturerURL = manu.com;
+            unitsPerEm = 2000;
             userData = {
             a = test;
             b = (
