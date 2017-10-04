@@ -356,7 +356,107 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         zone = classes.GSAlignmentZone(23, 40)
         self.assertWritesValue(zone, '"{23, 40}"')
 
-# Might be impractical because of formatting (whitespace changes)
+    def test_write_instance(self):
+        instance = classes.GSInstance()
+        # List of properties from https://docu.glyphsapp.com/#gsinstance
+        # active
+        # FIXME: (jany) does not seem to be handled by this library? No doc?
+        instance.active = True
+        # name
+        instance.name = "SemiBoldCompressed (name)"
+        # weight
+        instance.weight = "SemiBold (weight)"
+        # width
+        instance.width = "Compressed (width)"
+        # weightValue
+        instance.weightValue = 0.6
+        # widthValue
+        instance.widthValue = 0.2
+        # customValue
+        instance.customValue = 0.4
+        # isItalic
+        instance.isItalic = True
+        # isBold
+        instance.isBold = True
+        # linkStyle
+        instance.linkStyle = "linked style value"
+        # familyName
+        instance.familyName = "Sans Rien (familyName)"
+        # preferredFamily
+        instance.preferredFamily = "Sans Rien (preferredFamily)"
+        # preferredSubfamilyName
+        instance.preferredSubfamilyName = "Semi Bold Compressed (preferredSubFamilyName)"
+        # windowsFamily
+        instance.windowsFamily = "Sans Rien MS (windowsFamily)"
+        # windowsStyle: read only
+        # windowsLinkedToStyle: read only
+        # fontName
+        instance.fontName = "SansRien (fontName)"
+        # fullName
+        instance.fullName = "Sans Rien Semi Bold Compressed (fullName)"
+        # customParameters
+        instance.customParameters['hheaLineGap'] = 10
+        # instanceInterpolations
+        instance.instanceInterpolations = {
+            'M1': 0.2,
+            'M2': 0.8
+        }
+        # manualInterpolation
+        instance.manualInterpolation = True
+        # interpolatedFont: read only
+
+        # FIXME: (jany) the weight and width are not in the output
+        #   cofusion with weightClass/widthClass?
+        self.assertWrites(instance, dedent("""\
+            {
+            customParameters = (
+            {
+            name = famiyName;
+            value = "Sans Rien (familyName)";
+            },
+            {
+            name = preferredFamily;
+            value = "Sans Rien (preferredFamily)";
+            },
+            {
+            name = preferredSubfamilyName;
+            value = "Semi Bold Compressed (preferredSubFamilyName)";
+            },
+            {
+            name = styleMapFamilyName;
+            value = "Sans Rien MS (windowsFamily)";
+            },
+            {
+            name = postscriptFontName;
+            value = "SansRien (fontName)";
+            },
+            {
+            name = postscriptFullName;
+            value = "Sans Rien Semi Bold Compressed (fullName)";
+            },
+            {
+            name = hheaLineGap;
+            value = 10;
+            }
+            );
+            interpolationCustom = 0.4;
+            interpolationWeight = 0.6;
+            interpolationWidth = 0.2;
+            instanceInterpolations = {
+            M1 = 0.2;
+            M2 = 0.8;
+            };
+            isBold = 1;
+            isItalic = 1;
+            linkStyle = "linked style value";
+            manualInterpolation = 1;
+            name = "SemiBoldCompressed (name)";
+            }
+        """))
+
+# Might be impractical because of formatting (whitespace changes)?
+# Maybe it's OK because random glyphs files from github seem to be
+# formatted exactly like what this writer outputs
 # class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 #     def assertParseWriteRoundtrip(self, filename):
 #         with open(filename) as f:
