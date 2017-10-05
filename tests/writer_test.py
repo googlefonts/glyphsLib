@@ -238,7 +238,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # id
         master.id = "MASTER-ID"
         # name
-        master.name = "Hairline Megawide"
+        # Cannot set the `name` attribute directly
+        # master.name = "Hairline Megawide"
+        master.customParameters['Master Name'] = "Hairline Megawide"
         # weight
         master.weight = "Thin"
         # width
