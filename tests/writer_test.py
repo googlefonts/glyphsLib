@@ -478,6 +478,19 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             classes.GSCustomParameter('fsType', [1, 2]),
             "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}")
 
+    def test_write_class(self):
+        _class = classes.GSClass()
+        _class.name = "e"
+        _class.code = "e eacute egrave"
+        _class.automatic = True
+        self.assertWrites(_class, dedent("""\
+            {
+            automatic = 1;
+            code = "e eacute egrave";
+            name = e;
+            }
+        """))
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs
