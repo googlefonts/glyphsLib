@@ -19,8 +19,7 @@ import difflib
 import sys
 
 from glyphsLib import classes
-from glyphsLib.builder import to_ufos
-from glyphsLib.roundtrip import to_glyphs
+from glyphsLib.builder import (to_ufos, to_glyphs)
 
 import test_helpers
 

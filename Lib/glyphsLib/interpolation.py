@@ -21,9 +21,9 @@ import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder import (
-    set_custom_params, GLYPHS_PREFIX, build_stylemap_names
-)
+from glyphsLib.builder.ufo import set_custom_params, build_stylemap_names
+from glyphsLib.builder.constants import GLYPHS_PREFIX
+
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
 
 __all__ = [

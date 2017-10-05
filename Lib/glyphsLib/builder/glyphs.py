@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from glyphsLib import classes
-from glyphsLib import builder
+
+from .constants import GLYPHS_PREFIX
 
 # def designspace_from_ufos(ufos):
 #     pass
@@ -47,5 +48,5 @@ def to_glyphs_master(ufo):
     Extract from the given UFO the data that goes into a GSFontMaster.
     """
     master = classes.GSFontMaster()
-    master.id = ufo.lib[builder.GLYPHS_PREFIX + 'fontMasterID']
+    master.id = ufo.lib[GLYPHS_PREFIX + 'fontMasterID']
     return master

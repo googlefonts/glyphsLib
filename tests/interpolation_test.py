@@ -26,7 +26,7 @@ import xml.etree.ElementTree as etree
 
 import defcon
 from fontTools.misc.py23 import open
-from glyphsLib.builder import GLYPHS_PREFIX
+from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.interpolation import (
     build_designspace, set_weight_class, set_width_class, build_stylemap_names
 )
