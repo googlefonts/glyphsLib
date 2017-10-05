@@ -2723,3 +2723,13 @@ class GSFont(GSBase):
     @note.setter
     def note(self, value):
         self.customParameters["note"] = value
+
+    # FIXME: (jany) I don't understand why this is needed for
+    #   gridSubDivisions but it works without it for upm
+    @property
+    def gridSubDivisions(self):
+        return self.gridSubDivision
+
+    @gridSubDivisions.setter
+    def gridSubDivisions(self, value):
+        self.gridSubDivision = value

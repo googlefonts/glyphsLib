@@ -47,6 +47,5 @@ def to_glyphs_master(ufo):
     Extract from the given UFO the data that goes into a GSFontMaster.
     """
     master = classes.GSFontMaster()
-    #import pdb; pdb.set_trace()
     master.id = ufo.lib[builder.GLYPHS_PREFIX + 'fontMasterID']
     return master
