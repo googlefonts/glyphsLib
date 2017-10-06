@@ -493,14 +493,29 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def test_feature_prefix(self):
         fp = classes.GSFeaturePrefix()
-        fp.name = "sups"
-        fp.code = "    sub @standard by @sups;"
+        fp.name = "Languagesystems"
+        fp.code = "languagesystem DFLT dflt;"
         fp.automatic = True
         self.assertWrites(fp, dedent("""\
             {
             automatic = 1;
+            code = "languagesystem DFLT dflt;";
+            name = Languagesystems;
+            }
+        """))
+
+    def test_feature(self):
+        feature = classes.GSFeature()
+        feature.name = "sups"
+        feature.code = "    sub @standard by @sups;"
+        feature.automatic = True
+        feature.notes = "notes about sups"
+        self.assertWrites(feature, dedent("""\
+            {
+            automatic = 1;
             code = "    sub @standard by @sups;";
             name = sups;
+            notes = "notes about sups";
             }
         """))
 
