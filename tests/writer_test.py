@@ -479,11 +479,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}")
 
     def test_write_class(self):
-        _class = classes.GSClass()
-        _class.name = "e"
-        _class.code = "e eacute egrave"
-        _class.automatic = True
-        self.assertWrites(_class, dedent("""\
+        class_ = classes.GSClass()
+        class_.name = "e"
+        class_.code = "e eacute egrave"
+        class_.automatic = True
+        self.assertWrites(class_, dedent("""\
             {
             automatic = 1;
             code = "e eacute egrave";
