@@ -66,7 +66,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         font.instances.append(i1)
         # glyphs
         g1 = classes.GSGlyph()
-        g1.id = 'G1'
+        g1.name = 'G1'
         font.glyphs.append(g1)
         # classes
         c1 = classes.GSClass()
@@ -197,6 +197,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             glyphs = (
             {
+            glyphname = G1;
             }
             );
             grid = 35;
@@ -491,7 +492,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
-    def test_feature_prefix(self):
+    def test_write_feature_prefix(self):
         fp = classes.GSFeaturePrefix()
         fp.name = "Languagesystems"
         fp.code = "languagesystem DFLT dflt;"
@@ -504,7 +505,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
-    def test_feature(self):
+    def test_write_feature(self):
         feature = classes.GSFeature()
         feature.name = "sups"
         feature.code = "    sub @standard by @sups;"
@@ -519,6 +520,79 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_glyph(self):
+        glyph = classes.GSGlyph()
+        # https://docu.glyphsapp.com/#gsglyph
+        # parent: not written
+        # layers
+        layer = classes.GSLayer()
+        layer.name = "L1"
+        # TODO: (jany) manipulate layer without a parent?
+        # glyph.layers.append(layer)
+        # name
+        glyph.name = "Aacute"
+        # unicode
+        glyph.unicode = "00C1"
+        # string: not written
+        # id: not written
+        # category
+        glyph.category = "Letter"
+        # subCategory
+        glyph.subCategory = "Uppercase"
+        # script
+        glyph.script = "latin"
+        # productionName
+        glyph.productionName = "Aacute.prod"
+        # glyphInfo: not written
+        # leftKerningGroup
+        glyph.leftKerningGroup = "A"
+        # rightKerningGroup
+        glyph.rightKerningGroup = "A"
+        # leftKerningKey: not written
+        # rightKerningKey: not written
+        # leftMetricsKey
+        glyph.leftMetricsKey = "A"
+        # rightMetricsKey
+        glyph.rightMetricsKey = "A"
+        # widthMetricsKey
+        glyph.widthMetricsKey = "A"
+        # export
+        glyph.export = False
+        # color
+        glyph.color = 11
+        # colorObject: not written
+        # note
+        glyph.note = "Stunning one-bedroom A with renovated acute accent"
+        # selected: FIXME: (jany) not written?
+        # mastersCompatible: not stored
+        # userData
+        glyph.userData['rememberToMakeCoffe'] = True
+        # smartComponentAxes
+        # TODO: GSSmartComponentAxis
+        glyph.smartComponentAxes = []
+        # lastChange
+        glyph.lastChange = glyphs_datetime('2017-10-03 07:35:46 +0000')
+        self.assertWrites(glyph, dedent("""\
+            {
+            color = 11;
+            export = 0;
+            glyphname = Aacute;
+            lastChange = "2017-10-03 07:35:46 +0000";
+            leftKerningGroup = A;
+            leftMetricsKey = A;
+            widthMetricsKey = A;
+            note = "Stunning one-bedroom A with renovated acute accent";
+            rightKerningGroup = A;
+            rightMetricsKey = A;
+            unicode = 00C1;
+            script = latin;
+            category = Letter;
+            subCategory = Uppercase;
+            userData = {
+            rememberToMakeCoffe = 1;
+            };
+            }
+        """))
 
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be

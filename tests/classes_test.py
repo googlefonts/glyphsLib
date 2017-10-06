@@ -752,6 +752,10 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         glyph = self.font.glyphs["adieresis"]
         self.assertEqual(glyph.string, "ä")
 
+    def test_id(self):
+        # TODO
+        pass
+
     # TODO
     # category
     # storeCategory

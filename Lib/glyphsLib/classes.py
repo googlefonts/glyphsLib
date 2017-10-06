@@ -2535,6 +2535,12 @@ class GSGlyph(GSBase):
         lambda self: self.name,
         lambda self, value: setattr(self, "name", value))
 
+    @property
+    def id(self):
+        """An unique identifier for each glyph"""
+        # FIXME: (jany) what is it? it doesn't seem be stored in the file
+        return self.name
+
 
 class GSFont(GSBase):
     _classesForName = {
