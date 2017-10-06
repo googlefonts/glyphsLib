@@ -491,6 +491,20 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_feature_prefix(self):
+        fp = classes.GSFeaturePrefix()
+        fp.name = "sups"
+        fp.code = "    sub @standard by @sups;"
+        fp.automatic = True
+        self.assertWrites(fp, dedent("""\
+            {
+            automatic = 1;
+            code = "    sub @standard by @sups;";
+            name = sups;
+            }
+        """))
+
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs
