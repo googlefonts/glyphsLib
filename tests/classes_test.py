@@ -29,6 +29,7 @@ from glyphsLib.classes import (
     GSAnchor, GSComponent, GSAlignmentZone, GSClass, GSFeature, GSAnnotation,
     GSFeaturePrefix, GSGuideLine, GSHint, GSNode,
     LayerComponentsProxy, LayerGuideLinesProxy,
+    STEM
 )
 from glyphsLib.types import point, transform, rect, size
 
@@ -956,7 +957,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         newHint = copy.copy(newHint)
         newHint.originNode = layer.paths[0].nodes[0]
         newHint.targetNode = layer.paths[0].nodes[1]
-        newHint.type = GSHint.STEM
+        newHint.type = STEM
         layer.hints.append(newHint)
         self.assertIsNotNone(layer.hints[0].__repr__())
         self.assertEqual(len(layer.hints), 1)
@@ -965,11 +966,11 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         newHint1 = GSHint()
         newHint1.originNode = layer.paths[0].nodes[0]
         newHint1.targetNode = layer.paths[0].nodes[1]
-        newHint1.type = GSHint.STEM
+        newHint1.type = STEM
         newHint2 = GSHint()
         newHint2.originNode = layer.paths[0].nodes[0]
         newHint2.targetNode = layer.paths[0].nodes[1]
-        newHint2.type = GSHint.STEM
+        newHint2.type = STEM
         layer.hints.extend([newHint1, newHint2])
         newHint = GSHint()
         newHint.originNode = layer.paths[0].nodes[0]

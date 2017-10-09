@@ -98,7 +98,7 @@ TTROUNDUP = 1
 TTROUNDDOWN = 2
 TRIPLE = 128
 
-#annotations:
+# Annotations:
 TEXT = 1
 ARROW = 2
 CIRCLE = 3
@@ -1354,7 +1354,10 @@ class GSNode(GSBase):
 
     def __init__(self, position=(0, 0), nodetype=LINE,
                  smooth=False, name=None):
-        self.position = point(position[0], position[1])
+        if isinstance(position, point):
+            self.position = position
+        else:
+            self.position = point(position[0], position[1])
         self.type = nodetype
         self.smooth = smooth
         self.name = name
@@ -1900,24 +1903,6 @@ class GSHint(GSBase):
         "options",
         "settings"
     )
-    # Hint types
-    TOPGHOST = -1
-    STEM = 0
-    BOTTOMGHOST = 1
-    TTANCHOR = 2
-    TTSTEM = 3
-    TTALIGN = 4
-    TTINTERPOLATE = 5
-    TTDIAGONAL = 6
-    TTDELTA = 8
-    CORNER = 16
-    CAP = 17
-    # Hint options
-    TTROUND = 0
-    TTROUNDUP = 1
-    TTROUNDDOWN = 2
-    TTDONROUND = 4
-    TRIPLE = 128
 
     def shouldWriteValueForKey(self, key):
         if key == "stem":
@@ -1958,6 +1943,45 @@ class GSHint(GSBase):
             return "<GSHint %s %s>" % (self.type, self.name)
         else:
             return "<GSHint %s %s>" % (self.type, direction)
+
+    @property
+    def originNode(self):
+        if self._originNode is not None:
+            return self._originNode
+        if self._origin is not None:
+            # Find the GSNode that is refered to by the indices in _origin
+            path_index, node_index = self._origin
+            layer = self.parent  # FIXME: (jany) I don't have access to the parent from the GSHint!!!
+            path = layer.paths[path_index]
+            node = path.nodes[node_index]
+            return node
+
+    @originNode.setter
+    def originNode(self, node):
+        self._originNode = node
+        self._origin = None
+
+    @property
+    def origin(self):
+        if self._origin is not None:
+            return self._origin
+        if self._originNode is not None:
+            # Find the path_index & node_index of the _originNode
+            path = self._originNode.parent
+            layer = path.parent
+            for path_index in range(len(layer.paths)):
+                if path == layer.paths[path_index]:
+                    for node_index in range(len(path.nodes)):
+                        if self._originNode == path.nodes[node_index]:
+                            return point(path_index, node_index)
+            return None
+
+    @origin.setter
+    def origin(self, origin):
+        self._origin = origin
+        self._originNode = None
+
+    # FIXME: (jany) if the above is OK after review, do the same for the others
 
 
 class GSFeature(GSBase):
@@ -2012,13 +2036,6 @@ class GSAnnotation(GSBase):
         "width": float,  # the width of the text field or size of the cicle
     }
     _parent = None
-
-    # Annotation types
-    TEXT = "Text"
-    ARROW = "Arrow"
-    CIRCLE = "Circle"
-    PLUS = "Plus"
-    MINUS = "Minus"
 
     @property
     def parent(self):

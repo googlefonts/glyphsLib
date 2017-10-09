@@ -848,7 +848,7 @@ userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
         annotation = classes.GSAnnotation()
         # http://docu.glyphsapp.com/#gsannotation
         annotation.position = point(12, 34)
-        annotation.type = classes.GSAnnotation.TEXT
+        annotation.type = classes.TEXT
         annotation.text = "Look here"
         annotation.angle = 123.5
         annotation.width = 135
@@ -857,10 +857,64 @@ userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
             angle = 123.5;
             position = "{12, 34}";
             text = "Look here";
-            type = Text;
+            type = 1;
             width = 135;
             }
         """))
+
+    def test_write_hint(self):
+        hint = classes.GSHint()
+        # http://docu.glyphsapp.com/#gshint
+        # FIXME: (jany) understand how hints are stored
+        layer = classes.GSLayer()
+        path1 = classes.GSPath()
+        layer.paths.append(path1)
+        node1 = classes.GSNode(point(100, 100))
+        path1.nodes.append(node1)
+        hint.originNode = node1
+
+        # FIXME: (jany) implement the same official Python API as for `origin`
+        # path1.nodes.append(node2)
+        # node2 = classes.GSNode(point(200, 200))
+        # hint.targetNode = node2
+        hint.target = point(0, 1)
+
+        # node3 = classes.GSNode(point(300, 300))
+        # path1.nodes.append(node3)
+        # hint.otherNode1 = node3
+        hint.other1 = point(0, 2)
+
+        # path2 = classes.GSPath()
+        # node4 = classes.GSNode(point(400, 400))
+        # path2.nodes.append(node4)
+        # hint.otherNode2 = node4
+        hint.other2 = point(1, 0)
+
+        hint.type = classes.CORNER
+        hint.options = classes.TTROUND | classes.TRIPLE
+        hint.horizontal = True
+        # selected: not written
+        hint.name = "My favourite hint"
+        self.assertWrites(hint, dedent("""\
+            {
+            horizontal = 1;
+            origin = "{0, 0}";
+            target = "{0, 1}";
+            other1 = "{0, 2}";
+            other2 = "{1, 0}";
+            type = 16;
+            name = "My favourite hint";
+            options = 128;
+            }
+        """))
+
+        # FIXME: (jany) What about the undocumented scale & stem?
+        #   -> Add a test for that
+
+        # FIXME: (jany) Add a test for target = "up"?
+
+    # def test_write_background_image
+
 
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
