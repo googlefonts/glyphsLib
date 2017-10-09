@@ -2013,6 +2013,13 @@ class GSAnnotation(GSBase):
     }
     _parent = None
 
+    # Annotation types
+    TEXT = "Text"
+    ARROW = "Arrow"
+    CIRCLE = "Circle"
+    PLUS = "Plus"
+    MINUS = "Minus"
+
     @property
     def parent(self):
         return self._parent

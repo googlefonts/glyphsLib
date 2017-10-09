@@ -844,6 +844,24 @@ userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
             }
         """))
 
+    def test_write_annotation(self):
+        annotation = classes.GSAnnotation()
+        # http://docu.glyphsapp.com/#gsannotation
+        annotation.position = point(12, 34)
+        annotation.type = classes.GSAnnotation.TEXT
+        annotation.text = "Look here"
+        annotation.angle = 123.5
+        annotation.width = 135
+        self.assertWrites(annotation, dedent("""\
+            {
+            angle = 123.5;
+            position = "{12, 34}";
+            text = "Look here";
+            type = Text;
+            width = 135;
+            }
+        """))
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs
