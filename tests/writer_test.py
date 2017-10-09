@@ -821,13 +821,28 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # name
         node.name = "top-left corner"
         # userData
-        # FIXME: (jany) The user data is missing!
+        # FIXME: (jany) Not sure about the userData part
         node.userData["rememberToDownloadARealRemindersApp"] = True
         self.assertWritesValue(
             node,
             '"10 30 CURVE SMOOTH {\\nname = \\"top-left corner\\";\\n\
 userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
         )
+
+    def test_write_guideline(self):
+        line = classes.GSGuideLine()
+        # http://docu.glyphsapp.com/#GSGuideLine
+        line.position = point(56, 45)
+        line.angle = 11.0
+        line.name = "italic angle"
+        # selected: not written
+        self.assertWrites(line, dedent("""\
+            {
+            angle = 11;
+            name = "italic angle";
+            position = "{56, 45}";
+            }
+        """))
 
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
