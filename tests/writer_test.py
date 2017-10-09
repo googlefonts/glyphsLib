@@ -771,6 +771,18 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_smart_component_axis(self):
+        axis = classes.GSSmartComponentAxis()
+        axis.name = "crotchDepth"
+        axis.topValue = 0
+        axis.bottomValue = -100
+        # FIXME: (jany) keys that have value 0 are not written?
+        self.assertWrites(axis, dedent("""\
+            {
+            bottomValue = -100;
+            name = crotchDepth;
+            }
+        """))
 
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
