@@ -23,7 +23,7 @@ import glyphsLib
 from glyphsLib.types import (
     transform, point, rect, size, glyphs_datetime, color, floatToString,
     readIntlist, writeIntlist, needsQuotes, feature_syntax_encode, baseType,
-    encode_dict_as_string_for_gsnode
+    encode_dict_as_string_for_gsnode, decode_dict_as_string_from_gsnode
 )
 from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
@@ -1405,8 +1405,9 @@ class GSNode(GSBase):
 
         # TODO: Use proper string parsing used in other classes
         if '{\\nname' in line:
-            nameMatch = re.match(r'\{\\nname = "?(.+?)"?;\\n\}', m[4]).groups()
-            self.name = nameMatch[0]
+            parser = Parser()
+            value = decode_dict_as_string_from_gsnode(m[4])
+            self.name = parser.parse(value)["name"]
         else:
             self.name = None
 

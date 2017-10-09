@@ -370,6 +370,14 @@ def encode_dict_as_string_for_gsnode(value):
     return value.replace("\n", "\\n")
 
 
+# FIXME: (jany) This is not a correct reverse function, if
+#   the input string contains "\\n"
+def decode_dict_as_string_from_gsnode(value):
+    """Inverse of encode_dict_as_string_for_gsnode"""
+    value = value.replace('\\"', '"')
+    return value.replace("\\n", "\n")
+
+
 def feature_syntax_encode(value):
     if isinstance(value, (str, unicode)) and needsQuotes(value):
 
