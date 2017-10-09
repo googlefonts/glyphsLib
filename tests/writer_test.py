@@ -594,6 +594,127 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_layer(self):
+        layer = classes.GSLayer()
+        # http://docu.glyphsapp.com/#gslayer
+        # parent: not written
+        # name
+        layer.name = '{125, 100}'
+        # associatedMasterId
+        layer.associatedMasterId = 'M1'
+        # layerId
+        layer.layerId = 'L1'
+        # color
+        layer.color = 2  # brown
+        # colorObject: read-only, computed
+        # components
+        component = classes.GSComponent(glyph='glyphName')
+        layer.components.append(component)
+        # guides
+        guide = classes.GSGuideLine()
+        guide.name = 'xheight'
+        layer.guides.append(guide)
+        # annotations
+        annotation = classes.GSAnnotation()
+        # annotation.type = TEXT  # FIXME: (jany) this constant from the doc's examples is not defined
+        annotation.type = 'TEXT'
+        annotation.text = 'Fuck, this curve is ugly!'
+        layer.annotations.append(annotation)
+        # hints
+        hint = classes.GSHint()
+        hint.name = 'hintName'
+        layer.hints.append(hint)
+        # anchors
+        anchor = classes.GSAnchor()
+        anchor.name = 'top'
+        layer.anchors['top'] = anchor
+        # paths
+        path = classes.GSPath()
+        layer.paths.append(path)
+        # selection: read-only
+        # LSB, RSB, TSB, BSB: not written
+        # width
+        layer.width = 890.4
+        # leftMetricsKey
+        layer.leftMetricsKey = "A"
+        # rightMetricsKey
+        layer.rightMetricsKey = "A"
+        # widthMetricsKey
+        layer.widthMetricsKey = "A"
+        # bounds: read-only, computed
+        # selectionBounds: read-only, computed
+        # background
+        # FIXME: (jany) why not use a GSLayer like the official doc suggests?
+        background_layer = classes.GSBackgroundLayer()
+        layer.background = background_layer
+        # backgroundImage
+        image = classes.GSBackgroundImage('/path/to/file.jpg')
+        layer.backgroundImage = image
+        # bezierPath: read-only, objective-c
+        # openBezierPath: read-only, objective-c
+        # completeOpenBezierPath: read-only, objective-c
+        # isAligned
+        # FIXME: (jany) is this read-only?
+        #   is this computed from each component's alignment?
+        # layer.isAligned = False
+        # userData
+        layer.userData['rememberToMakeCoffe'] = True
+        # smartComponentPoleMapping
+        layer.smartComponentPoleMapping['crotchDepth'] = 2  # Top pole
+        layer.smartComponentPoleMapping['shoulderWidth'] = 1  # Bottom pole
+        self.assertWrites(layer, dedent("""\
+            {
+            anchors = (
+            {
+            name = top;
+            }
+            );
+            annotations = (
+            {
+            position = ;
+            text = "Fuck, this curve is ugly!";
+            type = TEXT;
+            }
+            );
+            associatedMasterId = M1;
+            background = {
+            };
+            backgroundImage = {
+            crop = "{{0, 0}, {0, 0}}";
+            imagePath = "/path/to/file.jpg";
+            };
+            color = 2;
+            components = (
+            {
+            name = glyphName;
+            }
+            );
+            guideLines = (
+            {
+            name = xheight;
+            }
+            );
+            hints = (
+            {
+            name = hintName;
+            }
+            );
+            layerId = L1;
+            leftMetricsKey = A;
+            widthMetricsKey = A;
+            rightMetricsKey = A;
+            name = "{125, 100}";
+            paths = (
+            {
+            }
+            );
+            userData = {
+            rememberToMakeCoffe = 1;
+            };
+            width = 890.4;
+            }
+        """))
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs

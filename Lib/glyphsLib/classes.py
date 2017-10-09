@@ -1978,6 +1978,7 @@ class GSClass(GSFeature):
 class GSFeaturePrefix(GSFeature):
     pass
 
+
 class GSAnnotation(GSBase):
     _classesForName = {
         "angle": float,
@@ -2171,7 +2172,7 @@ class GSBackgroundImage(GSBase):
         "transform": transform(1, 0, 0, 1, 0, 0),
     }
 
-    def __init__(self, path = None):
+    def __init__(self, path=None):
         super(GSBackgroundImage, self).__init__()
         self.imagePath = path
         self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
@@ -2185,6 +2186,7 @@ class GSBackgroundImage(GSBase):
         return self.imagePath
     @path.setter
     def path(self, value):
+        # FIXME: (jany) use posix pathnames here?
         if os.dirname(os.abspath(value)) == os.dirname(os.abspath(self.parent.parent.parent.filepath)):
             self.imagePath = os.path.basename(value)
         else:
@@ -2228,7 +2230,7 @@ class GSBackgroundImage(GSBase):
         self.transform = [affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]]
 
 
-
+# FIXME: (jany) This class is not mentioned in the official docs?
 class GSBackgroundLayer(GSBase):
     _classesForName = {
         "anchors": GSAnchor,
@@ -2270,6 +2272,7 @@ class GSLayer(GSBase):
         "visible": bool,
         "width": float,
         "widthMetricsKey": unicode,
+        "smartComponentPoleMapping": dict,
     }
     _defaultsForName = {
         "weight": 600,
@@ -2299,7 +2302,9 @@ class GSLayer(GSBase):
         "vertWidth",
         "width",
     )
-    _userData = {}
+    # FIXME: (jany) with the line below, user data would be shared between all
+    #   instances of GSLayer!?
+    # _userData = {}
 
     def __init__(self):
         super(GSLayer, self).__init__()
@@ -2309,6 +2314,8 @@ class GSLayer(GSBase):
         self.guides = []
         self._paths = []
         self._selection = []
+        self.smartComponentPoleMapping = {}
+        self._userData = {}
 
     def __repr__(self):
         name = self.name
