@@ -808,6 +808,27 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+    def test_write_node(self):
+        node = classes.GSNode(point(10, 30), classes.GSNode.CURVE)
+        # http://docu.glyphsapp.com/#gsnode
+        # position: already set
+        # type: already set
+        # smooth
+        node.smooth = True
+        # connection: deprecated
+        # selected: not written
+        # index, nextNode, prevNode: computed
+        # name
+        node.name = "top-left corner"
+        # userData
+        # FIXME: (jany) The user data is missing!
+        node.userData["rememberToDownloadARealRemindersApp"] = True
+        self.assertWritesValue(
+            node,
+            '"10 30 CURVE SMOOTH {\\nname = \\"top-left corner\\";\\n\
+userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
+        )
+
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be
 # formatted exactly like what this writer outputs

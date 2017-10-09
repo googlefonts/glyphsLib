@@ -21,8 +21,9 @@ import traceback
 import uuid
 import glyphsLib
 from glyphsLib.types import (
-    transform, point, rect, size, glyphs_datetime, color, floatToString, readIntlist,
-    writeIntlist, needsQuotes, feature_syntax_encode, baseType
+    transform, point, rect, size, glyphs_datetime, color, floatToString,
+    readIntlist, writeIntlist, needsQuotes, feature_syntax_encode, baseType,
+    encode_dict_as_string_for_gsnode
 )
 from glyphsLib.parser import Parser
 from glyphsLib.writer import GlyphsWriter
@@ -1348,7 +1349,7 @@ class GSNode(GSBase):
     CURVE = "curve"
     OFFCURVE = "offcurve"
     QCURVE = "qcurve"
-    _userData = {}
+    _userData = None
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE,
@@ -1379,8 +1380,16 @@ class GSNode(GSBase):
         content = self.type.upper()
         if self.smooth:
             content += " SMOOTH"
-        if self.name:
-            content += ' {\\nname = \\"%s\\";\\n}' % self.name
+        if self.name is not None or self._userData is not None:
+            # FIXME: (jany) must provide a simpler way to write a string
+            string = StringIO()
+            writer = GlyphsWriter(fp=string)
+            writer.writeDict({
+                "name": self.name,
+                "userData": self._userData,
+            })
+            content += ' '
+            content += encode_dict_as_string_for_gsnode(string.getvalue())
         return '"%s %s %s"' % \
             (floatToString(self.position[0]), floatToString(self.position[1]),
              content)
