@@ -773,6 +773,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def test_write_smart_component_axis(self):
         axis = classes.GSSmartComponentAxis()
+        # http://docu.glyphsapp.com/#gssmartcomponentaxis
         axis.name = "crotchDepth"
         axis.topValue = 0
         axis.bottomValue = -100
@@ -781,6 +782,29 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             bottomValue = -100;
             name = crotchDepth;
+            }
+        """))
+
+    def test_write_path(self):
+        path = classes.GSPath()
+        # http://docu.glyphsapp.com/#gspath
+        # parent: not written
+        # nodes
+        node = classes.GSNode()
+        path.nodes.append(node)
+        # segments: computed, objective-c
+        # closed
+        path.closed = True
+        # direction: computed
+        # bounds: computed
+        # selected: not written
+        # bezierPath: computed
+        self.assertWrites(path, dedent("""\
+            {
+            closed = 1;
+            nodes = (
+            "0 0 LINE"
+            );
             }
         """))
 
