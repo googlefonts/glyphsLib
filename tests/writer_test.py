@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import unittest
+import math
 from textwrap import dedent
 from collections import OrderedDict
 
@@ -723,6 +724,45 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             position = "{23, 45.5}";
             }
         """))
+
+    def test_write_component(self):
+        component = classes.GSComponent("dieresis")
+        # http://docu.glyphsapp.com/#gscomponent
+        # position
+        component.position = point(45.5, 250)
+        # scale
+        component.scale = 2.0
+        # rotation
+        component.rotation = math.pi/2
+        # componentName: already set at init
+        # component: read-only
+        # layer: read-only
+        # transform: already set using scale & position
+        # FIXME: (jany) the results don't look very precise:
+        #   with an integer scale and 90° rotation, the resulting matrix
+        #   should have integer coefficients?
+        # bounds: read-only, objective-c
+        # automaticAlignment
+        component.automaticAlignment = True
+        # anchor
+        component.anchor = "top"
+        # selected: not written
+        # smartComponentValues
+        component.smartComponentValues = {
+            "crotchDepth": -77,
+        }
+        # bezierPath: read-only, objective-c
+        self.assertWrites(component, dedent("""\
+            {
+            anchor = top;
+            name = dieresis;
+            smartComponentValues = {
+            crotchDepth = -77;
+            };
+            transform = "{1.99925, 0.05482, -0.05482, 1.99925, 45.5, 250}";
+            }
+        """))
+
 
 # Might be impractical because of formatting (whitespace changes)?
 # Maybe it's OK because random glyphs files from github seem to be

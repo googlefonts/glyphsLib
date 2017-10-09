@@ -1701,9 +1701,11 @@ class GSComponent(GSBase):
         "name": unicode,
         "piece": dict,
         "transform": transform,
+        "smartComponentValues": dict,
     }
     _defaultsForName = {
         "transform": transform(1, 0, 0, 1, 0, 0),
+        "smartComponentValues": None,
     }
     _parent = None
 
