@@ -834,7 +834,7 @@ paths = (
 {
 closed = 1;
 nodes = (
-"352 147 LINE SMOOTH {\nname = Hello;\n}",
+"352 147 LINE SMOOTH {\nname = Hello;\nrememberToMakeCoffee = 1;\n}",
 "352 68 OFFCURVE",
 "314 7 OFFCURVE",
 "212 7 CURVE SMOOTH",
