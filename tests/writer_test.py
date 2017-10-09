@@ -19,7 +19,7 @@ from textwrap import dedent
 from collections import OrderedDict
 
 from glyphsLib import classes
-from glyphsLib.types import glyphs_datetime
+from glyphsLib.types import glyphs_datetime, point
 
 import test_helpers
 
@@ -712,6 +712,15 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             rememberToMakeCoffe = 1;
             };
             width = 890.4;
+            }
+        """))
+
+    def test_write_anchor(self):
+        anchor = classes.GSAnchor('top', point(23, 45.5))
+        self.assertWrites(anchor, dedent("""\
+            {
+            name = top;
+            position = "{23, 45.5}";
             }
         """))
 

@@ -1829,8 +1829,12 @@ class GSAnchor(GSBase):
         "position": point(0, 0),
     }
 
-    def __init__(self):
+    def __init__(self, name=None, position=None):
         super(GSAnchor, self).__init__()
+        if name is not None:
+            self.name = name
+        if position is not None:
+            self.position = position
 
     def __repr__(self):
         return '<%s "%s" x=%.1f y=%.1f>' % \

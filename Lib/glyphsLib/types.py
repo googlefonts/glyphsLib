@@ -52,9 +52,9 @@ class point(object):
     """Read/write a vector in curly braces."""
     dimension = 2
     default = [None, None]
-    regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
+    regex = re.compile('{%s}' % ', '.join(['([-.e\\d]+)'] * dimension))
 
-    def __init__(self, value = None, value2 = None, rect = None):
+    def __init__(self, value=None, value2=None, rect=None):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         elif value is not None and value2 is None:
@@ -72,7 +72,6 @@ class point(object):
                 len(self.value) == self.dimension)
         if self.value is not self.default:
             return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
-    
 
     def __getitem__(self, key):
         if type(key) is int and key < self.dimension:
