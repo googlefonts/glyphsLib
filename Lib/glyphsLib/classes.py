@@ -1354,10 +1354,7 @@ class GSNode(GSBase):
 
     def __init__(self, position=(0, 0), nodetype=LINE,
                  smooth=False, name=None):
-        if isinstance(position, point):
-            self.position = position
-        else:
-            self.position = point(position[0], position[1])
+        self.position = point(position[0], position[1])
         self.type = nodetype
         self.smooth = smooth
         self.name = name
