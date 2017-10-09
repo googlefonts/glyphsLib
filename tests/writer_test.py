@@ -20,7 +20,7 @@ from textwrap import dedent
 from collections import OrderedDict
 
 from glyphsLib import classes
-from glyphsLib.types import glyphs_datetime, point
+from glyphsLib.types import glyphs_datetime, point, rect
 
 import test_helpers
 
@@ -913,7 +913,34 @@ userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
 
         # FIXME: (jany) Add a test for target = "up"?
 
-    # def test_write_background_image
+    def test_write_background_image(self):
+        image = classes.GSBackgroundImage('/tmp/img.jpg')
+        # http://docu.glyphsapp.com/#gsbackgroundimage
+        # path: already set
+        # image: read-only, objective-c
+        image.crop = rect(point(0, 10), point(500, 510))
+        image.locked = True
+        image.alpha = 70
+        image.position = point(40, 90)
+        image.scale = (1.1, 1.2)
+        image.rotation = 0.3
+        # transform: Already set with scale/rotation
+        self.assertWrites(image, dedent("""\
+            {
+            alpha = 70;
+            crop = "{{0, 10}, {500, 510}}";
+            imagePath = "/tmp/img.jpg";
+            locked = 1;
+            transform = (
+            1.09998,
+            0.00576,
+            -0.00628,
+            1.19998,
+            40,
+            90
+            );
+            }
+        """))
 
 
 # Might be impractical because of formatting (whitespace changes)?
