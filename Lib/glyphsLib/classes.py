@@ -1821,6 +1821,14 @@ class GSComponent(GSBase):
                 return rect(point(left, bottom), point(right - left, top - bottom))
 
 
+class GSSmartComponentAxis(GSBase):
+    _classesForName = {
+        "name": str,
+        "topValue": float,
+        "bottomValue": float,
+    }
+
+
 class GSAnchor(GSBase):
     _classesForName = {
         "name": unicode,
@@ -2452,6 +2460,7 @@ class GSGlyph(GSBase):
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": unicode,
+        "smartComponentAxes": GSSmartComponentAxis,
     }
     _wrapperKeysTranslate = {
         "glyphname": "name"
@@ -2496,7 +2505,8 @@ class GSGlyph(GSBase):
         "category",
         "subCategory",
         "userData",
-        "partsSettings"
+        "partsSettings",
+        "smartComponentAxes",
     )
     _userData = {}
 
@@ -2507,6 +2517,7 @@ class GSGlyph(GSBase):
         self.parent = None
         self.export = True
         self.selected = False
+        self.smartComponentAxes = []
 
     def __repr__(self):
         return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))

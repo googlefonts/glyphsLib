@@ -570,9 +570,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         glyph.userData['rememberToMakeCoffe'] = True
         # smartComponentAxes
         # TODO: GSSmartComponentAxis
-        glyph.smartComponentAxes = []
+        axis = classes.GSSmartComponentAxis()
+        axis.name = "crotchDepth"
+        glyph.smartComponentAxes.append(axis)
         # lastChange
         glyph.lastChange = glyphs_datetime('2017-10-03 07:35:46 +0000')
+        # FIXME: (jany) not sure about the key name for smartComponentAxes
         self.assertWrites(glyph, dedent("""\
             {
             color = 11;
@@ -592,6 +595,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             userData = {
             rememberToMakeCoffe = 1;
             };
+            smartComponentAxes = (
+            {
+            name = crotchDepth;
+            }
+            );
             }
         """))
 
