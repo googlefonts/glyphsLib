@@ -1217,23 +1217,23 @@ class GSPathFromFileTest(GSObjectsTestCase):
         self.assertEqual(len(path.nodes), 44)
         for node in path.nodes:
             self.assertEqual(node.parent, path)
-        # amount = len(path.nodes)
-        # newNode = GSNode(point("{100, 100}"))
-        # path.nodes.append(newNode)
-        # self.assertEqual(newNode, path.nodes[-1])
-        # del path.nodes[-1]
-        # newNode = GSNode(point("{20, 20}"))
-        # path.nodes.insert(0, newNode)
-        # self.assertEqual(newNode, path.nodes[0])
-        # path.nodes.remove(path.nodes[0])
-        # newNode1 = GSNode(point("{10, 10}"))
-        # newNode2 = GSNode(point("{20, 20}"))
-        # path.nodes.extend([newNode1, newNode2])
-        # self.assertEqual(newNode1, path.nodes[-2])
-        # self.assertEqual(newNode2, path.nodes[-1])
-        # del path.nodes[-2]
-        # del path.nodes[-1]
-        # self.assertEqual(amount, len(path.nodes))
+        amount = len(path.nodes)
+        newNode = GSNode(point("{100, 100}"))
+        path.nodes.append(newNode)
+        self.assertEqual(newNode, path.nodes[-1])
+        del path.nodes[-1]
+        newNode = GSNode(point("{20, 20}"))
+        path.nodes.insert(0, newNode)
+        self.assertEqual(newNode, path.nodes[0])
+        path.nodes.remove(path.nodes[0])
+        newNode1 = GSNode(point("{10, 10}"))
+        newNode2 = GSNode(point("{20, 20}"))
+        path.nodes.extend([newNode1, newNode2])
+        self.assertEqual(newNode1, path.nodes[-2])
+        self.assertEqual(newNode2, path.nodes[-1])
+        del path.nodes[-2]
+        del path.nodes[-1]
+        self.assertEqual(amount, len(path.nodes))
 
     # TODO: GSPath.closed
 

@@ -44,7 +44,7 @@ __all__ = [
     "GSLayer",
     "GSAnchor",
     "GSComponent",
-#    "GSSmartComponentAxis",
+    "GSSmartComponentAxis",
     "GSPath",
     "GSNode",
     "GSGuideLine",
@@ -1351,26 +1351,12 @@ class GSNode(GSBase):
     _userData = {}
     _parent = None
 
-    def __init__(self, line=None, position=(0, 0), nodetype='line',
-                 smooth=False, name = None):
-        if line is not None:
-            m = re.match(self._rx, line).groups()
-            self.position = point(float(m[0]), float(m[1]))
-            self.type = m[2].lower()
-            self.smooth = bool(m[3])
-
-            # TODO: Use proper string parsing used in other classes
-            if '{\\nname' in line:
-                nameMatch = re.match(r'\{\\nname = "?(.+?)"?;\\n\}', m[4]).groups()
-                self.name = nameMatch[0]
-            else:
-                self.name = None
-
-        else:
-            self.position = point(position[0], position[1])
-            self.type = nodetype
-            self.smooth = smooth
-            self.name = name
+    def __init__(self, position=(0, 0), nodetype=LINE,
+                 smooth=False, name=None):
+        self.position = point(position[0], position[1])
+        self.type = nodetype
+        self.smooth = smooth
+        self.name = name
         self._parent = None
 
     def __repr__(self):
@@ -1398,6 +1384,21 @@ class GSNode(GSBase):
         return '"%s %s %s"' % \
             (floatToString(self.position[0]), floatToString(self.position[1]),
              content)
+
+    def read(self, line):
+        m = re.match(self._rx, line).groups()
+        self.position = point(float(m[0]), float(m[1]))
+        self.type = m[2].lower()
+        self.smooth = bool(m[3])
+
+        # TODO: Use proper string parsing used in other classes
+        if '{\\nname' in line:
+            nameMatch = re.match(r'\{\\nname = "?(.+?)"?;\\n\}', m[4]).groups()
+            self.name = nameMatch[0]
+        else:
+            self.name = None
+
+        return self
 
     @property
     def index(self):
