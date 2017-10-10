@@ -1187,8 +1187,6 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertEqual(100, stem.smartComponentValues["height"])
         self.assertEqual(-80.20097, shoulder.smartComponentValues["crotchDepth"])
 
-        # FIXME: (jany) which one?
-        # self.assertEqual(0, shoulder.smartComponentValues["shoulderWidth"])
         self.assertNotIn("shoulderWidth", shoulder.smartComponentValues)
 
         self.assertNotIn("somethingElse", shoulder.smartComponentValues)
