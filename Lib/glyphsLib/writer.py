@@ -79,8 +79,9 @@ class GlyphsWriter(object):
                 continue
             if value is None:
                 continue
-            if (isinstance(value,
-                           (list, glyphsLib.classes.Proxy, str, unicode)) and
+            if (key != "code" and  # FIXME: (jany) ugly
+                    isinstance(value, (list, glyphsLib.classes.Proxy,
+                                       str, unicode)) and
                     len(value) == 0):
                 continue
             if (hasattr(dictValue, "shouldWriteValueForKey") and
@@ -95,6 +96,8 @@ class GlyphsWriter(object):
         self.file.write("(\n")
         idx = 0
         length = len(arrayValue)
+        if hasattr(arrayValue, "plistArray"):
+            arrayValue = arrayValue.plistArray()
         for value in arrayValue:
             self.writeValue(value)
             if idx < length - 1:

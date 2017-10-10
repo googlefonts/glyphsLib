@@ -18,7 +18,9 @@ import unittest
 import math
 from textwrap import dedent
 from collections import OrderedDict
+import os
 
+import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import glyphs_datetime, point, rect
 
@@ -161,6 +163,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             .appVersion = 895;
             classes = (
             {
+            code = "";
             name = C1;
             }
             );
@@ -185,6 +188,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             features = (
             {
+            code = "";
             name = F1;
             }
             );
@@ -489,6 +493,16 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             automatic = 1;
             code = "e eacute egrave";
+            name = e;
+            }
+        """))
+
+        # When the code is an empty string, write an empty string
+        class_.code = ""
+        self.assertWrites(class_, dedent("""\
+            {
+            automatic = 1;
+            code = "";
             name = e;
             }
         """))
@@ -836,7 +850,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertWritesValue(
             node,
             '"10 30 CURVE SMOOTH {\\nname = \\"top-left corner\\";\\n\
-userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
+rememberToDownloadARealRemindersApp = 1;\\n}"'
         )
 
     def test_write_guideline(self):
@@ -953,21 +967,21 @@ userData = {\\nrememberToDownloadARealRemindersApp = 1;\\n};\\n}"'
         """))
 
 
-# Might be impractical because of formatting (whitespace changes)?
-# Maybe it's OK because random glyphs files from github seem to be
-# formatted exactly like what this writer outputs
-# class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-#     def assertParseWriteRoundtrip(self, filename):
-#         with open(filename) as f:
-#             expected = f.readlines()
-#             font = glyphsLib.load(f)
-#         actual = test_helpers.write_to_lines(font)
-#         self.assertLinesEqual(
-#             expected, actual,
-#             "The writer should output exactly what the parser read")
+class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
+    def assertParseWriteRoundtrip(self, filename):
+        with open(filename) as f:
+            expected = f.read().splitlines()
+            f.seek(0, 0)
+            font = glyphsLib.load(f)
+        actual = test_helpers.write_to_lines(font)
+        self.assertLinesEqual(
+            expected, actual,
+            "The writer should output exactly what the parser read")
 
-#     def test_roundtrip_on_file(self):
-#         self.assertParseWriteRoundtrip('data/GlyphsUnitTestSans.glyphs')
+    def test_roundtrip_on_file(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+        self.assertParseWriteRoundtrip(filename)
 
 
 if __name__ == '__main__':

@@ -343,6 +343,8 @@ NSPropertyListNameSet = (
 
 
 def needsQuotes(string):
+    if len(string) == 0:
+        return True
     needsQuotes = False
     if not isinstance(string, (str, unicode)):
         return False

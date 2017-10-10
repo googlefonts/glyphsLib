@@ -695,6 +695,9 @@ class GlyphLayerProxy(Proxy):
                 self._owner._setupLayer(newLayer, master.id)
                 self.__setitem__(master.id, newLayer)
 
+    def plistArray(self):
+        return list(self._owner._layers.values())
+
 class LayerAnchorsProxy(Proxy):
 
     def __getitem__(self, key):
@@ -926,6 +929,8 @@ class CustomParametersProxy(Proxy):
 class UserDataProxy(Proxy):
 
     def __getitem__(self, key):
+        if self._owner._userData is None:
+            raise KeyError
         return self._owner._userData.get(key)
 
     def __setitem__(self, key, value):
@@ -935,23 +940,33 @@ class UserDataProxy(Proxy):
             self._owner._userData = {key: value}
 
     def __delitem__(self, key):
-        if key in self._owner._userData:
+        if self._owner._userData is not None and key in self._owner._userData:
             del self._owner._userData[key]
 
     def __contains__(self, item):
+        if self._owner._userData is None:
+            return False
         return item in self._owner._userData
 
     def __iter__(self):
+        if self._owner._userData is None:
+            return
         for value in self._owner._userData.values():
             yield value
 
     def values(self):
+        if self._owner._userData is None:
+            return []
         return self._owner._userData.values()
 
     def keys(self):
+        if self._owner._userData is None:
+            return []
         return self._owner._userData.keys()
 
     def get(self, key):
+        if self._owner._userData is None:
+            return None
         return self._owner._userData.get(key)
 
     def setter(self, values):
@@ -1221,7 +1236,6 @@ class GSFontMaster(GSBase):
         "widthValue",
         "xHeight"
     )
-    _userData = {}
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
@@ -1234,6 +1248,7 @@ class GSFontMaster(GSBase):
         self._custom2 = None
         self.italicAngle = 0.0
         self.customValue = 0.0
+        self._userData = None
 
     def __repr__(self):
         return '<GSFontMaster "%s" width %s weight %s>' % \
@@ -1317,7 +1332,6 @@ class GSNode(GSBase):
     CURVE = "curve"
     OFFCURVE = "offcurve"
     QCURVE = "qcurve"
-    _userData = None
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE,
@@ -1325,8 +1339,9 @@ class GSNode(GSBase):
         self.position = point(position[0], position[1])
         self.type = nodetype
         self.smooth = smooth
-        self.name = name
         self._parent = None
+        self._userData = None
+        self.name = name
 
     def __repr__(self):
         content = self.type
@@ -1348,14 +1363,11 @@ class GSNode(GSBase):
         content = self.type.upper()
         if self.smooth:
             content += " SMOOTH"
-        if self.name is not None or self._userData is not None:
+        if self._userData is not None and len(self._userData) > 0:
             # FIXME: (jany) must provide a simpler way to write a string
             string = StringIO()
             writer = GlyphsWriter(fp=string)
-            writer.writeDict({
-                "name": self.name,
-                "userData": self._userData,
-            })
+            writer.writeDict(self._userData)
             content += ' '
             content += encode_dict_as_string_for_gsnode(string.getvalue())
         return '"%s %s %s"' % \
@@ -1369,14 +1381,26 @@ class GSNode(GSBase):
         self.smooth = bool(m[3])
 
         # TODO: Use proper string parsing used in other classes
-        if '{\\nname' in line:
+        if m[4] is not None and len(m[4]) > 0:
             parser = Parser()
             value = decode_dict_as_string_from_gsnode(m[4])
-            self.name = parser.parse(value)["name"]
-        else:
-            self.name = None
+            self._userData = parser.parse(value)
 
         return self
+
+    @property
+    def name(self):
+        if "name" in self.userData:
+            return self.userData["name"]
+        return None
+
+    @name.setter
+    def name(self, value):
+        if value is None:
+            if "name" in self.userData:
+                del(self.userData["name"])
+        else:
+            self.userData["name"] = value
 
     @property
     def index(self):
@@ -1982,6 +2006,11 @@ class GSFeature(GSBase):
         self.name = name
         self.code = code
 
+    def shouldWriteValueForKey(self, key):
+        if key == "code":
+            return True
+        return super(GSFeature, self).shouldWriteValueForKey(key)
+
     def getCode(self):
         return self._code
 
@@ -2342,7 +2371,7 @@ class GSLayer(GSBase):
         self.guides = []
         self._paths = []
         self._selection = []
-        self._userData = {}
+        self._userData = None
 
     def __repr__(self):
         name = self.name
@@ -2530,7 +2559,6 @@ class GSGlyph(GSBase):
         "userData",
         "partsSettings",
     )
-    _userData = {}
 
     def __init__(self, name=None):
         super(GSGlyph, self).__init__()
@@ -2540,6 +2568,7 @@ class GSGlyph(GSBase):
         self.export = True
         self.selected = False
         self.smartComponentAxes = []
+        self._userData = None
 
     def __repr__(self):
         return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
@@ -2638,7 +2667,6 @@ class GSFont(GSBase):
         "unitsPerEm": 1000,
         "kerning": OrderedDict(),
     }
-    _userData = {}
 
     def __init__(self, path=None):
         super(GSFont, self).__init__()
@@ -2653,6 +2681,7 @@ class GSFont(GSBase):
         self._customParameters = []
         self._classes = []
         self.filepath = None
+        self._userData = None
 
         if path:
             assert isinstance(path, (str, unicode)), \
