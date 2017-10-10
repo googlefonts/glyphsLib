@@ -595,9 +595,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             userData = {
             rememberToMakeCoffe = 1;
             };
-            smartComponentAxes = (
+            partsSettings = (
             {
             name = crotchDepth;
+            bottomValue = 0;
+            topValue = 0;
             }
             );
             }
@@ -775,13 +777,17 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         axis = classes.GSSmartComponentAxis()
         # http://docu.glyphsapp.com/#gssmartcomponentaxis
         axis.name = "crotchDepth"
+        axis.topName = "High"
         axis.topValue = 0
+        axis.bottomName = "Low"
         axis.bottomValue = -100
-        # FIXME: (jany) keys that have value 0 are not written?
         self.assertWrites(axis, dedent("""\
             {
-            bottomValue = -100;
             name = crotchDepth;
+            bottomName = Low;
+            bottomValue = -100;
+            topName = High;
+            topValue = 0;
             }
         """))
 

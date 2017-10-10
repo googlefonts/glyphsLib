@@ -27,7 +27,7 @@ from fontTools.misc.py23 import unicode
 from glyphsLib.classes import (
     GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
     GSAnchor, GSComponent, GSAlignmentZone, GSClass, GSFeature, GSAnnotation,
-    GSFeaturePrefix, GSGuideLine, GSHint, GSNode,
+    GSFeaturePrefix, GSGuideLine, GSHint, GSNode, GSSmartComponentAxis,
     LayerComponentsProxy, LayerGuideLinesProxy,
     STEM
 )
@@ -831,8 +831,19 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         self.assertIsNone(glyph.userData.get("unitTestValue"))
         self.assertEqual(len(glyph.userData), amount)
 
-    # TODO
-    # glyph.smartComponentAxes
+    def test_smart_component_axes(self):
+        shoulder = self.font.glyphs['_part.shoulder']
+        axes = shoulder.smartComponentAxes
+        self.assertIsNotNone(axes)
+        crotch_depth, shoulder_width = axes
+        self.assertIsInstance(crotch_depth, GSSmartComponentAxis)
+        self.assertEqual("crotchDepth", crotch_depth.name)
+        self.assertEqual(0, crotch_depth.topValue)
+        self.assertEqual(-100, crotch_depth.bottomValue)
+        self.assertIsInstance(shoulder_width, GSSmartComponentAxis)
+        self.assertEqual("shoulderWidth", shoulder_width.name)
+        self.assertEqual(100, shoulder_width.topValue)
+        self.assertEqual(0, shoulder_width.bottomValue)
 
     # TODO
     # lastChange

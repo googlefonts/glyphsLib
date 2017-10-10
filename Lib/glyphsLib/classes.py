@@ -1159,38 +1159,6 @@ class GSGuideLine(GSBase):
         return self._parent
 
 
-class GSPartProperty(GSBase):
-    _classesForName = {
-         "name": unicode,
-         "bottomName": unicode,
-         "bottomValue": int,
-         "topName": unicode,
-         "topValue": int,
-    }
-    _keyOrder = (
-         "name",
-         "bottomName",
-         "bottomValue",
-         "topName",
-         "topValue",
-    )
-
-    def plistValue(self):
-        name = self.name
-        if needsQuotes(name):
-            name = '"%s"' % name
-        bottomName = self.bottomName
-        if needsQuotes(bottomName):
-            bottomName = '"%s"' % bottomName
-        topName = self.topName
-        if needsQuotes(topName):
-            topName = '"%s"' % topName
-        return ("{\nname = %s;\nbottomName = %s;\nbottomValue = %i;"
-                "\ntopName = %s;\ntopValue = %i;\n}" %
-                (name,  bottomName, self.bottomValue,
-                 topName, self.topValue))
-
-
 class GSFontMaster(GSBase):
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
@@ -1834,10 +1802,23 @@ class GSComponent(GSBase):
 
 class GSSmartComponentAxis(GSBase):
     _classesForName = {
-        "name": str,
-        "topValue": float,
+        "name": unicode,
+        "bottomName": unicode,
         "bottomValue": float,
+        "topName": unicode,
+        "topValue": float,
     }
+    _keyOrder = (
+        "name",
+        "bottomName",
+        "bottomValue",
+        "topName",
+        "topValue",
+    )
+
+    def shouldWriteValueForKey(self, key):
+        # Always write the 5 values
+        return True
 
 
 class GSAnchor(GSBase):
@@ -2479,7 +2460,7 @@ class GSGlyph(GSBase):
         "leftKerningKey": unicode,
         "leftMetricsKey": unicode,
         "note": unicode,
-        "partsSettings": GSPartProperty,
+        "partsSettings": GSSmartComponentAxis,
         "production": str,
         "rightKerningGroup": unicode,
         "rightKerningKey": unicode,
@@ -2492,10 +2473,10 @@ class GSGlyph(GSBase):
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": unicode,
-        "smartComponentAxes": GSSmartComponentAxis,
     }
     _wrapperKeysTranslate = {
-        "glyphname": "name"
+        "glyphname": "name",
+        "partsSettings": "smartComponentAxes",
     }
     _defaultsForName = {
         "category": None,
@@ -2538,7 +2519,6 @@ class GSGlyph(GSBase):
         "subCategory",
         "userData",
         "partsSettings",
-        "smartComponentAxes",
     )
     _userData = {}
 
@@ -2590,6 +2570,10 @@ class GSGlyph(GSBase):
     glyphname = property(
         lambda self: self.name,
         lambda self, value: setattr(self, "name", value))
+
+    smartComponentAxes = property(
+        lambda self: self.partsSettings,
+        lambda self, value: setattr(self, "partsSettings", value))
 
     @property
     def id(self):
