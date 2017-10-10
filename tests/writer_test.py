@@ -770,7 +770,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             anchor = top;
             name = dieresis;
-            smartComponentValues = {
+            piece = {
             crotchDepth = -77;
             };
             transform = "{1.99925, 0.05482, -0.05482, 1.99925, 45.5, 250}";

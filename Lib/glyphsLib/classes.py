@@ -1680,11 +1680,12 @@ class GSComponent(GSBase):
         "name": unicode,
         "piece": dict,
         "transform": transform,
-        "smartComponentValues": dict,
+    }
+    _wrapperKeysTranslate = {
+        "piece": "smartComponentValues",
     }
     _defaultsForName = {
         "transform": transform(1, 0, 0, 1, 0, 0),
-        "smartComponentValues": None,
     }
     _parent = None
 
@@ -1798,6 +1799,10 @@ class GSComponent(GSBase):
 
             if left is not None and bottom is not None and right is not None and top is not None:
                 return rect(point(left, bottom), point(right - left, top - bottom))
+
+    smartComponentValues = property(
+        lambda self: self.piece,
+        lambda self, value: setattr(self, "piece", value))
 
 
 class GSSmartComponentAxis(GSBase):

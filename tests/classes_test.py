@@ -1181,8 +1181,18 @@ class GSComponentFromFileTest(GSObjectsTestCase):
     def test_anchor(self):
         self.assertString(self.component.anchor)
 
+    def test_smartComponentValues(self):
+        glyph = self.font.glyphs["h"]
+        stem, shoulder = glyph.layers[0].components
+        self.assertEqual(100, stem.smartComponentValues["height"])
+        self.assertEqual(-80.20097, shoulder.smartComponentValues["crotchDepth"])
 
-    # TODO smartComponentValues
+        # FIXME: (jany) which one?
+        # self.assertEqual(0, shoulder.smartComponentValues["shoulderWidth"])
+        self.assertNotIn("shoulderWidth", shoulder.smartComponentValues)
+
+        self.assertNotIn("somethingElse", shoulder.smartComponentValues)
+
     # bezierPath?
     # componentLayer()
 
