@@ -720,6 +720,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
             );
             userData = {
+            PartSelection = {
+            crotchDepth = 2;
+            shoulderWidth = 1;
+            };
             rememberToMakeCoffe = 1;
             };
             width = 890.4;

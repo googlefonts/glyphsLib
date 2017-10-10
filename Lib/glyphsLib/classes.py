@@ -939,7 +939,7 @@ class UserDataProxy(Proxy):
             del self._owner._userData[key]
 
     def __contains__(self, item):
-        return item in self._owner._userData.values()
+        return item in self._owner._userData
 
     def __iter__(self):
         for value in self._owner._userData.values():
@@ -2299,7 +2299,6 @@ class GSLayer(GSBase):
         "visible": bool,
         "width": float,
         "widthMetricsKey": unicode,
-        "smartComponentPoleMapping": dict,
     }
     _defaultsForName = {
         "weight": 600,
@@ -2329,9 +2328,6 @@ class GSLayer(GSBase):
         "vertWidth",
         "width",
     )
-    # FIXME: (jany) with the line below, user data would be shared between all
-    #   instances of GSLayer!?
-    # _userData = {}
 
     def __init__(self):
         super(GSLayer, self).__init__()
@@ -2341,7 +2337,6 @@ class GSLayer(GSBase):
         self.guides = []
         self._paths = []
         self._selection = []
-        self.smartComponentPoleMapping = {}
         self._userData = {}
 
     def __repr__(self):
@@ -2414,6 +2409,16 @@ class GSLayer(GSBase):
     userData = property(
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value))
+
+    @property
+    def smartComponentPoleMapping(self):
+        if "PartSelection" not in self.userData:
+            self.userData["PartSelection"] = {}
+        return self.userData["PartSelection"]
+
+    @smartComponentPoleMapping.setter
+    def smartComponentPoleMapping(self, value):
+        self.userData["PartSelection"] = value
 
     @property
     def bounds(self):

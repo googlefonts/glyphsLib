@@ -29,7 +29,7 @@ from glyphsLib.classes import (
     GSAnchor, GSComponent, GSAlignmentZone, GSClass, GSFeature, GSAnnotation,
     GSFeaturePrefix, GSGuideLine, GSHint, GSNode, GSSmartComponentAxis,
     LayerComponentsProxy, LayerGuideLinesProxy,
-    STEM
+    STEM, TEXT, ARROW, CIRCLE, PLUS, MINUS
 )
 from glyphsLib.types import point, transform, rect, size
 
@@ -378,7 +378,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
         self.assertIsNone(font.userData["TestData"])
         font.userData["TestData"] = 42
         self.assertEqual(font.userData["TestData"], 42)
-        self.assertTrue(42 in font.userData)
+        self.assertTrue("TestData" in font.userData)
         del(font.userData["TestData"])
         self.assertIsNone(font.userData["TestData"])
 
@@ -930,7 +930,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         # self.assertEqual(layer.annotations, [])
         self.assertEqual(len(layer.annotations), 0)
         newAnnotation = GSAnnotation()
-        newAnnotation.type = 1  # TEXT
+        newAnnotation.type = TEXT
         newAnnotation.text = 'This curve is ugly!'
         layer.annotations.append(newAnnotation)
         # TODO position.x, position.y
@@ -939,11 +939,11 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         del layer.annotations[0]
         self.assertEqual(len(layer.annotations), 0)
         newAnnotation1 = GSAnnotation()
-        newAnnotation1.type = 2  # ARROW
+        newAnnotation1.type = ARROW
         newAnnotation2 = GSAnnotation()
-        newAnnotation2.type = 3  # CIRCLE
+        newAnnotation2.type = CIRCLE
         newAnnotation3 = GSAnnotation()
-        newAnnotation3.type = 4  # PLUS
+        newAnnotation3.type = PLUS
         layer.annotations.extend([newAnnotation1, newAnnotation2,
                                   newAnnotation3])
         self.assertEqual(layer.annotations[-3], newAnnotation1)
@@ -951,7 +951,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         self.assertEqual(layer.annotations[-1], newAnnotation3)
         newAnnotation = GSAnnotation()
         newAnnotation = copy.copy(newAnnotation)
-        newAnnotation.type = 5  # MINUS
+        newAnnotation.type = MINUS
         layer.annotations.insert(0, newAnnotation)
         self.assertEqual(layer.annotations[0], newAnnotation)
         layer.annotations.remove(layer.annotations[0])
@@ -1061,7 +1061,30 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         # self.assertDict(layer.userData)
         layer.userData["Hallo"] = "Welt"
         self.assertEqual(layer.userData["Hallo"], "Welt")
-        self.assertTrue("Welt" in layer.userData)
+        self.assertTrue("Hallo" in layer.userData)
+
+    def test_smartComponentPoleMapping(self):
+        # http://docu.glyphsapp.com/#smartComponentPoleMapping
+        # Read some data from the file
+        shoulder = self.font.glyphs["_part.shoulder"]
+        for layer in shoulder.layers:
+            if layer.name == "NarrowShoulder":
+                mapping = layer.smartComponentPoleMapping
+                self.assertIsNotNone(mapping)
+                # crotchDepth is at the top pole
+                self.assertEqual(2, mapping["crotchDepth"])
+                # shoulderWidth is at the bottom pole
+                self.assertEqual(1, mapping["shoulderWidth"])
+
+        # Exercise the getter/setter
+        layer = self.layer
+        self.assertDict(layer.smartComponentPoleMapping)
+        self.assertFalse("crotchDepth" in layer.smartComponentPoleMapping)
+        layer.smartComponentPoleMapping["crotchDepth"] = 2
+        self.assertTrue("crotchDepth" in layer.smartComponentPoleMapping)
+        layer.smartComponentPoleMapping = {"shoulderWidth": 1}
+        self.assertFalse("crotchDepth" in layer.smartComponentPoleMapping)
+        self.assertEqual(1, layer.smartComponentPoleMapping["shoulderWidth"])
 
     # TODO: Methods
     # copyDecomposedLayer()
