@@ -2212,8 +2212,8 @@ weightClass = Thin;
 {
 interpolationWeight = 30;
 instanceInterpolations = {
-"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.82192;
 "3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.17808;
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.82192;
 };
 name = "Extra Light";
 weightClass = ExtraLight;

@@ -235,8 +235,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
-        # Don't write the keyboardIncrement if it's None
-        font.keyboardIncrement = None
+        # Don't write the keyboardIncrement if it's 1 (default)
+        font.keyboardIncrement = 1
         written = test_helpers.write_to_lines(font)
         self.assertFalse(any("keyboardIncrement" in line for line in written))
 
