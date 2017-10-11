@@ -967,17 +967,8 @@ rememberToDownloadARealRemindersApp = 1;\\n}"'
         """))
 
 
-class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def assertParseWriteRoundtrip(self, filename):
-        with open(filename) as f:
-            expected = f.read().splitlines()
-            f.seek(0, 0)
-            font = glyphsLib.load(f)
-        actual = test_helpers.write_to_lines(font)
-        self.assertLinesEqual(
-            expected, actual,
-            "The writer should output exactly what the parser read")
-
+class WriterRoundtripTest(unittest.TestCase,
+                          test_helpers.AssertParseWriteRoundtrip):
     def test_roundtrip_on_file(self):
         filename = os.path.join(
             os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')

@@ -17,6 +17,7 @@
 import difflib
 import sys
 
+import glyphsLib
 from glyphsLib.writer import GlyphsWriter
 from fontTools.misc.py23 import StringIO
 
@@ -42,3 +43,16 @@ class AssertLinesEqual(object):
                     line += "\n"
                 sys.stderr.write(line)
             self.fail(message)
+
+
+class AssertParseWriteRoundtrip(AssertLinesEqual):
+    def assertParseWriteRoundtrip(self, filename):
+        with open(filename) as f:
+            expected = f.read().splitlines()
+            f.seek(0, 0)
+            font = glyphsLib.load(f)
+        actual = write_to_lines(font)
+        self.assertLinesEqual(
+            expected, actual,
+            "The writer should output exactly what the parser read")
+
