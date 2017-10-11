@@ -855,13 +855,20 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # name
         node.name = "top-left corner"
         # userData
-        # FIXME: (jany) Not sure about the userData part
         node.userData["rememberToDownloadARealRemindersApp"] = True
         self.assertWritesValue(
             node,
             '"10 30 CURVE SMOOTH {\\nname = \\"top-left corner\\";\\n\
 rememberToDownloadARealRemindersApp = 1;\\n}"'
         )
+
+        # Write floating point coordinates
+        node = classes.GSNode(point(499.99, 512.01), classes.GSNode.OFFCURVE)
+        self.assertWritesValue(
+            node,
+            '"499.99 512.01 OFFCURVE"'
+        )
+
 
     def test_write_guideline(self):
         line = classes.GSGuideLine()

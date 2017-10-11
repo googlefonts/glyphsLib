@@ -298,15 +298,15 @@ def floatToString(Float, precision=3):
         ActualPrecition = actualPrecition(Float)
         precision = min(precision, ActualPrecition)
         fractional = math.modf(math.fabs(Float))[0]
-        if precision >= 5 and fractional >= 0.00001 and fractional <= 0.99999:
+        if precision >= 5 and fractional >= 0.000005 and fractional <= 0.999995:
             return "%.5f" % Float
-        elif precision >= 4 and fractional >= 0.0001 and fractional <= 0.9999:
+        elif precision >= 4 and fractional >= 0.00005 and fractional <= 0.99995:
             return "%.4f" % Float
-        elif precision >= 3 and fractional >= 0.001 and fractional <= 0.999:
+        elif precision >= 3 and fractional >= 0.0005 and fractional <= 0.9995:
             return "%.3f" % Float
-        elif precision >= 2 and fractional >= 0.01 and fractional <= 0.99:
+        elif precision >= 2 and fractional >= 0.005 and fractional <= 0.995:
             return "%.2f" % Float
-        elif precision >= 1 and fractional >= 0.1 and fractional <= 0.9:
+        elif precision >= 1 and fractional >= 0.05 and fractional <= 0.95:
             return "%.1f" % Float
         else:
             return "%.0f" % Float
