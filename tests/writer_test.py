@@ -125,9 +125,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # gridLength
         font.gridLength = 2
         # keyboardIncrement
-        # FIXME: (jany) Not handled by this library, maybe because it's a
-        #   UI feature from Glyphs.app. It should be handled though, so that
-        #   designers who use the export/import macros don't lose their settings?
         font.keyboardIncrement = 1.2
         # disablesNiceNames
         font.disablesNiceNames = True
@@ -220,6 +217,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             };
             };
+            keyboardIncrement = 1.2;
             manufacturer = Manu;
             manufacturerURL = manu.com;
             unitsPerEm = 2000;

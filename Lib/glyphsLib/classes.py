@@ -2059,7 +2059,7 @@ class GSInstance(GSBase):
     _classesForName = {
         "customParameters": GSCustomParameter,
         "exports": bool,
-        "instanceInterpolations": dict,
+        "instanceInterpolations": OrderedDict,
         "interpolationCustom": float,
         "interpolationCustom1": float,
         "interpolationCustom2": float,
@@ -2644,6 +2644,7 @@ class GSFont(GSBase):
         "instances": GSInstance,
         "keepAlternatesTogether": bool,
         "kerning": OrderedDict,
+        "keyboardIncrement": float,
         "manufacturer": unicode,
         "manufacturerURL": unicode,
         "unitsPerEm": int,
@@ -2700,7 +2701,7 @@ class GSFont(GSBase):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
 
     def shouldWriteValueForKey(self, key):
-        if key in ("unitsPerEm", "versionMinor"):
+        if key in ("unitsPerEm", "versionMinor", "keyboardIncrement"):
             return True
         return super(GSFont, self).shouldWriteValueForKey(key)
 
