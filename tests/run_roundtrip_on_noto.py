@@ -15,12 +15,14 @@
 import subprocess
 import os
 import unittest
+import re
 
 import test_helpers
 
-import glyphsLib
 
 NOTO_DIRECTORY = os.path.join(os.path.dirname(__file__), 'noto-source')
+APP_VERSION_RE = re.compile('\\.appVersion = "(.*)"')
+
 
 def glyphs_files(directory):
     for root, _dirs, files in os.walk(directory):
@@ -29,12 +31,23 @@ def glyphs_files(directory):
                 yield os.path.join(root, filename)
 
 
+def app_version(filename):
+    with open(filename) as fp:
+        for line in fp:
+            m = APP_VERSION_RE.match(line)
+            if m:
+                return m.group(1)
+    return "no_version"
+
+
 class NotoRoundtripTest(unittest.TestCase,
                         test_helpers.AssertParseWriteRoundtrip):
     pass
 
 
 if __name__ == '__main__':
+    print("Run with `pytest -c noto_pytest.ini`")
+else:
     subprocess.call([
         "git", "clone", "https://github.com/googlei18n/noto-source.git",
         NOTO_DIRECTORY])
@@ -43,8 +56,9 @@ if __name__ == '__main__':
         def test_method(self, filename=filename):
             self.assertParseWriteRoundtrip(filename)
         file_basename = os.path.basename(filename)
-        test_name = "test_{0}".format(file_basename.replace(r'[^a-zA-Z]', ''))
+        test_name = "test_n{0:0>3d}_v{1}_{2}".format(
+            index,
+            app_version(filename),
+            file_basename.replace(r'[^a-zA-Z]', ''))
         test_method.__name__ = test_name
         setattr(NotoRoundtripTest, test_name, test_method)
-
-    unittest.main()
