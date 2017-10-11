@@ -12,6 +12,8 @@ dist
 # Unit test
 .cache/
 .tox/
+.coverage
+htmlcov
 
 # Autosaved files
 *~

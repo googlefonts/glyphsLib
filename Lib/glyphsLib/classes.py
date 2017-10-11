@@ -1249,6 +1249,8 @@ class GSFontMaster(GSBase):
         self.italicAngle = 0.0
         self.customValue = 0.0
         self._userData = None
+        self.xHeight = None
+        self.capHeight = None
 
     def __repr__(self):
         return '<GSFontMaster "%s" width %s weight %s>' % \
@@ -1258,6 +1260,9 @@ class GSFontMaster(GSBase):
         if key in ("width", "weight"):
             if getattr(self, key) == "Regular":
                 return False
+            return True
+        if key in ("xHeight", "capHeight") and getattr(self, key) is not None:
+            # Write those values even when == 0
             return True
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
 

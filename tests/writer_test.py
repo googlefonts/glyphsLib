@@ -355,6 +355,13 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+        # Write the capHeight and xHeight even if they are "0"
+        master.xHeight = 0
+        master.capHeight = 0
+        written = test_helpers.write_to_lines(master)
+        self.assertIn("xHeight = 0;", written)
+        self.assertIn("capHeight = 0;", written)
+
     def test_write_alignment_zone(self):
         zone = classes.GSAlignmentZone(23, 40)
         self.assertWritesValue(zone, '"{23, 40}"')
