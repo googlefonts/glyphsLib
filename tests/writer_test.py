@@ -235,6 +235,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+        # Don't write the keyboardIncrement if it's None
+        font.keyboardIncrement = None
+        written = test_helpers.write_to_lines(font)
+        self.assertFalse(any("keyboardIncrement" in line for line in written))
+
     def test_write_font_master_attributes(self):
         """Test the writer on all GSFontMaster attributes"""
         master = classes.GSFontMaster()

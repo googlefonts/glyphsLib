@@ -2683,6 +2683,7 @@ class GSFont(GSBase):
         self._classes = []
         self.filepath = None
         self._userData = None
+        self.keyboardIncrement = None
 
         if path:
             assert isinstance(path, (str, unicode)), \

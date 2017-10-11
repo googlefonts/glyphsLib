@@ -16,6 +16,7 @@
 
 import difflib
 import sys
+from textwrap import dedent
 
 import glyphsLib
 from glyphsLib.writer import GlyphsWriter
@@ -36,6 +37,11 @@ def write_to_lines(glyphs_object):
 class AssertLinesEqual(object):
     def assertLinesEqual(self, expected, actual, message):
         if actual != expected:
+            if len(actual) < len(expected):
+                sys.stderr.write(dedent("""\
+                    WARNING: the actual text is shorter that the expected text.
+                             Some information may be LOST!
+                    """))
             for line in difflib.unified_diff(
                     expected, actual,
                     fromfile="<expected>", tofile="<actual>"):
