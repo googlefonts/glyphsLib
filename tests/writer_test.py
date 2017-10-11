@@ -629,6 +629,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+        # Write the script even when it's an empty string
+        glyph.script = ""
+        written = test_helpers.write_to_lines(glyph)
+        self.assertIn('script = "";', written)
+
     def test_write_layer(self):
         layer = classes.GSLayer()
         # http://docu.glyphsapp.com/#gslayer

@@ -2578,6 +2578,11 @@ class GSGlyph(GSBase):
     def __repr__(self):
         return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
 
+    def shouldWriteValueForKey(self, key):
+        if key == "script" and self.script is not None:
+            return True
+        return super(GSGlyph, self).shouldWriteValueForKey(key)
+
     layers = property(lambda self: GlyphLayerProxy(self),
                       lambda self, value: GlyphLayerProxy(self).setter(value))
 
