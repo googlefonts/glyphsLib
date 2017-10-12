@@ -15,17 +15,17 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import *
+from fontTools.misc.py23 import tounicode, unichr, unicode
 
-import collections
+from collections import OrderedDict
 import re
-import sys
 
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    def __init__(self):
+    def __init__(self, dict_type=OrderedDict):
+        self.dict_type = dict_type
         value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
         self.start_dict_re = re.compile(r'\s*{')
         self.end_dict_re = re.compile(r'\s*}')
@@ -44,6 +44,34 @@ class Parser:
         if text[i:].strip():
             self._fail('Unexpected trailing content', text, i)
         return result
+
+    def parse_into_object(self, res, text):
+        """Do the parsing."""
+
+        text = tounicode(text, encoding='utf-8')
+
+        m = self.start_dict_re.match(text, 0)
+        if m:
+            i = self._parse_dict_into_object(res, text, 1)
+        else:
+            self._fail('not correct file format')
+        if text[i:].strip():
+            self._fail('Unexpected trailing content', text, i)
+        return i
+
+    def _guess_dict_type(self, parsed, value):
+        if parsed[-1] != '"':
+            try:
+                float_val = float(value)
+                if float_val.is_integer():
+                    dict_type = int
+                else:
+                    dict_type = float
+            except:
+                dict_type = unicode
+        else:
+            dict_type = unicode
+        return dict_type
 
     def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
@@ -64,6 +92,25 @@ class Parser:
         if m:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
+            if hasattr(self.dict_type, "read"):
+                reader = self.dict_type()
+                value = reader.read(value)
+                return value, i
+
+
+            if self.dict_type is None:  # for custom parameters
+                self.dict_type = self._guess_dict_type(parsed, value)
+
+            if self.dict_type == bool:
+                value = bool(int(value))  # bool(u'0') returns True
+                return value, i
+
+            if self.dict_type in (dict, OrderedDict):
+                if not self.start_dict_re.match(value):
+                    self.dict_type = self._guess_dict_type(parsed, value)
+
+            value = self.dict_type(value)
+
             return value, i
 
         else:
@@ -71,35 +118,55 @@ class Parser:
 
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
+        old_dict_type = self.dict_type
+        new_type = self.dict_type
+        if new_type is None:
+            # customparameter.value needs to be set from the found value
+            new_type = dict
+        elif type(new_type) == list:
+            new_type = new_type[0]
+        res = new_type()
+        i = self._parse_dict_into_object(res, text, i)
+        self.dict_type = old_dict_type
+        return res, i
 
-        res = collections.OrderedDict()
+    def _parse_dict_into_object(self, res, text, i):
         end_match = self.end_dict_re.match(text, i)
         while not end_match:
+            old_dict_type = self.dict_type
             m = self.attr_re.match(text, i)
             if not m:
                 self._fail('Unexpected dictionary content', text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
+            if hasattr(res, "classForName"):
+                self.dict_type = res.classForName(name)
             i += len(parsed)
-            res[name], i = self._parse(text, i)
+            result = self._parse(text, i)
+            try:
+                res[name], i = result
+            except:
+                res = {}  # ugly, this fixes nested dicts in customparameters
+                res[name], i = result
 
             m = self.dict_delim_re.match(text, i)
             if not m:
                 self._fail('Missing delimiter in dictionary before content',
-                            text, i)
+                           text, i)
             parsed = m.group(0)
             i += len(parsed)
 
             end_match = self.end_dict_re.match(text, i)
-
+            self.dict_type = old_dict_type
         parsed = end_match.group(0)
         i += len(parsed)
-        return res, i
+        return i
 
     def _parse_list(self, text, i):
         """Parse a list from source text starting at i."""
 
         res = []
         end_match = self.end_list_re.match(text, i)
+        old_dict_type = self.dict_type
         while not end_match:
             list_item, i = self._parse(text, i)
             res.append(list_item)
@@ -110,11 +177,12 @@ class Parser:
                 m = self.list_delim_re.match(text, i)
                 if not m:
                     self._fail('Missing delimiter in list before content',
-                                text, i)
+                               text, i)
                 parsed = m.group(0)
                 i += len(parsed)
 
         parsed = end_match.group(0)
+        self.dict_type = old_dict_type
         i += len(parsed)
         return res, i
 
@@ -143,90 +211,3 @@ class Parser:
         """Raise an exception with given message and text at i."""
 
         raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
-
-
-class Writer(object):
-    """Write parsed data back to flat file.  Normalizes quoting
-    and indentation."""
-
-    # ints and floats are unquoted, as are strings of letters/digits and
-    # underscore with period or leading forward slash.  Everything else
-    # is quoted.
-    _sym_re = re.compile(
-        r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
-
-    def __init__(self, out=sys.stdout, indent=0, reorder=False):
-        self.out = out
-        self.indent = indent
-        self.reorder = reorder
-        self.curindent = 0
-
-    def write(self, data):
-        self.curindent = 0
-        self._write(data)
-        self.out.write('\n')
-        self.out.flush()
-
-    def _write(self, data):
-        if isinstance(data, dict):
-            self._write_dict(data)
-        elif isinstance(data, list):
-            self._write_list(data)
-        else:
-            self._write_atom(data)
-
-    def _write_dict(self, data):
-        if self.reorder:
-            keys = sorted(data.keys())
-        else:
-            keys = data.keys()
-        self.curindent += self.indent
-        pad = ' ' * self.curindent
-        out = self.out
-        out.write('{\n')
-        for k in keys:
-            out.write(pad)
-            self._write_atom(k)
-            out.write(' = ')
-            self._write(data[k])
-            out.write(';\n')
-        self.curindent -= self.indent
-        out.write(' ' * self.curindent)
-        out.write('}')
-
-    def _write_list(self, data):
-        first = True
-        self.curindent += self.indent
-        pad = ' ' * self.curindent
-        out = self.out
-        out.write('(')
-        for v in data:
-            out.write('\n' if first else ',\n')
-            out.write(pad)
-            first = False
-            self._write(v)
-        self.curindent -= self.indent
-        out.write('\n')
-        out.write(' ' * self.curindent)
-        out.write(')')
-
-    _escape_re = re.compile('([^\u0020-\u007e])|"')
-
-    @staticmethod
-    def _escape_fn(m):
-        if m.group(1):
-            v = ord(m.group(1)[0])
-            if v < 0x20:
-                return r'\%03o' % v
-            return '\\U%04X' % v
-        return r'\"'
-
-    def _write_atom(self, data):
-      data = Writer._escape_re.sub(Writer._escape_fn, data)
-      out = self.out
-      if Writer._sym_re.match(data):
-          out.write(data)
-          return
-      out.write('"')
-      out.write(data)
-      out.write('"')

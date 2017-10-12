@@ -20,11 +20,11 @@ from io import open
 import logging
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.casting import cast_data
 from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
 
+from glyphsLib.classes import *
 
 __version__ = "1.8.0"
 
@@ -37,20 +37,20 @@ logger = logging.getLogger(__name__)
 
 def load(fp):
     """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return the unpacked root object (an ordered dictionary).
+    Return a GSFont object.
     """
     return loads(fp.read())
 
 
 def loads(value):
     """Read a .glyphs file from a bytes object.
-    Return the unpacked root object (an ordered dictionary).
+    Return a GSFont object.
     """
-    p = Parser()
+    p = Parser(dict_type = GSFont)
     logger.info('Parsing .glyphs file')
+    print("____loads")
     data = p.parse(value)
     logger.info('Casting parsed values')
-    cast_data(data)
     return data
 
 
@@ -59,12 +59,12 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
     """Load an unpacked .glyphs object to UFO objects."""
 
     if hasattr(file_or_path, 'read'):
-        data = load(file_or_path)
+        font = load(file_or_path)
     else:
         with open(file_or_path, 'r', encoding='utf-8') as ifile:
-            data = load(ifile)
+            font = load(ifile)
     logger.info('Loading to UFOs')
-    return to_ufos(data, include_instances=include_instances,
+    return to_ufos(font, include_instances=include_instances,
                    family_name=family_name, debug=debug)
 
 
@@ -97,7 +97,8 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         return ufos
 
 
-def build_instances(filename, master_dir, instance_dir, family_name=None):
+def build_instances(filename, master_dir, instance_dir, family_name=None,
+                    round_geometry=True):
     """Write and return UFOs from the instances defined in a .glyphs file.
 
     Args:
@@ -110,5 +111,6 @@ def build_instances(filename, master_dir, instance_dir, family_name=None):
     master_ufos, instance_data = load_to_ufos(
         filename, include_instances=True, family_name=family_name)
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data)
+        master_ufos, master_dir, instance_dir, instance_data,
+        round_geometry=round_geometry)
     return instance_ufos

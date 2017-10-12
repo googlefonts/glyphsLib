@@ -6,6 +6,7 @@ python:
 branches:
   only:
     - master
+    - classtree
     - /^v\d+\.\d+.*$/
 
 install: pip install tox-travis

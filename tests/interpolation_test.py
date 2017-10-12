@@ -30,6 +30,7 @@ from glyphsLib.builder import GLYPHS_PREFIX
 from glyphsLib.interpolation import (
     build_designspace, set_weight_class, set_width_class, build_stylemap_names
 )
+from glyphsLib.classes import GSInstance, GSCustomParameter
 
 
 def makeFamily(familyName):
@@ -58,8 +59,8 @@ def makeMaster(familyName, styleName, weight=None, width=None):
 
 def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
                  linked_style=None):
-    result = {"name": name}
-    params = []
+    inst = GSInstance()
+    inst.name = name
     if weight is not None:
         # Glyphs 2.3 stores the instance weight in two to three places:
         # 1. as a textual weightClass (such as “Bold”; no value defaults to
@@ -72,11 +73,11 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
         #    (no value defaults to 100).
         weightName, weightClass, interpolationWeight = weight
         if weightName is not None:
-            result["weightClass"] = weightName
+            inst.weightClass = weightName
         if weightClass is not None:
-            params.append({"name": "weightClass", "value": weightClass})
+            inst.customParameters["weightClass"] = weightClass
         if interpolationWeight is not None:
-            result["interpolationWeight"] = interpolationWeight
+            inst.interpolationWeight = interpolationWeight
     if width is not None:
         # Glyphs 2.3 stores the instance width in two places:
         # 1. as a textual widthClass (such as “Condensed”; no value defaults
@@ -87,20 +88,18 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
         #    defaults to 100).
         widthClass, interpolationWidth = width
         if widthClass is not None:
-            result["widthClass"] = widthClass
+            inst.widthClass = widthClass
         if interpolationWidth is not None:
-            result["interpolationWidth"] = interpolationWidth
+            inst.interpolationWidth = interpolationWidth
     # TODO: Support custom axes; need to triple-check how these are encoded in
     # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
-    if params:
-        result["customParameters"] = params
     if is_bold is not None:
-        result["isBold"] = is_bold
+        inst.isBold = is_bold
     if is_italic is not None:
-        result["isItalic"] = is_italic
+        inst.isItalic = is_italic
     if linked_style is not None:
-        result["linkStyle"] = linked_style
-    return result
+        inst.linkStyle = linked_style
+    return inst
 
 
 class DesignspaceTest(unittest.TestCase):
@@ -133,38 +132,37 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestBasic.designspace")
 
-    def test_inactive_from_active(self):
-        # Glyphs.app recognizes active=0 as a flag for inactive instances.
-        # https://github.com/googlei18n/glyphsLib/issues/129
-        masters, instances = makeFamily("DesignspaceTest Inactive")
-        for inst in instances["data"]:
-            if inst["name"] != "Semibold":
-                inst["active"] = False
-        self.expect_designspace(masters, instances,
-                                "DesignspaceTestInactive.designspace")
-
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
         # https://github.com/googlei18n/glyphsLib/issues/129
         masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
-            if inst["name"] != "Semibold":
-                inst["exports"] = False
+            if inst.name != "Semibold":
+                inst.exports = False
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
     def test_familyName(self):
         masters, instances = makeFamily("DesignspaceTest FamilyName")
         customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
-        customFamily["customParameters"].append({
-            "name": "familyName",
-            "value": "Custom Family"})
+        customFamily.customParameters["familyName"] = "Custom Family"
         instances["data"] = [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             customFamily,
         ]
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
+
+    def test_fileName(self):
+        masters, instances = makeFamily("DesignspaceTest FamilyName")
+        customFileName= makeInstance("Regular", weight=("Bold", 600, 151))
+        customFileName.customParameters["fileName"] = "Custom FileName"
+        instances["data"] = [
+            makeInstance("Regular", weight=("Regular", 400, 90)),
+            customFileName,
+        ]
+        self.expect_designspace(masters, instances,
+                                "DesignspaceTestFileName.designspace")
 
     def test_noRegularMaster(self):
         # Currently, fonttools.varLib fails to build variable fonts
@@ -190,11 +188,9 @@ class DesignspaceTest(unittest.TestCase):
         master = makeMaster("PSNameTest", "Master")
         thin, black = makeInstance("Thin"), makeInstance("Black")
         instances = {"data": [thin, black]}
-        black.setdefault("customParameters", []).append({
-            "name": "postscriptFontName",
-            "value": "PSNameTest-Superfat",
-        })
+        black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
         d = etree.fromstringlist(self.build_designspace([master], instances))
+
         def psname(doc, style):
             inst = doc.find('instances/instance[@stylename="%s"]' % style)
             return inst.attrib.get('postscriptfontname')
@@ -211,6 +207,7 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
         ]
+
         self.expect_designspace(masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
 
@@ -260,7 +257,7 @@ class DesignspaceTest(unittest.TestCase):
         instances = {
             "data": [
                 makeInstance("Black", weight=("Black", 900, 190)),
-                makeInstance("Medium", weight=("Medium", 444.4, 111)),
+                makeInstance("Medium", weight=("Medium", 444, 111)),
                 makeInstance("Regular", weight=("Regular", 400, 100)),
                 makeInstance("Thin", weight=("Thin", 100, 26)),
             ],
@@ -270,7 +267,7 @@ class DesignspaceTest(unittest.TestCase):
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
-        self.assertEqual(weightAxis.attrib["default"], "444.4")
+        self.assertEqual(weightAxis.attrib["default"], "444.0")
 
     def test_designspace_name(self):
         master_dir = tempfile.mkdtemp()
@@ -309,9 +306,8 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_weight_class(ufo, makeInstance("Bold"))
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-        # no value is stored in the UFO lib when instance in glyphs
-        # source contains no `weightClass` (because same as default)
-        self.assertTrue(WEIGHT_CLASS_KEY not in ufo.lib)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_weight_class(self):
         ufo = defcon.Font()
@@ -344,9 +340,8 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_width_class(ufo, makeInstance("Normal"))
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-        # no value is stored in the UFO lib when instance in glyphs
-        # source contains no `widthClass` (because same as default)
-        self.assertTrue(WIDTH_CLASS_KEY not in ufo.lib)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_width_class(self):
         ufo = defcon.Font()

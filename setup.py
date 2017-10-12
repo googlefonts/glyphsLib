@@ -154,6 +154,12 @@ bump2version = ['bump2version'] if needs_bump2version else []
 with open('README.rst', 'r') as f:
     long_description = f.read()
 
+test_requires = [
+    'pytest>=2.8',
+]
+if sys.version_info < (3, 3):
+    test_requires.append('mock>=2.0.0')
+
 setup(
     name='glyphsLib',
     version='1.8.0',
@@ -171,10 +177,7 @@ setup(
         ],
     },
     setup_requires=pytest_runner + wheel + bump2version,
-    tests_require=[
-        'pytest>=2.8',
-        'mock>=2.0.0',
-    ],
+    tests_require=test_requires,
     install_requires=[
         "fonttools>=3.4.0",
         "defcon>=0.3.0",

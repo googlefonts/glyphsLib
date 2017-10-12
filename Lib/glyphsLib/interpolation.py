@@ -73,7 +73,8 @@ WIDTH_CODES = {
 }
 
 
-def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
+def interpolate(ufos, master_dir, out_dir, instance_data, debug=False,
+                round_geometry=True):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs, or unused instance data if debug is True.
     """
@@ -85,7 +86,8 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False):
     logger.info('Building instances')
     for path, _ in instance_files:
         clean_ufo(path)
-    build(designspace_path, outputUFOFormatVersion=3)
+    build(designspace_path, outputUFOFormatVersion=3,
+          roundGeometry=round_geometry)
 
     instance_ufos = apply_instance_data(instance_files)
     if debug:
@@ -170,11 +172,13 @@ def get_axes(masters, regular_master, instances):
             labelNames = {"en": name.title()}
             mapping = []
             for instance in instances:
-                interpolLoc = instance.get(interpolLocKey, DEFAULT_LOCS[name])
+                interpolLoc = getattr(instance, interpolLocKey,
+                                      DEFAULT_LOCS[name])
                 userLoc = interpolLoc
-                for param in instance.get('customParameters', []):
-                    if param.get('name') == userLocParam:
-                        userLoc = float(param.get('value', DEFAULT_LOCS[name]))
+                for param in instance.customParameters:
+                    if param.name == userLocParam:
+                        userLoc = float(getattr(param, 'value',
+                                                DEFAULT_LOCS[name]))
                         break
                 mapping.append((userLoc, interpolLoc))
                 if interpolLoc == regularInterpolLoc:
@@ -196,7 +200,7 @@ def is_instance_active(instance):
     # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
     # to mark instances as inactive. Inactive instances should get ignored.
     # https://github.com/googlei18n/glyphsLib/issues/129
-    return instance.get('exports', True) and instance.get('active', True)
+    return instance.exports and getattr(instance, 'active', True)
 
 
 def write_axes(axes, writer):
@@ -286,19 +290,22 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
     """
     ofiles = []
     for instance in instances:
-        familyName, postScriptFontName = None, None
-        for p in instance.get('customParameters', ()):
-            param, value = p['name'], p['value']
+        familyName, postScriptFontName, ufo_path = None, None, None
+        for p in instance.customParameters:
+            param, value = p.name, p.value
             if param == 'familyName':
                 familyName = value
             elif param == 'postscriptFontName':
                 # Glyphs uses "postscriptFontName", not "postScriptFontName"
                 postScriptFontName = value
+            elif param == 'fileName':
+                ufo_path = os.path.join(out_dir, value + '.ufo')
         if familyName is None:
             familyName = family_name
 
-        styleName = instance.get('name')
-        ufo_path = build_ufo_path(out_dir, familyName, styleName)
+        styleName = instance.name
+        if not ufo_path:
+            ufo_path = build_ufo_path(out_dir, familyName, styleName)
         ofiles.append((ufo_path, instance))
         # MutatorMath.DesignSpaceDocumentWriter iterates over the location
         # dictionary, which is non-deterministic so it can cause test failures.
@@ -308,14 +315,14 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         # https://github.com/googlei18n/glyphsLib/issues/165
         location = OrderedDict()
         for axis in axes:
-            location[axis] = instance.get(
-                'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+            location[axis] = getattr(
+                instance, 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=familyName,
             style_name=styleName,
-            is_bold=instance.get('isBold', False),
-            is_italic=instance.get('isItalic', False),
-            linked_style=instance.get('linkStyle')
+            is_bold=instance.isBold,
+            is_italic=instance.isItalic,
+            linked_style=instance.linkStyle,
         )
         writer.startInstance(
             name=' '.join((familyName, styleName)),
@@ -335,7 +342,7 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
 
 
 def _set_class_from_instance(ufo, data, key, codes):
-    class_name = data.get(key)
+    class_name = getattr(data, key)
     if class_name:
         ufo.lib[GLYPHS_PREFIX + key] = class_name
     if class_name in codes:

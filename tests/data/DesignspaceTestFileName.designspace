@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<designspace format="3">
+    <axes>
+        <axis default="400.0" maximum="600.0" minimum="400.0" name="weight" tag="wght">
+            <map input="400.0" output="90" />
+            <map input="600.0" output="151" />
+            <labelname xml:lang="en">Weight</labelname>
+        </axis>
+    </axes>
+    <sources>
+        <source familyname="DesignspaceTest FamilyName" filename="DesignspaceTestFamilyName-Regular.ufo" name="DesignspaceTest FamilyName Regular" stylename="Regular">
+            <lib copy="1" />
+            <groups copy="1" />
+            <features copy="1" />
+            <info copy="1" />
+            <location>
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+        </source>
+        <source familyname="DesignspaceTest FamilyName" filename="DesignspaceTestFamilyName-Black.ufo" name="DesignspaceTest FamilyName Black" stylename="Black">
+            <location>
+                <dimension name="weight" xvalue="190.000000" />
+            </location>
+        </source>
+    </sources>
+    <instances>
+        <instance familyname="DesignspaceTest FamilyName" filename="out/DesignspaceTestFamilyName-Regular.ufo" name="DesignspaceTest FamilyName Regular" stylemapfamilyname="DesignspaceTest FamilyName" stylemapstylename="regular" stylename="Regular">
+            <location>
+                <dimension name="weight" xvalue="90.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+        <instance familyname="DesignspaceTest FamilyName" filename="out/Custom FileName.ufo" name="DesignspaceTest FamilyName Regular" stylemapfamilyname="DesignspaceTest FamilyName" stylemapstylename="regular" stylename="Regular">
+            <location>
+                <dimension name="weight" xvalue="151.000000" />
+            </location>
+            <info />
+            <kerning />
+        </instance>
+    </instances>
+</designspace>
