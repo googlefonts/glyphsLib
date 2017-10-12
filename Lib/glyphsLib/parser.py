@@ -20,34 +20,21 @@ from fontTools.misc.py23 import *
 import collections
 import re
 import sys
-from io import open
-import logging
-from copy import deepcopy
 
-from .casting import cast_data, uncast_data
-
-__all__ = [
-    "load", "loads", "dump", "dumps", # TODO Add GlyphsEncoder / GlyphsDecoder ala json module
-]
-
-logger = logging.getLogger(__name__)
 
 class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
-    value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
-    start_dict_re = re.compile(r'\s*{')
-    end_dict_re = re.compile(r'\s*}')
-    dict_delim_re = re.compile(r'\s*;')
-    start_list_re = re.compile(r'\s*\(')
-    end_list_re = re.compile(r'\s*\)')
-    list_delim_re = re.compile(r'\s*,')
-    attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
-    value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
-
-    def __init__(self, unescape=True):
-      self.unescape = unescape
-
+    def __init__(self):
+        value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
+        self.start_dict_re = re.compile(r'\s*{')
+        self.end_dict_re = re.compile(r'\s*}')
+        self.dict_delim_re = re.compile(r'\s*;')
+        self.start_list_re = re.compile(r'\s*\(')
+        self.end_list_re = re.compile(r'\s*\)')
+        self.list_delim_re = re.compile(r'\s*,')
+        self.attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
+        self.value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
 
     def parse(self, text):
         """Do the parsing."""
@@ -141,25 +128,21 @@ class Parser:
             return unichr(int(m.group(1)[1:], 8))
         return unichr(int(m.group(2)[2:], 16))
 
-    @staticmethod
-    def unescape_text(text):
-        """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.  Also convert escapes to unicode."""
-
-        if text[0] == '"':
-            assert text[-1] == '"'
-            text = text[1:-1].replace('\\"', '"')
-        return Parser._unescape_re.sub(Parser._unescape_fn, text)
-
-
     def _trim_value(self, value):
-        return self.unescape_text(value) if self.unescape else value
+        """Trim double quotes off the ends of a value, un-escaping inner
+        double quotes.
+        Also convert escapes to unicode.
+        """
 
+        if value[0] == '"':
+            assert value[-1] == '"'
+            value = value[1:-1].replace('\\"', '"')
+        return Parser._unescape_re.sub(Parser._unescape_fn, value)
 
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
-        raise ValueError('%s (%d):\n%s' % (message, i, text[i:i + 79]))
+        raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
 
 
 class Writer(object):
@@ -172,13 +155,10 @@ class Writer(object):
     _sym_re = re.compile(
         r'^(?:-?\.[0-9]+|-?[0-9]+\.?[0-9]*|[_a-zA-Z0-9/\.][_a-zA-Z0-9\.]*)$')
 
-    def __init__(
-            self, out=sys.stdout, indent=0, sort_keys=False, escape=True):
-
+    def __init__(self, out=sys.stdout, indent=0, reorder=False):
         self.out = out
         self.indent = indent
-        self.sort_keys = sort_keys
-        self.escape = escape
+        self.reorder = reorder
         self.curindent = 0
 
     def write(self, data):
@@ -196,7 +176,7 @@ class Writer(object):
             self._write_atom(data)
 
     def _write_dict(self, data):
-        if self.sort_keys:
+        if self.reorder:
             keys = sorted(data.keys())
         else:
             keys = data.keys()
@@ -230,8 +210,7 @@ class Writer(object):
         out.write(' ' * self.curindent)
         out.write(')')
 
-    # escape DEL and controls except for TAB
-    _escape_re = re.compile('([^\u0020-\u007e\u0009])|"')
+    _escape_re = re.compile('([^\u0020-\u007e])|"')
 
     @staticmethod
     def _escape_fn(m):
@@ -242,62 +221,12 @@ class Writer(object):
             return '\\U%04X' % v
         return r'\"'
 
-    @staticmethod
-    def escape_text(text):
-        """Quote and escape if it doesn't look like a 'symbol'."""
-        data = Writer._escape_re.sub(Writer._escape_fn, text)
-        return data if Writer._sym_re.match(data) else '"' + data + '"'
-
     def _write_atom(self, data):
-        self.out.write(self.escape_text(data) if self.escape else data)
-
-
-def load(fp):
-    """Read a .glyphs file. 'fp' should be a (readable) file object.
-    Return the unpacked root object (an ordered dictionary).
-    """
-    return loads(fp.read())
-
-
-def loads(s):
-    """Read a .glyphs file from a bytes object.
-    Return the unpacked root object (an ordered dictionary).
-    """
-    p = Parser()
-    logger.info('Parsing .glyphs file')
-    data = p.parse(s)
-    logger.info('Casting parsed values')
-    cast_data(data)
-    return data
-
-
-def dump(obj, fp, **kwargs):
-    """Write object tree to a .glyphs file. 'fp' should be a (writable) file object.
-    """
-    logger.info('Making copy of values')
-    obj = deepcopy(obj)
-    logger.info('Uncasting values')
-    uncast_data(obj)
-    w = Writer(out=fp, **kwargs)
-    logger.info('Writing .glyphs file')
-    w.write(obj)
-
-
-def dumps(obj, **kwargs):
-    """Serialize object tree to a .glyphs file format.
-    Returns bytes object."""
-    fp = BytesIO()
-    dump(obj, fp, **kwargs)
-    return fp.getvalue()
-
-
-def _parse_write_no_escape(filenames):
-    p = Parser(unescape=False)
-    w = Writer(out=sys.stdout, escape=False)  # can resuse stdout, poor api design though
-    for filename in filenames:
-        with open(filename, 'r', encoding='utf-8') as f:
-            w.write(p.parse(f.read()))
-
-
-if __name__ == '__main__':
-    _parse_write_no_escape(sys.argv[1:])
+      data = Writer._escape_re.sub(Writer._escape_fn, data)
+      out = self.out
+      if Writer._sym_re.match(data):
+          out.write(data)
+          return
+      out.write('"')
+      out.write(data)
+      out.write('"')
