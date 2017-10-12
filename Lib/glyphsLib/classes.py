@@ -206,7 +206,6 @@ class GSApplication(object):
 Glyphs = GSApplication()
 
 
-
 class GSBase(object):
     _classesForName = {}
     _defaultsForName = {}
@@ -2577,8 +2576,8 @@ class GSGlyph(GSBase):
         return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
 
     def shouldWriteValueForKey(self, key):
-        if key == "script" and self.script is not None:
-            return True
+        if key in ("script", "category", "subCategory"):
+            return getattr(self, key) is not None
         return super(GSGlyph, self).shouldWriteValueForKey(key)
 
     layers = property(lambda self: GlyphLayerProxy(self),

@@ -442,6 +442,9 @@ width = 593;
 leftKerningGroup = A;
 rightKerningGroup = A;
 unicode = 0041;
+script = "";
+category = "";
+subCategory = "";
 },
 {
 glyphname = Adieresis;

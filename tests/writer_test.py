@@ -662,9 +662,14 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """))
 
         # Write the script even when it's an empty string
+        # Same for category and subCategory
         glyph.script = ""
+        glyph.category = ""
+        glyph.subCategory = ""
         written = test_helpers.write_to_lines(glyph)
         self.assertIn('script = "";', written)
+        self.assertIn('category = "";', written)
+        self.assertIn('subCategory = "";', written)
 
     def test_write_layer(self):
         layer = classes.GSLayer()
