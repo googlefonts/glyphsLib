@@ -79,11 +79,6 @@ class GlyphsWriter(object):
                 continue
             if value is None:
                 continue
-            if (key != "code" and key != "script" and  # FIXME: (jany) ugly
-                    isinstance(value, (list, glyphsLib.classes.Proxy,
-                                       str, unicode)) and
-                    len(value) == 0):
-                continue
             if (hasattr(dictValue, "shouldWriteValueForKey") and
                     not dictValue.shouldWriteValueForKey(key)):
                 continue

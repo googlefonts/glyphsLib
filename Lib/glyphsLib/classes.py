@@ -254,6 +254,9 @@ class GSBase(object):
         value = getattr(self, getKey)
         klass = self._classesForName[key]
         default = self._defaultsForName.get(key, None)
+        if (isinstance(value, (list, glyphsLib.classes.Proxy,
+                               str, unicode)) and len(value) == 0):
+            return False
         if default is not None:
             return default != value
         if klass in (int, float, bool) and value == 0:
@@ -1851,8 +1854,9 @@ class GSSmartComponentAxis(GSBase):
     )
 
     def shouldWriteValueForKey(self, key):
-        # Always write the 5 values
-        return True
+        if key in ("bottomValue", "topValue"):
+            return True
+        return super(GSSmartComponentAxis, self).shouldWriteValueForKey(key)
 
 
 class GSAnchor(GSBase):
@@ -2310,9 +2314,6 @@ class GSBackgroundLayer(GSBase):
     }
 
     def shouldWriteValueForKey(self, key):
-        if key == "backgroundImage":
-            return hasattr(self, key)
-            return len(value) > 0
         return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
 
 
@@ -2407,9 +2408,6 @@ class GSLayer(GSBase):
             return self.layerId != self.associatedMasterId
         if key in ("width"):
             return True
-        if key == "backgroundImage":
-            return hasattr(self, key)
-            return len(value) > 0
         return super(GSLayer, self).shouldWriteValueForKey(key)
 
     @property

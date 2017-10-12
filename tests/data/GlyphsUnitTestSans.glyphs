@@ -2184,6 +2184,42 @@ userData = {
 PartSelection = {
 height = 2;
 };
+com.typemytype.robofont.layerData = {
+"Regular Nov 6 15, 18:44" = {
+anchors = (
+);
+components = (
+{
+baseGlyph = tmA;
+transformation = (
+1,
+0,
+0,
+1,
+0,
+0
+);
+}
+);
+contours = (
+{
+points = (
+{
+smooth = 0;
+x = 2570;
+y = -907;
+}
+);
+}
+);
+lib = {
+};
+name = tmAA;
+unicodes = (
+);
+width = 3047;
+};
+};
 };
 width = 600;
 }

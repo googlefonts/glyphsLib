@@ -69,4 +69,3 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
             expected, actual,
             "The writer should output exactly what the parser read")
 
-

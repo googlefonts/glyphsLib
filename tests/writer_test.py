@@ -592,8 +592,22 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # mastersCompatible: not stored
         # userData
         glyph.userData['rememberToMakeCoffe'] = True
+        # Check that empty collections are written
+        glyph.userData['com.someoneelse.coolsoftware.customdata'] = [
+            OrderedDict([
+                ('zero', 0),
+                ('emptyList', []),
+                ('emptyDict', {}),
+                ('emptyString', ""),
+            ]),
+            [],
+            {},
+            "",
+            "hey",
+            0,
+            1,
+        ]
         # smartComponentAxes
-        # TODO: GSSmartComponentAxis
         axis = classes.GSSmartComponentAxis()
         axis.name = "crotchDepth"
         glyph.smartComponentAxes.append(axis)
@@ -617,6 +631,24 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             category = Letter;
             subCategory = Uppercase;
             userData = {
+            com.someoneelse.coolsoftware.customdata = (
+            {
+            zero = 0;
+            emptyList = (
+            );
+            emptyDict = {
+            };
+            emptyString = "";
+            },
+            (
+            ),
+            {
+            },
+            "",
+            hey,
+            0,
+            1
+            );
             rememberToMakeCoffe = 1;
             };
             partsSettings = (
