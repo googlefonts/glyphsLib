@@ -3359,6 +3359,16 @@ kerning = {
 keyboardIncrement = 0;
 unitsPerEm = 1000;
 userData = {
+AsteriskParameters = {
+"253E7231-480D-4F8E-8754-50FC8575C08E" = (
+"754",
+"30",
+7,
+51,
+"80",
+"50"
+);
+};
 GSDimensionPlugin.Dimensions = {
 "3E7589AA-8194-470F-8E2F-13C1C581BE24" = {
 HH = 91;

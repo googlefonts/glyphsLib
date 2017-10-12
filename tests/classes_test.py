@@ -373,6 +373,16 @@ class GSFontFromFileTest(GSObjectsTestCase):
 
     def test_userData(self):
         font = self.font
+        self.assertEqual(font.userData["AsteriskParameters"], {
+            "253E7231-480D-4F8E-8754-50FC8575C08E": [
+                "754",
+                "30",
+                7,
+                51,
+                "80",
+                "50",
+            ],
+        })
         # self.assertIsInstance(font.userData, dict)
         # TODO
         self.assertIsNone(font.userData["TestData"])

@@ -116,7 +116,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # userData
         font.userData = {
             'a': 'test',
-            'b': [1, {'c': 2}]
+            'b': [1, {'c': 2}],
+            'd': [1, "1"],
         }
         # grid
         font.grid = 35
@@ -228,6 +229,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             c = 2;
             }
+            );
+            d = (
+            1,
+            "1"
             );
             };
             versionMajor = 2;
