@@ -19,7 +19,7 @@ import sys
 from textwrap import dedent
 
 import glyphsLib
-from glyphsLib.writer import GlyphsWriter
+from glyphsLib.writer import Writer
 from fontTools.misc.py23 import StringIO
 
 
@@ -29,7 +29,7 @@ def write_to_lines(glyphs_object):
     Return an array of lines ready for diffing.
     """
     string = StringIO()
-    writer = GlyphsWriter(fp=string)
+    writer = Writer(fp=string)
     writer.write(glyphs_object)
     return string.getvalue().splitlines()
 

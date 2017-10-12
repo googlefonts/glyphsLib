@@ -27,13 +27,13 @@ from fontTools.misc.py23 import unicode, open
 '''
     Usage
 
-    writer = GlyphsWriter('Path/to/File.glyphs')
+    writer = Writer('Path/to/File.glyphs')
     writer.write(font)
 
 '''
 
 
-class GlyphsWriter(object):
+class Writer(object):
 
     def __init__(self, filePath=None, fp=None):
 

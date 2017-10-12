@@ -26,7 +26,7 @@ from glyphsLib.types import (
     encode_dict_as_string_for_gsnode, decode_dict_as_string_from_gsnode
 )
 from glyphsLib.parser import Parser
-from glyphsLib.writer import GlyphsWriter
+from glyphsLib.writer import Writer
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
 from glyphsLib.affine import Affine
@@ -1067,12 +1067,12 @@ class GSCustomParameter(GSBase):
                     v = str(v)
                 elif isinstance(v, dict):
                     string = StringIO()
-                    writer = GlyphsWriter(fp=string)
+                    writer = Writer(fp=string)
                     writer.writeDict(v)
                     v = string.getvalue()
                 elif isinstance(v, list):
                     string = StringIO()
-                    writer = GlyphsWriter(fp=string)
+                    writer = Writer(fp=string)
                     writer.writeArray(v)
                     v = string.getvalue()
                 else:
@@ -1373,7 +1373,7 @@ class GSNode(GSBase):
         if self._userData is not None and len(self._userData) > 0:
             # FIXME: (jany) must provide a simpler way to write a string
             string = StringIO()
-            writer = GlyphsWriter(fp=string)
+            writer = Writer(fp=string)
             writer.writeDict(self._userData)
             content += ' '
             content += encode_dict_as_string_for_gsnode(string.getvalue())
@@ -2718,9 +2718,9 @@ class GSFont(GSBase):
 
     def save(self, path=None):
         if path:
-            writer = GlyphsWriter(path)
+            writer = Writer(path)
         elif self.filepath:
-            writer = GlyphsWriter(self.filepath)
+            writer = Writer(self.filepath)
         else:
             raise ValueError
         writer.write(self)
