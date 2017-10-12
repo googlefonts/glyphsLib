@@ -19,26 +19,39 @@ from __future__ import (print_function, division, absolute_import,
 from io import open
 import logging
 
-from fontTools.misc.py23 import tostr
-
 from glyphsLib.builder import to_ufos
+from glyphsLib.casting import cast_data
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import load, loads, dump, dumps
+from glyphsLib.parser import Parser
 from glyphsLib.util import write_ufo
 
 
 __version__ = "1.8.0"
 
-# Doing `import *` from a module that uses unicode_literals, produces
-# "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
-# Thus we need to encode the unicode literals as ascii bytes.
-# https://bugs.python.org/issue21720
-__all__ = [tostr(s) for s in (
-    "build_masters", "build_instances", "load_to_ufos",
-    "load", "loads", "dump", "dumps",
-)]
+__all__ = [
+    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
+]
 
 logger = logging.getLogger(__name__)
+
+
+def load(fp):
+    """Read a .glyphs file. 'fp' should be (readable) file object.
+    Return the unpacked root object (an ordered dictionary).
+    """
+    return loads(fp.read())
+
+
+def loads(value):
+    """Read a .glyphs file from a bytes object.
+    Return the unpacked root object (an ordered dictionary).
+    """
+    p = Parser()
+    logger.info('Parsing .glyphs file')
+    data = p.parse(value)
+    logger.info('Casting parsed values')
+    cast_data(data)
+    return data
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,
