@@ -19,8 +19,10 @@ import re
 
 import test_helpers
 
+NOTO_DIRECTORY = os.path.join(os.path.dirname(__file__), 'noto-source-moyogo')
+NOTO_GIT_URL = "https://github.com/moyogo/noto-source.git"
+NOTO_GIT_BRANCH = "normalized-1071"
 
-NOTO_DIRECTORY = os.path.join(os.path.dirname(__file__), 'noto-source')
 APP_VERSION_RE = re.compile('\\.appVersion = "(.*)"')
 
 
@@ -48,9 +50,9 @@ class NotoRoundtripTest(unittest.TestCase,
 if __name__ == '__main__':
     print("Run with `pytest -c noto_pytest.ini`")
 else:
-    subprocess.call([
-        "git", "clone", "https://github.com/googlei18n/noto-source.git",
-        NOTO_DIRECTORY])
+    subprocess.call(["git", "clone", NOTO_GIT_URL, NOTO_DIRECTORY])
+    subprocess.check_call(
+        ["git", "-C", NOTO_DIRECTORY, "checkout", NOTO_GIT_BRANCH])
 
     for index, filename in enumerate(glyphs_files(NOTO_DIRECTORY)):
         def test_method(self, filename=filename):
