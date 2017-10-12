@@ -1010,7 +1010,7 @@ class GSCustomParameter(GSBase):
         'underlinePosition', 'underlineThickness', 'unitsPerEm',
         'vheaVertAscender',
         'vheaVertDescender', 'vheaVertLineGap', 'weightClass', 'widthClass',
-        'winAscent', 'winDescent', 'xHeight', 'year', 'Grid Spacing'))
+        'winAscent', 'winDescent', 'year', 'Grid Spacing'))
     _CUSTOM_FLOAT_PARAMS = frozenset((
         'postscriptBlueScale',))
 
