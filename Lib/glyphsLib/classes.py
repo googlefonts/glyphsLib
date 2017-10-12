@@ -2403,8 +2403,11 @@ class GSLayer(GSBase):
             return master
 
     def shouldWriteValueForKey(self, key):
-        if key in ("associatedMasterId", "name"):
+        if key == "associatedMasterId":
             return self.layerId != self.associatedMasterId
+        if key == "name":
+            return (self.name is not None and len(self.name) > 0 and
+                    self.layerId != self.associatedMasterId)
         if key in ("width"):
             return True
         return super(GSLayer, self).shouldWriteValueForKey(key)

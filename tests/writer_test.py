@@ -796,6 +796,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """))
 
+        # Don't write a blank layer name
+        layer.name = ""
+        written = test_helpers.write_to_lines(layer)
+        self.assertNotIn('name = "";', written)
+
     def test_write_anchor(self):
         anchor = classes.GSAnchor('top', point(23, 45.5))
         self.assertWrites(anchor, dedent("""\
