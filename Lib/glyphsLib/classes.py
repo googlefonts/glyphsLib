@@ -2335,9 +2335,9 @@ class GSBackgroundLayer(GSBase):
         "paths": GSPath,
         "visible": bool,
     }
-
-    def shouldWriteValueForKey(self, key):
-        return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
+    _wrapperKeysTranslate = {
+        "guideLines": "guides",
+    }
 
 
 class GSLayer(GSBase):

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import (print_function, division, absolute_import,
+                        unicode_literals)
+
 PUBLIC_PREFIX = 'public.'
 GLYPHS_PREFIX = 'com.schriftgestaltung.'
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'

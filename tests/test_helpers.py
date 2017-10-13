@@ -19,6 +19,7 @@ import sys
 from textwrap import dedent
 
 import glyphsLib
+from glyphsLib.builder import to_glyphs, to_ufos
 from glyphsLib.writer import Writer
 from fontTools.misc.py23 import StringIO
 
@@ -69,3 +70,11 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
             expected, actual,
             "The writer should output exactly what the parser read")
 
+class AssertUFORoundtrip(AssertLinesEqual):
+    def assertUFORoundtrip(self, font):
+        expected = write_to_lines(font)
+        roundtrip = to_glyphs(to_ufos(font))
+        actual = write_to_lines(roundtrip)
+        self.assertLinesEqual(
+            expected, actual,
+            "The font has been modified by the roundtrip")

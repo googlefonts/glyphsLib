@@ -93,5 +93,14 @@ def adjust_anchors(anchor_data, ufo, component):
         # only adjust if this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top")
         if (anchor.name in anchor_data and
-            any(a.name == '_' + anchor.name for a in glyph.anchors)):
+                any(a.name == '_' + anchor.name for a in glyph.anchors)):
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
+
+
+def add_anchors_to_glyph(glyph, anchors):
+    """Add .glyphs anchors to a glyph."""
+
+    for anchor in anchors:
+        x, y = anchor.position
+        anchor_dict = {'name': anchor.name, 'x': x, 'y': y}
+        glyph.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))

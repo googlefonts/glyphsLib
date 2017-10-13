@@ -36,9 +36,12 @@ from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
     GSComponent, GSAlignmentZone, GSGuideLine
 from glyphsLib.types import point
 
-from glyphsLib.builder.ufo import build_style_name, set_custom_params, \
-    to_ufos, draw_paths, set_default_params, parse_glyphs_filter, \
-    build_stylemap_names
+from glyphsLib.builder import to_ufos
+from glyphsLib.builder.paths import draw_paths
+from glyphsLib.builder.custom_params import set_custom_params, \
+    set_default_params
+from glyphsLib.builder.names import build_stylemap_names, build_style_name
+from glyphsLib.builder.filters import parse_glyphs_filter
 from glyphsLib.builder.constants import GLYPHS_PREFIX, PUBLIC_PREFIX, \
     GLYPHLIB_PREFIX
 
@@ -312,7 +315,7 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
-    @patch('glyphsLib.builder.ufo.parse_glyphs_filter')
+    @patch('glyphsLib.builder.custom_params.parse_glyphs_filter')
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
         filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
         filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
@@ -872,13 +875,13 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_custom(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(GLYPHS_PREFIX + 'custom' in ufo.lib)
+        self.assertFalse(GLYPHS_PREFIX + 'customName' in ufo.lib)
 
     def test_lib_custom(self):
         font = generate_minimal_font()
         font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'customName'], 'FooBar')
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()
