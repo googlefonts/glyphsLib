@@ -192,10 +192,16 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             fontMaster = (
             {
+            ascender = 800;
+            capHeight = 700;
             id = M1;
+            xHeight = 500;
             },
             {
+            ascender = 800;
+            capHeight = 700;
             id = M2;
+            xHeight = 500;
             }
             );
             glyphs = (
