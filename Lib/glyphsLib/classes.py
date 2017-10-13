@@ -828,6 +828,13 @@ class LayerPathsProxy(IndexedObjectsProxy):
         super(LayerPathsProxy, self).__init__(owner)
 
 
+class LayerHintsProxy(IndexedObjectsProxy):
+    _objects_name = "_hints"
+
+    def __init__(self, owner):
+        super(LayerHintsProxy, self).__init__(owner)
+
+
 class LayerComponentsProxy(IndexedObjectsProxy):
     _objects_name = "_components"
 
@@ -1962,12 +1969,16 @@ class GSHint(GSBase):
         else:
             return "<GSHint %s %s>" % (self.type, direction)
 
+    @property
+    def parent(self):
+        return self._parent
+
     def _find_node_by_indices(self, point):
         """"Find the GSNode that is refered to by the given indices."""
         path_index, node_index = point
-        layer = self.parent  # FIXME: (jany) I don't have access to the parent from the GSHint!!!
-        path = layer.paths[path_index]
-        node = path.nodes[node_index]
+        layer = self.parent
+        path = layer.paths[int(path_index)]
+        node = path.nodes[int(node_index)]
         return node
 
     def _find_indices_for_node(self, node):
@@ -2449,6 +2460,7 @@ class GSLayer(GSBase):
     def __init__(self):
         super(GSLayer, self).__init__()
         self._anchors = []
+        self._hints = []
         self._annotations = []
         self._components = []
         self.guides = []
@@ -2506,6 +2518,10 @@ class GSLayer(GSBase):
     anchors = property(
         lambda self: LayerAnchorsProxy(self),
         lambda self, value: LayerAnchorsProxy(self).setter(value))
+
+    hints = property(
+        lambda self: LayerHintsProxy(self),
+        lambda self, value: LayerHintsProxy(self).setter(value))
 
     paths = property(
         lambda self: LayerPathsProxy(self),

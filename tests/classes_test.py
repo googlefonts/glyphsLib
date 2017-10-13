@@ -970,6 +970,21 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         layer.annotations.remove(layer.annotations[-1])
         self.assertEqual(len(layer.annotations), 0)
 
+    def test_hints_from_file(self):
+        glyph = self.font.glyphs["A"]
+        layer = glyph.layers[1]
+        self.assertEqual(2, len(layer.hints))
+        first, second = layer.hints
+        self.assertIsInstance(first, GSHint)
+        self.assertTrue(first.horizontal)
+        self.assertIsInstance(first.originNode, GSNode)
+        first_origin_node = layer.paths[1].nodes[1]
+        self.assertEqual(first_origin_node, first.originNode)
+
+        self.assertIsInstance(second, GSHint)
+        second_target_node = layer.paths[0].nodes[4]
+        self.assertEqual(second_target_node, second.targetNode)
+
     def test_hints(self):
         layer = self.layer
         # layer.hints = []
