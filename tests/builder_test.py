@@ -876,7 +876,7 @@ class ToUfosTest(unittest.TestCase):
 
     def test_lib_custom(self):
         font = generate_minimal_font()
-        font.masters[0].custom = 'FooBar'
+        font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
 
@@ -893,7 +893,7 @@ class ToUfosTest(unittest.TestCase):
             guide = GSGuideLine()
             guide.position = pt
             guide.angle = guide_data['angle']
-            layer.guideLines.append(guide)
+            layer.guides.append(guide)
         glyph.layers.append(layer)
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo['a'].guidelines, expected)

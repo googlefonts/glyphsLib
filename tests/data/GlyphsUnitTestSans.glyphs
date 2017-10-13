@@ -25,6 +25,12 @@ code = a.sc;
 name = smcp_target;
 }
 );
+customParameters = (
+{
+name = note;
+value = "Bla bla";
+}
+);
 date = "2015-06-08 08:53:00 +0000";
 familyName = "Glyphs Unit Test Sans";
 featurePrefixes = (

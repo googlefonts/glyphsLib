@@ -53,7 +53,7 @@ def generate_minimal_font():
     master.xHeight = 0
     font.masters.append(master)
 
-    font.unitsPerEm = 1000
+    font.upm = 1000
     font.versionMajor = 1
     font.versionMinor = 0
 
@@ -501,18 +501,18 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         # TODO otherBlues
         # self.assertIsInstance(master.otherBlues, list)
 
-        # guideLines
-        self.assertIsInstance(master.guideLines, list)
-        master.guideLines = []
-        self.assertEqual(len(master.guideLines), 0)
+        # guides
+        self.assertIsInstance(master.guides, list)
+        master.guides = []
+        self.assertEqual(len(master.guides), 0)
         newGuide = GSGuideLine()
         newGuide.position = point("{100, 100}")
         newGuide.angle = -10.0
-        master.guideLines.append(newGuide)
-        self.assertIsNotNone(master.guideLines[0].__repr__())
-        self.assertEqual(len(master.guideLines), 1)
-        del master.guideLines[0]
-        self.assertEqual(len(master.guideLines), 0)
+        master.guides.append(newGuide)
+        self.assertIsNotNone(master.guides[0].__repr__())
+        self.assertEqual(len(master.guides), 1)
+        del master.guides[0]
+        self.assertEqual(len(master.guides), 0)
 
         # guides
         self.assertIsInstance(master.guides, list)
@@ -916,24 +916,23 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         layer.components.remove(component)
         self.assertEqual(len(layer.components), amount)
 
-    # TODO also layer.guides
-    def test_guideLines(self):
+    def test_guides(self):
         layer = self.layer
-        self.assertIsInstance(layer.guideLines, LayerGuideLinesProxy)
-        for guide in layer.guideLines:
+        self.assertIsInstance(layer.guides, LayerGuideLinesProxy)
+        for guide in layer.guides:
             self.assertEqual(guide.parent, layer)
-        layer.guideLines = []
-        self.assertEqual(len(layer.guideLines), 0)
+        layer.guides = []
+        self.assertEqual(len(layer.guides), 0)
         newGuide = GSGuideLine()
         newGuide.position = point("{100, 100}")
         newGuide.angle = -10.0
-        amount = len(layer.guideLines)
-        layer.guideLines.append(newGuide)
+        amount = len(layer.guides)
+        layer.guides.append(newGuide)
         self.assertEqual(newGuide.parent, layer)
-        self.assertIsNotNone(layer.guideLines[0].__repr__())
-        self.assertEqual(len(layer.guideLines), amount + 1)
-        del layer.guideLines[0]
-        self.assertEqual(len(layer.guideLines), amount)
+        self.assertIsNotNone(layer.guides[0].__repr__())
+        self.assertEqual(len(layer.guides), amount + 1)
+        del layer.guides[0]
+        self.assertEqual(len(layer.guides), amount)
 
     def test_annotations(self):
         layer = self.layer

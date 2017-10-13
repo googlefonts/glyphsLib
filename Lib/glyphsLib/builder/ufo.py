@@ -177,7 +177,7 @@ def generate_base_fonts(font, family_name):
     date_created = getattr(font, 'date', None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)
-    units_per_em = font.unitsPerEm
+    units_per_em = font.upm
     version_major = font.versionMajor
     version_minor = font.versionMinor
     user_data = font.userData
@@ -232,7 +232,7 @@ def generate_base_fonts(font, family_name):
 
         width = master.width
         weight = master.weight
-        custom = master.custom
+        custom = master.customName
         if weight:
             ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
         if width:
@@ -522,7 +522,7 @@ def set_blue_values(ufo, alignment_zones):
 
 def set_guidelines(ufo_obj, glyphs_data):
     """Set guidelines."""
-    guidelines = glyphs_data.guideLines
+    guidelines = glyphs_data.guides
     if not guidelines:
         return
     new_guidelines = []

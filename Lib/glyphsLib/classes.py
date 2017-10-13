@@ -221,6 +221,7 @@ class GSBase(object):
                     value = self._defaultsForName.get(key)
                 else:
                     value = klass()
+                key = self._wrapperKeysTranslate.get(key, key)
                 setattr(self, key, value)
 
     def __repr__(self):
@@ -232,9 +233,15 @@ class GSBase(object):
     def classForName(self, name):
         return self._classesForName.get(name, str)
 
-    def __contains__(self, key):
-        return hasattr(self, key) and getattr(self, key) is not None
-
+    # Note:
+    # The dictionary API exposed by GS* classes is "private" in the sense that:
+    #  * it should only be used by the parser, so it should only
+    #    work for key names that are found in the files
+    #  * and only for filling data in the objects, which is why it only
+    #    implements `__setitem__`
+    #
+    # Users of the library should only rely on the object-oriented API that is
+    # documented at https://docu.glyphsapp.com/
     def __setitem__(self, key, value):
         if isinstance(value, bytes) and key in self._classesForName:
             new_type = self._classesForName[key]
@@ -850,7 +857,7 @@ class LayerAnnotationProxy(IndexedObjectsProxy):
 
 
 class LayerGuideLinesProxy(IndexedObjectsProxy):
-    _objects_name = "guides"
+    _objects_name = "_guides"
 
     def __init__(self, owner):
         super(LayerGuideLinesProxy, self).__init__(owner)
@@ -1041,70 +1048,10 @@ class GSCustomParameter(GSBase):
             (self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
-        # FIXME: (jany) This function looks like a re-implementation
-        #   of the writer, it may be simpler to cast the values in case
-        #   of known parameters and call
-        #   writer.writeDict({'name':name, 'value': value})
-        name = self.name
-        if needsQuotes(name):
-            name = '"%s"' % name
-        value = self.value
-        if self.name in self._CUSTOM_INT_PARAMS:
-            value = str(value)
-        elif self.name in self._CUSTOM_FLOAT_PARAMS:
-            value = floatToString(value)
-        elif self.name in self._CUSTOM_BOOL_PARAMS:
-            value = '1' if value else '0'
-        elif self.name in self._CUSTOM_INTLIST_PARAMS:
-            values = writeIntlist(value)
-            if len(values) > 0:
-                value = ",\n".join(values)
-                value = "(\n%s\n)" % value
-            else:
-                value = "(\n)"
-        # elif self.name == "TTFStems":
-        elif isinstance(value, int):
-            pass
-        elif isinstance(value, (str, unicode)):
-            value = feature_syntax_encode(value)
-        elif isinstance(value, list):
-            values = []
-            for v in value:
-                if isinstance(v, (int, float)):
-                    v = str(v)
-                elif isinstance(v, dict):
-                    string = StringIO()
-                    writer = Writer(fp=string)
-                    writer.writeDict(v)
-                    v = string.getvalue()
-                elif isinstance(v, list):
-                    string = StringIO()
-                    writer = Writer(fp=string)
-                    writer.writeArray(v)
-                    v = string.getvalue()
-                else:
-                    v = str(v)
-                    if needsQuotes(v):
-                        v = '"%s"' % v
-                values.append(v)
-            value = ",\n".join(values)
-            value = "(\n%s\n)" % value
-        elif isinstance(value, dict):
-            values = []
-            keys = sorted(value.keys())
-            for key in keys:
-                v = value[key]
-                if needsQuotes(key):
-                    key = '"%s"' % key
-                if needsQuotes(v):
-                    v = '"%s"' % v
-                values.append("%s = %s;" % (key, v))
-            value = "\n".join(values)
-            value = "{\n%s\n}" % value
-        else:
-            raise TypeError
-
-        return "{\nname = %s;\nvalue = %s;\n}" % (name, value)
+        string = StringIO()
+        writer = Writer(fp=string)
+        writer.writeDict({'name': self.name, 'value': self.value})
+        return string.getvalue()
 
     def getValue(self):
         return self._value
@@ -1220,6 +1167,7 @@ class GSFontMaster(GSBase):
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides",
+        "custom": "customName",
     }
     _keyOrder = (
         "alignmentZones",
@@ -1255,7 +1203,7 @@ class GSFontMaster(GSBase):
         self._customParameters = []
         self._weight = "Regular"
         self._width = "Regular"
-        self._custom = ""
+        self.customName = ""
         self._custom1 = None
         self._custom2 = None
         self.italicAngle = 0.0
@@ -1283,8 +1231,8 @@ class GSFontMaster(GSBase):
         name = self.customParameters["Master Name"]
         if name is None:
             names = [self._weight, self._width]
-            if (self._custom and len(self._custom) and
-                    self._custom not in names):
+            if (self.customName and len(self.customName) and
+                    self.customName not in names):
                 names.append(self._custom)
             if (self._custom1 and len(self._custom1) and
                     self._custom1 not in names):
@@ -1330,14 +1278,6 @@ class GSFontMaster(GSBase):
     def width(self, value):
         self._width = value
 
-    customName = property(
-        lambda self: self._custom,
-        lambda self, value: setattr(self, "_custom", value))
-
-    guideLines = property(
-        lambda self: self.guides,
-        lambda self, value: setattr(self, "guides", value))
-
 
 class GSNode(GSBase):
     _rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'\
@@ -1379,7 +1319,6 @@ class GSNode(GSBase):
         if self.smooth:
             content += " SMOOTH"
         if self._userData is not None and len(self._userData) > 0:
-            # FIXME: (jany) must provide a simpler way to write a string
             string = StringIO()
             writer = Writer(fp=string)
             writer.writeDict(self._userData)
@@ -2464,7 +2403,7 @@ class GSLayer(GSBase):
         self._hints = []
         self._annotations = []
         self._components = []
-        self.guides = []
+        self._guides = []
         self._paths = []
         self._selection = []
         self._userData = None
@@ -2532,7 +2471,7 @@ class GSLayer(GSBase):
         lambda self: LayerComponentsProxy(self),
         lambda self, value: LayerComponentsProxy(self).setter(value))
 
-    guideLines = property(
+    guides = property(
         lambda self: LayerGuideLinesProxy(self),
         lambda self, value: LayerGuideLinesProxy(self).setter(value))
 
@@ -2722,7 +2661,6 @@ class GSGlyph(GSBase):
     @property
     def id(self):
         """An unique identifier for each glyph"""
-        # FIXME: (jany) what is it? it doesn't seem be stored in the file
         return self.name
 
 
@@ -2909,13 +2847,3 @@ class GSFont(GSBase):
     @note.setter
     def note(self, value):
         self.customParameters["note"] = value
-
-    # FIXME: (jany) I don't understand why this is needed for
-    #   gridSubDivisions but it works without it for upm
-    @property
-    def gridSubDivisions(self):
-        return self.gridSubDivision
-
-    @gridSubDivisions.setter
-    def gridSubDivisions(self, value):
-        self.gridSubDivision = value

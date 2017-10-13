@@ -131,31 +131,18 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         font.disablesNiceNames = True
         # customParameters
         font.customParameters['ascender'] = 300
-        # selection
-        # FIXME: (jany) Not writable here: instead, check that individual
-        #   glyphs store their "selected" status correctly
-        # font.selection = ?
-        # selectedLayers
-        # FIXME: (jany) Same as `selection`
-        # selectedFontMaster
-        # FIXME: (jany) Same as `selection`
-        # masterIndex
-        # FIXME: (jany) Same as `selection`
-        # currentText
-        # FIXME: (jany) Same as `selection`
-        # tabs
-        # FIXME: (jany) Same as `selection`
-        # currentTab
-        # FIXME: (jany) Same as `selection`
-        # filepath
-        # FIXME: (jany) not handled because the GSFont should be able
-        #   to be written anywhere on the disk once it has been loaded?
-        # tool
-        # FIXME: (jany) Same as `selection`
+        # selection: not written
+        # selectedLayers: not written
+        # selectedFontMaster: not written
+        # masterIndex: not written
+        # currentText: not written
+        # tabs: not written
+        # currentTab: not written
+        # filepath: not written
+        # tool: not written
         # tools: not handled because it is a read-only list of GUI features
         # .appVersion (extra property that is not in the docs!)
         font.appVersion = 895
-        # TODO: (jany) check that node and ascender are correctly stored
         self.assertWrites(font, dedent("""\
             {
             .appVersion = 895;
@@ -271,11 +258,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.widthValue = 0.99
         # customValue
         # customName
-        # FIXME: (jany) Why is it called "custom" here instead of "customName"?
-        master.custom = "cuteness"
-        # FIXME: (jany) A value of 0.0 is not written to the file.
+        master.customName = "cuteness"
+        # A value of 0.0 is not written to the file.
         master.customValue = 0.001
-        # FIXME: (jany) Why are there 3 more customValues?
         master.custom1 = "color"
         master.customValue1 = 0.1
         master.custom2 = "depth"
@@ -304,10 +289,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # blueValues: not handled because it is read-only
         # otherBlues: not handled because it is read-only
         # guides
-        # FIXME: (jany) Here it is called "guideLines" instead of "guides"
         guide = classes.GSGuideLine()
         guide.name = "middle"
-        master.guideLines.append(guide)
+        master.guides.append(guide)
         # userData
         master.userData['rememberToMakeTea'] = True
         # customParameters
@@ -390,9 +374,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # width
         instance.width = "Compressed (width)"
         # weightValue
-        instance.weightValue = 0.6
+        instance.weightValue = 600
         # widthValue
-        instance.widthValue = 0.2
+        instance.widthValue = 200
         # customValue
         instance.customValue = 0.4
         # isItalic
@@ -427,7 +411,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # interpolatedFont: read only
 
         # FIXME: (jany) the weight and width are not in the output
-        #   cofusion with weightClass/widthClass?
+        #   confusion with weightClass/widthClass?
         self.assertWrites(instance, dedent("""\
             {
             customParameters = (
@@ -461,8 +445,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
             );
             interpolationCustom = 0.4;
-            interpolationWeight = 0.6;
-            interpolationWidth = 0.2;
+            interpolationWeight = 600;
+            interpolationWidth = 200;
             instanceInterpolations = {
             M1 = 0.2;
             M2 = 0.8;
@@ -561,10 +545,17 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # https://docu.glyphsapp.com/#gsglyph
         # parent: not written
         # layers
+        # Put the glyph in a font with at least one master for the magic in
+        # `glyph.layers.append()` to work.
+        font = classes.GSFont()
+        master = classes.GSFontMaster()
+        master.id = "MASTER-ID"
+        font.masters.insert(0, master)
+        font.glyphs.append(glyph)
         layer = classes.GSLayer()
+        layer.layerId = "LAYER-ID"
         layer.name = "L1"
-        # TODO: (jany) manipulate layer without a parent?
-        # glyph.layers.append(layer)
+        glyph.layers.insert(0, layer)
         # name
         glyph.name = "Aacute"
         # unicode
@@ -599,7 +590,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # colorObject: not written
         # note
         glyph.note = "Stunning one-bedroom A with renovated acute accent"
-        # selected: FIXME: (jany) not written?
+        # selected: not written
         # mastersCompatible: not stored
         # userData
         glyph.userData['rememberToMakeCoffe'] = True
@@ -624,13 +615,20 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         glyph.smartComponentAxes.append(axis)
         # lastChange
         glyph.lastChange = glyphs_datetime('2017-10-03 07:35:46 +0000')
-        # FIXME: (jany) not sure about the key name for smartComponentAxes
         self.assertWrites(glyph, dedent("""\
             {
             color = 11;
             export = 0;
             glyphname = Aacute;
             lastChange = "2017-10-03 07:35:46 +0000";
+            layers = (
+            {
+            associatedMasterId = "MASTER-ID";
+            layerId = "LAYER-ID";
+            name = L1;
+            width = 0;
+            }
+            );
             leftKerningGroup = A;
             leftMetricsKey = A;
             widthMetricsKey = A;
@@ -704,8 +702,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         layer.guides.append(guide)
         # annotations
         annotation = classes.GSAnnotation()
-        # annotation.type = TEXT  # FIXME: (jany) this constant from the doc's examples is not defined
-        annotation.type = 'TEXT'
+        annotation.type = classes.TEXT
         annotation.text = 'Fuck, this curve is ugly!'
         layer.annotations.append(annotation)
         # hints
@@ -761,7 +758,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             position = ;
             text = "Fuck, this curve is ugly!";
-            type = TEXT;
+            type = 1;
             }
             );
             associatedMasterId = M1;
@@ -964,7 +961,6 @@ rememberToDownloadARealRemindersApp = 1;\\n}"'
     def test_write_hint(self):
         hint = classes.GSHint()
         # http://docu.glyphsapp.com/#gshint
-        # FIXME: (jany) understand how hints are stored
         layer = classes.GSLayer()
         path1 = classes.GSPath()
         layer.paths.append(path1)
@@ -1007,7 +1003,13 @@ rememberToDownloadARealRemindersApp = 1;\\n}"'
         # FIXME: (jany) What about the undocumented scale & stem?
         #   -> Add a test for that
 
-        # FIXME: (jany) Add a test for target = "up"?
+        # Test with target = "up"
+        # FIXME: (jany) what does target = "up" mean?
+        #   Is there an official python API to write that?
+        # hint.targetNode = 'up'
+        # written = test_helpers.write_to_lines(hint)
+        # self.assertIn('target = up;', written)
+
 
     def test_write_background_image(self):
         image = classes.GSBackgroundImage('/tmp/img.jpg')

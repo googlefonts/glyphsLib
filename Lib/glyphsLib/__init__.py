@@ -58,13 +58,6 @@ def loads(s):
     return data
 
 
-def normalize(value):
-    """Read a .glyphs file from a bytes object.
-    Return a bytes object with the file's contents, normalized:
-    dictionary keys are put in order.
-    """
-    pass
-
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,
                  debug=False):
     """Load an unpacked .glyphs object to UFO objects."""
