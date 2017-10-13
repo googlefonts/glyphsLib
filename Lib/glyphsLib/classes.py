@@ -1924,22 +1924,23 @@ class GSHint(GSBase):
         if key == "stem":
             if self.stem == -2:
                 return None
-        if key in ['origin', 'other1', 'other2', 'place', 'scale'] and getattr(self, key).value == getattr(self, key).default:
+        if (key in ['origin', 'other1', 'other2', 'place', 'scale'] and
+                getattr(self, key).value == getattr(self, key).default):
             return None
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
             return None
         return super(GSHint, self).shouldWriteValueForKey(key)
 
-    def Hint__origin__pos(self):
-        if (self.originNode):
+    def _origin_pos(self):
+        if self.originNode:
             if self.horizontal:
                 return self.originNode.position.y
             else:
                 return self.originNode.position.x
         return self.origin
 
-    def Hint__width__pos(self):
-        if (self.targetNode):
+    def _width_pos(self):
+        if self.targetNode:
             if self.horizontal:
                 return self.targetNode.position.y
             else:
@@ -1952,25 +1953,40 @@ class GSHint(GSBase):
         else:
             direction = "vertical"
         if self.type == 'BOTTOMGHOST' or self.type == 'TOPGHOST':
-            return "<GSHint %s origin=(%s)>" % (self.type, self.Hint__origin__pos())
+            return "<GSHint %s origin=(%s)>" % (self.type, self._origin_pos())
         elif self.type == 'STEM':
-            return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (direction, self.Hint__origin__pos(), self.Hint__width__pos())
+            return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (
+                direction, self._origin_pos(), self._width_pos())
         elif self.type == 'CORNER' or self.type == 'CAP':
             return "<GSHint %s %s>" % (self.type, self.name)
         else:
             return "<GSHint %s %s>" % (self.type, direction)
+
+    def _find_node_by_indices(self, point):
+        """"Find the GSNode that is refered to by the given indices."""
+        path_index, node_index = point
+        layer = self.parent  # FIXME: (jany) I don't have access to the parent from the GSHint!!!
+        path = layer.paths[path_index]
+        node = path.nodes[node_index]
+        return node
+
+    def _find_indices_for_node(self, node):
+        """Find the path_index and node_index that identify the given node."""
+        path = node.parent
+        layer = path.parent
+        for path_index in range(len(layer.paths)):
+            if path == layer.paths[path_index]:
+                for node_index in range(len(path.nodes)):
+                    if node == path.nodes[node_index]:
+                        return point(path_index, node_index)
+        return None
 
     @property
     def originNode(self):
         if self._originNode is not None:
             return self._originNode
         if self._origin is not None:
-            # Find the GSNode that is refered to by the indices in _origin
-            path_index, node_index = self._origin
-            layer = self.parent  # FIXME: (jany) I don't have access to the parent from the GSHint!!!
-            path = layer.paths[path_index]
-            node = path.nodes[node_index]
-            return node
+            return self._find_node_by_indices(self._origin)
 
     @originNode.setter
     def originNode(self, node):
@@ -1982,22 +1998,84 @@ class GSHint(GSBase):
         if self._origin is not None:
             return self._origin
         if self._originNode is not None:
-            # Find the path_index & node_index of the _originNode
-            path = self._originNode.parent
-            layer = path.parent
-            for path_index in range(len(layer.paths)):
-                if path == layer.paths[path_index]:
-                    for node_index in range(len(path.nodes)):
-                        if self._originNode == path.nodes[node_index]:
-                            return point(path_index, node_index)
-            return None
+            return self._find_indices_for_node(self._originNode)
 
     @origin.setter
     def origin(self, origin):
         self._origin = origin
         self._originNode = None
 
-    # FIXME: (jany) if the above is OK after review, do the same for the others
+    @property
+    def targetNode(self):
+        if self._targetNode is not None:
+            return self._targetNode
+        if self._target is not None:
+            return self._find_node_by_indices(self._target)
+
+    @targetNode.setter
+    def targetNode(self, node):
+        self._targetNode = node
+        self._target = None
+
+    @property
+    def target(self):
+        if self._target is not None:
+            return self._target
+        if self._targetNode is not None:
+            return self._find_indices_for_node(self._targetNode)
+
+    @target.setter
+    def target(self, target):
+        self._target = target
+        self._targetNode = None
+
+    @property
+    def otherNode1(self):
+        if self._otherNode1 is not None:
+            return self._otherNode1
+        if self._other1 is not None:
+            return self._find_node_by_indices(self._other1)
+
+    @otherNode1.setter
+    def otherNode1(self, node):
+        self._otherNode1 = node
+        self._other1 = None
+
+    @property
+    def other1(self):
+        if self._other1 is not None:
+            return self._other1
+        if self._otherNode1 is not None:
+            return self._find_indices_for_node(self._otherNode1)
+
+    @other1.setter
+    def other1(self, other1):
+        self._other1 = other1
+        self._otherNode1 = None
+
+    @property
+    def otherNode2(self):
+        if self._otherNode2 is not None:
+            return self._otherNode2
+        if self._other2 is not None:
+            return self._find_node_by_indices(self._other2)
+
+    @otherNode2.setter
+    def otherNode2(self, node):
+        self._otherNode2 = node
+        self._other2 = None
+
+    @property
+    def other2(self):
+        if self._other2 is not None:
+            return self._other2
+        if self._otherNode2 is not None:
+            return self._find_indices_for_node(self._otherNode2)
+
+    @other2.setter
+    def other2(self, other2):
+        self._other2 = other2
+        self._otherNode2 = None
 
 
 class GSFeature(GSBase):

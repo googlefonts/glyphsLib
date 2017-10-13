@@ -966,22 +966,19 @@ rememberToDownloadARealRemindersApp = 1;\\n}"'
         path1.nodes.append(node1)
         hint.originNode = node1
 
-        # FIXME: (jany) implement the same official Python API as for `origin`
-        # path1.nodes.append(node2)
-        # node2 = classes.GSNode(point(200, 200))
-        # hint.targetNode = node2
-        hint.target = point(0, 1)
+        node2 = classes.GSNode(point(200, 200))
+        path1.nodes.append(node2)
+        hint.targetNode = node2
 
-        # node3 = classes.GSNode(point(300, 300))
-        # path1.nodes.append(node3)
-        # hint.otherNode1 = node3
-        hint.other1 = point(0, 2)
+        node3 = classes.GSNode(point(300, 300))
+        path1.nodes.append(node3)
+        hint.otherNode1 = node3
 
-        # path2 = classes.GSPath()
-        # node4 = classes.GSNode(point(400, 400))
-        # path2.nodes.append(node4)
-        # hint.otherNode2 = node4
-        hint.other2 = point(1, 0)
+        path2 = classes.GSPath()
+        layer.paths.append(path2)
+        node4 = classes.GSNode(point(400, 400))
+        path2.nodes.append(node4)
+        hint.otherNode2 = node4
 
         hint.type = classes.CORNER
         hint.options = classes.TTROUND | classes.TRIPLE
