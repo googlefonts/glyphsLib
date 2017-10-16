@@ -26542,6 +26542,10 @@ PRODUCTION_NAMES = {
 	"zzyx-yi":"uniA2E8",
 }
 
+PRODUCTION_NAMES_REVERSED = {
+	agl: g for g, agl in PRODUCTION_NAMES.items()
+}
+
 # Glyphs for which Glyphs.app has a different Unicode string
 # than the string we would generate from the production name.
 IRREGULAR_UNICODE_STRINGS = {

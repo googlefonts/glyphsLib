@@ -62,6 +62,16 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
         self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
 
+    def test_bug232(self):
+        # https://github.com/googlei18n/glyphsLib/issues/232
+        u, g = get_glyph("uni07F0"), get_glyph("longlowtonecomb-nko")
+        self.assertEqual((u.category, g.category), ("Mark", "Mark"))
+        self.assertEqual((u.subCategory, g.subCategory),
+                         ("Nonspacing", "Nonspacing"))
+        self.assertEqual((u.production_name, g.production_name),
+                         ("uni07F0", "uni07F0"))
+        self.assertEqual((u.unicode, g.unicode), ("\u07F0", "\u07F0"))
+
 
 if __name__ == "__main__":
     unittest.main()

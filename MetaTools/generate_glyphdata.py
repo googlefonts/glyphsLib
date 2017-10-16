@@ -201,6 +201,10 @@ def generate_python_source(data, out):
         out.write('\t"%s":"%s",\n' % (key, value))
     out.write("}\n\n")
 
+    out.write("PRODUCTION_NAMES_REVERSED = {\n"
+              "\tagl: g for g, agl in PRODUCTION_NAMES.items()\n"
+              "}\n\n")
+
     out.write(
         "# Glyphs for which Glyphs.app has a different Unicode string\n"
         "# than the string we would generate from the production name.\n")
