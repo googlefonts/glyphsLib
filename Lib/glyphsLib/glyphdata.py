@@ -31,7 +31,18 @@ Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 
 def get_glyph(name, data=glyphdata_generated):
-    prodname = data.PRODUCTION_NAMES.get(name, name)
+    prodname = data.PRODUCTION_NAMES.get(name)
+    # Some Glyphs files use production names (instead of Glyphs names).
+    # We catch this here, so that we can return the same properties as if
+    # the Glyphs file had been following the Glyphs naming conventions.
+    # https://github.com/googlei18n/glyphsLib/issues/232
+    if prodname is None:
+        rev_prodname = data.PRODUCTION_NAMES_REVERSED.get(name)
+        if rev_prodname is not None:
+            prodname = name
+            name = rev_prodname
+    if prodname is None:
+        prodname = name
     unistr = data.IRREGULAR_UNICODE_STRINGS.get(name)
     if unistr is None:
         unistr = agl.toUnicode(prodname)
