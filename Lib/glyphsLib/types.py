@@ -52,9 +52,9 @@ class point(object):
     """Read/write a vector in curly braces."""
     dimension = 2
     default = [None, None]
-    regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
+    regex = re.compile('{%s}' % ', '.join(['([-.e\\d]+)'] * dimension))
 
-    def __init__(self, value = None, value2 = None, rect = None):
+    def __init__(self, value=None, value2=None, rect=None):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         elif value is not None and value2 is None:
@@ -72,7 +72,6 @@ class point(object):
                 len(self.value) == self.dimension)
         if self.value is not self.default:
             return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
-    
 
     def __getitem__(self, key):
         if type(key) is int and key < self.dimension:
@@ -299,15 +298,15 @@ def floatToString(Float, precision=3):
         ActualPrecition = actualPrecition(Float)
         precision = min(precision, ActualPrecition)
         fractional = math.modf(math.fabs(Float))[0]
-        if precision >= 5 and fractional >= 0.00001 and fractional <= 0.99999:
+        if precision >= 5 and fractional >= 0.000005 and fractional <= 0.999995:
             return "%.5f" % Float
-        elif precision >= 4 and fractional >= 0.0001 and fractional <= 0.9999:
+        elif precision >= 4 and fractional >= 0.00005 and fractional <= 0.99995:
             return "%.4f" % Float
-        elif precision >= 3 and fractional >= 0.001 and fractional <= 0.999:
+        elif precision >= 3 and fractional >= 0.0005 and fractional <= 0.9995:
             return "%.3f" % Float
-        elif precision >= 2 and fractional >= 0.01 and fractional <= 0.99:
+        elif precision >= 2 and fractional >= 0.005 and fractional <= 0.995:
             return "%.2f" % Float
-        elif precision >= 1 and fractional >= 0.1 and fractional <= 0.9:
+        elif precision >= 1 and fractional >= 0.05 and fractional <= 0.95:
             return "%.1f" % Float
         else:
             return "%.0f" % Float
@@ -344,6 +343,8 @@ NSPropertyListNameSet = (
 
 
 def needsQuotes(string):
+    if len(string) == 0:
+        return True
     needsQuotes = False
     if not isinstance(string, (str, unicode)):
         return False
@@ -360,6 +361,23 @@ def needsQuotes(string):
         if i is not None:
             needsQuotes = True
     return needsQuotes
+
+
+# FIXME: (jany) why is `feature_syntax_encode` different?
+def encode_dict_as_string_for_gsnode(value):
+    """Takes the PLIST string of a dict, and returns the same string
+    encoded such that it can be included in the string representation
+    of a GSNode."""
+    value = value.replace('"', '\\"')
+    return value.replace("\n", "\\n")
+
+
+# FIXME: (jany) This is not a correct reverse function, if
+#   the input string contains "\\n"
+def decode_dict_as_string_from_gsnode(value):
+    """Inverse of encode_dict_as_string_for_gsnode"""
+    value = value.replace('\\"', '"')
+    return value.replace("\\n", "\n")
 
 
 def feature_syntax_encode(value):

@@ -36,9 +36,11 @@ from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
     GSComponent, GSAlignmentZone, GSGuideLine
 from glyphsLib.types import point
 
-from glyphsLib.builder import build_style_name, set_custom_params,\
-    to_ufos, GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX, draw_paths, \
-    set_default_params, parse_glyphs_filter, build_stylemap_names
+from glyphsLib.builder.ufo import build_style_name, set_custom_params, \
+    to_ufos, draw_paths, set_default_params, parse_glyphs_filter, \
+    build_stylemap_names
+from glyphsLib.builder.constants import GLYPHS_PREFIX, PUBLIC_PREFIX, \
+    GLYPHLIB_PREFIX
 
 from classes_test import generate_minimal_font, generate_instance_from_dict, \
     add_glyph, add_anchor, add_component
@@ -310,7 +312,7 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
-    @patch('glyphsLib.builder.parse_glyphs_filter')
+    @patch('glyphsLib.builder.ufo.parse_glyphs_filter')
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
         filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
         filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
@@ -874,7 +876,7 @@ class ToUfosTest(unittest.TestCase):
 
     def test_lib_custom(self):
         font = generate_minimal_font()
-        font.masters[0].custom = 'FooBar'
+        font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
 
@@ -891,7 +893,7 @@ class ToUfosTest(unittest.TestCase):
             guide = GSGuideLine()
             guide.position = pt
             guide.angle = guide_data['angle']
-            layer.guideLines.append(guide)
+            layer.guides.append(guide)
         glyph.layers.append(layer)
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo['a'].guidelines, expected)

@@ -27,28 +27,31 @@ from fontTools.misc.py23 import unicode, open
 '''
     Usage
 
-    writer = GlyphsWriter('Path/to/File.glyphs')
+    writer = Writer('Path/to/File.glyphs')
     writer.write(font)
 
 '''
 
 
-class GlyphsWriter(object):
+class Writer(object):
 
     def __init__(self, filePath=None, fp=None):
 
+        self.close = False
         if fp is not None:
             self.file = fp
         elif filePath is None:
             self.file = sys.stdout
         else:
             self.file = open(filePath, "w")
+            self.close = True
 
     def write(self, baseObject):
 
         self.writeDict(baseObject)
         self.file.write("\n")
-        self.file.close()
+        if self.close:
+            self.file.close()
 
     def writeDict(self, dictValue):
         self.file.write("{\n")
@@ -76,10 +79,6 @@ class GlyphsWriter(object):
                 continue
             if value is None:
                 continue
-            if (isinstance(value,
-                           (list, glyphsLib.classes.Proxy, str, unicode)) and
-                    len(value) == 0):
-                continue
             if (hasattr(dictValue, "shouldWriteValueForKey") and
                     not dictValue.shouldWriteValueForKey(key)):
                 continue
@@ -92,6 +91,8 @@ class GlyphsWriter(object):
         self.file.write("(\n")
         idx = 0
         length = len(arrayValue)
+        if hasattr(arrayValue, "plistArray"):
+            arrayValue = arrayValue.plistArray()
         for value in arrayValue:
             self.writeValue(value)
             if idx < length - 1:

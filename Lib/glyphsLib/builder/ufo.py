@@ -25,74 +25,20 @@ from collections import deque
 from glyphsLib.anchors import propagate_font_anchors
 from glyphsLib.util import clear_data, cast_to_number_or_bool, bin_to_int_list
 import glyphsLib.glyphdata
+from .constants import (
+    PUBLIC_PREFIX,
+    GLYPHS_PREFIX,
+    GLYPHLIB_PREFIX,
+    ROBOFONT_PREFIX,
+    UFO2FT_FILTERS_KEY,
+    GLYPHS_COLORS,
+    CODEPAGE_RANGES, )
 
 __all__ = [
     'to_ufos', 'set_custom_params', 'GLYPHS_PREFIX',
 ]
 
 logger = logging.getLogger(__name__)
-
-
-PUBLIC_PREFIX = 'public.'
-GLYPHS_PREFIX = 'com.schriftgestaltung.'
-GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'
-ROBOFONT_PREFIX = 'com.typemytype.robofont.'
-UFO2FT_FILTERS_KEY = 'com.github.googlei18n.ufo2ft.filters'
-
-GLYPHS_COLORS = (
-    '0.85,0.26,0.06,1',
-    '0.99,0.62,0.11,1',
-    '0.65,0.48,0.2,1',
-    '0.97,1,0,1',
-    '0.67,0.95,0.38,1',
-    '0.04,0.57,0.04,1',
-    '0,0.67,0.91,1',
-    '0.18,0.16,0.78,1',
-    '0.5,0.09,0.79,1',
-    '0.98,0.36,0.67,1',
-    '0.75,0.75,0.75,1',
-    '0.25,0.25,0.25,1')
-
-# https://www.microsoft.com/typography/otspec/os2.htm#cpr
-CODEPAGE_RANGES = {
-    1252: 0,
-    1250: 1,
-    1251: 2,
-    1253: 3,
-    1254: 4,
-    1255: 5,
-    1256: 6,
-    1257: 7,
-    1258: 8,
-    # 9-15: Reserved for Alternate ANSI
-    874: 16,
-    932: 17,
-    936: 18,
-    949: 19,
-    950: 20,
-    1361: 21,
-    # 22-28: Reserved for Alternate ANSI and OEM
-    # 29: Macintosh Character Set (US Roman)
-    # 30: OEM Character Set
-    # 31: Symbol Character Set
-    # 32-47: Reserved for OEM
-    869: 48,
-    866: 49,
-    865: 50,
-    864: 51,
-    863: 52,
-    862: 53,
-    861: 54,
-    860: 55,
-    857: 56,
-    855: 57,
-    852: 58,
-    775: 59,
-    737: 60,
-    708: 61,
-    850: 62,
-    437: 63,
-}
 
 
 def to_ufos(font, include_instances=False, family_name=None, debug=False):
@@ -231,7 +177,7 @@ def generate_base_fonts(font, family_name):
     date_created = getattr(font, 'date', None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)
-    units_per_em = font.unitsPerEm
+    units_per_em = font.upm
     version_major = font.versionMajor
     version_minor = font.versionMinor
     user_data = font.userData
@@ -286,7 +232,7 @@ def generate_base_fonts(font, family_name):
 
         width = master.width
         weight = master.weight
-        custom = master.custom
+        custom = master.customName
         if weight:
             ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
         if width:
@@ -576,7 +522,7 @@ def set_blue_values(ufo, alignment_zones):
 
 def set_guidelines(ufo_obj, glyphs_data):
     """Set guidelines."""
-    guidelines = glyphs_data.guideLines
+    guidelines = glyphs_data.guides
     if not guidelines:
         return
     new_guidelines = []

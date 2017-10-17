@@ -61,6 +61,10 @@ class Parser:
         return i
 
     def _guess_dict_type(self, parsed, value):
+        if value in ('infinity', 'inf', 'nan'):
+            # Those values would be accepted by `float()`
+            # But `infinity` is a glyph name
+            return unicode
         if parsed[-1] != '"':
             try:
                 float_val = float(value)
@@ -97,7 +101,6 @@ class Parser:
                 reader = self.dict_type()
                 value = reader.read(value)
                 return value, i
-
 
             if self.dict_type is None:  # for custom parameters
                 self.dict_type = self._guess_dict_type(parsed, value)
@@ -181,9 +184,9 @@ class Parser:
                                text, i)
                 parsed = m.group(0)
                 i += len(parsed)
+            self.dict_type = old_dict_type
 
         parsed = end_match.group(0)
-        self.dict_type = old_dict_type
         i += len(parsed)
         return res, i
 

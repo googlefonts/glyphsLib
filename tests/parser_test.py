@@ -73,6 +73,24 @@ class ParserTest(unittest.TestCase):
             b'{mystr="Don\xe2\x80\x99t crash";}',
             [('mystr', 'Don’t crash')])
 
+    def test_parse_str_infinity(self):
+        self.run_test(
+            b'{mystr = infinity;}',
+            [('mystr', 'infinity')]
+        )
+
+    def test_parse_str_inf(self):
+        self.run_test(
+            b'{mystr = inf;}',
+            [('mystr', 'inf')]
+        )
+
+    def test_parse_str_nan(self):
+        self.run_test(
+            b'{mystr = nan;}',
+            [('mystr', 'nan')]
+        )
+
 
 GLYPH_ATTRIBUTES = {
     "bottomKerningGroup": str,
