@@ -95,7 +95,7 @@ CODEPAGE_RANGES = {
 }
 
 
-def to_ufos(font, include_instances=False, family_name=None, debug=False):
+def to_ufos(font, include_instances=False, family_name=None, propagate_anchors=True, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to
@@ -194,7 +194,8 @@ def to_ufos(font, include_instances=False, family_name=None, debug=False):
 
     for ufo in ufos.values():
         ufo.lib[glyphOrder_key] = glyph_order
-        propagate_font_anchors(ufo)
+        if propagate_anchors:
+            propagate_font_anchors(ufo)
         add_features_to_ufo(ufo, feature_prefixes, classes, features)
         add_groups_to_ufo(ufo, kerning_groups)
 
