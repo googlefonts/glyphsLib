@@ -41,7 +41,8 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def to_ufos(font, include_instances=False, family_name=None, propagate_anchors=True, debug=False):
+def to_ufos(font, include_instances=False, family_name=None,
+            propagate_anchors=True, debug=False):
     """Take .glyphs file data and load it into UFOs.
 
     Takes in data as a dictionary structured according to

@@ -69,7 +69,9 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
             font = load(ifile)
     logger.info('Loading to UFOs')
     return to_ufos(font, include_instances=include_instances,
-                   family_name=family_name, propagate_anchors=propagate_anchors, debug=debug)
+                   family_name=family_name,
+                   propagate_anchors=propagate_anchors,
+                   debug=debug)
 
 
 def build_masters(filename, master_dir, designspace_instance_dir=None,
@@ -90,7 +92,8 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
     """
 
     ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name, propagate_anchors=propagate_anchors)
+        filename, include_instances=True, family_name=family_name,
+        propagate_anchors=propagate_anchors)
     if designspace_instance_dir is not None:
         designspace_path, instance_data = build_designspace(
             ufos, master_dir, designspace_instance_dir, instance_data)
@@ -113,7 +116,8 @@ def build_instances(filename, master_dir, instance_dir, family_name=None,
     """
 
     master_ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name, propagate_anchors=propagate_anchors)
+        filename, include_instances=True, family_name=family_name,
+        propagate_anchors=propagate_anchors)
     instance_ufos = interpolate(
         master_ufos, master_dir, instance_dir, instance_data,
         round_geometry=round_geometry)
