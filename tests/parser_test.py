@@ -91,6 +91,19 @@ class ParserTest(unittest.TestCase):
             [('mystr', 'nan')]
         )
 
+    def test_dont_crash_on_string_that_looks_like_a_dict(self):
+        # https://github.com/googlei18n/glyphsLib/issues/238
+        self.run_test(
+            b'{UUID0 = "{0.5, 0.5}";}',
+            [('UUID0', '{0.5, 0.5}')]
+        )
+
+    def test_parse_dict_in_dict(self):
+        self.run_test(
+            b'{outer = {inner = "turtles";};}',
+            [('outer', OrderedDict([('inner', 'turtles')]))]
+        )
+
 
 GLYPH_ATTRIBUTES = {
     "bottomKerningGroup": str,
