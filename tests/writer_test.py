@@ -261,11 +261,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.customName = "cuteness"
         # A value of 0.0 is not written to the file.
         master.customValue = 0.001
-        master.custom1 = "color"
+        master.customName1 = "color"
         master.customValue1 = 0.1
-        master.custom2 = "depth"
+        master.customName2 = "depth"
         master.customValue2 = 0.2
-        master.custom3 = "surealism"
+        master.customName3 = "surealism"
         master.customValue3 = 0.3
         # ascender
         master.ascender = 234.5

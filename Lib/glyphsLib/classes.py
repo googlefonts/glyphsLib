@@ -1168,6 +1168,9 @@ class GSFontMaster(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
         "custom": "customName",
+        "custom1": "customName1",
+        "custom2": "customName2",
+        "custom3": "customName3",
     }
     _keyOrder = (
         "alignmentZones",
@@ -1203,12 +1206,11 @@ class GSFontMaster(GSBase):
         self._customParameters = []
         self._weight = "Regular"
         self._width = "Regular"
-        self.customName = ""
-        self._custom1 = None
-        self._custom2 = None
         self.italicAngle = 0.0
-        self.customValue = 0.0
         self._userData = None
+        for number in ('', '1', '2', '3'):
+            setattr(self, 'customName' + number, '')
+            setattr(self, 'customValue' + number, 0.0)
 
     def __repr__(self):
         return '<GSFontMaster "%s" width %s weight %s>' % \
@@ -1226,28 +1228,21 @@ class GSFontMaster(GSBase):
 
     @property
     def name(self):
-        if self._name is not None:
-            return self._name
         name = self.customParameters["Master Name"]
         if name is None:
             names = [self._weight, self._width]
-            if (self.customName and len(self.customName) and
-                    self.customName not in names):
-                names.append(self._custom)
-            if (self._custom1 and len(self._custom1) and
-                    self._custom1 not in names):
-                names.append(self._custom1)
-            if (self._custom2 and len(self._custom2) and
-                    self._custom2 not in names):
-                names.append(self._custom2)
+            for number in ('', '1', '2', '3'):
+                custom_name = getattr(self, 'customName' + number)
+                if (custom_name and len(custom_name) and
+                        custom_name not in names):
+                    names.append(custom_name)
 
             if len(names) > 1 and "Regular" in names:
                 names.remove("Regular")
 
             if abs(self.italicAngle) > 0.01:
-                names.add("Italic")
+                names.append("Italic")
             name = " ".join(list(names))
-        self._name = name
         return name
 
     customParameters = property(
