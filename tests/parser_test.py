@@ -98,6 +98,12 @@ class ParserTest(unittest.TestCase):
             [('UUID0', '{0.5, 0.5}')]
         )
 
+    def test_parse_dict_in_dict(self):
+        self.run_test(
+            b'{outer = {inner = "turtles";};}',
+            [('outer', OrderedDict([('inner', 'turtles')]))]
+        )
+
 
 GLYPH_ATTRIBUTES = {
     "bottomKerningGroup": str,
