@@ -24,7 +24,6 @@ import datetime
 
 from glyphsLib.parser import Parser
 from glyphsLib.classes import GSGlyph, GSLayer
-from glyphsLib.types import color, glyphs_datetime
 from fontTools.misc.py23 import unicode
 
 GLYPH_DATA = '''\
@@ -119,34 +118,6 @@ class ParserTest(unittest.TestCase):
             b'{outer = {inner = "turtles";};}',
             [('outer', OrderedDict([('inner', 'turtles')]))]
         )
-
-
-GLYPH_ATTRIBUTES = {
-    "bottomKerningGroup": str,
-    "bottomMetricsKey": str,
-    "category": str,
-    "color": color,
-    "export": bool,
-    # "glyphname": str,
-    "lastChange": glyphs_datetime,
-    "layers": GSLayer,
-    "leftKerningGroup": str,
-    "leftMetricsKey": str,
-    "name": str,
-    "note": unicode,
-    "partsSettings": dict,
-    "production": str,
-    "rightKerningGroup": str,
-    "rightMetricsKey": str,
-    "script": str,
-    "subCategory": str,
-    "topKerningGroup": str,
-    "topMetricsKey": str,
-    "unicode": str,
-    "userData": dict,
-    "vertWidthMetricsKey": str,
-    "widthMetricsKey": str,
-}
 
 
 class ParserGlyphTest(unittest.TestCase):

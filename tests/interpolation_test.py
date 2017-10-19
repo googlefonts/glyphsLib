@@ -27,7 +27,7 @@ import xml.etree.ElementTree as etree
 import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.interpolation import (
+from glyphsLib.builder.interpolation import (
     build_designspace, set_weight_class, set_width_class, build_stylemap_names
 )
 from glyphsLib.classes import GSInstance, GSCustomParameter
@@ -120,12 +120,6 @@ class DesignspaceTest(unittest.TestCase):
         expectedPath = os.path.join(path, "data", expectedFile)
         with open(expectedPath, mode="r", encoding="utf-8") as f:
             expected = f.readlines()
-        if os.path.sep == '\\':
-            # On windows, the test must not fail because of a difference between
-            # forward and backward slashes in filname paths.
-            # The failure happens because of line 217 of "mutatorMath\ufo\document.py"
-            # > pathRelativeToDocument = os.path.relpath(fileName, os.path.dirname(self.path))
-            expected = [line.replace('filename="out/', 'filename="out\\') for line in expected]
         if actual != expected:
             for line in difflib.unified_diff(
                     expected, actual,

@@ -15,9 +15,16 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+import datetime
+
 UFO_FORMAT = '%Y/%m/%d %H:%M:%S'
 
 
 def to_ufo_time(datetime_obj):
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime(UFO_FORMAT)
+
+
+def from_ufo_time(string):
+    """Parses a datetime as specified for UFOs into a datetime object."""
+    return datetime.datetime.strptime(string, UFO_FORMAT)

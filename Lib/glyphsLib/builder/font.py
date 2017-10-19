@@ -18,10 +18,15 @@ from __future__ import (print_function, division, absolute_import,
 from collections import deque, OrderedDict
 import logging
 
-from .common import to_ufo_time
+from .common import to_ufo_time, from_ufo_time
 from .constants import GLYPHS_PREFIX
 
 logger = logging.getLogger(__name__)
+
+APP_VERSION_LIB_KEY = GLYPHS_PREFIX + 'appVersion'
+KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + 'keyboardIncrement'
+MASTER_ID_LIB_KEY = GLYPHS_PREFIX + 'fontMasterID'
+MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + 'fontMasterOrder'
 
 
 def to_ufo_font_attributes(self, family_name):
@@ -45,9 +50,13 @@ def to_ufo_font_attributes(self, family_name):
     designer_url = font.designerURL
     manufacturer = font.manufacturer
     manufacturer_url = font.manufacturerURL
+    glyph_order = list(glyph.name for glyph in font.glyphs)
 
-    for master in font.masters:
+    for index, master in enumerate(font.masters):
         ufo = self.ufo_module.Font()
+
+        ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
+        ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
 
         if date_created is not None:
             ufo.info.openTypeHeadCreated = date_created
@@ -95,6 +104,8 @@ def to_ufo_font_attributes(self, family_name):
             if custom_value:
                 ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
 
+        ufo.glyphOrder = glyph_order
+
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_blue_values(ufo, master)
         self.to_ufo_family_user_data(ufo)
@@ -103,8 +114,9 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_custom_params(ufo, master)
 
         master_id = master.id
-        ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
-        # FIXME: (jany) in the future, yield this UFO (for memory, laze iter)
+        ufo.lib[MASTER_ID_LIB_KEY] = master_id
+        ufo.lib[MASTER_ORDER_LIB_KEY] = index
+        # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
         self._ufos[master_id] = ufo
 
 
@@ -118,5 +130,113 @@ def to_glyphs_font_attributes(self, ufo, master, is_initial):
     master -- The current master being written
     is_initial -- True iff this the first UFO that we process
     """
-    master.id = ufo.lib[GLYPHS_PREFIX + 'fontMasterID']
-    # TODO: all the other attributes
+    # TODO: (jany) when is_initial, write to context.font without question
+    #     but when !is_initial, compare the last context.font.whatever and
+    #     what we would be writing, to guard against the info being
+    #     modified in only one of the UFOs in a MM. Maybe do this check later,
+    #     when the roundtrip without modification works.
+    if is_initial:
+        _set_glyphs_font_attributes(self, ufo)
+    else:
+        # self._compare_and_merge_glyphs_font_attributes(ufo)
+        pass
+    _set_glyphs_master_attributes(self, ufo, master)
+
+
+def _set_glyphs_font_attributes(self, ufo):
+    font = self.font
+    info = ufo.info
+
+    if APP_VERSION_LIB_KEY in ufo.lib:
+        font.appVersion = ufo.lib[APP_VERSION_LIB_KEY]
+    if KEYBOARD_INCREMENT_KEY in ufo.lib:
+        font.keyboardIncrement = ufo.lib[KEYBOARD_INCREMENT_KEY]
+
+    if info.openTypeHeadCreated is not None:
+        # FIXME: (jany) should wrap in glyphs_datetime? or maybe the GSFont
+        #     should wrap in glyphs_datetime if needed?
+        font.date = from_ufo_time(info.openTypeHeadCreated)
+    font.upm = info.unitsPerEm
+    if info.versionMajor is not None:
+        font.versionMajor = info.versionMajor
+    if info.versionMinor is not None:
+        font.versionMinor = info.versionMinor
+
+    if info.copyright is not None:
+        font.copyright = info.copyright
+    if info.openTypeNameDesigner is not None:
+        font.designer = info.openTypeNameDesigner
+    if info.openTypeNameDesignerURL is not None:
+        font.designerURL = info.openTypeNameDesignerURL
+    if info.openTypeNameManufacturer is not None:
+        font.manufacturer = info.openTypeNameManufacturer
+    if info.openTypeNameManufacturerURL is not None:
+        font.manufacturerURL = info.openTypeNameManufacturerURL
+
+    self.to_glyphs_family_names(ufo)
+    self.to_glyphs_family_user_data(ufo)
+    self.to_glyphs_family_custom_params(ufo)
+    self.to_glyphs_features(ufo)
+
+
+def _set_glyphs_master_attributes(self, ufo, master):
+    try:
+        master.id = ufo.lib[MASTER_ID_LIB_KEY]
+    except KeyError:
+        pass
+
+    master.ascender = ufo.info.ascender
+    master.capHeight = ufo.info.capHeight
+    master.descender = ufo.info.descender
+    master.xHeight = ufo.info.xHeight
+
+    horizontal_stems = ufo.info.postscriptStemSnapH
+    vertical_stems = ufo.info.postscriptStemSnapV
+    italic_angle = 0
+    if ufo.info.italicAngle:
+        italic_angle = -ufo.info.italicAngle
+    if horizontal_stems:
+        master.horizontalStems = horizontal_stems
+    if vertical_stems:
+        master.verticalStems = vertical_stems
+    if italic_angle:
+        master.italicAngle = italic_angle
+
+    try:
+        master.width = ufo.lib[GLYPHS_PREFIX + 'width']
+    except KeyError:
+        pass
+    try:
+        master.weight = ufo.lib[GLYPHS_PREFIX + 'weight']
+    except KeyError:
+        pass
+
+    for number in ('', '1', '2', '3'):
+        name_key = GLYPHS_PREFIX + 'customName' + number
+        if name_key in ufo.lib:
+            custom_name = ufo.lib[name_key]
+            if custom_name:
+                setattr(master, 'customName' + number, custom_name)
+        value_key = GLYPHS_PREFIX + 'customValue' + number
+        if value_key in ufo.lib:
+            custom_value = ufo.lib[value_key]
+            if custom_value:
+                setattr(master, 'customValue' + number, custom_value)
+
+    self.to_glyphs_blue_values(ufo, master)
+    self.to_glyphs_master_names(ufo, master)
+    self.to_glyphs_master_user_data(ufo, master)
+    self.to_glyphs_guidelines(ufo, master)
+    self.to_glyphs_master_custom_params(ufo, master)
+
+
+def to_glyphs_ordered_masters(self):
+    """Modify in-place the list of UFOs to restore their original order."""
+    self.ufos = sorted(self.ufos, key=_original_master_order)
+
+
+def _original_master_order(ufo):
+    try:
+        return ufo.lib[MASTER_ORDER_LIB_KEY]
+    except:
+        return float('infinity')

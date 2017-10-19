@@ -96,3 +96,13 @@ def _get_linked_style(style_name, is_bold, is_italic):
         else:
             linked_style.appendleft(part)
     return ' '.join(linked_style)
+
+
+def to_glyphs_family_names(self, ufo):
+    # FIXME: (jany) dubious, the ufo family name is not what was in Glyphs but
+    # what was given as an argument to to_ufo... why?
+    self.font.familyName = ufo.info.familyName
+
+
+def to_glyphs_master_names(self, ufo, master):
+    pass

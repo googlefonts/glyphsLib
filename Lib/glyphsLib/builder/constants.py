@@ -22,6 +22,9 @@ ROBOFONT_PREFIX = 'com.typemytype.robofont.'
 UFO2FT_FILTERS_KEY = 'com.github.googlei18n.ufo2ft.filters'
 UFO2FT_USE_PROD_NAMES_KEY = 'com.github.googlei18n.ufo2ft.useProductionNames'
 
+MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + 'customParameter.GSFontMaster.'
+FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + 'customParameter.GSFont.'
+
 GLYPHS_COLORS = (
     '0.85,0.26,0.06,1',
     '0.99,0.62,0.11,1',
@@ -76,3 +79,5 @@ CODEPAGE_RANGES = {
     850: 62,
     437: 63,
 }
+
+REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}

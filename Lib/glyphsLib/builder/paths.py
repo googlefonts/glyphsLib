@@ -15,14 +15,20 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+from glyphsLib import types
+from glyphsLib import classes
 
-def to_ufo_draw_paths(self, pen, paths):
+
+def to_ufo_paths(self, ufo_glyph, layer):
     """Draw .glyphs paths onto a pen."""
+    pen = ufo_glyph.getPointPen()
 
-    for path in paths:
-        pen.beginPath()
+    for path in layer.paths:
         nodes = list(path.nodes) # the list is changed below, otherwise you can't draw more than once per session.
+        for node in nodes:
+            self.to_ufo_node_user_data(ufo_glyph, node)
 
+        pen.beginPath()
         if not nodes:
             pen.endPath()
             continue
@@ -35,8 +41,37 @@ def to_ufo_draw_paths(self, pen, paths):
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
         for node in nodes:
-            node_type = node.type
-            if node_type not in ['line', 'curve', 'qcurve']:
-                node_type = None
+            node_type = _to_ufo_node_type(node.type)
             pen.addPoint(tuple(node.position), segmentType=node_type, smooth=node.smooth)
         pen.endPath()
+
+
+def to_glyphs_paths(self, ufo_glyph, layer):
+    for contour in ufo_glyph:
+        path = self.glyphs_module.GSPath()
+        for point in contour:
+            node = self.glyphs_module.GSNode()
+            node.position = types.Point(point.x, point.y)
+            node.type = _to_glyphs_node_type(point.segmentType)
+            node.smooth = point.smooth
+            node.name = point.name
+            path.nodes.append(node)
+        if not contour.open:
+            path.closed = True
+            path.nodes.append(path.nodes.pop(0))
+        layer.paths.append(path)
+
+        for node in path.nodes:
+            self.to_glyphs_node_user_data(ufo_glyph, node)
+
+
+def _to_ufo_node_type(node_type):
+    if node_type not in ['line', 'curve', 'qcurve']:
+        return None
+    return node_type
+
+
+def _to_glyphs_node_type(node_type):
+    if node_type is None:
+        return classes.OFFCURVE
+    return node_type

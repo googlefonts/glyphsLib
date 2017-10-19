@@ -17,8 +17,15 @@ from __future__ import (print_function, division, absolute_import,
 
 import logging
 import re
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
+
+GROUP_KEYS = {
+    '1': 'rightKerningGroup',
+    '2': 'leftKerningGroup'}
+
+UFO_KERN_GROUP_PATTERN = re.compile('^public\\.kern([12])\\.(.*)$')
 
 
 def to_ufo_kerning(self, ufo, kerning_data):
@@ -34,7 +41,6 @@ def to_ufo_kerning(self, ufo, kerning_data):
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
                 logger.warn(warning_msg % left)
-                continue
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
             right_is_class = bool(match)
@@ -42,7 +48,6 @@ def to_ufo_kerning(self, ufo, kerning_data):
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
                     logger.warn(warning_msg % right)
-                    continue
             if left_is_class != right_is_class:
                 if left_is_class:
                     pair = (left, right, True)
@@ -54,6 +59,19 @@ def to_ufo_kerning(self, ufo, kerning_data):
     seen = {}
     for classname, glyph, is_left_class in reversed(class_glyph_pairs):
         _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class)
+
+
+def to_glyphs_kerning(self, ufo, master):
+    """Add UFO kerning to GSFontMaster."""
+    for (left, right), value in ufo.kerning.items():
+        left_match = UFO_KERN_GROUP_PATTERN.match(left)
+        right_match = UFO_KERN_GROUP_PATTERN.match(right)
+        if left_match:
+            left = '@MMK_L_{}'.format(left_match.group(2))
+        if right_match:
+            right = '@MMK_R_{}'.format(right_match.group(2))
+        self.font.setKerningForPair(master.id, left, right, value)
+    # FIXME: (jany) handle conflicts?
 
 
 def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
@@ -71,8 +89,8 @@ def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
         pair = (member, glyph) if is_left_class else (glyph, member)
         existing_rule = seen.get(pair)
         if (existing_rule is not None and
-            existing_rule[-1] != val and
-            pair not in ufo.kerning):
+                existing_rule[-1] != val and
+                pair not in ufo.kerning):
             logger.warn(
                 'Conflicting kerning rules found in %s master for glyph pair '
                 '"%s, %s" (%s and %s), removing pair from latter rule' %
@@ -92,10 +110,7 @@ def to_ufo_glyph_groups(self, kerning_groups, glyph_data):
     """Add a glyph to its kerning groups, creating new groups if necessary."""
 
     glyph_name = glyph_data.name
-    group_keys = {
-        '1': 'rightKerningGroup',
-        '2': 'leftKerningGroup'}
-    for side, group_key in group_keys.items():
+    for side, group_key in GROUP_KEYS.items():
         group = getattr(glyph_data, group_key)
         if group is None or len(group) == 0:
             continue
@@ -103,8 +118,33 @@ def to_ufo_glyph_groups(self, kerning_groups, glyph_data):
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
+def to_glyphs_glyph_groups(self, kerning_groups, glyph):
+    """Write kerning groups to the GSGlyph.
+    Uses the ouput of to_glyphs_kerning_groups.
+    """
+    for group_key, group_name in kerning_groups.items():
+        setattr(glyph, group_key, group_name)
+
+
 def to_ufo_kerning_groups(self, ufo, kerning_groups):
     """Add kerning groups to an UFO."""
 
     for name, glyphs in kerning_groups.items():
         ufo.groups[name] = glyphs
+
+
+def to_glyphs_kerning_groups(self, ufo):
+    """Extract all kerning group information from UFO.
+    Return a dict {glyph name: dict {rightKerningGroup: leftKerningGroup: }}
+    """
+    result = defaultdict(dict)
+    for group, members in ufo.groups.items():
+        match = UFO_KERN_GROUP_PATTERN.match(group)
+        if not match:
+            continue
+        side = match.group(1)
+        group_name = match.group(2)
+        for glyph_name in members:
+            result[glyph_name][GROUP_KEYS[side]] = group_name
+
+    return result

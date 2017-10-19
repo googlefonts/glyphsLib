@@ -20,9 +20,10 @@ import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder.custom_params import set_custom_params
-from glyphsLib.builder.names import build_stylemap_names
-from glyphsLib.builder.constants import GLYPHS_PREFIX
+from .builders import UFOBuilder
+from .custom_params import to_ufo_custom_params
+from .names import build_stylemap_names
+from .constants import GLYPHS_PREFIX
 
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 # Glyphs.app's default values for the masters' {weight,width,custom}Value
 # and for the instances' interpolation{Weight,Width,Custom} properties.
 # When these values are set, they are omitted from the .glyphs source file.
+# FIXME: (jany) This behaviour should be in classes.py
 DEFAULT_LOCS = {
     'weight': 100,
     'width': 100,
@@ -326,6 +328,11 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
             location=location,
             familyName=familyName,
             styleName=styleName,
+            # FIXME: (jany) must provide a postscriptFontName or else cannot
+            # read back the instance element using DesignspaceDocumentReader
+            # becauses its .instances are in dictionary
+            # {postscriptFontName: instance}
+            # postScriptFontName=postScriptFontName or familyName + styleName,
             postScriptFontName=postScriptFontName,
             styleMapFamilyName=styleMapFamilyName,
             styleMapStyleName=styleMapStyleName,
@@ -370,14 +377,17 @@ def apply_instance_data(instance_data):
     Returns:
         List of opened and updated instance UFOs.
     """
-    from defcon import Font
+    import defcon
 
     instance_ufos = []
     for path, data in instance_data:
-        ufo = Font(path)
+        ufo = defcon.Font(path)
         set_weight_class(ufo, data)
         set_width_class(ufo, data)
-        set_custom_params(ufo, data=data)
+        self = UFOBuilder(instance_data, defcon)
+        to_ufo_custom_params(self, ufo, data)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos
+
+

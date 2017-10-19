@@ -12,12 +12,8 @@ dist
 # Unit test
 .cache/
 .tox/
-.coverage
+.coverage*
 htmlcov
 
 # Autosaved files
 *~
-
-# Additional test files
-# (there's a script to download them from GitHub)
-tests/noto-source*

@@ -24,11 +24,12 @@ from fontTools.misc.py23 import UnicodeIO
 
 import glyphsLib
 from glyphsLib import classes
-from glyphsLib.types import glyphs_datetime, point, rect
+from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
 from glyphsLib.parser import Parser
 
 import test_helpers
+
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
@@ -102,7 +103,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # versionMinor
         font.versionMinor = 104
         # date
-        font.date = glyphs_datetime('2017-10-03 07:35:46 +0000')
+        font.date = parse_datetime('2017-10-03 07:35:46 +0000')
         # familyName
         font.familyName = "Sans Rien"
         # upm
@@ -183,12 +184,14 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             ascender = 800;
             capHeight = 700;
+            descender = -200;
             id = M1;
             xHeight = 500;
             },
             {
             ascender = 800;
             capHeight = 700;
+            descender = -200;
             id = M2;
             xHeight = 500;
             }
@@ -412,8 +415,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         instance.manualInterpolation = True
         # interpolatedFont: read only
 
-        # FIXME: (jany) the weight and width are not in the output
-        #   confusion with weightClass/widthClass?
         self.assertWrites(instance, dedent("""\
             {
             customParameters = (
@@ -458,6 +459,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             linkStyle = "linked style value";
             manualInterpolation = 1;
             name = "SemiBoldCompressed (name)";
+            weightClass = "SemiBold (weight)";
+            widthClass = "Compressed (width)";
             }
         """))
 
@@ -616,7 +619,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         axis.name = "crotchDepth"
         glyph.smartComponentAxes.append(axis)
         # lastChange
-        glyph.lastChange = glyphs_datetime('2017-10-03 07:35:46 +0000')
+        glyph.lastChange = parse_datetime('2017-10-03 07:35:46 +0000')
         self.assertWrites(glyph, dedent("""\
             {
             color = 11;
@@ -628,7 +631,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             associatedMasterId = "MASTER-ID";
             layerId = "LAYER-ID";
             name = L1;
-            width = 0;
             }
             );
             leftKerningGroup = A;
@@ -731,9 +733,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bounds: read-only, computed
         # selectionBounds: read-only, computed
         # background
-        # FIXME: (jany) why not use a GSLayer like the official doc suggests?
-        background_layer = classes.GSBackgroundLayer()
-        layer.background = background_layer
+        bg = layer.background
         # backgroundImage
         image = classes.GSBackgroundImage('/path/to/file.jpg')
         layer.backgroundImage = image
@@ -758,7 +758,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             annotations = (
             {
-            position = ;
             text = "Fuck, this curve is ugly!";
             type = 1;
             }
@@ -812,7 +811,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertNotIn('name = "";', written)
 
     def test_write_anchor(self):
-        anchor = classes.GSAnchor('top', point(23, 45.5))
+        anchor = classes.GSAnchor('top', Point(23, 45.5))
         self.assertWrites(anchor, dedent("""\
             {
             name = top;
@@ -824,7 +823,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         component = classes.GSComponent("dieresis")
         # http://docu.glyphsapp.com/#gscomponent
         # position
-        component.position = point(45.5, 250)
+        component.position = Point(45.5, 250)
         # scale
         component.scale = 2.0
         # rotation
@@ -897,7 +896,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """))
 
     def test_write_node(self):
-        node = classes.GSNode(point(10, 30), classes.GSNode.CURVE)
+        node = classes.GSNode(Point(10, 30), classes.GSNode.CURVE)
         # http://docu.glyphsapp.com/#gsnode
         # position: already set
         # type: already set
@@ -917,7 +916,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
         )
 
         # Write floating point coordinates
-        node = classes.GSNode(point(499.99, 512.01), classes.GSNode.OFFCURVE)
+        node = classes.GSNode(Point(499.99, 512.01), classes.GSNode.OFFCURVE)
         self.assertWritesValue(
             node,
             '"499.99 512.01 OFFCURVE"'
@@ -929,7 +928,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
             ';': ';\n',
             'escapeception': '\\"\\\'\\n\\\\n',
         }
-        node = classes.GSNode(point(130, 431), classes.GSNode.LINE)
+        node = classes.GSNode(Point(130, 431), classes.GSNode.LINE)
         for key, value in test_user_data.items():
             node.userData[key] = value
         # This is the output of Glyphs 1089
@@ -942,7 +941,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
     def test_write_guideline(self):
         line = classes.GSGuideLine()
         # http://docu.glyphsapp.com/#GSGuideLine
-        line.position = point(56, 45)
+        line.position = Point(56, 45)
         line.angle = 11.0
         line.name = "italic angle"
         # selected: not written
@@ -957,7 +956,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
     def test_write_annotation(self):
         annotation = classes.GSAnnotation()
         # http://docu.glyphsapp.com/#gsannotation
-        annotation.position = point(12, 34)
+        annotation.position = Point(12, 34)
         annotation.type = classes.TEXT
         annotation.text = "Look here"
         annotation.angle = 123.5
@@ -978,21 +977,21 @@ rememberToDownloadARealRemindersApp = 1;}"'
         layer = classes.GSLayer()
         path1 = classes.GSPath()
         layer.paths.append(path1)
-        node1 = classes.GSNode(point(100, 100))
+        node1 = classes.GSNode(Point(100, 100))
         path1.nodes.append(node1)
         hint.originNode = node1
 
-        node2 = classes.GSNode(point(200, 200))
+        node2 = classes.GSNode(Point(200, 200))
         path1.nodes.append(node2)
         hint.targetNode = node2
 
-        node3 = classes.GSNode(point(300, 300))
+        node3 = classes.GSNode(Point(300, 300))
         path1.nodes.append(node3)
         hint.otherNode1 = node3
 
         path2 = classes.GSPath()
         layer.paths.append(path2)
-        node4 = classes.GSNode(point(400, 400))
+        node4 = classes.GSNode(Point(400, 400))
         path2.nodes.append(node4)
         hint.otherNode2 = node4
 
@@ -1030,10 +1029,10 @@ rememberToDownloadARealRemindersApp = 1;}"'
         # http://docu.glyphsapp.com/#gsbackgroundimage
         # path: already set
         # image: read-only, objective-c
-        image.crop = rect(point(0, 10), point(500, 510))
+        image.crop = Rect(Point(0, 10), Point(500, 510))
         image.locked = True
         image.alpha = 70
-        image.position = point(40, 90)
+        image.position = Point(40, 90)
         image.scale = (1.1, 1.2)
         image.rotation = 0.3
         # transform: Already set with scale/rotation
@@ -1043,14 +1042,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
             crop = "{{0, 10}, {500, 510}}";
             imagePath = "/tmp/img.jpg";
             locked = 1;
-            transform = (
-            1.09998,
-            0.00576,
-            -0.00628,
-            1.19998,
-            40,
-            90
-            );
+            transform = "{1.09998, 0.00576, -0.00628, 1.19998, 40, 90}";
             }
         """))
 

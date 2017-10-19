@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: (jany) merge with builder/common.py
+
 import logging
 import os
 import shutil
@@ -66,6 +68,22 @@ def cast_to_number_or_bool(inputstr):
             return inputstr
 
 
+def reverse_cast_to_number_or_bool(input):
+    if input is True:
+        return 'true'  # FIXME: (jany) dubious, glyphs handbook says should be 1
+    if input is False:
+        return 'false'  # FIXME: (jany) dubious, glyphs handbook says should be 0
+    return str(input)
+
+
 def bin_to_int_list(value):
     string = num2binary(value)
+    string = string.replace(' ', '')  # num2binary add a space every 8 digits
     return [i for i, v in enumerate(reversed(string)) if v == "1"]
+
+
+def int_list_to_bin(value):
+    result = 0
+    for i in value:
+        result += 1 << i
+    return result

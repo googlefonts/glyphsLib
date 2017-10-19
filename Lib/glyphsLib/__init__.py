@@ -21,14 +21,13 @@ import logging
 
 from fontTools.misc.py23 import tostr
 
+from glyphsLib.classes import __all__ as __all_classes__
+from glyphsLib.classes import *
 from glyphsLib.builder import to_ufos
-from glyphsLib.interpolation import interpolate, build_designspace
+from glyphsLib.builder.interpolation import interpolate, build_designspace
 from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import write_ufo
-
-from glyphsLib.classes import __all__ as __all_classes__
-from glyphsLib.classes import *
 
 __version__ = "2.2.2.dev0"
 

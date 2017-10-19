@@ -8,9 +8,9 @@
             <map input="900.0" output="190" />
             <labelname xml:lang="en">Weight</labelname>
         </axis>
-        <axis default="100.0" maximum="100.0" minimum="70" name="width" tag="wdth">
+        <axis default="100" maximum="100" minimum="70" name="width" tag="wdth">
             <map input="70" output="70" />
-            <map input="100.0" output="100.0" />
+            <map input="100" output="100" />
             <labelname xml:lang="en">Width</labelname>
         </axis>
     </axes>

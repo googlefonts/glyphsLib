@@ -37,6 +37,6 @@ class MainTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             ['python', '-m', 'glyphsLib.parser', filename],
             universal_newlines=True)  # Windows gives \r\n otherwise
         self.assertLinesEqual(
-            str(expected.splitlines()),
-            str(out.splitlines()),
+            list(map(str, expected.splitlines())),
+            list(map(str, out.splitlines())),
             'The roundtrip should output the .glyphs file unmodified.')

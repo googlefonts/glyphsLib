@@ -16,10 +16,15 @@
 
 import difflib
 import sys
+import os.path
+import tempfile
+from collections import OrderedDict
 from textwrap import dedent
 
 import glyphsLib
-from glyphsLib.builder import to_glyphs, to_ufos
+from glyphsLib.designSpaceDocument import (DesignSpaceDocument,
+                                           InMemoryDocWriter)
+from glyphsLib.builder import to_glyphs, to_designspace
 from glyphsLib.writer import Writer
 from fontTools.misc.py23 import UnicodeIO
 
@@ -70,11 +75,49 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
             expected, actual,
             "The writer should output exactly what the parser read")
 
+
 class AssertUFORoundtrip(AssertLinesEqual):
+    def _normalize(self, font):
+        # Order the kerning OrderedDict alphabetically
+        # (because the ordering from Glyphs.app is random and that would be
+        # a bit silly to store it only for the purpose of nicer diffs in tests)
+        font.kerning = OrderedDict(sorted(map(
+            lambda i: (i[0], OrderedDict(sorted(map(
+                lambda j: (j[0], OrderedDict(sorted(j[1].items()))),
+                i[1].items())
+            ))),
+            font.kerning.items())))
+
     def assertUFORoundtrip(self, font):
+        self._normalize(font)
         expected = write_to_lines(font)
-        roundtrip = to_glyphs(to_ufos(font))
+        # Don't propagate anchors when intending to round-trip
+        designspace = to_designspace(font, propagate_anchors=False)
+
+        # Check that round-tripping in memory is the same as writing on disk
+        roundtrip_in_mem = to_glyphs(designspace)
+        self._normalize(roundtrip_in_mem)
+        actual_in_mem = write_to_lines(roundtrip_in_mem)
+
+        directory = tempfile.mkdtemp()
+        path = os.path.join(directory, font.familyName + '.designspace')
+        designspace.write(path)
+        designspace_roundtrip = DesignSpaceDocument(
+            writerClass=InMemoryDocWriter)
+        designspace_roundtrip.read(path)
+        roundtrip = to_glyphs(designspace_roundtrip)
+        self._normalize(roundtrip)
         actual = write_to_lines(roundtrip)
+
+        with open('expected.txt', 'w') as f:
+            f.write('\n'.join(expected))
+        with open('actual_in_mem.txt', 'w') as f:
+            f.write('\n'.join(actual_in_mem))
+        with open('actual.txt', 'w') as f:
+            f.write('\n'.join(actual))
+        self.assertLinesEqual(
+            actual_in_mem, actual,
+            "The round-trip in memory or written to disk should be equivalent")
         self.assertLinesEqual(
             expected, actual,
-            "The font has been modified by the roundtrip")
+            "The font should not be modified by the roundtrip")

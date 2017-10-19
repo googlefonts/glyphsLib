@@ -20,26 +20,30 @@ import re
 import datetime
 import traceback
 import math
+import copy
 from fontTools.misc.py23 import unicode
 
 __all__ = [
-    'transform', 'point', 'rect'
+    'Transform', 'Point', 'Rect'
 ]
 
 
-class baseType(object):
+class ValueType(object):
+    """A base class for value types that are comparable in the Python sense
+    and readable/writable using the glyphsLib parser/writer.
+    """
     default = None
 
     def __init__(self, value=None):
         if value:
-            self.value = self.read(value)
+            self.value = self.fromString(value)
         else:
-            self.value = self.default
+            self.value = copy.deepcopy(self.default)
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__, self.plistValue())
 
-    def read(self, src):
+    def fromString(self, src):
         """Return a typed value representing the structured glyphs strings."""
         raise NotImplementedError('%s read' % type(self).__name__)
 
@@ -47,56 +51,78 @@ class baseType(object):
         """Return structured glyphs strings representing the typed value."""
         raise NotImplementedError('%s write' % type(self).__name__)
 
+    # https://stackoverflow.com/questions/390250/elegant-ways-to-support-equivalence-equality-in-python-classes
+    def __eq__(self, other):
+        """Overrides the default implementation"""
+        if isinstance(self, other.__class__):
+            return self.value == other.value
+        return NotImplemented
 
-class point(object):
+    def __ne__(self, other):
+        """Overrides the default implementation (unnecessary in Python 3)"""
+        x = self == other
+        if x is not NotImplemented:
+            return not x
+        return NotImplemented
+
+    def __hash__(self):
+        """Overrides the default implementation"""
+        return hash(self.value)
+
+
+# class Vector<dimension>
+def Vector(dim):
+    class Vector(ValueType):
+        """Base type for number vectors (points, rects, transform matrices)."""
+        dimension = dim
+        default = [0.0] * dimension
+        regex = re.compile('{%s}' % ', '.join(['([-.e\\d]+)'] * dimension))
+
+        def fromString(self, src):
+            if isinstance(src, list):
+                assert len(src) == self.dimension
+                return src
+            src = src.replace('"', '')
+            return [float(i) for i in self.regex.match(src).groups()]
+
+        def plistValue(self):
+            assert (isinstance(self.value, list)
+                    and len(self.value) == self.dimension)
+            return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
+
+        def __getitem__(self, key):
+            assert (isinstance(self.value, list) and
+                    len(self.value) == self.dimension)
+            return self.value[key]
+
+        def __setitem__(self, key, value):
+            assert (isinstance(self.value, list) and
+                    len(self.value) == self.dimension)
+            self.value[key] = value
+
+        def __len__(self):
+            return self.dimension
+
+    return Vector
+
+
+class Point(Vector(2)):
     """Read/write a vector in curly braces."""
-    dimension = 2
-    default = [None, None]
-    regex = re.compile('{%s}' % ', '.join(['([-.e\\d]+)'] * dimension))
 
     def __init__(self, value=None, value2=None, rect=None):
         if value is not None and value2 is not None:
-            self.value = [value, value2]
-        elif value is not None and value2 is None:
-            value = value.replace('"', '')
-            self.value = [float(i) for i in self.regex.match(value).groups()]
-        else:
-            self.value = self.default
+            value = [value, value2]
+        super(Point, self).__init__(value)
 
         self.rect = rect
 
     def __repr__(self):
         return '<point x=%s y=%s>' % (self.value[0], self.value[1])
 
-    def plistValue(self):
-        assert (isinstance(self.value, list) and
-                len(self.value) == self.dimension)
-        if self.value is not self.default:
-            return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
-
-    def __getitem__(self, key):
-        if type(key) is int and key < self.dimension:
-            if key < len(self.value):
-                return self.value[key]
-            else:
-                return 0
-        else:
-            raise IndexError
-
-    def __setitem__(self, key, value):
-        if type(key) is int and key < self.dimension:
-            while self.dimension > len(self.value):
-                self.value.append(0)
-            self.value[key] = value
-        else:
-            raise IndexError
-
-    def __len__(self):
-        return self.dimension
-
     @property
     def x(self):
         return self.value[0]
+
     @x.setter
     def x(self, value):
         self.value[0] = value
@@ -107,6 +133,7 @@ class point(object):
     @property
     def y(self):
         return self.value[1]
+
     @y.setter
     def y(self, value):
         self.value[1] = value
@@ -115,13 +142,14 @@ class point(object):
             self.rect.value[1] = value
 
 
-class size(point):
+class Size(Point):
     def __repr__(self):
         return '<size width=%s height=%s>' % (self.value[0], self.value[1])
 
     @property
     def width(self):
         return self.value[0]
+
     @width.setter
     def width(self, value):
         self.value[0] = value
@@ -132,6 +160,7 @@ class size(point):
     @property
     def height(self):
         return self.value[1]
+
     @height.setter
     def height(self, value):
         self.value[1] = value
@@ -140,47 +169,28 @@ class size(point):
             self.rect.value[3] = value
 
 
-class rect(object):
+class Rect(Vector(4)):
     """Read/write a rect of two points in curly braces."""
-    #crop = "{{0, 0}, {427, 259}}";
-
-    dimension = 4
-    default = [0, 0, 0, 0]
     regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
 
-    def __init__(self, value = None, value2 = None):
-
+    def __init__(self, value=None, value2=None):
         if value is not None and value2 is not None:
-            self.value = [value[0], value[1], value2[0], value2[1]]
-        elif value is not None and value2 is None:
-            value = value.replace('"', '')
-            self.value = [float(i) for i in self.regex.match(value).groups()]
-        else:
-            self.value = self.default
+            value = [value[0], value[1], value2[0], value2[1]]
+        super(Rect, self).__init__(value)
 
     def plistValue(self):
-        assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % (floatToString(self.value[0], 3), floatToString(self.value[1], 3), floatToString(self.value[2], 3), floatToString(self.value[3], 3))
+        assert (isinstance(self.value, list)
+                and len(self.value) == self.dimension)
+        return '"{{%s, %s}, {%s, %s}}"' % tuple(
+            floatToString(v, 3) for v in self.value)
 
     def __repr__(self):
         return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
 
-    def __getitem__(self, key):
-        return self.value[key]
-
-    def __setitem__(self, key, value):
-        if type(key) is int and key < self.dimension:
-            while self.dimension > len(self.value):
-                self.value.append(0)
-            self.value[key] = value
-        else:
-            raise KeyError
-    def __len__(self):
-        return self.dimension
-
     @property
     def origin(self):
-        return point(self.value[0], self.value[1], rect = self)
+        return Point(self.value[0], self.value[1], rect=self)
+
     @origin.setter
     def origin(self, value):
         self.value[0] = value.x
@@ -188,28 +198,26 @@ class rect(object):
 
     @property
     def size(self):
-        return size(self.value[2], self.value[3], rect = self)
+        return Size(self.value[2], self.value[3], rect=self)
+
     @size.setter
     def size(self, value):
         self.value[2] = value.width
         self.value[3] = value.height
 
 
-class transform(point):
+class Transform(Vector(6)):
     """Read/write a six-element vector."""
-    dimension = 6
-    default = [None, None, None, None, None, None]
-    regex = re.compile('{%s}' % ', '.join(['([-.e\d]+)'] * dimension))
-
-    def __init__(self, value = None, value2 = None, value3 = None, value4 = None, value5 = None, value6 = None):
-
-        if value is not None and value2 is not None and value3 is not None and value4 is not None and value5 is not None and value6 is not None:
-            self.value = [value, value2, value3, value4, value5, value6]
-        elif value is not None and value2 is None:
-            value = value.replace('"', '')
-            self.value = [float(i) for i in self.regex.match(value).groups()]
-        else:
-            self.value = self.default
+    def __init__(self,
+                 value=None,
+                 value2=None,
+                 value3=None,
+                 value4=None,
+                 value5=None,
+                 value6=None):
+        if all(v is not None for v in (value, value2, value3, value4, value5, value6)):
+            value = [value, value2, value3, value4, value5, value6]
+        super(Transform, self).__init__(value)
 
     def __repr__(self):
         return '<affine transformation %s>' % (' '.join(map(str, self.value)))
@@ -220,36 +228,43 @@ class transform(point):
         return '"{%s}"' % (', '.join(floatToString(v, 5) for v in self.value))
 
 
-class glyphs_datetime(baseType):
+UTC_OFFSET_RE = re.compile(
+    r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
+
+
+def parse_datetime(src=None):
+    """Parse a datetime object from a string."""
+    if src is None:
+        return None
+    string = src.replace('"', '')
+    # parse timezone ourselves, since %z is not always supported
+    # see: http://bugs.python.org/issue6641
+    m = UTC_OFFSET_RE.match(string)
+    if m:
+        sign = 1 if m.group("sign") == "+" else -1
+        tz_hours = sign * int(m.group("hours"))
+        tz_minutes = sign * int(m.group("minutes"))
+        offset = datetime.timedelta(hours=tz_hours, minutes=tz_minutes)
+        string = string[:-6]
+    else:
+        # no explicit timezone
+        offset = datetime.timedelta(0)
+    if 'AM' in string or 'PM' in string:
+        datetime_obj = datetime.datetime.strptime(
+            string, '%Y-%m-%d %I:%M:%S %p'
+        )
+    else:
+        datetime_obj = datetime.datetime.strptime(
+            string, '%Y-%m-%d %H:%M:%S'
+        )
+    return datetime_obj + offset
+
+
+# FIXME: (jany) Not sure this should be used
+class Datetime(ValueType):
     """Read/write a datetime.  Doesn't maintain time zone offset."""
-
-    utc_offset_re = re.compile(
-        r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
-
-    def read(self, src):
-        """Parse a datetime object from a string."""
-        string = src.replace('"', '')
-        # parse timezone ourselves, since %z is not always supported
-        # see: http://bugs.python.org/issue6641
-        m = glyphs_datetime.utc_offset_re.match(string)
-        if m:
-            sign = 1 if m.group("sign") == "+" else -1
-            tz_hours = sign * int(m.group("hours"))
-            tz_minutes = sign * int(m.group("minutes"))
-            offset = datetime.timedelta(hours=tz_hours, minutes=tz_minutes)
-            string = string[:-6]
-        else:
-            # no explicit timezone
-            offset = datetime.timedelta(0)
-        if 'AM' in string or 'PM' in string:
-            datetime_obj = datetime.datetime.strptime(
-                string, '%Y-%m-%d %I:%M:%S %p'
-            )
-        else:
-            datetime_obj = datetime.datetime.strptime(
-                string, '%Y-%m-%d %H:%M:%S'
-            )
-        return datetime_obj + offset
+    def fromString(self, src):
+        return parse_datetime(src)
 
     def plistValue(self):
         return "\"%s +0000\"" % self.value
@@ -261,27 +276,28 @@ class glyphs_datetime(baseType):
             return None
 
 
-class color(baseType):
+def parse_color(src=None):
+    if src is None:
+        return None
+    if src[0] == "(":
+        src = src[1:-1]
+        color = src.split(",")
+        color = tuple([int(c) for c in color])
+    else:
+        color = int(src)
+    return color
 
-    def read(self, src=None):
-        src.replace('"', '')
-        if src is None:
-            return None
-        if src[0] == "(":
-            src = src[1:-1]
-            color = src.split(",")
-            color = tuple([int(c) for c in color])
-        else:
-            color = int(src)
-        return color
+
+# FIXME: (jany) not sure this is used
+class Color(ValueType):
+    def fromString(self, src):
+        return parse_color(src)
 
     def __repr__(self):
         return self.value.__repr__()
 
     def plistValue(self):
-        if self.value is not None:
-            return str(self.value)
-        return None
+        return unicode(self.value)
 
 
 # mutate list in place

@@ -37,17 +37,19 @@ from glyphsLib import builder
 from glyphsLib.classes import (
     GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
     GSPath, GSNode, GSAnchor, GSComponent, GSAlignmentZone, GSGuideLine)
-from glyphsLib.types import point
+from glyphsLib.types import Point
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.builder.paths import to_ufo_draw_paths
-from glyphsLib.builder.custom_params import (set_custom_params,
-                                             set_default_params)
+from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
+from glyphsLib.builder.paths import to_ufo_paths
+from glyphsLib.builder.custom_params import (to_ufo_custom_params,
+                                             _set_default_params)
 from glyphsLib.builder.names import build_stylemap_names, build_style_name
 from glyphsLib.builder.filters import parse_glyphs_filter
 from glyphsLib.builder.constants import (
     GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX,
-    UFO2FT_USE_PROD_NAMES_KEY)
+    UFO2FT_USE_PROD_NAMES_KEY, FONT_CUSTOM_PARAM_PREFIX,
+    MASTER_CUSTOM_PARAM_PREFIX)
 
 from classes_test import (generate_minimal_font, generate_instance_from_dict,
                           add_glyph, add_anchor, add_component)
@@ -279,86 +281,115 @@ class BuildStyleMapNamesTest(unittest.TestCase):
 class SetCustomParamsTest(unittest.TestCase):
     def setUp(self):
         self.ufo = Font()
+        self.font = GSFont()
+        self.master = GSFontMaster()
+        self.font.masters.insert(0, self.master)
+        self.builder = UFOBuilder(self.font)
+
+    def set_custom_params(self):
+        self.builder.to_ufo_custom_params(self.ufo, self.master)
 
     def test_normalizes_curved_quotes_in_names(self):
-        master = GSFontMaster()
-        master.customParameters = [GSCustomParameter(name='‘bad’', value=1),
-                                   GSCustomParameter(name='“also bad”', value=2)]
-        set_custom_params(self.ufo, data=master)
-        self.assertIn(GLYPHS_PREFIX + "'bad'", self.ufo.lib)
-        self.assertIn(GLYPHS_PREFIX + '"also bad"', self.ufo.lib)
+        self.master.customParameters = [
+            GSCustomParameter(name='‘bad’', value=1),
+            GSCustomParameter(name='“also bad”', value=2),
+        ]
+        self.set_custom_params()
+        self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + "'bad'", self.ufo.lib)
+        self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + '"also bad"', self.ufo.lib)
 
     def test_set_glyphOrder(self):
-        set_custom_params(self.ufo, parsed=[('glyphOrder', ['A', 'B'])])
-        self.assertEqual(self.ufo.lib[PUBLIC_PREFIX + 'glyphOrder'], ['A', 'B'])
+        self.master.customParameters['glyphOrder'] = ['A', 'B']
+        self.set_custom_params()
+        self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + 'glyphOrder'], ['A', 'B'])
 
     def test_set_fsSelection_flags(self):
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        set_custom_params(self.ufo, parsed=[('Has WWS Names', False)])
+        self.master.customParameters['Has WWS Names'] = False
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        set_custom_params(self.ufo, parsed=[('Use Typo Metrics', True)])
+        self.master.customParameters['Use Typo Metrics'] = True
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [7])
 
         self.ufo = Font()
-        set_custom_params(self.ufo, parsed=[('Has WWS Names', True),
-                                       ('Use Typo Metrics', True)])
+        self.master.customParameters = [
+            GSCustomParameter(name='Use Typo Metrics', value=True),
+            GSCustomParameter(name='Has WWS Names', value=True),
+        ]
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [8, 7])
 
     def test_underlinePosition(self):
-        set_custom_params(self.ufo, parsed=[('underlinePosition', -2)])
+        self.master.customParameters['underlinePosition'] = -2
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -2)
 
-        set_custom_params(self.ufo, parsed=[('underlinePosition', 1)])
+        # self.master.customParameters['underlinePosition'] = 1
+        for param in self.master.customParameters:
+            if param.name == 'underlinePosition':
+                param.value = 1
+                break
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, 1)
 
     def test_underlineThickness(self):
-        set_custom_params(self.ufo, parsed=[('underlineThickness', 100)])
+        self.master.customParameters['underlineThickness'] = 100
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
 
-        set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
+        # self.master.customParameters['underlineThickness'] = 0
+        for param in self.master.customParameters:
+            if param.name == 'underlineThickness':
+                param.value = 0
+                break
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
     @patch('glyphsLib.builder.custom_params.parse_glyphs_filter')
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
-        filter1 = ('PreFilter', 'AddExtremes')
-        filter2 = (
-            'Filter',
-            'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
-        filter3 = (
-            'Filter',
-            'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
-        set_custom_params(self.ufo, parsed=[filter1, filter2, filter3])
+        pre_filter = 'AddExtremes'
+        filter1 = 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335'
+        filter2 = 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335'
+        self.master.customParameters.extend([
+                GSCustomParameter(name='PreFilter', value=pre_filter),
+                GSCustomParameter(name='Filter', value=filter1),
+                GSCustomParameter(name='Filter', value=filter2),
+            ])
+        self.set_custom_params()
 
         self.assertEqual(mock_parse_glyphs_filter.call_count, 3)
         self.assertEqual(mock_parse_glyphs_filter.call_args_list[0],
-                         mock.call(filter1[1], is_pre=True))
+                         mock.call(pre_filter, is_pre=True))
         self.assertEqual(mock_parse_glyphs_filter.call_args_list[1],
-                         mock.call(filter2[1], is_pre=False))
+                         mock.call(filter1, is_pre=False))
         self.assertEqual(mock_parse_glyphs_filter.call_args_list[2],
-                         mock.call(filter3[1], is_pre=False))
+                         mock.call(filter2, is_pre=False))
 
     def test_set_defaults(self):
-        set_default_params(self.ufo)
+        _set_default_params(self.ufo)
         self.assertEqual(self.ufo.info.openTypeOS2Type, [3])
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -100)
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
     def test_set_codePageRanges(self):
-        set_custom_params(self.ufo, parsed=[('codePageRanges', [1252, 1250])])
+        self.font.customParameters['codePageRanges'] = [1252, 1250]
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
 
     def test_set_openTypeOS2CodePageRanges(self):
-        set_custom_params(self.ufo, parsed=[
-            ('openTypeOS2CodePageRanges', [0, 1])])
+        self.font.customParameters['openTypeOS2CodePageRanges'] = [0, 1]
+        self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
 
     def test_gasp_table(self):
         gasp_table = {'65535': '15',
                       '20': '7',
                       '8': '10'}
-        set_custom_params(self.ufo, parsed=[('GASP Table', gasp_table)])
+        self.font.customParameters['GASP Table'] = gasp_table
+        self.set_custom_params()
 
         ufo_range_records = self.ufo.info.openTypeGaspRangeRecords
         self.assertIsNotNone(ufo_range_records)
@@ -372,17 +403,29 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(rec3['rangeGaspBehavior'], [0, 1, 2, 3])
 
     def test_set_disables_nice_names(self):
-        set_custom_params(self.ufo, parsed=[('disablesNiceNames', False)])
-        self.assertEqual(True, self.ufo.lib[GLYPHS_PREFIX + 'useNiceNames'])
+        self.font.disablesNiceNames = False
+        self.set_custom_params()
+        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX +
+                                            'useNiceNames'])
 
     def test_set_disable_last_change(self):
-        set_custom_params(self.ufo, parsed=[('Disable Last Change', True)])
-        self.assertEqual(True,
-                         self.ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
+        self.font.customParameters['Disable Last Change'] = True
+        self.set_custom_params()
+        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX +
+                                            'disablesLastChange'])
 
+    # https://github.com/googlei18n/glyphsLib/issues/268
     def test_xHeight(self):
-        set_custom_params(self.ufo, parsed=[('xHeight', '500')])
-        self.assertEqual(self.ufo.info.xHeight, 500)
+        self.ufo.info.xHeight = 300
+        self.master.customParameters['xHeight'] = '500'
+        self.set_custom_params()
+        # Additional xHeight values are Glyphs-specific and stored in lib
+        self.assertEqual(self.ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + 'xHeight'],
+                         '500')
+        # The xHeight from the property is not modified
+        self.assertEqual(self.ufo.info.xHeight, 300)
+        # TODO: check that the instance custom param wins over the
+        #       interpolated value
 
     def test_replace_feature(self):
         self.ufo.features.text = dedent("""
@@ -402,7 +445,8 @@ class SetCustomParamsTest(unittest.TestCase):
 
         repl = "liga; sub f f by ff;"
 
-        set_custom_params(self.ufo, parsed=[("Replace Feature", repl)])
+        self.master.customParameters["Replace Feature"] = repl
+        self.set_custom_params()
 
         self.assertEqual(self.ufo.features.text, dedent("""
             feature liga {
@@ -422,14 +466,15 @@ class SetCustomParamsTest(unittest.TestCase):
         original = self.ufo.features.text
         repl = "numr; sub one by one.numr;\nsub two by two.numr;\n"
 
-        set_custom_params(self.ufo, parsed=[("Replace Feature", repl)])
+        self.master.customParameters["Replace Feature"] = repl
+        self.set_custom_params()
 
         self.assertEqual(self.ufo.features.text, original)
 
     def test_useProductionNames(self):
         for value in (True, False):
-            glyphs_param = ("Don't use Production Names", value)
-            set_custom_params(self.ufo, parsed=[glyphs_param])
+            self.master.customParameters["Don't use Production Names"] = value
+            self.set_custom_params()
 
             self.assertIn(UFO2FT_USE_PROD_NAMES_KEY, self.ufo.lib)
             self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY],
@@ -792,26 +837,6 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
 
-    def test_set_glyphOrder_no_custom_param(self):
-        font = generate_minimal_font()
-        add_glyph(font, 'C')
-        add_glyph(font, 'B')
-        add_glyph(font, 'A')
-        add_glyph(font, 'Z')
-        glyphOrder = to_ufos(font)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
-        self.assertEqual(glyphOrder, ['C', 'B', 'A', 'Z'])
-
-    def test_set_glyphOrder_with_custom_param(self):
-        font = generate_minimal_font()
-        font.customParameters['glyphOrder'] = ['A', 'B', 'C']
-        add_glyph(font, 'C')
-        add_glyph(font, 'B')
-        add_glyph(font, 'A')
-        # glyphs outside glyphOrder are appended at the end
-        add_glyph(font, 'Z')
-        glyphOrder = to_ufos(font)[0].lib[PUBLIC_PREFIX + 'glyphOrder']
-        self.assertEqual(glyphOrder, ['A', 'B', 'C', 'Z'])
-
     def test_missing_date(self):
         font = generate_minimal_font()
         font.date = None
@@ -826,8 +851,8 @@ class ToUfosTest(unittest.TestCase):
 
         ufos, instances = to_ufos(font, include_instances=True)
 
+        key = FONT_CUSTOM_PARAM_PREFIX + name
         for ufo in ufos:
-            key = GLYPHS_PREFIX + name
             self.assertIn(key, ufo.lib)
             self.assertEqual(ufo.lib[key], value)
         self.assertIn(name, instances)
@@ -962,19 +987,21 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_custom(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(GLYPHS_PREFIX + 'customName' in ufo.lib)
+        self.assertFalse(MASTER_CUSTOM_PARAM_PREFIX + 'customName' in ufo.lib)
 
     def test_lib_custom(self):
         font = generate_minimal_font()
         font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'customName'], 'FooBar')
+        self.assertEqual(
+            ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + 'customName'], 'FooBar')
 
     def test_coerce_to_bool(self):
         font = generate_minimal_font()
         font.customParameters['Disable Last Change'] = 'Truthy'
         ufo = to_ufos(font)[0]
-        self.assertEqual(True, ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
+        self.assertEqual(True, ufo.lib[FONT_CUSTOM_PARAM_PREFIX +
+                                       'disablesLastChange'])
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()
@@ -984,7 +1011,7 @@ class ToUfosTest(unittest.TestCase):
         layer.layerId = font.masters[0].id
         layer.width = 0
         for guide_data in data_in:
-            pt = point(value=guide_data['position'][0],
+            pt = Point(value=guide_data['position'][0],
                        value2=guide_data['position'][1])
             guide = GSGuideLine()
             guide.position = pt
@@ -1055,11 +1082,14 @@ class ToUfosTest(unittest.TestCase):
 
         ufo = to_ufos(font)[0]
 
-        self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "leftMetricsKey"], "y")
-        self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "rightMetricsKey"], "z")
-        self.assertNotIn(GLYPHLIB_PREFIX + "widthMetricsKey", ufo["x"].lib)
+        self.assertEqual(
+            ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.leftMetricsKey"], "y")
+        self.assertEqual(
+            ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.rightMetricsKey"], "z")
+        self.assertNotIn(
+            GLYPHLIB_PREFIX + "glyph.widthMetricsKey", ufo["x"].lib)
 
-    def test_glyph_lib_componentsAlignment_and_componentsLocked(self):
+    def test_glyph_lib_component_alignment_and_locked_and_smart_values(self):
         font = generate_minimal_font()
         add_glyph(font, "a")
         add_glyph(font, "b")
@@ -1071,15 +1101,19 @@ class ToUfosTest(unittest.TestCase):
 
         self.assertEqual(comp1.alignment, 0)
         self.assertEqual(comp1.locked, False)
+        self.assertEqual(comp1.smartComponentValues, {})
 
         ufo = to_ufos(font)[0]
 
         # all components have deault values, no lib key is written
         self.assertNotIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
         self.assertNotIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
+        self.assertNotIn(GLYPHS_PREFIX + "componentsSmartComponentValues",
+                         ufo["c"].lib)
 
         comp2.alignment = -1
         comp1.locked = True
+        comp1.smartComponentValues['height'] = 0
         ufo = to_ufos(font)[0]
 
         # if any component has a non-default alignment/locked values, write
@@ -1090,6 +1124,11 @@ class ToUfosTest(unittest.TestCase):
         self.assertIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
         self.assertEqual(
             ufo["c"].lib[GLYPHS_PREFIX + "componentsLocked"], [True, False])
+        self.assertIn(GLYPHS_PREFIX + "componentsSmartComponentValues",
+                      ufo["c"].lib)
+        self.assertEqual(
+            ufo["c"].lib[GLYPHS_PREFIX + "componentsSmartComponentValues"],
+            [{'height': 0}, {}])
 
 
 class _PointDataPen(object):
@@ -1111,17 +1150,32 @@ class _PointDataPen(object):
         pass
 
 
+class _Glyph(object):
+    def __init__(self):
+        self.pen = _PointDataPen()
+
+    def getPointPen(self):
+        return self.pen
+
+
+class _UFOBuilder(object):
+    def to_ufo_node_user_data(self, *args):
+        pass
+
+
 class DrawPathsTest(unittest.TestCase):
 
     def test_to_ufo_draw_paths_empty_nodes(self):
-        contours = [GSPath()]
+        layer = GSLayer()
+        layer.paths.append(GSPath())
 
-        pen = _PointDataPen()
-        to_ufo_draw_paths(None, pen, contours)
+        glyph = _Glyph()
+        to_ufo_paths(_UFOBuilder(), glyph, layer)
 
-        self.assertEqual(pen.contours, [])
+        self.assertEqual(glyph.pen.contours, [])
 
     def test_to_ufo_draw_paths_open(self):
+        layer = GSLayer()
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='line'),
@@ -1130,10 +1184,11 @@ class DrawPathsTest(unittest.TestCase):
             GSNode(position=(3, 3), nodetype='curve', smooth=True),
         ]
         path.closed = False
-        pen = _PointDataPen()
-        to_ufo_draw_paths(None, pen, [path])
+        layer.paths.append(path)
+        glyph = _Glyph()
+        to_ufo_paths(_UFOBuilder(), glyph, layer)
 
-        self.assertEqual(pen.contours, [[
+        self.assertEqual(glyph.pen.contours, [[
             (0, 0, 'move', False),
             (1, 1, None, False),
             (2, 2, None, False),
@@ -1141,6 +1196,7 @@ class DrawPathsTest(unittest.TestCase):
         ]])
 
     def test_to_ufo_draw_paths_closed(self):
+        layer = GSLayer()
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='offcurve'),
@@ -1151,11 +1207,12 @@ class DrawPathsTest(unittest.TestCase):
             GSNode(position=(5, 5), nodetype='curve', smooth=True),
         ]
         path.closed = True
+        layer.paths.append(path)
 
-        pen = _PointDataPen()
-        to_ufo_draw_paths(None, pen, [path])
+        glyph = _Glyph()
+        to_ufo_paths(_UFOBuilder(), glyph, layer)
 
-        points = pen.contours[0]
+        points = glyph.pen.contours[0]
 
         first_x, first_y = points[0][:2]
         self.assertEqual((first_x, first_y), (5, 5))
@@ -1164,6 +1221,7 @@ class DrawPathsTest(unittest.TestCase):
         self.assertEqual(first_segment_type, 'curve')
 
     def test_to_ufo_draw_paths_qcurve(self):
+        layer = GSLayer()
         path = GSPath()
         path.nodes = [
             GSNode(position=(143, 695), nodetype='offcurve'),
@@ -1173,11 +1231,12 @@ class DrawPathsTest(unittest.TestCase):
             GSNode(position=(223, 334), nodetype='qcurve', smooth=True),
         ]
         path.closed = True
+        layer.paths.append(path)
 
-        pen = _PointDataPen()
-        to_ufo_draw_paths(None, pen, [path])
+        glyph = _Glyph()
+        to_ufo_paths(_UFOBuilder(), glyph, layer)
 
-        points = pen.contours[0]
+        points = glyph.pen.contours[0]
 
         first_x, first_y = points[0][:2]
         self.assertEqual((first_x, first_y), (223, 334))
@@ -1257,6 +1316,76 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
 
         captor.assertRegex("is dangling and will be skipped")
 
+
+class GlyphOrderTest(unittest.TestCase):
+    """Check that the glyphOrder data is persisted correctly in all directions.
+
+    In Glyphs, there are two pieces of information to save:
+     * The custom parameter 'glyphOrder', if provided
+     * The actual order of glyphs in the font.
+
+    We need both because:
+     * There can be glyphs in the font that are not in the glyphOrder
+     * Those extraneous glyphs are ordered automatically by Glyphs.app but
+       we don't know how, so if we want to reproduce the original ordering
+       with glyphsLib, we must store it.
+       FIXME: ask Georg how/whether we can order like Glyphs.app in glyphsLib
+
+    To match the Glyphs.app export/import behaviour, we will:
+     * set UFO's public.glyphOrder to the actual order in the font
+     * store the custom parameter 'glyphOrder' in UFO's lib, if provided.
+    """
+    def setUp(self):
+        self.font = GSFont()
+        self.font.masters.append(GSFontMaster())
+        self.font.glyphs.append(GSGlyph('a'))
+        self.font.glyphs.append(GSGlyph('c'))
+        self.font.glyphs.append(GSGlyph('f'))
+        self.ufo = Font()
+        self.ufo.newGlyph('a')
+        self.ufo.newGlyph('c')
+        self.ufo.newGlyph('f')
+
+    def from_glyphs(self):
+        builder = UFOBuilder(self.font)
+        return next(iter(builder.masters))
+
+    def from_ufo(self):
+        builder = GlyphsBuilder([self.ufo])
+        return builder.font
+
+    def test_from_glyphs_no_custom_order(self):
+        ufo = self.from_glyphs()
+        self.assertEqual(['a', 'c', 'f'], ufo.glyphOrder)
+        self.assertNotIn(GLYPHS_PREFIX + 'glyphOrder', ufo.lib)
+
+    def test_from_glyphs_with_custom_order(self):
+        self.font.customParameters['glyphOrder'] = ['a', 'b', 'c', 'd']
+        ufo = self.from_glyphs()
+        self.assertEqual(['a', 'c', 'f'], ufo.glyphOrder)
+        self.assertEqual(['a', 'b', 'c', 'd'],
+                         ufo.lib[GLYPHS_PREFIX + 'glyphOrder'])
+
+    def test_from_ufo_partial_public_order_no_custom_order(self):
+        """When we import a UFO that was not produced by glyphsLib.
+        If there was more than just 'f' that is not included in
+        public.glyphOrder, we could not know how to order them like Glyphs.app
+        """
+        self.ufo.glyphOrder = ['a', 'b', 'c', 'd']
+        font = self.from_ufo()
+        self.assertEqual(['a', 'c', 'f'],
+                         list(glyph.name for glyph in font.glyphs))
+        self.assertNotIn('glyphOrder', font.customParameters)
+
+    def test_from_ufo_complete_public_order_with_custom_order(self):
+        """Import a UFO generated by glyphsLib"""
+        self.ufo.glyphOrder = ['a', 'c', 'f']
+        self.ufo.lib[GLYPHS_PREFIX + 'glyphOrder'] = ['a', 'b', 'c', 'd']
+        font = self.from_ufo()
+        self.assertEqual(['a', 'c', 'f'],
+                         list(glyph.name for glyph in font.glyphs))
+        self.assertEqual(['a', 'b', 'c', 'd'],
+                         font.customParameters['glyphOrder'])
 
 
 if __name__ == '__main__':

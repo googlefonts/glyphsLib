@@ -19,7 +19,7 @@ import re
 
 import test_helpers
 
-NOTO_DIRECTORY = os.path.join(os.path.dirname(__file__), 'noto-source-moyogo')
+NOTO_DIRECTORY = os.path.join(os.path.dirname(__file__), 'downloaded', 'noto-source-moyogo')
 NOTO_GIT_URL = "https://github.com/moyogo/noto-source.git"
 NOTO_GIT_BRANCH = "normalized-1071"
 

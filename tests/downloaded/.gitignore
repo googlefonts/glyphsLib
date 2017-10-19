@@ -1,0 +1,5 @@
+*
+!.gitignore
+
+# This folder is for various tests files that can be downloaded from
+# GitHub repositories for extended integration tests.

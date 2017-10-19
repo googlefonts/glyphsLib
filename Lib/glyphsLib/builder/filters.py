@@ -18,7 +18,7 @@ from __future__ import (print_function, division, absolute_import,
 import logging
 import re
 
-from glyphsLib.util import cast_to_number_or_bool
+from glyphsLib.util import cast_to_number_or_bool, reverse_cast_to_number_or_bool
 
 logger = logging.getLogger(__name__)
 
@@ -70,3 +70,18 @@ def parse_glyphs_filter(filter_str, is_pre=False):
     if is_pre:
         result['pre'] = True
     return result
+
+
+def write_glyphs_filter(result):
+    elements = [result['name']]
+    if 'args' in result:
+        for arg in result['args']:
+            elements.append(reverse_cast_to_number_or_bool(arg))
+    if 'kwargs' in result:
+        for key, arg in result['kwargs'].items():
+            if key.lower() not in ('include', 'exclude'):
+                elements.append(key + ':' + reverse_cast_to_number_or_bool(arg))
+        for key, arg in result['kwargs'].items():
+            if key.lower() in ('include', 'exclude'):
+                elements.append(key + ':' + reverse_cast_to_number_or_bool(arg))
+    return ';'.join(elements)

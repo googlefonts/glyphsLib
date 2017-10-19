@@ -30,7 +30,6 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
         self.assertUFORoundtrip(empty_font)
 
     def test_GlyphsUnitTestSans(self):
-        self.skipTest("TODO")
         filename = os.path.join(os.path.dirname(__file__),
                                 'data/GlyphsUnitTestSans.glyphs')
         with open(filename) as f:

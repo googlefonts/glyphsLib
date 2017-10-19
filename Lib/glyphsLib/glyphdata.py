@@ -27,6 +27,7 @@ import unicodedata
 NARROW_PYTHON_BUILD = sys.maxunicode < 0x10FFFF
 
 
+# FIXME: (jany) Shouldn't this be the class GSGlyphInfo?
 Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 
