@@ -102,16 +102,12 @@ class Parser:
                 value = reader.read(value)
                 return value, i
 
-            if self.dict_type is None:  # for custom parameters
+            if self.dict_type is None or self.dict_type in (dict, OrderedDict):
                 self.dict_type = self._guess_dict_type(parsed, value)
 
             if self.dict_type == bool:
                 value = bool(int(value))  # bool(u'0') returns True
                 return value, i
-
-            if self.dict_type in (dict, OrderedDict):
-                if not self.start_dict_re.match(value):
-                    self.dict_type = self._guess_dict_type(parsed, value)
 
             value = self.dict_type(value)
 
