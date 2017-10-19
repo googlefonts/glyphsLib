@@ -52,7 +52,7 @@ def loads(s):
     """Read a .glyphs file from a bytes object.
     Return a GSFont object.
     """
-    p = Parser(dict_type=GSFont)
+    p = Parser(current_type=GSFont)
     logger.info('Parsing .glyphs file')
     data = p.parse(s)
     return data

@@ -34,8 +34,8 @@ class Parser:
     attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
     value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
 
-    def __init__(self, dict_type=OrderedDict):
-        self.dict_type = dict_type
+    def __init__(self, current_type=OrderedDict):
+        self.current_type = current_type
 
     def parse(self, text):
         """Do the parsing."""
@@ -55,12 +55,12 @@ class Parser:
         if m:
             i = self._parse_dict_into_object(res, text, 1)
         else:
-            self._fail('not correct file format')
+            self._fail('not correct file format', text, i)
         if text[i:].strip():
             self._fail('Unexpected trailing content', text, i)
         return i
 
-    def _guess_dict_type(self, parsed, value):
+    def _guess_current_type(self, parsed, value):
         if value in ('infinity', 'inf', 'nan'):
             # Those values would be accepted by `float()`
             # But `infinity` is a glyph name
@@ -69,14 +69,14 @@ class Parser:
             try:
                 float_val = float(value)
                 if float_val.is_integer():
-                    dict_type = int
+                    current_type = int
                 else:
-                    dict_type = float
+                    current_type = float
             except:
-                dict_type = unicode
+                current_type = unicode
         else:
-            dict_type = unicode
-        return dict_type
+            current_type = unicode
+        return current_type
 
     def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
@@ -97,19 +97,20 @@ class Parser:
         if m:
             parsed, value = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
-            if hasattr(self.dict_type, "read"):
-                reader = self.dict_type()
+            if hasattr(self.current_type, "read"):
+                reader = self.current_type()
                 value = reader.read(value)
                 return value, i
 
-            if self.dict_type is None or self.dict_type in (dict, OrderedDict):
-                self.dict_type = self._guess_dict_type(parsed, value)
+            if (self.current_type is None or
+                    self.current_type in (dict, OrderedDict)):
+                self.current_type = self._guess_current_type(parsed, value)
 
-            if self.dict_type == bool:
+            if self.current_type == bool:
                 value = bool(int(value))  # bool(u'0') returns True
                 return value, i
 
-            value = self.dict_type(value)
+            value = self.current_type(value)
 
             return value, i
 
@@ -118,8 +119,8 @@ class Parser:
 
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
-        old_dict_type = self.dict_type
-        new_type = self.dict_type
+        old_current_type = self.current_type
+        new_type = self.current_type
         if new_type is None:
             # customparameter.value needs to be set from the found value
             new_type = dict
@@ -127,19 +128,19 @@ class Parser:
             new_type = new_type[0]
         res = new_type()
         i = self._parse_dict_into_object(res, text, i)
-        self.dict_type = old_dict_type
+        self.current_type = old_current_type
         return res, i
 
     def _parse_dict_into_object(self, res, text, i):
         end_match = self.end_dict_re.match(text, i)
         while not end_match:
-            old_dict_type = self.dict_type
+            old_current_type = self.current_type
             m = self.attr_re.match(text, i)
             if not m:
                 self._fail('Unexpected dictionary content', text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
             if hasattr(res, "classForName"):
-                self.dict_type = res.classForName(name)
+                self.current_type = res.classForName(name)
             i += len(parsed)
             result = self._parse(text, i)
             try:
@@ -156,7 +157,7 @@ class Parser:
             i += len(parsed)
 
             end_match = self.end_dict_re.match(text, i)
-            self.dict_type = old_dict_type
+            self.current_type = old_current_type
         parsed = end_match.group(0)
         i += len(parsed)
         return i
@@ -166,7 +167,7 @@ class Parser:
 
         res = []
         end_match = self.end_list_re.match(text, i)
-        old_dict_type = self.dict_type
+        old_current_type = self.current_type
         while not end_match:
             list_item, i = self._parse(text, i)
             res.append(list_item)
@@ -180,7 +181,7 @@ class Parser:
                                text, i)
                 parsed = m.group(0)
                 i += len(parsed)
-            self.dict_type = old_dict_type
+            self.current_type = old_current_type
 
         parsed = end_match.group(0)
         i += len(parsed)
