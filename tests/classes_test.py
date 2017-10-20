@@ -541,6 +541,32 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertGreaterEqual(len(master.customParameters), 1)
         del(master.customParameters['trademark'])
 
+    def test_name(self):
+        master = self.master
+        self.assertEqual('Light', master.name)
+
+        master.customParameters['Master Name'] = 'My custom master name'
+        self.assertEqual('My custom master name', master.name)
+        del(master.customParameters['Master Name'])
+        self.assertEqual('Light', master.name)
+
+        master.italicAngle = 11
+        self.assertEqual('Light Italic', master.name)
+        master.italicAngle = 0
+
+        master.customName = 'Rounded'
+        self.assertEqual('Light Rounded', master.name)
+        master.customName1 = 'Stretched'
+        master.customName2 = 'Filled'
+        master.customName3 = 'Rotated'
+        self.assertEqual('Light Rounded Stretched Filled Rotated', master.name)
+        master.customName1 = ''
+        master.customName2 = ''
+        self.assertEqual('Light Rounded Rotated', master.name)
+        master.customName = ''
+        master.customName3 = ''
+        self.assertEqual('Light', master.name)
+
 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
 
