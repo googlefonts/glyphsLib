@@ -61,7 +61,7 @@ class Parser:
         return i
 
     def _guess_current_type(self, parsed, value):
-        if value in ('infinity', 'inf', 'nan'):
+        if value.lower() in ('infinity', 'inf', 'nan'):
             # Those values would be accepted by `float()`
             # But `infinity` is a glyph name
             return unicode

@@ -78,17 +78,33 @@ class ParserTest(unittest.TestCase):
             b'{mystr = infinity;}',
             [('mystr', 'infinity')]
         )
+        self.run_test(
+            b'{mystr = Infinity;}',
+            [('mystr', 'Infinity')]
+        )
+        self.run_test(
+            b'{mystr = InFiNItY;}',
+            [('mystr', 'InFiNItY')]
+        )
 
     def test_parse_str_inf(self):
         self.run_test(
             b'{mystr = inf;}',
             [('mystr', 'inf')]
         )
+        self.run_test(
+            b'{mystr = Inf;}',
+            [('mystr', 'Inf')]
+        )
 
     def test_parse_str_nan(self):
         self.run_test(
             b'{mystr = nan;}',
             [('mystr', 'nan')]
+        )
+        self.run_test(
+            b'{mystr = NaN;}',
+            [('mystr', 'NaN')]
         )
 
     def test_dont_crash_on_string_that_looks_like_a_dict(self):
