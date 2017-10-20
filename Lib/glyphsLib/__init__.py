@@ -23,7 +23,8 @@ from fontTools.misc.py23 import tostr
 
 from glyphsLib.builder import to_ufos
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import load, loads, dump, dumps
+from glyphsLib.parser import load, loads
+from glyphsLib.writer import dump, dumps
 from glyphsLib.util import write_ufo
 
 from glyphsLib.classes import *
