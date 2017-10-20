@@ -892,6 +892,12 @@ class ToUfosTest(unittest.TestCase):
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'customName'], 'FooBar')
 
+    def test_coerce_to_bool(self):
+        font = generate_minimal_font()
+        font.customParameters['Disable Last Change'] = 'Truthy'
+        ufo = to_ufos(font)[0]
+        self.assertEqual(True, ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
+
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()
         glyph = GSGlyph(name='a')
