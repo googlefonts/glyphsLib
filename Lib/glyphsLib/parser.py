@@ -15,13 +15,20 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import tounicode, unichr, unicode
+from fontTools.misc.py23 import tounicode, unichr, unicode, BytesIO
 
 from collections import OrderedDict
+from io import open
 import re
+import logging
+import sys
+
+import glyphsLib
+
+logger = logging.getLogger(__name__)
 
 
-class Parser:
+class Parser(object):
     """Parses Python dictionaries from Glyphs source files."""
 
     value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
@@ -212,3 +219,47 @@ class Parser:
         """Raise an exception with given message and text at i."""
 
         raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
+
+
+def load(fp):
+    """Read a .glyphs file. 'fp' should be (readable) file object.
+    Return a GSFont object.
+    """
+    return loads(fp.read())
+
+
+def loads(s):
+    """Read a .glyphs file from a bytes object.
+    Return a GSFont object.
+    """
+    p = Parser(current_type=glyphsLib.classes.GSFont)
+    logger.info('Parsing .glyphs file')
+    data = p.parse(s)
+    return data
+
+
+def dump(obj, fp):
+    """Write a GSFont object to a .glyphs file.
+    'fp' should be a (writable) file object.
+    """
+    writer = glyphsLib.writer.Writer(fp=fp)
+    logger.info('Writing .glyphs file')
+    writer.write(obj)
+
+
+def dumps(obj):
+    """Serialize a GSFont object to a .glyphs file format.
+    Return a bytes object.
+    """
+    fp = BytesIO()
+    dump(obj, fp)
+    return fp.getvalue()
+
+
+def main(args=None):
+    """Roundtrip the .glyphs file given as an argument."""
+    for arg in args:
+        dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

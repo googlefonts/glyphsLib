@@ -23,7 +23,7 @@ from fontTools.misc.py23 import tostr
 
 from glyphsLib.builder import to_ufos
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import Parser
+from glyphsLib.parser import load, loads, dump, dumps
 from glyphsLib.util import write_ufo
 
 from glyphsLib.classes import *
@@ -35,27 +35,11 @@ __version__ = "2.0.0.dev0"
 # Thus we need to encode the unicode literals as ascii bytes.
 # https://bugs.python.org/issue21720
 __all__ = [tostr(s) for s in (
-    "build_masters", "build_instances", "load_to_ufos", "load", "loads",
+    "build_masters", "build_instances", "load_to_ufos",
+    "load", "loads", "dump", "dumps",
 )]
 
 logger = logging.getLogger(__name__)
-
-
-def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return a GSFont object.
-    """
-    return loads(fp.read())
-
-
-def loads(s):
-    """Read a .glyphs file from a bytes object.
-    Return a GSFont object.
-    """
-    p = Parser(current_type=GSFont)
-    logger.info('Parsing .glyphs file')
-    data = p.parse(s)
-    return data
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,
