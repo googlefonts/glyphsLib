@@ -15,7 +15,7 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from fontTools.misc.py23 import tounicode, unichr, unicode, BytesIO
+from fontTools.misc.py23 import tounicode, unichr, unicode
 
 from collections import OrderedDict
 from io import open
@@ -238,28 +238,10 @@ def loads(s):
     return data
 
 
-def dump(obj, fp):
-    """Write a GSFont object to a .glyphs file.
-    'fp' should be a (writable) file object.
-    """
-    writer = glyphsLib.writer.Writer(fp=fp)
-    logger.info('Writing .glyphs file')
-    writer.write(obj)
-
-
-def dumps(obj):
-    """Serialize a GSFont object to a .glyphs file format.
-    Return a bytes object.
-    """
-    fp = BytesIO()
-    dump(obj, fp)
-    return fp.getvalue()
-
-
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
-        dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+        glyphsLib.dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

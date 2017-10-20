@@ -20,9 +20,10 @@ from __future__ import unicode_literals
 import sys
 import glyphsLib.classes
 from glyphsLib.types import floatToString, needsQuotes, feature_syntax_encode
+import logging
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, open
+from fontTools.misc.py23 import unicode, open, BytesIO
 
 '''
     Usage
@@ -31,6 +32,8 @@ from fontTools.misc.py23 import unicode, open
     writer.write(font)
 
 '''
+
+logger = logging.getLogger(__name__)
 
 
 class Writer(object):
@@ -145,3 +148,21 @@ class Writer(object):
             self.file.write("\"%s\" = " % key)
         else:
             self.file.write("%s = " % key)
+
+
+def dump(obj, fp):
+    """Write a GSFont object to a .glyphs file.
+    'fp' should be a (writable) file object.
+    """
+    writer = Writer(fp=fp)
+    logger.info('Writing .glyphs file')
+    writer.write(obj)
+
+
+def dumps(obj):
+    """Serialize a GSFont object to a .glyphs file format.
+    Return a bytes object.
+    """
+    fp = BytesIO()
+    dump(obj, fp)
+    return fp.getvalue()
