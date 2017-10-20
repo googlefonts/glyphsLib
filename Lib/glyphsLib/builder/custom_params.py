@@ -70,7 +70,10 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         # deal with any Glyphs naming quirks here
         if name == 'disablesNiceNames':
             name = 'useNiceNames'
-            value = int(not value)
+            value = not value
+
+        if name == 'Disable Last Change':
+            name = 'disablesLastChange'
 
         # convert code page numbers to OS/2 ulCodePageRange bits
         if name == 'codePageRanges':

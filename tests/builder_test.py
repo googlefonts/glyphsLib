@@ -357,6 +357,15 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(rec3['rangeMaxPPEM'], 65535)
         self.assertEqual(rec3['rangeGaspBehavior'], [0, 1, 2, 3])
 
+    def test_set_disables_nice_names(self):
+        set_custom_params(self.ufo, parsed=[('disablesNiceNames', False)])
+        self.assertEqual(True, self.ufo.lib[GLYPHS_PREFIX + 'useNiceNames'])
+
+    def test_set_disable_last_change(self):
+        set_custom_params(self.ufo, parsed=[('Disable Last Change', True)])
+        self.assertEqual(True,
+                         self.ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
+
 
 class ParseGlyphsFilterTest(unittest.TestCase):
     def test_complete_parameter(self):
