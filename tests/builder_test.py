@@ -455,7 +455,7 @@ class ToUfosTest(unittest.TestCase):
         """Test that a warning is printed when app version is missing."""
 
         font = generate_minimal_font()
-        font.appVersion = 0
+        font.appVersion = "0"
         with CapturingLogHandler(builder.logger, "WARNING") as captor:
             to_ufos(font)
         self.assertEqual(len([r for r in captor.records
