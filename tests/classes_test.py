@@ -126,7 +126,7 @@ class GSFontTest(unittest.TestCase):
         self.assertEqual(font.familyName, "Unnamed font")
         self.assertEqual(font.versionMajor, 1)
         self.assertEqual(font.versionMinor, 0)
-        self.assertEqual(font.appVersion, 0)
+        self.assertEqual(font.appVersion, "895")
 
         self.assertEqual(len(font.glyphs), 0)
         self.assertEqual(len(font.masters), 0)

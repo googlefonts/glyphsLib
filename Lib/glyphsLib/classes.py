@@ -2714,7 +2714,7 @@ class GSFont(GSBase):
         self.familyName = "Unnamed font"
         self._versionMinor = 0
         self.versionMajor = 1
-        self.appVersion = 0
+        self.appVersion = "895"  # minimum required version
         self._glyphs = []
         self._masters = []
         self._instances = []
