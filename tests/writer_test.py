@@ -142,10 +142,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # tool: not written
         # tools: not handled because it is a read-only list of GUI features
         # .appVersion (extra property that is not in the docs!)
-        font.appVersion = 895
+        font.appVersion = "895"
         self.assertWrites(font, dedent("""\
             {
-            .appVersion = 895;
+            .appVersion = "895";
             classes = (
             {
             code = "";
