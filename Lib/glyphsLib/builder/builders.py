@@ -28,7 +28,7 @@ class UFOBuilder(object):
     """Builder for Glyphs to UFO + designspace."""
 
     def __init__(self, font, defcon, family_name=None, propagate_anchors=True):
-        """Create a context for the Glyphs to UFO + designspace builder.
+        """Create a builder that goes from Glyphs to UFO + designspace.
 
         Keyword arguments:
         font -- The GSFont object to transform into UFOs
@@ -220,7 +220,7 @@ class GlyphsBuilder(object):
     """Builder for UFO + designspace to Glyphs."""
 
     def __init__(self, ufos, designspace, classes):
-        """Create a context for the UFO + designspace to Glyphs builder.
+        """Create a builder that goes from UFOs + designspace to Glyphs.
 
         Keyword arguments:
         ufos -- The list of UFOs to combine into a GSFont

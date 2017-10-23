@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def to_ufo_font_attributes(self, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data.
 
-    Modifies the list of UFOs in the context in-place.
+    Modifies the list of UFOs in the UFOBuilder (self) in-place.
     """
 
     font = self.font
@@ -110,10 +110,10 @@ def to_ufo_font_attributes(self, family_name):
 
 def to_glyphs_font_attributes(self, ufo, master, is_initial):
     """
-    Copy font attributes from `ufo` either to `context.font` or to `master`.
+    Copy font attributes from `ufo` either to `self.font` or to `master`.
 
     Arguments:
-    context -- The UFOToGlyphsContext
+    self -- The UFOBuilder
     ufo -- The current UFO being read
     master -- The current master being written
     is_initial -- True iff this the first UFO that we process
