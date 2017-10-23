@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,
-                 propagate_anchors=True, debug=False):
+                 propagate_anchors=True):
     """Load an unpacked .glyphs object to UFO objects."""
 
     if hasattr(file_or_path, 'read'):
@@ -55,8 +55,7 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
     logger.info('Loading to UFOs')
     return to_ufos(font, include_instances=include_instances,
                    family_name=family_name,
-                   propagate_anchors=propagate_anchors,
-                   debug=debug)
+                   propagate_anchors=propagate_anchors)
 
 
 def build_masters(filename, master_dir, designspace_instance_dir=None,

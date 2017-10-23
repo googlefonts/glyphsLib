@@ -18,24 +18,19 @@ from __future__ import (print_function, division, absolute_import,
 from collections import deque, OrderedDict
 import logging
 
-from .constants import GLYPHS_PREFIX
-from .guidelines import to_ufo_guidelines
 from .common import to_ufo_time
-from .names import to_ufo_names
-from .blue_values import to_ufo_blue_values
-from .user_data import to_ufo_family_user_data, to_ufo_master_user_data
-from .custom_params import to_ufo_custom_params
+from .constants import GLYPHS_PREFIX
 
 logger = logging.getLogger(__name__)
 
 
-def to_ufo_font_attributes(context, family_name):
+def to_ufo_font_attributes(self, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data.
 
     Modifies the list of UFOs in the context in-place.
     """
 
-    font = context.font
+    font = self.font
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
     # https://github.com/googlei18n/glyphsLib/issues/134
@@ -52,7 +47,7 @@ def to_ufo_font_attributes(context, family_name):
     manufacturer_url = font.manufacturerURL
 
     for master in font.masters:
-        ufo = context.defcon.Font()
+        ufo = self.defcon.Font()
 
         if date_created is not None:
             ufo.info.openTypeHeadCreated = date_created
@@ -100,19 +95,20 @@ def to_ufo_font_attributes(context, family_name):
             if custom_value:
                 ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
 
-        to_ufo_names(context, ufo, master, family_name)
-        to_ufo_blue_values(context, ufo, master)
-        to_ufo_family_user_data(context, ufo)
-        to_ufo_master_user_data(context, ufo, master)
-        to_ufo_guidelines(context, ufo, master)
-        to_ufo_custom_params(context, ufo, master)
+        self.to_ufo_names(ufo, master, family_name)
+        self.to_ufo_blue_values(ufo, master)
+        self.to_ufo_family_user_data(ufo)
+        self.to_ufo_master_user_data(ufo, master)
+        self.to_ufo_guidelines(ufo, master)
+        self.to_ufo_custom_params(ufo, master)
 
         master_id = master.id
         ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
-        context.ufos[master_id] = ufo
+        # FIXME: (jany) in the future, yield this UFO (for memory, laze iter)
+        self._ufos[master_id] = ufo
 
 
-def to_glyphs_font_attributes(context, ufo, master, is_initial):
+def to_glyphs_font_attributes(self, ufo, master, is_initial):
     """
     Copy font attributes from `ufo` either to `context.font` or to `master`.
 

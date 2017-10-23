@@ -17,15 +17,11 @@ from __future__ import (print_function, division, absolute_import,
 
 import glyphsLib
 from .common import to_ufo_time
-from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX, \
-    PUBLIC_PREFIX
-from .paths import draw_paths
-from .components import draw_components
-from .anchors import add_anchors_to_glyph
-from .guidelines import to_ufo_guidelines
+from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
+                        PUBLIC_PREFIX)
 
 
-def load_glyph(context, ufo_glyph, layer, glyph_data):
+def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
 
     uval = glyph_data.unicode
@@ -85,15 +81,15 @@ def load_glyph(context, ufo_glyph, layer, glyph_data):
         ufo_glyph.width = 0
     else:
         ufo_glyph.width = width
-    load_glyph_libdata(context, ufo_glyph, layer)
+    self.to_ufo_glyph_libdata(ufo_glyph, layer)
 
     pen = ufo_glyph.getPointPen()
-    draw_paths(pen, layer.paths)
-    draw_components(pen, layer.components)
-    add_anchors_to_glyph(ufo_glyph, layer.anchors)
+    self.to_ufo_draw_paths(pen, layer.paths)
+    self.to_ufo_draw_components(pen, layer.components)
+    self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
 
 
-def set_glyph_background(context, glyph, background):
+def to_ufo_glyph_background(self, glyph, background):
     """Set glyph background."""
 
     if not background:
@@ -111,17 +107,17 @@ def set_glyph_background(context, glyph, background):
     new_glyph = layer.newGlyph(glyph.name)
     new_glyph.width = glyph.width
     pen = new_glyph.getPointPen()
-    draw_paths(pen, background.paths)
-    draw_components(pen, background.components)
-    add_anchors_to_glyph(new_glyph, background.anchors)
-    to_ufo_guidelines(context, new_glyph, background)
+    self.to_ufo_draw_paths(pen, background.paths)
+    self.to_ufo_draw_components(pen, background.components)
+    self.to_ufo_glyph_anchors(new_glyph, background.anchors)
+    self.to_ufo_guidelines(new_glyph, background)
 
 
-def load_glyph_libdata(context, glyph, layer):
+def to_ufo_glyph_libdata(self, glyph, layer):
     """Add to a glyph's lib data."""
 
-    to_ufo_guidelines(context, glyph, layer)
-    set_glyph_background(context, glyph, layer.background)
+    self.to_ufo_guidelines(glyph, layer)
+    self.to_ufo_glyph_background(glyph, layer.background)
     for key in ['annotations', 'hints']:
         try:
             value = getattr(layer, key)

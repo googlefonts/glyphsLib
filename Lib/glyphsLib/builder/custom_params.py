@@ -19,13 +19,13 @@ import re
 
 from glyphsLib.util import bin_to_int_list
 from .filters import parse_glyphs_filter
-from .constants import GLYPHS_PREFIX, PUBLIC_PREFIX, CODEPAGE_RANGES, \
-    UFO2FT_FILTERS_KEY
+from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX, CODEPAGE_RANGES,
+                        UFO2FT_FILTERS_KEY)
 
 
-def to_ufo_custom_params(context, ufo, master):
+def to_ufo_custom_params(self, ufo, master):
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
-    custom_params = parse_custom_params(context.font, misc)
+    custom_params = parse_custom_params(self.font, misc)
     set_custom_params(ufo, parsed=custom_params)
     # the misc attributes double as deprecated info attributes!
     # they are Glyphs-related, not OpenType-related, and don't go in info

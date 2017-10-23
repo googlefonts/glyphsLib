@@ -25,16 +25,16 @@ def autostr(automatic):
     return '# automatic\n' if automatic else ''
 
 
-def to_ufo_features(context, ufo):
+def to_ufo_features(self, ufo):
     """Write an UFO's OpenType feature file."""
 
     prefix_str = '\n\n'.join('# Prefix: %s\n%s%s' %
                              (prefix.name, autostr(prefix.automatic),
                               prefix.code.strip())
-                             for prefix in context.font.featurePrefixes)
+                             for prefix in self.font.featurePrefixes)
 
     class_defs = []
-    for class_ in context.font.classes:
+    for class_ in self.font.classes:
         prefix = '@' if not class_.name.startswith('@') else ''
         name = prefix + class_.name
         class_defs.append('%s%s = [ %s ];' % (autostr(class_.automatic), name,
@@ -42,7 +42,7 @@ def to_ufo_features(context, ufo):
     class_str = '\n\n'.join(class_defs)
 
     feature_defs = []
-    for feature in context.font.features:
+    for feature in self.font.features:
         code = feature.code.strip()
         lines = ['feature %s {' % name]
         if feature.notes:
@@ -58,7 +58,7 @@ def to_ufo_features(context, ufo):
         lines.append('} %s;' % feature.name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
-    gdef_str = build_gdef(ufo)
+    gdef_str = _build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
     full_text = '\n\n'.join(
@@ -66,7 +66,7 @@ def to_ufo_features(context, ufo):
     ufo.features.text = full_text if full_text.strip() else ''
 
 
-def build_gdef(ufo):
+def _build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
     bases, ligatures, marks, carets = set(), set(), set(), {}
     category_key = GLYPHLIB_PREFIX + 'category'

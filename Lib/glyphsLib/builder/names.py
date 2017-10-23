@@ -18,7 +18,7 @@ from __future__ import (print_function, division, absolute_import,
 from collections import deque
 
 
-def to_ufo_names(context, ufo, master, family_name):
+def to_ufo_names(self, ufo, master, family_name):
     width = master.width
     weight = master.weight
     custom = master.customName

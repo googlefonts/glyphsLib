@@ -31,22 +31,23 @@ except ImportError:
 from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
-    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, \
-    GSComponent, GSAlignmentZone, GSGuideLine
+from glyphsLib.classes import (
+    GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
+    GSPath, GSNode, GSAnchor, GSComponent, GSAlignmentZone, GSGuideLine)
 from glyphsLib.types import point
 
 from glyphsLib.builder import to_ufos
-from glyphsLib.builder.paths import draw_paths
-from glyphsLib.builder.custom_params import set_custom_params, \
-    set_default_params
+from glyphsLib.builder.paths import to_ufo_draw_paths
+from glyphsLib.builder.custom_params import (set_custom_params,
+                                             set_default_params)
 from glyphsLib.builder.names import build_stylemap_names, build_style_name
 from glyphsLib.builder.filters import parse_glyphs_filter
-from glyphsLib.builder.constants import GLYPHS_PREFIX, PUBLIC_PREFIX, \
-    GLYPHLIB_PREFIX
+from glyphsLib.builder.constants import (GLYPHS_PREFIX, PUBLIC_PREFIX,
+                                         GLYPHLIB_PREFIX)
 
-from classes_test import generate_minimal_font, generate_instance_from_dict, \
-    add_glyph, add_anchor, add_component
+from classes_test import (generate_minimal_font, generate_instance_from_dict,
+                          add_glyph, add_anchor, add_component)
+
 
 class BuildStyleNameTest(unittest.TestCase):
 
@@ -975,15 +976,15 @@ class _PointDataPen(object):
 
 class DrawPathsTest(unittest.TestCase):
 
-    def test_draw_paths_empty_nodes(self):
+    def test_to_ufo_draw_paths_empty_nodes(self):
         contours = [GSPath()]
 
         pen = _PointDataPen()
-        draw_paths(pen, contours)
+        to_ufo_draw_paths(None, pen, contours)
 
         self.assertEqual(pen.contours, [])
 
-    def test_draw_paths_open(self):
+    def test_to_ufo_draw_paths_open(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='line'),
@@ -993,7 +994,7 @@ class DrawPathsTest(unittest.TestCase):
         ]
         path.closed = False
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         self.assertEqual(pen.contours, [[
             (0, 0, 'move', False),
@@ -1002,7 +1003,7 @@ class DrawPathsTest(unittest.TestCase):
             (3, 3, 'curve', True),
         ]])
 
-    def test_draw_paths_closed(self):
+    def test_to_ufo_draw_paths_closed(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='offcurve'),
@@ -1015,7 +1016,7 @@ class DrawPathsTest(unittest.TestCase):
         path.closed = True
 
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         points = pen.contours[0]
 
@@ -1025,7 +1026,7 @@ class DrawPathsTest(unittest.TestCase):
         first_segment_type = points[0][2]
         self.assertEqual(first_segment_type, 'curve')
 
-    def test_draw_paths_qcurve(self):
+    def test_to_ufo_draw_paths_qcurve(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(143, 695), nodetype='offcurve'),
@@ -1037,7 +1038,7 @@ class DrawPathsTest(unittest.TestCase):
         path.closed = True
 
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         points = pen.contours[0]
 

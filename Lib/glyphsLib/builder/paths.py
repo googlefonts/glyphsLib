@@ -16,7 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-def draw_paths(pen, paths):
+def to_ufo_draw_paths(self, pen, paths):
     """Draw .glyphs paths onto a pen."""
 
     for path in paths:

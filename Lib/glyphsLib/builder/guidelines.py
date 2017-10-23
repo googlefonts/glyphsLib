@@ -15,10 +15,8 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from glyphsLib.types import point
 
-
-def to_ufo_guidelines(_context, ufo_obj, glyphs_obj):
+def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
     """Set guidelines."""
     guidelines = glyphs_obj.guides
     if not guidelines:
@@ -33,6 +31,6 @@ def to_ufo_guidelines(_context, ufo_obj, glyphs_obj):
     ufo_obj.guidelines = new_guidelines
 
 
-def to_glyphs_guidelines(context, glyphs_obj, ufo_obj):
+def to_glyphs_guidelines(self, glyphs_obj, ufo_obj):
     """Set guidelines."""
     pass

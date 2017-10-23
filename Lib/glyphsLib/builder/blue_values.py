@@ -16,7 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-def to_ufo_blue_values(_context, ufo, master):
+def to_ufo_blue_values(self, ufo, master):
     """Set postscript blue values from Glyphs alignment zones."""
 
     alignment_zones = master.alignmentZones
@@ -32,5 +32,5 @@ def to_ufo_blue_values(_context, ufo, master):
     ufo.info.postscriptOtherBlues = other_blues
 
 
-def to_glyphs_blue_values(context, ufo, master):
+def to_glyphs_blue_values(self, ufo, master):
     pass

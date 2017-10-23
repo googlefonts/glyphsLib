@@ -16,7 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-def draw_components(pen, components):
+def to_ufo_draw_components(self, pen, components):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
 
     for component in components:

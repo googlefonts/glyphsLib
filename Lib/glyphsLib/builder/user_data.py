@@ -20,14 +20,14 @@ from .constants import GLYPHS_PREFIX
 MASTER_USER_DATA_KEY = GLYPHS_PREFIX + 'fontMaster.userData'
 
 
-def to_ufo_family_user_data(context, ufo):
+def to_ufo_family_user_data(self, ufo):
     """Set family-wide user data as Glyphs does."""
-    user_data = context.font.userData
+    user_data = self.font.userData
     for key in user_data.keys():
         ufo.lib[key] = user_data[key]
 
 
-def to_ufo_master_user_data(_context, ufo, master):
+def to_ufo_master_user_data(self, ufo, master):
     """Set master-specific user data as Glyphs does."""
     user_data = master.userData
     if user_data:
@@ -37,11 +37,11 @@ def to_ufo_master_user_data(_context, ufo, master):
         ufo.lib[MASTER_USER_DATA_KEY] = data
 
 
-def to_glyphs_family_user_data(context, ufo):
+def to_glyphs_family_user_data(self, ufo):
     """Set the GSFont userData from the UFO family-wide user data."""
     pass
 
 
-def to_glyphs_master_user_data(_context, ufo, master):
+def to_glyphs_master_user_data(self, ufo, master):
     """Set the GSFontMaster userData from the UFO master-specific user data."""
     pass

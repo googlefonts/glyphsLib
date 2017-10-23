@@ -21,7 +21,7 @@ import re
 logger = logging.getLogger(__name__)
 
 
-def load_kerning(ufo, kerning_data):
+def to_ufo_kerning(self, ufo, kerning_data):
     """Add .glyphs kerning to an UFO."""
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
@@ -53,10 +53,10 @@ def load_kerning(ufo, kerning_data):
 
     seen = {}
     for classname, glyph, is_left_class in reversed(class_glyph_pairs):
-        remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class)
+        _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class)
 
 
-def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
+def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
     """Check if a class-to-glyph kerning rule has a conflict with any existing
     rule in `seen`, and remove any conflicts if they exist.
     """
@@ -88,7 +88,7 @@ def remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
             ufo.kerning[pair] = val
 
 
-def add_glyph_to_groups(kerning_groups, glyph_data):
+def to_ufo_glyph_groups(self, kerning_groups, glyph_data):
     """Add a glyph to its kerning groups, creating new groups if necessary."""
 
     glyph_name = glyph_data.name
@@ -103,7 +103,7 @@ def add_glyph_to_groups(kerning_groups, glyph_data):
         kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
 
 
-def add_groups_to_ufo(ufo, kerning_groups):
+def to_ufo_kerning_groups(self, ufo, kerning_groups):
     """Add kerning groups to an UFO."""
 
     for name, glyphs in kerning_groups.items():
