@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
@@ -21,10 +20,11 @@ import logging
 import os
 import xml.etree.ElementTree as etree
 
-from glyphsLib.builder.ufo import set_custom_params, build_stylemap_names
+from glyphsLib.builder.custom_params import set_custom_params
+from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 
-from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo, clear_data
+from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
 __all__ = [
     'interpolate', 'build_designspace', 'apply_instance_data'
@@ -73,10 +73,9 @@ WIDTH_CODES = {
 }
 
 
-def interpolate(ufos, master_dir, out_dir, instance_data, debug=False,
-                round_geometry=True):
+def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
     """Create MutatorMath designspace and generate instances.
-    Returns instance UFOs, or unused instance data if debug is True.
+    Returns instance UFOs.
     """
     from mutatorMath.ufo import build
 
@@ -90,8 +89,6 @@ def interpolate(ufos, master_dir, out_dir, instance_data, debug=False,
           roundGeometry=round_geometry)
 
     instance_ufos = apply_instance_data(instance_files)
-    if debug:
-        return clear_data(instance_data)
     return instance_ufos
 
 

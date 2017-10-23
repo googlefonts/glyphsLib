@@ -1031,7 +1031,9 @@ class GSCustomParameter(GSBase):
     _CUSTOM_BOOL_PARAMS = frozenset((
         'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
         'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour',
-        'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning', 'Disable Subroutines', 'Don\'t use Production Names'))
+        'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning',
+        'Disable Subroutines', 'Don\'t use Production Names',
+        'Disable Last Change'))
     _CUSTOM_INTLIST_PARAMS = frozenset((
         'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
         'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
@@ -2335,9 +2337,9 @@ class GSBackgroundLayer(GSBase):
         "paths": GSPath,
         "visible": bool,
     }
-
-    def shouldWriteValueForKey(self, key):
-        return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
+    _wrapperKeysTranslate = {
+        "guideLines": "guides",
+    }
 
 
 class GSLayer(GSBase):

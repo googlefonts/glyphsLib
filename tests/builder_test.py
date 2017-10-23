@@ -31,19 +31,23 @@ except ImportError:
 from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, \
-    GSCustomParameter, GSGlyph, GSLayer, GSPath, GSNode, GSAnchor, \
-    GSComponent, GSAlignmentZone, GSGuideLine
+from glyphsLib.classes import (
+    GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
+    GSPath, GSNode, GSAnchor, GSComponent, GSAlignmentZone, GSGuideLine)
 from glyphsLib.types import point
 
-from glyphsLib.builder.ufo import build_style_name, set_custom_params, \
-    to_ufos, draw_paths, set_default_params, parse_glyphs_filter, \
-    build_stylemap_names
-from glyphsLib.builder.constants import GLYPHS_PREFIX, PUBLIC_PREFIX, \
-    GLYPHLIB_PREFIX
+from glyphsLib.builder import to_ufos
+from glyphsLib.builder.paths import to_ufo_draw_paths
+from glyphsLib.builder.custom_params import (set_custom_params,
+                                             set_default_params)
+from glyphsLib.builder.names import build_stylemap_names, build_style_name
+from glyphsLib.builder.filters import parse_glyphs_filter
+from glyphsLib.builder.constants import (GLYPHS_PREFIX, PUBLIC_PREFIX,
+                                         GLYPHLIB_PREFIX)
 
-from classes_test import generate_minimal_font, generate_instance_from_dict, \
-    add_glyph, add_anchor, add_component
+from classes_test import (generate_minimal_font, generate_instance_from_dict,
+                          add_glyph, add_anchor, add_component)
+
 
 class BuildStyleNameTest(unittest.TestCase):
 
@@ -312,7 +316,7 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(self.ufo, parsed=[('underlineThickness', 0)])
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
-    @patch('glyphsLib.builder.ufo.parse_glyphs_filter')
+    @patch('glyphsLib.builder.custom_params.parse_glyphs_filter')
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
         filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
         filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
@@ -353,6 +357,15 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(rec2['rangeGaspBehavior'], [0, 1, 2])
         self.assertEqual(rec3['rangeMaxPPEM'], 65535)
         self.assertEqual(rec3['rangeGaspBehavior'], [0, 1, 2, 3])
+
+    def test_set_disables_nice_names(self):
+        set_custom_params(self.ufo, parsed=[('disablesNiceNames', False)])
+        self.assertEqual(True, self.ufo.lib[GLYPHS_PREFIX + 'useNiceNames'])
+
+    def test_set_disable_last_change(self):
+        set_custom_params(self.ufo, parsed=[('Disable Last Change', True)])
+        self.assertEqual(True,
+                         self.ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
 
 
 class ParseGlyphsFilterTest(unittest.TestCase):
@@ -872,13 +885,19 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_custom(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(GLYPHS_PREFIX + 'custom' in ufo.lib)
+        self.assertFalse(GLYPHS_PREFIX + 'customName' in ufo.lib)
 
     def test_lib_custom(self):
         font = generate_minimal_font()
         font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
-        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'custom'], 'FooBar')
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'customName'], 'FooBar')
+
+    def test_coerce_to_bool(self):
+        font = generate_minimal_font()
+        font.customParameters['Disable Last Change'] = 'Truthy'
+        ufo = to_ufos(font)[0]
+        self.assertEqual(True, ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
 
     def _run_guideline_test(self, data_in, expected):
         font = generate_minimal_font()
@@ -957,15 +976,15 @@ class _PointDataPen(object):
 
 class DrawPathsTest(unittest.TestCase):
 
-    def test_draw_paths_empty_nodes(self):
+    def test_to_ufo_draw_paths_empty_nodes(self):
         contours = [GSPath()]
 
         pen = _PointDataPen()
-        draw_paths(pen, contours)
+        to_ufo_draw_paths(None, pen, contours)
 
         self.assertEqual(pen.contours, [])
 
-    def test_draw_paths_open(self):
+    def test_to_ufo_draw_paths_open(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='line'),
@@ -975,7 +994,7 @@ class DrawPathsTest(unittest.TestCase):
         ]
         path.closed = False
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         self.assertEqual(pen.contours, [[
             (0, 0, 'move', False),
@@ -984,7 +1003,7 @@ class DrawPathsTest(unittest.TestCase):
             (3, 3, 'curve', True),
         ]])
 
-    def test_draw_paths_closed(self):
+    def test_to_ufo_draw_paths_closed(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(0, 0), nodetype='offcurve'),
@@ -997,7 +1016,7 @@ class DrawPathsTest(unittest.TestCase):
         path.closed = True
 
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         points = pen.contours[0]
 
@@ -1007,7 +1026,7 @@ class DrawPathsTest(unittest.TestCase):
         first_segment_type = points[0][2]
         self.assertEqual(first_segment_type, 'curve')
 
-    def test_draw_paths_qcurve(self):
+    def test_to_ufo_draw_paths_qcurve(self):
         path = GSPath()
         path.nodes = [
             GSNode(position=(143, 695), nodetype='offcurve'),
@@ -1019,7 +1038,7 @@ class DrawPathsTest(unittest.TestCase):
         path.closed = True
 
         pen = _PointDataPen()
-        draw_paths(pen, [path])
+        to_ufo_draw_paths(None, pen, [path])
 
         points = pen.contours[0]
 
