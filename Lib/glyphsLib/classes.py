@@ -877,15 +877,20 @@ class CustomParametersProxy(Proxy):
         if isinstance(key, int):
             return self._owner._customParameters[key]
         else:
-            for customParameter in self._owner._customParameters:
-                if customParameter.name == key:
-                    return customParameter.value
+            customParameter = self._get_parameter_by_key(key)
+            if customParameter is not None:
+                return customParameter.value
         return None
 
+    def _get_parameter_by_key(self, key):
+        for customParameter in self._owner._customParameters:
+            if customParameter.name == key:
+                return customParameter
+
     def __setitem__(self, key, value):
-        Value = self.__getitem__(key)
-        if Value is not None:
-            Value.value = value
+        customParameter = self._get_parameter_by_key(key)
+        if customParameter is not None:
+            customParameter.value = value
         else:
             parameter = GSCustomParameter(name=key, value=value)
             self._owner._customParameters.append(parameter)
