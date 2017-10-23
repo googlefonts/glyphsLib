@@ -18,29 +18,35 @@ from __future__ import (print_function, division, absolute_import,
 from collections import OrderedDict
 import logging
 
+import defcon
 
 logger = logging.getLogger(__name__)
 
+from glyphsLib import classes
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX
 
 
 class UFOBuilder(object):
     """Builder for Glyphs to UFO + designspace."""
 
-    def __init__(self, font, defcon, family_name=None, propagate_anchors=True):
+    def __init__(self,
+                 font,
+                 ufo_module=defcon,
+                 family_name=None,
+                 propagate_anchors=True):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
         Keyword arguments:
         font -- The GSFont object to transform into UFOs
-        defcon -- The defcon module to use to build UFO objects (you can pass
-                  a custom module that has the same classes as the official
-                  defcon to get instances of your own classes)
+        ufo_module -- A Python module to use to build UFO objects (you can pass
+                      a custom module that has the same classes as the official
+                      defcon to get instances of your own classes)
         family_name -- if provided, the master UFOs will be given this name and
                        only instances with this name will be returned.
         propagate_anchors -- set to False to prevent anchor propagation
         """
         self.font = font
-        self.defcon = defcon
+        self.ufo_module = ufo_module
 
         # The set of UFOs (= defcon.Font objects) that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.
@@ -77,7 +83,7 @@ class UFOBuilder(object):
 
 
     @property
-    def master_ufos(self):
+    def masters(self):
         """Get an iterator over master UFOs that match the given family_name.
         """
         if self._ufos:
@@ -173,7 +179,7 @@ class UFOBuilder(object):
                                            self._instance_family_name))
         instance_data = {'data': instances}
 
-        first_ufo = next(iter(self.master_ufos))
+        first_ufo = next(iter(self.masters))
 
         # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
         # shared by all the master ufos; here we just get it from the first one
@@ -219,20 +225,22 @@ def filter_instances_by_family(instances, family_name=None):
 class GlyphsBuilder(object):
     """Builder for UFO + designspace to Glyphs."""
 
-    def __init__(self, ufos, designspace, classes):
+    def __init__(self, ufos, designspace=None, glyphs_module=classes):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
         Keyword arguments:
         ufos -- The list of UFOs to combine into a GSFont
         designspace -- A MutatorMath Designspace to use for the GSFont
-        classes -- The glyphsLib.classes module to use to build glyphsLib
-                   classes (you can pass a custom module with the same classes
-                   as the official glyphsLib.classes to get instances of your
-                   own classes)
+        glyphs_module -- The glyphsLib.classes module to use to build glyphsLib
+                         classes (you can pass a custom module with the same
+                         classes as the official glyphsLib.classes to get
+                         instances of your own classes, or pass the Glyphs.app
+                         module that holds the official classes to import UFOs
+                         into Glyphs.app)
         """
         self.ufos = ufos
         self.designspace = designspace
-        self.classes = classes
+        self.glyphs_module = glyphs_module
 
         self._font = None
         """The GSFont that will be built."""
@@ -244,9 +252,9 @@ class GlyphsBuilder(object):
         if self._font is not None:
             return self._font
 
-        self._font = self.classes.GSFont()
+        self._font = self.glyphs_module.GSFont()
         for index, ufo in enumerate(self.ufos):
-            master = self.classes.GSFontMaster()
+            master = self.glyphs_module.GSFontMaster()
             self.to_glyphs_font_attributes(ufo, master,
                                            is_initial=(index == 0))
             self._font.masters.insert(len(self._font.masters), master)

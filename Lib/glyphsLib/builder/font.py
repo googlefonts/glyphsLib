@@ -47,7 +47,7 @@ def to_ufo_font_attributes(self, family_name):
     manufacturer_url = font.manufacturerURL
 
     for master in font.masters:
-        ufo = self.defcon.Font()
+        ufo = self.ufo_module.Font()
 
         if date_created is not None:
             ufo.info.openTypeHeadCreated = date_created
