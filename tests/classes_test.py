@@ -139,6 +139,13 @@ class GSFontTest(unittest.TestCase):
         font = GSFont()
         self.assertEqual(repr(font), '<GSFont "Unnamed font">')
 
+    def test_update_custom_parameter(self):
+        font = GSFont()
+        font.customParameters['Filter'] = 'RemoveOverlap'
+        self.assertEqual(font.customParameters['Filter'], 'RemoveOverlap')
+        font.customParameters['Filter'] = 'AddExtremes'
+        self.assertEqual(font.customParameters['Filter'], 'AddExtremes')
+
 
 class GSObjectsTestCase(unittest.TestCase):
 
