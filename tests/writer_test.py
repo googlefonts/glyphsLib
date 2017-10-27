@@ -826,14 +826,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # scale
         component.scale = 2.0
         # rotation
-        component.rotation = math.pi/2
+        component.rotation = 90
         # componentName: already set at init
         # component: read-only
         # layer: read-only
         # transform: already set using scale & position
-        # FIXME: (jany) the results don't look very precise:
-        #   with an integer scale and 90° rotation, the resulting matrix
-        #   should have integer coefficients?
         # bounds: read-only, objective-c
         # automaticAlignment
         component.automaticAlignment = True
@@ -852,7 +849,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             piece = {
             crotchDepth = -77;
             };
-            transform = "{1.99925, 0.05482, -0.05482, 1.99925, 45.5, 250}";
+            transform = "{0, 2, -2, 0, 45.5, 250}";
             }
         """))
 
