@@ -16,7 +16,6 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import glyphsLib
-import glyphsLib.glyphdata
 from .common import to_ufo_time
 from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)
@@ -24,6 +23,7 @@ from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
+    import glyphsLib.glyphdata  # Expensive import
 
     uval = glyph_data.unicode
     if uval is not None:

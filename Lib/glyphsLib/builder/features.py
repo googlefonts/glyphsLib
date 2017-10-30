@@ -18,7 +18,6 @@ from __future__ import (print_function, division, absolute_import,
 from fontTools.misc.py23 import round, unicode
 
 import glyphsLib
-import glyphsLib.glyphdata
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
@@ -69,6 +68,8 @@ def to_ufo_features(self, ufo):
 
 def _build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
+    import glyphsLib.glyphdata  # Expensive import
+
     bases, ligatures, marks, carets = set(), set(), set(), {}
     category_key = GLYPHLIB_PREFIX + 'category'
     subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
