@@ -44,7 +44,7 @@ def to_ufo_features(self, ufo):
     feature_defs = []
     for feature in self.font.features:
         code = feature.code.strip()
-        lines = ['feature %s {' % name]
+        lines = ['feature %s {' % feature.name]
         if feature.notes:
             lines.append('# notes:')
             lines.extend('# ' + line for line in feature.notes.splitlines())
