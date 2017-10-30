@@ -28,9 +28,10 @@ from fontTools.misc.py23 import unicode, open, BytesIO
 '''
     Usage
 
-    writer = Writer('Path/to/File.glyphs')
-    writer.write(font)
-
+    >> fp = open('Path/to/File.glyphs', 'w')
+    >> writer = Writer(fp)
+    >> writer.write(font)
+    >> fp.close()
 '''
 
 logger = logging.getLogger(__name__)
@@ -38,23 +39,22 @@ logger = logging.getLogger(__name__)
 
 class Writer(object):
 
-    def __init__(self, filePath=None, fp=None):
-
-        self.close = False
-        if fp is not None:
+    def __init__(self, fp):
+        # figure out whether file object expects bytes or unicodes
+        try:
+            fp.write(b'')
+        except TypeError:
+            fp.write(u'')  # this better not fail...
+            # file already accepts unicodes; use it directly
             self.file = fp
-        elif filePath is None:
-            self.file = sys.stdout
         else:
-            self.file = open(filePath, "w")
-            self.close = True
+            # file expects bytes; wrap it in a UTF-8 codecs.StreamWriter
+            import codecs
+            self.file = codecs.getwriter('utf-8')(fp)
 
-    def write(self, baseObject):
-
-        self.writeDict(baseObject)
+    def write(self, rootObject):
+        self.writeDict(rootObject)
         self.file.write("\n")
-        if self.close:
-            self.file.close()
 
     def writeDict(self, dictValue):
         self.file.write("{\n")
@@ -154,15 +154,15 @@ def dump(obj, fp):
     """Write a GSFont object to a .glyphs file.
     'fp' should be a (writable) file object.
     """
-    writer = Writer(fp=fp)
+    writer = Writer(fp)
     logger.info('Writing .glyphs file')
     writer.write(obj)
 
 
 def dumps(obj):
     """Serialize a GSFont object to a .glyphs file format.
-    Return a bytes object.
+    Return a (unicode) str object.
     """
-    fp = BytesIO()
+    fp = UnicodeIO()
     dump(obj, fp)
     return fp.getvalue()
