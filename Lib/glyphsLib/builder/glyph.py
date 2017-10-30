@@ -16,6 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import glyphsLib
+import glyphsLib.glyphdata
 from .common import to_ufo_time
 from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)

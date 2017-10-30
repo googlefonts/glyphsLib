@@ -18,6 +18,7 @@ from __future__ import (print_function, division, absolute_import,
 from fontTools.misc.py23 import round, unicode
 
 import glyphsLib
+import glyphsLib.glyphdata
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
