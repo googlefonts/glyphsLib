@@ -23,7 +23,7 @@ from glyphsLib.util import cast_to_number_or_bool
 logger = logging.getLogger(__name__)
 
 
-def parse_glyphs_filter(filter_str):
+def parse_glyphs_filter(filter_str, is_pre=False):
     """Parses glyphs custom filter string into a dict object that
        ufo2ft can consume.
 
@@ -67,4 +67,6 @@ def parse_glyphs_filter(filter_str):
             if 'args' not in result:
                 result['args'] = []
             result['args'].append(cast_to_number_or_bool(elem))
+    if is_pre:
+        result['pre'] = True
     return result

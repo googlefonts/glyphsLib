@@ -128,8 +128,9 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
         if name == 'glyphOrder':
             # store the public.glyphOrder in lib.plist
             ufo.lib[PUBLIC_PREFIX + name] = value
-        elif name == 'Filter':
-            filter_struct = parse_glyphs_filter(value)
+        elif name in ('PreFilter', 'Filter'):
+            filter_struct = parse_glyphs_filter(
+                value, is_pre=name.startswith('Pre'))
             if not filter_struct:
                 continue
             if UFO2FT_FILTERS_KEY not in ufo.lib.keys():

@@ -318,13 +318,22 @@ class SetCustomParamsTest(unittest.TestCase):
 
     @patch('glyphsLib.builder.custom_params.parse_glyphs_filter')
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
-        filter1 = ('Filter', 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
-        filter2 = ('Filter', 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
-        set_custom_params(self.ufo, parsed=[filter1, filter2])
+        filter1 = ('PreFilter', 'AddExtremes')
+        filter2 = (
+            'Filter',
+            'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335')
+        filter3 = (
+            'Filter',
+            'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335')
+        set_custom_params(self.ufo, parsed=[filter1, filter2, filter3])
 
-        self.assertEqual(mock_parse_glyphs_filter.call_count, 2)
-        self.assertEqual(mock_parse_glyphs_filter.call_args_list[0], mock.call(filter1[1]))
-        self.assertEqual(mock_parse_glyphs_filter.call_args_list[1], mock.call(filter2[1]))
+        self.assertEqual(mock_parse_glyphs_filter.call_count, 3)
+        self.assertEqual(mock_parse_glyphs_filter.call_args_list[0],
+                         mock.call(filter1[1], is_pre=True))
+        self.assertEqual(mock_parse_glyphs_filter.call_args_list[1],
+                         mock.call(filter2[1], is_pre=False))
+        self.assertEqual(mock_parse_glyphs_filter.call_args_list[2],
+                         mock.call(filter3[1], is_pre=False))
 
     def test_set_defaults(self):
         set_default_params(self.ufo)
@@ -384,6 +393,15 @@ class ParseGlyphsFilterTest(unittest.TestCase):
             'exclude': ['uni0334', 'uni0335', 'uni0336'],
         }
         result = parse_glyphs_filter(inputstr)
+        self.assertEqual(result, expected)
+
+    def test_is_pre(self):
+        inputstr = 'Dummy'
+        expected = {
+            'name': 'Dummy',
+            'pre': True,
+        }
+        result = parse_glyphs_filter(inputstr, is_pre=True)
         self.assertEqual(result, expected)
 
     def test_positional_parameter(self):
