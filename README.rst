@@ -47,7 +47,7 @@ Read and write Glyphs data as Python objects
     with open('MyFont.glyphs', 'wb') as glyphs_file:
         glyphsLib.dump(font, glyphs_file)
 
-The `glyphsLib.classes` module aims to provide an interface similar to
+The ``glyphsLib.classes`` module aims to provide an interface similar to
 Glyphs.app's `Python Scripting API <https://docu.glyphsapp.com>`__.
 
 Note that currently not all the classes and methods may be fully
