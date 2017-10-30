@@ -26,6 +26,7 @@ from glyphsLib.interpolation import interpolate, build_designspace
 from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import write_ufo
+import glyphsLib.classes
 
 from glyphsLib.classes import *
 
@@ -39,6 +40,7 @@ __all__ = [tostr(s) for s in (
     "build_masters", "build_instances", "load_to_ufos",
     "load", "loads", "dump", "dumps",
 )]
+__all__.extend(glyphsLib.classes.__all__)
 
 logger = logging.getLogger(__name__)
 
