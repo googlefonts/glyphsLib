@@ -21,16 +21,16 @@ from textwrap import dedent
 import glyphsLib
 from glyphsLib.builder import to_glyphs, to_ufos
 from glyphsLib.writer import Writer
-from fontTools.misc.py23 import StringIO
+from fontTools.misc.py23 import UnicodeIO
 
 
 def write_to_lines(glyphs_object):
     """
-    Use the Writer to write the given object to a StringIO.
+    Use the Writer to write the given object to a UnicodeIO.
     Return an array of lines ready for diffing.
     """
-    string = StringIO()
-    writer = Writer(fp=string)
+    string = UnicodeIO()
+    writer = Writer(string)
     writer.write(glyphs_object)
     return string.getvalue().splitlines()
 

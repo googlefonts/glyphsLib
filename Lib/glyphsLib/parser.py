@@ -54,7 +54,7 @@ class Parser(object):
         return result
 
     def parse_into_object(self, res, text):
-        """Do the parsing."""
+        """Parse data into an existing GSFont instance."""
 
         text = tounicode(text, encoding='utf-8')
 
@@ -229,7 +229,8 @@ def load(fp):
 
 
 def loads(s):
-    """Read a .glyphs file from a bytes object.
+    """Read a .glyphs file from a (unicode) str object, or from
+    a UTF-8 encoded bytes object.
     Return a GSFont object.
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)

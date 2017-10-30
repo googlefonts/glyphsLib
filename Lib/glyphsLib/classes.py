@@ -19,6 +19,7 @@ from __future__ import print_function, unicode_literals
 import re, math, inspect
 import traceback
 import uuid
+import logging
 import glyphsLib
 from glyphsLib.types import (
     transform, point, rect, size, glyphs_datetime, color, floatToString,
@@ -28,8 +29,11 @@ from glyphsLib.types import (
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, basestring, StringIO, unichr
+from fontTools.misc.py23 import unicode, basestring, UnicodeIO, unichr, open
 from glyphsLib.affine import Affine
+
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "Glyphs",
@@ -194,8 +198,7 @@ class GSApplication(object):
         self.fonts = []
 
     def open(self, path):
-        newFont = glyphsLib.load(open(path, 'r'))
-        newFont.filepath = path
+        newFont = GSFont(path)
         self.fonts.append(newFont)
         self.font = newFont
         return newFont
@@ -1055,8 +1058,8 @@ class GSCustomParameter(GSBase):
             (self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
-        string = StringIO()
-        writer = Writer(fp=string)
+        string = UnicodeIO()
+        writer = Writer(string)
         writer.writeDict({'name': self.name, 'value': self.value})
         return string.getvalue()
 
@@ -1321,8 +1324,8 @@ class GSNode(GSBase):
         if self.smooth:
             content += " SMOOTH"
         if self._userData is not None and len(self._userData) > 0:
-            string = StringIO()
-            writer = Writer(fp=string)
+            string = UnicodeIO()
+            writer = Writer(string)
             writer.writeDict(self._userData)
             content += ' '
             content += encode_dict_as_string_for_gsnode(string.getvalue())
@@ -2735,12 +2738,10 @@ class GSFont(GSBase):
                 "Please supply a file path"
             assert path.endswith(".glyphs"), \
                 "Please supply a file path to a .glyphs file"
-            fp = open(path)
-            p = Parser()
-            # logger.info('Parsing .glyphs file')
-            print("____loads")
-            p.parse_into_object(self, fp.read())
-            fp.close()
+            with open(path, 'r', encoding='utf-8') as fp:
+                p = Parser()
+                logger.info('Parsing .glyphs file into %r', self)
+                p.parse_into_object(self, fp.read())
             self.filepath = path
 
     def __repr__(self):
@@ -2752,13 +2753,15 @@ class GSFont(GSBase):
         return super(GSFont, self).shouldWriteValueForKey(key)
 
     def save(self, path=None):
-        if path:
-            writer = Writer(path)
-        elif self.filepath:
-            writer = Writer(self.filepath)
-        else:
-            raise ValueError
-        writer.write(self)
+        if path is None:
+            if self.filepath:
+                path = self.filepath
+            else:
+                raise ValueError("No path provided and GSFont has no filepath")
+        with open(path, 'w', encoding='utf-8') as fp:
+            w = Writer(fp)
+            logger.info('Writing %r to .glyphs file', self)
+            w.write(self)
 
     def getVersionMinor(self):
         return self._versionMinor
