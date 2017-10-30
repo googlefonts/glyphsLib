@@ -27,6 +27,7 @@ from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import write_ufo
 
+from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
 
 __version__ = "2.0.0.dev0"
@@ -35,10 +36,10 @@ __version__ = "2.0.0.dev0"
 # "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
 # Thus we need to encode the unicode literals as ascii bytes.
 # https://bugs.python.org/issue21720
-__all__ = [tostr(s) for s in (
+__all__ = [tostr(s) for s in [
     "build_masters", "build_instances", "load_to_ufos",
     "load", "loads", "dump", "dumps",
-)]
+ ] + __all_classes__]
 
 logger = logging.getLogger(__name__)
 

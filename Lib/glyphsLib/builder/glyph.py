@@ -23,6 +23,7 @@ from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
+    from glyphsLib import glyphdata  # Expensive import
 
     uval = glyph_data.unicode
     if uval is not None:
@@ -40,7 +41,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     export = glyph_data.export
     if export is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphdata.get_glyph(ufo_glyph.name)
     production_name = glyph_data.production or glyphinfo.production_name
     if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'

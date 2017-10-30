@@ -68,6 +68,8 @@ def to_ufo_features(self, ufo):
 
 def _build_gdef(ufo):
     """Build a table GDEF statement for ligature carets."""
+    from glyphsLib import glyphdata  # Expensive import
+
     bases, ligatures, marks, carets = set(), set(), set(), {}
     category_key = GLYPHLIB_PREFIX + 'category'
     subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
@@ -80,7 +82,7 @@ def _build_gdef(ufo):
             if name and name.startswith('caret_') and 'x' in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor['x']))
         lib = glyph.lib
-        glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name)
+        glyphinfo = glyphdata.get_glyph(glyph.name)
         # first check glyph.lib for category/subCategory overrides; else use
         # global values from GlyphData
         category = lib.get(category_key)
