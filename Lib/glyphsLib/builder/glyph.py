@@ -39,7 +39,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'ColorIndex'] = color_index
         ufo_glyph.lib[PUBLIC_PREFIX + 'markColor'] = GLYPHS_COLORS[color_index]
     export = glyph_data.export
-    if export is not None:
+    if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
     glyphinfo = glyphdata.get_glyph(ufo_glyph.name)
     production_name = glyph_data.production or glyphinfo.production_name
@@ -50,10 +50,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
         ufo_glyph.font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
-        glyph_metrics_key = None
-        try:
-            glyph_metrics_key = getattr(layer, key)
-        except KeyError:
+        glyph_metrics_key = getattr(layer, key)
+        if glyph_metrics_key is None:
             glyph_metrics_key = getattr(glyph_data, key)
         if glyph_metrics_key:
             ufo_glyph.lib[GLYPHLIB_PREFIX + key] = glyph_metrics_key
@@ -157,11 +155,7 @@ def to_ufo_glyph_libdata(self, glyph, layer):
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
     for key in ['alignment', 'locked']:
-        values = []
-        for c in layer.components:
-            value = getattr(c, key)
-            if value is not None:
-                values.append(value)
+        values = [getattr(c, key) for c in layer.components]
         if any(values):
             key = key[0].upper() + key[1:]
             glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values

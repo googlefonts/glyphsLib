@@ -1097,13 +1097,13 @@ class GSLayerFromFileTest(GSObjectsTestCase):
     # LSB, RSB, TSB, BSB, width
 
     def test_leftMetricsKey(self):
-        self.assertUnicode(self.layer.leftMetricsKey)
+        self.assertIs(self.layer.leftMetricsKey, None)
 
     def test_rightMetricsKey(self):
-        self.assertUnicode(self.layer.rightMetricsKey)
+        self.assertIs(self.layer.rightMetricsKey, None)
 
     def test_widthMetricsKey(self):
-        self.assertUnicode(self.layer.widthMetricsKey)
+        self.assertIs(self.layer.widthMetricsKey, None)
 
     # TODO: bounds, selectionBounds
 

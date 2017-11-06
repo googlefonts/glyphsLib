@@ -2375,6 +2375,9 @@ class GSLayer(GSBase):
     }
     _defaultsForName = {
         "weight": 600,
+        "leftMetricsKey": None,
+        "rightMetricsKey": None,
+        "widthMetricsKey": None,
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides",
