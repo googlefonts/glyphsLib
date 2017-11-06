@@ -376,6 +376,10 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(True,
                          self.ufo.lib[GLYPHS_PREFIX + 'disablesLastChange'])
 
+    def test_xHeight(self):
+        set_custom_params(self.ufo, parsed=[('xHeight', '500')])
+        self.assertEqual(self.ufo.info.xHeight, 500)
+
 
 class ParseGlyphsFilterTest(unittest.TestCase):
     def test_complete_parameter(self):
