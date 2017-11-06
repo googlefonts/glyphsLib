@@ -183,7 +183,7 @@ def parse_custom_params(font, misc_keys):
     for key in misc_keys:
         try:
             val = getattr(font, key)
-        except KeyError:
+        except AttributeError:
             continue
         if val is not None:
             params.append((key, val))
