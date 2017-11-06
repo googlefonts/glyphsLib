@@ -976,6 +976,66 @@ class ToUfosTest(unittest.TestCase):
             ["public.default", "SubLayer"]
         )
 
+    def test_glyph_lib_Export(self):
+        font = generate_minimal_font()
+        glyph = add_glyph(font, "a")
+
+        self.assertEqual(glyph.export, True)
+
+        ufo = to_ufos(font)[0]
+
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
+
+        glyph.export = False
+        ufo = to_ufos(font)[0]
+
+        self.assertEqual(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
+
+    def test_glyph_lib_metricsKeys(self):
+        font = generate_minimal_font()
+        glyph = add_glyph(font, "x")
+        glyph.leftMetricsKey = "y"
+        glyph.rightMetricsKey = "z"
+        assert glyph.widthMetricsKey is None
+
+        ufo = to_ufos(font)[0]
+
+        self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "leftMetricsKey"], "y")
+        self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "rightMetricsKey"], "z")
+        self.assertNotIn(GLYPHLIB_PREFIX + "widthMetricsKey", ufo["x"].lib)
+
+    def test_glyph_lib_componentsAlignment_and_componentsLocked(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "b")
+        composite_glyph = add_glyph(font, "c")
+        add_component(font, "c", "a", (1, 0, 0, 1, 0, 0))
+        add_component(font, "c", "b", (1, 0, 0, 1, 0, 100))
+        comp1 = composite_glyph.layers[0].components[0]
+        comp2 = composite_glyph.layers[0].components[1]
+
+        self.assertEqual(comp1.alignment, 0)
+        self.assertEqual(comp1.locked, False)
+
+        ufo = to_ufos(font)[0]
+
+        # all components have deault values, no lib key is written
+        self.assertNotIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
+        self.assertNotIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
+
+        comp2.alignment = -1
+        comp1.locked = True
+        ufo = to_ufos(font)[0]
+
+        # if any component has a non-default alignment/locked values, write
+        # list of values for all of them
+        self.assertIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
+        self.assertEqual(
+            ufo["c"].lib[GLYPHS_PREFIX + "componentsAlignment"], [0, -1])
+        self.assertIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
+        self.assertEqual(
+            ufo["c"].lib[GLYPHS_PREFIX + "componentsLocked"], [True, False])
+
 
 class _PointDataPen(object):
 
