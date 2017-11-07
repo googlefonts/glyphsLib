@@ -2715,7 +2715,7 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
-        "fontMaster": "_masters",
+        "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridSubDivision": "gridSubDivisions"
     }
