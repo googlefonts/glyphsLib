@@ -41,11 +41,11 @@ Read and write Glyphs data as Python objects
 
 .. code:: python
 
-    with open('MyFont.glyphs', 'rb') as glyphs_file:
-        font = glyphsLib.load(glyphs_file)
-
-    with open('MyFont.glyphs', 'wb') as glyphs_file:
-        glyphsLib.dump(font, glyphs_file)
+    from glyphsLib import GSFont
+    
+    font = GSFont(glyphs_file)
+    
+    font.save(glyphs_file)
 
 The ``glyphsLib.classes`` module aims to provide an interface similar to
 Glyphs.app's `Python Scripting API <https://docu.glyphsapp.com>`__.
