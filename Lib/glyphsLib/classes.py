@@ -1157,8 +1157,10 @@ class GSFontMaster(GSBase):
         "descender": float,
         "guideLines": GSGuideLine,
         "horizontalStems": int,
+        "iconName": str,
         "id": str,
         "italicAngle": float,
+        "name": str,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1198,8 +1200,10 @@ class GSFontMaster(GSBase):
         "descender",
         "guideLines",
         "horizontalStems",
+        "iconName",
         "id",
         "italicAngle",
+        "name",
         "userData",
         "verticalStems",
         "visible",
@@ -1238,6 +1242,8 @@ class GSFontMaster(GSBase):
 
     @property
     def name(self):
+        if self._name is not None:
+            return self._name
         name = self.customParameters["Master Name"]
         if name is None:
             names = [self._weight, self._width]
@@ -1254,7 +1260,11 @@ class GSFontMaster(GSBase):
                 names.append("Italic")
             name = " ".join(list(names))
         return name
-
+    
+    @name.setter
+    def name(self, value):
+        self._name = value
+        
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value))
