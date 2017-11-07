@@ -16,7 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 
-def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
+def to_ufo_guidelines(glyphs_obj, ufo_obj):
     """Set guidelines."""
     guidelines = glyphs_obj.guides
     if not guidelines:

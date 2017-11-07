@@ -32,6 +32,13 @@ from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, UnicodeIO, unichr, open
 from glyphsLib.affine import Affine
 
+from builder.common import to_ufo_time
+from builder.constants import GLYPHS_PREFIX
+from builder.names import to_ufo_names
+from builder.blue_values import to_ufo_blue_values
+from builder.user_data import to_ufo_family_user_data, to_ufo_master_user_data
+from builder.guidelines import to_ufo_guidelines
+from builder.custom_params import to_ufo_custom_params
 
 logger = logging.getLogger(__name__)
 
@@ -1282,7 +1289,91 @@ class GSFontMaster(GSBase):
     @width.setter
     def width(self, value):
         self._width = value
+    
+    
+    def ufo_object(self):
+        ufo = None
+        try:
+            ufo = self.parent.ufo_module.Font()
+        except:
+            import defcon
+            ufo = defcon.Font()
+        
+        
+        font = self.parent
+        
+        family_name = font.familyName
+        
+        # "date" can be missing; Glyphs.app removes it on saving if it's empty:
+        # https://github.com/googlei18n/glyphsLib/issues/134
+        date_created = getattr(font, 'date', None)
+        if date_created is not None:
+            date_created = to_ufo_time(date_created)
+        units_per_em = font.upm
+        version_major = font.versionMajor
+        version_minor = font.versionMinor
+        copyright = font.copyright
+        designer = font.designer
+        designer_url = font.designerURL
+        manufacturer = font.manufacturer
+        manufacturer_url = font.manufacturerURL
+        
+        if date_created is not None:
+            ufo.info.openTypeHeadCreated = date_created
+        ufo.info.unitsPerEm = units_per_em
+        ufo.info.versionMajor = version_major
+        ufo.info.versionMinor = version_minor
 
+        if copyright:
+            ufo.info.copyright = copyright
+        if designer:
+            ufo.info.openTypeNameDesigner = designer
+        if designer_url:
+            ufo.info.openTypeNameDesignerURL = designer_url
+        if manufacturer:
+            ufo.info.openTypeNameManufacturer = manufacturer
+        if manufacturer_url:
+            ufo.info.openTypeNameManufacturerURL = manufacturer_url
+
+        ufo.info.ascender = self.ascender
+        ufo.info.capHeight = self.capHeight
+        ufo.info.descender = self.descender
+        ufo.info.xHeight = self.xHeight
+
+        horizontal_stems = self.horizontalStems
+        vertical_stems = self.verticalStems
+        italic_angle = -self.italicAngle
+        if horizontal_stems:
+            ufo.info.postscriptStemSnapH = horizontal_stems
+        if vertical_stems:
+            ufo.info.postscriptStemSnapV = vertical_stems
+        if italic_angle:
+            ufo.info.italicAngle = italic_angle
+
+        width = self.width
+        weight = self.weight
+        if weight:
+            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+        if width:
+            ufo.lib[GLYPHS_PREFIX + 'width'] = width
+        for number in ('', '1', '2', '3'):
+            custom_name = getattr(self, 'customName' + number)
+            if custom_name:
+                ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
+            custom_value = getattr(self, 'customValue' + number)
+            if custom_value:
+                ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
+
+        to_ufo_names(self, ufo, self, family_name)
+        to_ufo_blue_values(self, ufo, self)
+        to_ufo_family_user_data(font, ufo)
+        to_ufo_master_user_data(self, ufo)
+        to_ufo_guidelines(self, ufo)
+        to_ufo_custom_params(self, ufo)
+
+        ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = self.id
+        
+        return ufo
 
 class GSNode(GSBase):
     _rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'\

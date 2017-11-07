@@ -23,9 +23,9 @@ from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX, CODEPAGE_RANGES,
                         UFO2FT_FILTERS_KEY)
 
 
-def to_ufo_custom_params(self, ufo, master):
+def to_ufo_custom_params(master, ufo):
     misc = ['DisplayStrings', 'disablesAutomaticAlignment', 'disablesNiceNames']
-    custom_params = parse_custom_params(self.font, misc)
+    custom_params = parse_custom_params(master.parent, misc)
     set_custom_params(ufo, parsed=custom_params)
     # the misc attributes double as deprecated info attributes!
     # they are Glyphs-related, not OpenType-related, and don't go in info

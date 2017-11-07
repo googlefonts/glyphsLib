@@ -19,7 +19,7 @@ import glyphsLib
 from .common import to_ufo_time
 from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)
-
+from .guidelines import to_ufo_guidelines
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
@@ -88,7 +88,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
 
 
-def to_ufo_glyph_background(self, glyph, background):
+def to_ufo_glyph_background(background, glyph):
     """Set glyph background."""
 
     if not background:
@@ -115,8 +115,8 @@ def to_ufo_glyph_background(self, glyph, background):
 def to_ufo_glyph_libdata(self, glyph, layer):
     """Add to a glyph's lib data."""
 
-    self.to_ufo_guidelines(glyph, layer)
-    self.to_ufo_glyph_background(glyph, layer.background)
+    to_ufo_guidelines(layer, glyph)
+    to_ufo_glyph_background(glyph, layer.background)
     for key in ['annotations', 'hints']:
         try:
             value = getattr(layer, key)
