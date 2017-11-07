@@ -225,7 +225,14 @@ class glyphs_datetime(baseType):
         # parse timezone ourselves, since %z is not always supported
         # see: http://bugs.python.org/issue6641
         string, tz = src.rsplit(' ', 1)
-        datetime_obj = datetime.datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
+        if 'AM' in string or 'PM' in string:
+            datetime_obj = datetime.datetime.strptime(
+                string, '%Y-%m-%d %I:%M:%S %p'
+            )
+        else:
+            datetime_obj = datetime.datetime.strptime(
+                string, '%Y-%m-%d %H:%M:%S'
+            )
         offset = datetime.timedelta(
             hours=int(tz[:3]), minutes=int(tz[0] + tz[3:]))
         return datetime_obj + offset
