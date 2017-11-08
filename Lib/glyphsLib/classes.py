@@ -1160,7 +1160,7 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": float,
-        "name": str,
+        "name": unicode,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
