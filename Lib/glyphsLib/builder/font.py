@@ -17,6 +17,7 @@ from __future__ import (print_function, division, absolute_import,
 
 from collections import deque, OrderedDict
 import logging
+import math
 
 from .common import to_ufo_time
 from .constants import GLYPHS_PREFIX
@@ -80,6 +81,8 @@ def to_ufo_font_attributes(self, family_name):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
+            ufo.info.openTypeHheaCaretSlopeRise = 1000
+            ufo.info.openTypeHheaCaretSlopeRun = int(math.tan(math.radians(-italic_angle)) * 1000)
 
         width = master.width
         weight = master.weight
