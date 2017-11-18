@@ -1159,6 +1159,8 @@ class GSFontMaster(GSBase):
         "horizontalStems": int,
         "id": str,
         "italicAngle": float,
+        "name": str,
+        "iconName": str,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1200,6 +1202,8 @@ class GSFontMaster(GSBase):
         "horizontalStems",
         "id",
         "italicAngle",
+        "name",
+        "iconName",
         "userData",
         "verticalStems",
         "visible",
@@ -1211,6 +1215,7 @@ class GSFontMaster(GSBase):
     )
 
     def __init__(self):
+        self._font = None
         super(GSFontMaster, self).__init__()
         self._name = None
         self._customParameters = []
@@ -1234,7 +1239,19 @@ class GSFontMaster(GSBase):
         if key in ("xHeight", "capHeight", "ascender"):
             # Always write those values
             return True
+        if key == "name":
+            if self.font and int(self.font.appVersion) >= 1075:
+                return True
+            return False
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, value):
+        self._font = value
 
     @property
     def name(self):
@@ -1253,7 +1270,15 @@ class GSFontMaster(GSBase):
             if abs(self.italicAngle) > 0.01:
                 names.append("Italic")
             name = " ".join(list(names))
+        self._name = name
         return name
+
+    @name.setter
+    def name(self, value):
+        if self.font and int(self.font.appVersion) >= 1075:
+            self._name = value
+        else:
+            return
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2746,6 +2771,9 @@ class GSFont(GSBase):
                 logger.info('Parsing .glyphs file into %r', self)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
+
+        for master in self.masters:
+            master.font = self
 
     def __repr__(self):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
