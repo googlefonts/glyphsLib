@@ -334,6 +334,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             id = "MASTER-ID";
             italicAngle = 12.2;
+            name = "Hairline Megawide";
             userData = {
             rememberToMakeTea = 1;
             };
@@ -910,8 +911,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         node.userData["rememberToDownloadARealRemindersApp"] = True
         self.assertWritesValue(
             node,
-            '"10 30 CURVE SMOOTH {\\nname = \\"top-left corner\\";\\n\
-rememberToDownloadARealRemindersApp = 1;\\n}"'
+            '"10 30 CURVE SMOOTH {name = \\"top-left corner\\";\\n\
+rememberToDownloadARealRemindersApp = 1;}"'
         )
 
         # Write floating point coordinates
