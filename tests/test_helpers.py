@@ -121,3 +121,15 @@ class AssertUFORoundtrip(AssertLinesEqual):
         self.assertLinesEqual(
             expected, actual,
             "The font should not be modified by the roundtrip")
+
+
+class AssertDesignspaceRoundtrip(object):
+    def assertDesignspaceRoundtrip(self, designspace):
+        font = to_glyphs(designspace)
+        font.save('test_font.glyphs')
+        # roundtrip_in_mem = to_designspace(font)
+        # # TODO: tempdir
+        # font.save('lol.glyphs')
+        # font_rt = GSFont('lol.glyphs')
+        # roundtrip = to_designspace(font_rt)
+        # # TODO: assert designspace + UFOS are equal!

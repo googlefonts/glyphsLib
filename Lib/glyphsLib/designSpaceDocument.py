@@ -1101,7 +1101,9 @@ class DesignSpaceDocument(object):
         # so someone can build a thing for a thing.
         fonts = []
         for sourceDescriptor in self.sources:
-            if sourceDescriptor.path is not None:
+            if sourceDescriptor.font is not None:
+                fonts.append(sourceDescriptor.font)
+            elif sourceDescriptor.path is not None:
                 if os.path.exists(sourceDescriptor.path):
                     f = self.fontClass(sourceDescriptor.path)
                     fonts.append((f, sourceDescriptor.location))

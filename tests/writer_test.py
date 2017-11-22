@@ -631,6 +631,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             associatedMasterId = "MASTER-ID";
             layerId = "LAYER-ID";
             name = L1;
+            width = 600;
             }
             );
             leftKerningGroup = A;
@@ -809,6 +810,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         layer.name = ""
         written = test_helpers.write_to_lines(layer)
         self.assertNotIn('name = "";', written)
+
+        # Write the width even if 0
+        layer.width = 0
+        written = test_helpers.write_to_lines(layer)
+        self.assertIn('width = 0;', written)
 
     def test_write_anchor(self):
         anchor = classes.GSAnchor('top', Point(23, 45.5))

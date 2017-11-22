@@ -298,7 +298,13 @@ class GlyphsBuilder(_LoggerMixin):
                 # assert all(ufo in designspace.getFonts() for ufo in ufos)
                 self.ufos = ufos
             else:
-                self.ufos = [source.font for source in designspace.sources]
+                self.ufos = []
+                for source in designspace.sources:
+                    try:
+                        # It's an in-memory source descriptor
+                        self.ufos.append(source.font)
+                    except AttributeError:
+                        self.ufos.append(designspace.fontClass(source.path))
         elif ufos:
             self.designspace = None
             self.ufos = ufos

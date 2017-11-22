@@ -2445,8 +2445,8 @@ class GSLayer(GSBase):
         "widthMetricsKey": unicode,
     }
     _defaultsForName = {
-        "width": 0,  # FIXME: (jany) check in glyphs
-        "weight": 600,
+        "width": 600.0,
+        "weight": 600.0,
         "leftMetricsKey": None,
         "rightMetricsKey": None,
         "widthMetricsKey": None,
@@ -2540,6 +2540,8 @@ class GSLayer(GSBase):
             return master
 
     def shouldWriteValueForKey(self, key):
+        if key == "width":
+            return True
         if key == "associatedMasterId":
             return self.layerId != self.associatedMasterId
         if key == "name":
