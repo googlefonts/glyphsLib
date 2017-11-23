@@ -146,6 +146,12 @@ class GSFontTest(unittest.TestCase):
         font.customParameters['Filter'] = 'AddExtremes'
         self.assertEqual(font.customParameters['Filter'], 'AddExtremes')
 
+    def test_font_master_proxy(self):
+        font = GSFont()
+        master = GSFontMaster()
+        font.masters.append(master)
+        self.assertEqual(master.font, font)
+
 
 class GSObjectsTestCase(unittest.TestCase):
 
@@ -542,6 +548,9 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             'ThisFont is a trademark by MyFoundry.com'
         self.assertGreaterEqual(len(master.customParameters), 1)
         del(master.customParameters['trademark'])
+
+        # font
+        self.assertEqual(self.font, self.master.font)
 
     def test_name(self):
         master = self.master

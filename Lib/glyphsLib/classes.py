@@ -1158,7 +1158,7 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": float,
-        "name": str,
+        "name": unicode,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -2717,7 +2717,7 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
-        "fontMaster": "_masters",
+        "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridSubDivision": "gridSubDivisions"
     }
