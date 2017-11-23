@@ -384,12 +384,17 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_replace_feature(self):
         self.ufo.features.text = dedent("""
             feature liga {
+            # only the first match is replaced
             sub f i by fi;
             } liga;
 
             feature calt {
             sub e' t' c by ampersand;
             } calt;
+
+            feature liga {
+            sub f l by fl;
+            } liga;
         """)
 
         repl = "liga; sub f f by ff;"
@@ -404,6 +409,10 @@ class SetCustomParamsTest(unittest.TestCase):
             feature calt {
             sub e' t' c by ampersand;
             } calt;
+
+            feature liga {
+            sub f l by fl;
+            } liga;
         """))
 
         # only replace feature body if tag already present

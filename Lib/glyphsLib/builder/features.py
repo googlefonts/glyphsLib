@@ -140,7 +140,7 @@ def replace_feature(tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
     return re.sub(
-        r"(?<=^feature %(tag)s {\n)(.*)(?=^} %(tag)s;$)" % {"tag": tag},
+        r"(?<=^feature %(tag)s {\n)(.*?)(?=^} %(tag)s;$)" % {"tag": tag},
         repl,
         features,
         count=1,
