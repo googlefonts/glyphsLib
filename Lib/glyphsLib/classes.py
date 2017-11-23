@@ -399,7 +399,7 @@ class FontFontMasterProxy(Proxy):
             raise(KeyError)
 
     def __setitem__(self, Key, FontMaster):
-        FontMaster.parent = self._owner
+        FontMaster.font = self._owner
         if type(Key) is int:
             OldFontMaster = self.__getitem__(Key)
             if Key < 0:
@@ -414,7 +414,6 @@ class FontFontMasterProxy(Proxy):
         else:
             raise(KeyError)
 
-
     def __delitem__(self, Key):
         if type(Key) is int:
             if Key < 0:
@@ -428,7 +427,7 @@ class FontFontMasterProxy(Proxy):
         return self._owner._masters
 
     def append(self, FontMaster):
-        FontMaster.parent = self._owner
+        FontMaster.font = self._owner
         FontMaster.id = str(uuid.uuid4()).upper()
         self._owner._masters.append(FontMaster)
 
@@ -438,7 +437,6 @@ class FontFontMasterProxy(Proxy):
                 newLayer = GSLayer()
                 glyph._setupLayer(newLayer, FontMaster.id)
                 glyph.layers.append(newLayer)
-
 
     def remove(self, FontMaster):
 
@@ -451,7 +449,7 @@ class FontFontMasterProxy(Proxy):
         self._owner._masters.remove(FontMaster)
 
     def insert(self, Index, FontMaster):
-        FontMaster.parent = self._owner
+        FontMaster.font = self._owner
         self._owner._masters.insert(Index, FontMaster)
 
     def extend(self, FontMasters):
@@ -463,7 +461,7 @@ class FontFontMasterProxy(Proxy):
             values = list(values)
         self._owner._masters = values
         for m in self._owner._masters:
-            m.parent = self._owner
+            m.font = self._owner
 
 
 class FontGlyphsProxy(Proxy):
@@ -1157,8 +1155,10 @@ class GSFontMaster(GSBase):
         "descender": float,
         "guideLines": GSGuideLine,
         "horizontalStems": int,
+        "iconName": str,
         "id": str,
         "italicAngle": float,
+        "name": str,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1198,8 +1198,10 @@ class GSFontMaster(GSBase):
         "descender",
         "guideLines",
         "horizontalStems",
+        "iconName",
         "id",
         "italicAngle",
+        "name",
         "userData",
         "verticalStems",
         "visible",
@@ -1212,6 +1214,7 @@ class GSFontMaster(GSBase):
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
+        self.font = None
         self._name = None
         self._customParameters = []
         self._weight = "Regular"
@@ -1234,6 +1237,10 @@ class GSFontMaster(GSBase):
         if key in ("xHeight", "capHeight", "ascender"):
             # Always write those values
             return True
+        if key == "name":
+            if getattr(self, key) == "Regular":
+                return False
+            return True
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
 
     @property
@@ -1253,7 +1260,12 @@ class GSFontMaster(GSBase):
             if abs(self.italicAngle) > 0.01:
                 names.append("Italic")
             name = " ".join(list(names))
+        self._name = name
         return name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2746,6 +2758,8 @@ class GSFont(GSBase):
                 logger.info('Parsing .glyphs file into %r', self)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
+            for master in self.masters:
+                master.font = self
 
     def __repr__(self):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)

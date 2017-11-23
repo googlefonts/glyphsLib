@@ -376,7 +376,8 @@ def encode_dict_as_string_for_gsnode(value):
     encoded such that it can be included in the string representation
     of a GSNode."""
     value = value.replace('"', '\\"')
-    return value.replace("\n", "\\n")
+    value = value.replace('\n', '')
+    return value.replace(";", ";\\n", value.count(';') - 1)
 
 
 # FIXME: (jany) This is not a correct reverse function, if

@@ -429,11 +429,6 @@ class GSFontFromFileTest(GSObjectsTestCase):
         self.assertEqual(amount, len(list(font.customParameters)))
         del font.customParameters['trademark']
 
-    def test_font_master_is_name_not_writable(self):
-        """Match the Glyphs python API"""
-        with self.assertRaises(AttributeError):
-            self.font.masters[0].name = "Test"
-
     # TODO: selection, selectedLayers, currentText, tabs, currentTab
 
     # TODO: selectedFontMaster, masterIndex
@@ -1399,7 +1394,7 @@ class GSNodeFromFileTest(GSObjectsTestCase):
         self.assertEqual(self.node.name, 'Hello')
 
     def test_userData(self):
-        self.assertEqual(1, self.node.userData["rememberToMakeCoffee"])
+        self.assertEqual("1", self.node.userData["rememberToMakeCoffee"])
 
     def test_makeNodeFirst(self):
         oldAmount = len(self.path.nodes)
