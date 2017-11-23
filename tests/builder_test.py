@@ -1131,5 +1131,40 @@ class DrawPathsTest(unittest.TestCase):
         self.assertEqual(first_segment_type, 'qcurve')
 
 
+class GlyphPropertiesTest(unittest.TestCase):
+
+    def test_glyph_color(self):
+        font = generate_minimal_font()
+        glyph = GSGlyph(name='a')
+        glyph2 = GSGlyph(name='b')
+        glyph3 = GSGlyph(name='c')
+        glyph4 = GSGlyph(name='d')
+        glyph.color = [244, 0, 138, 1]
+        glyph2.color = 3
+        glyph3.color = 88
+        glyph4.color = [800, 0, 138, 1]
+        font.glyphs.append(glyph)
+        font.glyphs.append(glyph2)
+        font.glyphs.append(glyph3)
+        font.glyphs.append(glyph4)
+        layer = GSLayer()
+        layer2 = GSLayer()
+        layer3 = GSLayer()
+        layer4 = GSLayer()
+        layer.layerId = font.masters[0].id
+        layer2.layerId = font.masters[0].id
+        layer3.layerId = font.masters[0].id
+        layer4.layerId = font.masters[0].id
+        glyph.layers.append(layer)
+        glyph2.layers.append(layer2)
+        glyph3.layers.append(layer3)
+        glyph4.layers.append(layer4)
+        ufo = to_ufos(font)[0]
+        self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.9569,0,0.5412,0.0039')
+        self.assertEqual(ufo['b'].lib.get('public.markColor'), '0.97,1,0,1')
+        self.assertEqual(ufo['c'].lib.get('public.markColor'), None)
+        self.assertEqual(ufo['d'].lib.get('public.markColor'), None)
+
+
 if __name__ == '__main__':
     unittest.main()
