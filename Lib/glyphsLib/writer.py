@@ -19,11 +19,11 @@
 from __future__ import unicode_literals
 import sys
 import glyphsLib.classes
-from glyphsLib.types import floatToString, needsQuotes, feature_syntax_encode
+from glyphsLib.types import floatToString
 import logging
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, open, BytesIO
+from fontTools.misc.py23 import unicode, open, BytesIO, UnicodeIO
 
 '''
     Usage
@@ -140,11 +140,11 @@ class Writer(object):
             self.file.write("\"%s +0000\"" % str(value))
         else:
             if forKey != "unicode":
-                value = feature_syntax_encode(value)
+                value = escape_string(value)
             self.file.write(unicode(value))
 
     def writeKey(self, key):
-        key = feature_syntax_encode(key)
+        key = escape_string(key)
         self.file.write("%s = " % key)
 
 
@@ -164,3 +164,64 @@ def dumps(obj):
     fp = UnicodeIO()
     dump(obj, fp)
     return fp.getvalue()
+
+
+NSPropertyListNameSet = (
+    # 0
+    False, False, False, False, False, False, False, False,
+    False, False, False, False, False, False, False, False,
+    # 16
+    False, False, False, False, False, False, False, False,
+    False, False, False, False, False, False, False, False,
+    # 32
+    False, False, False, False, True, False, False, False,
+    False, False, False, False, False, False, True, False,
+    # 48
+    True, True, True, True, True, True, True, True,
+    True, True, False, False, False, False, False, False,
+    # 64
+    False, True, True, True, True, True, True, True,
+    True, True, True, True, True, True, True, True,
+    # 80
+    True, True, True, True, True, True, True, True,
+    True, True, True, False, False, False, False, True,
+    # 96
+    False, True, True, True, True, True, True, True,
+    True, True, True, True, True, True, True, True,
+    # 112
+    True, True, True, True, True, True, True, True,
+    True, True, True, False, False, False, False, False
+    )
+
+
+def _needs_quotes(string):
+    if len(string) == 0:
+        return True
+    if not isinstance(string, (str, unicode)):
+        return False
+
+    # Does it need quotes because of special characters?
+    for c in string:
+        d = ord(c)
+        if d >= 128 or not NSPropertyListNameSet[d]:
+            return True
+
+    # Does it need quotes because it could be confused with a number?
+    i = None
+    try:
+        i = int(string)
+    except:
+        pass
+    if i is not None:
+        return True
+
+    return False
+
+
+def escape_string(value):
+    if isinstance(value, (str, unicode)) and _needs_quotes(value):
+        value = value.replace("\\", "\\\\")
+        value = value.replace("\"", "\\\"")
+        value = value.replace("\n", "\\012")
+        value = '"%s"' % value
+    return value

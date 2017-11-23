@@ -20,9 +20,13 @@ from textwrap import dedent
 from collections import OrderedDict
 import os
 
+from fontTools.misc.py23 import UnicodeIO
+
 import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import glyphs_datetime, point, rect
+from glyphsLib.writer import dump, dumps
+from glyphsLib.parser import Parser
 
 import test_helpers
 
@@ -923,15 +927,20 @@ rememberToDownloadARealRemindersApp = 1;}"'
         )
 
         # Write userData with special characters
+        test_user_data = {
+            '\nkey"\';\n\n\n': '"\'value\nseveral lines\n;\n',
+            ';': ';\n',
+            'escapeception': '\\"\\\'\\n\\\\n',
+        }
         node = classes.GSNode(point(130, 431), classes.GSNode.LINE)
-        node.userData['\nkey;\n\n\n'] = 'value\nseveral lines\n;\n'
-        node.userData[';'] = ';\n'
-        self.assertWritesValue(
-            node,
-            # This is the output of Glyphs 1089
-            '"130 431 LINE {\\"\\012key;\\012\\012\\012\\" = \\"value\\012several lines\\012;\\012\\";\\n\\";\\" = \\";\\012\\";}"'
-        )
-
+        for key, value in test_user_data.items():
+            node.userData[key] = value
+        # This is the output of Glyphs 1089
+        expected_output = '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" = \\"\\\\"\'value\\012several lines\\012;\\012\\";\\n\\";\\" = \\";\\012\\";\\nescapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+        self.assertWritesValue(node, expected_output)
+        # Check that we can read the userData back
+        node = Parser(classes.GSNode).parse(expected_output)
+        self.assertEqual(test_user_data, dict(node.userData))
 
     def test_write_guideline(self):
         line = classes.GSGuideLine()
@@ -1047,6 +1056,23 @@ rememberToDownloadARealRemindersApp = 1;}"'
             );
             }
         """))
+
+
+class WriterDumpInterfaceTest(unittest.TestCase):
+    def test_dump(self):
+        obj = classes.GSFont()
+        fp = UnicodeIO()
+
+        dump(obj, fp)
+
+        self.assertTrue(fp.getvalue())
+
+    def test_dumps(self):
+        obj = classes.GSFont()
+
+        string = dumps(obj)
+
+        self.assertTrue(string)
 
 
 class WriterRoundtripTest(unittest.TestCase,

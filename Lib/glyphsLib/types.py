@@ -58,6 +58,7 @@ class point(object):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         elif value is not None and value2 is None:
+            value = value.replace('"', '')
             self.value = [float(i) for i in self.regex.match(value).groups()]
         else:
             self.value = self.default
@@ -152,6 +153,7 @@ class rect(object):
         if value is not None and value2 is not None:
             self.value = [value[0], value[1], value2[0], value2[1]]
         elif value is not None and value2 is None:
+            value = value.replace('"', '')
             self.value = [float(i) for i in self.regex.match(value).groups()]
         else:
             self.value = self.default
@@ -204,6 +206,7 @@ class transform(point):
         if value is not None and value2 is not None and value3 is not None and value4 is not None and value5 is not None and value6 is not None:
             self.value = [value, value2, value3, value4, value5, value6]
         elif value is not None and value2 is None:
+            value = value.replace('"', '')
             self.value = [float(i) for i in self.regex.match(value).groups()]
         else:
             self.value = self.default
@@ -221,6 +224,7 @@ class glyphs_datetime(baseType):
     """Read/write a datetime.  Doesn't maintain time zone offset."""
 
     def read(self, src):
+        src = src.replace('"', '')
         """Parse a datetime object from a string."""
         # parse timezone ourselves, since %z is not always supported
         # see: http://bugs.python.org/issue6641
@@ -250,6 +254,7 @@ class glyphs_datetime(baseType):
 class color(baseType):
 
     def read(self, src=None):
+        src.replace('"', '')
         if src is None:
             return None
         if src[0] == "(":
@@ -319,84 +324,3 @@ def floatToString(Float, precision=3):
             return "%.0f" % Float
     except:
         print(traceback.format_exc())
-
-
-NSPropertyListNameSet = (
-    # 0
-    False, False, False, False, False, False, False, False,
-    False, False, False, False, False, False, False, False,
-    # 16
-    False, False, False, False, False, False, False, False,
-    False, False, False, False, False, False, False, False,
-    # 32
-    False, False, False, False, True, False, False, False,
-    False, False, False, False, False, False, True, False,
-    # 48
-    True, True, True, True, True, True, True, True,
-    True, True, False, False, False, False, False, False,
-    # 64
-    False, True, True, True, True, True, True, True,
-    True, True, True, True, True, True, True, True,
-    # 80
-    True, True, True, True, True, True, True, True,
-    True, True, True, False, False, False, False, True,
-    # 96
-    False, True, True, True, True, True, True, True,
-    True, True, True, True, True, True, True, True,
-    # 112
-    True, True, True, True, True, True, True, True,
-    True, True, True, False, False, False, False, False
-    )
-
-
-def needsQuotes(string):
-    if len(string) == 0:
-        return True
-    needsQuotes = False
-    if not isinstance(string, (str, unicode)):
-        return False
-    for c in string:
-        d = ord(c)
-        if d >= 128 or not NSPropertyListNameSet[d]:
-            needsQuotes = True
-    if not needsQuotes:
-        i = None
-        try:
-            i = int(string)
-        except:
-            pass
-        if i is not None:
-            needsQuotes = True
-    return needsQuotes
-
-
-# FIXME: (jany) why is `feature_syntax_encode` different?
-def encode_dict_as_string_for_gsnode(value):
-    """Takes the PLIST string of a dict, and returns the same string
-    encoded such that it can be included in the string representation
-    of a GSNode."""
-    # Strip the first and last newlines
-    if value.startswith('{\n'):
-        value = '{' + value[2:]
-    if value.endswith('\n}'):
-        value = value[:-2] + '}'
-    value = value.replace('"', '\\"')
-    value = value.replace('\n', '\\n')
-    return value
-
-
-# FIXME: (jany) This is not a correct reverse function, if
-#   the input string contains "\\n"
-def decode_dict_as_string_from_gsnode(value):
-    """Inverse of encode_dict_as_string_for_gsnode"""
-    value = value.replace('\\"', '"')
-    return value.replace("\\n", "\n")
-
-
-def feature_syntax_encode(value):
-    if isinstance(value, (str, unicode)) and needsQuotes(value):
-
-        value = value.replace("\"", "\\\"")
-        value = value.replace("\n", "\\012")
-        value = '"%s"' % value
-    return value
