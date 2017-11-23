@@ -1214,7 +1214,7 @@ class GSFontMaster(GSBase):
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
-        self._font = None
+        self.font = None
         self._name = None
         self._customParameters = []
         self._weight = "Regular"
@@ -1242,14 +1242,6 @@ class GSFontMaster(GSBase):
                 return False
             return True
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
-
-    @property
-    def font(self):
-        return self._font
-
-    @font.setter
-    def font(self, value):
-        self._font = value
 
     @property
     def name(self):
