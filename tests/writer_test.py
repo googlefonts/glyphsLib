@@ -922,6 +922,16 @@ rememberToDownloadARealRemindersApp = 1;}"'
             '"499.99 512.01 OFFCURVE"'
         )
 
+        # Write userData with special characters
+        node = classes.GSNode(point(130, 431), classes.GSNode.LINE)
+        node.userData['\nkey;\n\n\n'] = 'value\nseveral lines\n;\n'
+        node.userData[';'] = ';\n'
+        self.assertWritesValue(
+            node,
+            # This is the output of Glyphs 1089
+            '"130 431 LINE {\\"\\012key;\\012\\012\\012\\" = \\"value\\012several lines\\012;\\012\\";\\n\\";\\" = \\";\\012\\";}"'
+        )
+
 
     def test_write_guideline(self):
         line = classes.GSGuideLine()

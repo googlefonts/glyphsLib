@@ -144,10 +144,8 @@ class Writer(object):
             self.file.write(unicode(value))
 
     def writeKey(self, key):
-        if needsQuotes(key):
-            self.file.write("\"%s\" = " % key)
-        else:
-            self.file.write("%s = " % key)
+        key = feature_syntax_encode(key)
+        self.file.write("%s = " % key)
 
 
 def dump(obj, fp):

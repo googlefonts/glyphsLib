@@ -375,9 +375,14 @@ def encode_dict_as_string_for_gsnode(value):
     """Takes the PLIST string of a dict, and returns the same string
     encoded such that it can be included in the string representation
     of a GSNode."""
+    # Strip the first and last newlines
+    if value.startswith('{\n'):
+        value = '{' + value[2:]
+    if value.endswith('\n}'):
+        value = value[:-2] + '}'
     value = value.replace('"', '\\"')
-    value = value.replace('\n', '')
-    return value.replace(";", ";\\n", value.count(';') - 1)
+    value = value.replace('\n', '\\n')
+    return value
 
 
 # FIXME: (jany) This is not a correct reverse function, if
