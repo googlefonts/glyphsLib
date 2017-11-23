@@ -19,6 +19,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 import collections
 import datetime
+from textwrap import dedent
 import unittest
 # unittest.mock is only available for python 3.3+
 try:
@@ -379,6 +380,39 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_xHeight(self):
         set_custom_params(self.ufo, parsed=[('xHeight', '500')])
         self.assertEqual(self.ufo.info.xHeight, 500)
+
+    def test_replace_feature(self):
+        self.ufo.features.text = dedent("""
+            feature liga {
+            sub f i by fi;
+            } liga;
+
+            feature calt {
+            sub e' t' c by ampersand;
+            } calt;
+        """)
+
+        repl = "liga; sub f f by ff;"
+
+        set_custom_params(self.ufo, parsed=[("Replace Feature", repl)])
+
+        self.assertEqual(self.ufo.features.text, dedent("""
+            feature liga {
+            sub f f by ff;
+            } liga;
+
+            feature calt {
+            sub e' t' c by ampersand;
+            } calt;
+        """))
+
+        # only replace feature body if tag already present
+        original = self.ufo.features.text
+        repl = "numr; sub one by one.numr;\nsub two by two.numr;\n"
+
+        set_custom_params(self.ufo, parsed=[("Replace Feature", repl)])
+
+        self.assertEqual(self.ufo.features.text, original)
 
 
 class ParseGlyphsFilterTest(unittest.TestCase):

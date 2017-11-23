@@ -21,6 +21,7 @@ from glyphsLib.util import bin_to_int_list
 from .filters import parse_glyphs_filter
 from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX, CODEPAGE_RANGES,
                         UFO2FT_FILTERS_KEY)
+from .features import replace_feature
 
 
 def to_ufo_custom_params(self, ufo, master):
@@ -137,6 +138,10 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
             if UFO2FT_FILTERS_KEY not in ufo.lib.keys():
                 ufo.lib[UFO2FT_FILTERS_KEY] = []
             ufo.lib[UFO2FT_FILTERS_KEY].append(filter_struct)
+        elif name == "Replace Feature":
+            tag, repl = re.split("\s*;\s*", value, 1)
+            ufo.features.text = replace_feature(tag, repl,
+                                                ufo.features.text or "")
         elif hasattr(ufo.info, name) and name not in non_info:
             # most OpenType table entries go in the info object
             setattr(ufo.info, name, value)
