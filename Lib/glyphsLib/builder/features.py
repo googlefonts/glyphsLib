@@ -17,6 +17,8 @@ from __future__ import (print_function, division, absolute_import,
 
 from fontTools.misc.py23 import round, unicode
 
+import re
+
 import glyphsLib
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
@@ -132,3 +134,14 @@ def _build_gdef(ufo):
                      (glyph, ' '.join(unicode(p) for p in sorted(caretPos))))
     lines.append('} GDEF;')
     return '\n'.join(lines)
+
+
+def replace_feature(tag, repl, features):
+    if not repl.endswith("\n"):
+        repl += "\n"
+    return re.sub(
+        r"(?<=^feature %(tag)s {\n)(.*?)(?=^} %(tag)s;$)" % {"tag": tag},
+        repl,
+        features,
+        count=1,
+        flags=re.DOTALL | re.MULTILINE)
