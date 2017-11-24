@@ -67,6 +67,12 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
         # Roundtrip again to check idempotence
         font = glyphsLib.loads("\n".join(actual))
         actual_idempotent = write_to_lines(font)
+        with open('expected.txt', 'w') as f:
+            f.write('\n'.join(expected))
+        with open('actual.txt', 'w') as f:
+            f.write('\n'.join(actual))
+        with open('actual_indempotent.txt', 'w') as f:
+            f.write('\n'.join(actual_idempotent))
         # Assert idempotence first, because if that fails it's a big issue
         self.assertLinesEqual(
             actual, actual_idempotent,

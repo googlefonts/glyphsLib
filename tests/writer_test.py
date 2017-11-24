@@ -755,6 +755,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             anchors = (
             {
             name = top;
+            position = "{0, 0}";
             }
             );
             annotations = (
@@ -822,6 +823,15 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             name = top;
             position = "{23, 45.5}";
+            }
+        """))
+
+        # Write a position of 0, 0
+        anchor = classes.GSAnchor('top', Point(0, 0))
+        self.assertWrites(anchor, dedent("""\
+            {
+            name = top;
+            position = "{0, 0}";
             }
         """))
 

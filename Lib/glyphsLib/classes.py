@@ -1901,6 +1901,11 @@ class GSAnchor(GSBase):
                 (self.__class__.__name__, self.name, self.position[0],
                  self.position[1])
 
+    def shouldWriteValueForKey(self, key):
+        if key == 'position':
+            return True
+        return super(GSAnchor, self).shouldWriteValueForKey(key)
+
     @property
     def parent(self):
         return self._parent

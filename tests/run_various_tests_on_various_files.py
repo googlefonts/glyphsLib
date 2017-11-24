@@ -117,11 +117,18 @@ TESTABLES = [
         'git_ref': 'f17124d041e6ee370a9fcddcc084aa6cbf3d5500',
         'classes': (GlyphsRT, GlyphsToDesignspaceRT),
     },
+    # {
+    #     # This one has truckloads of smart components
+    #     'name': 'vt323',
+    #     'git_url': 'https://github.com/phoikoi/VT323',
+    #     'git_ref': 'master',
+    #     'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+    # },
     {
         # This one has truckloads of smart components
-        'name': 'vt323',
-        'git_url': 'https://github.com/phoikoi/VT323',
-        'git_ref': 'master',
+        'name': 'vt323_jany',
+        'git_url': 'https://github.com/belluzj/VT323',
+        'git_ref': 'glyphs-1089',
         'classes': (GlyphsRT, GlyphsToDesignspaceRT),
     },
     # The following contain .designspace files

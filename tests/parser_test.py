@@ -23,8 +23,7 @@ import unittest
 import datetime
 
 from glyphsLib.parser import Parser
-from glyphsLib.classes import GSGlyph, GSLayer
-from fontTools.misc.py23 import unicode
+from glyphsLib.classes import GSGlyph
 
 GLYPH_DATA = '''\
 (
