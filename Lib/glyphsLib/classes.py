@@ -16,18 +16,19 @@
 # limitations under the License.
 
 from __future__ import print_function, unicode_literals
-import re, math, inspect
+
+import re
+import math
+import inspect
 import traceback
 import uuid
 import logging
 import glyphsLib
 from glyphsLib.types import (
     transform, point, rect, size, glyphs_datetime, color, floatToString,
-    readIntlist, writeIntlist, needsQuotes, feature_syntax_encode, baseType,
-    encode_dict_as_string_for_gsnode, decode_dict_as_string_from_gsnode
-)
+    readIntlist, writeIntlist, baseType)
 from glyphsLib.parser import Parser
-from glyphsLib.writer import Writer
+from glyphsLib.writer import Writer, escape_string
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, UnicodeIO, unichr, open
 from glyphsLib.affine import Affine
@@ -1158,7 +1159,7 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": float,
-        "name": str,
+        "name": unicode,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1297,8 +1298,9 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
-    _rx = '([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'\
-          '(?: (SMOOTH))?(?: (\{.*\}))?'
+    _PLIST_VALUE_RE = re.compile(
+        '"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
+        '(?: (SMOOTH))?(?: (\{.*\}))?"', re.DOTALL)
     MOVE = "move"
     LINE = "line"
     CURVE = "curve"
@@ -1340,21 +1342,20 @@ class GSNode(GSBase):
             writer = Writer(string)
             writer.writeDict(self._userData)
             content += ' '
-            content += encode_dict_as_string_for_gsnode(string.getvalue())
+            content += self._encode_dict_as_string(string.getvalue())
         return '"%s %s %s"' % \
             (floatToString(self.position[0]), floatToString(self.position[1]),
              content)
 
     def read(self, line):
-        m = re.match(self._rx, line).groups()
+        m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = point(float(m[0]), float(m[1]))
         self.type = m[2].lower()
         self.smooth = bool(m[3])
 
-        # TODO: Use proper string parsing used in other classes
         if m[4] is not None and len(m[4]) > 0:
+            value = self._decode_dict_as_string(m[4])
             parser = Parser()
-            value = decode_dict_as_string_from_gsnode(m[4])
             self._userData = parser.parse(value)
 
         return self
@@ -1417,6 +1418,36 @@ class GSNode(GSBase):
     @property
     def selected(self):
         raise OnlyInGlyphsAppError
+
+    def _encode_dict_as_string(self, value):
+        """Takes the PLIST string of a dict, and returns the same string
+        encoded such that it can be included in the string representation
+        of a GSNode."""
+        # Strip the first and last newlines
+        if value.startswith('{\n'):
+            value = '{' + value[2:]
+        if value.endswith('\n}'):
+            value = value[:-2] + '}'
+        value = value.replace('"', '\\"')
+        value = value.replace('\n', '\\n')
+        return value
+
+    _ESCAPED_CHAR_RE = re.compile(r'\\(.)')
+
+    @staticmethod
+    def _unescape_char(m):
+        char = m.group(1)
+        if char == '\\':
+            return '\\'
+        if char == 'n':
+            return '\n'
+        if char == '"':
+            return '"'
+        return m.group(0)
+
+    def _decode_dict_as_string(self, value):
+        """Reverse function of _encode_string_as_dict"""
+        return self._ESCAPED_CHAR_RE.sub(self._unescape_char, value)
 
 
 class GSPath(GSBase):
@@ -2717,7 +2748,7 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
-        "fontMaster": "_masters",
+        "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridSubDivision": "gridSubDivisions"
     }

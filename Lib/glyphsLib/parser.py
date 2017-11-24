@@ -106,7 +106,9 @@ class Parser(object):
             i += len(parsed)
             if hasattr(self.current_type, "read"):
                 reader = self.current_type()
-                value = reader.read(value)
+                # Give the escaped value to `read` to be symetrical with
+                # `plistValue` which handles the escaping itself.
+                value = reader.read(m.group(1))
                 return value, i
 
             if (self.current_type is None or
