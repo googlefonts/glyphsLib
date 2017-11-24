@@ -1298,8 +1298,9 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
-    _rx = '"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'\
-          '(?: (SMOOTH))?(?: (\{(?:.|\\n)*\}))?"'
+    _PLIST_VALUE_RE = re.compile(
+        '"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
+        '(?: (SMOOTH))?(?: (\{.*\}))?"', re.DOTALL)
     MOVE = "move"
     LINE = "line"
     CURVE = "curve"
@@ -1347,7 +1348,7 @@ class GSNode(GSBase):
              content)
 
     def read(self, line):
-        m = re.match(self._rx, line).groups()
+        m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = point(float(m[0]), float(m[1]))
         self.type = m[2].lower()
         self.smooth = bool(m[3])

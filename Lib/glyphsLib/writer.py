@@ -139,9 +139,10 @@ class Writer(object):
         elif type(value) == datetime.datetime:
             self.file.write("\"%s +0000\"" % str(value))
         else:
+            value = unicode(value)
             if forKey != "unicode":
                 value = escape_string(value)
-            self.file.write(unicode(value))
+            self.file.write(value)
 
     def writeKey(self, key):
         key = escape_string(key)
@@ -197,8 +198,6 @@ NSPropertyListNameSet = (
 def _needs_quotes(string):
     if len(string) == 0:
         return True
-    if not isinstance(string, (str, unicode)):
-        return False
 
     # Does it need quotes because of special characters?
     for c in string:
@@ -207,21 +206,18 @@ def _needs_quotes(string):
             return True
 
     # Does it need quotes because it could be confused with a number?
-    i = None
     try:
-        i = int(string)
-    except:
-        pass
-    if i is not None:
+        int(string)
+    except ValueError:
+        return False
+    else:
         return True
 
-    return False
 
-
-def escape_string(value):
-    if isinstance(value, (str, unicode)) and _needs_quotes(value):
-        value = value.replace("\\", "\\\\")
-        value = value.replace("\"", "\\\"")
-        value = value.replace("\n", "\\012")
-        value = '"%s"' % value
-    return value
+def escape_string(string):
+    if _needs_quotes(string):
+        string = string.replace("\\", "\\\\")
+        string = string.replace("\"", "\\\"")
+        string = string.replace("\n", "\\012")
+        string = '"%s"' % string
+    return string
