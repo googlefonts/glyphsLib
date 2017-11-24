@@ -287,6 +287,7 @@ class SetCustomParamsTest(unittest.TestCase):
         self.builder = UFOBuilder(self.font)
 
     def set_custom_params(self):
+        self.builder.to_ufo_custom_params(self.ufo, self.font)
         self.builder.to_ufo_custom_params(self.ufo, self.master)
 
     def test_normalizes_curved_quotes_in_names(self):

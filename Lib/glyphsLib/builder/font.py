@@ -111,6 +111,7 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_family_user_data(ufo)
         self.to_ufo_master_user_data(ufo, master)
         self.to_ufo_guidelines(ufo, master)
+        self.to_ufo_custom_params(ufo, font)
         self.to_ufo_custom_params(ufo, master)
 
         master_id = master.id
@@ -175,7 +176,7 @@ def _set_glyphs_font_attributes(self, ufo):
 
     self.to_glyphs_family_names(ufo)
     self.to_glyphs_family_user_data(ufo)
-    self.to_glyphs_family_custom_params(ufo)
+    self.to_glyphs_custom_params(ufo, font)
     self.to_glyphs_features(ufo)
 
 
@@ -227,7 +228,7 @@ def _set_glyphs_master_attributes(self, ufo, master):
     self.to_glyphs_master_names(ufo, master)
     self.to_glyphs_master_user_data(ufo, master)
     self.to_glyphs_guidelines(ufo, master)
-    self.to_glyphs_master_custom_params(ufo, master)
+    self.to_glyphs_custom_params(ufo, master)
 
 
 def to_glyphs_ordered_masters(self):

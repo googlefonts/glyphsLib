@@ -365,8 +365,7 @@ class GlyphsBuilder(_LoggerMixin):
     from .blue_values import to_glyphs_blue_values
     from .components import (to_glyphs_components,
                              to_glyphs_smart_component_axes)
-    from .custom_params import (to_glyphs_family_custom_params,
-                                to_glyphs_master_custom_params)
+    from .custom_params import to_glyphs_custom_params
     from .features import to_glyphs_features
     from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters
     from .glyph import to_glyphs_glyph

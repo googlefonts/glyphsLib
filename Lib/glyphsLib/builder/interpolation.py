@@ -385,6 +385,7 @@ def apply_instance_data(instance_data):
         set_weight_class(ufo, data)
         set_width_class(ufo, data)
         self = UFOBuilder(instance_data, defcon)
+        # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
         to_ufo_custom_params(self, ufo, data)
         ufo.save()
         instance_ufos.append(ufo)

@@ -139,14 +139,6 @@ class UFOProxy(object):
 
 class AbstractParamHandler(object):
     # @abstractmethod
-    def glyphs_names(self):
-        return []
-
-    # @abstractmethod
-    def ufo_names(self):
-        return []
-
-    # @abstractmethod
     def to_glyphs(self):
         pass
 
@@ -172,19 +164,6 @@ class ParamHandler(AbstractParamHandler):
         # Value transformation functions
         self.value_to_ufo = value_to_ufo
         self.value_to_glyphs = value_to_glyphs
-
-    def glyphs_names(self):
-        """Return the list of names that are handled
-        from the customParameters.
-        """
-        # Just in case one handler covers several names
-        if self.glyphs_long_name:
-            return (self.glyphs_name, self.glyphs_long_name)
-        return (self.glyphs_name,)
-
-    def ufo_names(self):
-        """Return the list of names that are handled from the lib.plist."""
-        return (self.ufo_name,)
 
     # By default, the parameter is read from/written to:
     #  - the Glyphs object's customParameters
@@ -249,14 +228,11 @@ class ParamHandler(AbstractParamHandler):
 
 
 KNOWN_PARAM_HANDLERS = []
-KNOWN_PARAM_GLYPHS_NAMES = set()
-KNOWN_PARAM_UFO_NAMES = set()
 
 
 def register(handler):
     KNOWN_PARAM_HANDLERS.append(handler)
-    KNOWN_PARAM_GLYPHS_NAMES.update(handler.glyphs_names())
-    KNOWN_PARAM_UFO_NAMES.update(handler.ufo_names())
+
 
 GLYPHS_UFO_CUSTOM_PARAMS = (
     ('hheaAscender', 'openTypeHheaAscender'),
@@ -369,6 +345,7 @@ register(ParamHandler(
 
 
 class MiscParamHandler(ParamHandler):
+    """Copy GSFont attributes to ufo lib"""
     def _read_from_glyphs(self, glyphs):
         return glyphs.get_attribute_value(self.glyphs_name)
 
@@ -401,12 +378,6 @@ class OS2SelectionParamHandler(AbstractParamHandler):
         ('Has WWS Names', 8),
         ('Use Typo Metrics', 7),
     )
-
-    def glyphs_names(self):
-        return [flag[0] for flag in self.flags]
-
-    def ufo_names(self):
-        return ('openTypeOS2Selection',)
 
     def to_glyphs(self, glyphs, ufo):
         ufo_flags = ufo.get_info_value('openTypeOS2Selection')
@@ -477,50 +448,30 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
 register(ReplaceFeatureParamHandler())
 
 
-def to_ufo_custom_params(self, ufo, master):
+def to_ufo_custom_params(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
-    font_proxy = GlyphsObjectProxy(self.font, glyphs_module=None)
-    master_proxy = GlyphsObjectProxy(master, glyphs_module=None)
+    glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
     ufo_proxy = UFOProxy(ufo)
 
     for handler in KNOWN_PARAM_HANDLERS:
-        handler.to_ufo(font_proxy, ufo_proxy)
-        handler.to_ufo(master_proxy, ufo_proxy)
+        handler.to_ufo(glyphs_proxy, ufo_proxy)
 
-    for param in font_proxy.unhandled_custom_parameters():
+    for param in glyphs_proxy.unhandled_custom_parameters():
         name = _normalize_custom_param_name(param.name)
-        ufo.lib[CUSTOM_PARAM_PREFIX + font_proxy.sub_key + name] = param.value
-    for param in master_proxy.unhandled_custom_parameters():
-        name = _normalize_custom_param_name(param.name)
-        ufo.lib[CUSTOM_PARAM_PREFIX + master_proxy.sub_key + name] = param.value
+        ufo.lib[CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key + name] = param.value
 
     _set_default_params(ufo)
 
 
-def to_glyphs_family_custom_params(self, ufo):
-    font_proxy = GlyphsObjectProxy(self.font, glyphs_module=self.glyphs_module)
+def to_glyphs_custom_params(self, ufo, glyphs_object):
+    glyphs_proxy = GlyphsObjectProxy(glyphs_object,
+                                     glyphs_module=self.glyphs_module)
     ufo_proxy = UFOProxy(ufo)
+
     # Handle known parameters
     for handler in KNOWN_PARAM_HANDLERS:
-        handler.to_glyphs(font_proxy, ufo_proxy)
+        handler.to_glyphs(glyphs_proxy, ufo_proxy)
 
-    _to_glyphs_unknown_parameters(font_proxy, ufo_proxy)
-
-    _unset_default_params(self.font)
-
-
-def to_glyphs_master_custom_params(self, ufo, master):
-    master_proxy = GlyphsObjectProxy(master, glyphs_module=self.glyphs_module)
-    ufo_proxy = UFOProxy(ufo)
-    for handler in KNOWN_PARAM_HANDLERS:
-        handler.to_glyphs(master_proxy, ufo_proxy)
-
-    _to_glyphs_unknown_parameters(master_proxy, ufo_proxy)
-
-    _unset_default_params(master)
-
-
-def _to_glyphs_unknown_parameters(glyphs_proxy, ufo_proxy):
     # TODO: (jany) Make sure that all parameters of the UFO info have a handler
     #              That way, only lib can have extra stuff
     prefix = CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key
@@ -530,6 +481,8 @@ def _to_glyphs_unknown_parameters(glyphs_proxy, ufo_proxy):
             continue
         name = name[len(prefix):]
         glyphs_proxy.set_custom_value(name, value)
+
+    _unset_default_params(glyphs_object)
 
 
 def _normalize_custom_param_name(name):
