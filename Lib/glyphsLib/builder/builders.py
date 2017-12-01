@@ -90,6 +90,13 @@ class UFOBuilder(object):
             return self._ufos.values()
         kerning_groups = {}
 
+        # Store set of actually existing master (layer) ids. This helps with
+        # catching dangling layer data that Glyphs may ignore, e.g. when
+        # copying glyphs from other fonts with, naturally, different master
+        # ids. Note: Masters have unique ids according to the Glyphs
+        # documentation and can therefore be stored in a set.
+        master_layer_ids = {m.id for m in self.font.masters}
+
         # stores background data from "associated layers"
         supplementary_layer_data = []
 
@@ -123,9 +130,10 @@ class UFOBuilder(object):
 
                 assoc_id = layer.associatedMasterId
                 if assoc_id != layer.layerId:
-                    if layer_name is not None:
-                        supplementary_layer_data.append(
-                            (assoc_id, glyph_name, layer_name, layer))
+                    # Store all layers, even the invalid ones, and just skip
+                    # them and print a warning below.
+                    supplementary_layer_data.append(
+                        (assoc_id, glyph_name, layer_name, layer))
                     continue
 
                 ufo = self._ufos[layer_id]
@@ -134,6 +142,23 @@ class UFOBuilder(object):
 
         for layer_id, glyph_name, layer_name, layer_data \
                 in supplementary_layer_data:
+            if layer_data.layerId not in master_layer_ids \
+            and layer_data.associatedMasterId not in master_layer_ids:
+                logger.warn(
+                    '{}, glyph "{}": Layer "{}" is dangling and will be '
+                    'skipped. Did you copy a glyph from a different font? If '
+                    'so, you should clean up any phantom layers not associated '
+                    'with an actual master.'.format(
+                        self.font.familyName, glyph_name, layer_data.layerId))
+                continue
+
+            if not layer_name:
+                # Empty layer names are invalid according to the UFO spec.
+                logger.warn(
+                    '{}, glyph "{}": Contains layer without a name which will '
+                    'be skipped.'.format(self.font.familyName, glyph_name))
+                continue
+
             ufo_font = self._ufos[layer_id]
             if layer_name not in ufo_font.layers:
                 ufo_layer = ufo_font.newLayer(layer_name)
