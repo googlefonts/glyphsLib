@@ -1216,44 +1216,37 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
     def setUp(self):
         self.font = generate_minimal_font()
         add_glyph(self.font, "a")
-
-        self.log_buffer = io.StringIO()
-        self.log_handler = logging.StreamHandler(self.log_buffer)
-        self.logger = logging.getLogger("glyphsLib.builder.builders")
-        self.logger.addHandler(self.log_handler)
-
-    def tearDown(self):
-        self.logger.removeHandler(self.log_handler)
+        self.logger = logging.getLogger("glyphsLib.builder.builders.UFOBuilder")
 
     def test_normal_layer(self):
-        to_ufos(self.font)
+        with CapturingLogHandler(self.logger, level="WARNING") as captor:
+            to_ufos(self.font)
 
-        self.log_buffer.seek(0)
-        log = self.log_buffer.read()
-
-        self.assertFalse("is dangling and will be skipped" in log)
-        self.assertFalse("layer without a name" in log)
+        # no warnings are emitted
+        self.assertRaises(
+            AssertionError,
+            captor.assertRegex, "is dangling and will be skipped")
+        self.assertRaises(
+            AssertionError,
+            captor.assertRegex, "layer without a name")
 
     def test_nameless_layer(self):
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
-        to_ufos(self.font)
 
-        self.log_buffer.seek(0)
-        log = self.log_buffer.read()
+        with CapturingLogHandler(self.logger, level="WARNING") as captor:
+            to_ufos(self.font)
 
-        self.assertFalse("is dangling and will be skipped" in log)
-        self.assertTrue("layer without a name" in log)
+        captor.assertRegex("layer without a name")
 
     def test_dangling_layer(self):
         self.font.glyphs[0].layers[0].layerId = "yyy"
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
-        to_ufos(self.font)
 
-        self.log_buffer.seek(0)
-        log = self.log_buffer.read()
+        with CapturingLogHandler(self.logger, level="WARNING") as captor:
+            to_ufos(self.font)
 
-        self.assertTrue("is dangling and will be skipped" in log)
-        self.assertFalse("layer without a name" in log)
+        captor.assertRegex("is dangling and will be skipped")
+
 
 
 if __name__ == '__main__':
