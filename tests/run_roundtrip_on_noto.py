@@ -47,20 +47,23 @@ class NotoRoundtripTest(unittest.TestCase,
     pass
 
 
-if __name__ == '__main__':
-    print("Run with `pytest -c noto_pytest.ini`")
-else:
+if not os.path.exists(NOTO_DIRECTORY):
     subprocess.call(["git", "clone", NOTO_GIT_URL, NOTO_DIRECTORY])
-    subprocess.check_call(
-        ["git", "-C", NOTO_DIRECTORY, "checkout", NOTO_GIT_BRANCH])
+subprocess.check_call(
+    ["git", "-C", NOTO_DIRECTORY, "checkout", NOTO_GIT_BRANCH])
 
-    for index, filename in enumerate(glyphs_files(NOTO_DIRECTORY)):
-        def test_method(self, filename=filename):
-            self.assertParseWriteRoundtrip(filename)
-        file_basename = os.path.basename(filename)
-        test_name = "test_n{0:0>3d}_v{1}_{2}".format(
-            index,
-            app_version(filename),
-            file_basename.replace(r'[^a-zA-Z]', ''))
-        test_method.__name__ = test_name
-        setattr(NotoRoundtripTest, test_name, test_method)
+for index, filename in enumerate(glyphs_files(NOTO_DIRECTORY)):
+    def test_method(self, filename=filename):
+        self.assertParseWriteRoundtrip(filename)
+    file_basename = os.path.basename(filename)
+    test_name = "test_n{0:0>3d}_v{1}_{2}".format(
+        index,
+        app_version(filename),
+        file_basename.replace(r'[^a-zA-Z]', ''))
+    test_method.__name__ = test_name
+    setattr(NotoRoundtripTest, test_name, test_method)
+
+
+if __name__ == '__main__':
+    import sys
+    sys.exit(unittest.main())
