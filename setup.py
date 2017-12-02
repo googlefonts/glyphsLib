@@ -162,7 +162,7 @@ if sys.version_info < (3, 3):
 
 setup(
     name='glyphsLib',
-    version='2.1.1.dev0',
+    version='2.1.1',
     author="James Godfrey-Kittle",
     author_email="jamesgk@google.com",
     description="A bridge from Glyphs source files (.glyphs) to UFOs",
