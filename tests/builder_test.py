@@ -20,6 +20,8 @@ from __future__ import (print_function, division, absolute_import,
 import collections
 import datetime
 from textwrap import dedent
+import io
+import logging
 import unittest
 # unittest.mock is only available for python 3.3+
 try:
@@ -1207,6 +1209,51 @@ class GlyphPropertiesTest(unittest.TestCase):
         self.assertEqual(ufo['b'].lib.get('public.markColor'), '0.97,1,0,1')
         self.assertEqual(ufo['c'].lib.get('public.markColor'), None)
         self.assertEqual(ufo['d'].lib.get('public.markColor'), None)
+
+
+class SkipDanglingAndNamelessLayers(unittest.TestCase):
+
+    def setUp(self):
+        self.font = generate_minimal_font()
+        add_glyph(self.font, "a")
+
+        self.log_buffer = io.StringIO()
+        self.log_handler = logging.StreamHandler(self.log_buffer)
+        self.logger = logging.getLogger("glyphsLib.builder.builders")
+        self.logger.addHandler(self.log_handler)
+
+    def tearDown(self):
+        self.logger.removeHandler(self.log_handler)
+
+    def test_normal_layer(self):
+        to_ufos(self.font)
+
+        self.log_buffer.seek(0)
+        log = self.log_buffer.read()
+
+        self.assertFalse("is dangling and will be skipped" in log)
+        self.assertFalse("layer without a name" in log)
+
+    def test_nameless_layer(self):
+        self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
+        to_ufos(self.font)
+
+        self.log_buffer.seek(0)
+        log = self.log_buffer.read()
+
+        self.assertFalse("is dangling and will be skipped" in log)
+        self.assertTrue("layer without a name" in log)
+
+    def test_dangling_layer(self):
+        self.font.glyphs[0].layers[0].layerId = "yyy"
+        self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
+        to_ufos(self.font)
+
+        self.log_buffer.seek(0)
+        log = self.log_buffer.read()
+
+        self.assertTrue("is dangling and will be skipped" in log)
+        self.assertFalse("layer without a name" in log)
 
 
 if __name__ == '__main__':
