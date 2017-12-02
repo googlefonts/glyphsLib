@@ -20,13 +20,23 @@ import logging
 
 import defcon
 
-logger = logging.getLogger(__name__)
-
 from glyphsLib import classes
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX
 
 
-class UFOBuilder(object):
+class _LoggerMixin(object):
+
+    _logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = logging.getLogger(
+                ".".join([self.__class__.__module__, self.__class__.__name__]))
+        return self._logger
+
+
+class UFOBuilder(_LoggerMixin):
     """Builder for Glyphs to UFO + designspace."""
 
     def __init__(self,
@@ -58,7 +68,7 @@ class UFOBuilder(object):
         # check that source was generated with at least stable version 2.3
         # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
         if int(font.appVersion) < 895:
-            logger.warn(
+            self.logger.warn(
                 'This Glyphs source was generated with an outdated version '
                 'of Glyphs. The resulting UFOs may be incorrect.')
 
@@ -142,9 +152,9 @@ class UFOBuilder(object):
 
         for layer_id, glyph_name, layer_name, layer_data \
                 in supplementary_layer_data:
-            if layer_data.layerId not in master_layer_ids \
-            and layer_data.associatedMasterId not in master_layer_ids:
-                logger.warn(
+            if (layer_data.layerId not in master_layer_ids
+                    and layer_data.associatedMasterId not in master_layer_ids):
+                self.logger.warn(
                     '{}, glyph "{}": Layer "{}" is dangling and will be '
                     'skipped. Did you copy a glyph from a different font? If '
                     'so, you should clean up any phantom layers not associated '
@@ -154,7 +164,7 @@ class UFOBuilder(object):
 
             if not layer_name:
                 # Empty layer names are invalid according to the UFO spec.
-                logger.warn(
+                self.logger.warn(
                     '{}, glyph "{}": Contains layer without a name which will '
                     'be skipped.'.format(self.font.familyName, glyph_name))
                 continue
@@ -247,7 +257,7 @@ def filter_instances_by_family(instances, family_name=None):
             yield instance
 
 
-class GlyphsBuilder(object):
+class GlyphsBuilder(_LoggerMixin):
     """Builder for UFO + designspace to Glyphs."""
 
     def __init__(self, ufos, designspace=None, glyphs_module=classes):
