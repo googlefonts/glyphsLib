@@ -45,8 +45,9 @@ from glyphsLib.builder.custom_params import (set_custom_params,
                                              set_default_params)
 from glyphsLib.builder.names import build_stylemap_names, build_style_name
 from glyphsLib.builder.filters import parse_glyphs_filter
-from glyphsLib.builder.constants import (GLYPHS_PREFIX, PUBLIC_PREFIX,
-                                         GLYPHLIB_PREFIX)
+from glyphsLib.builder.constants import (
+    GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX,
+    UFO2FT_USE_PROD_NAMES_KEY)
 
 from classes_test import (generate_minimal_font, generate_instance_from_dict,
                           add_glyph, add_anchor, add_component)
@@ -424,6 +425,15 @@ class SetCustomParamsTest(unittest.TestCase):
         set_custom_params(self.ufo, parsed=[("Replace Feature", repl)])
 
         self.assertEqual(self.ufo.features.text, original)
+
+    def test_useProductionNames(self):
+        for value in (True, False):
+            glyphs_param = ("Don't use Production Names", value)
+            set_custom_params(self.ufo, parsed=[glyphs_param])
+
+            self.assertIn(UFO2FT_USE_PROD_NAMES_KEY, self.ufo.lib)
+            self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY],
+                             not value)
 
 
 class ParseGlyphsFilterTest(unittest.TestCase):

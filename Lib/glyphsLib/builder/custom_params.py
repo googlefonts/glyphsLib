@@ -20,7 +20,7 @@ import re
 from glyphsLib.util import bin_to_int_list
 from .filters import parse_glyphs_filter
 from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX, CODEPAGE_RANGES,
-                        UFO2FT_FILTERS_KEY)
+                        UFO2FT_FILTERS_KEY, UFO2FT_USE_PROD_NAMES_KEY)
 from .features import replace_feature
 
 
@@ -57,6 +57,11 @@ def set_custom_params(ufo, parsed=None, data=None, misc_keys=(), non_info=()):
     fsSelection_flags = {'Use Typo Metrics', 'Has WWS Names'}
     for name, value in parsed:
         name = normalize_custom_param_name(name)
+
+        if name == "Don't use Production Names":
+            # convert between Glyphs.app's and ufo2ft's equivalent parameter
+            ufo.lib[UFO2FT_USE_PROD_NAMES_KEY] = not value
+            continue
 
         if name in fsSelection_flags:
             if value:
