@@ -112,7 +112,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_glyph_background(ufo_glyph, layer)
     self.to_ufo_annotations(ufo_glyph, layer)
     self.to_ufo_hints(ufo_glyph, layer)
-    self.to_ufo_glyph_user_data(ufo_glyph, glyph)
+    self.to_ufo_glyph_user_data(ufo_glyph.font, glyph)
     self.to_ufo_layer_user_data(ufo_glyph, layer)
     self.to_ufo_smart_component_axes(ufo_glyph, glyph)
 
@@ -211,7 +211,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     self.to_glyphs_guidelines(ufo_glyph, layer)
     self.to_glyphs_annotations(ufo_glyph, layer)
     self.to_glyphs_hints(ufo_glyph, layer)
-    self.to_glyphs_glyph_user_data(ufo_glyph, glyph)
+    self.to_glyphs_glyph_user_data(ufo_glyph.font, glyph)
     self.to_glyphs_layer_user_data(ufo_glyph, layer)
     self.to_glyphs_smart_component_axes(ufo_glyph, glyph)
 

@@ -25,8 +25,12 @@ from .builders import UFOBuilder, GlyphsBuilder
 logger = logging.getLogger(__name__)
 
 
-def to_ufos(font, include_instances=False, family_name=None,
-            propagate_anchors=True, ufo_module=defcon):
+def to_ufos(font,
+            include_instances=False,
+            family_name=None,
+            propagate_anchors=True,
+            ufo_module=defcon,
+            minimize_glyphs_diffs=False):
     # TODO: (jany) Update documentation
     """Take .glyphs file data and load it into UFOs.
 
@@ -42,7 +46,8 @@ def to_ufos(font, include_instances=False, family_name=None,
         font,
         ufo_module=ufo_module,
         family_name=family_name,
-        propagate_anchors=propagate_anchors)
+        propagate_anchors=propagate_anchors,
+        minimize_glyphs_diffs=minimize_glyphs_diffs)
 
     result = list(builder.masters)
 
@@ -51,8 +56,11 @@ def to_ufos(font, include_instances=False, family_name=None,
     return result
 
 
-def to_designspace(font, family_name=None, propagate_anchors=True,
-                   ufo_module=defcon):
+def to_designspace(font,
+                   family_name=None,
+                   propagate_anchors=True,
+                   ufo_module=defcon,
+                   minimize_glyphs_diffs=False):
     # TODO: (jany) Update documentation
     """Take .glyphs file data and load it into a Designspace Document + UFOS.
 
@@ -68,11 +76,15 @@ def to_designspace(font, family_name=None, propagate_anchors=True,
         font,
         ufo_module=ufo_module,
         family_name=family_name,
-        propagate_anchors=propagate_anchors)
+        propagate_anchors=propagate_anchors,
+        use_designspace=True,
+        minimize_glyphs_diffs=minimize_glyphs_diffs)
     return builder.designspace
 
 
-def to_glyphs(ufos_or_designspace, glyphs_module=classes):
+def to_glyphs(ufos_or_designspace,
+              glyphs_module=classes,
+              minimize_ufo_diffs=False):
     """
     Take a list of UFOs and combine them into a single .glyphs file.
 
@@ -83,8 +95,10 @@ def to_glyphs(ufos_or_designspace, glyphs_module=classes):
     # FIXME: (jany) duck-type instead of isinstance
     if isinstance(ufos_or_designspace, DesignSpaceDocument):
         builder = GlyphsBuilder(designspace=ufos_or_designspace,
-                                glyphs_module=glyphs_module)
+                                glyphs_module=glyphs_module,
+                                minimize_ufo_diffs=minimize_ufo_diffs)
     else:
         builder = GlyphsBuilder(ufos=ufos_or_designspace,
-                                glyphs_module=glyphs_module)
+                                glyphs_module=glyphs_module,
+                                minimize_ufo_diffs=minimize_ufo_diffs)
     return builder.font

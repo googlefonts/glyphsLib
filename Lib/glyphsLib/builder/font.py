@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 APP_VERSION_LIB_KEY = GLYPHS_PREFIX + 'appVersion'
 KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + 'keyboardIncrement'
-MASTER_ID_LIB_KEY = GLYPHS_PREFIX + 'fontMasterID'
 MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + 'fontMasterOrder'
 
 
@@ -75,50 +74,17 @@ def to_ufo_font_attributes(self, family_name):
         if manufacturer_url:
             ufo.info.openTypeNameManufacturerURL = manufacturer_url
 
-        ufo.info.ascender = master.ascender
-        ufo.info.capHeight = master.capHeight
-        ufo.info.descender = master.descender
-        ufo.info.xHeight = master.xHeight
-
-        horizontal_stems = master.horizontalStems
-        vertical_stems = master.verticalStems
-        italic_angle = -master.italicAngle
-        if horizontal_stems:
-            ufo.info.postscriptStemSnapH = horizontal_stems
-        if vertical_stems:
-            ufo.info.postscriptStemSnapV = vertical_stems
-        if italic_angle:
-            ufo.info.italicAngle = italic_angle
-
-        width = master.width
-        weight = master.weight
-        if weight:
-            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-        if width:
-            ufo.lib[GLYPHS_PREFIX + 'width'] = width
-        for number in ('', '1', '2', '3'):
-            custom_name = getattr(master, 'customName' + number)
-            if custom_name:
-                ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
-            custom_value = getattr(master, 'customValue' + number)
-            if custom_value:
-                ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
-
         ufo.glyphOrder = glyph_order
 
         self.to_ufo_names(ufo, master, family_name)
-        self.to_ufo_blue_values(ufo, master)
         self.to_ufo_family_user_data(ufo)
-        self.to_ufo_master_user_data(ufo, master)
-        self.to_ufo_guidelines(ufo, master)
         self.to_ufo_custom_params(ufo, font)
-        self.to_ufo_custom_params(ufo, master)
 
-        master_id = master.id
-        ufo.lib[MASTER_ID_LIB_KEY] = master_id
+        self.to_ufo_master_attributes(ufo, master)
+
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
-        self._ufos[master_id] = ufo
+        self._ufos[master.id] = ufo
 
 
 def to_glyphs_font_attributes(self, ufo, master, is_initial):
@@ -141,7 +107,6 @@ def to_glyphs_font_attributes(self, ufo, master, is_initial):
     else:
         # self._compare_and_merge_glyphs_font_attributes(ufo)
         pass
-    _set_glyphs_master_attributes(self, ufo, master)
 
 
 def _set_glyphs_font_attributes(self, ufo):
@@ -175,60 +140,9 @@ def _set_glyphs_font_attributes(self, ufo):
         font.manufacturerURL = info.openTypeNameManufacturerURL
 
     self.to_glyphs_family_names(ufo)
-    self.to_glyphs_family_user_data(ufo)
+    self.to_glyphs_family_user_data_from_ufo(ufo)
     self.to_glyphs_custom_params(ufo, font)
     self.to_glyphs_features(ufo)
-
-
-def _set_glyphs_master_attributes(self, ufo, master):
-    try:
-        master.id = ufo.lib[MASTER_ID_LIB_KEY]
-    except KeyError:
-        pass
-
-    master.ascender = ufo.info.ascender
-    master.capHeight = ufo.info.capHeight
-    master.descender = ufo.info.descender
-    master.xHeight = ufo.info.xHeight
-
-    horizontal_stems = ufo.info.postscriptStemSnapH
-    vertical_stems = ufo.info.postscriptStemSnapV
-    italic_angle = 0
-    if ufo.info.italicAngle:
-        italic_angle = -ufo.info.italicAngle
-    if horizontal_stems:
-        master.horizontalStems = horizontal_stems
-    if vertical_stems:
-        master.verticalStems = vertical_stems
-    if italic_angle:
-        master.italicAngle = italic_angle
-
-    try:
-        master.width = ufo.lib[GLYPHS_PREFIX + 'width']
-    except KeyError:
-        pass
-    try:
-        master.weight = ufo.lib[GLYPHS_PREFIX + 'weight']
-    except KeyError:
-        pass
-
-    for number in ('', '1', '2', '3'):
-        name_key = GLYPHS_PREFIX + 'customName' + number
-        if name_key in ufo.lib:
-            custom_name = ufo.lib[name_key]
-            if custom_name:
-                setattr(master, 'customName' + number, custom_name)
-        value_key = GLYPHS_PREFIX + 'customValue' + number
-        if value_key in ufo.lib:
-            custom_value = ufo.lib[value_key]
-            if custom_value:
-                setattr(master, 'customValue' + number, custom_value)
-
-    self.to_glyphs_blue_values(ufo, master)
-    self.to_glyphs_master_names(ufo, master)
-    self.to_glyphs_master_user_data(ufo, master)
-    self.to_glyphs_guidelines(ufo, master)
-    self.to_glyphs_custom_params(ufo, master)
 
 
 def to_glyphs_ordered_masters(self):
@@ -237,7 +151,9 @@ def to_glyphs_ordered_masters(self):
 
 
 def _original_master_order(ufo):
+    # FIXME: (jany) Here we should rely on order of sources in designspace
+    # if self.use_designspace
     try:
         return ufo.lib[MASTER_ORDER_LIB_KEY]
-    except:
+    except KeyError:
         return float('infinity')

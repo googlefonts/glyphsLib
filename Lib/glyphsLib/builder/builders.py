@@ -51,7 +51,9 @@ class UFOBuilder(_LoggerMixin):
                  ufo_module=defcon,
                  designspace_module=designSpaceDocument,
                  family_name=None,
-                 propagate_anchors=True):
+                 propagate_anchors=True,
+                 use_designspace=False,
+                 minimize_glyphs_diffs=False):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
         Keyword arguments:
@@ -64,10 +66,18 @@ class UFOBuilder(_LoggerMixin):
         family_name -- if provided, the master UFOs will be given this name and
                        only instances with this name will be returned.
         propagate_anchors -- set to False to prevent anchor propagation
+        use_designspace -- set to True to make optimal use of the designspace:
+                           data that is common to all ufos will go there.
+        minimize_glyphs_diffs -- set to True to store extra info in UFOs
+                                 in order to get smaller diffs between .glyphs
+                                 .glyphs files when going glyphs->ufo->glyphs.
         """
         self.font = font
         self.ufo_module = ufo_module
         self.designspace_module = designspace_module
+        self.propagate_anchors = propagate_anchors
+        self.use_designspace = use_designspace
+        self.minimize_glyphs_diffs = minimize_glyphs_diffs
 
         # The set of UFOs (= defcon.Font objects) that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.
@@ -99,8 +109,6 @@ class UFOBuilder(_LoggerMixin):
                 self._instance_family_name = None
             else:
                 self._instance_family_name = family_name
-
-        self.propagate_anchors = propagate_anchors
 
     @property
     def masters(self):
@@ -137,8 +145,8 @@ class UFOBuilder(_LoggerMixin):
                 if assoc_id != layer.layerId:
                     # Store all layers, even the invalid ones, and just skip
                     # them and print a warning below.
-                    supplementary_layer_data.append(
-                        (assoc_id, glyph_name, layer_name, layer))
+                    supplementary_layer_data.append((assoc_id, glyph_name,
+                                                     layer_name, layer))
                     continue
 
                 ufo = self._ufos[layer_id]
@@ -150,14 +158,14 @@ class UFOBuilder(_LoggerMixin):
 
         for master_id, glyph_name, layer_name, layer \
                 in supplementary_layer_data:
-            if (layer.layerId not in master_layer_ids and
-                    layer.associatedMasterId not in master_layer_ids):
+            if (layer.layerId not in master_layer_ids
+                    and layer.associatedMasterId not in master_layer_ids):
                 self.logger.warn(
                     '{}, glyph "{}": Layer "{}" is dangling and will be '
                     'skipped. Did you copy a glyph from a different font? If '
                     'so, you should clean up any phantom layers not associated '
-                    'with an actual master.'.format(
-                        self.font.familyName, glyph_name, layer.layerId))
+                    'with an actual master.'.format(self.font.familyName,
+                                                    glyph_name, layer.layerId))
                 continue
 
             if not layer_name:
@@ -184,6 +192,8 @@ class UFOBuilder(_LoggerMixin):
                 self.to_ufo_propagate_font_anchors(ufo)
             self.to_ufo_features(ufo)  # This depends on the glyphOrder key
             self.to_ufo_kerning_groups(ufo, kerning_groups)
+            for layer in ufo.layers:
+                self.to_ufo_layer_lib(layer)
 
         for master_id, kerning in self.font.kerning.items():
             self.to_ufo_kerning(self._ufos[master_id], kerning)
@@ -215,7 +225,8 @@ class UFOBuilder(_LoggerMixin):
         self._designspace = self.designspace_module.DesignSpaceDocument(
             writerClass=designSpaceDocument.InMemoryDocWriter,
             fontClass=self.ufo_module.Font)
-        self.to_ufo_instances()
+        self.to_designspace_instances()
+        self.to_designspace_family_user_data()
         return self._designspace
 
     # DEPRECATED
@@ -252,14 +263,16 @@ class UFOBuilder(_LoggerMixin):
     from .glyph import to_ufo_glyph, to_ufo_glyph_background
     from .guidelines import to_ufo_guidelines
     from .hints import to_ufo_hints
-    from .instances import to_ufo_instances
+    from .instances import to_designspace_instances
     from .kerning import (to_ufo_kerning, to_ufo_glyph_groups,
                           to_ufo_kerning_groups)
+    from .masters import to_ufo_master_attributes
     from .names import to_ufo_names
     from .paths import to_ufo_paths
-    from .user_data import (to_ufo_family_user_data, to_ufo_master_user_data,
-                            to_ufo_glyph_user_data, to_ufo_layer_user_data,
-                            to_ufo_node_user_data)
+    from .user_data import (to_designspace_family_user_data,
+                            to_ufo_family_user_data, to_ufo_master_user_data,
+                            to_ufo_glyph_user_data, to_ufo_layer_lib,
+                            to_ufo_layer_user_data, to_ufo_node_user_data)
 
 
 def filter_instances_by_family(instances, family_name=None):
@@ -279,7 +292,11 @@ def filter_instances_by_family(instances, family_name=None):
 class GlyphsBuilder(_LoggerMixin):
     """Builder for UFO + designspace to Glyphs."""
 
-    def __init__(self, ufos=[], designspace=None, glyphs_module=classes):
+    def __init__(self,
+                 ufos=[],
+                 designspace=None,
+                 glyphs_module=classes,
+                 minimize_ufo_diffs=False):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
         Keyword arguments:
@@ -291,7 +308,13 @@ class GlyphsBuilder(_LoggerMixin):
                          instances of your own classes, or pass the Glyphs.app
                          module that holds the official classes to import UFOs
                          into Glyphs.app)
+        minimize_ufo_diffs -- set to True to store extra info in .glyphs files
+                              in order to get smaller diffs between UFOs
+                              when going UFOs->glyphs->UFOs
         """
+        self.glyphs_module = glyphs_module
+        self.minimize_ufo_diffs = minimize_ufo_diffs
+
         if designspace is not None:
             self.designspace = designspace
             if ufos:
@@ -300,18 +323,17 @@ class GlyphsBuilder(_LoggerMixin):
             else:
                 self.ufos = []
                 for source in designspace.sources:
-                    try:
-                        # It's an in-memory source descriptor
-                        self.ufos.append(source.font)
-                    except AttributeError:
-                        self.ufos.append(designspace.fontClass(source.path))
+                    # FIXME: (jany) Do something better for the InMemory stuff
+                    # Is it an in-memory source descriptor?
+                    if not hasattr(source, 'font'):
+                        source.font = designspace.fontClass(source.path)
+                    self.ufos.append(source.font)
         elif ufos:
-            self.designspace = None
+            self.designspace = self._fake_designspace(ufos)
             self.ufos = ufos
         else:
             raise RuntimeError(
                 'Please provide a designspace or at least one UFO.')
-        self.glyphs_module = glyphs_module
 
         self._font = None
         """The GSFont that will be built."""
@@ -332,9 +354,11 @@ class GlyphsBuilder(_LoggerMixin):
             master = self.glyphs_module.GSFontMaster()
             self.to_glyphs_font_attributes(ufo, master,
                                            is_initial=(index == 0))
+            self.to_glyphs_master_attributes(ufo, master)
             self._font.masters.insert(len(self._font.masters), master)
 
             for layer in ufo.layers:
+                self.to_glyphs_layer_lib(layer)
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
                     self.to_glyphs_glyph_groups(kerning_groups, glyph)
@@ -342,21 +366,65 @@ class GlyphsBuilder(_LoggerMixin):
             self.to_glyphs_kerning(ufo, master)
 
         # Now that all GSGlyph are built, restore the glyph order
-        first_ufo = next(iter(self.ufos))
-        if GLYPH_ORDER_KEY in first_ufo.lib:
-            glyph_order = first_ufo.lib[GLYPH_ORDER_KEY]
-            lookup = {name: i for i, name in enumerate(glyph_order)}
-            self.font.glyphs = sorted(
-                self.font.glyphs,
-                key=lambda glyph: lookup.get(glyph.name, 1 << 63))
+        for first_ufo in self.ufos:
+            if GLYPH_ORDER_KEY in first_ufo.lib:
+                glyph_order = first_ufo.lib[GLYPH_ORDER_KEY]
+                lookup = {name: i for i, name in enumerate(glyph_order)}
+                self.font.glyphs = sorted(
+                    self.font.glyphs,
+                    key=lambda glyph: lookup.get(glyph.name, 1 << 63))
+
+            # FIXME: (jany) Only do that on the first one. Maybe we should
+            # merge the various `public.glyphorder` values?
+            break
 
         # Restore the layer ordering in each glyph
         for glyph in self._font.glyphs:
             self.to_glyphs_layer_order(glyph)
 
+        self.to_glyphs_family_user_data_from_designspace()
         self.to_glyphs_instances()
 
         return self._font
+
+    def _fake_designspace(self, ufos):
+        """Build a fake designspace with the given UFOs as sources, so that all
+        builder functions can rely on the presence of a designspace.
+        """
+        designspace = designSpaceDocument.DesignSpaceDocument(
+            writerClass=designSpaceDocument.InMemoryDocWriter)
+
+        for ufo in ufos:
+            source = designspace.newSourceDescriptor()
+            source.font = ufo
+            source.familyName = ufo.info.familyName
+            source.styleName = ufo.info.styleName
+            # source.name = '%s %s' % (source.familyName, source.styleName)
+            source.path = ufo.path
+
+            # MutatorMath.DesignSpaceDocumentWriter iterates over the location
+            # dictionary, which is non-deterministic so it can cause test failures.
+            # We therefore use an OrderedDict to which we insert in axis order.
+            # Since glyphsLib will switch to DesignSpaceDocument once that is
+            # integrated into fonttools, it's not worth fixing upstream.
+            # https://github.com/googlei18n/glyphsLib/issues/165
+            # FIXME: (jany) still needed?
+            # location = OrderedDict()
+            # for axis in self.designspace.axes:
+            #     value_key = axis.name + 'Value'
+            #     if axis.name.startswith('custom'):
+            #         # FIXME: (jany) this is getting boring
+            #         value_key = 'customValue' + axis.name[len('custom'):]
+            #     location[axis.name] = ufo.lib.get(
+            #         MASTER_CUSTOM_PARAM_PREFIX + value_key, DEFAULT_LOCS[axis.name])
+            source.location = {}
+            # if font is regular:
+            #     source.copyLib = True
+            #     source.copyInfo = True
+            #     source.copyGroups = True
+            #     source.copyFeatures = True
+            designspace.addSource(source)
+        return designspace
 
     # Implementation is split into one file per feature
     from .anchors import to_glyphs_glyph_anchors
@@ -375,10 +443,13 @@ class GlyphsBuilder(_LoggerMixin):
     from .kerning import (to_glyphs_glyph_groups, to_glyphs_kerning_groups,
                           to_glyphs_kerning)
     from .layers import to_glyphs_layer, to_glyphs_layer_order
+    from .masters import to_glyphs_master_attributes
     from .names import to_glyphs_family_names, to_glyphs_master_names
     from .paths import to_glyphs_paths
-    from .user_data import (to_glyphs_family_user_data,
+    from .user_data import (to_glyphs_family_user_data_from_designspace,
+                            to_glyphs_family_user_data_from_ufo,
                             to_glyphs_master_user_data,
                             to_glyphs_glyph_user_data,
+                            to_glyphs_layer_lib,
                             to_glyphs_layer_user_data,
                             to_glyphs_node_user_data)

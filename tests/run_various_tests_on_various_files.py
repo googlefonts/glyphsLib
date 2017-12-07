@@ -19,18 +19,18 @@ import pytest
 import re
 
 import glyphsLib
-from glyphsLib.designSpaceDocument import DesignSpaceDocument
+from glyphsLib.designSpaceDocument import (DesignSpaceDocument,
+                                           InMemoryDocWriter)
 import test_helpers
 
+
 # Kinds of tests that can be run
-
-
 class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
     """Test the parser & writer for .glyphs files only"""
 
     @classmethod
     def add_tests(cls, testable):
-        files = glyphs_files(directory(testable))
+        files = test_helpers.glyphs_files(directory(testable))
         for index, filename in enumerate(sorted(files)):
 
             def test_method(self, filename=filename):
@@ -38,7 +38,7 @@ class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
 
             file_basename = os.path.basename(filename)
             test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
-                index, testable['name'], app_version(filename),
+                index, testable['name'], test_helpers.app_version(filename),
                 file_basename.replace(r'[^a-zA-Z]', ''))
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
@@ -50,7 +50,7 @@ class GlyphsToDesignspaceRT(unittest.TestCase,
 
     @classmethod
     def add_tests(cls, testable):
-        files = glyphs_files(directory(testable))
+        files = test_helpers.glyphs_files(directory(testable))
         for index, filename in enumerate(sorted(files)):
 
             def test_method(self, filename=filename):
@@ -60,22 +60,23 @@ class GlyphsToDesignspaceRT(unittest.TestCase,
 
             file_basename = os.path.basename(filename)
             test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
-                index, testable['name'], app_version(filename),
+                index, testable['name'], test_helpers.app_version(filename),
                 file_basename.replace(r'[^a-zA-Z]', ''))
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
 
 
-class DesignspaceToGlyphsRT(unittest.TestCase):
+class DesignspaceToGlyphsRT(unittest.TestCase,
+                            test_helpers.AssertDesignspaceRoundtrip):
     """Test the whole chain from designspace + UFOs to .glyphs and back"""
 
     @classmethod
     def add_tests(cls, testable):
-        files = designspace_files(directory(testable))
+        files = test_helpers.designspace_files(directory(testable))
         for index, filename in enumerate(sorted(files)):
 
             def test_method(self, filename=filename):
-                doc = DesignSpaceDocument()
+                doc = DesignSpaceDocument(writerClass=InMemoryDocWriter)
                 doc.read(filename)
                 self.assertDesignspaceRoundtrip(doc)
 
@@ -85,6 +86,7 @@ class DesignspaceToGlyphsRT(unittest.TestCase):
                 file_basename.replace(r'[^a-zA-Z]', ''))
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
+            print("adding test", test_name)
 
 
 class UFOsToGlyphsRT(unittest.TestCase):
@@ -147,32 +149,6 @@ TESTABLES = [
 ]
 
 
-APP_VERSION_RE = re.compile('\\.appVersion = "(.*)"')
-
-
-def glyphs_files(directory):
-    for root, _dirs, files in os.walk(directory):
-        for filename in files:
-            if filename.endswith('.glyphs'):
-                yield os.path.join(root, filename)
-
-
-def app_version(filename):
-    with open(filename) as fp:
-        for line in fp:
-            m = APP_VERSION_RE.match(line)
-            if m:
-                return m.group(1)
-    return "no_version"
-
-
-def designspace_files(directory):
-    for root, _dirs, files in os.walk(directory):
-        for filename in files:
-            if filename.endswith('.designspace'):
-                yield os.path.join(root, filename)
-
-
 def directory(testable):
     return os.path.join(
         os.path.dirname(__file__), 'downloaded', testable['name'])
@@ -191,7 +167,8 @@ for testable in TESTABLES:
     for cls in testable['classes']:
         cls.add_tests(testable)
 
+
 if __name__ == '__main__':
     import sys
     # Run pytest.main because it's easier to filter tests, drop into PDB, etc.
-    sys.exit(pytest.main([__file__, *sys.argv]))
+    sys.exit(pytest.main(sys.argv))

@@ -18,9 +18,10 @@ from __future__ import (print_function, division, absolute_import,
 from collections import OrderedDict
 
 from glyphsLib.util import build_ufo_path
-from .constants import (GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX,
-                        MASTER_CUSTOM_PARAM_PREFIX)
+from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
+                        FONT_CUSTOM_PARAM_PREFIX, MASTER_CUSTOM_PARAM_PREFIX)
 from .names import build_stylemap_names
+from .masters import UFO_FILENAME_KEY
 
 EXPORT_KEY = GLYPHS_PREFIX + 'export'
 WIDTH_KEY = GLYPHS_PREFIX + 'width'
@@ -31,7 +32,7 @@ MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + 'manualInterpolation'
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + 'intanceInterpolations'
 
 
-def to_ufo_instances(self):
+def to_designspace_instances(self):
     """Write instance data from self.font to self.designspace."""
 
     # base_family = masters[0].info.familyName
@@ -47,18 +48,20 @@ def to_ufo_instances(self):
 
     # instances = list(filter(is_instance_active, instance_data.get('data', [])))
     ufo_masters = list(self.masters)
-    varfont_origin = _get_varfont_origin(ufo_masters)
-    regular = _find_regular_master(ufo_masters, regularName=varfont_origin)
-    _to_ufo_designspace_axes(self, regular)
-    _to_ufo_designspace_sources(self, regular)
+    if ufo_masters:
+        varfont_origin = _get_varfont_origin(ufo_masters)
+        regular = _find_regular_master(ufo_masters, regularName=varfont_origin)
+        _to_designspace_axes(self, regular)
+        _to_designspace_sources(self, regular)
 
     for instance in self.font.instances:
-        _to_ufo_designspace_instance(self, instance)
+        _to_designspace_instance(self, instance)
 
 
 def _get_varfont_origin(masters):
     # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
     # shared by all the master ufos; here we just get it from the first one
+    assert len(masters) > 0
     varfont_origin_key = "Variation Font Origin"
     return masters[0].lib.get(FONT_CUSTOM_PARAM_PREFIX + varfont_origin_key)
 
@@ -144,7 +147,7 @@ WIDTH_CODES = {
 }
 
 
-def _to_ufo_designspace_axes(self, regular_master):
+def _to_designspace_axes(self, regular_master):
     # According to Georg Seifert, Glyphs 3 will have a better model
     # for describing variation axes.  The plan is to store the axis
     # information globally in the Glyphs file. In addition to actual
@@ -219,17 +222,20 @@ def _to_ufo_designspace_axes(self, regular_master):
             self.designspace.addAxis(axis)
 
 
-def _to_ufo_designspace_sources(self, regular):
+def _to_designspace_sources(self, regular):
     """Add master UFOs to the designspace document."""
     # FIXME: (jany) maybe read data from the GSFontMasters directly?
-    for font in self.masters:
+    for master, font in zip(self.font.masters, self.masters):
         source = self.designspace.newSourceDescriptor()
         source.font = font
         source.familyName = font.info.familyName
         source.styleName = font.info.styleName
         source.name = '%s %s' % (source.familyName, source.styleName)
-        source.filename = build_ufo_path('.', source.familyName,
-                                         source.styleName)
+        if UFO_FILENAME_KEY in master.userData:
+            source.filename = master.userData[UFO_FILENAME_KEY]
+        else:
+            source.filename = build_ufo_path('.', source.familyName,
+                                             source.styleName)
 
         # MutatorMath.DesignSpaceDocumentWriter iterates over the location
         # dictionary, which is non-deterministic so it can cause test failures.
@@ -255,7 +261,7 @@ def _to_ufo_designspace_sources(self, regular):
         self.designspace.addSource(source)
 
 
-def _to_ufo_designspace_instance(self, instance):
+def _to_designspace_instance(self, instance):
     ufo_instance = self.designspace.newInstanceDescriptor()
     for p in instance.customParameters:
         param, value = p.name, p.value
@@ -370,8 +376,7 @@ def to_glyphs_instances(self):
             pass
 
         for axis in [
-                'weight', 'width', 'custom', 'custom1', 'custom2', 'custom3'
-        ]:
+                'weight', 'width', 'custom', 'custom1', 'custom2', 'custom3']:
             # Retrieve the interpolation location
             try:
                 loc = ufo_instance.location[axis]

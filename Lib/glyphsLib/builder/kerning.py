@@ -40,14 +40,16 @@ def to_ufo_kerning(self, ufo, kerning_data):
         if left_is_class:
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
-                logger.warn(warning_msg % left)
+                # logger.warn(warning_msg % left)
+                pass
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
             right_is_class = bool(match)
             if right_is_class:
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
-                    logger.warn(warning_msg % right)
+                    # logger.warn(warning_msg % right)
+                    pass
             if left_is_class != right_is_class:
                 if left_is_class:
                     pair = (left, right, True)
@@ -78,12 +80,16 @@ def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
     """Check if a class-to-glyph kerning rule has a conflict with any existing
     rule in `seen`, and remove any conflicts if they exist.
     """
-
     original_pair = (classname, glyph) if is_left_class else (glyph, classname)
     val = ufo.kerning[original_pair]
     rule = original_pair + (val,)
 
-    old_glyphs = ufo.groups[classname]
+    try:
+        old_glyphs = ufo.groups[classname]
+    except KeyError:
+        # This can happen. The main function `to_ufo_kerning` prints a warning.
+        return
+
     new_glyphs = []
     for member in old_glyphs:
         pair = (member, glyph) if is_left_class else (glyph, member)

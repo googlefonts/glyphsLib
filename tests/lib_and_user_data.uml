@@ -1,0 +1,96 @@
+@startuml
+
+title
+    Relationships between the various Designspace/UFO ""lib"" fields
+    and their Glyphs.app ""userData"" counterparts
+
+end title
+
+skinParam {
+    ClassArrowThickness 2
+}
+
+package Designspace {
+    class DesignSpaceDocument {
+        + lib
+    }
+}
+
+package UFO {
+    class Font {
+        + lib
+        + data
+    }
+    DesignSpaceDocument o-- "*" Font
+
+    class Layer {
+        + lib
+    }
+    Font *-- "*" Layer
+
+    class Glyph {
+        + lib
+    }
+    Layer *-- "*" Glyph
+}
+
+package Glyphs.app {
+    class GSFont {
+        + userData
+    }
+
+    class GSFontMaster {
+        + userData
+    }
+    GSFont *-- "*" GSFontMaster
+
+    class GSGlyph {
+        + userData
+    }
+    GSFont *--- "*" GSGlyph
+
+    class GSLayer {
+        + userData
+    }
+    GSGlyph *-- "*" GSLayer
+
+    class GSNode {
+        + userData
+    }
+    GSLayer *-- "*" GSNode
+}
+
+
+DesignSpaceDocument "1" <-[#green]> "1" GSFont
+note on link
+    Green arrows represent a 1-to-1
+    mapping between Glyphs.app and
+    UFO/Designspace. In those cases,
+    the ""lib"" keys will be copied as-is
+    into ""userData"" and reciprocally.
+end note
+
+Font "1" <-[#green]> "1" GSFontMaster
+note on link
+    The UFO ""data"" will be stored
+    under a special key in the
+    masters' ""userData"".
+end note
+
+Layer "*" .up[#blue].> "1" GSFontMaster
+Font "1" <.[#blue]. "*" GSGlyph
+
+Glyph "1" <-[#green]> "1" GSLayer
+
+Glyph "1" <.[#blue]. "*" GSNode
+note bottom on link
+    Blue arrows mean that there is no
+    1-to-1 relationship between the two
+    worlds, so we store one side into a
+    special key on the other side.
+
+    Here the GSNode ""userData"" is
+    stored into a special GLIF ""lib"" key.
+end note
+
+@enduml

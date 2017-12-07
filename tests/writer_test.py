@@ -794,6 +794,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             name = "{125, 100}";
             paths = (
             {
+            closed = 1;
             }
             );
             userData = {

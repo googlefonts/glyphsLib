@@ -105,4 +105,5 @@ def to_glyphs_family_names(self, ufo):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    pass
+    # ???
+    master.name = ufo.info.styleName

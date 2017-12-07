@@ -443,7 +443,8 @@ class FontFontMasterProxy(Proxy):
 
     def append(self, FontMaster):
         FontMaster.font = self._owner
-        FontMaster.id = str(uuid.uuid4()).upper()
+        if not FontMaster.id:
+            FontMaster.id = str(uuid.uuid4()).upper()
         self._owner._masters.append(FontMaster)
 
         # Cycle through all glyphs and append layer
@@ -984,6 +985,8 @@ class UserDataProxy(Proxy):
     def __getitem__(self, key):
         if self._owner._userData is None:
             raise KeyError
+        # This is not the normal `dict` behaviour, because this does not raise
+        # `KeyError` and instead just returns `None`. It matches Glyphs.app.
         return self._owner._userData.get(key)
 
     def __setitem__(self, key, value):
@@ -1004,6 +1007,8 @@ class UserDataProxy(Proxy):
     def __iter__(self):
         if self._owner._userData is None:
             return
+        # This is not the normal `dict` behaviour, because this yields values
+        # instead of keys. It matches Glyphs.app though. Urg.
         for value in self._owner._userData.values():
             yield value
 
@@ -1116,8 +1121,8 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
-
     def __init__(self, pos=0, size=20):
+        super(GSAlignmentZone, self).__init__()
         self.position = pos
         self.size = size
 
@@ -1276,6 +1281,8 @@ class GSFontMaster(GSBase):
 
     @property
     def name(self):
+        # FIXME: (jany) this getter looks stupid, it never returns the value
+        # from self._name. TODO: test what Glyphs does and how this makes sense
         name = self.customParameters["Master Name"]
         if name is None:
             names = [self.weight, self.width]
@@ -1296,7 +1303,12 @@ class GSFontMaster(GSBase):
 
     @name.setter
     def name(self, value):
-        self._name = value
+        # FIXME: (jany) this is called during init while there are no
+        # customparameters defined yet and it crashes, so I added the if
+        # because during init it sets an empty string
+        if value:
+            self._name = value
+            # self.customParameters["Master Name"] = value
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -1320,6 +1332,7 @@ class GSNode(GSBase):
 
     def __init__(self, position=(0, 0), nodetype=LINE,
                  smooth=False, name=None):
+        super(GSNode, self).__init__()
         self.position = Point(position[0], position[1])
         self.type = nodetype
         self.smooth = smooth
@@ -1482,6 +1495,7 @@ class GSPath(GSBase):
     _parent = None
 
     def __init__(self):
+        super(GSPath, self).__init__()
         self._closed = True
         self.nodes = []
 
@@ -2779,7 +2793,7 @@ class GSGlyph(GSBase):
                       lambda self, value: GlyphLayerProxy(self).setter(value))
 
     def _setupLayer(self, layer, key):
-        assert type(key) == str
+        assert isinstance(key, (str, unicode))
         layer.parent = self
         layer.layerId = key
         # TODO use proxy `self.parent.masters[key]`

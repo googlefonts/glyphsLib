@@ -43,6 +43,10 @@ class DesignSpaceDocumentError(Exception):
         return repr(self.msg) + repr(self.obj)
 
 
+class NoFontError(DesignSpaceDocumentError):
+    """Raised when a SourceDescriptor cannot be linked to a source UFO."""
+
+
 def _indent(elem, whitespace="    ", level=0):
     # taken from http://effbot.org/zone/element-lib.htm#prettyprint
     i = "\n" + level * whitespace
@@ -82,6 +86,7 @@ class SourceDescriptor(SimpleDescriptor):
               'familyName', 'styleName']
 
     def __init__(self):
+        self.document = None    # a reference to the parent document
         self.filename = None    # the original path as found in the document
         self.path = None        # the absolute path, calculated from filename
         self.name = None
@@ -332,6 +337,10 @@ class BaseDocWriter(object):
             self.root.append(ET.Element("instances"))
         for instanceObject in self.documentObject.instances:
             self._addInstance(instanceObject)
+
+        if self.documentObject.lib:
+            self._addLib(self.documentObject.lib)
+
         if pretty:
             _indent(self.root, whitespace=self._whiteSpace)
         tree = ET.ElementTree(self.root)
@@ -537,6 +546,12 @@ class BaseDocWriter(object):
         sourceElement.append(locationElement)
         self.root.findall('.sources')[0].append(sourceElement)
 
+    def _addLib(self, dict):
+        libElement = ET.Element('lib')
+        # TODO: (jany) PLIST I guess?
+        libElement.text = json.dumps(dict)
+        self.root.append(libElement)
+
     def _writeGlyphElement(self, instanceElement, instanceObject, glyphName, data):
         glyphElement = ET.Element('glyph')
         if data.get('mute'):
@@ -588,6 +603,7 @@ class BaseDocReader(object):
         self.readRules()
         self.readSources()
         self.readInstances()
+        self.readLib()
 
     def getSourcePaths(self, makeGlyphs=True, makeKerning=True, makeInfo=True):
         paths = []
@@ -771,7 +787,7 @@ class BaseDocReader(object):
             for kerningElement in sourceElement.findall(".kerning"):
                 if kerningElement.attrib.get('mute') == '1':
                     sourceObject.muteKerning = True
-            self.documentObject.sources.append(sourceObject)
+            self.documentObject.addSource(sourceObject)
 
     def locationFromElement(self, element):
         elementLocation = None
@@ -961,6 +977,12 @@ class BaseDocReader(object):
             glyphData['masters'] = glyphSources
         instanceObject.glyphs[glyphName] = glyphData
 
+    def readLib(self):
+        """ TODO: (jany) doc
+        """
+        for libElement in self.root.findall(".lib"):
+            self.documentObject.lib = json.loads(libElement.text)
+
 
 class DesignSpaceDocument(object):
     """ Read, write data from the designspace file"""
@@ -974,6 +996,7 @@ class DesignSpaceDocument(object):
         self.rules = []
         self.default = None         # name of the default master
         self.defaultLoc = None
+        self.lib = {}
         #
         if readerClass is not None:
             self.readerClass = readerClass
@@ -1046,7 +1069,7 @@ class DesignSpaceDocument(object):
 
 
         """
-        for descriptor in self.sources + self.instances:
+        for descriptor in list(self.sources) + self.instances:
             # check what the relative path really should be?
             expectedFilename = None
             if descriptor.path is not None and self.path is not None:
@@ -1062,8 +1085,24 @@ class DesignSpaceDocument(object):
                 if descriptor.filename is not expectedFilename:
                     descriptor.filename = expectedFilename
 
+    @property
+    def sources(self):
+        # Return an immutable list to force users to call `addSource`
+        # or the setter. This is because I want source descriptors to keep a
+        # reference to their parent for their `font` property.
+        # Maybe this is all too much and another design is needed
+        # (where source descriptors don't instanciate fonts)
+        return tuple(self._sources)
+
+    @sources.setter
+    def sources(self, sources):
+        self._sources = list(sources)
+        for source in self._sources:
+            source.document = self
+
     def addSource(self, sourceDescriptor):
-        self.sources.append(sourceDescriptor)
+        sourceDescriptor.document = self
+        self._sources.append(sourceDescriptor)
 
     def addInstance(self, instanceDescriptor):
         self.instances.append(instanceDescriptor)
@@ -1356,8 +1395,8 @@ class InMemorySourceDescriptor(SourceDescriptor):
     """
 
     def __init__(self, fontClass=None):
-        super(InMemorySourceDescriptor, self).__init__()
         self._font = None
+        super(InMemorySourceDescriptor, self).__init__()
         if fontClass is not None:
             self.fontClass = fontClass
         else:
@@ -1369,9 +1408,14 @@ class InMemorySourceDescriptor(SourceDescriptor):
         if self._font is not None:
             return self._font
 
-        # FIXME: (jany) will there always be a path?
         if self.path:
             self._font = self.fontClass(self.path)
+        elif self.document and self.filename:
+            path = os.path.join(os.path.dirname(self.document), self.filename)
+            self._font = self.fontClass(path)
+
+        if self._font is None:
+            raise NoFontError("")
 
         return self._font
 
@@ -1400,20 +1444,26 @@ class InMemoryDocWriter(BaseDocWriter):
 
     @classmethod
     def getSourceDescriptor(cls, document):
+        # FIXME: (jany) settle on whether we want
+        #   1. descriptors to hold the fontClass
+        #   2. descriptors to refer to their parent document
+        #   3. another design (back to "dumb data bag" descriptors, no OOP)
         return cls.sourceDescriptorClass(fontClass=document.fontClass)
 
     def write(self, pretty=True):
         super(InMemoryDocWriter, self).write(pretty)
-        for sourceObject in self.documentObject.sources:
-            if not sourceObject.filename:
-                self.documentObject.logger.warn(
-                    'In-memory source font {font} not written to the disk '
-                    'because its descriptor does not have a filename.'.format(
-                        font=sourceObject.font))
-                continue
-            path = os.path.join(
-                os.path.dirname(self.path), sourceObject.filename)
-            sourceObject.font.save(path)
+        # FIXME: (jany) think about a way of reliably writing the document and
+        # the UFOs next to each other in one function call
+        # for sourceObject in self.documentObject.sources:
+        #     if not sourceObject.filename:
+        #         self.documentObject.logger.warn(
+        #             'In-memory source font {font} not written to the disk '
+        #             'because its descriptor does not have a filename.'.format(
+        #                 font=sourceObject.font))
+        #         continue
+        #     path = os.path.join(
+        #         os.path.dirname(self.path), sourceObject.filename)
+        #     sourceObject.font.save(path)
 
 
 def rulesToFeature(doc, whiteSpace="\t", newLine="\n"):

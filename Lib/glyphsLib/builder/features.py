@@ -190,9 +190,18 @@ class FeaDocument(object):
         # need the end location to find the text in between.
         # FIXME: (jany) maybe feaLib could provide that?
         self._build_end_locations_rec(self._doc)
+
+        # TODO: (jany) add a test with a complex feature file (nested blocks)
         if self._doc.statements:
-            self._doc.statements[-1].end_location = (
-                None, len(self._lines) + 1, len(self._lines[-1]) + 1)
+            end_location = (None, len(self._lines) + 1,
+                            len(self._lines[-1]) + 1)
+            last_statement = self._doc.statements[-1]
+            while True:
+                last_statement.end_location = end_location
+                if (not hasattr(last_statement, 'statements') or
+                        not last_statement.statements):
+                    break
+                last_statement = last_statement.statements[-1]
 
     def _build_end_locations_rec(self, block):
         # To get the end location, we do a depth-first exploration of the ast:
@@ -340,7 +349,7 @@ class FeatureFileProcessor(object):
         automatic = False
         st = self.statements.peek()
         if isinstance(st, ast.Comment):
-            if self.AUTOMATIC_RE.match(st):
+            if self.AUTOMATIC_RE.match(st.text):
                 automatic = True
                 st = self.statements.peek(1)
             else:

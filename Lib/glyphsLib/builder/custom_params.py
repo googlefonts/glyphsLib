@@ -276,7 +276,8 @@ register(ParamHandler(
     glyphs_name='codePageRanges',
     ufo_name='openTypeOS2CodePageRanges',
     value_to_ufo=lambda value: [CODEPAGE_RANGES[v] for v in value],
-    value_to_glyphs=lambda value: [REVERSE_CODEPAGE_RANGES[v] for v in value]
+    # TODO: handle KeyError, store into userData
+    value_to_glyphs=lambda value: [REVERSE_CODEPAGE_RANGES[v] for v in value if v in REVERSE_CODEPAGE_RANGES]
 ))
 # But don't do the conversion if the Glyphs param name is written in full
 register(ParamHandler(
@@ -285,7 +286,8 @@ register(ParamHandler(
     # Don't do any conversion when writing to UFO
     # value_to_ufo=identity,
     # Don't use this handler to write back to Glyphs
-    value_to_glyphs=lambda value: None
+    value_to_glyphs=lambda value: value  # TODO: only write if contains non-codepage values
+    # TODO: (jany) add test with non-codepage values
 ))
 
 # enforce that winAscent/Descent are positive, according to UFO spec

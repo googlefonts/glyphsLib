@@ -15,46 +15,60 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-from .constants import GLYPHS_PREFIX, PUBLIC_PREFIX
+import base64
+import os
+import posixpath
 
-MASTER_USER_DATA_KEY = GLYPHS_PREFIX + 'fontMaster.userData'
-LAYER_USER_DATA_KEY = GLYPHS_PREFIX + 'layer.userData'
-GLYPH_USER_DATA_KEY = GLYPHS_PREFIX + 'glyph.userData'
-NODE_USER_DATA_KEY = GLYPHS_PREFIX + 'node.userData'
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, PUBLIC_PREFIX
+
+UFO_DATA_KEY = GLYPHLIB_PREFIX + 'ufoData'
+FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + 'fontUserData'
+LAYER_LIB_KEY = GLYPHLIB_PREFIX + 'layerLib'
+GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + 'glyphUserData'
+NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + 'nodeUserData'
+
+
+def to_designspace_family_user_data(self):
+    if self.use_designspace:
+        self.designspace.lib.update(dict(self.font.userData))
 
 
 def to_ufo_family_user_data(self, ufo):
     """Set family-wide user data as Glyphs does."""
-    user_data = self.font.userData
-    for key in user_data.keys():
-        # FIXME: (jany) Should put a Glyphs prefix?
-        # FIXME: (jany) At least identify which stuff we have put in lib during
-        #     the Glyphs->UFO so that we don't take it back into userData in
-        #     the other direction.
-        ufo.lib[key] = user_data[key]
+    if not self.use_designspace:
+        ufo.lib[FONT_USER_DATA_KEY] = dict(self.font.userData)
 
 
 def to_ufo_master_user_data(self, ufo, master):
     """Set master-specific user data as Glyphs does."""
-    user_data = master.userData
-    if user_data:
-        data = {}
-        for key in user_data.keys():
-            data[key] = user_data[key]
-        ufo.lib[MASTER_USER_DATA_KEY] = data
+    for key in master.userData.keys():
+        if _user_data_has_no_special_meaning(key):
+            ufo.lib[key] = master.userData[key]
+
+    # Restore UFO data files
+    if UFO_DATA_KEY in master.userData:
+        for filename, data in master.userData[UFO_DATA_KEY].items():
+            os_filename = os.path.join(*filename.split('/'))
+            ufo.data[os_filename] = base64.b64decode(data)
 
 
-def to_ufo_glyph_user_data(self, ufo_glyph, glyph):
-    user_data = glyph.userData
-    if user_data:
-        ufo_glyph.lib[GLYPH_USER_DATA_KEY] = dict(user_data)
+def to_ufo_glyph_user_data(self, ufo, glyph):
+    key = GLYPH_USER_DATA_KEY + '.' + glyph.name
+    if glyph.userData:
+        ufo.lib[key] = dict(glyph.userData)
+
+
+def to_ufo_layer_lib(self, ufo_layer):
+    key = LAYER_LIB_KEY + '.' + ufo_layer.name
+    if key in self.font.userData.keys():
+        ufo_layer.lib = self.font.userData[key]
 
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
-    if user_data:
-        key = LAYER_USER_DATA_KEY + '.' + layer.layerId
-        ufo_glyph.lib[key] = dict(user_data)
+    for key in user_data.keys():
+        if _user_data_has_no_special_meaning(key):
+            ufo_glyph.lib[key] = user_data[key]
 
 
 def to_ufo_node_user_data(self, ufo_glyph, node):
@@ -65,32 +79,68 @@ def to_ufo_node_user_data(self, ufo_glyph, node):
         ufo_glyph.lib[key] = dict(user_data)
 
 
-def to_glyphs_family_user_data(self, ufo):
-    """Set the GSFont userData from the UFO family-wide user data."""
+def to_glyphs_family_user_data_from_designspace(self):
+    """Set the GSFont userData from the designspace family-wide lib data."""
     target_user_data = self.font.userData
-    for key, value in ufo.lib.items():
-        if _user_data_was_originally_there_family_wide(key):
+    for key, value in self.designspace.lib.items():
+        if _user_data_has_no_special_meaning(key):
             target_user_data[key] = value
 
 
+def to_glyphs_family_user_data_from_ufo(self, ufo):
+    """Set the GSFont userData from the UFO family-wide lib data."""
+    target_user_data = self.font.userData
+    try:
+        for key, value in ufo.lib[FONT_USER_DATA_KEY].items():
+            # Existing values taken from the designspace lib take precedence
+            if key not in target_user_data.keys():
+                target_user_data[key] = value
+    except KeyError:
+        # No FONT_USER_DATA in ufo.lib
+        pass
+
+
 def to_glyphs_master_user_data(self, ufo, master):
-    """Set the GSFontMaster userData from the UFO master-specific user data."""
-    if MASTER_USER_DATA_KEY not in ufo.lib:
-        return
-    user_data = ufo.lib[MASTER_USER_DATA_KEY]
+    """Set the GSFontMaster userData from the UFO master-specific lib data."""
+    target_user_data = master.userData
+    for key, value in ufo.lib.items():
+        if _user_data_has_no_special_meaning(key):
+            target_user_data[key] = value
+
+    # Save UFO data files
+    if ufo.data.fileNames:
+        ufo_data = {}
+        for os_filename in ufo.data.fileNames:
+            filename = posixpath.join(*os_filename.split(os.path.sep))
+            data_bytes = base64.b64encode(ufo.data[os_filename])
+            # FIXME: (jany) The `decode` is here because putting bytes in
+            # userData doesn't work in Python 3. (comes out as `"b'stuff'"`)
+            ufo_data[filename] = data_bytes.decode()
+        master.userData[UFO_DATA_KEY] = ufo_data
+
+
+def to_glyphs_glyph_user_data(self, ufo, glyph):
+    key = GLYPH_USER_DATA_KEY + '.' + glyph.name
+    if key in ufo.lib:
+        glyph.userData = ufo.lib[key]
+
+
+def to_glyphs_layer_lib(self, ufo_layer):
+    user_data = {}
+    for key, value in ufo_layer.lib.items():
+        if _user_data_has_no_special_meaning(key):
+            user_data[key] = value
+
     if user_data:
-        master.userData = user_data
-
-
-def to_glyphs_glyph_user_data(self, ufo_glyph, glyph):
-    if GLYPH_USER_DATA_KEY in ufo_glyph.lib:
-        glyph.userData = ufo_glyph.lib[GLYPH_USER_DATA_KEY]
+        key = LAYER_LIB_KEY + '.' + ufo_layer.name
+        self.font.userData[key] = user_data
 
 
 def to_glyphs_layer_user_data(self, ufo_glyph, layer):
-    key = LAYER_USER_DATA_KEY + '.' + layer.layerId
-    if key in ufo_glyph.lib:
-        layer.userData = ufo_glyph.lib[key]
+    user_data = layer.userData
+    for key, value in ufo_glyph.lib.items():
+        if _user_data_has_no_special_meaning(key):
+            user_data[key] = value
 
 
 def to_glyphs_node_user_data(self, ufo_glyph, node):
@@ -100,6 +150,5 @@ def to_glyphs_node_user_data(self, ufo_glyph, node):
         node.userData = ufo_glyph.lib[key]
 
 
-def _user_data_was_originally_there_family_wide(key):
-    # FIXME: (jany) Identify better which keys must be brought back?
+def _user_data_has_no_special_meaning(key):
     return not (key.startswith(GLYPHS_PREFIX) or key.startswith(PUBLIC_PREFIX))
