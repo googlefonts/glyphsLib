@@ -211,12 +211,12 @@ def generate_python_source(data, out):
             "#\n"
             % fetch_data_version())
 
-    for paragraph in fetch("LICENSE").strip().split("\n\n"):
-        out.write("#\n")
-        for line in textwrap.wrap(paragraph):
-            out.write("# ")
-            out.write(line)
-            out.write("\n")
+        for paragraph in fetch("LICENSE").strip().split("\n\n"):
+            out.write("#\n")
+            for line in textwrap.wrap(paragraph):
+                out.write("# ")
+                out.write(line)
+                out.write("\n")
 
     out.write("\nfrom __future__ import unicode_literals\n\n\n")
     out.write(
