@@ -228,7 +228,12 @@ class glyphs_datetime(baseType):
         """Parse a datetime object from a string."""
         # parse timezone ourselves, since %z is not always supported
         # see: http://bugs.python.org/issue6641
-        string, tz = src.rsplit(' ', 1)
+        srcs = src.split(' ')
+        string = srcs[0] + " " + srcs[1]
+        if len(srcs) > 2:
+            tz = srcs[2]
+        else:
+            tz = "+0000";
         if 'AM' in string or 'PM' in string:
             datetime_obj = datetime.datetime.strptime(
                 string, '%Y-%m-%d %I:%M:%S %p'
