@@ -15,7 +15,7 @@ import collections
 import logging
 import os
 import posixpath
-import json  # FIXME: (jany) that's for lib, should use plist xml I guess
+import plistlib
 import xml.etree.ElementTree as ET
 from mutatorMath.objects.location import biasFromLocations, Location
 
@@ -32,6 +32,30 @@ __all__ = [
     'InstanceDescriptor', 'AxisDescriptor', 'RuleDescriptor', 'BaseDocReader',
     'BaseDocWriter'
 ]
+
+
+def to_plist(value):
+    try:
+        # Python 2
+        string = plistlib.writePlistToString(value)
+    except AttributeError:
+        # Python 3
+        string = plistlib.dumps(value).decode()
+    return ET.fromstring(string).getchildren()[0]
+
+
+def from_plist(element):
+    if element is None:
+        return {}
+    plist = ET.Element('plist')
+    plist.append(element)
+    string = ET.tostring(plist)
+    try:
+        # Python 2
+        return plistlib.readPlistFromString(string)
+    except AttributeError:
+        # Python 3
+        return plistlib.loads(string, fmt=plistlib.FMT_XML)
 
 
 class DesignSpaceDocumentError(Exception):
@@ -497,7 +521,7 @@ class BaseDocWriter(object):
         if instanceObject.lib:
             libElement = ET.Element('lib')
             # TODO: (jany) PLIST I guess?
-            libElement.text = json.dumps(instanceObject.lib)
+            libElement.append(to_plist(instanceObject.lib))
             instanceElement.append(libElement)
         self.root.findall('.instances')[0].append(instanceElement)
 
@@ -549,7 +573,7 @@ class BaseDocWriter(object):
     def _addLib(self, dict):
         libElement = ET.Element('lib')
         # TODO: (jany) PLIST I guess?
-        libElement.text = json.dumps(dict)
+        libElement.append(to_plist(dict))
         self.root.append(libElement)
 
     def _writeGlyphElement(self, instanceElement, instanceObject, glyphName, data):
@@ -889,7 +913,7 @@ class BaseDocReader(object):
     def readLibElement(self, libElement, instanceObject):
         """ TODO: (jany) doc
         """
-        instanceObject.lib = json.loads(libElement.text)
+        instanceObject.lib = from_plist(libElement.getchildren()[0])
 
     def readInfoElement(self, infoElement, instanceObject):
         """ Read the info element.
@@ -981,7 +1005,7 @@ class BaseDocReader(object):
         """ TODO: (jany) doc
         """
         for libElement in self.root.findall(".lib"):
-            self.documentObject.lib = json.loads(libElement.text)
+            self.documentObject.lib = from_plist(libElement.getchildren()[0])
 
 
 class DesignSpaceDocument(object):
