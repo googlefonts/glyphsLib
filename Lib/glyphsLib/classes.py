@@ -2732,7 +2732,6 @@ class GSFont(GSBase):
         "features": GSFeature,
         "fontMaster": GSFontMaster,
         "glyphs": GSGlyph,
-        "grid": int,
         "gridLength": int,
         "gridSubDivision": int,
         "instances": GSInstance,
@@ -2750,6 +2749,7 @@ class GSFont(GSBase):
         ".appVersion": "appVersion",
         "fontMaster": "masters",
         "unitsPerEm": "upm",
+        "gridLength": "grid",
         "gridSubDivision": "gridSubDivisions"
     }
     _defaultsForName = {
@@ -2900,3 +2900,10 @@ class GSFont(GSBase):
     @note.setter
     def note(self, value):
         self.customParameters["note"] = value
+
+    @property
+    def gridLength(self):
+        if (self.gridSubDivisions > 0):
+            return float(self.grid) / float(self.gridSubDivisions)
+        else:
+            return self.grid
