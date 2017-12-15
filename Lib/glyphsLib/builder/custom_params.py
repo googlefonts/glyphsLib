@@ -271,6 +271,17 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
 
+GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
+    'openTypeHheaCaretSlopeRun',
+    'openTypeVheaCaretSlopeRun',
+    'openTypeHheaCaretSlopeRise',
+    'openTypeVheaCaretSlopeRise',
+    'openTypeHheaCaretOffset',
+    'openTypeVheaCaretOffset',
+)
+for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
+    register(ParamHandler(name, name))
+
 # convert code page numbers to OS/2 ulCodePageRange bits
 register(ParamHandler(
     glyphs_name='codePageRanges',

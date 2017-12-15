@@ -192,15 +192,21 @@ class AssertDesignspaceRoundtrip(object):
         font = to_glyphs(designspace, minimize_ufo_diffs=True)
 
         # Check that round-tripping in memory is the same as writing on disk
-        roundtrip_in_mem = to_designspace(font)
+        roundtrip_in_mem = to_designspace(font, propagate_anchors=False)
 
         tmpfont_path = os.path.join(directory, 'font.glyphs')
         font.save(tmpfont_path)
         font_rt = classes.GSFont(tmpfont_path)
-        roundtrip = to_designspace(font_rt)
+        roundtrip = to_designspace(font_rt, propagate_anchors=False)
 
         font.save('intermediary.glyphs')
 
+        write_designspace_and_UFOs(designspace, 'expected/test.designspace')
+        for source in designspace.sources:
+            normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
+        write_designspace_and_UFOs(roundtrip, 'actual/test.designspace')
+        for source in roundtrip.sources:
+            normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         # self.assertDesignspacesEqual(
         #     roundtrip_in_mem, roundtrip,
         #     "The round-trip in memory or written to disk should be equivalent")

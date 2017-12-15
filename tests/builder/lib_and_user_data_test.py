@@ -18,6 +18,7 @@ from __future__ import (print_function, division, absolute_import,
 import base64
 import os
 import pytest
+from collections import OrderedDict
 
 import defcon
 from glyphsLib import classes
@@ -243,3 +244,36 @@ def test_node_user_data_into_glif_lib():
     path = font.glyphs['a'].layers['M1'].paths[0]
     assert path.nodes[1].userData['nodeUserDataKey1'] == 'nodeUserDataValue1'
     assert path.nodes[4].userData['nodeUserDataKey2'] == 'nodeUserDataValue2'
+
+
+def test_lib_data_types():
+    # Test the roundtrip of a few basic types both at the top level and in a
+    # nested object.
+    data = OrderedDict({
+        'boolean': True,
+        'smooth': False,
+        'integer': 1,
+        'float': 0.5,
+        'array': [],
+        'dict': {},
+    })
+    ufo = defcon.Font()
+    a = ufo.newGlyph('a')
+    for key, value in data.items():
+        a.lib[key] = value
+        a.lib['nestedDict'] = dict(data)
+        a.lib['nestedArray'] = list(data.values())
+        a.lib['crazyNesting'] = [{'a': [{'b': [dict(data)]}]}]
+
+    font = to_glyphs([ufo])
+    ufo, = to_ufos(font)
+
+    for index, (key, value) in enumerate(data.items()):
+        assert value == ufo['a'].lib[key]
+        assert value == ufo['a'].lib['nestedDict'][key]
+        assert value == ufo['a'].lib['nestedArray'][index]
+        assert value == ufo['a'].lib['crazyNesting'][0]['a'][0]['b'][0][key]
+        assert type(value) == type(ufo['a'].lib[key])
+        assert type(value) == type(ufo['a'].lib['nestedDict'][key])
+        assert type(value) == type(ufo['a'].lib['nestedArray'][index])
+        assert type(value) == type(ufo['a'].lib['crazyNesting'][0]['a'][0]['b'][0][key])

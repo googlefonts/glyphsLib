@@ -25,6 +25,7 @@ from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + 'script'
+ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + 'originalWidth'
 
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):
@@ -70,8 +71,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
             ufo_glyph.font.lib[postscriptNamesKey] = dict()
         ufo_glyph.font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
-    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey',
-                'leftKerningGroup', 'rightKerningGroup']:
+    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         value = getattr(layer, key, None)
         if value:
             ufo_glyph.lib[GLYPHLIB_PREFIX + 'layer.' + key] = value
@@ -102,7 +102,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     elif category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
         # zero the width of Nonspacing Marks like Glyphs.app does on export
         # TODO: check for customParameter DisableAllAutomaticBehaviour
-        ufo_glyph.lib[GLYPHLIB_PREFIX + 'originalWidth'] = width
+        # FIXME: (jany) also don't do that when rt UFO -> glyphs -> UFO
+        ufo_glyph.lib[ORIGINAL_WIDTH_KEY] = width
         ufo_glyph.width = 0
     else:
         ufo_glyph.width = width
@@ -176,8 +177,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
 
     layer = self.to_glyphs_layer(ufo_layer, glyph, master)
 
-    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey',
-                'leftKerningGroup', 'rightKerningGroup']:
+    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
         for prefix, object in (('glyph.', glyph), ('layer.', layer)):
             full_key = GLYPHLIB_PREFIX + prefix + key
             if full_key in ufo_glyph.lib:
@@ -203,8 +203,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     layer.width = ufo_glyph.width
     if category == 'Mark' and sub_category == 'Nonspacing' and layer.width == 0:
         # Restore originalWidth
-        if GLYPHLIB_PREFIX + 'originalWidth' in ufo_glyph.lib:
-            layer.width = ufo_glyph.lib[GLYPHLIB_PREFIX + 'originalWidth']
+        if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
+            layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
             # TODO: check for customParameter DisableAllAutomaticBehaviour?
 
     self.to_glyphs_background_image(ufo_glyph, layer)

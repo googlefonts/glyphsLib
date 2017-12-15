@@ -116,7 +116,6 @@ class UFOBuilder(_LoggerMixin):
         """
         if self._ufos:
             return self._ufos.values()
-        kerning_groups = {}
 
         # Store set of actually existing master (layer) ids. This helps with
         # catching dangling layer data that Glyphs may ignore, e.g. when
@@ -134,7 +133,6 @@ class UFOBuilder(_LoggerMixin):
         self.to_ufo_font_attributes(self.family_name)
 
         for glyph in self.font.glyphs:
-            self.to_ufo_glyph_groups(kerning_groups, glyph)
             glyph_name = glyph.name
 
             for layer in glyph.layers.values():
@@ -153,8 +151,10 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo.newGlyph(glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)
                 ufo_layer = ufo.layers.defaultLayer
-                ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
-                              glyph.name] = self._layer_order_in_glyph(layer)
+                if self.minimize_glyphs_diffs:
+                    ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
+                                  glyph.name] = self._layer_order_in_glyph(
+                                      layer)
 
         for master_id, glyph_name, layer_name, layer \
                 in supplementary_layer_data:
@@ -181,9 +181,10 @@ class UFOBuilder(_LoggerMixin):
             else:
                 ufo_layer = ufo_font.layers[layer_name]
             # TODO: (jany) move as much as possible into layers.py
-            ufo_layer.lib[GLYPHS_PREFIX + 'layerId'] = layer.layerId
-            ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
-                          glyph_name] = self._layer_order_in_glyph(layer)
+            if self.minimize_glyphs_diffs:
+                ufo_layer.lib[GLYPHS_PREFIX + 'layerId'] = layer.layerId
+                ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
+                              glyph_name] = self._layer_order_in_glyph(layer)
             ufo_glyph = ufo_layer.newGlyph(glyph_name)
             self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
@@ -191,12 +192,11 @@ class UFOBuilder(_LoggerMixin):
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
             self.to_ufo_features(ufo)  # This depends on the glyphOrder key
-            self.to_ufo_kerning_groups(ufo, kerning_groups)
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
-        for master_id, kerning in self.font.kerning.items():
-            self.to_ufo_kerning(self._ufos[master_id], kerning)
+        self.to_ufo_groups()
+        self.to_ufo_kerning()
 
         return self._ufos.values()
 
@@ -261,11 +261,11 @@ class UFOBuilder(_LoggerMixin):
     from .features import to_ufo_features
     from .font import to_ufo_font_attributes
     from .glyph import to_ufo_glyph, to_ufo_glyph_background
+    from .groups import to_ufo_groups
     from .guidelines import to_ufo_guidelines
     from .hints import to_ufo_hints
     from .instances import to_designspace_instances
-    from .kerning import (to_ufo_kerning, to_ufo_glyph_groups,
-                          to_ufo_kerning_groups)
+    from .kerning import to_ufo_kerning
     from .masters import to_ufo_master_attributes
     from .names import to_ufo_names
     from .paths import to_ufo_paths
@@ -348,22 +348,22 @@ class GlyphsBuilder(_LoggerMixin):
         self.to_glyphs_ordered_masters()
 
         self._font = self.glyphs_module.GSFont()
+        self._ufos = OrderedDict()  # Same as in UFOBuilder
         for index, ufo in enumerate(self.ufos):
-            kerning_groups = self.to_glyphs_kerning_groups(ufo)
-
             master = self.glyphs_module.GSFontMaster()
             self.to_glyphs_font_attributes(ufo, master,
                                            is_initial=(index == 0))
             self.to_glyphs_master_attributes(ufo, master)
             self._font.masters.insert(len(self._font.masters), master)
+            self._ufos[master.id] = ufo
 
             for layer in ufo.layers:
                 self.to_glyphs_layer_lib(layer)
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
-                    self.to_glyphs_glyph_groups(kerning_groups, glyph)
 
-            self.to_glyphs_kerning(ufo, master)
+        self.to_glyphs_groups()
+        self.to_glyphs_kerning()
 
         # Now that all GSGlyph are built, restore the glyph order
         for first_ufo in self.ufos:
@@ -437,11 +437,11 @@ class GlyphsBuilder(_LoggerMixin):
     from .features import to_glyphs_features
     from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters
     from .glyph import to_glyphs_glyph
+    from .groups import to_glyphs_groups
     from .guidelines import to_glyphs_guidelines
     from .hints import to_glyphs_hints
     from .instances import to_glyphs_instances
-    from .kerning import (to_glyphs_glyph_groups, to_glyphs_kerning_groups,
-                          to_glyphs_kerning)
+    from .kerning import to_glyphs_kerning
     from .layers import to_glyphs_layer, to_glyphs_layer_order
     from .masters import to_glyphs_master_attributes
     from .names import to_glyphs_family_names, to_glyphs_master_names

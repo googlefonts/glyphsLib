@@ -31,7 +31,7 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
 
     def test_GlyphsUnitTestSans(self):
         filename = os.path.join(os.path.dirname(__file__),
-                                'data/GlyphsUnitTestSans.glyphs')
+                                '../data/GlyphsUnitTestSans.glyphs')
         with open(filename) as f:
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
