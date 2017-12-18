@@ -26,7 +26,7 @@ def to_ufo_names(self, ufo, master, family_name):
 
     styleName = build_style_name(
         width if width != 'Regular' else '',
-        weight,
+        weight if weight != 'Regular' else '',
         custom,
         is_italic
     )
