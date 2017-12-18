@@ -246,7 +246,7 @@ def test_node_user_data_into_glif_lib():
     assert path.nodes[4].userData['nodeUserDataKey2'] == 'nodeUserDataValue2'
 
 
-def test_lib_data_types():
+def test_lib_data_types(tmpdir):
     # Test the roundtrip of a few basic types both at the top level and in a
     # nested object.
     data = OrderedDict({
@@ -266,6 +266,14 @@ def test_lib_data_types():
         a.lib['crazyNesting'] = [{'a': [{'b': [dict(data)]}]}]
 
     font = to_glyphs([ufo])
+
+    # FIXME: This test will stop working if the font is written and read back,
+    # because the file format of Glyphs does not make a difference between
+    # `True` (bool) and `1` (int).
+    # filename = os.path.join(str(tmpdir), 'font.glyphs')
+    # font.save(filename)
+    # font = classes.GSFont(filename)
+
     ufo, = to_ufos(font)
 
     for index, (key, value) in enumerate(data.items()):

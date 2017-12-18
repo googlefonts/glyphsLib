@@ -32,6 +32,7 @@ from glyphsLib.builder import to_glyphs, to_designspace
 from glyphsLib.writer import Writer
 from fontTools.misc.py23 import UnicodeIO
 from ufonormalizer import normalizeUFO
+import defcon
 
 
 def write_to_lines(glyphs_object):
@@ -146,6 +147,42 @@ def write_designspace_and_UFOs(designspace, path):
     designspace.write(path)
 
 
+def deboolized(object):
+    if isinstance(object, OrderedDict):
+        return OrderedDict([
+            (key, deboolized(value)) for key, value in object.items()])
+    if isinstance(object, dict):
+        return {key: deboolized(value) for key, value in object.items()}
+    if isinstance(object, list):
+        return [deboolized(value) for value in object]
+
+    if isinstance(object, bool):
+        return 1 if object else 0
+
+    return object
+
+
+def deboolize(lib):
+    for key, value in lib.items():
+        # Force dirtying the font, because value == deboolized(value)
+        # since True == 1 in python, so defcon thinks nothing happens
+        lib[key] = None
+        lib[key] = deboolized(value)
+
+
+def normalize_ufo_lib(path):
+    """Go through each `lib` element recursively and transform `bools` into
+    `int` because that's what's going to happen on round-trip with Glyphs.
+    """
+    font = defcon.Font(path)
+    deboolize(font.lib)
+    for layer in font.layers:
+        deboolize(layer.lib)
+        for glyph in layer:
+            deboolize(glyph.lib)
+    font.save()
+
+
 class AssertDesignspaceRoundtrip(object):
     """Check UFOs + designspace -> .glyphs -> UFOs + designspace"""
     def assertDesignspacesEqual(self, expected, actual, message=''):
@@ -168,6 +205,7 @@ class AssertDesignspaceRoundtrip(object):
         git("init")
         write_designspace_and_UFOs(expected, designspace_filename)
         for source in expected.sources:
+            normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         git("add", ".")
         git("commit", "-m", "expected")
@@ -175,6 +213,7 @@ class AssertDesignspaceRoundtrip(object):
         clean_git_folder()
         write_designspace_and_UFOs(actual, designspace_filename)
         for source in actual.sources:
+            normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         git("add", ".")
         status = git("status")
@@ -203,9 +242,11 @@ class AssertDesignspaceRoundtrip(object):
 
         write_designspace_and_UFOs(designspace, 'expected/test.designspace')
         for source in designspace.sources:
+            normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         write_designspace_and_UFOs(roundtrip, 'actual/test.designspace')
         for source in roundtrip.sources:
+            normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         # self.assertDesignspacesEqual(
         #     roundtrip_in_mem, roundtrip,
