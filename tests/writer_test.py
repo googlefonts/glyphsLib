@@ -123,12 +123,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             'b': [1, {'c': 2}],
             'd': [1, "1"],
         }
-        # grid
+        # grid -> gridLength
         font.grid = 35
         # gridSubDivisions
         font.gridSubDivisions = 5
-        # gridLength
-        font.gridLength = 2
         # keyboardIncrement
         font.keyboardIncrement = 1.2
         # disablesNiceNames
@@ -200,8 +198,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             glyphname = G1;
             }
             );
-            grid = 35;
-            gridLength = 2;
+            gridLength = 35;
             gridSubDivision = 5;
             instances = (
             {
