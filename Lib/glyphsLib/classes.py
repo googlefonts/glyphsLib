@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function, division, unicode_literals
 
 import re
 import math
@@ -2904,6 +2904,6 @@ class GSFont(GSBase):
     @property
     def gridLength(self):
         if (self.gridSubDivisions > 0):
-            return float(self.grid) / float(self.gridSubDivisions)
+            return self.grid / self.gridSubDivisions
         else:
             return self.grid
