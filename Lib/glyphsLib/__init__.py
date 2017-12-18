@@ -30,7 +30,7 @@ from glyphsLib.util import write_ufo
 from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
 
-__version__ = "2.2.0.dev0"
+__version__ = "2.2.0"
 
 # Doing `import *` from a module that uses unicode_literals, produces
 # "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
