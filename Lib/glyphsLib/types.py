@@ -223,12 +223,24 @@ class transform(point):
 class glyphs_datetime(baseType):
     """Read/write a datetime.  Doesn't maintain time zone offset."""
 
+    utc_offset_re = re.compile(
+        r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
+
     def read(self, src):
-        src = src.replace('"', '')
         """Parse a datetime object from a string."""
+        string = src.replace('"', '')
         # parse timezone ourselves, since %z is not always supported
         # see: http://bugs.python.org/issue6641
-        string, tz = src.rsplit(' ', 1)
+        m = glyphs_datetime.utc_offset_re.match(string)
+        if m:
+            sign = 1 if m.group("sign") == "+" else -1
+            tz_hours = sign * int(m.group("hours"))
+            tz_minutes = sign * int(m.group("minutes"))
+            offset = datetime.timedelta(hours=tz_hours, minutes=tz_minutes)
+            string = string[:-6]
+        else:
+            # no explicit timezone
+            offset = datetime.timedelta(0)
         if 'AM' in string or 'PM' in string:
             datetime_obj = datetime.datetime.strptime(
                 string, '%Y-%m-%d %I:%M:%S %p'
@@ -237,8 +249,6 @@ class glyphs_datetime(baseType):
             datetime_obj = datetime.datetime.strptime(
                 string, '%Y-%m-%d %H:%M:%S'
             )
-        offset = datetime.timedelta(
-            hours=int(tz[:3]), minutes=int(tz[0] + tz[3:]))
         return datetime_obj + offset
 
     def plistValue(self):

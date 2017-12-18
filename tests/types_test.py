@@ -39,6 +39,26 @@ class GlyphsDateTimeTest(unittest.TestCase):
         self.assertEqual(test_time.read(string_12hrs),
                          datetime.datetime(2017, 1, 1, 17, 30, 30))
 
+    def test_parsing_timezone(self):
+        """Assert glyphs_datetime can parse the (optional) timezone
+        formatted as UTC offset. If it's not explicitly specified, then
+        +0000 is assumed.
+        """
+        self.assertEqual(glyphs_datetime().read('2017-12-18 16:45:31 -0100'),
+                         datetime.datetime(2017, 12, 18, 15, 45, 31))
+
+        self.assertEqual(glyphs_datetime().read('2017-12-18 14:15:31 +0130'),
+                         datetime.datetime(2017, 12, 18, 15, 45, 31))
+
+        self.assertEqual(glyphs_datetime().read('2017-12-18 15:45:31'),
+                         datetime.datetime(2017, 12, 18, 15, 45, 31))
+
+        self.assertEqual(glyphs_datetime().read('2017-12-18 03:45:31 PM'),
+                         datetime.datetime(2017, 12, 18, 15, 45, 31))
+
+        self.assertEqual(glyphs_datetime().read('2017-12-18 09:45:31 AM'),
+                         datetime.datetime(2017, 12, 18, 9, 45, 31))
+
 
 if __name__ == '__main__':
     unittest.main()
