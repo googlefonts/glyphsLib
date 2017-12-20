@@ -984,7 +984,7 @@ class UserDataProxy(Proxy):
 
     def __getitem__(self, key):
         if self._owner._userData is None:
-            raise KeyError
+            return None
         # This is not the normal `dict` behaviour, because this does not raise
         # `KeyError` and instead just returns `None`. It matches Glyphs.app.
         return self._owner._userData.get(key)
@@ -1058,7 +1058,7 @@ class GSCustomParameter(GSBase):
         'openTypeVheaVertTypoAscender', 'openTypeVheaVertTypoDescender',
         'openTypeVheaVertTypoLineGap', 'postscriptBlueFuzz',
         'postscriptBlueShift',
-        'postscriptDefaultWidthX', 'postscriptSlantAngle',
+        'postscriptDefaultWidthX',
         'postscriptUnderlinePosition', 'postscriptUnderlineThickness',
         'postscriptUniqueID', 'postscriptWindowsCharacterSet',
         'shoulderHeight',
@@ -1068,7 +1068,7 @@ class GSCustomParameter(GSBase):
         'vheaVertDescender', 'vheaVertLineGap', 'weightClass', 'widthClass',
         'winAscent', 'winDescent', 'year', 'Grid Spacing'))
     _CUSTOM_FLOAT_PARAMS = frozenset((
-        'postscriptBlueScale',))
+        'postscriptSlantAngle', 'postscriptBlueScale',))
 
     _CUSTOM_BOOL_PARAMS = frozenset((
         'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',

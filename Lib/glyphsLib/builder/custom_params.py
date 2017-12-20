@@ -170,14 +170,14 @@ class ParamHandler(AbstractParamHandler):
     #  - the UFO's info object if it has a matching attribute, else the lib
     def to_glyphs(self, glyphs, ufo):
         ufo_value = self._read_from_ufo(glyphs, ufo)
-        if ufo_value is None:
+        if ufo_value is None or ufo_value == []:
             return
         glyphs_value = self.value_to_glyphs(ufo_value)
         self._write_to_glyphs(glyphs, glyphs_value)
 
     def to_ufo(self, glyphs, ufo):
         glyphs_value = self._read_from_glyphs(glyphs)
-        if glyphs_value is None:
+        if glyphs_value is None or glyphs_value == []:
             return
         ufo_value = self.value_to_ufo(glyphs_value)
         self._write_to_ufo(glyphs, ufo, ufo_value)
@@ -271,6 +271,8 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
 
+# TODO: (jany) for all the following fields, check that they are stored in a
+# meaningful Glyphs customParameter. Maybe they have short names?
 GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'openTypeHheaCaretSlopeRun',
     'openTypeVheaCaretSlopeRun',
@@ -278,6 +280,42 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'openTypeVheaCaretSlopeRise',
     'openTypeHheaCaretOffset',
     'openTypeVheaCaretOffset',
+    'openTypeHeadLowestRecPPEM',
+    'openTypeHeadFlags',
+    'openTypeNameVersion',
+    'openTypeNameUniqueID',
+
+    # TODO: look at https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
+    # Use Name Table Entry for the next param
+    'openTypeNameRecords',
+
+    'openTypeOS2FamilyClass',
+    'openTypeOS2SubscriptXSize',
+    'openTypeOS2SubscriptYSize',
+    'openTypeOS2SubscriptXOffset',
+    'openTypeOS2SubscriptYOffset',
+    'openTypeOS2SuperscriptXSize',
+    'openTypeOS2SuperscriptYSize',
+    'openTypeOS2SuperscriptXOffset',
+    'openTypeOS2SuperscriptYOffset',
+    'openTypeOS2StrikeoutSize',
+    'openTypeOS2StrikeoutPosition',
+    'postscriptFontName',
+    'postscriptFullName',
+    'postscriptSlantAngle',
+    'postscriptUniqueID',
+
+    # Should this be handled in `blue_values.py`?
+    'postscriptFamilyBlues',
+    'postscriptFamilyOtherBlues',
+    'postscriptBlueFuzz',
+
+    'postscriptForceBold',
+    'postscriptDefaultWidthX',
+    'postscriptNominalWidthX',
+    'postscriptWeightName',
+    'postscriptDefaultCharacter',
+    'postscriptWindowsCharacterSet',
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name, name))
@@ -331,7 +369,8 @@ def to_ufo_gasp_table(value):
 
 def to_glyphs_gasp_table(value):
     return {
-        record['rangeMaxPPEM']: int_list_to_bin(record['rangeGaspBehavior'])
+        str(record['rangeMaxPPEM']):
+            int_list_to_bin(record['rangeGaspBehavior'])
         for record in value
     }
 
@@ -386,6 +425,11 @@ register(MiscParamHandler('weightValue', ufo_info=False))
 register(MiscParamHandler('widthValue', ufo_info=False))
 
 
+def append_unique(array, value):
+    if value not in array:
+        array.append(value)
+
+
 class OS2SelectionParamHandler(AbstractParamHandler):
     flags = (
         ('Has WWS Names', 8),
@@ -403,9 +447,13 @@ class OS2SelectionParamHandler(AbstractParamHandler):
     def to_ufo(self, glyphs, ufo):
         for glyphs_name, value in self.flags:
             if glyphs.get_custom_value(glyphs_name):
-                if ufo.get_info_value('openTypeOS2Selection') is None:
-                    ufo.set_info_value('openTypeOS2Selection', [])
-                ufo.get_info_value('openTypeOS2Selection').append(value)
+                selection = ufo.get_info_value('openTypeOS2Selection')
+                if selection is None:
+                    selection = []
+                if value not in selection:
+                    selection.append(value)
+                ufo.set_info_value('openTypeOS2Selection', selection)
+
 
 register(OS2SelectionParamHandler())
 

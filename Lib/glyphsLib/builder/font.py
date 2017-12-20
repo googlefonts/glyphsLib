@@ -19,7 +19,7 @@ from collections import deque, OrderedDict
 import logging
 
 from .common import to_ufo_time, from_ufo_time
-from .constants import GLYPHS_PREFIX
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,7 @@ def to_ufo_font_attributes(self, family_name):
     designer_url = font.designerURL
     manufacturer = font.manufacturer
     manufacturer_url = font.manufacturerURL
+    note = font.note
     glyph_order = list(glyph.name for glyph in font.glyphs)
 
     for index, master in enumerate(font.masters):

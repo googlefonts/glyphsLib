@@ -105,5 +105,23 @@ def to_glyphs_family_names(self, ufo):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    # ???
-    master.name = ufo.info.styleName
+    # One way would be to split the `ufo.info.styleName`
+    # and find out for each part whether it is a width, weight or customName
+
+    # Instead we shove all of it into custom, unless we can already build the
+    # stylename with the currently available info in the master.
+    # TODO: more testing of this
+    width = master.width
+    weight = master.weight
+    custom = master.customName
+    is_italic = bool(master.italicAngle)
+
+    current_stylename = build_style_name(
+        width if width != 'Regular' else '',
+        weight if weight != 'Regular' else '',
+        custom,
+        is_italic
+    )
+
+    if current_stylename != ufo.info.styleName:
+        master.customName = ufo.info.styleName
