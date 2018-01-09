@@ -28,6 +28,9 @@ import glyphsLib
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
+ANONYMOUS_FEATURE_PREFIX_NAME = '<anonymous>'
+
+
 def autostr(automatic):
     return '# automatic\n' if automatic else ''
 
@@ -35,10 +38,16 @@ def autostr(automatic):
 def to_ufo_features(self, ufo):
     """Write an UFO's OpenType feature file."""
 
-    prefix_str = '\n\n'.join('# Prefix: %s\n%s%s' %
-                             (prefix.name, autostr(prefix.automatic),
-                              prefix.code)
-                             for prefix in self.font.featurePrefixes)
+    prefixes = []
+    for prefix in self.font.featurePrefixes:
+        strings = []
+        if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
+            strings.append('# Prefix: %s\n' % prefix.name)
+        strings.append(autostr(prefix.automatic))
+        strings.append(prefix.code)
+        prefixes.append(''.join(strings))
+
+    prefix_str = '\n\n'.join(prefixes)
 
     class_defs = []
     for class_ in self.font.classes:
@@ -181,27 +190,25 @@ class FeaDocument(object):
         _, end_line, end_char = statement.end_location
         lines = self._lines[begin_line - 1:end_line]
         if lines:
-            lines[0] = lines[0][begin_char - 1:]
+            # In case it's the same line, we need to trim the end first
             lines[-1] = lines[-1][:end_char]
+            lines[0] = lines[0][begin_char - 1:]
         return ''.join(lines)
 
     def _build_end_locations(self):
         # The statements in the ast only have their start location, but we also
         # need the end location to find the text in between.
         # FIXME: (jany) maybe feaLib could provide that?
+        # Add a fake statement at the end, it's the only one that won't get
+        # a proper end_location, but its presence will help compute the
+        # end_location of the real last statement(s).
+        self._lines.append('#')  # Line corresponding to the fake statement
+        fake_location = (None, len(self._lines), 1)
+        self._doc.statements.append(ast.Comment(fake_location, "Sentinel"))
         self._build_end_locations_rec(self._doc)
-
-        # TODO: (jany) add a test with a complex feature file (nested blocks)
-        if self._doc.statements:
-            end_location = (None, len(self._lines) + 1,
-                            len(self._lines[-1]) + 1)
-            last_statement = self._doc.statements[-1]
-            while True:
-                last_statement.end_location = end_location
-                if (not hasattr(last_statement, 'statements') or
-                        not last_statement.statements):
-                    break
-                last_statement = last_statement.statements[-1]
+        # Remove the fake last statement
+        self._lines.pop()
+        self._doc.statements.pop()
 
     def _build_end_locations_rec(self, block):
         # To get the end location, we do a depth-first exploration of the ast:
@@ -220,6 +227,7 @@ class FeaDocument(object):
             if previous_in_block is not None:
                 previous_in_block.end_location = self._in_block_end_location(
                     previous)
+                previous_in_block = None
             previous = st
             if hasattr(st, 'statements'):
                 previous_in_block = st.statements[-1]
@@ -294,17 +302,33 @@ class FeatureFileProcessor(object):
     NOTES_RE = re.compile('^# notes:$')
 
     def _process_file(self):
+        unhandled_root_elements = []
         while self.statements.has_next():
-            if (not self._process_prefix() and
-                    not self._process_glyph_class_definition() and
-                    not self._process_feature_block() and
-                    not self._process_gdef_table_block()):
-                # FIXME: (jany) Discard other root-level comments... bad?
-                #    Maybe put them in anonymous featurePrefixes
+            if (self._process_prefix() or
+                    self._process_glyph_class_definition() or
+                    self._process_feature_block() or
+                    self._process_gdef_table_block()):
+                # Flush any unhandled root elements into an anonymous prefix
+                if unhandled_root_elements:
+                    prefix = self.glyphs_module.GSFeaturePrefix()
+                    prefix.name = ANONYMOUS_FEATURE_PREFIX_NAME
+                    prefix.code = self._rstrip_newlines(
+                        self.doc.text(unhandled_root_elements))
+                    self._font.featurePrefixes.append(prefix)
+                    unhandled_root_elements.clear()
+            else:
                 # FIXME: (jany) Maybe print warning about unhandled fea block?
                 # TODO: (jany) Check the list of all possible blocks in ast and
                 #   handle them all (even if dummy implem)
+                unhandled_root_elements.append(self.statements.peek())
                 self.statements.next()
+        # Flush any unhandled root elements into an anonymous prefix
+        if unhandled_root_elements:
+            prefix = self.glyphs_module.GSFeaturePrefix()
+            prefix.name = ANONYMOUS_FEATURE_PREFIX_NAME
+            prefix.code = self._rstrip_newlines(
+                self.doc.text(unhandled_root_elements))
+            self._font.featurePrefixes.append(prefix)
 
     def _process_prefix(self):
         st = self.statements.peek()
@@ -361,7 +385,32 @@ class FeatureFileProcessor(object):
         self.statements.next()
         glyph_class = self.glyphs_module.GSClass()
         glyph_class.name = st.name
-        glyph_class.code = ' '.join(st.glyphSet())
+        # Call st.glyphs.asFea() because it updates the 'original' field
+        # However, we don't use the result of `asFea` because it expands
+        # classes in a strange way
+        # FIXME: (jany) maybe open an issue if feaLib?
+        st.glyphs.asFea()
+        elements = []
+        try:
+            if st.glyphs.original:
+                for glyph in st.glyphs.original:
+                    try:
+                        # Class name (GlyphClassName object)
+                        elements.append('@' + glyph.glyphclass.name)
+                    except AttributeError:
+                        try:
+                            # Class name (GlyphClassDefinition object)
+                            # FIXME: (jany) why not always the same type?
+                            elements.append('@' + glyph.name)
+                        except AttributeError:
+                            # Glyph name
+                            elements.append(glyph)
+            else:
+                elements = st.glyphSet()
+        except AttributeError:
+            # Single class
+            elements.append('@' + st.glyphs.glyphclass.name)
+        glyph_class.code = ' '.join(elements)
         glyph_class.automatic = bool(automatic)
         self._font.classes.append(glyph_class)
         return True

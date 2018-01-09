@@ -2959,6 +2959,8 @@ class GSFont(GSBase):
 
     @features.setter
     def features(self, value):
+        # FIXME: (jany) why not use Proxy like every other attribute?
+        # FIXME: (jany) do the same for featurePrefixes?
         self._features = value
         for g in self._features:
             g._parent = self
