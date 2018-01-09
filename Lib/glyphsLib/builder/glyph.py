@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 from defcon import Color
 
 import glyphsLib.glyphdata
-from .common import to_ufo_time, from_ufo_time
+from .common import to_ufo_time, from_ufo_time, from_loose_ufo_time
 from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)
 
@@ -45,7 +45,6 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'lastChange'] = to_ufo_time(last_change)
     color_index = glyph.color
     if color_index is not None:
-        ufo_glyph.lib[GLYPHLIB_PREFIX + 'ColorIndex'] = color_index
         color_tuple = None
         if isinstance(color_index, list):
             if not all(i in range(0, 256) for i in color_index):
@@ -58,7 +57,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
         else:
             logger.warn('Invalid color index {} for {}'.format(color_index, glyph.name))
         if color_tuple is not None:
-            ufo_glyph.lib[PUBLIC_PREFIX + 'markColor'] = color_tuple
+            ufo_glyph.markColor = color_tuple
     export = glyph.export
     if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
@@ -150,17 +149,11 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         glyph.note = note
     if GLYPHLIB_PREFIX + 'lastChange' in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + 'lastChange']
-        glyph.lastChange = from_ufo_time(last_change)
+        # We cannot be strict about the dateformat because it's not an official
+        # UFO field mentioned in the spec so it could happen to have a timezone
+        glyph.lastChange = from_loose_ufo_time(last_change)
     if ufo_glyph.markColor:
-        if GLYPHLIB_PREFIX + 'ColorIndex' in ufo_glyph.lib:
-            color_index = ufo_glyph.lib[GLYPHLIB_PREFIX + 'ColorIndex']
-            if ufo_glyph.markColor == GLYPHS_COLORS[color_index]:
-                # Still coherent
-                glyph.color = color_index
-            else:
-                glyph.color = _to_glyphs_color_index(self, ufo_glyph.markColor)
-        else:
-            glyph.color = _to_glyphs_color_index(self, ufo_glyph.markColor)
+        glyph.color = _to_glyphs_color(self, ufo_glyph.markColor)
     if GLYPHLIB_PREFIX + 'Export' in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export']
     ps_names_key = PUBLIC_PREFIX + 'postscriptNames'
@@ -248,20 +241,12 @@ def to_ufo_glyph_background(self, glyph, layer):
     self.to_ufo_guidelines(new_glyph, background)
 
 
-def _to_glyphs_color_index(self, color):
+def _to_glyphs_color(self, color):
     # color is a defcon Color
-    index, _ = min(
-        enumerate(GLYPHS_COLORS),
-        key=lambda _, glyphs_color: _rgb_distance(color, Color(glyphs_color)))
-    return index
-    # TODO: (jany) remove color approximation, actually it's possible to store
-    #    arbitrary colors in Glyphs
+    # Try to find a matching Glyphs color
+    for index, glyphs_color in enumerate(GLYPHS_COLORS):
+        if str(color) == glyphs_color:
+            return index
 
-
-def _rgb_distance(c1, c2):
-    # https://en.wikipedia.org/wiki/Color_difference
-    rmean = float(c1.r+c2.r) / 2
-    dr = c1.r - c2.r
-    dg = c1.g - c2.g
-    db = c1.b - c2.b
-    return (2 + rmean)*dr*dr + 4*dg*dg + (3 - rmean)*db*db
+    # Otherwise, make a Glyphs-formatted color list
+    return [int(component * 255) for component in list(color)]

@@ -15,8 +15,14 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
+import re
+
 from glyphsLib.types import Point
 
+COLOR_NAME_SUFFIX = ' [%s]'
+COLOR_NAME_RE = re.compile(r'^.*( \[([0-1.,eE+-]+)\])$')
+IDENTIFIER_NAME_SUFFIX = ' [#%s]'
+IDENTIFIER_NAME_RE = re.compile(r'^.*( \[#([^\]]+)\])$')
 LOCKED_NAME_SUFFIX = ' [locked]'
 
 
@@ -30,10 +36,21 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
         x, y = guideline.position
         angle = guideline.angle
         angle = (360 - angle) % 360
-        name = guideline.name
-        if guideline.locked:
-            name += LOCKED_NAME_SUFFIX
         new_guideline = {'x': x, 'y': y, 'angle': angle}
+        name = guideline.name
+        if name is not None:
+            # Identifier
+            m = IDENTIFIER_NAME_RE.match(name)
+            if m:
+                new_guideline['identifier'] = m.group(2)
+                name = name[:-len(m.group(1))]
+            # Color
+            m = COLOR_NAME_RE.match(name)
+            if m:
+                new_guideline['color'] = m.group(2)
+                name = name[:-len(m.group(1))]
+        if guideline.locked:
+            name = (name or '') + LOCKED_NAME_SUFFIX
         if name:
             new_guideline['name'] = name
         new_guidelines.append(new_guideline)
@@ -47,10 +64,16 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
     for guideline in ufo_obj.guidelines:
         new_guideline = self.glyphs_module.GSGuideLine()
         name = guideline.name
+        # Locked
         if name is not None and name.endswith(LOCKED_NAME_SUFFIX):
             name = name[:-len(LOCKED_NAME_SUFFIX)]
             new_guideline.locked = True
+        if guideline.color:
+            name = (name or '') + COLOR_NAME_SUFFIX % str(guideline.color)
+        if guideline.identifier:
+            name = (name or '') + IDENTIFIER_NAME_SUFFIX % guideline.identifier
         new_guideline.name = name
-        new_guideline.position = Point(guideline.x, guideline.y)
-        new_guideline.angle = (360 - guideline.angle) % 360
+        new_guideline.position = Point(guideline.x or 0, guideline.y or 0)
+        if guideline.angle is not None:
+            new_guideline.angle = (360 - guideline.angle) % 360
         glyphs_obj.guides.append(new_guideline)

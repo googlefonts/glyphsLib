@@ -112,6 +112,9 @@ class Point(Vector(2)):
     def __init__(self, value=None, value2=None, rect=None):
         if value is not None and value2 is not None:
             value = [value, value2]
+        assert (value is None or
+                isinstance(value, (str, unicode)) or
+                isinstance(value, (list, tuple)))
         super(Point, self).__init__(value)
 
         self.rect = rect

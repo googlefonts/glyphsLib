@@ -18,9 +18,11 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 import pytest
+import datetime
 
 import defcon
 
+from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos
 
 # TODO: (jany) think hard about the ordering and RTL/LTR
@@ -177,3 +179,69 @@ def test_groups():
     ufo, = to_ufos(font)
 
     assert dict(ufo.groups) == groups_dict
+
+
+def test_guidelines():
+    ufo = defcon.Font()
+    # Complete guideline
+    ufo.appendGuideline(dict(
+        x=10, y=20, angle=30, name="lc", color="1,0,0,1", identifier="lc1"))
+    # Don't crash if a guideline misses information
+    ufo.appendGuideline({})
+    ufo.appendGuideline({'x': 10})
+    ufo.appendGuideline({'y': 20})
+
+    font = to_glyphs([ufo])
+
+    assert len(font.masters[0].guides) == 4
+
+    # We only care about the data in the first guideline
+    # The others are here to prevent crashes when only half of the data is here
+    g = font.masters[0].guides[0]
+
+    assert g.position.x == 10
+    assert g.position.y == 20
+    assert g.angle == 330
+    assert g.name == "lc [1,0,0,1] [#lc1]"
+
+    ufo, = to_ufos(font)
+
+    g = ufo.guidelines[0]
+
+    assert g.x == 10
+    assert g.y == 20
+    assert g.angle == 30
+    assert g.name == 'lc'
+    assert g.color == '1,0,0,1'
+    assert g.identifier == 'lc1'
+
+
+def test_glyph_color():
+    ufo = defcon.Font()
+    a = ufo.newGlyph('a')
+    a.markColor = GLYPHS_COLORS[3]
+    b = ufo.newGlyph('b')
+    b.markColor = '1,0.5,0,1'
+
+    font = to_glyphs([ufo])
+
+    assert font.glyphs['a'].color == 3
+    assert font.glyphs['b'].color == [255, 127, 0, 255]
+
+    ufo, = to_ufos(font)
+
+    assert ufo['a'].markColor == GLYPHS_COLORS[3]
+    # FIXME: (jany) rounding errors
+    assert ufo['b'].markColor == '1,0.498,0,1'
+
+
+def test_bad_ufo_date_format_in_glyph_lib():
+    ufo = defcon.Font()
+    a = ufo.newGlyph('a')
+    a.lib[GLYPHLIB_PREFIX + 'lastChange'] = '2017-12-19 15:12:44 +0000'
+
+    # Don't crash
+    font = to_glyphs([ufo])
+
+    assert (font.glyphs['a'].lastChange ==
+            datetime.datetime(2017, 12, 19, 15, 12, 44))
