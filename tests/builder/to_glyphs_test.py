@@ -245,3 +245,42 @@ def test_bad_ufo_date_format_in_glyph_lib():
 
     assert (font.glyphs['a'].lastChange ==
             datetime.datetime(2017, 12, 19, 15, 12, 44))
+
+
+def test_have_default_interpolation_values():
+    """When no designspace is provided, make sure that the Glyphs file has some default "axis positions" for the masters.
+    """
+    thin = defcon.Font()
+    thin.info.openTypeOS2WidthClass = 5
+    thin.info.openTypeOS2WeightClass = 100
+    regular = defcon.Font()
+    regular.info.openTypeOS2WidthClass = 5
+    regular.info.openTypeOS2WeightClass = 400
+    bold = defcon.Font()
+    bold.info.openTypeOS2WidthClass = 5
+    bold.info.openTypeOS2WeightClass = 700
+    thin_expanded = defcon.Font()
+    thin_expanded.info.openTypeOS2WidthClass = 7
+    thin_expanded.info.openTypeOS2WeightClass = 100
+    bold_ultra_cond = defcon.Font()
+    bold_ultra_cond.info.openTypeOS2WidthClass = 1
+    bold_ultra_cond.info.openTypeOS2WeightClass = 700
+
+    font = to_glyphs([thin, regular, bold, thin_expanded, bold_ultra_cond])
+
+    gthin, greg, gbold, gthinex, gbolducond = font.masters
+
+    # For weight, copy the WeightClass as-is
+    assert gthin.weightValue == 100
+    assert greg.weightValue == 400
+    assert gbold.weightValue == 700
+    assert gthinex.weightValue == 100
+    assert gbolducond.weightValue == 700
+
+    # For width, use the "% of normal" column from the spec
+    # https://www.microsoft.com/typography/otspec/os2.htm#wdc
+    assert gthin.widthValue == 100
+    assert greg.widthValue == 100
+    assert gbold.widthValue == 100
+    assert gthinex.widthValue == 125
+    assert gbolducond.widthValue == 50

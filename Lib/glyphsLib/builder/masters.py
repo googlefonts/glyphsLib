@@ -123,9 +123,12 @@ def to_glyphs_master_attributes(self, ufo, master):
     # Retrieve the master locations: weight, width, custom 0 - 1 - 2 - 3
     source = _get_designspace_source_for_ufo(self, ufo)
     for axis in ['weight', 'width']:
+        attr = 'openTypeOS2%sClass' % axis.capitalize()
+        ufo_class = getattr(ufo.info, attr)
         # First, try the designspace
         try:
             # TODO: ??? name = source.lib[...]
+            # TODO: maybe handled by names.py?
             # setattr(master, axis, name)
             raise KeyError
         except KeyError:
@@ -133,9 +136,8 @@ def to_glyphs_master_attributes(self, ufo, master):
             try:
                 setattr(master, axis, ufo.lib[GLYPHS_PREFIX + axis])
             except KeyError:
-                # FIXME: (jany) as last resort, use 400/700 as a location,
-                #   from the weightClass/widthClass?
-                pass
+                if ufo_class:
+                    setattr(master, axis, _class_to_name(axis, ufo_class))
 
         value_key = axis + 'Value'
         # First, try the designspace
@@ -147,9 +149,9 @@ def to_glyphs_master_attributes(self, ufo, master):
             try:
                 setattr(master, value_key, ufo.lib[GLYPHS_PREFIX + value_key])
             except KeyError:
-                # FIXME: (jany) as last resort, use 400/700 as a location,
-                #   from the weightClass/widthClass?
-                pass
+                if ufo_class:
+                    setattr(master, value_key, _class_to_value(
+                        axis, ufo_class))
 
     for number in ('', '1', '2', '3'):
         # For the custom locations, we need both the name and the value
@@ -188,3 +190,38 @@ def _get_designspace_source_for_ufo(self, ufo):
     for source in self.designspace.sources:
         if source.font == ufo:
             return source
+
+# FIXME: (jany) this code/data must also be somewhere else, refactor
+# From the spec: https://www.microsoft.com/typography/otspec/os2.htm#wtc
+CLASSES_DICT = {
+    'weight': {
+        100: ('Thin', 100),
+        200: ('Extra-light', 200),
+        300: ('Light', 300),
+        400: ('Regular', 400),
+        500: ('Medium', 500),
+        600: ('Semi-bold', 600),
+        700: ('Bold', 700),
+        800: ('Extra-bold', 800),
+        900: ('Black', 900),
+    },
+    'width': {
+        1: ('Ultra-condensed', 50),
+        2: ('Extra-condensed', 62.5),
+        3: ('Condensed', 75),
+        4: ('Semi-condensed', 87.5),
+        5: ('Medium', 100),
+        6: ('Semi-expanded', 112.5),
+        7: ('Expanded', 125),
+        8: ('Extra-expanded', 150),
+        9: ('Ultra-expanded', 200),
+    }
+}
+
+
+def _class_to_name(axis, ufo_class):
+    return CLASSES_DICT[axis][ufo_class][0]
+
+
+def _class_to_value(axis, ufo_class):
+    return CLASSES_DICT[axis][ufo_class][1]
