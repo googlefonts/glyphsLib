@@ -19,11 +19,15 @@ from __future__ import (print_function, division, absolute_import,
 
 import pytest
 import datetime
+import os
 
 import defcon
 
 from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
-from glyphsLib import to_glyphs, to_ufos
+from glyphsLib import to_glyphs, to_ufos, to_designspace
+
+# FIXME: (jany) should come from fonttools
+from glyphsLib.designSpaceDocument import DesignSpaceDocument
 
 # TODO: (jany) think hard about the ordering and RTL/LTR
 # TODO: (jany) make one generic test with data using pytest
@@ -183,37 +187,58 @@ def test_groups():
 
 def test_guidelines():
     ufo = defcon.Font()
-    # Complete guideline
-    ufo.appendGuideline(dict(
-        x=10, y=20, angle=30, name="lc", color="1,0,0,1", identifier="lc1"))
-    # Don't crash if a guideline misses information
-    ufo.appendGuideline({})
-    ufo.appendGuideline({'x': 10})
-    ufo.appendGuideline({'y': 20})
+    a = ufo.newGlyph('a')
+    for obj in [ufo, a]:
+        # Complete guideline
+        obj.appendGuideline(dict(
+            x=10,
+            y=20,
+            angle=30,
+            name="lc",
+            color="1,0,0,1",
+            identifier="lc1"))
+        # Don't crash if a guideline misses information
+        obj.appendGuideline({'x': 10})
+        obj.appendGuideline({'y': 20})
+        obj.appendGuideline({})
 
     font = to_glyphs([ufo])
 
-    assert len(font.masters[0].guides) == 4
+    for gobj in [font.masters[0], font.glyphs['a'].layers[0]]:
+        assert len(gobj.guides) == 4
 
-    # We only care about the data in the first guideline
-    # The others are here to prevent crashes when only half of the data is here
-    g = font.masters[0].guides[0]
+        angled, vertical, horizontal, empty = gobj.guides
 
-    assert g.position.x == 10
-    assert g.position.y == 20
-    assert g.angle == 330
-    assert g.name == "lc [1,0,0,1] [#lc1]"
+        assert angled.position.x == 10
+        assert angled.position.y == 20
+        assert angled.angle == 330
+        assert angled.name == "lc [1,0,0,1] [#lc1]"
+
+        assert vertical.position.x == 10
+        assert vertical.angle == 90
+
+        assert horizontal.position.y == 20
+        assert horizontal.angle == 0
 
     ufo, = to_ufos(font)
 
-    g = ufo.guidelines[0]
+    for obj in [ufo, ufo['a']]:
+        angled, vertical, horizontal, empty = obj.guidelines
 
-    assert g.x == 10
-    assert g.y == 20
-    assert g.angle == 30
-    assert g.name == 'lc'
-    assert g.color == '1,0,0,1'
-    assert g.identifier == 'lc1'
+        assert angled.x == 10
+        assert angled.y == 20
+        assert angled.angle == 30
+        assert angled.name == 'lc'
+        assert angled.color == '1,0,0,1'
+        assert angled.identifier == 'lc1'
+
+        assert vertical.x == 10
+        assert vertical.y is None
+        assert vertical.angle is None
+
+        assert horizontal.x is None
+        assert horizontal.y == 20
+        assert horizontal.angle is None
 
 
 def test_glyph_color():
@@ -221,18 +246,17 @@ def test_glyph_color():
     a = ufo.newGlyph('a')
     a.markColor = GLYPHS_COLORS[3]
     b = ufo.newGlyph('b')
-    b.markColor = '1,0.5,0,1'
+    b.markColor = '{:.04f},{:.04f},0,1'.format(4.0 / 255, 128.0 / 255)
 
     font = to_glyphs([ufo])
 
     assert font.glyphs['a'].color == 3
-    assert font.glyphs['b'].color == [255, 127, 0, 255]
+    assert font.glyphs['b'].color == [4, 128, 0, 255]
 
     ufo, = to_ufos(font)
 
     assert ufo['a'].markColor == GLYPHS_COLORS[3]
-    # FIXME: (jany) rounding errors
-    assert ufo['b'].markColor == '1,0.498,0,1'
+    assert ufo['b'].markColor == b.markColor
 
 
 def test_bad_ufo_date_format_in_glyph_lib():
@@ -284,3 +308,108 @@ def test_have_default_interpolation_values():
     assert gbold.widthValue == 100
     assert gthinex.widthValue == 125
     assert gbolducond.widthValue == 50
+
+
+def test_designspace_source_locations(tmpdir):
+    """Check that opening UFOs from their source descriptor works with both
+    the filename and the path attributes.
+    """
+    designspace_path = os.path.join(str(tmpdir), 'test.designspace')
+    light_ufo_path = os.path.join(str(tmpdir), 'light.ufo')
+    bold_ufo_path = os.path.join(str(tmpdir), 'bold.ufo')
+
+    designspace = DesignSpaceDocument()
+    light_source = designspace.newSourceDescriptor()
+    light_source.filename = 'light.ufo'
+    designspace.addSource(light_source)
+    bold_source = designspace.newSourceDescriptor()
+    bold_source.path = bold_ufo_path
+    designspace.addSource(bold_source)
+    designspace.write(designspace_path)
+
+    light = defcon.Font()
+    light.info.ascender = 30
+    light.save(light_ufo_path)
+
+    bold = defcon.Font()
+    bold.info.ascender = 40
+    bold.save(bold_ufo_path)
+
+    designspace = DesignSpaceDocument()
+    designspace.read(designspace_path)
+
+    font = to_glyphs(designspace)
+
+    assert len(font.masters) == 2
+    assert font.masters[0].ascender == 30
+    assert font.masters[1].ascender == 40
+
+
+@pytest.mark.skip(reason='Should be better defined')
+def test_ufo_filename_is_kept_the_same(tmpdir):
+    """Check that the filenames of existing UFOs are correctly written to
+    the designspace document when doing UFOs -> Glyphs -> designspace.
+    This only works when the option "minimize_ufo_diffs" is given, because
+    keeping track of this information adds stuff to the Glyphs file.
+    """
+    light_ufo_path = os.path.join(str(tmpdir), 'light.ufo')
+    bold_ufo_path = os.path.join(str(tmpdir), 'subdir/bold.ufo')
+
+    light = defcon.Font()
+    light.info.ascender = 30
+    light.save(light_ufo_path)
+
+    bold = defcon.Font()
+    bold.info.ascender = 40
+    bold.save(bold_ufo_path)
+
+    # First check: when going from UFOs -> Glyphs -> designspace
+    font = to_glyphs([light, bold], minimize_ufo_diffs=True)
+
+    designspace = to_designspace(font)
+    assert designspace.sources[0].path == light_ufo_path
+    assert designspace.sources[1].path == bold_ufo_path
+
+    # Second check: going from designspace -> Glyphs -> designspace
+    designspace_path = os.path.join(str(tmpdir), 'test.designspace')
+    designspace = DesignSpaceDocument()
+    light_source = designspace.newSourceDescriptor()
+    light_source.filename = 'light.ufo'
+    designspace.addSource(light_source)
+    bold_source = designspace.newSourceDescriptor()
+    bold_source.path = bold_ufo_path
+    designspace.addSource(bold_source)
+    designspace.write(designspace_path)
+
+    font = to_glyphs([light, bold], minimize_ufo_diffs=True)
+
+    assert designspace.sources[0].filename == 'light.ufo'
+    assert designspace.sources[1].filename == 'subdir/bold.ufo'
+
+
+def test_dont_copy_advance_to_the_background_unless_it_was_there():
+    ufo = defcon.Font()
+    bg = ufo.newLayer('public.background')
+
+    fg_a = ufo.newGlyph('a')
+    fg_a.width = 100
+    bg_a = bg.newGlyph('a')
+
+    fg_b = ufo.newGlyph('b')
+    fg_b.width = 200
+    bg_b = bg.newGlyph('b')
+    bg_b.width = 300
+
+    font = to_glyphs([ufo])
+
+    ufo, = to_ufos(font)
+
+    assert ufo['a'].width == 100
+    assert ufo.layers['public.background']['a'].width == 0  # 0 is the default
+    assert ufo['b'].width == 200
+    assert ufo.layers['public.background']['b'].width == 300
+
+
+def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():
+    # TODO
+    pass

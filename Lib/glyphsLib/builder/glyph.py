@@ -232,7 +232,9 @@ def to_ufo_glyph_background(self, glyph, layer):
     else:
         layer = font.layers[layer_name]
     new_glyph = layer.newGlyph(glyph.name)
-    new_glyph.width = glyph.width
+
+    # FIXME: (jany) find out more about Glyphs' background width handling
+    new_glyph.width = background.width
 
     self.to_ufo_background_image(new_glyph, background)
     self.to_ufo_paths(new_glyph, background)
@@ -249,4 +251,4 @@ def _to_glyphs_color(self, color):
             return index
 
     # Otherwise, make a Glyphs-formatted color list
-    return [int(component * 255) for component in list(color)]
+    return [round(component * 255) for component in list(color)]

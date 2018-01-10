@@ -33,10 +33,18 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
         return
     new_guidelines = []
     for guideline in guidelines:
+        new_guideline = {}
         x, y = guideline.position
         angle = guideline.angle
         angle = (360 - angle) % 360
-        new_guideline = {'x': x, 'y': y, 'angle': angle}
+        if _is_vertical(x, y, angle):
+            new_guideline['x'] = x
+        elif _is_horizontal(x, y, angle):
+            new_guideline['y'] = y
+        else:
+            new_guideline['x'] = x
+            new_guideline['y'] = y
+            new_guideline['angle'] = angle
         name = guideline.name
         if name is not None:
             # Identifier
@@ -76,4 +84,16 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
         new_guideline.position = Point(guideline.x or 0, guideline.y or 0)
         if guideline.angle is not None:
             new_guideline.angle = (360 - guideline.angle) % 360
+        elif _is_vertical(guideline.x, guideline.y, None):
+            new_guideline.angle = 90
         glyphs_obj.guides.append(new_guideline)
+
+
+def _is_vertical(x, y, angle):
+    return (y is None or y == 0) and (
+        angle is None or angle == 90 or angle == 270)
+
+
+def _is_horizontal(x, y, angle):
+    return (x is None or x == 0) and (
+        angle is None or angle == 0 or angle == 180)
