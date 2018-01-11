@@ -441,7 +441,7 @@ ufo_info_spec = [
         # values are defined below.
         Field('postscriptWindowsCharacterSet', 4),
     ),
-    skip_section(
+    section(
         'Macintosh FOND Resource Data',
         # macintoshFONDFamilyID integer Family ID number. Corresponds to the
         # ffFamID in the FOND resource.

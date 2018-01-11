@@ -316,6 +316,9 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'postscriptWeightName',
     'postscriptDefaultCharacter',
     'postscriptWindowsCharacterSet',
+
+    'macintoshFONDFamilyID',
+    'macintoshFONDName',
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name, name))
