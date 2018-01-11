@@ -33,11 +33,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     from glyphsLib import glyphdata  # Expensive import
 
-    uval = glyph.unicode
-    if uval is not None:
-        ufo_glyph.unicode = int(uval, 16)
-        # FIXME: (jany) handle several unicodes
-        # https://github.com/googlei18n/glyphsLib/issues/216
+    ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
     note = glyph.note
     if note is not None:
         ufo_glyph.note = note
@@ -140,11 +136,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         # FIXME: (jany) ordering?
         self.font.glyphs.append(glyph)
 
-    uval = ufo_glyph.unicode
-    if uval is not None:
-        glyph.unicode = '{:04X}'.format(uval)
-        # FIXME: (jany) handle several unicodes
-        # https://github.com/googlei18n/glyphsLib/issues/216
+    if ufo_glyph.unicodes:
+        glyph.unicodes = ['{:04X}'.format(c) for c in ufo_glyph.unicodes]
     note = ufo_glyph.note
     if note is not None:
         glyph.note = note

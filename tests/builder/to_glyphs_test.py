@@ -425,3 +425,22 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir):
 def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():
     # TODO
     pass
+
+
+def test_double_unicodes(tmpdir):
+    ufo = defcon.Font()
+    z = ufo.newGlyph('z')
+    z.unicodes = [0x005A, 0x007A]
+
+    font = to_glyphs([ufo])
+    path = os.path.join(str(tmpdir), 'test.glyphs')
+    font.save(path)
+    saved_font = classes.GSFont(path)
+
+    for font in [font, saved_font]:
+        assert font.glyphs['z'].unicode == "005A"
+        assert font.glyphs['z'].unicodes == ["005A", "007A"]
+
+        ufo, = to_ufos(font)
+
+        assert ufo['z'].unicodes == [0x005A, 0x007A]

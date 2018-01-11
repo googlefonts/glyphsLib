@@ -353,3 +353,22 @@ def floatToString(Float, precision=3):
             return "%.0f" % Float
     except:
         print(traceback.format_exc())
+
+
+class UnicodesList(list):
+    """Represent a PLIST-able list of unicode codepoints as strings."""
+    def __init__(self, value=None):
+        if value is None:
+            unicodes = []
+        elif isinstance(value, (str, unicode)):
+            unicodes = value.split(',')
+        else:
+            unicodes = value
+        super(UnicodesList, self).__init__(unicodes)
+
+    def plistValue(self):
+        if not self:
+            return None
+        if len(self) == 1:
+            return self[0]
+        return '"%s"' % ','.join(self)

@@ -27,7 +27,7 @@ import logging
 import glyphsLib
 from glyphsLib.types import (
     ValueType, Transform, Point, Rect, Size, parse_datetime, parse_color,
-    floatToString, readIntlist, writeIntlist)
+    floatToString, readIntlist, writeIntlist, UnicodesList)
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer, escape_string
 from collections import OrderedDict
@@ -2731,12 +2731,13 @@ class GSGlyph(GSBase):
         "subCategory": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
-        "unicode": unicode,
+        "unicode": UnicodesList,
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": unicode,
     }
     _wrapperKeysTranslate = {
+        "unicode": "unicodes",
         "glyphname": "name",
         "partsSettings": "smartComponentAxes",
     }
@@ -2755,7 +2756,6 @@ class GSGlyph(GSBase):
         "subCategory": None,
         "userData": None,
         "widthMetricsKey": None,
-        "unicode": None,
     }
     _keyOrder = (
         "color",
@@ -2846,6 +2846,24 @@ class GSGlyph(GSBase):
     def id(self):
         """An unique identifier for each glyph"""
         return self.name
+
+    @property
+    def unicode(self):
+        if self._unicodes:
+            return self._unicodes[0]
+        return None
+
+    @unicode.setter
+    def unicode(self, unicode):
+        self._unicodes = UnicodesList(unicode)
+
+    @property
+    def unicodes(self):
+        return self._unicodes
+
+    @unicodes.setter
+    def unicodes(self, unicodes):
+        self._unicodes = UnicodesList(unicodes)
 
 
 class GSFont(GSBase):

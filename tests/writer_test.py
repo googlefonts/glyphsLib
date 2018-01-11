@@ -685,6 +685,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn('category = "";', written)
         self.assertIn('subCategory = "";', written)
 
+        # Write double unicodes
+        glyph.unicodes = ['00C1', 'E002']
+        written = test_helpers.write_to_lines(glyph)
+        self.assertIn('unicode = "00C1,E002";', written)
+
     def test_write_layer(self):
         layer = classes.GSLayer()
         # http://docu.glyphsapp.com/#gslayer
