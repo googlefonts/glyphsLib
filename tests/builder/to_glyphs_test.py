@@ -25,6 +25,7 @@ import defcon
 
 from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos, to_designspace
+from glyphsLib import classes
 
 # FIXME: (jany) should come from fonttools
 from glyphsLib.designSpaceDocument import DesignSpaceDocument
@@ -387,7 +388,7 @@ def test_ufo_filename_is_kept_the_same(tmpdir):
     assert designspace.sources[1].filename == 'subdir/bold.ufo'
 
 
-def test_dont_copy_advance_to_the_background_unless_it_was_there():
+def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir):
     ufo = defcon.Font()
     bg = ufo.newLayer('public.background')
 
@@ -400,14 +401,25 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there():
     bg_b = bg.newGlyph('b')
     bg_b.width = 300
 
+    fg_c = ufo.newGlyph('c')
+    fg_c.width = 400
+    bg_c = bg.newGlyph('c')
+    bg_c.width = 400
+
     font = to_glyphs([ufo])
+    path = os.path.join(str(tmpdir), 'test.glyphs')
+    font.save(path)
+    saved_font = classes.GSFont(path)
 
-    ufo, = to_ufos(font)
+    for font in [font, saved_font]:
+        ufo, = to_ufos(font)
 
-    assert ufo['a'].width == 100
-    assert ufo.layers['public.background']['a'].width == 0  # 0 is the default
-    assert ufo['b'].width == 200
-    assert ufo.layers['public.background']['b'].width == 300
+        assert ufo['a'].width == 100
+        assert ufo.layers['public.background']['a'].width == 0
+        assert ufo['b'].width == 200
+        assert ufo.layers['public.background']['b'].width == 300
+        assert ufo['c'].width == 400
+        assert ufo.layers['public.background']['c'].width == 400
 
 
 def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():

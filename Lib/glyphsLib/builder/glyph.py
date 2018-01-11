@@ -26,6 +26,7 @@ from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + 'script'
 ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + 'originalWidth'
+BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + 'backgroundWidth'
 
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):
@@ -193,7 +194,14 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         sub_category = glyphinfo.subCategory
 
     # load width before background, which is loaded with lib data
-    layer.width = ufo_glyph.width
+    if hasattr(layer, 'foreground'):
+        if ufo_glyph.width:
+            # Don't store "0", it's the default in UFO.
+            # Store in userData because the background's width is not relevant
+            # in Glyphs.
+            layer.userData[BACKGROUND_WIDTH_KEY] = ufo_glyph.width
+    else:
+        layer.width = ufo_glyph.width
     if category == 'Mark' and sub_category == 'Nonspacing' and layer.width == 0:
         # Restore originalWidth
         if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
@@ -228,13 +236,14 @@ def to_ufo_glyph_background(self, glyph, layer):
         layer_name = 'public.background'
     font = glyph.font
     if layer_name not in font.layers:
-        layer = font.newLayer(layer_name)
+        ufo_layer = font.newLayer(layer_name)
     else:
-        layer = font.layers[layer_name]
-    new_glyph = layer.newGlyph(glyph.name)
+        ufo_layer = font.layers[layer_name]
+    new_glyph = ufo_layer.newGlyph(glyph.name)
 
-    # FIXME: (jany) find out more about Glyphs' background width handling
-    new_glyph.width = background.width
+    width = background.userData[BACKGROUND_WIDTH_KEY]
+    if width is not None:
+        new_glyph.width = width
 
     self.to_ufo_background_image(new_glyph, background)
     self.to_ufo_paths(new_glyph, background)

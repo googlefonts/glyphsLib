@@ -2465,7 +2465,6 @@ class GSLayer(GSBase):
     }
     _defaultsForName = {
         "width": 600.0,
-        "weight": 600.0,
         "leftMetricsKey": None,
         "rightMetricsKey": None,
         "widthMetricsKey": None,
@@ -2692,6 +2691,19 @@ class GSBackgroundLayer(GSLayer):
     @property
     def foreground(self):
         return self._foreground
+
+    # The width property of this class behaves like this in Glyphs:
+    #  - Always returns 600.0
+    #  - Settable but does not remember the value (basically useless)
+    # Reproduce this behaviour here so that the roundtrip does not rely on it.
+    @property
+    def width(self):
+        return 600.0
+
+    @width.setter
+    def width(self, whatever):
+        pass
+
 
 GSLayer._classesForName['background'] = GSBackgroundLayer
 
