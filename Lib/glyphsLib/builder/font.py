@@ -82,11 +82,11 @@ def to_ufo_font_attributes(self, family_name):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
-
-        for name, getter, tag, userLocParam, defaultUserLoc in axesDef:
-            value = getattr(master, getter)
-            ufo.lib[GLYPHS_PREFIX + name + "Value"] = value
-
+        masterCoordinates = []
+        for name, masterKey, instanceKey, tag, userLocParam, defaultUserLoc in axesDef:
+            value = getattr(master, masterKey)
+            masterCoordinates.append(value)
+        ufo.lib[GLYPHS_PREFIX + 'masterCoordinates'] = masterCoordinates
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_blue_values(ufo, master)
         self.to_ufo_family_user_data(ufo)

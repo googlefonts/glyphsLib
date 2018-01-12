@@ -28,7 +28,7 @@ import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.interpolation import (
-    build_designspace, set_weight_class, set_width_class, build_stylemap_names
+    build_designspace, set_weight_class, set_width_class, build_stylemap_names, DEFAULT_LOCS_LIST
 )
 from glyphsLib.classes import GSFont, GSInstance, GSCustomParameter
 
@@ -55,10 +55,17 @@ def makeFont(familyName):
 def makeMaster(familyName, styleName, weight=None, width=None):
     m = defcon.Font()
     m.info.familyName, m.info.styleName = familyName, styleName
+    masterCoordinates = []
     if weight is not None:
-        m.lib[GLYPHS_PREFIX + "weightValue"] = weight
+        masterCoordinates.append(weight)
+    else:
+        masterCoordinates.append(DEFAULT_LOCS_LIST[0])
     if width is not None:
-        m.lib[GLYPHS_PREFIX + "widthValue"] = width
+        masterCoordinates.append(width)
+    else:
+        masterCoordinates.append(DEFAULT_LOCS_LIST[1])
+    
+    m.lib[GLYPHS_PREFIX + 'masterCoordinates'] = masterCoordinates
     return m
 
 

@@ -97,7 +97,7 @@ def build_designspace(font, masters, master_dir, out_dir, instance_data):
     """
     from mutatorMath.ufo.document import DesignSpaceDocumentWriter
     assert(isinstance(font, GSFont))
-    base_family = masters[0].info.familyName
+    base_family = font.familyName
     assert all(m.info.familyName == base_family for m in masters), \
         'Masters must all have same family'
 
@@ -138,15 +138,17 @@ def get_axis_definitions(font):
     axesParameter = font.customParameters["Axes"]
     if axesParameter is None:
         axesDef = (
-            ('Weight', 'weightValue', 'wght', 'weightClass', 400),
-            ('Width', 'widthValue', 'wdth', 'widthClass', 100),
-            ('Custom', 'customValue', 'XXXX', None, 0))
+            # AxisName, instanceKey, axisTag, ...
+            ('Weight', 'weightValue', 'interpolationWeight', 'wght', 'weightClass', 400.0),
+            ('Width', 'widthValue', 'interpolationWidth', 'wdth', 'widthClass', 100.0),
+            ('Custom', 'customValue', 'interpolationCustom', 'XXXX', None, 0.0))
     else:
         axesDef = []
-        axisProperties = ('weightValue', 'widthValue', 'customValue', 'customValue1', 'customValue2', 'customValue3')
+        masterKeys = ('weightValue', 'widthValue', 'customValue', 'customValue1', 'customValue2', 'customValue3')
+        instanceKeys = ('interpolationWeight', 'interpolationWidth', 'interpolationCustom', 'interpolationCustom1', 'interpolationCustom2', 'interpolationCustom3')
         idx = 0
         for axis in axesParameter:
-            axesDef.append((axis["Name"], axisProperties[idx], axis.get("Tag", "XXX%d" % idx), None, 0))
+            axesDef.append((axis["Name"], masterKeys[idx], instanceKeys[idx], axis.get("Tag", "XXX%d" % idx), None, 0))
             idx += 1
     return axesDef
 
@@ -170,20 +172,24 @@ def get_axes(font, masters, regular_master, instances):
     axes = OrderedDict()
     
     axesDef = get_axis_definitions(font)
+    
+    key = GLYPHS_PREFIX + 'masterCoordinates'
     idx = 0
-    for name, getter, tag, userLocParam, defaultUserLoc in axesDef:
-        key = GLYPHS_PREFIX + name + 'Value'
-        interpolLocKey = 'interpolation' + getter.title()
-        interpolLocKey = interpolLocKey.replace("value", "")
+    for name, masterKey, instanceKey, tag, userLocParam, defaultUserLoc in axesDef:
+        
         minimum = maximum = default = defaultUserLoc
         if any(key in master.lib for master in masters):
-            regularInterpolLoc = regular_master.lib.get(key, DEFAULT_LOCS_LIST[idx])
+            regularInterpolLocs = regular_master.lib.get(key, DEFAULT_LOCS_LIST)
+            regularInterpolLoc = DEFAULT_LOCS_LIST[idx]
+            try:
+                regularInterpolLocs[idx]
+            except:
+                pass
             regularUserLoc = defaultUserLoc
             labelNames = {"en": name}
             mapping = []
             for instance in instances:
-                
-                interpolLoc = getattr(instance, interpolLocKey,
+                interpolLoc = getattr(instance, instanceKey,
                                       DEFAULT_LOCS_LIST[idx])
                 userLoc = interpolLoc
                 for param in instance.customParameters:
@@ -194,16 +200,23 @@ def get_axes(font, masters, regular_master, instances):
                 mapping.append((userLoc, interpolLoc))
                 if interpolLoc == regularInterpolLoc:
                     regularUserLoc = userLoc
-            if len(mapping) == 0: # no Instances
+            if len(mapping) <= 0: # no Instance
+                mapping = []
                 for master in masters:
-                    interpolLoc = master.lib.get(key, DEFAULT_LOCS_LIST[idx])
-                    mapping.append((interpolLoc, interpolLoc))
+                    masterCoordinates = master.lib.get(key, None)
+                    interpolLoc = 0
+                    try:
+                        interpolLoc = masterCoordinates[idx]
+                        mapping.append((interpolLoc, interpolLoc))
+                    except:
+                        pass # the default `axesDef` has always 3 entries, the masters can have less
+                    
             mapping = sorted(set(mapping))  # avoid duplicates
-            if mapping:
+            if len(mapping) > 0:
                 minimum = min([userLoc for userLoc, _ in mapping])
                 maximum = max([userLoc for userLoc, _ in mapping])
                 default = min(maximum, max(minimum, regularUserLoc))  # clamp
-            if minimum < maximum:
+            if minimum < maximum or minimum != defaultUserLoc:
                 axes[name] = AxisDescriptor(
                     minimum=minimum, maximum=maximum, default=default,
                     name=name, tag=tag, labelNames=labelNames, map=mapping)
@@ -286,10 +299,10 @@ def add_masters_to_writer(ufos, regular, axes, writer):
         # https://github.com/googlei18n/glyphsLib/issues/165
         location = OrderedDict()
         idx = 0
-        
+        key = GLYPHS_PREFIX + 'masterCoordinates'
+        masterCoordinates = font.lib.get(key, DEFAULT_LOCS_LIST)
         for axis in axes:
-            location[axis] = font.lib.get(
-                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOCS_LIST[idx])
+            location[axis] = masterCoordinates[idx]
             idx += 1
         is_regular = (font is regular)
         writer.addSource(
