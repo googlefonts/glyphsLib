@@ -2780,15 +2780,17 @@ class GSFont(GSBase):
         self._userData = None
 
         if path:
-            assert isinstance(path, (str, unicode)), \
-                "Please supply a file path"
-            assert path.endswith(".glyphs"), \
-                "Please supply a file path to a .glyphs file"
-            with open(path, 'r', encoding='utf-8') as fp:
-                p = Parser()
-                logger.info('Parsing .glyphs file into %r', self)
-                p.parse_into_object(self, fp.read())
-            self.filepath = path
+            p = Parser()
+            if hasattr(path, 'read'):
+                p.parse_into_object(self, path.read())
+            else:
+                assert isinstance(path, (str, unicode)), \
+                    "Please supply a file path"
+                assert path.endswith(".glyphs"), \
+                    "Please supply a file path to a .glyphs file"
+                with open(path, 'r', encoding='utf-8') as fp:
+                    p.parse_into_object(self, fp.read())
+                    self.filepath = path
             for master in self.masters:
                 master.font = self
 
@@ -2806,10 +2808,15 @@ class GSFont(GSBase):
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
-        with open(path, 'w', encoding='utf-8') as fp:
-            w = Writer(fp)
+        if hasattr(path, 'write'):
+            w = Writer(path)
             logger.info('Writing %r to .glyphs file', self)
             w.write(self)
+        else:
+            with open(path, 'w', encoding='utf-8') as fp:
+                w = Writer(fp)
+                logger.info('Writing %r to .glyphs file', self)
+                w.write(self)
 
     def getVersionMinor(self):
         return self._versionMinor
