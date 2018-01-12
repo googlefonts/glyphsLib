@@ -25,7 +25,7 @@ from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
-
+from glyphsLib.classes import GSFont
 __all__ = [
     'interpolate', 'build_designspace', 'apply_instance_data'
 ]
@@ -35,11 +35,7 @@ logger = logging.getLogger(__name__)
 # Glyphs.app's default values for the masters' {weight,width,custom}Value
 # and for the instances' interpolation{Weight,Width,Custom} properties.
 # When these values are set, they are omitted from the .glyphs source file.
-DEFAULT_LOCS = {
-    'weight': 100,
-    'width': 100,
-    'custom': 0,
-}
+DEFAULT_LOCS_LIST = (100, 100, 0, 0, 0, 0, 0)
 
 WEIGHT_CODES = {
     'Thin': 250,
@@ -73,14 +69,14 @@ WIDTH_CODES = {
 }
 
 
-def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
+def interpolate(font, ufos, master_dir, out_dir, instance_data, round_geometry=True):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs.
     """
     from mutatorMath.ufo import build
 
     designspace_path, instance_files = build_designspace(
-        ufos, master_dir, out_dir, instance_data)
+        font, ufos, master_dir, out_dir, instance_data)
 
     logger.info('Building instances')
     for path, _ in instance_files:
@@ -92,7 +88,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
     return instance_ufos
 
 
-def build_designspace(masters, master_dir, out_dir, instance_data):
+def build_designspace(font, masters, master_dir, out_dir, instance_data):
     """Just create MutatorMath designspace without generating instances.
 
     Returns the path of the resulting designspace document and a list of
@@ -100,13 +96,13 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     Glyphs data for that instance.
     """
     from mutatorMath.ufo.document import DesignSpaceDocumentWriter
-
+    assert(isinstance(font, GSFont))
     base_family = masters[0].info.familyName
     assert all(m.info.familyName == base_family for m in masters), \
         'Masters must all have same family'
 
-    for font in masters:
-        write_ufo(font, master_dir)
+    for master in masters:
+        write_ufo(master, master_dir)
 
     # needed so that added masters and instances have correct relative paths
     tmp_path = os.path.join(master_dir, 'tmp.designspace')
@@ -116,7 +112,7 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     regular = find_regular_master(
         masters=masters,
         regularName=instance_data.get('Variation Font Origin'))
-    axes = get_axes(masters, regular, instances)
+    axes = get_axes(font, masters, regular, instances)
     write_axes(axes, writer)
     add_masters_to_writer(masters, regular, axes, writer)
     instance_files = add_instances_to_writer(
@@ -138,8 +134,23 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
 AxisDescriptor = namedtuple('AxisDescriptor', [
     'minimum', 'maximum', 'default', 'name', 'tag', 'labelNames', 'map'])
 
+def get_axis_definitions(font):
+    axesParameter = font.customParameters["Axes"]
+    if axesParameter is None:
+        axesDef = (
+            ('Weight', 'weightValue', 'wght', 'weightClass', 400),
+            ('Width', 'widthValue', 'wdth', 'widthClass', 100),
+            ('Custom', 'customValue', 'XXXX', None, 0))
+    else:
+        axesDef = []
+        axisProperties = ('weightValue', 'widthValue', 'customValue', 'customValue1', 'customValue2', 'customValue3')
+        idx = 0
+        for axis in axesParameter:
+            axesDef.append((axis["Name"], axisProperties[idx], axis.get("Tag", "XXX%d" % idx), None, 0))
+            idx += 1
+    return axesDef
 
-def get_axes(masters, regular_master, instances):
+def get_axes(font, masters, regular_master, instances):
     # According to Georg Seifert, Glyphs 3 will have a better model
     # for describing variation axes.  The plan is to store the axis
     # information globally in the Glyphs file. In addition to actual
@@ -157,39 +168,46 @@ def get_axes(masters, regular_master, instances):
     # the upcoming version of Glyphs is going to store explicit
     # axis desriptions in its file format.
     axes = OrderedDict()
-    for name, tag, userLocParam, defaultUserLoc in (
-            ('weight', 'wght', 'weightClass', 400),
-            ('width', 'wdth', 'widthClass', 100),
-            ('custom', 'XXXX', None, 0)):
+    
+    axesDef = get_axis_definitions(font)
+    idx = 0
+    for name, getter, tag, userLocParam, defaultUserLoc in axesDef:
         key = GLYPHS_PREFIX + name + 'Value'
-        interpolLocKey = 'interpolation' + name.title()
+        interpolLocKey = 'interpolation' + getter.title()
+        interpolLocKey = interpolLocKey.replace("value", "")
+        minimum = maximum = default = defaultUserLoc
         if any(key in master.lib for master in masters):
-            regularInterpolLoc = regular_master.lib.get(key, DEFAULT_LOCS[name])
+            regularInterpolLoc = regular_master.lib.get(key, DEFAULT_LOCS_LIST[idx])
             regularUserLoc = defaultUserLoc
-            labelNames = {"en": name.title()}
+            labelNames = {"en": name}
             mapping = []
             for instance in instances:
+                
                 interpolLoc = getattr(instance, interpolLocKey,
-                                      DEFAULT_LOCS[name])
+                                      DEFAULT_LOCS_LIST[idx])
                 userLoc = interpolLoc
                 for param in instance.customParameters:
                     if param.name == userLocParam:
                         userLoc = float(getattr(param, 'value',
-                                                DEFAULT_LOCS[name]))
+                                                DEFAULT_LOCS_LIST[idx]))
                         break
                 mapping.append((userLoc, interpolLoc))
                 if interpolLoc == regularInterpolLoc:
                     regularUserLoc = userLoc
+            if len(mapping) == 0: # no Instances
+                for master in masters:
+                    interpolLoc = master.lib.get(key, DEFAULT_LOCS_LIST[idx])
+                    mapping.append((interpolLoc, interpolLoc))
             mapping = sorted(set(mapping))  # avoid duplicates
             if mapping:
                 minimum = min([userLoc for userLoc, _ in mapping])
                 maximum = max([userLoc for userLoc, _ in mapping])
                 default = min(maximum, max(minimum, regularUserLoc))  # clamp
-            else:
-                minimum = maximum = default = defaultUserLoc
-            axes[name] = AxisDescriptor(
-                minimum=minimum, maximum=maximum, default=default,
-                name=name, tag=tag, labelNames=labelNames, map=mapping)
+            if minimum < maximum:
+                axes[name] = AxisDescriptor(
+                    minimum=minimum, maximum=maximum, default=default,
+                    name=name, tag=tag, labelNames=labelNames, map=mapping)
+        idx += 1
     return axes
 
 
@@ -267,9 +285,12 @@ def add_masters_to_writer(ufos, regular, axes, writer):
         # integrated into fonttools, it's not worth fixing upstream.
         # https://github.com/googlei18n/glyphsLib/issues/165
         location = OrderedDict()
+        idx = 0
+        
         for axis in axes:
             location[axis] = font.lib.get(
-                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOCS[axis])
+                GLYPHS_PREFIX + axis + 'Value', DEFAULT_LOCS_LIST[idx])
+            idx += 1
         is_regular = (font is regular)
         writer.addSource(
             path=font.path, name='%s %s' % (family, style),
@@ -311,9 +332,13 @@ def add_instances_to_writer(writer, family_name, axes, instances, out_dir):
         # integrated into fonttools, it's not worth fixing upstream.
         # https://github.com/googlei18n/glyphsLib/issues/165
         location = OrderedDict()
+        idx = 0
+        axisGetters = ("interpolationWeight", "interpolationWidth", "interpolationCustom", "interpolationCustom1", "interpolationCustom2")
         for axis in axes:
             location[axis] = getattr(
-                instance, 'interpolation' + axis.title(), DEFAULT_LOCS[axis])
+                instance, axisGetters[idx], DEFAULT_LOCS_LIST[idx])
+            idx += 1
+        
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=familyName,
             style_name=styleName,

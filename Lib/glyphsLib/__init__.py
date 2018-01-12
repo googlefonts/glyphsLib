@@ -62,7 +62,7 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         propagate_anchors=propagate_anchors)
     if designspace_instance_dir is not None:
         designspace_path, instance_data = build_designspace(
-            ufos, master_dir, designspace_instance_dir, instance_data)
+            font, ufos, master_dir, designspace_instance_dir, instance_data)
         return ufos, designspace_path, instance_data
     else:
         for ufo in ufos:
@@ -85,6 +85,6 @@ def build_instances(filename, master_dir, instance_dir, family_name=None,
         font, include_instances=True, family_name=family_name,
         propagate_anchors=propagate_anchors)
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data,
+        font, master_ufos, master_dir, instance_dir, instance_data,
         round_geometry=round_geometry)
     return instance_ufos

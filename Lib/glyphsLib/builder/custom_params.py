@@ -30,8 +30,6 @@ def to_ufo_custom_params(self, ufo, master):
     set_custom_params(ufo, parsed=custom_params)
     # the misc attributes double as deprecated info attributes!
     # they are Glyphs-related, not OpenType-related, and don't go in info
-    misc = ('customValue', 'weightValue', 'widthValue')
-    set_custom_params(ufo, data=master, misc_keys=misc, non_info=misc)
 
     set_default_params(ufo)
 
