@@ -2781,16 +2781,24 @@ class GSFont(GSBase):
 
         if path:
             p = Parser()
+            
+            fileContent = None
             if hasattr(path, 'read'):
-                p.parse_into_object(self, path.read())
+                fileContent = path.read()
             else:
                 assert isinstance(path, (str, unicode)), \
                     "Please supply a file path"
-                assert path.endswith(".glyphs"), \
-                    "Please supply a file path to a .glyphs file"
-                with open(path, 'r', encoding='utf-8') as fp:
-                    p.parse_into_object(self, fp.read())
-                    self.filepath = path
+                if path.endswith(".glyphs"):
+                    with open(path, 'r', encoding='utf-8') as fp:
+                        fileContent = fp.read()
+                        self.filepath = path
+                elif path[0] == "{":
+                    fileContent = path
+            if fileContent is not None:
+                p.parse_into_object(self, fileContent) 
+            else:
+                "Please supply a file path to a .glyphs file"
+            
             for master in self.masters:
                 master.font = self
 
