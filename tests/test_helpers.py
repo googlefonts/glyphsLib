@@ -57,10 +57,10 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
         with open(filename) as f:
             expected = f.read().splitlines()
             f.seek(0, 0)
-            font = glyphsLib.load(f)
+            font = glyphsLib.classes.GSFont(f)
         actual = write_to_lines(font)
         # Roundtrip again to check idempotence
-        font = glyphsLib.loads("\n".join(actual))
+        font = glyphsLib.classes.GSFont("\n".join(actual))
         actual_idempotent = write_to_lines(font)
         # Assert idempotence first, because if that fails it's a big issue
         self.assertLinesEqual(

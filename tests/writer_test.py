@@ -25,7 +25,6 @@ from fontTools.misc.py23 import UnicodeIO
 import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import glyphs_datetime, point, rect
-from glyphsLib.writer import dump, dumps
 from glyphsLib.parser import Parser
 
 import test_helpers
@@ -1060,14 +1059,14 @@ class WriterDumpInterfaceTest(unittest.TestCase):
         obj = classes.GSFont()
         fp = UnicodeIO()
 
-        dump(obj, fp)
+        obj.save(fp)
 
         self.assertTrue(fp.getvalue())
 
     def test_dumps(self):
         obj = classes.GSFont()
 
-        string = dumps(obj)
+        string = obj.plistValue()
 
         self.assertTrue(string)
 

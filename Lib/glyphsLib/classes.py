@@ -2817,7 +2817,11 @@ class GSFont(GSBase):
                 w = Writer(fp)
                 logger.info('Writing %r to .glyphs file', self)
                 w.write(self)
-
+    def plistValue(self):
+        fp = UnicodeIO()
+        self.save(fp)
+        return fp.getvalue()
+        
     def getVersionMinor(self):
         return self._versionMinor
 
