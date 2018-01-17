@@ -41,8 +41,9 @@ def parse_options(args):
                         help="Output and generate interpolated instances UFO "
                              "to folder INSTANCES. "
                              "(default: %(const)s)")
-    parser.add_argument("-R", "--no-round", action="store_false",
-                        help="Round geometry to integers")
+    parser.add_argument("-r", "--round-instances", action="store_true",
+                        help="Apply integer rounding to all geometry when "
+                             "interpolating")
     options = parser.parse_args(args)
     return options
 
@@ -54,7 +55,7 @@ def main(args=None):
             glyphsLib.build_masters(opt.glyphs, opt.masters)
         else:
             glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances,
-                                      round_geometry=opt.no_round)
+                                      round_geometry=opt.round_instances)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
