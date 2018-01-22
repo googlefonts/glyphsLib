@@ -51,9 +51,6 @@ def test_blank(tmpdir):
     assert not rtufo.features.text
 
 
-# FIXME: (jany) fix in feaLib
-@pytest.mark.xfail(
-    reason='feaLib does not parse correctly a file with only comments')
 def test_comment(tmpdir):
     ufo = defcon.Font()
     ufo.features.text = dedent('''\
@@ -66,7 +63,7 @@ def test_comment(tmpdir):
     assert not font.features
     assert len(font.featurePrefixes) == 1
     fp = font.featurePrefixes[0]
-    assert fp.code == ufo.features.text
+    assert fp.code.strip() == ufo.features.text.strip()
     assert not fp.automatic
 
     assert rtufo.features.text == ufo.features.text
@@ -139,15 +136,6 @@ def test_class_synonym(tmpdir):
     ''')
 
 
-@pytest.mark.xfail(reason='Fealib will always resolve includes')
-# FIXME: (jany) what to do?
-#    1. Have an option in feaLib to NOT follow includes and have an AST element
-#       like "include statement". This is the easiest way to handle roundtrip
-#       because we can have a GSFeaturePrefix with the include statement in it.
-#    2. Always enforce that includes must be resolvable, and dispatch their
-#       contents into GSFeaturePrefix, GSClass, GSFeature and so on. Very hard
-#       to roundtrip because we lose the original include information (or we
-#       need lots of bookkeeping)
 def test_include(tmpdir):
     ufo = defcon.Font()
     ufo.features.text = dedent('''\
@@ -159,7 +147,21 @@ def test_include(tmpdir):
     font, rtufo = roundtrip(ufo, tmpdir)
 
     assert len(font.featurePrefixes) == 1
-    assert font.featurePrefixes[0].code == ufo.features.text
+    assert font.featurePrefixes[0].code.strip() == ufo.features.text.strip()
+
+    assert rtufo.features.text == ufo.features.text
+
+
+def test_include_no_semicolon(tmpdir):
+    ufo = defcon.Font()
+    ufo.features.text = dedent('''\
+        include(../family.fea)
+    ''')
+
+    font, rtufo = roundtrip(ufo, tmpdir)
+
+    assert len(font.featurePrefixes) == 1
+    assert font.featurePrefixes[0].code.strip() == ufo.features.text.strip()
 
     assert rtufo.features.text == ufo.features.text
 
