@@ -444,3 +444,24 @@ def test_double_unicodes(tmpdir):
         ufo, = to_ufos(font)
 
         assert ufo['z'].unicodes == [0x005A, 0x007A]
+
+
+def test_open_contour():
+    ufo = defcon.Font()
+    a = ufo.newGlyph('a')
+    pen = a.getPen()
+    pen.moveTo((10, 20))
+    pen.lineTo((30, 40))
+    pen.endPath()
+
+    font = to_glyphs([ufo])
+
+    path = font.glyphs['a'].layers[0].paths[0]
+    assert not path.closed
+    assert len(path.nodes) == 2
+    assert path.nodes[0].type == classes.LINE
+
+    ufo_rt, = to_ufos(font)
+
+    assert ([(p.segmentType, p.x, p.y) for p in a[0]] ==
+            [(p.segmentType, p.x, p.y) for p in ufo_rt['a'][0]])

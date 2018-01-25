@@ -1496,7 +1496,6 @@ class GSPath(GSBase):
 
     def __init__(self):
         super(GSPath, self).__init__()
-        self._closed = True
         self.nodes = []
 
     @property

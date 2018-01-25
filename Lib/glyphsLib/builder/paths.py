@@ -56,8 +56,8 @@ def to_glyphs_paths(self, ufo_glyph, layer):
             node.smooth = point.smooth
             node.name = point.name
             path.nodes.append(node)
+        path.closed = not contour.open
         if not contour.open:
-            path.closed = True
             path.nodes.append(path.nodes.pop(0))
         layer.paths.append(path)
 
@@ -74,4 +74,6 @@ def _to_ufo_node_type(node_type):
 def _to_glyphs_node_type(node_type):
     if node_type is None:
         return classes.OFFCURVE
+    if node_type == 'move':
+        return classes.LINE
     return node_type
