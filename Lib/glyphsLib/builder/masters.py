@@ -15,8 +15,8 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import uuid
 import os
+from collections import OrderedDict
 
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 
@@ -27,7 +27,8 @@ UFO_TRADEMARK_KEY = GLYPHLIB_PREFIX + 'ufoTrademark'
 UFO_NOTE_KEY = GLYPHLIB_PREFIX + 'ufoNote'
 
 
-def to_ufo_master_attributes(self, ufo, master):
+def to_ufo_master_attributes(self, source, master):
+    ufo = source.font
     ufo.info.ascender = master.ascender
     ufo.info.capHeight = master.capHeight
     ufo.info.descender = master.descender
@@ -87,13 +88,17 @@ def to_ufo_master_attributes(self, ufo, master):
         ufo.lib[MASTER_ID_LIB_KEY] = master_id
 
 
-def to_glyphs_master_attributes(self, ufo, master):
+def to_glyphs_master_attributes(self, source, master):
+    ufo = source.font
     try:
         master.id = ufo.lib[MASTER_ID_LIB_KEY]
     except KeyError:
-        master.id = str(uuid.uuid4())
+        # GSFontMaster has a random id by default
+        pass
 
-    if ufo.path and self.minimize_ufo_diffs:
+    if source.filename is not None and self.minimize_ufo_diffs:
+        master.userData[UFO_FILENAME_KEY] = source.filename
+    elif ufo.path and self.minimize_ufo_diffs:
         master.userData[UFO_FILENAME_KEY] = os.path.basename(ufo.path)
 
     master.ascender = ufo.info.ascender
@@ -120,108 +125,8 @@ def to_glyphs_master_attributes(self, ufo, master):
     if ufo.info.note is not None:
         master.userData[UFO_NOTE_KEY] = ufo.info.note
 
-    # Retrieve the master locations: weight, width, custom 0 - 1 - 2 - 3
-    source = _get_designspace_source_for_ufo(self, ufo)
-    for axis in ['weight', 'width']:
-        attr = 'openTypeOS2%sClass' % axis.capitalize()
-        ufo_class = getattr(ufo.info, attr)
-        # First, try the designspace
-        try:
-            # TODO: ??? name = source.lib[...]
-            # TODO: maybe handled by names.py?
-            # setattr(master, axis, name)
-            raise KeyError
-        except KeyError:
-            # Second, try the custom key
-            try:
-                setattr(master, axis, ufo.lib[GLYPHS_PREFIX + axis])
-            except KeyError:
-                if ufo_class:
-                    setattr(master, axis, _class_to_name(axis, ufo_class))
-
-        value_key = axis + 'Value'
-        # First, try the designspace
-        try:
-            loc = source.location[axis]
-            setattr(master, value_key, loc)
-        except KeyError:
-            # Second, try the custom key
-            try:
-                setattr(master, value_key, ufo.lib[GLYPHS_PREFIX + value_key])
-            except KeyError:
-                if ufo_class:
-                    setattr(master, value_key, _class_to_value(
-                        axis, ufo_class))
-
-    for number in ('', '1', '2', '3'):
-        # For the custom locations, we need both the name and the value
-        # FIXME: (jany) not sure it's worth implementing if everything is going
-        # to change soon on Glyphs.app's side.
-        pass
-        # try:
-        #     axis = 'custom' + number
-        #     value_key = 'customValue' + number
-        #     loc = source.location[axis]
-        #     value_key = axis + 'Value'
-        #     if axis.startswith('custom'):
-        #     setattr(instance, value_key, loc)
-        # except KeyError:
-        #     pass
-
-        # name_key = GLYPHS_PREFIX + 'customName' + number
-        # if name_key in ufo.lib:
-        #     custom_name = ufo.lib[name_key]
-        #     if custom_name:
-        #         setattr(master, 'customName' + number, custom_name)
-        # value_key = GLYPHS_PREFIX + 'customValue' + number
-        # if value_key in ufo.lib:
-        #     custom_value = ufo.lib[value_key]
-        #     if custom_value:
-        #         setattr(master, 'customValue' + number, custom_value)
-
     self.to_glyphs_blue_values(ufo, master)
     self.to_glyphs_master_names(ufo, master)
     self.to_glyphs_master_user_data(ufo, master)
     self.to_glyphs_guidelines(ufo, master)
     self.to_glyphs_custom_params(ufo, master)
-
-
-def _get_designspace_source_for_ufo(self, ufo):
-    for source in self.designspace.sources:
-        if source.font == ufo:
-            return source
-
-# FIXME: (jany) this code/data must also be somewhere else, refactor
-# From the spec: https://www.microsoft.com/typography/otspec/os2.htm#wtc
-CLASSES_DICT = {
-    'weight': {
-        100: ('Thin', 100),
-        200: ('Extra-light', 200),
-        300: ('Light', 300),
-        400: ('Regular', 400),
-        500: ('Medium', 500),
-        600: ('Semi-bold', 600),
-        700: ('Bold', 700),
-        800: ('Extra-bold', 800),
-        900: ('Black', 900),
-    },
-    'width': {
-        1: ('Ultra-condensed', 50),
-        2: ('Extra-condensed', 62.5),
-        3: ('Condensed', 75),
-        4: ('Semi-condensed', 87.5),
-        5: ('Medium', 100),
-        6: ('Semi-expanded', 112.5),
-        7: ('Expanded', 125),
-        8: ('Extra-expanded', 150),
-        9: ('Ultra-expanded', 200),
-    }
-}
-
-
-def _class_to_name(axis, ufo_class):
-    return CLASSES_DICT[axis][ufo_class][0]
-
-
-def _class_to_value(axis, ufo_class):
-    return CLASSES_DICT[axis][ufo_class][1]

@@ -27,8 +27,8 @@ def build_ufo_path(out_dir, family_name, style_name):
 
     return os.path.join(
         out_dir, '%s-%s.ufo' % (
-            family_name.replace(' ', ''),
-            style_name.replace(' ', '')))
+            (family_name or '').replace(' ', ''),
+            (style_name or '').replace(' ', '')))
 
 
 def write_ufo(ufo, out_dir):

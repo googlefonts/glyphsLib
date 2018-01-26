@@ -58,6 +58,7 @@ def to_ufos(font,
 
 def to_designspace(font,
                    family_name=None,
+                   instance_dir=None,
                    propagate_anchors=True,
                    ufo_module=defcon,
                    minimize_glyphs_diffs=False):
@@ -76,6 +77,7 @@ def to_designspace(font,
         font,
         ufo_module=ufo_module,
         family_name=family_name,
+        instance_dir=instance_dir,
         propagate_anchors=propagate_anchors,
         use_designspace=True,
         minimize_glyphs_diffs=minimize_glyphs_diffs)

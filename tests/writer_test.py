@@ -419,7 +419,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             customParameters = (
             {
-            name = famiyName;
+            name = familyName;
             value = "Sans Rien (familyName)";
             },
             {

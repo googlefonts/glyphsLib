@@ -22,7 +22,7 @@ UFO_KERN_GROUP_PATTERN = re.compile('^public\\.kern([12])\\.(.*)$')
 
 def to_ufo_kerning(self):
     for master_id, kerning in self.font.kerning.items():
-        _to_ufo_kerning(self, self._ufos[master_id], kerning)
+        _to_ufo_kerning(self, self._sources[master_id].font, kerning)
 
 
 def _to_ufo_kerning(self, ufo, kerning_data):
@@ -99,8 +99,8 @@ def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
 
 def to_glyphs_kerning(self):
     """Add UFO kerning to GSFont."""
-    for master_id, ufo in self._ufos.items():
-        for (left, right), value in ufo.kerning.items():
+    for master_id, source in self._sources.items():
+        for (left, right), value in source.font.kerning.items():
             left_match = UFO_KERN_GROUP_PATTERN.match(left)
             right_match = UFO_KERN_GROUP_PATTERN.match(right)
             if left_match:

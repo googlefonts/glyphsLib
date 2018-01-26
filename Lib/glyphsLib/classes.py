@@ -150,6 +150,38 @@ LTRTTB = 3
 RTLTTB = 2
 
 
+WEIGHT_CODES = {
+    'Thin': 250,
+    'ExtraLight': 250,
+    'UltraLight': 250,
+    'Light': 300,
+    None: 400,  # default value normally omitted in source
+    'Normal': 400,
+    'Regular': 400,
+    'Medium': 500,
+    'DemiBold': 600,
+    'SemiBold': 600,
+    'Bold': 700,
+    'UltraBold': 800,
+    'ExtraBold': 800,
+    'Black': 900,
+    'Heavy': 900,
+}
+
+WIDTH_CODES = {
+    'Ultra Condensed': 1,
+    'Extra Condensed': 2,
+    'Condensed': 3,
+    'SemiCondensed': 4,
+    None: 5,  # default value normally omitted in source
+    'Medium (normal)': 5,
+    'Semi Expanded': 6,
+    'Expanded': 7,
+    'Extra Expanded': 8,
+    'Ultra Expanded': 9,
+}
+
+
 class OnlyInGlyphsAppError(NotImplementedError):
     def __init__(self):
         NotImplementedError.__init__(self, "This property/method is only available in the real UI-based version of Glyphs.app.")
@@ -1193,7 +1225,9 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": float,
-        "name": unicode,
+        "name": unicode,  # FIXME: (jany) does not seem to be filled in by
+                          #     Glyphs 1113, instead chops up the name into
+                          #     weight or custom.
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1204,10 +1238,17 @@ class GSFontMaster(GSBase):
         "xHeight": float,
     }
     _defaultsForName = {
+        # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
+        # and weight anymore as attributes, even though those properties are
+        # still written to the saved files.
         "weight": "Regular",
-        "width": "Regular",
+        "width": "Medium (normal)",
         "weightValue": 100.0,
         "widthValue": 100.0,
+        "customValue": 0.0,
+        "customValue1": 0.0,
+        "customValue2": 0.0,
+        "customValue3": 0.0,
         "xHeight": 500,
         "capHeight": 700,
         "ascender": 800,
@@ -1252,6 +1293,7 @@ class GSFontMaster(GSBase):
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
+        self.id = str(uuid.uuid4())
         self.font = None
         self._name = None
         self._customParameters = []
@@ -1266,10 +1308,10 @@ class GSFontMaster(GSBase):
             (self.name, self.widthValue, self.weightValue)
 
     def shouldWriteValueForKey(self, key):
-        if key in ("width", "weight"):
-            if getattr(self, key) == "Regular":
-                return False
-            return True
+        if key == "width":
+            return getattr(self, key) != "Medium (normal)"
+        if key == "weight":
+            return getattr(self, key) != "Regular"
         if key in ("xHeight", "capHeight", "ascender", "descender"):
             # Always write those values
             return True
@@ -1281,34 +1323,42 @@ class GSFontMaster(GSBase):
 
     @property
     def name(self):
-        # FIXME: (jany) this getter looks stupid, it never returns the value
-        # from self._name. TODO: test what Glyphs does and how this makes sense
-        name = self.customParameters["Master Name"]
-        if name is None:
-            names = [self.weight, self.width]
-            for number in ('', '1', '2', '3'):
-                custom_name = getattr(self, 'customName' + number)
-                if (custom_name and len(custom_name) and
-                        custom_name not in names):
-                    names.append(custom_name)
-
-            if len(names) > 1 and "Regular" in names:
-                names.remove("Regular")
-
-            if abs(self.italicAngle) > 0.01:
-                names.append("Italic")
-            name = " ".join(list(names))
-        self._name = name
-        return name
+        name = self.customParameters['Master Name']
+        if name:
+            return name
+        if self._name:
+            return self._name
+        return self._joinName()
 
     @name.setter
     def name(self, value):
-        # FIXME: (jany) this is called during init while there are no
-        # customparameters defined yet and it crashes, so I added the if
-        # because during init it sets an empty string
-        if value:
-            self._name = value
-            # self.customParameters["Master Name"] = value
+        # This is what Glyphs 1113 seems to be doing, approximately.
+        self.weight, self.width, self.customName = self._splitName(value)
+
+    def _joinName(self):
+        names = [self.weight, self.width, self.customName]
+        names = [n for n in names if n]  # Remove None and empty string
+        if len(names) > 1 and "Medium (normal)" in names:
+            names.remove("Medium (normal)")
+        if len(names) > 1 and "Regular" in names:
+            names.remove("Regular")
+        if abs(self.italicAngle) > 0.01:
+            names.append("Italic")
+        return " ".join(list(names))
+
+    def _splitName(self, value):
+        if value is None:
+            value = ''
+        weight = 'Regular'
+        width = 'Medium (normal)'
+        custom = ''
+        names = value.split(" ")
+        if names and names[0] in WEIGHT_CODES:
+            weight = names.pop(0)
+            if names and names[0] in WIDTH_CODES:
+                witdh = names.pop(0)
+        custom = " ".join(names)
+        return (weight, width, custom)
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2246,8 +2296,6 @@ class GSInstance(GSBase):
         self.visible = True
         self.isBold = False
         self.isItalic = False
-        self.widthClass = "Medium (normal)"
-        self.weightClass = "Regular"
         self._customParameters = []
 
     customParameters = property(
@@ -2272,7 +2320,7 @@ class GSInstance(GSBase):
 
     @familyName.setter
     def familyName(self, value):
-        self.customParameters["famiyName"] = value
+        self.customParameters["familyName"] = value
 
     @property
     def preferredFamily(self):
@@ -3003,6 +3051,7 @@ class GSFont(GSBase):
                 return master
         return None
 
+    # FIXME: (jany) Why is this not a FontInstanceProxy?
     @property
     def instances(self):
         return self._instances

@@ -81,17 +81,17 @@ def to_ufo_groups(self):
                     groups[group].append(glyph.name)
 
     # Update all UFOs with the same info
-    for ufo in self._ufos.values():
+    for source in self._sources.values():
         for name, glyphs in groups.items():
             # Shallow copy to prevent unexpected object sharing
-            ufo.groups[name] = glyphs[:]
+            source.font.groups[name] = glyphs[:]
 
 
 def to_glyphs_groups(self):
     # Build the GSClasses from the groups of the first UFO.
     groups = []
-    for ufo in self.ufos:
-        for name, glyphs in ufo.groups.items():
+    for source in self._sources.values():
+        for name, glyphs in source.font.groups.items():
             if _is_kerning_group(name):
                 _to_glyphs_kerning_group(self, name, glyphs)
             else:
@@ -103,11 +103,11 @@ def to_glyphs_groups(self):
         break
 
     # Check that other UFOs are identical and print a warning if not.
-    for index, ufo in enumerate(self.ufos):
+    for index, source in enumerate(self._sources.values()):
         if index == 0:
-            reference_ufo = ufo
+            reference_ufo = source.font
         else:
-            _assert_groups_are_identical(self, reference_ufo, ufo)
+            _assert_groups_are_identical(self, reference_ufo, source.font)
 
 
 def _is_kerning_group(name):

@@ -30,7 +30,9 @@ NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + 'nodeUserData'
 
 def to_designspace_family_user_data(self):
     if self.use_designspace:
-        self.designspace.lib.update(dict(self.font.userData))
+        for key, value in dict(self.font.userData).items():
+            if _user_data_has_no_special_meaning(key):
+                self.designspace.lib[key] = value
 
 
 def to_ufo_family_user_data(self, ufo):

@@ -53,7 +53,9 @@ def to_ufo_font_attributes(self, family_name):
     glyph_order = list(glyph.name for glyph in font.glyphs)
 
     for index, master in enumerate(font.masters):
+        source = self.designspace.newSourceDescriptor()
         ufo = self.ufo_module.Font()
+        source.font = ufo
 
         ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
         ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
@@ -81,14 +83,15 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_family_user_data(ufo)
         self.to_ufo_custom_params(ufo, font)
 
-        self.to_ufo_master_attributes(ufo, master)
+        self.to_ufo_master_attributes(source, master)
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
-        self._ufos[master.id] = ufo
+        self.designspace.addSource(source)
+        self._sources[master.id] = source
 
 
-def to_glyphs_font_attributes(self, ufo, master, is_initial):
+def to_glyphs_font_attributes(self, source, master, is_initial):
     """
     Copy font attributes from `ufo` either to `self.font` or to `master`.
 
@@ -104,14 +107,15 @@ def to_glyphs_font_attributes(self, ufo, master, is_initial):
     #     modified in only one of the UFOs in a MM. Maybe do this check later,
     #     when the roundtrip without modification works.
     if is_initial:
-        _set_glyphs_font_attributes(self, ufo)
+        _set_glyphs_font_attributes(self, source)
     else:
         # self._compare_and_merge_glyphs_font_attributes(ufo)
         pass
 
 
-def _set_glyphs_font_attributes(self, ufo):
+def _set_glyphs_font_attributes(self, source):
     font = self.font
+    ufo = source.font
     info = ufo.info
 
     if APP_VERSION_LIB_KEY in ufo.lib:
@@ -147,14 +151,13 @@ def _set_glyphs_font_attributes(self, ufo):
 
 
 def to_glyphs_ordered_masters(self):
-    """Modify in-place the list of UFOs to restore their original order."""
-    self.ufos = sorted(self.ufos, key=_original_master_order)
+    """Modify in-place the list of UFOs to restore their original order in
+    the Glyphs file (if any, otherwise does not change the order)."""
+    return sorted(self.designspace.sources, key=_original_master_order)
 
 
-def _original_master_order(ufo):
-    # FIXME: (jany) Here we should rely on order of sources in designspace
-    # if self.use_designspace
+def _original_master_order(source):
     try:
-        return ufo.lib[MASTER_ORDER_LIB_KEY]
+        return source.font.lib[MASTER_ORDER_LIB_KEY]
     except KeyError:
-        return float('infinity')
+        return 1 << 31

@@ -24,12 +24,13 @@ def to_ufo_names(self, ufo, master, family_name):
     custom = master.customName
     is_italic = bool(master.italicAngle)
 
-    styleName = build_style_name(
-        width if width != 'Regular' else '',
+    styleName = master.name or build_style_name(
+        width if width != 'Medium (normal)' else '',
         weight if weight != 'Regular' else '',
         custom,
         is_italic
     )
+    # FIXME: (jany) should be the responsibility of ufo2ft?
     styleMapFamilyName, styleMapStyleName = build_stylemap_names(
         family_name=family_name,
         style_name=styleName,
@@ -65,7 +66,7 @@ def build_stylemap_names(family_name, style_name, is_bold=False,
     if not linked_style or linked_style == 'Regular':
         linked_style = _get_linked_style(style_name, is_bold, is_italic)
     if linked_style:
-        styleMapFamilyName = family_name + ' ' + linked_style
+        styleMapFamilyName = (family_name or '') + ' ' + linked_style
     else:
         styleMapFamilyName = family_name
     return styleMapFamilyName, styleMapStyleName
@@ -99,29 +100,20 @@ def _get_linked_style(style_name, is_bold, is_italic):
 
 
 def to_glyphs_family_names(self, ufo):
-    # FIXME: (jany) dubious, the ufo family name is not what was in Glyphs but
-    # what was given as an argument to to_ufo... why?
     self.font.familyName = ufo.info.familyName
 
 
 def to_glyphs_master_names(self, ufo, master):
-    # One way would be to split the `ufo.info.styleName`
-    # and find out for each part whether it is a width, weight or customName
-
-    # Instead we shove all of it into custom, unless we can already build the
-    # stylename with the currently available info in the master.
-    # TODO: more testing of this
     width = master.width
     weight = master.weight
     custom = master.customName
     is_italic = bool(master.italicAngle)
 
     current_stylename = build_style_name(
-        width if width != 'Regular' else '',
+        width if width != 'Medium (normal)' else '',
         weight if weight != 'Regular' else '',
         custom,
         is_italic
     )
 
-    if current_stylename != ufo.info.styleName:
-        master.customName = ufo.info.styleName
+    master.name = ufo.info.styleName

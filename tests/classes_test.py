@@ -568,16 +568,19 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
 
         master.customName = 'Rounded'
         self.assertEqual('Light Rounded', master.name)
-        master.customName1 = 'Stretched'
-        master.customName2 = 'Filled'
-        master.customName3 = 'Rotated'
+        master.customName = 'Rounded Stretched Filled Rotated'
         self.assertEqual('Light Rounded Stretched Filled Rotated', master.name)
-        master.customName1 = ''
-        master.customName2 = ''
-        self.assertEqual('Light Rounded Rotated', master.name)
         master.customName = ''
-        master.customName3 = ''
         self.assertEqual('Light', master.name)
+
+    def test_default_values(self):
+        master = GSFontMaster()
+        self.assertEqual(master.weightValue, 100.0)
+        self.assertEqual(master.widthValue, 100.0)
+        self.assertEqual(master.customValue, 0.0)
+        self.assertEqual(master.customValue1, 0.0)
+        self.assertEqual(master.customValue2, 0.0)
+        self.assertEqual(master.customValue3, 0.0)
 
 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
@@ -699,6 +702,15 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         # self.assertIsInstance(instance.interpolatedFont, type(Glyphs.font))
 
         # TODO generate()
+
+    def test_default_values(self):
+        instance = GSInstance()
+        self.assertEqual(instance.weightValue, 100.0)
+        self.assertEqual(instance.widthValue, 100.0)
+        self.assertEqual(instance.customValue, 0.0)
+        self.assertEqual(instance.customValue1, 0.0)
+        self.assertEqual(instance.customValue2, 0.0)
+        self.assertEqual(instance.customValue3, 0.0)
 
 
 class GSGlyphFromFileTest(GSObjectsTestCase):

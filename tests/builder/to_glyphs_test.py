@@ -273,7 +273,8 @@ def test_bad_ufo_date_format_in_glyph_lib():
 
 
 def test_have_default_interpolation_values():
-    """When no designspace is provided, make sure that the Glyphs file has some default "axis positions" for the masters.
+    """When no designspace is provided, make sure that the Glyphs file has some
+    default "axis positions" for the masters.
     """
     thin = defcon.Font()
     thin.info.openTypeOS2WidthClass = 5

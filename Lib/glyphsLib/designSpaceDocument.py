@@ -58,6 +58,15 @@ def from_plist(element):
         return plistlib.loads(string, fmt=plistlib.FMT_XML)
 
 
+def posix(path):
+    """Normalize paths using forward slash to work also on Windows."""
+    new_path = posixpath.join(*path.split(os.path.sep))
+    if path.startswith('/'):
+        # The above transformation loses absolute paths
+        new_path = '/' + new_path
+    return new_path
+
+
 class DesignSpaceDocumentError(Exception):
     def __init__(self, msg, obj=None):
         self.msg = msg
@@ -111,8 +120,8 @@ class SourceDescriptor(SimpleDescriptor):
 
     def __init__(self):
         self.document = None    # a reference to the parent document
-        self.filename = None    # the original path as found in the document
-        self.path = None        # the absolute path, calculated from filename
+        self._filename = None    # the original path as found in the document
+        self._path = None        # the absolute path, calculated from filename
         self.name = None
         self.location = None
         self.copyLib = False
@@ -124,6 +133,28 @@ class SourceDescriptor(SimpleDescriptor):
         self.mutedGlyphNames = []
         self.familyName = None
         self.styleName = None
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        if value is None:
+            self._filename = None
+            return
+        self._filename = posix(value)
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, value):
+        if value is None:
+            self._path = None
+            return
+        self._path = posix(value)
 
 
 class RuleDescriptor(SimpleDescriptor):
@@ -211,8 +242,8 @@ class InstanceDescriptor(SimpleDescriptor):
                 'lib']
 
     def __init__(self):
-        self.filename = None    # the original path as found in the document
-        self.path = None        # the absolute path, calculated from filename
+        self._filename = None    # the original path as found in the document
+        self._path = None        # the absolute path, calculated from filename
         self.name = None
         self.location = None
         self.familyName = None
@@ -229,6 +260,28 @@ class InstanceDescriptor(SimpleDescriptor):
         self.kerning = True
         self.info = True
         self.lib = {}
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        if value is None:
+            self._filename = None
+            return
+        self._filename = posix(value)
+
+    @property
+    def path(self):
+        return self._path
+
+    @path.setter
+    def path(self, value):
+        if value is None:
+            self._path = None
+            return
+        self._path = posix(value)
 
     def setStyleName(self, styleName, languageCode="en"):
         self.localisedStyleName[languageCode] = styleName
@@ -1013,6 +1066,7 @@ class DesignSpaceDocument(object):
     def __init__(self, readerClass=None, writerClass=None, fontClass=None):
         self.logger = logging.getLogger("DesignSpaceDocumentLog")
         self.path = None
+        self.filename = None  # A preferred filename for the document
         self.formatVersion = None
         self.sources = []
         self.instances = []
@@ -1048,6 +1102,7 @@ class DesignSpaceDocument(object):
         writer.write()
 
     def _posixRelativePath(self, otherPath):
+        # FIXME: (jany) not needed anymore thanks to the descriptor accessors?
         relative = os.path.relpath(otherPath, os.path.dirname(self.path))
         return posixpath.join(*relative.split(os.path.sep))
 
