@@ -1,5 +1,5 @@
 {
-.appVersion = "1087";
+.appVersion = "1114";
 DisplayStrings = (
 A
 );
@@ -107,9 +107,7 @@ horizontalStems = (
 16,
 18
 );
-iconName = Light;
 id = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
-name = Light;
 userData = {
 GSOffsetHorizontal = 9;
 GSOffsetMakeStroke = 1;
@@ -185,7 +183,6 @@ horizontalStems = (
 88,
 91
 );
-iconName = Regular;
 id = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
 userData = {
 GSOffsetHorizontal = 45;
@@ -257,9 +254,7 @@ horizontalStems = (
 210,
 215
 );
-iconName = Bold;
 id = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
-name = Bold;
 userData = {
 GSOffsetHorizontal = 115;
 GSOffsetMakeStroke = 1;
@@ -359,11 +354,13 @@ hints = (
 horizontal = 1;
 origin = "{1, 1}";
 target = "{1, 0}";
+type = Stem;
 },
 {
 horizontal = 1;
 origin = "{0, 1}";
 target = "{0, 4}";
+type = Stem;
 }
 );
 layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";

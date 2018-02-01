@@ -1205,6 +1205,10 @@ class GSGuideLine(GSBase):
         return self._parent
 
 
+MASTER_NAME_WEIGHTS = ('Light', 'SemiLight', 'SemiBold', 'Bold')
+MASTER_NAME_WIDTHS = ('Condensed', 'SemiCondensed', 'Extended', 'SemiExtended')
+
+
 class GSFontMaster(GSBase):
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
@@ -1242,7 +1246,7 @@ class GSFontMaster(GSBase):
         # and weight anymore as attributes, even though those properties are
         # still written to the saved files.
         "weight": "Regular",
-        "width": "Medium (normal)",
+        "width": "Regular",
         "weightValue": 100.0,
         "widthValue": 100.0,
         "customValue": 0.0,
@@ -1308,17 +1312,14 @@ class GSFontMaster(GSBase):
             (self.name, self.widthValue, self.weightValue)
 
     def shouldWriteValueForKey(self, key):
-        if key == "width":
-            return getattr(self, key) != "Medium (normal)"
-        if key == "weight":
+        if key in ("weight", "width"):
             return getattr(self, key) != "Regular"
         if key in ("xHeight", "capHeight", "ascender", "descender"):
             # Always write those values
             return True
         if key == "name":
-            if getattr(self, key) == "Regular":
-                return False
-            return True
+            # Only write out the name if we can't make it by joining the parts
+            return self.name != self._joinName()
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
 
     @property
@@ -1334,30 +1335,48 @@ class GSFontMaster(GSBase):
     def name(self, value):
         # This is what Glyphs 1113 seems to be doing, approximately.
         self.weight, self.width, self.customName = self._splitName(value)
+        # Only store the requested name if we can't build it from the parts
+        if self._joinName() == value:
+            self._name = None
+        else:
+            self._name = value
 
     def _joinName(self):
         names = [self.weight, self.width, self.customName]
         names = [n for n in names if n]  # Remove None and empty string
-        if len(names) > 1 and "Medium (normal)" in names:
-            names.remove("Medium (normal)")
         if len(names) > 1 and "Regular" in names:
             names.remove("Regular")
-        if abs(self.italicAngle) > 0.01:
-            names.append("Italic")
+        # if abs(self.italicAngle) > 0.01:
+        #     names.append("Italic")
         return " ".join(list(names))
 
     def _splitName(self, value):
         if value is None:
             value = ''
         weight = 'Regular'
-        width = 'Medium (normal)'
+        width = 'Regular'
         custom = ''
-        names = value.split(" ")
-        if names and names[0] in WEIGHT_CODES:
-            weight = names.pop(0)
-            if names and names[0] in WIDTH_CODES:
-                witdh = names.pop(0)
-        custom = " ".join(names)
+        names = []
+        previous_was_removed = False
+        for name in value.split(" "):
+            if name == 'Regular':
+                pass
+            elif name in MASTER_NAME_WEIGHTS:
+                if previous_was_removed:
+                    # Get the double space in custom
+                    names.append('')
+                previous_was_removed = True
+                weight = name
+            elif name in MASTER_NAME_WIDTHS:
+                if previous_was_removed:
+                    # Get the double space in custom
+                    names.append('')
+                previous_was_removed = True
+                width = name
+            else:
+                previous_was_removed = False
+                names.append(name)
+        custom = " ".join(names).strip()
         return (weight, width, custom)
 
     customParameters = property(

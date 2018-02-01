@@ -563,7 +563,9 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual('Light', master.name)
 
         master.italicAngle = 11
-        self.assertEqual('Light Italic', master.name)
+        # self.assertEqual('Light Italic', master.name)
+        # That doesn't do anything in the latest Glyphs (1114)
+        self.assertEqual('Light', master.name)
         master.italicAngle = 0
 
         master.customName = 'Rounded'
@@ -572,6 +574,60 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual('Light Rounded Stretched Filled Rotated', master.name)
         master.customName = ''
         self.assertEqual('Light', master.name)
+
+    def test_name_assignment(self):
+        test_data = [
+            # Regular
+            ('Regular', '', '', ''),
+            # Weights from the dropdown
+            ('Light', 'Light', '', ''),
+            ('SemiLight', 'SemiLight', '', ''),
+            ('SemiBold', 'SemiBold', '', ''),
+            ('Bold', 'Bold', '', ''),
+            # Widths from the dropdown
+            ('Condensed', '', 'Condensed', ''),
+            ('SemiCondensed', '', 'SemiCondensed', ''),
+            ('SemiExtended', '', 'SemiExtended', ''),
+            ('Extended', '', 'Extended', ''),
+            # Mixed weight and width from dropdowns
+            ('Light Condensed', 'Light', 'Condensed', ''),
+            ('Bold SemiExtended', 'Bold', 'SemiExtended', ''),
+            # With italic -- in Glyphs 1114  works like a custom part
+            ('Light Italic', 'Light', '', 'Italic'),
+            ('SemiLight Italic', 'SemiLight', '', 'Italic'),
+            ('SemiBold Italic', 'SemiBold', '', 'Italic'),
+            ('Bold Italic', 'Bold', '', 'Italic'),
+            ('Condensed Italic', '', 'Condensed', 'Italic'),
+            ('SemiCondensed Italic', '', 'SemiCondensed', 'Italic'),
+            ('SemiExtended Italic', '', 'SemiExtended', 'Italic'),
+            ('Extended Italic', '', 'Extended', 'Italic'),
+            ('Light Condensed Italic', 'Light', 'Condensed', 'Italic'),
+            ('Bold SemiExtended Italic', 'Bold', 'SemiExtended', 'Italic'),
+            # With custom parts
+            ('Thin', '', '', 'Thin'),
+            ('SemiLight Ultra Expanded', 'SemiLight', '', 'Ultra Expanded'),
+            ('Bold Compressed', 'Bold', '', 'Compressed'),
+            ('Fat Condensed', '', 'Condensed', 'Fat'),
+            ('Ultra Light Extended', 'Light', 'Extended', 'Ultra'),
+            ('Hyper Light Condensed Dunhill', 'Light', 'Condensed', 'Hyper  Dunhill'),
+            ('Bold SemiExtended Rugged', 'Bold', 'SemiExtended', 'Rugged'),
+            ('Thin Italic', '', '', 'Thin Italic'),
+            ('SemiLight Ultra Expanded Italic', 'SemiLight', '', 'Ultra Expanded Italic'),
+            ('Bold Compressed Italic', 'Bold', '', 'Compressed Italic'),
+            ('Fat Condensed Italic', '', 'Condensed', 'Fat Italic'),
+            ('Ultra Light Extended Italic', 'Light', 'Extended', 'Ultra  Italic'),
+            ('Hyper Light Condensed Dunhill Italic', 'Light', 'Condensed', 'Hyper  Dunhill Italic'),
+            ('Bold SemiExtended Rugged Italic', 'Bold', 'SemiExtended', 'Rugged Italic'),
+            ('Green Light Red Extended Blue', 'Light', 'Extended', 'Green Red Blue'),
+            ('Green SemiExtended Red SemiBold Blue', 'SemiBold', 'SemiExtended', 'Green Red Blue'),
+        ]
+        master = GSFontMaster()
+        for name, weight, width, custom in test_data:
+            master.name = name
+            self.assertEqual(master.name, name)
+            self.assertEqual(master.weight, weight or 'Regular')
+            self.assertEqual(master.width, width or 'Regular')
+            self.assertEqual(master.customName, custom)
 
     def test_default_values(self):
         master = GSFontMaster()
