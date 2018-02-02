@@ -24,12 +24,10 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as etree
 
-# import defcon
+import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-# from glyphsLib.builder.interpolation import (
-#     build_designspace, set_weight_class, set_width_class, build_stylemap_names
-# )
+from glyphsLib.interpolation import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
 from glyphsLib import to_designspace, to_glyphs
 
@@ -187,6 +185,11 @@ class DesignspaceTest(unittest.TestCase):
         doc = to_designspace(font, instance_dir='out')
         self.expect_designspace(doc, "DesignspaceTestInactive.designspace")
         self.expect_designspace_roundtrip(doc)
+
+        # Although inactive instances are not exported by default,
+        # all instances are exported when intending to roundtrip Glyphs->Glyphs
+        doc = to_designspace(font, minimize_glyphs_diffs=True)
+        self.assertEqual(4, len(doc.instances))
 
     def test_familyName(self):
         masters, _ = makeFamily()
@@ -348,6 +351,145 @@ class DesignspaceTest(unittest.TestCase):
         # 'Italic' is the base style; append to designspace name
         self.assertEqual(doc.filename, "FamilyName-Italic.designspace")
 
+    def test_instance_filtering_by_family_name(self):
+        # See https://github.com/googlei18n/fontmake/issues/257
+        path = os.path.join(os.path.dirname(__file__), '..', 'data',
+                            'MontserratStrippedDown.glyphs')
+        font = GSFont(path)
+
+        # By default (no special parameter), all instances are exported
+        designspace_all = to_designspace(font)
+        assert len(designspace_all.instances) == 18
+
+        # If we specify that we want the same familyName as the masters,
+        # we only get instances that have that same family name, and the
+        # masters are copied as-is. (basically a subset of the previous doc)
+        designspace_no_alternates = to_designspace(
+            font, family_name='Montserrat')
+        assert len(designspace_no_alternates.instances) == 9
+
+        # If we specify the alternate family name, we only get the instances
+        # that have that family name, and the masters are renamed to have the
+        # given family name.
+        designspace_alternates = to_designspace(
+            font, family_name='Montserrat Alternates')
+        assert (designspace_alternates.sources[0].familyName ==
+                'Montserrat Alternates')
+        assert (designspace_alternates.sources[0].font.info.familyName ==
+                'Montserrat Alternates')
+        assert len(designspace_alternates.instances) == 9
+
+
+WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
+WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
+
+
+class SetWeightWidthClassesTest(unittest.TestCase):
+
+    def test_no_weigth_class(self):
+        ufo = defcon.Font()
+        # name here says "Bold", however no excplit weightClass
+        # is assigned
+        set_weight_class(ufo, makeInstance("Bold"))
+        # the default OS/2 weight class is set
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
+
+    def test_weight_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Bold",
+            weight=("Bold", None, 150)
+        )
+
+        set_weight_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
+
+    def test_explicit_default_weight(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Regular",
+            weight=("Regular", None, 100)
+        )
+
+        set_weight_class(ufo, data)
+        # the default OS/2 weight class is set
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
+
+    def test_no_width_class(self):
+        ufo = defcon.Font()
+        # no explicit widthClass set, instance name doesn't matter
+        set_width_class(ufo, makeInstance("Normal"))
+        # the default OS/2 width class is set
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
+
+    def test_width_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Condensed",
+            width=("Condensed", 3, 80)
+        )
+
+        set_width_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
+
+    def test_explicit_default_width(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "Regular",
+            width=("Medium (normal)", 5, 100)
+        )
+
+        set_width_class(ufo, data)
+        # the default OS/2 width class is set
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
+        # non-empty value is stored in the UFO lib even if same as default
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
+
+    def test_weight_and_width_class(self):
+        ufo = defcon.Font()
+        data = makeInstance(
+            "SemiCondensed ExtraBold",
+            weight=("ExtraBold", None, 160),
+            width=("SemiCondensed", 4, 90)
+        )
+
+        set_weight_class(ufo, data)
+        set_width_class(ufo, data)
+
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 800)
+        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
+        self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
+        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
+
+    def test_unknown_weight_class(self):
+        ufo = defcon.Font()
+        # "DemiLight" is not among the predefined weight classes listed in
+        # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
+        # Resources/weights.plist
+        # NOTE It is not possible from the user interface to set a custom
+        # string as instance 'weightClass' since the choice is constrained
+        # by a drop-down menu.
+        data = makeInstance(
+            "DemiLight Italic",
+            weight=("DemiLight", 350, 70)
+        )
+
+        set_weight_class(ufo, data)
+
+        # we do not set any OS/2 weight class; user needs to provide
+        # a 'weightClass' custom parameter in this special case
+        self.assertTrue(ufo.info.openTypeOS2WeightClass is None)
+
 
 # def test_designspace_roundtrip(tmpdir):
 #     return
@@ -443,117 +585,6 @@ class DesignspaceTest(unittest.TestCase):
 #         rtxml = fp.read()
 #
 #     assert xml == rtxml
-#
-#
-# WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
-# WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
-#
-#
-# class SetWeightWidthClassesTest(unittest.TestCase):
-#
-#     def test_no_weigth_class(self):
-#         ufo = defcon.Font()
-#         # name here says "Bold", however no excplit weightClass
-#         # is assigned
-#         set_weight_class(ufo, makeInstance("Bold"))
-#         # the default OS/2 weight class is set
-#         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-#         # non-empty value is stored in the UFO lib even if same as default
-#         self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
-#
-#     def test_weight_class(self):
-#         ufo = defcon.Font()
-#         data = makeInstance(
-#             "Bold",
-#             weight=("Bold", None, 150)
-#         )
-#
-#         set_weight_class(ufo, data)
-#
-#         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
-#         self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
-#
-#     def test_explicit_default_weight(self):
-#         ufo = defcon.Font()
-#         data = makeInstance(
-#             "Regular",
-#             weight=("Regular", None, 100)
-#         )
-#
-#         set_weight_class(ufo, data)
-#         # the default OS/2 weight class is set
-#         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-#         # non-empty value is stored in the UFO lib even if same as default
-#         self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
-#
-#     def test_no_width_class(self):
-#         ufo = defcon.Font()
-#         # no explicit widthClass set, instance name doesn't matter
-#         set_width_class(ufo, makeInstance("Normal"))
-#         # the default OS/2 width class is set
-#         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-#         # non-empty value is stored in the UFO lib even if same as default
-#         self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
-#
-#     def test_width_class(self):
-#         ufo = defcon.Font()
-#         data = makeInstance(
-#             "Condensed",
-#             width=("Condensed", 80)
-#         )
-#
-#         set_width_class(ufo, data)
-#
-#         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
-#         self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
-#
-#     def test_explicit_default_width(self):
-#         ufo = defcon.Font()
-#         data = makeInstance(
-#             "Regular",
-#             width=("Medium (normal)", 100)
-#         )
-#
-#         set_width_class(ufo, data)
-#         # the default OS/2 width class is set
-#         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-#         # non-empty value is stored in the UFO lib even if same as default
-#         self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
-#
-#     def test_weight_and_width_class(self):
-#         ufo = defcon.Font()
-#         data = makeInstance(
-#             "SemiCondensed ExtraBold",
-#             weight=("ExtraBold", None, 160),
-#             width=("SemiCondensed", 90)
-#         )
-#
-#         set_weight_class(ufo, data)
-#         set_width_class(ufo, data)
-#
-#         self.assertEqual(ufo.info.openTypeOS2WeightClass, 800)
-#         self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
-#         self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
-#         self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
-#
-#     def test_unknown_weight_class(self):
-#         ufo = defcon.Font()
-#         # "DemiLight" is not among the predefined weight classes listed in
-#         # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
-#         # Resources/weights.plist
-#         # NOTE It is not possible from the user interface to set a custom
-#         # string as instance 'weightClass' since the choice is constrained
-#         # by a drop-down menu.
-#         data = makeInstance(
-#             "DemiLight Italic",
-#             weight=("DemiLight", 350, 70)
-#         )
-#
-#         set_weight_class(ufo, data)
-#
-#         # we do not set any OS/2 weight class; user needs to provide
-#         # a 'weightClass' custom parameter in this special case
-#         self.assertTrue(ufo.info.openTypeOS2WeightClass is None)
 
 
 if __name__ == "__main__":

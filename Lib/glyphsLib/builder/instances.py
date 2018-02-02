@@ -37,7 +37,9 @@ INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + 'intanceInterpolations'
 def to_designspace_instances(self):
     """Write instance data from self.font to self.designspace."""
     for instance in self.font.instances:
-        if is_instance_active(instance) or self.minimize_glyphs_diffs:
+        if (self.minimize_glyphs_diffs or
+                (is_instance_active(instance) and
+                 _is_instance_included_in_family(self, instance))):
             _to_designspace_instance(self, instance)
 
 
@@ -106,6 +108,12 @@ def _to_designspace_instance(self, instance):
 
     # TODO: put the userData/customParameters in lib
     self.designspace.addInstance(ufo_instance)
+
+
+def _is_instance_included_in_family(self, instance):
+    if not self._do_filter_instances_by_family:
+        return True
+    return instance.familyName == self.family_name
 
 
 def to_glyphs_instances(self):

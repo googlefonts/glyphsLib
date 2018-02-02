@@ -105,22 +105,15 @@ class UFOBuilder(_LoggerMixin):
                 'This Glyphs source was generated with an outdated version '
                 'of Glyphs. The resulting UFOs may be incorrect.')
 
-        source_family_name = self.font.familyName
         if family_name is None:
             # use the source family name, and include all the instances
-            self.family_name = source_family_name
+            self.family_name = self.font.familyName
             self._do_filter_instances_by_family = False
         else:
             self.family_name = family_name
             # use a custom 'family_name' to name master UFOs, and only build
             # instances with matching 'familyName' custom parameter
             self._do_filter_instances_by_family = True
-            if family_name == source_family_name:
-                # if the 'family_name' provided is the same as the source, only
-                # include instances which do _not_ specify a custom 'familyName'
-                self._instance_family_name = None
-            else:
-                self._instance_family_name = family_name
 
     @property
     def masters(self):
@@ -260,8 +253,7 @@ class UFOBuilder(_LoggerMixin):
         instances = self.font.instances
         if self._do_filter_instances_by_family:
             instances = list(
-                filter_instances_by_family(instances,
-                                           self._instance_family_name))
+                filter_instances_by_family(instances, self.family_name))
         instance_data = {'data': instances}
 
         first_ufo = next(iter(self.masters))
@@ -306,14 +298,7 @@ def filter_instances_by_family(instances, family_name=None):
     """Yield instances whose 'familyName' custom parameter is
     equal to 'family_name'.
     """
-    for instance in instances:
-        familyName = None
-        for p in instance.customParameters:
-            param, value = p.name, p.value
-            if param == 'familyName':
-                familyName = value
-        if familyName == family_name:
-            yield instance
+    return (i for i in instances if i.familyName == family_name)
 
 
 class GlyphsBuilder(_LoggerMixin):
