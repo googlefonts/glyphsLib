@@ -109,8 +109,7 @@ def to_glyphs_font_attributes(self, source, master, is_initial):
     if is_initial:
         _set_glyphs_font_attributes(self, source)
     else:
-        # self._compare_and_merge_glyphs_font_attributes(ufo)
-        pass
+        _compare_and_merge_glyphs_font_attributes(self, source)
 
 
 def _set_glyphs_font_attributes(self, source):
@@ -148,6 +147,11 @@ def _set_glyphs_font_attributes(self, source):
     self.to_glyphs_family_user_data_from_ufo(ufo)
     self.to_glyphs_custom_params(ufo, font)
     self.to_glyphs_features(ufo)
+
+
+def _compare_and_merge_glyphs_font_attributes(self, source):
+    ufo = source.font
+    self.to_glyphs_family_names(ufo, merge=True)
 
 
 def to_glyphs_ordered_masters(self):

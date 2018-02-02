@@ -361,6 +361,12 @@ def get_regular_master(font):
     for master in font.masters:
         if master.name == base_style:
             return master
+    # Second try: maybe the base style has regular in it as well
+    for master in font.masters:
+        name_without_regular = ' '.join(
+            n for n in master.name.split(' ') if n != 'Regular')
+        if name_without_regular == base_style:
+            return master
     return font.masters[0]
 
 

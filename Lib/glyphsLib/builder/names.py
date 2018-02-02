@@ -99,8 +99,14 @@ def _get_linked_style(style_name, is_bold, is_italic):
     return ' '.join(linked_style)
 
 
-def to_glyphs_family_names(self, ufo):
-    self.font.familyName = ufo.info.familyName
+def to_glyphs_family_names(self, ufo, merge=False):
+    if not merge:
+        # First UFO
+        self.font.familyName = ufo.info.familyName
+    else:
+        # Subsequent UFOs
+        if self.font.familyName != ufo.info.familyName:
+            raise RuntimeError('All UFOs should have the same family name.')
 
 
 def to_glyphs_master_names(self, ufo, master):
