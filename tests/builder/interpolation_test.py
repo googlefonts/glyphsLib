@@ -227,7 +227,7 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace_roundtrip(doc)
 
     def test_noRegularMaster(self):
-        # Currently, fonttools.varLib fails to build variable fonts
+        # Currently, fontTools.varLib fails to build variable fonts
         # if the default axis value does not happen to be at the
         # location of one of the interpolation masters.
         # glyhpsLib tries to work around this downstream limitation.

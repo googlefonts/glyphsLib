@@ -22,8 +22,7 @@ import os
 
 import defcon
 
-# FIXME: import fontTools.designSpaceDocument
-from glyphsLib import designSpaceDocument
+from fontTools import designspaceLib
 
 from glyphsLib import classes, glyphdata_generated
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX
@@ -51,7 +50,7 @@ class UFOBuilder(_LoggerMixin):
     def __init__(self,
                  font,
                  ufo_module=defcon,
-                 designspace_module=designSpaceDocument,
+                 designspace_module=designspaceLib,
                  family_name=None,
                  instance_dir=None,
                  propagate_anchors=True,
@@ -65,7 +64,7 @@ class UFOBuilder(_LoggerMixin):
                       a custom module that has the same classes as the official
                       defcon to get instances of your own classes)
         designspace_module -- A Python module to use to build a Designspace
-                              Document. Should look like designSpaceDocument.
+                              Document. Default is fontTools.designspaceLib.
         family_name -- if provided, the master UFOs will be given this name and
                        only instances with this name will be returned.
         instance_dir -- if provided, instance UFOs will be located in this
@@ -94,9 +93,7 @@ class UFOBuilder(_LoggerMixin):
         # the master UFOs, when the user requests them.
         # The axes, instances, rules... will only be built if the designspace
         # document itself is requested by the user.
-        self._designspace = self.designspace_module.DesignSpaceDocument(
-            writerClass=designSpaceDocument.InMemoryDocWriter,
-            fontClass=self.ufo_module.Font)
+        self._designspace = self.designspace_module.DesignSpaceDocument()
         self._designspace_is_complete = False
 
         # check that source was generated with at least stable version 2.3
@@ -344,11 +341,9 @@ class GlyphsBuilder(_LoggerMixin):
             if ufos:
                 raise NotImplementedError
             for source in designspace.sources:
-                # FIXME: (jany) Do something better for the InMemory stuff
-                # Is it an in-memory source descriptor?
                 if not hasattr(source, 'font') or source.font is None:
                     if source.path:
-                        # FIXME: (jany) consider not mucking with the caller's objects
+                        # FIXME: (jany) consider not changing the caller's objects
                         source.font = defcon.Font(source.path)
                     else:
                         dirname = os.path.dirname(designspace.path)
@@ -417,8 +412,7 @@ class GlyphsBuilder(_LoggerMixin):
         """Build a fake designspace with the given UFOs as sources, so that all
         builder functions can rely on the presence of a designspace.
         """
-        designspace = designSpaceDocument.DesignSpaceDocument(
-            writerClass=designSpaceDocument.InMemoryDocWriter)
+        designspace = designspaceLib.DesignSpaceDocument()
 
         ufo_to_location = defaultdict(dict)
 

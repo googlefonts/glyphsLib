@@ -209,7 +209,7 @@ class FeaDocument(object):
         # end_location of the real last statement(s).
         self._lines.append('#')  # Line corresponding to the fake statement
         fake_location = (None, len(self._lines), 1)
-        self._doc.statements.append(ast.Comment(fake_location, "Sentinel"))
+        self._doc.statements.append(ast.Comment(text="Sentinel", location=fake_location))
         self._build_end_locations_rec(self._doc)
         # Remove the fake last statement
         self._lines.pop()

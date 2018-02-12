@@ -27,8 +27,7 @@ from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 from glyphsLib import classes
 
-# FIXME: (jany) should come from fonttools
-from glyphsLib.designSpaceDocument import DesignSpaceDocument
+from fontTools.designspaceLib import DesignSpaceDocument
 
 # TODO: (jany) think hard about the ordering and RTL/LTR
 # TODO: (jany) make one generic test with data using pytest

@@ -26,8 +26,7 @@ from textwrap import dedent
 
 import glyphsLib
 from glyphsLib import classes
-from glyphsLib.designSpaceDocument import (DesignSpaceDocument,
-                                           InMemoryDocWriter)
+from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder import to_glyphs, to_designspace
 from glyphsLib.writer import Writer
 from fontTools.misc.py23 import UnicodeIO
@@ -116,8 +115,7 @@ class AssertUFORoundtrip(AssertLinesEqual):
         directory = tempfile.mkdtemp()
         path = os.path.join(directory, font.familyName + '.designspace')
         write_designspace_and_UFOs(designspace, path)
-        designspace_roundtrip = DesignSpaceDocument(
-            writerClass=InMemoryDocWriter)
+        designspace_roundtrip = DesignSpaceDocument()
         designspace_roundtrip.read(path)
         roundtrip = to_glyphs(designspace_roundtrip)
         self._normalize(roundtrip)
@@ -248,9 +246,9 @@ class AssertDesignspaceRoundtrip(object):
         for source in roundtrip.sources:
             normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
-        # self.assertDesignspacesEqual(
-        #     roundtrip_in_mem, roundtrip,
-        #     "The round-trip in memory or written to disk should be equivalent")
+        self.assertDesignspacesEqual(
+            roundtrip_in_mem, roundtrip,
+            "The round-trip in memory or written to disk should be equivalent")
         self.assertDesignspacesEqual(
             designspace, roundtrip,
             "The font should not be modified by the roundtrip")
