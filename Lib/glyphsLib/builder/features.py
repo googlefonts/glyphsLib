@@ -21,10 +21,7 @@ from textwrap import dedent
 from fontTools.misc.py23 import round, unicode
 from fontTools.misc.py23 import StringIO
 
-from fontTools.feaLib.lexer import Lexer
-from fontTools.feaLib.parser import Parser, SymbolTable
-from fontTools.feaLib.error import FeatureLibError
-from fontTools.feaLib import parser, ast
+from fontTools.feaLib import ast, parser
 
 import re
 
@@ -173,117 +170,11 @@ def to_glyphs_features(self, ufo):
     processor.to_glyphs(self.font)
 
 
-# TODO: (jany) backport to feaLib
-class IncludeStatement(ast.Statement):
-    def __init__(self, location, filename):
-        super(IncludeStatement, self).__init__(location)
-        self.filename = filename
-
-    def build(self):
-        # TODO: (jany) check that raising makes sense here
-        # TODO: (jany) use the correct exception class
-        raise FeatureLibError(
-            "It does not make sense to build an include statement, "
-            "use the including parser for building",
-            self.location)
-
-    def asFea(self, indent=""):
-        return indent + "include(%s);" % self.filename
-
-
-# TODO: (jany) backport to feaLib
-class NonIncludingParser(Parser):
-    def __init__(self, featurefile, glyphMap):
-        self.glyphMap_ = glyphMap
-        self.doc_ = self.ast.FeatureFile()
-        self.anchors_ = SymbolTable()
-        self.glyphclasses_ = SymbolTable()
-        self.lookups_ = SymbolTable()
-        self.valuerecords_ = SymbolTable()
-        self.symbol_tables_ = {
-            self.anchors_, self.valuerecords_
-        }
-        self.next_token_type_, self.next_token_ = (None, None)
-        self.cur_comments_ = []
-        self.next_token_location_ = None
-        # Diff: simple Lexer
-        filename = None
-        if hasattr(featurefile, "read"):
-            fileobj, closing = featurefile, False
-        else:
-            filename, closing = featurefile, True
-            # try:
-            fileobj = open(filename, "r", encoding="utf-8")
-            # except IOError as err:
-            # raise feaLib.FeatureLibError(str(err), location)
-        data = fileobj.read()
-        if not filename:
-            filename = fileobj.name if hasattr(fileobj, "name") else "<features>"
-        if closing:
-            fileobj.close()
-        self.lexer_ = Lexer(data, filename)
-        self.advance_lexer_(comments=True)
-
-    def parse(self):
-        statements = self.doc_.statements
-        # Diff: or self.cur_comments_
-        while self.next_token_type_ is not None or self.cur_comments_:
-            self.advance_lexer_(comments=True)
-            if self.cur_token_type_ is Lexer.COMMENT:
-                statements.append(self.ast.Comment(self.cur_token_location_, self.cur_token_))
-            elif self.cur_token_type_ is Lexer.GLYPHCLASS:
-                statements.append(self.parse_glyphclass_definition_())
-            # Diff: return "include" statements as-is
-            elif self.is_cur_keyword_("include"):
-                statements.append(self.parse_include_())
-            elif self.is_cur_keyword_(("anon", "anonymous")):
-                statements.append(self.parse_anonymous_())
-            elif self.is_cur_keyword_("anchorDef"):
-                statements.append(self.parse_anchordef_())
-            elif self.is_cur_keyword_("languagesystem"):
-                statements.append(self.parse_languagesystem_())
-            elif self.is_cur_keyword_("lookup"):
-                statements.append(self.parse_lookup_(vertical=False))
-            elif self.is_cur_keyword_("markClass"):
-                statements.append(self.parse_markClass_())
-            elif self.is_cur_keyword_("feature"):
-                statements.append(self.parse_feature_block_())
-            elif self.is_cur_keyword_("table"):
-                statements.append(self.parse_table_())
-            elif self.is_cur_keyword_("valueRecordDef"):
-                statements.append(
-                    self.parse_valuerecord_definition_(vertical=False))
-            elif self.cur_token_type_ is Lexer.NAME and self.cur_token_ in self.extensions:
-                statements.append(self.extensions[self.cur_token_](self))
-            elif self.cur_token_type_ is Lexer.SYMBOL and self.cur_token_ == ";":
-                continue
-            else:
-                raise FeatureLibError(
-                    "Expected feature, languagesystem, lookup, markClass, "
-                    "table, or glyph class definition, got {} \"{}\"".format(self.cur_token_type_, self.cur_token_),
-                    self.cur_token_location_)
-        return self.doc_
-
-    def parse_include_(self):
-        assert self.cur_token_ == "include"
-        location = self.cur_token_location_
-        filename = self.expect_filename_()
-        # self.expect_symbol_(";")
-        return IncludeStatement(location, filename)
-
-    def expect_filename_(self):
-        self.advance_lexer_()
-        if self.cur_token_type_ is not Lexer.FILENAME:
-            raise FeatureLibError("Expected file name",
-                                  self.cur_token_location_)
-        return self.cur_token_
-
-
 class FeaDocument(object):
     """Parse the string of a fea code into statements."""
     def __init__(self, text, glyph_set):
         feature_file = StringIO(text)
-        parser_ = NonIncludingParser(feature_file, glyph_set)
+        parser_ = parser.Parser(feature_file, glyph_set, followIncludes=False)
         self._doc = parser_.parse()
         self.statements = self._doc.statements
         self._lines = text.splitlines(True)  # keepends=True
