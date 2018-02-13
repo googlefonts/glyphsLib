@@ -170,14 +170,14 @@ class ParamHandler(AbstractParamHandler):
     #  - the UFO's info object if it has a matching attribute, else the lib
     def to_glyphs(self, glyphs, ufo):
         ufo_value = self._read_from_ufo(glyphs, ufo)
-        if ufo_value is None or ufo_value == []:
+        if ufo_value is None:
             return
         glyphs_value = self.value_to_glyphs(ufo_value)
         self._write_to_glyphs(glyphs, glyphs_value)
 
     def to_ufo(self, glyphs, ufo):
         glyphs_value = self._read_from_glyphs(glyphs)
-        if glyphs_value is None or glyphs_value == []:
+        if glyphs_value is None:
             return
         ufo_value = self.value_to_ufo(glyphs_value)
         self._write_to_ufo(glyphs, ufo, ufo_value)
@@ -306,8 +306,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'postscriptUniqueID',
 
     # Should this be handled in `blue_values.py`?
-    'postscriptFamilyBlues',
-    'postscriptFamilyOtherBlues',
+    # 'postscriptFamilyBlues',
+    # 'postscriptFamilyOtherBlues',
     'postscriptBlueFuzz',
 
     'postscriptForceBold',
@@ -321,7 +321,21 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'macintoshFONDName',
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
-    register(ParamHandler(name, name))
+    register(ParamHandler(name))
+
+
+class EmptyListDefaultParamHandler(ParamHandler):
+    def to_glyphs(self, glyphs, ufo):
+        ufo_value = self._read_from_ufo(glyphs, ufo)
+        # Ingore default value == empty list
+        if ufo_value is None or ufo_value == []:
+            return
+        glyphs_value = self.value_to_glyphs(ufo_value)
+        self._write_to_glyphs(glyphs, glyphs_value)
+
+register(EmptyListDefaultParamHandler('postscriptFamilyBlues'))
+register(EmptyListDefaultParamHandler('postscriptFamilyOtherBlues'))
+
 
 # convert code page numbers to OS/2 ulCodePageRange bits
 register(ParamHandler(

@@ -243,4 +243,19 @@ class SetCustomParamsTest(unittest.TestCase):
             self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY],
                              not value)
 
+    def test_default_fstype(self):
+        # No specified fsType => set default value
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Type, [3])
 
+    def test_set_fstype(self):
+        # Set another fsType => store that
+        self.master.customParameters["fsType"] = [2]
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Type, [2])
+
+    def test_empty_fstype(self):
+        # Set empty fsType => store empty
+        self.master.customParameters["fsType"] = []
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Type, [])

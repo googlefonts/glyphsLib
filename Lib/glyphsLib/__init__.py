@@ -17,6 +17,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from io import open
+import os
 import logging
 
 from fontTools.misc.py23 import tostr
