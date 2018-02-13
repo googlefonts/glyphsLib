@@ -52,7 +52,7 @@ def main(args=None):
     opt = parse_options(args)
     if opt.glyphs is not None:
         if opt.instances is None:
-            glyphsLib.build_masters(opt.glyphs, opt.masters)
+            glyphsLib.build_masters(opt, opt.glyphs, opt.masters)
         else:
             glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances,
                                       round_geometry=opt.round_instances)

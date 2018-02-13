@@ -2780,15 +2780,25 @@ class GSFont(GSBase):
         self._userData = None
 
         if path:
-            assert isinstance(path, (str, unicode)), \
-                "Please supply a file path"
-            assert path.endswith(".glyphs"), \
+            p = Parser()
+            
+            fileContent = None
+            if hasattr(path, 'read'):
+                fileContent = path.read()
+            else:
+                assert isinstance(path, (str, unicode)), \
+                    "Please supply a file path"
+                if path.endswith(".glyphs"):
+                    with open(path, 'r', encoding='utf-8') as fp:
+                        fileContent = fp.read()
+                        self.filepath = path
+                elif path[0] == "{":
+                    fileContent = path
+            if fileContent is not None:
+                p.parse_into_object(self, fileContent) 
+            else:
                 "Please supply a file path to a .glyphs file"
-            with open(path, 'r', encoding='utf-8') as fp:
-                p = Parser()
-                logger.info('Parsing .glyphs file into %r', self)
-                p.parse_into_object(self, fp.read())
-            self.filepath = path
+            
             for master in self.masters:
                 master.font = self
 
@@ -2806,11 +2816,20 @@ class GSFont(GSBase):
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
-        with open(path, 'w', encoding='utf-8') as fp:
-            w = Writer(fp)
+        if hasattr(path, 'write'):
+            w = Writer(path)
             logger.info('Writing %r to .glyphs file', self)
             w.write(self)
-
+        else:
+            with open(path, 'w', encoding='utf-8') as fp:
+                w = Writer(fp)
+                logger.info('Writing %r to .glyphs file', self)
+                w.write(self)
+    def plistValue(self):
+        fp = UnicodeIO()
+        self.save(fp)
+        return fp.getvalue()
+        
     def getVersionMinor(self):
         return self._versionMinor
 

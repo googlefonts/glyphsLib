@@ -23,8 +23,6 @@ from fontTools.misc.py23 import tostr
 
 from glyphsLib.builder import to_ufos
 from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import load, loads
-from glyphsLib.writer import dump, dumps
 from glyphsLib.util import write_ufo
 
 from glyphsLib.classes import __all__ as __all_classes__
@@ -37,27 +35,10 @@ __version__ = "2.2.2.dev0"
 # Thus we need to encode the unicode literals as ascii bytes.
 # https://bugs.python.org/issue21720
 __all__ = [tostr(s) for s in [
-    "build_masters", "build_instances", "load_to_ufos",
-    "load", "loads", "dump", "dumps",
+    "build_masters", "build_instances"
  ] + __all_classes__]
 
 logger = logging.getLogger(__name__)
-
-
-def load_to_ufos(file_or_path, include_instances=False, family_name=None,
-                 propagate_anchors=True):
-    """Load an unpacked .glyphs object to UFO objects."""
-
-    if hasattr(file_or_path, 'read'):
-        font = load(file_or_path)
-    else:
-        with open(file_or_path, 'r', encoding='utf-8') as ifile:
-            font = load(ifile)
-    logger.info('Loading to UFOs')
-    return to_ufos(font, include_instances=include_instances,
-                   family_name=family_name,
-                   propagate_anchors=propagate_anchors)
-
 
 def build_masters(filename, master_dir, designspace_instance_dir=None,
                   family_name=None, propagate_anchors=True):
@@ -75,13 +56,13 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         path to a designspace and a list of (path, data) tuples with instance
         paths from the designspace and respective data from the Glyphs source.
     """
-
-    ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name,
+    font = GSFont(filename)
+    ufos, instance_data = to_ufos(
+        font, include_instances=True, family_name=family_name,
         propagate_anchors=propagate_anchors)
     if designspace_instance_dir is not None:
         designspace_path, instance_data = build_designspace(
-            ufos, master_dir, designspace_instance_dir, instance_data)
+            font, ufos, master_dir, designspace_instance_dir, instance_data)
         return ufos, designspace_path, instance_data
     else:
         for ufo in ufos:
@@ -99,11 +80,11 @@ def build_instances(filename, master_dir, instance_dir, family_name=None,
         family_name: If provided, the master UFOs will be given this name and
             only instances with this name will be built.
     """
-
-    master_ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name,
+    font = GSFont(filename)
+    master_ufos, instance_data = to_ufos(
+        font, include_instances=True, family_name=family_name,
         propagate_anchors=propagate_anchors)
     instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data,
+        font, master_ufos, master_dir, instance_dir, instance_data,
         round_geometry=round_geometry)
     return instance_ufos

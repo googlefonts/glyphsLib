@@ -222,29 +222,12 @@ class Parser(object):
 
         raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
 
-
-def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return a GSFont object.
-    """
-    return loads(fp.read())
-
-
-def loads(s):
-    """Read a .glyphs file from a (unicode) str object, or from
-    a UTF-8 encoded bytes object.
-    Return a GSFont object.
-    """
-    p = Parser(current_type=glyphsLib.classes.GSFont)
-    logger.info('Parsing .glyphs file')
-    data = p.parse(s)
-    return data
-
-
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
+    # args = ["/Users/georg/Stuff/New Font.glyphs"]
     for arg in args:
-        glyphsLib.dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+        font = glyphsLib.classes.GSFont(arg)
+        font.save(sys.stdout)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -20,7 +20,7 @@ import logging
 
 from .common import to_ufo_time
 from .constants import GLYPHS_PREFIX
-
+from glyphsLib.interpolation import get_axis_definitions
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +45,8 @@ def to_ufo_font_attributes(self, family_name):
     designer_url = font.designerURL
     manufacturer = font.manufacturer
     manufacturer_url = font.manufacturerURL
+
+    axesDef = get_axis_definitions(font)
 
     for master in font.masters:
         ufo = self.ufo_module.Font()
@@ -80,21 +82,11 @@ def to_ufo_font_attributes(self, family_name):
             ufo.info.postscriptStemSnapV = vertical_stems
         if italic_angle:
             ufo.info.italicAngle = italic_angle
-
-        width = master.width
-        weight = master.weight
-        if weight:
-            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-        if width:
-            ufo.lib[GLYPHS_PREFIX + 'width'] = width
-        for number in ('', '1', '2', '3'):
-            custom_name = getattr(master, 'customName' + number)
-            if custom_name:
-                ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
-            custom_value = getattr(master, 'customValue' + number)
-            if custom_value:
-                ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
-
+        masterCoordinates = []
+        for name, masterKey, instanceKey, tag, userLocParam, defaultUserLoc in axesDef:
+            value = getattr(master, masterKey)
+            masterCoordinates.append(value)
+        ufo.lib[GLYPHS_PREFIX + 'masterCoordinates'] = masterCoordinates
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_blue_values(ufo, master)
         self.to_ufo_family_user_data(ufo)

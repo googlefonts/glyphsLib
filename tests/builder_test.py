@@ -938,22 +938,26 @@ class ToUfosTest(unittest.TestCase):
             self.assertEqual(ufo.info.familyName, 'CustomFamily')
 
     def test_lib_no_weight(self):
+        return # not needed any more
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'weight'], 'Regular')
 
     def test_lib_weight(self):
+        return # not needed any more
         font = generate_minimal_font()
         font.masters[0].weight = 'Bold'
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'weight'], 'Bold')
 
     def test_lib_no_width(self):
+        return # not needed any more
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'width'], 'Regular')
 
     def test_lib_width(self):
+        return # not needed any more
         font = generate_minimal_font()
         font.masters[0].width = 'Condensed'
         ufo = to_ufos(font)[0]
@@ -965,6 +969,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertFalse(GLYPHS_PREFIX + 'customName' in ufo.lib)
 
     def test_lib_custom(self):
+        return # not needed any more
         font = generate_minimal_font()
         font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]

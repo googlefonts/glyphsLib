@@ -28,12 +28,13 @@ import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.interpolation import (
-    build_designspace, set_weight_class, set_width_class, build_stylemap_names
+    build_designspace, set_weight_class, set_width_class, build_stylemap_names, DEFAULT_LOCS_LIST
 )
-from glyphsLib.classes import GSInstance, GSCustomParameter
+from glyphsLib.classes import GSFont, GSInstance, GSCustomParameter
 
 
 def makeFamily(familyName):
+    font = makeFont(familyName)
     m1 = makeMaster(familyName, "Regular", weight=90.0)
     m2 = makeMaster(familyName, "Black", weight=190.0)
     instances = {
@@ -44,16 +45,27 @@ def makeFamily(familyName):
             makeInstance("Black", weight=("Black", 900, 190)),
         ],
     }
-    return [m1, m2], instances
+    return font, [m1, m2], instances
 
-
+def makeFont(familyName):
+    font = GSFont()
+    font.familyName = familyName
+    return font
+    
 def makeMaster(familyName, styleName, weight=None, width=None):
     m = defcon.Font()
     m.info.familyName, m.info.styleName = familyName, styleName
+    masterCoordinates = []
     if weight is not None:
-        m.lib[GLYPHS_PREFIX + "weightValue"] = weight
+        masterCoordinates.append(weight)
+    else:
+        masterCoordinates.append(DEFAULT_LOCS_LIST[0])
     if width is not None:
-        m.lib[GLYPHS_PREFIX + "widthValue"] = width
+        masterCoordinates.append(width)
+    else:
+        masterCoordinates.append(DEFAULT_LOCS_LIST[1])
+    
+    m.lib[GLYPHS_PREFIX + 'masterCoordinates'] = masterCoordinates
     return m
 
 
@@ -103,19 +115,19 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
 
 
 class DesignspaceTest(unittest.TestCase):
-    def build_designspace(self, masters, instances):
+    def build_designspace(self, font, masters, instances):
         master_dir = tempfile.mkdtemp()
         try:
             designspace, _ = build_designspace(
-                masters, master_dir, os.path.join(master_dir, "out"), instances)
+                font, masters, master_dir, os.path.join(master_dir, "out"), instances)
             with open(designspace, mode="r", encoding="utf-8") as f:
                 result = f.readlines()
         finally:
             shutil.rmtree(master_dir)
         return result
 
-    def expect_designspace(self, masters, instances, expectedFile):
-        actual = self.build_designspace(masters, instances)
+    def expect_designspace(self, font, masters, instances, expectedFile):
+        actual = self.build_designspace(font, masters, instances)
         path, _ = os.path.split(__file__)
         expectedPath = os.path.join(path, "data", expectedFile)
         with open(expectedPath, mode="r", encoding="utf-8") as f:
@@ -134,40 +146,40 @@ class DesignspaceTest(unittest.TestCase):
             self.fail("*.designspace file is different from expected")
 
     def test_basic(self):
-        masters, instances = makeFamily("DesignspaceTest Basic")
-        self.expect_designspace(masters, instances,
+        font, masters, instances = makeFamily("DesignspaceTest Basic")
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestBasic.designspace")
 
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
         # https://github.com/googlei18n/glyphsLib/issues/129
-        masters, instances = makeFamily("DesignspaceTest Inactive")
+        font, masters, instances = makeFamily("DesignspaceTest Inactive")
         for inst in instances["data"]:
             if inst.name != "Semibold":
                 inst.exports = False
-        self.expect_designspace(masters, instances,
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestInactive.designspace")
 
     def test_familyName(self):
-        masters, instances = makeFamily("DesignspaceTest FamilyName")
+        font, masters, instances = makeFamily("DesignspaceTest FamilyName")
         customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
         customFamily.customParameters["familyName"] = "Custom Family"
         instances["data"] = [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             customFamily,
         ]
-        self.expect_designspace(masters, instances,
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestFamilyName.designspace")
 
     def test_fileName(self):
-        masters, instances = makeFamily("DesignspaceTest FamilyName")
+        font, masters, instances = makeFamily("DesignspaceTest FamilyName")
         customFileName= makeInstance("Regular", weight=("Bold", 600, 151))
         customFileName.customParameters["fileName"] = "Custom FileName"
         instances["data"] = [
             makeInstance("Regular", weight=("Regular", 400, 90)),
             customFileName,
         ]
-        self.expect_designspace(masters, instances,
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestFileName.designspace")
 
     def test_noRegularMaster(self):
@@ -175,6 +187,8 @@ class DesignspaceTest(unittest.TestCase):
         # if the default axis value does not happen to be at the
         # location of one of the interpolation masters.
         # glyhpsLib tries to work around this downstream limitation.
+        font = GSFont()
+        font.familyName = "NoRegularMaster"
         masters = [
             makeMaster("NoRegularMaster", "Thin", weight=26),
             makeMaster("NoRegularMaster", "Black", weight=190),
@@ -184,18 +198,20 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Bold", weight=("Thin", 100, 26)),
         ]}
-        doc = etree.fromstringlist(self.build_designspace(masters, instances))
+        doc = etree.fromstringlist(self.build_designspace(font, masters, instances))
         weightAxis = doc.find('axes/axis[@tag="wght"]')
         self.assertEqual(weightAxis.attrib["minimum"], "100.0")
         self.assertEqual(weightAxis.attrib["default"], "100.0")  # not 400
         self.assertEqual(weightAxis.attrib["maximum"], "900.0")
 
     def test_postscriptFontName(self):
+        font = GSFont()
+        font.familyName = "PSNameTest"
         master = makeMaster("PSNameTest", "Master")
         thin, black = makeInstance("Thin"), makeInstance("Black")
         instances = {"data": [thin, black]}
         black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
-        d = etree.fromstringlist(self.build_designspace([master], instances))
+        d = etree.fromstringlist(self.build_designspace(font, [master], instances))
 
         def psname(doc, style):
             inst = doc.find('instances/instance[@stylename="%s"]' % style)
@@ -207,14 +223,14 @@ class DesignspaceTest(unittest.TestCase):
         # The generated *.designspace file should place instances
         # in the same order as they appear in the original source.
         # https://github.com/googlei18n/glyphsLib/issues/113
-        masters, instances = makeFamily("DesignspaceTest InstanceOrder")
+        font, masters, instances = makeFamily("DesignspaceTest InstanceOrder")
         instances["data"] = [
             makeInstance("Black", weight=("Black", 900, 190)),
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
         ]
 
-        self.expect_designspace(masters, instances,
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestInstanceOrder.designspace")
 
     def test_twoAxes(self):
@@ -222,6 +238,8 @@ class DesignspaceTest(unittest.TestCase):
         # parameters for the weight axis. For the width axis, glyphsLib
         # should use 100 as default value (just like Glyphs.app does).
         familyName = "DesignspaceTest TwoAxes"
+        font = GSFont()
+        font.familyName = familyName
         masters = [
             makeMaster(familyName, "Regular", weight=90),
             makeMaster(familyName, "Black", weight=190),
@@ -247,13 +265,15 @@ class DesignspaceTest(unittest.TestCase):
                              width=("Extra Condensed", 70)),
             ]
         }
-        self.expect_designspace(masters, instances,
+        self.expect_designspace(font, masters, instances,
                                 "DesignspaceTestTwoAxes.designspace")
 
     def test_variationFontOrigin(self):
         # Glyphs 2.4.1 introduced a custom parameter “Variation Font Origin”
         # to specify which master should be considered the origin.
         # https://glyphsapp.com/blog/glyphs-2-4-1-released
+        font = GSFont()
+        font.familyName = "Family"
         masters = [
             makeMaster("Family", "Thin", weight=26),
             makeMaster("Family", "Regular", weight=100),
@@ -269,7 +289,7 @@ class DesignspaceTest(unittest.TestCase):
             ],
             "Variation Font Origin": "Medium",
         }
-        doc = etree.fromstringlist(self.build_designspace(masters, instances))
+        doc = etree.fromstringlist(self.build_designspace(font, masters, instances))
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
@@ -278,7 +298,10 @@ class DesignspaceTest(unittest.TestCase):
     def test_designspace_name(self):
         master_dir = tempfile.mkdtemp()
         try:
+            font = GSFont()
+            font.familyName = "Family Name"
             designspace_path, _ = build_designspace(
+                font,
                 [
                     makeMaster("Family Name", "Regular", weight=100),
                     makeMaster("Family Name", "Bold", weight=190),
@@ -288,6 +311,7 @@ class DesignspaceTest(unittest.TestCase):
                              "FamilyName.designspace")
 
             designspace_path, _ = build_designspace(
+                font,
                 [
                     makeMaster("Family Name", "Italic", weight=100),
                     makeMaster("Family Name", "Bold Italic", weight=190),
