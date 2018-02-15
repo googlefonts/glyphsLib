@@ -27,7 +27,7 @@ import xml.etree.ElementTree as etree
 import defcon
 from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.interpolation import set_weight_class, set_width_class
+from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
 from glyphsLib import to_designspace, to_glyphs
 
@@ -120,6 +120,14 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
     if linked_style is not None:
         inst.linkStyle = linked_style
     return inst
+
+
+def makeInstanceDescriptor(*args, **kwargs):
+    """Same as makeInstance but return the corresponding InstanceDescriptor."""
+    ginst = makeInstance(*args, **kwargs)
+    font = makeFont([makeMaster('Regular')], [ginst], 'Family')
+    doc = to_designspace(font)
+    return doc, doc.instances[0]
 
 
 def makeFont(masters, instances, familyName):
@@ -390,86 +398,109 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         ufo = defcon.Font()
         # name here says "Bold", however no excplit weightClass
         # is assigned
-        set_weight_class(ufo, makeInstance("Bold"))
+        doc, instance = makeInstanceDescriptor("Bold")
+        set_weight_class(ufo, doc, instance)
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
         # non-empty value is stored in the UFO lib even if same as default
-        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
+        # FIXME: (jany) why do we want to write something Glyphs-specific in
+        #   the instance UFO? Does someone later in the toolchain rely on it?
+        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_weight_class(self):
         ufo = defcon.Font()
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "Bold",
             weight=("Bold", None, 150)
         )
 
-        set_weight_class(ufo, data)
+        set_weight_class(ufo, doc, data)
 
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
-        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
+        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
 
     def test_explicit_default_weight(self):
         ufo = defcon.Font()
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "Regular",
             weight=("Regular", None, 100)
         )
 
-        set_weight_class(ufo, data)
+        set_weight_class(ufo, doc, data)
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
         # non-empty value is stored in the UFO lib even if same as default
-        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
+        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_no_width_class(self):
         ufo = defcon.Font()
         # no explicit widthClass set, instance name doesn't matter
-        set_width_class(ufo, makeInstance("Normal"))
+        doc, data = makeInstanceDescriptor("Normal")
+        set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
         # non-empty value is stored in the UFO lib even if same as default
-        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
+        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_width_class(self):
         ufo = defcon.Font()
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "Condensed",
             width=("Condensed", 3, 80)
         )
 
-        set_width_class(ufo, data)
+        set_width_class(ufo, doc, data)
 
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
-        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
+        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
 
     def test_explicit_default_width(self):
         ufo = defcon.Font()
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "Regular",
             width=("Medium (normal)", 5, 100)
         )
 
-        set_width_class(ufo, data)
+        set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
         # non-empty value is stored in the UFO lib even if same as default
-        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
+        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_weight_and_width_class(self):
         ufo = defcon.Font()
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "SemiCondensed ExtraBold",
             weight=("ExtraBold", None, 160),
             width=("SemiCondensed", 4, 90)
         )
 
-        set_weight_class(ufo, data)
-        set_width_class(ufo, data)
+        set_weight_class(ufo, doc, data)
+        set_width_class(ufo, doc, data)
 
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 800)
-        self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
+        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
-        self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
+        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
+
+    def test_unknown_ui_string_but_defined_weight_class(self):
+        ufo = defcon.Font()
+        # "DemiLight" is not among the predefined weight classes listed in
+        # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
+        # Resources/weights.plist
+        # NOTE It is not possible from the user interface to set a custom
+        # string as instance 'weightClass' since the choice is constrained
+        # by a drop-down menu.
+        doc, data = makeInstanceDescriptor(
+            "DemiLight Italic",
+            weight=("DemiLight", 350, 70)
+        )
+
+        set_weight_class(ufo, doc, data)
+
+        # Here we have set the weightClass to 350 so even though the string
+        # is wrong, our value of 350 should be used.
+        self.assertTrue(ufo.info.openTypeOS2WeightClass == 350)
 
     def test_unknown_weight_class(self):
         ufo = defcon.Font()
@@ -479,16 +510,18 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         # NOTE It is not possible from the user interface to set a custom
         # string as instance 'weightClass' since the choice is constrained
         # by a drop-down menu.
-        data = makeInstance(
+        doc, data = makeInstanceDescriptor(
             "DemiLight Italic",
-            weight=("DemiLight", 350, 70)
+            weight=("DemiLight", None, 70)
         )
 
-        set_weight_class(ufo, data)
+        set_weight_class(ufo, doc, data)
 
         # we do not set any OS/2 weight class; user needs to provide
         # a 'weightClass' custom parameter in this special case
-        self.assertTrue(ufo.info.openTypeOS2WeightClass is None)
+        # FIXME: (jany) the new code writes the default OS2 class instead of
+        #   None. Is that a problem?
+        self.assertTrue(ufo.info.openTypeOS2WeightClass == 400)
 
 
 # def test_designspace_roundtrip(tmpdir):

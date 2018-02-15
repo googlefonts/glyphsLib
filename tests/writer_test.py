@@ -242,6 +242,13 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         written = test_helpers.write_to_lines(font)
         self.assertFalse(any("keyboardIncrement" in line for line in written))
 
+        # Always write versionMajor and versionMinor, even when 0
+        font.versionMajor = 0
+        font.versionMinor = 0
+        written = test_helpers.write_to_lines(font)
+        self.assertIn("versionMajor = 0;", written)
+        self.assertIn("versionMinor = 0;", written)
+
     def test_write_font_master_attributes(self):
         """Test the writer on all GSFontMaster attributes"""
         master = classes.GSFontMaster()

@@ -27,7 +27,8 @@ from glyphsLib import designSpaceDocument
 
 from glyphsLib import classes, glyphdata_generated
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX
-from .axes import DEFAULT_AXES_DEFS, find_base_style, class_to_value
+from .axes import (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style,
+                   class_to_value)
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + 'glyphOrder'
 
@@ -212,7 +213,7 @@ class UFOBuilder(_LoggerMixin):
         # TODO: move to layers.py
         # TODO: optimize?
         for order, glyph_layer in enumerate(layer.parent.layers.values()):
-            if glyph_layer == layer:
+            if glyph_layer is layer:
                 return order
         return None
 
@@ -422,8 +423,8 @@ class GlyphsBuilder(_LoggerMixin):
 
         # Make weight and width axis if relevant
         for info_key, axis_def in zip(
-            ('openTypeOS2WeightClass', 'openTypeOS2WidthClass'),
-                DEFAULT_AXES_DEFS):
+                ('openTypeOS2WeightClass', 'openTypeOS2WidthClass'),
+                (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)):
             axis = designspace.newAxisDescriptor()
             axis.tag = axis_def.tag
             axis.name = axis_def.name

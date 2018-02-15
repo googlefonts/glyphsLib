@@ -25,39 +25,18 @@ from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
 # This is a key into GSFont.userData to store axes defined in the designspace
 AXES_KEY = GLYPHLIB_PREFIX + 'axes'
 
-# From the spec: https://www.microsoft.com/typography/otspec/os2.htm#wtc
-CLASSES_DICT = {
-    'wght': {
-        100: ('Thin', 100),
-        200: ('Extra-light', 200),
-        300: ('Light', 300),
-        400: ('Regular', 400),
-        500: ('Medium', 500),
-        600: ('Semi-bold', 600),
-        700: ('Bold', 700),
-        800: ('Extra-bold', 800),
-        900: ('Black', 900),
-    },
-    'wdth': {
-        1: ('Ultra-condensed', 50),
-        2: ('Extra-condensed', 62.5),
-        3: ('Condensed', 75),
-        4: ('Semi-condensed', 87.5),
-        5: ('Medium', 100),
-        6: ('Semi-expanded', 112.5),
-        7: ('Expanded', 125),
-        8: ('Extra-expanded', 150),
-        9: ('Ultra-expanded', 200),
-    }
+# From the spec: https://docs.microsoft.com/en-gb/typography/opentype/spec/os2#uswidthclass
+WIDTH_CLASS_TO_VALUE = {
+    1: 50,  # Ultra-condensed
+    2: 62.5,  # Extra-condensed
+    3: 75,  # Condensed
+    4: 87.5,  # Semi-condensed
+    5: 100,  # Medium
+    6: 112.5,  # Semi-expanded
+    7: 125,  # Expanded
+    8: 150,  # Extra-expanded
+    9: 200,  # Ultra-expanded
 }
-
-
-def class_to_name(axis, ufo_class):
-    """
-    >>> class_to_name('wdth', 7)
-    'Expanded'
-    """
-    return CLASSES_DICT[axis][int(ufo_class)][0]
 
 
 def class_to_value(axis, ufo_class):
@@ -68,40 +47,76 @@ def class_to_value(axis, ufo_class):
     if axis == 'wght':
         # 600.0 => 600, 250 => 250
         return int(ufo_class)
-    return CLASSES_DICT[axis][int(ufo_class)][1]
+    elif axis == 'wdth':
+        return WIDTH_CLASS_TO_VALUE[int(ufo_class)]
+
+    raise NotImplementedError
 
 
-def user_loc_code_to_value(axis_tag, user_loc):
-    """ Go from Glyphs UI strings to user space location.
+def _nospace_lookup(dict, key):
+    try:
+        return dict[key]
+    except KeyError:
+        # Even though the Glyphs UI strings are supposed to be fixed,
+        # some Noto files contain variants of them that have spaces.
+        key = ''.join(str(key).split())
+        return dict[key]
 
-    >>> user_loc_code_to_value('wght', 'ExtraLight')
+
+def user_loc_string_to_value(axis_tag, user_loc):
+    """Go from Glyphs UI strings to user space location.
+    Returns None if the string is invalid.
+
+    >>> user_loc_string_to_value('wght', 'ExtraLight')
     250
-    >>> user_loc_code_to_value('wdth', 'SemiCondensed')
+    >>> user_loc_string_to_value('wdth', 'SemiCondensed')
     87.5
+    >>> user_loc_string_to_value('wdth', 'Clearly Not From Glyphs UI')
+    None
     """
     if axis_tag == 'wght':
-        return class_to_value('wght', WEIGHT_CODES.get(user_loc, user_loc))
-    if axis_tag == 'wdth':
-        return class_to_value('wdth', WIDTH_CODES.get(user_loc, user_loc))
+        try:
+            value = _nospace_lookup(WEIGHT_CODES, user_loc)
+        except KeyError:
+            return None
+        return class_to_value('wght', value)
+    elif axis_tag == 'wdth':
+        try:
+            value = _nospace_lookup(WIDTH_CODES, user_loc)
+        except KeyError:
+            return None
+        return class_to_value('wdth', value)
 
     # Currently this function should only be called with a width or weight
     raise NotImplementedError
 
 
 def user_loc_value_to_class(axis_tag, user_loc):
-    """
+    """Return the OS/2 weight or width class that is closest to the provided
+    user location. For weight the user location is between 0 and 1000 and for
+    width it is a percentage.
+
+    >>> user_loc_value_to_class('wght', 310)
+    300
     >>> user_loc_value_to_class('wdth', 62)
     2
     """
     if axis_tag == 'wght':
         return int(user_loc)
-    return min(sorted(CLASSES_DICT[axis_tag].items()),
-               key=lambda item: abs(item[1][1] - user_loc))[0]
+    elif axis_tag == 'wdth':
+        return min(sorted(WIDTH_CLASS_TO_VALUE.items()),
+                   key=lambda item: abs(item[1] - user_loc))[0]
+
+    raise NotImplementedError
 
 
-def user_loc_value_to_code(axis_tag, user_loc):
-    """
-    >>> user_loc_value_to_code('wdth', 150)
+def user_loc_value_to_instance_string(axis_tag, user_loc):
+    """Return the Glyphs UI string (from the instance dropdown) that is
+    closest to the provided user location.
+
+    >>> user_loc_value_to_string('wght', 430)
+    'Regular'
+    >>> user_loc_value_to_string('wdth', 150)
     'Extra Expanded'
     """
     codes = {}
@@ -128,9 +143,6 @@ def to_designspace_axes(self):
         axis.tag = axis_def.tag
         axis.name = axis_def.name
 
-        regularDesignLoc = axis_def.get_design_loc(regular_master)
-        regularUserLoc = axis_def.get_user_loc(regular_master)
-
         axis.labelNames = {"en": axis_def.name}
         instance_mapping = []
         for instance in self.font.instances:
@@ -138,24 +150,26 @@ def to_designspace_axes(self):
                 designLoc = axis_def.get_design_loc(instance)
                 userLoc = axis_def.get_user_loc(instance)
                 instance_mapping.append((userLoc, designLoc))
-
-                # FIXME: (jany) why the next two lines?
-                if designLoc == regularDesignLoc:
-                    regularUserLoc = userLoc
         instance_mapping = sorted(set(instance_mapping))  # avoid duplicates
 
         master_mapping = []
         for master in self.font.masters:
             designLoc = axis_def.get_design_loc(master)
-            # FIXME: (jany) in latest Glyphs (1113) masters don't have
-            # a user loc
-            userLoc = axis_def.get_user_loc(master)
+            # Glyphs masters don't have a user location
+            userLoc = designLoc
             master_mapping.append((userLoc, designLoc))
         master_mapping = sorted(set(master_mapping))
 
-        minimum = maximum = default = axis_def.default_user_loc
         # Prefer the instance-based mapping
         mapping = instance_mapping or master_mapping
+
+        regularDesignLoc = axis_def.get_design_loc(regular_master)
+        # Glyphs masters don't have a user location, so we compute it by
+        # looking at the axis mapping in reverse.
+        reverse_mapping = [(dl, ul) for ul, dl in mapping]
+        regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+
+        minimum = maximum = default = axis_def.default_user_loc
         if mapping:
             minimum = min([userLoc for userLoc, _ in mapping])
             maximum = max([userLoc for userLoc, _ in mapping])
@@ -233,6 +247,10 @@ def to_glyphs_axes(self):
 
 
 class AxisDefinition(object):
+    """Centralize the code that deals with axis locations, user location versus
+    design location, associated OS/2 table codes, etc.
+    """
+
     def __init__(self, tag, name, design_loc_key, default_design_loc=0.0,
                  user_loc_key=None, user_loc_param=None, default_user_loc=0.0):
         self.tag = tag
@@ -243,65 +261,93 @@ class AxisDefinition(object):
         self.user_loc_param = user_loc_param
         self.default_user_loc = default_user_loc
 
-    def get_design_loc(self, master_or_instance):
-        return getattr(master_or_instance, self.design_loc_key)
+    def get_design_loc(self, glyphs_master_or_instance):
+        """Get the design location (aka interpolation value) of a Glyphs
+        master or instance along this axis. For example for the weight
+        axis it could be the thickness of a stem, for the width a percentage
+        of extension with respect to the normal width.
+        """
+        return getattr(glyphs_master_or_instance, self.design_loc_key)
 
     def set_design_loc(self, master_or_instance, value):
+        """Set the design location of a Glyphs master or instance."""
         setattr(master_or_instance, self.design_loc_key, value)
 
-    def get_user_loc(self, master_or_instance):
+    def get_user_loc(self, instance):
+        """Get the user location of a Glyphs instance.
+        Masters in Glyphs don't have a user location.
+        The user location is what the user sees on the slider in his
+        variable-font-enabled UI. For weight it is a value between 0 and 1000,
+        400 being Regular and 700 Bold.
+        For width... FIXME: clarify what it is for the width.
+        """
+        assert isinstance(instance, classes.GSInstance)
         if self.tag == 'wdth':
             # FIXME: (jany) existing test "DesignspaceTestTwoAxes.designspace"
             # suggests that the user location is the same as the design loc
             # for the width only
-            return self.get_design_loc(master_or_instance)
+            return self.get_design_loc(instance)
 
         user_loc = self.default_user_loc
         if self.user_loc_key is not None:
-            user_loc = getattr(master_or_instance, self.user_loc_key)
-            user_loc = user_loc_code_to_value(self.tag, user_loc)
+            # Only weight and with have a custom user location.
+            # The `user_loc_key` gives a "location code" = Glyphs UI string
+            user_loc = getattr(instance, self.user_loc_key)
+            user_loc = user_loc_string_to_value(self.tag, user_loc)
+            if user_loc is None:
+                user_loc = self.default_user_loc
         # The custom param takes over the key if it exists
         # e.g. for weight:
         #       key = "weight" -> "Bold" -> 700
         # but param = "weightClass" -> 600       => 600 wins
         if self.user_loc_param is not None:
-            class_ = master_or_instance.customParameters[self.user_loc_param]
+            class_ = instance.customParameters[self.user_loc_param]
             if class_ is not None:
                 user_loc = class_to_value(self.tag, class_)
         return user_loc
 
-    def set_user_loc(self,  master_or_instance, value):
+    def set_user_loc(self, instance, value):
+        """Set the user location of a Glyphs instance."""
+        assert isinstance(instance, classes.GSInstance)
         # Try to set the key if possible, i.e. if there is a key, and
         # if there exists a code that can represent the given value, e.g.
         # for "weight": 600 can be represented by SemiBold so we use that,
         # but for 550 there is no code so we will have to set the custom
         # parameter as well.
-        code = user_loc_value_to_code(self.tag, value)
-        value_for_code = user_loc_code_to_value(self.tag, code)
+        code = user_loc_value_to_instance_string(self.tag, value)
+        value_for_code = user_loc_string_to_value(self.tag, code)
         if self.user_loc_key is not None:
-            setattr(master_or_instance, self.user_loc_key, code)
+            setattr(instance, self.user_loc_key, code)
         if self.user_loc_param is not None and value != value_for_code:
             try:
                 class_ = user_loc_value_to_class(self.tag, value)
-                master_or_instance.customParameters[self.user_loc_param] = class_
+                instance.customParameters[self.user_loc_param] = class_
             except:
                 pass
 
-    def set_user_loc_code(self, master_or_instance, code):
+    def set_user_loc_code(self, instance, code):
+        assert isinstance(instance, classes.GSInstance)
         # The previous method `set_user_loc` will not roundtrip every
         # time, for example for value = 600, both "DemiBold" and "SemiBold"
         # would work, so we provide this other method to set a specific code.
         if self.user_loc_key is not None:
-            setattr(master_or_instance, self.user_loc_key, code)
+            setattr(instance, self.user_loc_key, code)
+
+    def set_ufo_user_loc(self, ufo, value):
+        if self.name not in ('Weight', 'Width'):
+            raise NotImplementedError
+        class_ = user_loc_value_to_class(self.tag, value)
+        ufo_key = "".join(['openTypeOS2', self.name, 'Class'])
+        setattr(ufo.info, ufo_key, class_)
 
 
-DEFAULT_AXES_DEFS = (
-    AxisDefinition('wght', 'Weight', 'weightValue', 100.0,
-                   'weight', 'weightClass', 400.0),
-    AxisDefinition('wdth', 'Width', 'widthValue', 100.0,
-                   'width', 'widthClass', 100.0),
-    AxisDefinition('XXXX', 'Custom', 'customValue', 0.0, None, None, 0.0),
-)
+WEIGHT_AXIS_DEF = AxisDefinition('wght', 'Weight', 'weightValue', 100.0,
+                                 'weight', 'weightClass', 400.0)
+WIDTH_AXIS_DEF = AxisDefinition('wdth', 'Width', 'widthValue', 100.0,
+                                'width', 'widthClass', 100.0)
+CUSTOM_AXIS_DEF = AxisDefinition('XXXX', 'Custom', 'customValue', 0.0,
+                                 None, None, 0.0)
+DEFAULT_AXES_DEFS = (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, CUSTOM_AXIS_DEF)
 
 
 # Adapted from PR https://github.com/googlei18n/glyphsLib/pull/306

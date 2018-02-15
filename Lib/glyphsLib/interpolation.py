@@ -24,7 +24,7 @@ from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder.custom_params import to_ufo_custom_params
 from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
+from glyphsLib.builder.instances import apply_instance_data
 
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
@@ -41,7 +41,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
     """
     # TODO: (jany) This should not be in glyphsLib, but rather an instance
     #    method of the designspace document, or another thing like
-    #    ufoProcessor.
+    #    ufoProcessor/mutatorMath.build()
     #    GlyphsLib should put all that is necessary to interpolate into the
     #    InstanceDescriptor (lib if needed)
     #    All the logic like applying custom parameters and so on should be made
@@ -61,52 +61,3 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     """
     # TODO: (jany) check whether this function is still useful
     raise NotImplementedError
-
-
-def _set_class_from_instance(ufo, data, key, codes):
-    class_name = getattr(data, key)
-    if class_name:
-        ufo.lib[GLYPHS_PREFIX + key + "Class"] = class_name
-    if class_name in codes:
-        class_code = codes[class_name]
-        ufo_key = "".join(['openTypeOS2', key[0].upper(), key[1:], 'Class'])
-        setattr(ufo.info, ufo_key, class_code)
-
-
-def set_weight_class(ufo, instance_data):
-    """ Store `weightClass` instance attributes in the UFO lib, and set the
-    ufo.info.openTypeOS2WeightClass accordingly.
-    """
-    _set_class_from_instance(ufo, instance_data, "weight", WEIGHT_CODES)
-
-
-def set_width_class(ufo, instance_data):
-    """ Store `widthClass` instance attributes in the UFO lib, and set the
-    ufo.info.openTypeOS2WidthClass accordingly.
-    """
-    _set_class_from_instance(ufo, instance_data, "width", WIDTH_CODES)
-
-
-def apply_instance_data(instance_data):
-    """Open instances, apply data, and re-save.
-
-    Args:
-        instance_data: List of (path, data) tuples, one for each instance.
-    Returns:
-        List of opened and updated instance UFOs.
-    """
-    # FIXME: (jany) This is implemented because fontmake calls it.
-    # The instance_data will be an array of InstanceDescriptors
-    import defcon
-
-    instance_ufos = []
-    for path, data in instance_data:
-        ufo = defcon.Font(path)
-        set_weight_class(ufo, data)
-        set_width_class(ufo, data)
-        self = UFOBuilder(instance_data, defcon)
-        # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
-        to_ufo_custom_params(self, ufo, data)
-        ufo.save()
-        instance_ufos.append(ufo)
-    return instance_ufos

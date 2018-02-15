@@ -77,7 +77,8 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
 
     font = GSFont(filename)
     designspace = to_designspace(
-        font, family_name=family_name, propagate_anchors=propagate_anchors)
+        font, family_name=family_name, propagate_anchors=propagate_anchors,
+        instance_dir=designspace_instance_dir)
     ufos = []
     for source in designspace.sources:
         ufos.append(source.font)
@@ -88,9 +89,9 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
     if designspace_instance_dir is not None:
         designspace_path = os.path.join(master_dir, designspace.filename)
         designspace.write(designspace_path)
-        # All the instance data should be in the designspace
-        instance_data = designspace.instances
-        return ufos, designspace_path, instance_data
+        # All the instance data should be in the designspace. That's why for
+        # now we return the designspace in place of `instance_data`.
+        return ufos, designspace_path, designspace
     else:
         return ufos
 

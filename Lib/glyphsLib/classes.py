@@ -3013,7 +3013,7 @@ class GSFont(GSBase):
         return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
 
     def shouldWriteValueForKey(self, key):
-        if key in ("unitsPerEm", "versionMinor"):
+        if key in ("unitsPerEm", "versionMajor", "versionMinor"):
             return True
         return super(GSFont, self).shouldWriteValueForKey(key)
 

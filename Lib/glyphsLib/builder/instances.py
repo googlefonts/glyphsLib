@@ -19,12 +19,13 @@ from collections import OrderedDict
 import os
 
 from glyphsLib.util import build_ufo_path
-from glyphsLib.classes import WEIGHT_CODES
+from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
 from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
                         FONT_CUSTOM_PARAM_PREFIX, MASTER_CUSTOM_PARAM_PREFIX)
 from .names import build_stylemap_names
 from .masters import UFO_FILENAME_KEY
-from .axes import get_axis_definitions, is_instance_active, interp
+from .axes import (get_axis_definitions, is_instance_active, interp,
+                   WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)
 
 EXPORT_KEY = GLYPHS_PREFIX + 'export'
 WIDTH_KEY = GLYPHS_PREFIX + 'width'
@@ -32,6 +33,7 @@ WEIGHT_KEY = GLYPHS_PREFIX + 'weight'
 FULL_FILENAME_KEY = GLYPHLIB_PREFIX + 'fullFilename'
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + 'manualInterpolation'
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + 'intanceInterpolations'
+CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + 'customParameters'
 
 
 def to_designspace_instances(self):
@@ -76,9 +78,12 @@ def _to_designspace_instance(self, instance):
         ufo_instance.filename = build_ufo_path(
             instance_dir, ufo_instance.familyName, ufo_instance.styleName)
 
+    designspace_axis_tags = set(a.tag for a in self.designspace.axes)
     location = {}
     for axis_def in get_axis_definitions(self.font):
-        location[axis_def.name] = axis_def.get_design_loc(instance)
+        # Only write locations along defined axes
+        if axis_def.tag in designspace_axis_tags:
+            location[axis_def.name] = axis_def.get_design_loc(instance)
     ufo_instance.location = location
 
     # FIXME: (jany) should be the responsibility of ufo2ft?
@@ -106,7 +111,27 @@ def _to_designspace_instance(self, instance):
         ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
         ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
-    # TODO: put the userData/customParameters in lib
+    # Strategy: dump all custom parameters into the InstanceDescriptor.
+    # Later, when using `glyphsLib.interpolation.apply_instance_data`,
+    # we will dig out those custom parameters using
+    # `InstanceDescriptorAsGSInstance` and apply them to the instance UFO
+    # with `to_ufo_custom_params`.
+    # NOTE: customParameters are not a dict! One key can have several values
+    params = []
+    for p in instance.customParameters:
+        if p.name in ('familyName', 'postscriptFontName', 'fileName',
+                      FULL_FILENAME_KEY):
+            # These will be stored in the official descriptor attributes
+            continue
+        if p.name in ('weightClass', 'widthClass'):
+            # No need to store these ones because we can recover them by
+            # reading the mapping backward, because the mapping is built from
+            # where the instances are.
+            continue
+        params.append((p.name, p.value))
+    if params:
+        ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = params
+
     self.designspace.addInstance(ufo_instance)
 
 
@@ -232,9 +257,96 @@ def to_glyphs_instances(self):
             # if instance.manualInterpolation: warn about data loss
             pass
 
+        if CUSTOM_PARAMETERS_KEY in ufo_instance.lib:
+            for name, value in ufo_instance.lib[CUSTOM_PARAMETERS_KEY]:
+                instance.customParameters.append(
+                    GSCustomParameter(name, value))
+
         if self.minimize_ufo_diffs:
             instance.customParameters[
                 FULL_FILENAME_KEY] = ufo_instance.filename
 
         # FIXME: (jany) cannot `.append()` because no proxy => no parent
         self.font.instances = self.font.instances + [instance]
+
+
+class InstanceDescriptorAsGSInstance(object):
+    """Wraps a designspace InstanceDescriptor and makes it behave like a
+    GSInstance, just enough to use the descriptor as a source of custom
+    parameters for `to_ufo_custom_parameters`
+    """
+    def __init__(self, descriptor):
+        self._descriptor = descriptor
+
+        # Having a simple list is enough because `to_ufo_custom_params` does
+        # not use the fake dictionary interface.
+        self.customParameters = []
+        if CUSTOM_PARAMETERS_KEY in descriptor.lib:
+            for name, value in descriptor.lib[CUSTOM_PARAMETERS_KEY]:
+                self.customParameters.append(GSCustomParameter(name, value))
+
+
+def _set_class_from_instance(ufo, designspace, instance, axis_def):
+    # FIXME: (jany) copy-pasted from above, factor into method?
+    design_loc = None
+    try:
+        design_loc = instance.location[axis_def.name]
+    except KeyError:
+        # The location does not have this axis?
+        pass
+
+    # Retrieve the user location (weightClass/widthClass)
+    # by going through the axis mapping in reverse.
+    user_loc = design_loc
+    mapping = None
+    for axis in designspace.axes:
+        if axis.tag == axis_def.tag:
+            mapping = axis.map
+    if mapping:
+        reverse_mapping = [(dl, ul) for ul, dl in mapping]
+        user_loc = interp(reverse_mapping, design_loc)
+
+    if user_loc is not None:
+        axis_def.set_ufo_user_loc(ufo, user_loc)
+    else:
+        axis_def.set_ufo_user_loc(ufo, axis_def.default_user_loc)
+
+
+def set_weight_class(ufo, designspace, instance):
+    """ the `weightClass` instance attribute from the UFO lib, and set
+    the ufo.info.openTypeOS2WeightClass accordingly.
+    """
+    _set_class_from_instance(ufo, designspace, instance, WEIGHT_AXIS_DEF)
+
+
+def set_width_class(ufo, designspace, instance):
+    """Read the `widthClass` instance attribute from the UFO lib, and set the
+    ufo.info.openTypeOS2WidthClass accordingly.
+    """
+    _set_class_from_instance(ufo, designspace, instance, WIDTH_AXIS_DEF)
+
+
+def apply_instance_data(designspace):
+    """Open instances, apply data, and re-save.
+
+    Args:
+        instance_data: DesignSpaceDocument object with some instances
+    Returns:
+        List of opened and updated instance UFOs.
+    """
+    import defcon
+
+    instance_ufos = []
+    for instance in designspace.instances:
+        path = instance.path
+        ufo = defcon.Font(path)
+        set_weight_class(ufo, designspace, instance)
+        set_width_class(ufo, designspace, instance)
+
+        glyphs_instance = InstanceDescriptorAsGSInstance(instance)
+        builder = UFOBuilder(instance, defcon)
+        # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
+        to_ufo_custom_params(self, ufo, instance)
+        ufo.save()
+        instance_ufos.append(ufo)
+    return instance_ufos

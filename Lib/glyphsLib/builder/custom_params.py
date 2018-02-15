@@ -25,6 +25,7 @@ from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX,
                         CODEPAGE_RANGES, REVERSE_CODEPAGE_RANGES)
 from .features import replace_feature
 
+# TODO: update this documentation
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
 Custom parameter data can be pre-parsed out of Glyphs data and provided via
