@@ -94,8 +94,7 @@ def to_glyphs(ufos_or_designspace,
     so we should have to_glyphs(to_ufos(font)) == font
     and also to_glyphs(to_designspace(font)) == font
     """
-    # FIXME: (jany) duck-type instead of isinstance
-    if isinstance(ufos_or_designspace, DesignSpaceDocument):
+    if hasattr(ufos_or_designspace, 'sources'):
         builder = GlyphsBuilder(designspace=ufos_or_designspace,
                                 glyphs_module=glyphs_module,
                                 minimize_ufo_diffs=minimize_ufo_diffs)

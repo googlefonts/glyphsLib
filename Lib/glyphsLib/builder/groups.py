@@ -174,13 +174,14 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
         if group not in reference_ufo.groups:
             _warn("group `%s` from `%s` will be lost because it's not "
                   "defined in the reference UFO", group, _ufo_logging_ref(ufo))
+            continue
         reference_glyphs = reference_ufo.groups[group]
-        if glyphs != reference_glyphs:
+        if set(glyphs) != set(reference_glyphs):
             _warn("group `%s` from `%s` will not be stored accurately because "
                   "it is different from the reference UFO", group,
                   _ufo_logging_ref(ufo))
-            _warn("    reference = %s", ' '.join(glyphs))
-            _warn("    current   = %s", ' '.join(reference_glyphs))
+            _warn("    reference = %s", ' '.join(sorted(glyphs)))
+            _warn("    current   = %s", ' '.join(sorted(reference_glyphs)))
 
 
 def _ufo_logging_ref(ufo):

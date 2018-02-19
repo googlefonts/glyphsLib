@@ -346,14 +346,14 @@ class GlyphsBuilder(_LoggerMixin):
             for source in designspace.sources:
                 # FIXME: (jany) Do something better for the InMemory stuff
                 # Is it an in-memory source descriptor?
-                if not hasattr(source, 'font'):
+                if not hasattr(source, 'font') or source.font is None:
                     if source.path:
                         # FIXME: (jany) consider not mucking with the caller's objects
-                        source.font = designspace.fontClass(source.path)
+                        source.font = defcon.Font(source.path)
                     else:
                         dirname = os.path.dirname(designspace.path)
                         ufo_path = os.path.join(dirname, source.filename)
-                        source.font = designspace.fontClass(ufo_path)
+                        source.font = defcon.Font(ufo_path)
         elif ufos:
             self.designspace = self._fake_designspace(ufos)
         else:

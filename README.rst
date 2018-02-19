@@ -42,9 +42,9 @@ Read and write Glyphs data as Python objects
 .. code:: python
 
     from glyphsLib import GSFont
-    
+
     font = GSFont(glyphs_file)
-    
+
     font.save(glyphs_file)
 
 The ``glyphsLib.classes`` module aims to provide an interface similar to
@@ -56,6 +56,78 @@ is missing or does not work as expected, please open a issue.
 
 .. TODO Briefly state how much of the Glyphs.app API is currently covered,
    and what is not supported yet.
+
+Go back and forth between UFOs and Glyphs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. Without a designspace file, using for example the `Inria fonts by Black[Foundry] <https://github.com/BlackFoundry/InriaFonts/tree/master/masters/INRIA-SANS>`__:
+
+..code: python
+
+    import glob
+    from defcon import Font
+    from glyphsLib import to_glyphs
+    ufos = [Font(path) for path in glob.glob('*Italic.ufo')]
+    # Sort the UFOs because glyphsLib will create masters in the same order
+    ufos = sorted(ufos, key=lambda ufo: ufo.info.openTypeOS2WeightClass)
+    font = to_glyphs(ufos)
+    font.save('InriaSansItalic.glyphs')
+
+`Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/InriaSansItalic.glyphs>`__
+
+2. With a designspace, using `Spectral from Production Type <https://github.com/productiontype/Spectral/tree/master/sources>`__:
+
+..code: python
+
+    import glob
+    from fontTools.designspaceLib import DesignSpaceDocument
+    from glyphsLib import to_glyphs
+    doc = DesignSpaceDocument()
+    doc.read('spectral-build-roman.designspace')
+    font = to_glyphs(doc)
+    font.save('SpectralRoman.glyphs')
+
+`Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/SpectralRoman.glyphs>`__
+
+3. In both cases, if you intend to go back to UFOs after modifying the file
+with Glyphs, you should use the ``minimize_ufo_diffs`` parameter to minimize
+the amount of diffs that will show up in git after the back and forth. To do
+so, the glyphsLib will add some bookkeeping values in various ``userData``
+fields. For example, it will try to remember which GSClass came from
+groups.plist or from the feature file.
+
+The same option exists for people who want to do Glyphs->UFOs->Glyphs:
+``minimize_glyphs_diffs``, which will add some bookkeeping data in UFO ``lib``.
+For example, it will keep the same UUIDs for Glyphs layers, and so will need
+to store those layer UUIDs in the UFOs.
+
+.. code: python
+
+    import glob
+    import os
+    from fontTools.designspaceLib import DesignSpaceDocument
+    from glyphsLib import to_glyphs, to_designspace, GSFont
+    doc = DesignSpaceDocument()
+    doc.read('spectral-build-roman.designspace')
+    font = to_glyphs(doc, minimize_ufo_diffs=True)
+    doc2 = to_designspace(font, propagate_anchors=False)
+    # UFOs are in memory only, attached to the doc via `sources`
+    # Writing doc2 over the original doc should generate very few git diffs (ideally none)
+    doc2.write(doc.path)
+    for source in doc2.sources:
+        path = os.path.join(os.path.dirname(doc.path), source.filename)
+        # You will want to use ufoNormalizer after
+        source.font.save(path)
+
+    font = GSFont('SpectralRoman.glyphs')
+    doc = to_designspace(font, minimize_glyphs_diffs=True, propagate_anchors=False)
+    font2 = to_glyphs(doc)
+    # Writing font2 over font should generate very few git diffs (ideally none):
+    font2.save(font.filepath)
+
+In practice there are always a few diffs on things that don't really make a
+difference, like optional things being added/removed or whitespace changes or
+things getting reordered...
 
 .. |Travis Build Status| image:: https://travis-ci.org/googlei18n/glyphsLib.svg
    :target: https://travis-ci.org/googlei18n/glyphsLib
