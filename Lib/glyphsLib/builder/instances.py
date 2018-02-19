@@ -342,6 +342,9 @@ def apply_instance_data(instance_data):
     instance_ufos = []
     for instance in designspace.instances:
         path = instance.path
+        if path is None:
+            path = os.path.join(
+                os.path.dirname(designspace.path), instance.filename)
         ufo = defcon.Font(path)
         set_weight_class(ufo, designspace, instance)
         set_width_class(ufo, designspace, instance)

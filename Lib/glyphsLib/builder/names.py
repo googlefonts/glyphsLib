@@ -30,17 +30,22 @@ def to_ufo_names(self, ufo, master, family_name):
         custom,
         is_italic
     )
-    # FIXME: (jany) should be the responsibility of ufo2ft?
-    styleMapFamilyName, styleMapStyleName = build_stylemap_names(
-        family_name=family_name,
-        style_name=styleName,
-        is_bold=(styleName == 'Bold'),
-        is_italic=is_italic
-    )
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
-    ufo.info.styleMapFamilyName = styleMapFamilyName
-    ufo.info.styleMapStyleName = styleMapStyleName
+
+    # FIXME: (jany) should be the responsibility of ufo2ft?
+    # Anyway, only generate the styleMap names if we're not round-tripping
+    # (i.e. generating UFOs for fontmake, the traditional use-case of
+    # glyphsLib.)
+    if not self.minimize_glyphs_diffs:
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=family_name,
+            style_name=styleName,
+            is_bold=(styleName == 'Bold'),
+            is_italic=is_italic
+        )
+        ufo.info.styleMapFamilyName = styleMapFamilyName
+        ufo.info.styleMapStyleName = styleMapStyleName
 
 
 def build_stylemap_names(family_name, style_name, is_bold=False,

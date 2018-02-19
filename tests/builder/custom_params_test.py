@@ -259,3 +259,10 @@ class SetCustomParamsTest(unittest.TestCase):
         self.master.customParameters["fsType"] = []
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Type, [])
+
+    def test_version_string(self):
+        # TODO: test the automatic replacement that is described in the Glyphs
+        #   Handbook
+        self.font.customParameters['versionString'] = 'Version 2.040'
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeNameVersion, 'Version 2.040')

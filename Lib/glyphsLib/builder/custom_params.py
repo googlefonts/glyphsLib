@@ -320,9 +320,17 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
 
     'macintoshFONDFamilyID',
     'macintoshFONDName',
+
+    'trademark',
+
+    'styleMapFamilyName'
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))
+
+
+# TODO: handle dynamic version number replacement
+register(ParamHandler('versionString', 'openTypeNameVersion'))
 
 
 class EmptyListDefaultParamHandler(ParamHandler):

@@ -23,7 +23,6 @@ from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 MASTER_ID_LIB_KEY = GLYPHS_PREFIX + 'fontMasterID'
 UFO_FILENAME_KEY = GLYPHLIB_PREFIX + 'ufoFilename'
 UFO_YEAR_KEY = GLYPHLIB_PREFIX + 'ufoYear'
-UFO_TRADEMARK_KEY = GLYPHLIB_PREFIX + 'ufoTrademark'
 UFO_NOTE_KEY = GLYPHLIB_PREFIX + 'ufoNote'
 
 
@@ -47,9 +46,6 @@ def to_ufo_master_attributes(self, source, master):
     year = master.userData[UFO_YEAR_KEY]
     if year is not None:
         ufo.info.year = year
-    trademark = master.userData[UFO_TRADEMARK_KEY]
-    if trademark is not None:
-        ufo.info.trademark = trademark
     note = master.userData[UFO_NOTE_KEY]
     if note is not None:
         ufo.info.note = note
@@ -120,8 +116,6 @@ def to_glyphs_master_attributes(self, source, master):
 
     if ufo.info.year is not None:
         master.userData[UFO_YEAR_KEY] = ufo.info.year
-    if ufo.info.trademark is not None:
-        master.userData[UFO_TRADEMARK_KEY] = ufo.info.trademark
     if ufo.info.note is not None:
         master.userData[UFO_NOTE_KEY] = ufo.info.note
 

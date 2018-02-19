@@ -78,9 +78,12 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
     """
 
     font = GSFont(filename)
+    instance_dir = None
+    if designspace_instance_dir is not None:
+        instance_dir = os.path.relpath(designspace_instance_dir, master_dir)
     designspace = to_designspace(
         font, family_name=family_name, propagate_anchors=propagate_anchors,
-        instance_dir=designspace_instance_dir)
+        instance_dir=instance_dir)
     ufos = []
     for source in designspace.sources:
         ufos.append(source.font)
