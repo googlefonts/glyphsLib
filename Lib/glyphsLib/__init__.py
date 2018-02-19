@@ -25,6 +25,8 @@ from fontTools.misc.py23 import tostr
 from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs
+from glyphsLib.builder.instances import InstanceData
+from glyphsLib.interpolation import interpolate
 from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import clean_ufo
@@ -90,8 +92,10 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         designspace_path = os.path.join(master_dir, designspace.filename)
         designspace.write(designspace_path)
         # All the instance data should be in the designspace. That's why for
-        # now we return the designspace in place of `instance_data`.
-        return ufos, designspace_path, designspace
+        # now we return the full designspace in place of `instance_data`.
+        # However, other functions still expect the instance data to have
+        # a list of (path, something) tuples, hence the class `InstanceData`.
+        return ufos, designspace_path, InstanceData(designspace)
     else:
         return ufos
 

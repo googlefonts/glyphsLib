@@ -53,7 +53,7 @@ def to_ufo_font_attributes(self, family_name):
     glyph_order = list(glyph.name for glyph in font.glyphs)
 
     for index, master in enumerate(font.masters):
-        source = self.designspace.newSourceDescriptor()
+        source = self._designspace.newSourceDescriptor()
         ufo = self.ufo_module.Font()
         source.font = ufo
 
@@ -87,7 +87,7 @@ def to_ufo_font_attributes(self, family_name):
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
-        self.designspace.addSource(source)
+        self._designspace.addSource(source)
         self._sources[master.id] = source
 
 

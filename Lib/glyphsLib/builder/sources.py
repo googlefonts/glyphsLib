@@ -45,8 +45,6 @@ def _to_designspace_source(self, master, is_regular):
     # UFO_SOURCE_NAME_KEY
     source.name = '%s %s' % (source.familyName, source.styleName)
 
-    # TODO: (jany) make sure to use forward slashes? Maybe it should be the
-    #   responsibility of DesignspaceDocument
     if UFO_FILENAME_KEY in master.userData:
         source.filename = master.userData[UFO_FILENAME_KEY]
     else:

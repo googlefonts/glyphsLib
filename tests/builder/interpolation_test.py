@@ -29,7 +29,8 @@ from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
-from glyphsLib import to_designspace, to_glyphs
+from glyphsLib import to_designspace, to_glyphs, build_instances
+from glyphsLib.builder.constants import UFO2FT_USE_PROD_NAMES_KEY
 
 
 # Current limitation of glyphsLib for designspace to designspace round-trip:
@@ -524,100 +525,29 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertTrue(ufo.info.openTypeOS2WeightClass == 400)
 
 
-# def test_designspace_roundtrip(tmpdir):
-#     return
-#     doc = DesignSpaceDocument()
-#
-#     weight = doc.newAxisDescriptor()
-#     weight.minimum = 1
-#     weight.maximum = 1000
-#     weight.default = 400
-#     weight.name = "weight"
-#     weight.tag = "wght"
-#     weight.labelNames['fa-IR'] = "قطر"
-#     weight.labelNames['en'] = "Wéíght"
-#     weight.map = [(1.0, 10.0), (400.0, 66.0), (1000.0, 990.0)]
-#     doc.addAxis(weight)
-#
-#     # No width axis (to check that a default one is not created)
-#
-#     # One custom axis
-#     craziness = doc.newAxisDescriptor()
-#     craziness.minimum = -0.5
-#     craziness.maximum = 0.5
-#     craziness.default = 0
-#     craziness.name = 'craziness'
-#     craziness.tag = 'CRZY'
-#     craziness.labelNames['en'] = 'Craziness'
-#     craziness.map = []
-#     doc.addAxis(craziness)
-#
-#     # Sources
-#
-#     light_narrow = doc.newSourceDescriptor()
-#     light_narrow.font = defcon.Font()
-#     light_narrow.filename = 'sources/Cool Font LtNw.ufo'
-#     light_narrow.name = 'light_narrow'
-#     light_narrow.copyLib = True
-#     light_narrow.copyInfo = True
-#     light_narrow.copyFeatures = True
-#     light_narrow.location = dict(
-#         weight=1,  # FIXME: should it be 1 or 10?
-#         craziness=0)
-#     light_narrow.familyName = "Cool Font"
-#     light_narrow.styleName = "Narrow Light"
-#     light_narrow.mutedGlyphNames.append("A")
-#     light_narrow.mutedGlyphNames.append("Z")
-#     doc.addSource(light_narrow)
-#
-#     bold_narrow = doc.newSourceDescriptor()
-#     bold_narrow.font = defcon.Font()
-#     bold_narrow.filename = 'sources/Cool Font BdNw.ufo'
-#     bold_narrow.name = 'bold_narrow'
-#     bold_narrow.location = dict(
-#         weight=990,  # FIXME: Should it be 1000 or 990?
-#         craziness=0)
-#     bold_narrow.familyName = "Cool Font"
-#     bold_narrow.styleName = "Narrow Bold"
-#     doc.addSource(bold_narrow)
-#
-#     light_narrow_crazy = doc.newSourceDescriptor()
-#     light_narrow_crazy.font = defcon.Font()
-#     light_narrow_crazy.filename = 'sources/Cool Font BdNw.ufo'
-#     light_narrow_crazy.name = 'light_narrow'
-#     light_narrow_crazy.location = dict(
-#         weight=1,  # FIXME: should it be 1 or 10?
-#         craziness=0.5)
-#     light_narrow_crazy.familyName = "Cool Font"
-#     light_narrow_crazy.styleName = "Narrow Bold"
-#     doc.addSource(light_narrow_crazy)
-#
-#     # A source with mostly blank attributes to check that it does not crash
-#     out_of_place = doc.newSourceDescriptor()
-#     out_of_place.font = defcon.Font()
-#     doc.addSource(out_of_place)
-#
-#     # Instances
-#
-#     # TODO
-#
-#     font = to_glyphs(doc)
-#
-#     # TODO: check how stuff is stored for Glyphs
-#
-#     rtdoc = to_designspace(font)
-#
-#     # Compare
-#     path = os.path.join(str(tmpdir), 'original.designspace')
-#     doc.write(path)
-#     with open(path) as fp:
-#         xml = fp.read()
-#     rtpath = os.path.join(str(tmpdir), 'rt.designspace')
-#     rtdoc.write(rtpath)
-#     with open(rtpath) as fp:
-#         rtxml = fp.read()
-#
-#     assert xml == rtxml
+def test_apply_instance_data(tmpdir):
+    # Goal: test that the existing APIs used by fontmake and possibly others
+    # still work (especially `apply_instance_data`)
+    masters, instances = makeFamily()
+    gasp_table = {'65535': '15', '20': '7', '8': '10'}
+    instances[0].customParameters['GASP Table'] = gasp_table
+    instances[1].customParameters["Don't use Production Names"] = True
+    font = makeFont(masters, instances, 'Exemplary Sans')
+    filename = os.path.join(str(tmpdir), 'font.glyphs')
+    font.save(filename)
+
+    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
+    os.mkdir(master_dir)
+    instance_dir = os.path.join(str(tmpdir), 'instance_ufos_test')
+    os.mkdir(instance_dir)
+    ufos = build_instances(filename, master_dir, instance_dir)
+
+    ufo_range_records = ufos[0].info.openTypeGaspRangeRecords
+    assert ufo_range_records is not None
+    assert len(ufo_range_records) == 3
+
+    assert UFO2FT_USE_PROD_NAMES_KEY in ufos[1].lib
+    assert ufos[1].lib[UFO2FT_USE_PROD_NAMES_KEY] == False
 
 
 if __name__ == "__main__":

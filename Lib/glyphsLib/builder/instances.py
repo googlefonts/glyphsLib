@@ -26,6 +26,7 @@ from .names import build_stylemap_names
 from .masters import UFO_FILENAME_KEY
 from .axes import (get_axis_definitions, is_instance_active, interp,
                    WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)
+from .custom_params import to_ufo_custom_params
 
 EXPORT_KEY = GLYPHS_PREFIX + 'export'
 WIDTH_KEY = GLYPHS_PREFIX + 'width'
@@ -326,15 +327,17 @@ def set_width_class(ufo, designspace, instance):
     _set_class_from_instance(ufo, designspace, instance, WIDTH_AXIS_DEF)
 
 
-def apply_instance_data(designspace):
+# DEPRECATED: needs better API
+def apply_instance_data(instance_data):
     """Open instances, apply data, and re-save.
 
     Args:
-        instance_data: DesignSpaceDocument object with some instances
+        instance_data: an InstanceData object.
     Returns:
         List of opened and updated instance UFOs.
     """
     import defcon
+    designspace = instance_data.designspace
 
     instance_ufos = []
     for instance in designspace.instances:
@@ -344,9 +347,18 @@ def apply_instance_data(designspace):
         set_width_class(ufo, designspace, instance)
 
         glyphs_instance = InstanceDescriptorAsGSInstance(instance)
-        builder = UFOBuilder(instance, defcon)
         # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
-        to_ufo_custom_params(self, ufo, instance)
+        to_ufo_custom_params(None, ufo, glyphs_instance)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos
+
+
+# DEPRECATED: supports deprecated APIs
+class InstanceData(list):
+    """A list wrapper that also holds a reference to a designspace.
+    It's only here to accomodate for existing APIs.
+    """
+    def __init__(self, designspace):
+        self.designspace = designspace
+        self.extend((i.path, i) for i in designspace.instances)

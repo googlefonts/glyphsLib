@@ -123,6 +123,7 @@ class UFOBuilder(_LoggerMixin):
         if self._sources:
             for source in self._sources.values():
                 yield source.font
+            return
 
         # Store set of actually existing master (layer) ids. This helps with
         # catching dangling layer data that Glyphs may ignore, e.g. when
@@ -255,7 +256,7 @@ class UFOBuilder(_LoggerMixin):
         if self._do_filter_instances_by_family:
             instances = list(
                 filter_instances_by_family(instances, self.family_name))
-        instance_data = {'data': instances}
+        instance_data = {'data': instances, 'designspace': self.designspace}
 
         first_ufo = next(iter(self.masters))
 

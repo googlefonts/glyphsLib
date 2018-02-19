@@ -24,7 +24,7 @@ from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder.custom_params import to_ufo_custom_params
 from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.builder.instances import apply_instance_data
+from glyphsLib.builder.instances import apply_instance_data, InstanceData
 
 from glyphsLib.util import build_ufo_path, write_ufo, clean_ufo
 
@@ -35,23 +35,28 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
+# DEPRECATED
 def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
     """Create MutatorMath designspace and generate instances.
     Returns instance UFOs.
     """
-    # TODO: (jany) This should not be in glyphsLib, but rather an instance
-    #    method of the designspace document, or another thing like
-    #    ufoProcessor/mutatorMath.build()
-    #    GlyphsLib should put all that is necessary to interpolate into the
-    #    InstanceDescriptor (lib if needed)
-    #    All the logic like applying custom parameters and so on should be made
-    #    glyphs-agnostic (because most of it should be relevant for other build
-    #    systems as well?)
-    #    or the logic that is really specific to Glyphs could be implemented as
-    #    in apply_instance_data: InstanceDescriptor -> UFO of the instance.
-    raise NotImplementedError
+    # Problem with this function: should take a designspace explicitly.
+    from mutatorMath.ufo import build
+
+    designspace_path, instance_files = build_designspace(
+        ufos, master_dir, out_dir, instance_data)
+
+    logger.info('Building instances')
+    for path, _ in instance_files:
+        clean_ufo(path)
+    build(designspace_path, outputUFOFormatVersion=3,
+          roundGeometry=round_geometry)
+
+    instance_ufos = apply_instance_data(instance_files)
+    return instance_ufos
 
 
+# DEPRECATED
 def build_designspace(masters, master_dir, out_dir, instance_data):
     """Just create MutatorMath designspace without generating instances.
 
@@ -60,4 +65,20 @@ def build_designspace(masters, master_dir, out_dir, instance_data):
     Glyphs data for that instance.
     """
     # TODO: (jany) check whether this function is still useful
-    raise NotImplementedError
+    # No need to build a designspace, we should have it in "instance_data"
+    designspace = instance_data['designspace']
+
+    # Move masters and instances to the designated directories
+    for font in masters:
+        write_ufo(font, master_dir)
+        for source in designspace.sources:
+            if source.font is font:
+                source.path = font.path
+    for instance in designspace.instances:
+        instance.path = os.path.join(out_dir,
+                                     os.path.basename(instance.filename))
+
+    designspace_path = os.path.join(master_dir, designspace.filename)
+    designspace.write(designspace_path)
+
+    return designspace_path, InstanceData(designspace)
