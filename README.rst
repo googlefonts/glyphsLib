@@ -62,7 +62,7 @@ Go back and forth between UFOs and Glyphs
 
 1. Without a designspace file, using for example the `Inria fonts by Black[Foundry] <https://github.com/BlackFoundry/InriaFonts/tree/master/masters/INRIA-SANS>`__:
 
-..code: python
+.. code:: python
 
     import glob
     from defcon import Font
@@ -77,7 +77,7 @@ Go back and forth between UFOs and Glyphs
 
 2. With a designspace, using `Spectral from Production Type <https://github.com/productiontype/Spectral/tree/master/sources>`__:
 
-..code: python
+.. code:: python
 
     import glob
     from fontTools.designspaceLib import DesignSpaceDocument
@@ -101,7 +101,7 @@ The same option exists for people who want to do Glyphs->UFOs->Glyphs:
 For example, it will keep the same UUIDs for Glyphs layers, and so will need
 to store those layer UUIDs in the UFOs.
 
-.. code: python
+.. code:: python
 
     import glob
     import os
