@@ -24,13 +24,9 @@ LAYER_ORDER_TEMP_USER_DATA_KEY = '__layerOrder'
 
 def to_glyphs_layer(self, ufo_layer, glyph, master):
     if ufo_layer.name == 'public.default':  # TODO: (jany) constant
-        if master.id not in glyph.layers:
-            glyph.layers[master.id] = self.glyphs_module.GSLayer()
-        layer = glyph.layers[master.id]
-        layer.layerId = master.id
-        layer.name = master.name
+        layer = _get_or_make_foreground(self, glyph, master)
     elif ufo_layer.name == 'public.background':
-        master_layer = glyph.layers[master.id]
+        master_layer = _get_or_make_foreground(self, glyph, master)
         layer = master_layer.background
     elif ufo_layer.name.endswith('.background'):
         # Find or create the foreground layer
@@ -62,6 +58,15 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
     if order_key in ufo_layer.lib:
         order = ufo_layer.lib[order_key]
         layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY] = order
+    return layer
+
+
+def _get_or_make_foreground(self, glyph, master):
+    layer = glyph.layers[master.id]
+    if layer is None:
+        layer = glyph.layers[master.id] = self.glyphs_module.GSLayer()
+    layer.layerId = master.id
+    layer.name = master.name
     return layer
 
 

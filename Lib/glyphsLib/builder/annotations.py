@@ -51,8 +51,8 @@ def to_glyphs_annotations(self, ufo_glyph, layer):
         for attr in ['angle', 'position', 'text', 'type', 'width']:
             if attr in annot and annot[attr]:
                 if attr == 'position':
-                    position = Point()
-                    position.x, position.y = annot[attr]
+                    # annot['position'] can be either "{1, 2}" or (1, 2)
+                    position = Point(annot['position'])
                     annotation.position = position
                 else:
                     setattr(annotation, attr, annot[attr])

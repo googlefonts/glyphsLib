@@ -478,3 +478,12 @@ def test_background_before_foreground():
 
     # Check that it does not crash
     font = to_glyphs([ufo])
+
+
+def test_only_background():
+    ufo = defcon.Font()
+    background = ufo.newLayer('public.background')
+    a_bg = background.newGlyph('a')
+
+    # Check that it does not crash
+    font = to_glyphs([ufo])
