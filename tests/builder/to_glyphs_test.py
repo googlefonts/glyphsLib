@@ -466,3 +466,15 @@ def test_open_contour():
 
     assert ([(p.segmentType, p.x, p.y) for p in a[0]] ==
             [(p.segmentType, p.x, p.y) for p in ufo_rt['a'][0]])
+
+
+def test_background_before_foreground():
+    ufo = defcon.Font()
+    a = ufo.newGlyph('a')
+    background = ufo.newLayer('public.background')
+    a_bg = background.newGlyph('a')
+
+    ufo.layers.layerOrder = ['public.background', 'public.default']
+
+    # Check that it does not crash
+    font = to_glyphs([ufo])
