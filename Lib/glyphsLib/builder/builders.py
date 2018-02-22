@@ -382,7 +382,7 @@ class GlyphsBuilder(_LoggerMixin):
             self._font.masters.insert(len(self._font.masters), master)
             self._sources[master.id] = source
 
-            for layer in source.font.layers:
+            for layer in _sorted_backgrounds_last(source.font.layers):
                 self.to_glyphs_layer_lib(layer)
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
@@ -488,3 +488,9 @@ class GlyphsBuilder(_LoggerMixin):
                             to_glyphs_layer_lib,
                             to_glyphs_layer_user_data,
                             to_glyphs_node_user_data)
+
+
+def _sorted_backgrounds_last(ufo_layers):
+    # Stable sort that groups all foregrounds first and all backgrounds last
+    return sorted(ufo_layers, key=lambda layer:
+                  1 if layer.name.endswith('.background') else 0)
