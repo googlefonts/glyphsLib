@@ -75,7 +75,11 @@ def to_ufo_features(self, ufo):
         lines.append('} %s;' % feature.name)
         feature_defs.append('\n'.join(lines))
     fea_str = '\n\n'.join(feature_defs)
-    gdef_str = _build_gdef(ufo)
+
+    # Don't add a GDEF when planning to round-trip
+    gdef_str = None
+    if not self.minimize_glyphs_diffs:
+        gdef_str = _build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
     full_text = '\n\n'.join(
