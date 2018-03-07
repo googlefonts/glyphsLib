@@ -118,6 +118,12 @@ class ParserTest(unittest.TestCase):
             [('outer', OrderedDict([('inner', 'turtles')]))]
         )
 
+    def test_parse_base64_data(self):
+        self.run_test(
+            b'{key = <dmFsdWU=>;}',
+            [('key', b'value')]
+        )
+
 
 class ParserGlyphTest(unittest.TestCase):
     def test_parse_empty_glyphs(self):
