@@ -197,10 +197,10 @@ class UFOBuilder(_LoggerMixin):
             ufo = source.font
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
-            self.to_ufo_features(ufo)  # This depends on the glyphOrder key
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
+        self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
@@ -382,6 +382,7 @@ class GlyphsBuilder(_LoggerMixin):
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
 
+        self.to_glyphs_features()
         self.to_glyphs_groups()
         self.to_glyphs_kerning()
 

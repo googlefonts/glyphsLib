@@ -232,6 +232,47 @@ def test_feature(tmpdir):
     assert rtufo.features.text.strip() == ufo.features.text.strip()
 
 
-# TODO: add test with different features in different UFOs
-# Assumption: all UFOs must have the same feature files, otherwise warning
-# Use the feature file from the first UFO
+def test_different_features_in_different_UFOS(tmpdir):
+    # If the input UFOs have different features, Glyphs cannot model the
+    # differences easily.
+    #
+    # TODO: A complex solution would be to put all the features that we find
+    # across all the UFOS into the GSFont's features, and then add custom
+    # parameters "Replace Features" and "Remove features" to the GSFontMasters
+    # of the UFOs that didn't have the feature originally.
+    #
+    # What is done now: if feature files differ between the input UFOs, the
+    # original text of each UFO's feature is stored in userData, and a single
+    # GSFeaturePrefix is created just to warn the user that features were not
+    # imported because of differences.
+    ufo1 = defcon.Font()
+    ufo1.features.text = dedent('''\
+        include('../family.fea');
+    ''')
+    ufo2 = defcon.Font()
+    ufo2.features.text = dedent('''\
+        include('../family.fea');
+
+        feature ss03 {
+            sub c by c.ss03;
+        } ss03;
+    ''')
+
+    font = to_glyphs([ufo1, ufo2], minimize_ufo_diffs=True)
+    filename = os.path.join(str(tmpdir), 'font.glyphs')
+    font.save(filename)
+    font = classes.GSFont(filename)
+    ufo1rt, ufo2rt = to_ufos(font)
+
+    assert len(font.features) == 0
+    assert len(font.featurePrefixes) == 1
+    assert font.featurePrefixes[0].code == dedent('''\
+        # Do not use Glyphs to edit features.
+        #
+        # This Glyphs file was made from several UFOs that had different
+        # features. As a result, the features are not editable in Glyphs and
+        # the original features will be restored when you go back to UFOs.
+    ''')
+
+    assert ufo1rt.features.text == ufo1.features.text
+    assert ufo2rt.features.text == ufo2.features.text
