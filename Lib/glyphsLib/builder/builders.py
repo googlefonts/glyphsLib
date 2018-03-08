@@ -19,6 +19,7 @@ from collections import OrderedDict, defaultdict
 import logging
 import tempfile
 import os
+from textwrap import dedent
 
 import defcon
 
@@ -337,18 +338,9 @@ class GlyphsBuilder(_LoggerMixin):
         self.minimize_ufo_diffs = minimize_ufo_diffs
 
         if designspace is not None:
-            self.designspace = designspace
             if ufos:
                 raise NotImplementedError
-            for source in designspace.sources:
-                if not hasattr(source, 'font') or source.font is None:
-                    if source.path:
-                        # FIXME: (jany) consider not changing the caller's objects
-                        source.font = defcon.Font(source.path)
-                    else:
-                        dirname = os.path.dirname(designspace.path)
-                        ufo_path = os.path.join(dirname, source.filename)
-                        source.font = defcon.Font(ufo_path)
+            self.designspace = self._valid_designspace(designspace)
         elif ufos:
             self.designspace = self._fake_designspace(ufos)
         else:
@@ -408,6 +400,39 @@ class GlyphsBuilder(_LoggerMixin):
         self.to_glyphs_instances()
 
         return self._font
+
+    def _valid_designspace(self, designspace):
+        """Make sure that the user-provided designspace has loaded fonts and
+        that names are the same as those from the UFOs.
+        """
+        # TODO: really make a copy to avoid modifying the original object
+        copy = designspace
+        for source in copy.sources:
+            if not hasattr(source, 'font') or source.font is None:
+                if source.path:
+                    # FIXME: (jany) consider not changing the caller's objects
+                    source.font = defcon.Font(source.path)
+                else:
+                    dirname = os.path.dirname(designspace.path)
+                    ufo_path = os.path.join(dirname, source.filename)
+                    source.font = defcon.Font(ufo_path)
+            if source.location is None:
+                source.location = {}
+            for name in ('familyName', 'styleName'):
+                if getattr(source, name) != getattr(source.font.info, name):
+                    self.logger.warn(dedent('''\
+                        The {name} is different between the UFO and the designspace source:
+                            source filename: {filename}
+                            source {name}: {source_name}
+                            ufo {name}: {ufo_name}
+
+                        The UFO name will be used.
+                    ''').format(name=name,
+                                filename=source.filename,
+                                source_name=getattr(source, name),
+                                ufo_name=getattr(source.font.info, name)))
+                    setattr(source, name, getattr(source.font.info, name))
+        return copy
 
     def _fake_designspace(self, ufos):
         """Build a fake designspace with the given UFOs as sources, so that all

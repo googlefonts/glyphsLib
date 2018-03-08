@@ -486,3 +486,32 @@ def test_only_background():
 
     # Check that it does not crash
     font = to_glyphs([ufo])
+
+
+def test_warn_diff_between_designspace_and_ufos(caplog):
+    ufo = defcon.Font()
+    ufo.info.familyName = 'UFO Family Name'
+    ufo.info.styleName = 'UFO Style Name'
+    # ufo.info.styleMapFamilyName = 'UFO Stylemap Family Name'
+    # ufo.info.styleMapStyleName = 'bold'
+
+    doc = DesignSpaceDocument()
+    source = doc.newSourceDescriptor()
+    source.font = ufo
+    source.familyName = 'DS Family Name'
+    source.styleName = 'DS Style Name'
+    doc.addSource(source)
+
+    font = to_glyphs(doc, minimize_ufo_diffs=True)
+    assert any(record.levelname == 'WARNING' for record in caplog.records)
+    assert 'The familyName is different between the UFO and the designspace source' in caplog.text
+    assert 'The styleName is different between the UFO and the designspace source' in caplog.text
+
+    doc = to_designspace(font)
+    source = doc.sources[0]
+
+    # The UFO info will prevail
+    assert ufo.info.familyName == 'UFO Family Name'
+    assert ufo.info.styleName == 'UFO Style Name'
+    assert source.font.info.familyName == 'UFO Family Name'
+    assert source.font.info.styleName == 'UFO Style Name'
