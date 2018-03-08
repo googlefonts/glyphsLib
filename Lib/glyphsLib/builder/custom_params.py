@@ -323,7 +323,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
 
     'trademark',
 
-    'styleMapFamilyName'
+    'styleMapFamilyName',
+    'styleMapStyleName',
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))

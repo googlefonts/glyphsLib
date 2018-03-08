@@ -515,3 +515,13 @@ def test_warn_diff_between_designspace_and_ufos(caplog):
     assert ufo.info.styleName == 'UFO Style Name'
     assert source.font.info.familyName == 'UFO Family Name'
     assert source.font.info.styleName == 'UFO Style Name'
+
+
+def test_custom_stylemap_style_name():
+    ufo = defcon.Font()
+    ufo.info.styleMapStyleName = 'bold'  # Not "regular"
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    ufo, = to_ufos(font)
+
+    assert ufo.info.styleMapStyleName == 'bold'
