@@ -269,14 +269,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.widthValue = 0.99
         # customValue
         # customName
-        master.customName = "cuteness"
+        master.customName = "Overextended"
         # A value of 0.0 is not written to the file.
         master.customValue = 0.001
-        master.customName1 = "color"
         master.customValue1 = 0.1
-        master.customName2 = "depth"
         master.customValue2 = 0.2
-        master.customName3 = "surealism"
         master.customValue3 = 0.3
         # ascender
         master.ascender = 234.5
@@ -314,13 +311,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             ascender = 234.5;
             capHeight = 200.6;
-            custom = cuteness;
+            custom = Overextended;
             customValue = 0.001;
-            custom1 = color;
             customValue1 = 0.1;
-            custom2 = depth;
             customValue2 = 0.2;
-            custom3 = surealism;
             customValue3 = 0.3;
             customParameters = (
             {

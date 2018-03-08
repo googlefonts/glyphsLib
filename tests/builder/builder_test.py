@@ -775,14 +775,13 @@ class ToUfosTest(unittest.TestCase):
     def test_lib_no_custom(self):
         font = generate_minimal_font()
         ufo = to_ufos(font)[0]
-        self.assertFalse(MASTER_CUSTOM_PARAM_PREFIX + 'customName' in ufo.lib)
+        self.assertFalse(GLYPHS_PREFIX + 'customName' in ufo.lib)
 
     def test_lib_custom(self):
         font = generate_minimal_font()
         font.masters[0].customName = 'FooBar'
         ufo = to_ufos(font)[0]
-        self.assertEqual(
-            ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + 'customName'], 'FooBar')
+        self.assertEqual(ufo.lib[GLYPHS_PREFIX + 'customName'], 'FooBar')
 
     def test_coerce_to_bool(self):
         font = generate_minimal_font()

@@ -445,8 +445,6 @@ register(MiscParamHandler(
 ))
 
 for number in ('', '1', '2', '3'):
-    register(MiscParamHandler('customName' + number, ufo_info=False,
-                              ufo_default=''))
     register(MiscParamHandler('customValue' + number, ufo_info=False))
 register(MiscParamHandler('weightValue', ufo_info=False))
 register(MiscParamHandler('widthValue', ufo_info=False))
