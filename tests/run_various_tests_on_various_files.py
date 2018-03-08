@@ -19,8 +19,7 @@ import pytest
 import re
 
 import glyphsLib
-from glyphsLib.designSpaceDocument import (DesignSpaceDocument,
-                                           InMemoryDocWriter)
+from fontTools.designspaceLib import DesignSpaceDocument
 import test_helpers
 
 

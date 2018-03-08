@@ -21,10 +21,9 @@ import pytest
 from collections import OrderedDict
 
 import defcon
+from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib import classes
 from glyphsLib.builder.constants import GLYPHLIB_PREFIX
-from glyphsLib.designSpaceDocument import (DesignSpaceDocument,
-                                           InMemoryDocWriter)
 
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 
@@ -34,13 +33,13 @@ from glyphsLib import to_glyphs, to_ufos, to_designspace
 
 
 def test_designspace_lib_equivalent_to_font_user_data(tmpdir):
-    designspace = DesignSpaceDocument(writerClass=InMemoryDocWriter)
+    designspace = DesignSpaceDocument()
     designspace.lib['designspaceLibKey1'] = 'designspaceLibValue1'
 
     # Save to disk and reload the designspace to test the write/read of lib
     path = os.path.join(str(tmpdir), 'test.designspace')
     designspace.write(path)
-    designspace = DesignSpaceDocument(writerClass=InMemoryDocWriter)
+    designspace = DesignSpaceDocument()
     designspace.read(path)
 
     font = to_glyphs(designspace)

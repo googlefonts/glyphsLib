@@ -30,14 +30,27 @@ from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
 ANONYMOUS_FEATURE_PREFIX_NAME = '<anonymous>'
+ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + 'originalFeatureCode'
 
 
 def autostr(automatic):
     return '# automatic\n' if automatic else ''
 
 
-def to_ufo_features(self, ufo):
+def to_ufo_features(self):
+    for master_id, source in self._sources.items():
+        master = self.font.masters[master_id]
+        _to_ufo_features(self, master, source.font)
+
+
+def _to_ufo_features(self, master, ufo):
     """Write an UFO's OpenType feature file."""
+
+    # Recover the original feature code if it was stored in the user data
+    original = master.userData[ORIGINAL_FEATURE_CODE_KEY]
+    if original is not None:
+        ufo.features.text = original
+        return
 
     prefixes = []
     for prefix in self.font.featurePrefixes:
@@ -166,12 +179,69 @@ def replace_feature(tag, repl, features):
         flags=re.DOTALL | re.MULTILINE)
 
 
-def to_glyphs_features(self, ufo):
+def to_glyphs_features(self):
+    if not self.designspace.sources:
+        # Needs at least one UFO
+        return
+
+    # Handle differing feature files between input UFOs
+    # For now: switch to very simple strategy if there is any difference
+    # TODO: later, use a merge-as-we-go strategy where all discovered features
+    #   go into the GSFont's features, and custom parameters are used to
+    #   disable features on masters that didn't have them originally.
+    if _features_are_different_across_ufos(self):
+        if self.minimize_ufo_diffs:
+            self.logger.warn(
+                'Feature files are different across UFOs. The produced Glyphs '
+                'file will have no editable features.')
+            # Do all UFOs, not only the first one
+            _to_glyphs_features_basic(self)
+            return
+        self.logger.warn(
+            'Feature files are different across UFOs. The produced Glyphs '
+            'file will reflect only the features of the first UFO.')
+
+    # Split the feature file of the first UFO into GSFeatures
+    ufo = self.designspace.sources[0].font
     if ufo.features.text is None:
         return
     document = FeaDocument(ufo.features.text, ufo.keys())
     processor = FeatureFileProcessor(document, self.glyphs_module)
     processor.to_glyphs(self.font)
+
+
+def _features_are_different_across_ufos(self):
+    # FIXME: requires that features are in the same order in all feature files
+    #   only allowed deviation is whitespace
+    reference = self.designspace.sources[0].font.features.text or ''
+    reference = _normalize_whitespace(reference)
+    for source in self.designspace.sources[1:]:
+        other = _normalize_whitespace(source.font.features.text or '')
+        if reference != other:
+            return True
+    return False
+
+
+def _normalize_whitespace(text):
+    # FIXME: does not take into account "significant" whitespace like
+    # whitespace in a UI string
+    return re.sub(r'\s+', ' ', text)
+
+
+def _to_glyphs_features_basic(self):
+    prefix = self.glyphs_module.GSFeaturePrefix()
+    prefix.name = 'WARNING'
+    prefix.code = dedent('''\
+        # Do not use Glyphs to edit features.
+        #
+        # This Glyphs file was made from several UFOs that had different
+        # features. As a result, the features are not editable in Glyphs and
+        # the original features will be restored when you go back to UFOs.
+    ''')
+    self.font.featurePrefixes.append(prefix)
+    for master_id, source in self._sources.items():
+        master = self.font.masters[master_id]
+        master.userData[ORIGINAL_FEATURE_CODE_KEY] = source.font.features.text
 
 
 class FeaDocument(object):
@@ -209,7 +279,7 @@ class FeaDocument(object):
         # end_location of the real last statement(s).
         self._lines.append('#')  # Line corresponding to the fake statement
         fake_location = (None, len(self._lines), 1)
-        self._doc.statements.append(ast.Comment(fake_location, "Sentinel"))
+        self._doc.statements.append(ast.Comment(text="Sentinel", location=fake_location))
         self._build_end_locations_rec(self._doc)
         # Remove the fake last statement
         self._lines.pop()
@@ -451,9 +521,8 @@ class FeatureFileProcessor(object):
         st = self.statements.peek()
         if not isinstance(st, ast.TableBlock) or st.name != 'GDEF':
             return False
-        self.statements.next()
-        # TODO: (jany)
-        return True
+        # TODO: read an existing GDEF table and do something with it?
+        return False
 
     def _pop_comment(self, statements, comment_re):
         """Look for the comment that matches the given regex.

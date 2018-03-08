@@ -323,7 +323,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
 
     'trademark',
 
-    'styleMapFamilyName'
+    'styleMapFamilyName',
+    'styleMapStyleName',
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))
@@ -444,8 +445,6 @@ register(MiscParamHandler(
 ))
 
 for number in ('', '1', '2', '3'):
-    register(MiscParamHandler('customName' + number, ufo_info=False,
-                              ufo_default=''))
     register(MiscParamHandler('customValue' + number, ufo_info=False))
 register(MiscParamHandler('weightValue', ufo_info=False))
 register(MiscParamHandler('widthValue', ufo_info=False))

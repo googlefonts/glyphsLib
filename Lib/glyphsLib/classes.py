@@ -1216,11 +1216,8 @@ class GSFontMaster(GSBase):
         "capHeight": float,
         "custom": unicode,
         "customValue": float,
-        "custom1": unicode,
         "customValue1": float,
-        "custom2": unicode,
         "customValue2": float,
-        "custom3": unicode,
         "customValue3": float,
         "customParameters": GSCustomParameter,
         "descender": float,
@@ -1261,9 +1258,6 @@ class GSFontMaster(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
         "custom": "customName",
-        "custom1": "customName1",
-        "custom2": "customName2",
-        "custom3": "customName3",
     }
     _keyOrder = (
         "alignmentZones",
@@ -1271,11 +1265,8 @@ class GSFontMaster(GSBase):
         "capHeight",
         "custom",
         "customValue",
-        "custom1",
         "customValue1",
-        "custom2",
         "customValue2",
-        "custom3",
         "customValue3",
         "customParameters",
         "descender",
@@ -1303,8 +1294,8 @@ class GSFontMaster(GSBase):
         self._customParameters = []
         self.italicAngle = 0.0
         self._userData = None
+        self.customName = ''
         for number in ('', '1', '2', '3'):
-            setattr(self, 'customName' + number, '')
             setattr(self, 'customValue' + number, 0.0)
 
     def __repr__(self):

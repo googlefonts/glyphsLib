@@ -66,10 +66,9 @@ def to_ufo_master_attributes(self, source, master):
         ufo.lib[GLYPHS_PREFIX + 'width'] = width
     if widthValue:
         ufo.lib[GLYPHS_PREFIX + 'widthValue'] = widthValue
+    if master.customName:
+        ufo.lib[GLYPHS_PREFIX + 'customName'] = master.customName
     for number in ('', '1', '2', '3'):
-        custom_name = getattr(master, 'customName' + number)
-        if custom_name:
-            ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
         custom_value = getattr(master, 'customValue' + number)
         if custom_value:
             ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value

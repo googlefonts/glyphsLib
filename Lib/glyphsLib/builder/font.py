@@ -146,7 +146,6 @@ def _set_glyphs_font_attributes(self, source):
     self.to_glyphs_family_names(ufo)
     self.to_glyphs_family_user_data_from_ufo(ufo)
     self.to_glyphs_custom_params(ufo, font)
-    self.to_glyphs_features(ufo)
 
 
 def _compare_and_merge_glyphs_font_attributes(self, source):

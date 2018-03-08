@@ -19,11 +19,11 @@ from collections import OrderedDict, defaultdict
 import logging
 import tempfile
 import os
+from textwrap import dedent
 
 import defcon
 
-# FIXME: import fontTools.designSpaceDocument
-from glyphsLib import designSpaceDocument
+from fontTools import designspaceLib
 
 from glyphsLib import classes, glyphdata_generated
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX
@@ -51,7 +51,7 @@ class UFOBuilder(_LoggerMixin):
     def __init__(self,
                  font,
                  ufo_module=defcon,
-                 designspace_module=designSpaceDocument,
+                 designspace_module=designspaceLib,
                  family_name=None,
                  instance_dir=None,
                  propagate_anchors=True,
@@ -65,7 +65,7 @@ class UFOBuilder(_LoggerMixin):
                       a custom module that has the same classes as the official
                       defcon to get instances of your own classes)
         designspace_module -- A Python module to use to build a Designspace
-                              Document. Should look like designSpaceDocument.
+                              Document. Default is fontTools.designspaceLib.
         family_name -- if provided, the master UFOs will be given this name and
                        only instances with this name will be returned.
         instance_dir -- if provided, instance UFOs will be located in this
@@ -94,9 +94,7 @@ class UFOBuilder(_LoggerMixin):
         # the master UFOs, when the user requests them.
         # The axes, instances, rules... will only be built if the designspace
         # document itself is requested by the user.
-        self._designspace = self.designspace_module.DesignSpaceDocument(
-            writerClass=designSpaceDocument.InMemoryDocWriter,
-            fontClass=self.ufo_module.Font)
+        self._designspace = self.designspace_module.DesignSpaceDocument()
         self._designspace_is_complete = False
 
         # check that source was generated with at least stable version 2.3
@@ -200,10 +198,10 @@ class UFOBuilder(_LoggerMixin):
             ufo = source.font
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
-            self.to_ufo_features(ufo)  # This depends on the glyphOrder key
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
+        self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
@@ -340,20 +338,9 @@ class GlyphsBuilder(_LoggerMixin):
         self.minimize_ufo_diffs = minimize_ufo_diffs
 
         if designspace is not None:
-            self.designspace = designspace
             if ufos:
                 raise NotImplementedError
-            for source in designspace.sources:
-                # FIXME: (jany) Do something better for the InMemory stuff
-                # Is it an in-memory source descriptor?
-                if not hasattr(source, 'font') or source.font is None:
-                    if source.path:
-                        # FIXME: (jany) consider not mucking with the caller's objects
-                        source.font = defcon.Font(source.path)
-                    else:
-                        dirname = os.path.dirname(designspace.path)
-                        ufo_path = os.path.join(dirname, source.filename)
-                        source.font = defcon.Font(ufo_path)
+            self.designspace = self._valid_designspace(designspace)
         elif ufos:
             self.designspace = self._fake_designspace(ufos)
         else:
@@ -387,6 +374,7 @@ class GlyphsBuilder(_LoggerMixin):
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
 
+        self.to_glyphs_features()
         self.to_glyphs_groups()
         self.to_glyphs_kerning()
 
@@ -413,12 +401,44 @@ class GlyphsBuilder(_LoggerMixin):
 
         return self._font
 
+    def _valid_designspace(self, designspace):
+        """Make sure that the user-provided designspace has loaded fonts and
+        that names are the same as those from the UFOs.
+        """
+        # TODO: really make a copy to avoid modifying the original object
+        copy = designspace
+        for source in copy.sources:
+            if not hasattr(source, 'font') or source.font is None:
+                if source.path:
+                    # FIXME: (jany) consider not changing the caller's objects
+                    source.font = defcon.Font(source.path)
+                else:
+                    dirname = os.path.dirname(designspace.path)
+                    ufo_path = os.path.join(dirname, source.filename)
+                    source.font = defcon.Font(ufo_path)
+            if source.location is None:
+                source.location = {}
+            for name in ('familyName', 'styleName'):
+                if getattr(source, name) != getattr(source.font.info, name):
+                    self.logger.warn(dedent('''\
+                        The {name} is different between the UFO and the designspace source:
+                            source filename: {filename}
+                            source {name}: {source_name}
+                            ufo {name}: {ufo_name}
+
+                        The UFO name will be used.
+                    ''').format(name=name,
+                                filename=source.filename,
+                                source_name=getattr(source, name),
+                                ufo_name=getattr(source.font.info, name)))
+                    setattr(source, name, getattr(source.font.info, name))
+        return copy
+
     def _fake_designspace(self, ufos):
         """Build a fake designspace with the given UFOs as sources, so that all
         builder functions can rely on the presence of a designspace.
         """
-        designspace = designSpaceDocument.DesignSpaceDocument(
-            writerClass=designSpaceDocument.InMemoryDocWriter)
+        designspace = designspaceLib.DesignSpaceDocument()
 
         ufo_to_location = defaultdict(dict)
 

@@ -22,6 +22,7 @@ from io import open
 import re
 import logging
 import sys
+import base64
 
 import glyphsLib
 
@@ -40,6 +41,7 @@ class Parser(object):
     list_delim_re = re.compile(r'\s*,')
     attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
     value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
+    bytes_re = re.compile(r'\s*<([A-Za-z0-9+/=]+)>', re.DOTALL)
 
     def __init__(self, current_type=OrderedDict):
         self.current_type = current_type
@@ -122,6 +124,13 @@ class Parser(object):
             value = self.current_type(value)
 
             return value, i
+
+        m = self.bytes_re.match(text, i)
+        if m:
+            parsed, value = m.group(0), m.group(1)
+            decoded = base64.b64decode(value)
+            i += len(parsed)
+            return decoded, i
 
         else:
             self._fail('Unexpected content', text, i)

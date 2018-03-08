@@ -17,8 +17,7 @@ import logging
 from glyphsLib import classes
 import defcon
 
-# FIXME: (jany) import from fonttools
-from glyphsLib.designSpaceDocument import DesignSpaceDocument
+from fontTools.designspaceLib import DesignSpaceDocument
 
 from .builders import UFOBuilder, GlyphsBuilder
 

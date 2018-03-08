@@ -115,16 +115,4 @@ def to_glyphs_family_names(self, ufo, merge=False):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    width = master.width
-    weight = master.weight
-    custom = master.customName
-    is_italic = bool(master.italicAngle)
-
-    current_stylename = build_style_name(
-        width if width != 'Medium (normal)' else '',
-        weight if weight != 'Regular' else '',
-        custom,
-        is_italic
-    )
-
     master.name = ufo.info.styleName

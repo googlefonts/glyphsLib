@@ -27,8 +27,7 @@ from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 from glyphsLib import classes
 
-# FIXME: (jany) should come from fonttools
-from glyphsLib.designSpaceDocument import DesignSpaceDocument
+from fontTools.designspaceLib import DesignSpaceDocument
 
 # TODO: (jany) think hard about the ordering and RTL/LTR
 # TODO: (jany) make one generic test with data using pytest
@@ -487,3 +486,42 @@ def test_only_background():
 
     # Check that it does not crash
     font = to_glyphs([ufo])
+
+
+def test_warn_diff_between_designspace_and_ufos(caplog):
+    ufo = defcon.Font()
+    ufo.info.familyName = 'UFO Family Name'
+    ufo.info.styleName = 'UFO Style Name'
+    # ufo.info.styleMapFamilyName = 'UFO Stylemap Family Name'
+    # ufo.info.styleMapStyleName = 'bold'
+
+    doc = DesignSpaceDocument()
+    source = doc.newSourceDescriptor()
+    source.font = ufo
+    source.familyName = 'DS Family Name'
+    source.styleName = 'DS Style Name'
+    doc.addSource(source)
+
+    font = to_glyphs(doc, minimize_ufo_diffs=True)
+    assert any(record.levelname == 'WARNING' for record in caplog.records)
+    assert 'The familyName is different between the UFO and the designspace source' in caplog.text
+    assert 'The styleName is different between the UFO and the designspace source' in caplog.text
+
+    doc = to_designspace(font)
+    source = doc.sources[0]
+
+    # The UFO info will prevail
+    assert ufo.info.familyName == 'UFO Family Name'
+    assert ufo.info.styleName == 'UFO Style Name'
+    assert source.font.info.familyName == 'UFO Family Name'
+    assert source.font.info.styleName == 'UFO Style Name'
+
+
+def test_custom_stylemap_style_name():
+    ufo = defcon.Font()
+    ufo.info.styleMapStyleName = 'bold'  # Not "regular"
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    ufo, = to_ufos(font)
+
+    assert ufo.info.styleMapStyleName == 'bold'
