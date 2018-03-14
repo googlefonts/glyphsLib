@@ -23,6 +23,9 @@ from textwrap import dedent
 import io
 import logging
 import unittest
+import tempfile
+import os
+import shutil
 
 from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
@@ -934,6 +937,19 @@ class ToUfosTest(unittest.TestCase):
 
         assert master_rt.name == 'Thin'
         assert master_rt.weight == 'Light'
+
+        tmpdir = tempfile.mkdtemp()
+        try:
+            filename = os.path.join(tmpdir, 'test.glyphs')
+            font_rt.save(filename)
+            font_rt_written = GSFont(filename)
+
+            master_rt_written = font_rt_written.masters[0]
+
+            assert master_rt_written.name == 'Thin'
+            assert master_rt_written.weight == 'Light'
+        finally:
+            shutil.rmtree(tmpdir)
 
 
 class _PointDataPen(object):
