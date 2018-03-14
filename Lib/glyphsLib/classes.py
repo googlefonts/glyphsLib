@@ -1226,9 +1226,7 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": float,
-        "name": unicode,  # FIXME: (jany) does not seem to be filled in by
-                          #     Glyphs 1113, instead chops up the name into
-                          #     weight or custom.
+        "name": unicode,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1323,19 +1321,43 @@ class GSFontMaster(GSBase):
         return self._joinName()
 
     @name.setter
-    def name(self, value):
-        # This is what Glyphs 1113 seems to be doing, approximately.
-        self.weight, self.width, self.customName = self._splitName(value)
+    def name(self, name):
+        """This function will take the given name and split it into components
+        weight, width, customName, and possibly the full name.
+        This is what Glyphs 1113 seems to be doing, approximately.
+        """
+        weight, width, custom_name = self._splitName(name)
+        self.set_all_name_components(name, weight, width, custom_name)
+
+    def set_all_name_components(self, name, weight, width, custom_name):
+        """This function ensures that after being called, the master.name,
+        master.weight, master.width, and master.customName match the given
+        values.
+        """
+        self.weight = weight
+        self.width = width
+        self.customName = custom_name
         # Only store the requested name if we can't build it from the parts
-        if self._joinName() == value:
+        if self._joinName() == name:
             self._name = None
+            # This setter is called during __init__ when customParameters are
+            # not ready yet.
+            try:
+                del self.customParameters['Master Name']
+            except:
+                pass
         else:
-            self._name = value
+            self._name = name
+            try:
+                self.customParameters['Master Name'] = name
+            except:
+                pass
 
     def _joinName(self):
         names = [self.weight, self.width, self.customName]
         names = [n for n in names if n]  # Remove None and empty string
-        if len(names) > 1 and "Regular" in names:
+        # Remove all occurences of 'Regular'
+        while len(names) > 1 and "Regular" in names:
             names.remove("Regular")
         # if abs(self.italicAngle) > 0.01:
         #     names.append("Italic")

@@ -32,7 +32,7 @@ from glyphsLib.classes import (
     GSPath, GSNode, GSAnchor, GSComponent, GSAlignmentZone, GSGuideLine)
 from glyphsLib.types import Point
 
-from glyphsLib.builder import to_ufos
+from glyphsLib.builder import to_ufos, to_glyphs
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.paths import to_ufo_paths
 from glyphsLib.builder.names import build_stylemap_names, build_style_name
@@ -916,6 +916,24 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(
             ufo["c"].lib[GLYPHS_PREFIX + "componentsSmartComponentValues"],
             [{'height': 0}, {}])
+
+    def test_master_with_light_weight_but_thin_name(self):
+        font = generate_minimal_font()
+        master = font.masters[0]
+        name = 'Thin'  # In Glyphs.app, show "Thin" in the sidebar
+        weight = 'Light'  # In Glyphs.app, have the light "n" icon
+        width = None  # No data => should be equivalent to Regular
+        custom_name = 'Thin'
+        master.set_all_name_components(name, weight, width, custom_name)
+        assert master.name == 'Thin'
+        assert master.weight == 'Light'
+
+        ufo, = to_ufos(font)
+        font_rt = to_glyphs([ufo])
+        master_rt = font_rt.masters[0]
+
+        assert master_rt.name == 'Thin'
+        assert master_rt.weight == 'Light'
 
 
 class _PointDataPen(object):

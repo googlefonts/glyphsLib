@@ -54,20 +54,12 @@ def to_ufo_master_attributes(self, source, master):
     # "Native" designspace fonts will only have the designspace info
     # FIXME: (jany) maybe we should not duplicate the information and only
     # write it in the designspace?
-    width = master.width
     widthValue = master.widthValue
-    weight = master.weight
     weightValue = master.weightValue
-    if weight:
-        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
     if weightValue is not None:
         ufo.lib[GLYPHS_PREFIX + 'weightValue'] = weightValue
-    if width:
-        ufo.lib[GLYPHS_PREFIX + 'width'] = width
     if widthValue:
         ufo.lib[GLYPHS_PREFIX + 'widthValue'] = widthValue
-    if master.customName:
-        ufo.lib[GLYPHS_PREFIX + 'customName'] = master.customName
     for number in ('', '1', '2', '3'):
         custom_value = getattr(master, 'customValue' + number)
         if custom_value:
