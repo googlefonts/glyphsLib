@@ -1256,6 +1256,7 @@ class GSFontMaster(GSBase):
     _wrapperKeysTranslate = {
         "guideLines": "guides",
         "custom": "customName",
+        "name": "_name",
     }
     _keyOrder = (
         "alignmentZones",
@@ -1306,9 +1307,9 @@ class GSFontMaster(GSBase):
         if key in ("xHeight", "capHeight", "ascender", "descender"):
             # Always write those values
             return True
-        if key == "name":
+        if key == "_name":
             # Only write out the name if we can't make it by joining the parts
-            return self.name != self._joinName()
+            return self._name != self.name
         return super(GSFontMaster, self).shouldWriteValueForKey(key)
 
     @property
@@ -1334,24 +1335,16 @@ class GSFontMaster(GSBase):
         master.weight, master.width, and master.customName match the given
         values.
         """
-        self.weight = weight
-        self.width = width
-        self.customName = custom_name
+        self.weight = weight or 'Regular'
+        self.width = width or 'Regular'
+        self.customName = custom_name or ''
         # Only store the requested name if we can't build it from the parts
         if self._joinName() == name:
             self._name = None
-            # This setter is called during __init__ when customParameters are
-            # not ready yet.
-            try:
-                del self.customParameters['Master Name']
-            except:
-                pass
+            del self.customParameters['Master Name']
         else:
             self._name = name
-            try:
-                self.customParameters['Master Name'] = name
-            except:
-                pass
+            self.customParameters['Master Name'] = name
 
     def _joinName(self):
         names = [self.weight, self.width, self.customName]

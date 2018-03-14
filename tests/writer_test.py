@@ -256,9 +256,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # id
         master.id = "MASTER-ID"
         # name
-        # Cannot set the `name` attribute directly
-        # master.name = "Hairline Megawide"
-        master.customParameters['Master Name'] = "Hairline Megawide"
+        master._name = "Name Hairline Megawide"
+        master.customParameters['Master Name'] = "Param Hairline Megawide"
         # weight
         master.weight = "Thin"
         # width
@@ -319,7 +318,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             customParameters = (
             {
             name = "Master Name";
-            value = "Hairline Megawide";
+            value = "Param Hairline Megawide";
             },
             {
             name = underlinePosition;
@@ -339,7 +338,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             id = "MASTER-ID";
             italicAngle = 12.2;
-            name = "Hairline Megawide";
+            name = "Name Hairline Megawide";
             userData = {
             rememberToMakeTea = 1;
             };
