@@ -575,6 +575,12 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         master.customName = ''
         self.assertEqual('Light', master.name)
 
+        # Test the name of a master set to "Regular" in the UI dropdown
+        # but with a customName
+        thin = GSFontMaster()
+        thin.customName = 'Thin'
+        self.assertEqual('Thin', thin.name)
+
     def test_name_assignment(self):
         test_data = [
             # Regular

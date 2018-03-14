@@ -17,11 +17,21 @@ from __future__ import (print_function, division, absolute_import,
 
 from collections import deque
 
+from .constants import GLYPHS_PREFIX
+
 
 def to_ufo_names(self, ufo, master, family_name):
     width = master.width
     weight = master.weight
     custom = master.customName
+
+    if weight:
+        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+    if width:
+        ufo.lib[GLYPHS_PREFIX + 'width'] = width
+    if custom:
+        ufo.lib[GLYPHS_PREFIX + 'customName'] = master.customName
+
     is_italic = bool(master.italicAngle)
 
     styleName = master.name or build_style_name(
@@ -115,4 +125,9 @@ def to_glyphs_family_names(self, ufo, merge=False):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    master.name = ufo.info.styleName
+    name = ufo.info.styleName
+    weight = ufo.lib.get(GLYPHS_PREFIX + 'weight')
+    width = ufo.lib.get(GLYPHS_PREFIX + 'width')
+    custom = ufo.lib.get(GLYPHS_PREFIX + 'customName')
+
+    master.set_all_name_components(name, weight, width, custom)
