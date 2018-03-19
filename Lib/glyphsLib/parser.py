@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 from fontTools.misc.py23 import tounicode, unichr, unicode
@@ -33,6 +32,7 @@ class Parser(object):
     """Parses Python dictionaries from Glyphs source files."""
 
     value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
+    unicode_list_re = re.compile(r'\s*([0-9a-fA-F]+(,[0-9a-fA-F]+)+)')
     start_dict_re = re.compile(r'\s*{')
     end_dict_re = re.compile(r'\s*}')
     dict_delim_re = re.compile(r'\s*;')
@@ -87,7 +87,7 @@ class Parser(object):
             current_type = unicode
         return current_type
 
-    def _parse(self, text, i):
+    def _parse(self, text, i, _parsing_unicodes=False):
         """Recursive function to parse a single dictionary, list, or value."""
 
         m = self.start_dict_re.match(text, i)
@@ -102,6 +102,14 @@ class Parser(object):
             i += len(parsed)
             return self._parse_list(text, i)
 
+        if _parsing_unicodes:
+            m = self.unicode_list_re.match(text, i)
+            if m:
+                parsed = m.group(0)
+                i += len(parsed)
+                unicode_list = m.group(1).split(",")
+                return unicode_list, i
+
         m = self.value_re.match(text, i)
         if m:
             parsed, value = m.group(0), self._trim_value(m.group(1))
@@ -113,8 +121,8 @@ class Parser(object):
                 value = reader.read(m.group(1))
                 return value, i
 
-            if (self.current_type is None or
-                    self.current_type in (dict, OrderedDict)):
+            if (self.current_type is None
+                    or self.current_type in (dict, OrderedDict)):
                 self.current_type = self._guess_current_type(parsed, value)
 
             if self.current_type == bool:
@@ -160,7 +168,12 @@ class Parser(object):
             if hasattr(res, "classForName"):
                 self.current_type = res.classForName(name)
             i += len(parsed)
-            result = self._parse(text, i)
+
+            if name == "unicode":
+                result = self._parse(text, i, _parsing_unicodes=True)
+            else:
+                result = self._parse(text, i)
+
             try:
                 res[name], i = result
             except:
@@ -254,6 +267,7 @@ def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
         glyphsLib.dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
