@@ -25,8 +25,27 @@ from .constants import (GLYPHS_PREFIX, PUBLIC_PREFIX,
                         CODEPAGE_RANGES, REVERSE_CODEPAGE_RANGES)
 from .features import replace_feature
 
-# TODO: update this documentation
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
+
+Custom parameter data will be extracted from a Glyphs object such as GSFont,
+GSFontMaster or GSInstance by wrapping it in the GlyphsObjectProxy.
+This proxy normalizes and speeds up the API used to access custom parameters,
+and also keeps track of which customParameters have been read from the object.
+
+Note:
+    In the special case of GSInstance -> UFO, the source object is not
+    actually the GSInstance but a designspace InstanceDescriptor wrapped in
+    InstanceDescriptorAsGSInstance. This is because the generation of
+    instance UFOs from a Glyphs font happens in two steps:
+
+        1. the GSFont is turned into a designspace + master UFOS
+        2. the designspace + master UFOs are interpolated into instance UFOs
+
+    We want step 2. to rely only on information from the designspace, that's why
+    we use the InstanceDescriptor as a source of customParameters to put into
+    the instance UFO.
+
+In the other direction, put information from UFO info or lib into
 
 Custom parameter data can be pre-parsed out of Glyphs data and provided via
 the `parsed` argument, otherwise `data` should be provided and will be
@@ -286,7 +305,7 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     'openTypeNameVersion',
     'openTypeNameUniqueID',
 
-    # TODO: look at https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
+    # TODO: (jany) look at https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
     # Use Name Table Entry for the next param
     'openTypeNameRecords',
 
@@ -330,7 +349,7 @@ for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))
 
 
-# TODO: handle dynamic version number replacement
+# TODO: (jany) handle dynamic version number replacement
 register(ParamHandler('versionString', 'openTypeNameVersion'))
 
 
@@ -352,7 +371,7 @@ register(ParamHandler(
     glyphs_name='codePageRanges',
     ufo_name='openTypeOS2CodePageRanges',
     value_to_ufo=lambda value: [CODEPAGE_RANGES[v] for v in value],
-    # TODO: handle KeyError, store into userData
+    # TODO: (jany) handle KeyError, store into userData
     value_to_glyphs=lambda value: [REVERSE_CODEPAGE_RANGES[v] for v in value if v in REVERSE_CODEPAGE_RANGES]
 ))
 # But don't do the conversion if the Glyphs param name is written in full
@@ -362,7 +381,7 @@ register(ParamHandler(
     # Don't do any conversion when writing to UFO
     # value_to_ufo=identity,
     # Don't use this handler to write back to Glyphs
-    value_to_glyphs=lambda value: value  # TODO: only write if contains non-codepage values
+    value_to_glyphs=lambda value: value # TODO: (jany) only write if contains non-codepage values
     # TODO: (jany) add test with non-codepage values
 ))
 
@@ -528,7 +547,12 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
                 tag, repl, ufo._owner.features.text or "")
 
     def to_glyphs(self, glyphs, ufo):
-        # TODO
+        # TODO: (jany) The "Replace Feature" custom parameter can be used to
+        # have one master/instance with different features than what is stored
+        # in the GSFont. When going from several UFOs to one GSFont, we could
+        # detect when UFOs have different features, put the common ones in
+        # GSFont and replace the different ones with this custom parameter.
+        # See the file `tests/builder/features_test.py`.
         pass
 
 register(ReplaceFeatureParamHandler())
@@ -558,8 +582,9 @@ def to_glyphs_custom_params(self, ufo, glyphs_object):
     for handler in KNOWN_PARAM_HANDLERS:
         handler.to_glyphs(glyphs_proxy, ufo_proxy)
 
-    # TODO: (jany) Make sure that all parameters of the UFO info have a handler
-    #              That way, only lib can have extra stuff
+    # Since all UFO `info` entries (from `fontinfo.plist`) have a registered
+    # handler, the only place where we can find unexpected stuff is the `lib`.
+    # See the file `tests/builder/fontinfo_test.py` for `fontinfo` coverage.
     prefix = CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key
     for name, value in ufo_proxy.unhandled_lib_items():
         name = _normalize_custom_param_name(name)

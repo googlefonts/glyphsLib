@@ -370,7 +370,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         instance = classes.GSInstance()
         # List of properties from https://docu.glyphsapp.com/#gsinstance
         # active
-        # FIXME: (jany) does not seem to be handled by this library? No doc?
         instance.active = True
         # name
         instance.name = "SemiBoldCompressed (name)"
@@ -1044,7 +1043,6 @@ rememberToDownloadARealRemindersApp = 1;}"'
         # hint.targetNode = 'up'
         # written = test_helpers.write_to_lines(hint)
         # self.assertIn('target = up;', written)
-
 
     def test_write_background_image(self):
         image = classes.GSBackgroundImage('/tmp/img.jpg')

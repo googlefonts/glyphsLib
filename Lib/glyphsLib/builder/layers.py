@@ -19,7 +19,45 @@ from __future__ import (print_function, division, absolute_import,
 from .constants import GLYPHS_PREFIX
 
 LAYER_ID_KEY = GLYPHS_PREFIX + 'layerId'
+LAYER_ORDER_PREFIX = GLYPHS_PREFIX + 'layerOrderInGlyph.'
 LAYER_ORDER_TEMP_USER_DATA_KEY = '__layerOrder'
+
+
+def to_ufo_layer(self, glyph, layer):
+    ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+    if layer.associatedMasterId == layer.layerId:
+        ufo_layer = ufo_font.layers.defaultLayer
+    elif layer.name not in ufo_font.layers:
+        ufo_layer = ufo_font.newLayer(layer.name)
+    else:
+        ufo_layer = ufo_font.layers[layer.name]
+    if self.minimize_glyphs_diffs:
+        ufo_layer.lib[LAYER_ID_KEY] = layer.layerId
+        ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
+            self, layer)
+    return ufo_layer
+
+
+def to_ufo_background_layer(self, ufo_glyph):
+    font = self.font
+    if ufo_glyph.layer.name != 'public.default':
+        layer_name = ufo_glyph.layer.name + '.background'
+    else:
+        layer_name = 'public.background'
+    font = ufo_glyph.font
+    if layer_name not in font.layers:
+        ufo_layer = font.newLayer(layer_name)
+    else:
+        ufo_layer = font.layers[layer_name]
+    return ufo_layer
+
+
+def _layer_order_in_glyph(self, layer):
+    # TODO: optimize?
+    for order, glyph_layer in enumerate(layer.parent.layers.values()):
+        if glyph_layer is layer:
+            return order
+    return None
 
 
 def to_glyphs_layer(self, ufo_layer, glyph, master):
@@ -54,7 +92,7 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
             layer.layerId = ufo_layer.lib[LAYER_ID_KEY]
         layer.name = ufo_layer.name
         glyph.layers.append(layer)
-    order_key = GLYPHS_PREFIX + 'layerOrderInGlyph.' + glyph.name
+    order_key = LAYER_ORDER_PREFIX + glyph.name
     if order_key in ufo_layer.lib:
         order = ufo_layer.lib[order_key]
         layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY] = order

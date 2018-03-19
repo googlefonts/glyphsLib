@@ -101,11 +101,6 @@ def to_glyphs_font_attributes(self, source, master, is_initial):
     master -- The current master being written
     is_initial -- True iff this the first UFO that we process
     """
-    # TODO: (jany) when is_initial, write to context.font without question
-    #     but when !is_initial, compare the last context.font.whatever and
-    #     what we would be writing, to guard against the info being
-    #     modified in only one of the UFOs in a MM. Maybe do this check later,
-    #     when the roundtrip without modification works.
     if is_initial:
         _set_glyphs_font_attributes(self, source)
     else:

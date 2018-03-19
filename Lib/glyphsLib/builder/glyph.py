@@ -97,7 +97,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
         pass
     elif category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
         # zero the width of Nonspacing Marks like Glyphs.app does on export
-        # TODO: check for customParameter DisableAllAutomaticBehaviour
+        # TODO: (jany) check for customParameter DisableAllAutomaticBehaviour
         # FIXME: (jany) also don't do that when rt UFO -> glyphs -> UFO
         ufo_glyph.lib[ORIGINAL_WIDTH_KEY] = width
         ufo_glyph.width = 0
@@ -165,11 +165,18 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     layer = self.to_glyphs_layer(ufo_layer, glyph, master)
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
-        for prefix, object in (('glyph.', glyph), ('layer.', layer)):
+        # Also read the old version of the key that didn't have a prefix and
+        # store it on the layer (because without the "glyph"/"layer" prefix we
+        # didn't know whether it originally came from the layer of the glyph,
+        # so it's easier to put it back on the most specific level, i.e. the
+        # layer)
+        for prefix, glyphs_object in (('glyph.', glyph),
+                                      ('', layer),
+                                      ('layer.', layer)):
             full_key = GLYPHLIB_PREFIX + prefix + key
             if full_key in ufo_glyph.lib:
                 value = ufo_glyph.lib[full_key]
-                setattr(object, key, value)
+                setattr(glyphs_object, key, value)
 
     if SCRIPT_LIB_KEY in ufo_glyph.lib:
         glyph.script = ufo_glyph.lib[SCRIPT_LIB_KEY]
@@ -199,7 +206,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         # Restore originalWidth
         if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
             layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
-            # TODO: check for customParameter DisableAllAutomaticBehaviour?
+            # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
 
     self.to_glyphs_background_image(ufo_glyph, layer)
     self.to_glyphs_guidelines(ufo_glyph, layer)
@@ -221,17 +228,7 @@ def to_ufo_glyph_background(self, glyph, layer):
         return
 
     background = layer.background
-
-    # FIXME: (jany) move most of this to layers.py
-    if glyph.layer.name != 'public.default':
-        layer_name = glyph.layer.name + '.background'
-    else:
-        layer_name = 'public.background'
-    font = glyph.font
-    if layer_name not in font.layers:
-        ufo_layer = font.newLayer(layer_name)
-    else:
-        ufo_layer = font.layers[layer_name]
+    ufo_layer = self.to_ufo_background_layer(glyph)
     new_glyph = ufo_layer.newGlyph(glyph.name)
 
     width = background.userData[BACKGROUND_WIDTH_KEY]
