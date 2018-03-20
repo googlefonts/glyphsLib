@@ -200,24 +200,10 @@ def to_glyphs_axes(self):
     if weight is not None:
         axes_parameter.append({'Name': weight.name or 'Weight', 'Tag': 'wght'})
         # TODO: (jany) store other data about this axis?
-    elif width is not None or customs:
-        # Add a dumb weight axis to not mess up the indices
-        # FIXME: (jany) I inferred this requirement from the code in
-        # https://github.com/googlei18n/glyphsLib/pull/306
-        # which seems to suggest that the first value is always weight and
-        # the second always width
-        axes_parameter.append({'Name': 'Weight', 'Tag': 'wght'})
 
     if width is not None:
         axes_parameter.append({'Name': width.name or 'Width', 'Tag': 'wdth'})
         # TODO: (jany) store other data about this axis?
-    elif customs:
-        # Add a dumb width axis to not mess up the indices
-        # FIXME: (jany) I inferred this requirement from the code in
-        # https://github.com/googlei18n/glyphsLib/pull/306
-        # which seems to suggest that the first value is always weight and
-        # the second always width
-        axes_parameter.append({'Name': 'Width', 'Tag': 'wdth'})
 
     for custom in customs:
         axes_parameter.append({
@@ -342,12 +328,51 @@ class AxisDefinition(object):
         setattr(ufo.info, ufo_key, class_)
 
 
-WEIGHT_AXIS_DEF = AxisDefinition('wght', 'Weight', 'weightValue', 100.0,
-                                 'weight', 'weightClass', 400.0)
-WIDTH_AXIS_DEF = AxisDefinition('wdth', 'Width', 'widthValue', 100.0,
-                                'width', 'widthClass', 100.0)
-CUSTOM_AXIS_DEF = AxisDefinition('XXXX', 'Custom', 'customValue', 0.0,
-                                 None, None, 0.0)
+class AxisDefinitionFactory(object):
+    """Creates a set of axis definitions, making sure to recognize default axes
+    (weight and width) and also keeping track of indices of custom axes.
+
+    From looking at a Glyphs file with only one custom axis, it looks like
+    when there is an "Axes" customParameter, the axis design locations are
+    stored in `weightValue` for the first axis (regardless of whether it is
+    a weight axis, `widthValue` for the second axis, etc.
+    """
+    def __init__(self):
+        self.axis_index = -1
+
+    def get(self, tag=None, name='Custom'):
+        self.axis_index += 1
+        design_loc_key = self._design_loc_key()
+        if tag is None:
+            if self.axis_index == 0:
+                tag = 'XXXX'
+            else:
+                tag = 'XXX%d' % self.axis_index
+
+        if tag == 'wght':
+            return AxisDefinition(tag, name, design_loc_key, 100.0, 'weight',
+                                  'weightClass', 400.0)
+        if tag == 'wdth':
+            return AxisDefinition(tag, name, design_loc_key, 100.0, 'width',
+                                  'widthClass', 100.0)
+        return AxisDefinition(tag, name, design_loc_key, 0.0, None, None, 0.0)
+
+    def _design_loc_key(self):
+        if self.axis_index == 0:
+            return 'weightValue'
+        elif self.axis_index == 1:
+            return 'widthValue'
+        elif self.axis_index == 2:
+            return 'customValue'
+        else:
+            return 'customValue%d' % (self.axis_index - 2)
+
+
+defaults_factory = AxisDefinitionFactory()
+
+WEIGHT_AXIS_DEF = defaults_factory.get('wght', 'Weight')
+WIDTH_AXIS_DEF = defaults_factory.get('wdth', 'Width')
+CUSTOM_AXIS_DEF = defaults_factory.get('XXXX', 'Custom')
 DEFAULT_AXES_DEFS = (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, CUSTOM_AXIS_DEF)
 
 
@@ -357,19 +382,11 @@ def get_axis_definitions(font):
     if axesParameter is None:
         return DEFAULT_AXES_DEFS
 
-    axesDef = []
-    designLocKeys = ('weightValue', 'widthValue', 'customValue',
-                     'customValue1', 'customValue2', 'customValue3')
-    defaultDesignLocs = (100.0, 100.0, 0.0, 0.0, 0.0, 0.0)
-    userLocKeys = ('weight', 'width', None, None, None, None)
-    userLocParams = ('weightClass', 'widthClass', None, None, None, None)
-    defaultUserLocs = (400.0, 100.0, 0.0, 0.0, 0.0, 0.0)
-    for idx, axis in enumerate(axesParameter):
-        axesDef.append(AxisDefinition(
-            axis.get("Tag", "XXX%d" % idx if idx > 0 else "XXXX"),
-            axis["Name"], designLocKeys[idx], defaultDesignLocs[idx],
-            userLocKeys[idx], userLocParams[idx], defaultUserLocs[idx]))
-    return axesDef
+    factory = AxisDefinitionFactory()
+    return [
+        factory.get(axis.get('Tag'), axis['Name'])
+        for axis in axesParameter
+    ]
 
 
 def _is_subset_of_default_axes(axes_parameter):
