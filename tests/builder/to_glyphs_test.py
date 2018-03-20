@@ -153,10 +153,11 @@ def test_groups():
     assert font.glyphs['T'].rightKerningGroup == 'T'
     assert font.glyphs['o'].leftKerningGroup == 'oe'
     assert font.glyphs['e'].leftKerningGroup == 'oe'
-    # In Glyphs, rightKerningGroup and leftKerningGroup refer to the sides of
-    # the glyph, they don't swap for RTL glyphs
-    assert font.glyphs['resh-hb'].leftKerningGroup == 'hebrewLikeT'
-    assert font.glyphs['samekh-hb'].rightKerningGroup == 'hebrewLikeO'
+    # ...and actually in Glyphs, the "rightKerningGroup" is NOT always on the
+    # right, but always matches "public.kern1" in UFO, so there is nothing
+    # special to do for RTL.
+    assert font.glyphs['resh-hb'].rightKerningGroup == 'hebrewLikeT'
+    assert font.glyphs['samekh-hb'].leftKerningGroup == 'hebrewLikeO'
 
     # Non-kerning groups are stored as classes
     assert font.classes['com.whatever.Te'].code == 'T e'
