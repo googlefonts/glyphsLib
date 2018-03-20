@@ -3009,7 +3009,7 @@ class GSFont(GSBase):
                 "Please supply a file path to a .glyphs file"
             with open(path, 'r', encoding='utf-8') as fp:
                 p = Parser()
-                logger.info('Parsing .glyphs file into %r', self)
+                logger.info('Parsing "%s" file into <GSFont>' % path)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
             for master in self.masters:
