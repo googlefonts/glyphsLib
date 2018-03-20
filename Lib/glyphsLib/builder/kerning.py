@@ -15,13 +15,17 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import logging
 import re
 
-logger = logging.getLogger(__name__)
+UFO_KERN_GROUP_PATTERN = re.compile('^public\\.kern([12])\\.(.*)$')
 
 
-def to_ufo_kerning(self, ufo, kerning_data):
+def to_ufo_kerning(self):
+    for master_id, kerning in self.font.kerning.items():
+        _to_ufo_kerning(self, self._sources[master_id].font, kerning)
+
+
+def _to_ufo_kerning(self, ufo, kerning_data):
     """Add .glyphs kerning to an UFO."""
 
     warning_msg = 'Non-existent glyph class %s found in kerning rules.'
@@ -33,16 +37,16 @@ def to_ufo_kerning(self, ufo, kerning_data):
         if left_is_class:
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
-                logger.warn(warning_msg % left)
-                continue
+                # self.logger.warn(warning_msg % left)
+                pass
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
             right_is_class = bool(match)
             if right_is_class:
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
-                    logger.warn(warning_msg % right)
-                    continue
+                    # self.logger.warn(warning_msg % right)
+                    pass
             if left_is_class != right_is_class:
                 if left_is_class:
                     pair = (left, right, True)
@@ -53,27 +57,32 @@ def to_ufo_kerning(self, ufo, kerning_data):
 
     seen = {}
     for classname, glyph, is_left_class in reversed(class_glyph_pairs):
-        _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class)
+        _remove_rule_if_conflict(self, ufo, seen, classname, glyph,
+                                 is_left_class)
 
 
-def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
+def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
     """Check if a class-to-glyph kerning rule has a conflict with any existing
     rule in `seen`, and remove any conflicts if they exist.
     """
-
     original_pair = (classname, glyph) if is_left_class else (glyph, classname)
     val = ufo.kerning[original_pair]
     rule = original_pair + (val,)
 
-    old_glyphs = ufo.groups[classname]
+    try:
+        old_glyphs = ufo.groups[classname]
+    except KeyError:
+        # This can happen. The main function `to_ufo_kerning` prints a warning.
+        return
+
     new_glyphs = []
     for member in old_glyphs:
         pair = (member, glyph) if is_left_class else (glyph, member)
         existing_rule = seen.get(pair)
         if (existing_rule is not None and
-            existing_rule[-1] != val and
-            pair not in ufo.kerning):
-            logger.warn(
+                existing_rule[-1] != val and
+                pair not in ufo.kerning):
+            self.logger.warn(
                 'Conflicting kerning rules found in %s master for glyph pair '
                 '"%s, %s" (%s and %s), removing pair from latter rule' %
                 ((ufo.info.styleName,) + pair + (existing_rule, rule)))
@@ -88,23 +97,15 @@ def _remove_rule_if_conflict(ufo, seen, classname, glyph, is_left_class):
             ufo.kerning[pair] = val
 
 
-def to_ufo_glyph_groups(self, kerning_groups, glyph_data):
-    """Add a glyph to its kerning groups, creating new groups if necessary."""
-
-    glyph_name = glyph_data.name
-    group_keys = {
-        '1': 'rightKerningGroup',
-        '2': 'leftKerningGroup'}
-    for side, group_key in group_keys.items():
-        group = getattr(glyph_data, group_key)
-        if group is None or len(group) == 0:
-            continue
-        group = 'public.kern%s.%s' % (side, group)
-        kerning_groups[group] = kerning_groups.get(group, []) + [glyph_name]
-
-
-def to_ufo_kerning_groups(self, ufo, kerning_groups):
-    """Add kerning groups to an UFO."""
-
-    for name, glyphs in kerning_groups.items():
-        ufo.groups[name] = glyphs
+def to_glyphs_kerning(self):
+    """Add UFO kerning to GSFont."""
+    for master_id, source in self._sources.items():
+        for (left, right), value in source.font.kerning.items():
+            left_match = UFO_KERN_GROUP_PATTERN.match(left)
+            right_match = UFO_KERN_GROUP_PATTERN.match(right)
+            if left_match:
+                left = '@MMK_L_{}'.format(left_match.group(2))
+            if right_match:
+                right = '@MMK_R_{}'.format(right_match.group(2))
+            self.font.setKerningForPair(master_id, left, right, value)
+    # FIXME: (jany) handle conflicts?

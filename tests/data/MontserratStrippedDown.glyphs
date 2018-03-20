@@ -1,0 +1,1010 @@
+{
+.appVersion = "1114";
+classes = (
+{
+automatic = 1;
+code = A;
+name = Uppercase;
+}
+);
+copyright = "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)";
+customParameters = (
+{
+name = fsType;
+value = (
+);
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = license;
+value = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL";
+},
+{
+name = licenseURL;
+value = "http://scripts.sil.org/OFL";
+},
+{
+name = vendorID;
+value = ULA;
+},
+{
+name = note;
+value = "strokes\012softsigns\012tick";
+},
+{
+name = "Disable Last Change";
+value = 1;
+},
+{
+name = "Use Line Breaks";
+value = 1;
+}
+);
+date = "2017-10-17 18:36:54 +0000";
+designer = "Julieta Ulanovsky";
+designerURL = "http://www.zkysky.com.ar/";
+familyName = Montserrat;
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+fontMaster = (
+{
+alignmentZones = (
+"{742, 10}",
+"{700, 10}",
+"{600, 10}",
+"{559, 10}",
+"{517, 10}",
+"{0, -10}",
+"{-100, -10}",
+"{-194, -10}"
+);
+ascender = 742;
+capHeight = 700;
+customParameters = (
+{
+name = typoAscender;
+value = 968;
+},
+{
+name = typoDescender;
+value = -251;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1109;
+},
+{
+name = winDescent;
+value = 270;
+},
+{
+name = hheaAscender;
+value = 968;
+},
+{
+name = hheaDescender;
+value = -251;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = smallCapHeight;
+value = 559;
+},
+{
+name = paramArea;
+value = "610";
+},
+{
+name = paramDepth;
+value = "30";
+},
+{
+name = paramOver;
+value = "6";
+}
+);
+descender = -194;
+horizontalStems = (
+19,
+19,
+19,
+19
+);
+id = UUID0;
+userData = {
+GSCornerRadius = 185;
+GSOffsetHorizontal = 10;
+GSOffsetMakeStroke = 1;
+GSOffsetProportional = 1;
+GSOffsetVertical = -15;
+};
+verticalStems = (
+20,
+20,
+20,
+20
+);
+weight = Light;
+weightValue = 20;
+xHeight = 517;
+},
+{
+alignmentZones = (
+"{742, 15}",
+"{700, 15}",
+"{600, 15}",
+"{570, 14}",
+"{532, 15}",
+"{0, -15}",
+"{-100, -15}",
+"{-194, -15}"
+);
+ascender = 742;
+capHeight = 700;
+customParameters = (
+{
+name = typoAscender;
+value = 968;
+},
+{
+name = typoDescender;
+value = -251;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1109;
+},
+{
+name = winDescent;
+value = 270;
+},
+{
+name = hheaAscender;
+value = 968;
+},
+{
+name = hheaDescender;
+value = -251;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = smallCapHeight;
+value = 570;
+},
+{
+name = paramArea;
+value = "473";
+},
+{
+name = paramDepth;
+value = "22";
+},
+{
+name = paramOver;
+value = "2";
+}
+);
+descender = -194;
+horizontalStems = (
+99,
+102,
+98,
+96
+);
+id = "708134FE-A11E-43C9-84F0-594DA15B6BD1";
+verticalStems = (
+114,
+115,
+110,
+111
+);
+weight = SemiBold;
+weightValue = 110;
+xHeight = 532;
+},
+{
+alignmentZones = (
+"{742, 20}",
+"{700, 20}",
+"{600, 20}",
+"{582, 18}",
+"{547, 20}",
+"{0, -20}",
+"{-100, -20}",
+"{-194, -20}"
+);
+ascender = 742;
+capHeight = 700;
+customParameters = (
+{
+name = typoAscender;
+value = 968;
+},
+{
+name = typoDescender;
+value = -251;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1109;
+},
+{
+name = winDescent;
+value = 270;
+},
+{
+name = hheaAscender;
+value = 968;
+},
+{
+name = hheaDescender;
+value = -251;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = smallCapHeight;
+value = 582;
+},
+{
+name = paramArea;
+value = "287";
+},
+{
+name = paramDepth;
+value = "12";
+},
+{
+name = paramOver;
+value = "0";
+}
+);
+descender = -194;
+guideLines = (
+{
+position = "{314, 609}";
+},
+{
+position = "{395, 716}";
+},
+{
+position = "{398, 742}";
+}
+);
+horizontalStems = (
+194,
+191,
+190,
+176
+);
+id = "5DA6E103-6A94-47F2-987D-4952DB8EA68E";
+userData = {
+GSCornerRadius = 61;
+GSOffsetHorizontal = 28;
+GSOffsetPosition = 0;
+GSOffsetProportional = 1;
+GSOffsetVertical = 20;
+};
+verticalStems = (
+236,
+244,
+226,
+229
+);
+weight = Bold;
+weightValue = 226;
+xHeight = 547;
+}
+);
+glyphs = (
+{
+glyphname = A;
+layers = (
+{
+anchors = (
+{
+name = bottom;
+position = "{344, 0}";
+},
+{
+name = ogonek;
+position = "{679, 0}";
+},
+{
+name = top;
+position = "{344, 700}";
+},
+{
+name = topleft;
+position = "{106, 700}";
+}
+);
+background = {
+paths = (
+{
+closed = 1;
+nodes = (
+"32 0 LINE",
+"349 684 LINE",
+"339 684 LINE",
+"656 0 LINE",
+"679 0 LINE",
+"354 700 LINE",
+"334 700 LINE",
+"9 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"581 187 LINE",
+"571 206 LINE",
+"116 206 LINE",
+"106 187 LINE"
+);
+}
+);
+};
+layerId = UUID0;
+paths = (
+{
+closed = 1;
+nodes = (
+"32 0 LINE",
+"349 684 LINE",
+"339 684 LINE",
+"656 0 LINE",
+"679 0 LINE",
+"354 700 LINE",
+"334 700 LINE",
+"9 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"571 211 LINE",
+"561 230 LINE",
+"126 230 LINE",
+"116 211 LINE"
+);
+}
+);
+width = 688;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{403, 0}";
+},
+{
+name = ogonek;
+position = "{825, 0}";
+},
+{
+name = top;
+position = "{403, 700}";
+},
+{
+name = topleft;
+position = "{121, 701}";
+}
+);
+background = {
+paths = (
+{
+closed = 1;
+nodes = (
+"221 0 LINE",
+"447 588 LINE",
+"355 588 LINE",
+"581 0 LINE",
+"825 0 LINE",
+"519 700 LINE",
+"287 700 LINE",
+"-19 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"605 102 LINE",
+"545 272 LINE",
+"223 272 LINE",
+"163 102 LINE"
+);
+}
+);
+};
+guideLines = (
+{
+angle = 245.556;
+position = "{234, 56}";
+}
+);
+layerId = "5DA6E103-6A94-47F2-987D-4952DB8EA68E";
+paths = (
+{
+closed = 1;
+nodes = (
+"221 0 LINE",
+"447 588 LINE",
+"355 588 LINE",
+"581 0 LINE",
+"825 0 LINE",
+"519 700 LINE",
+"287 700 LINE",
+"-19 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"605 122 LINE",
+"545 292 LINE",
+"223 292 LINE",
+"163 122 LINE"
+);
+}
+);
+width = 806;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{370, 0}";
+},
+{
+name = ogonek;
+position = "{743, 0}";
+},
+{
+name = top;
+position = "{370, 700}";
+},
+{
+name = topleft;
+position = "{113, 700}";
+}
+);
+background = {
+anchors = (
+{
+name = bottom;
+position = "{370, 0}";
+},
+{
+name = ogonek;
+position = "{743, 0}";
+},
+{
+name = top;
+position = "{370, 700}";
+},
+{
+name = topleft;
+position = "{113, 700}";
+}
+);
+paths = (
+{
+closed = 1;
+nodes = (
+"115 0 LINE",
+"392 637 LINE",
+"346 637 LINE",
+"623 0 LINE",
+"743 0 LINE",
+"426 700 LINE",
+"313 700 LINE",
+"-3 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"586 168 LINE",
+"554 260 LINE",
+"168 260 LINE",
+"137 168 LINE"
+);
+}
+);
+};
+layerId = "708134FE-A11E-43C9-84F0-594DA15B6BD1";
+paths = (
+{
+closed = 1;
+nodes = (
+"115 0 LINE",
+"392 637 LINE",
+"346 637 LINE",
+"623 0 LINE",
+"743 0 LINE",
+"426 700 LINE",
+"313 700 LINE",
+"-3 0 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"586 168 LINE",
+"554 260 LINE",
+"168 260 LINE",
+"137 168 LINE"
+);
+}
+);
+width = 740;
+}
+);
+leftKerningGroup = A;
+rightKerningGroup = A;
+rightMetricsKey = "=|";
+unicode = 0041;
+}
+);
+instances = (
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 20;
+instanceInterpolations = {
+UUID0 = 1;
+};
+name = Thin;
+weightClass = Thin;
+},
+{
+customParameters = (
+{
+name = weightClass;
+value = 275;
+},
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 33;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.14444;
+UUID0 = 0.85556;
+};
+name = ExtraLight;
+weightClass = ExtraLight;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 50;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.33333;
+UUID0 = 0.66667;
+};
+name = Light;
+weightClass = Light;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 71;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.56667;
+UUID0 = 0.43333;
+};
+name = Regular;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 96;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.84444;
+UUID0 = 0.15556;
+};
+name = Medium;
+weightClass = Medium;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 125;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.12931;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.87069;
+};
+name = SemiBold;
+weightClass = SemiBold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 156;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.39655;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.60345;
+};
+isBold = 1;
+name = Bold;
+weightClass = Bold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 190;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.68966;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.31034;
+};
+name = ExtraBold;
+weightClass = ExtraBold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+}
+);
+interpolationWeight = 226;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 1;
+};
+name = Black;
+weightClass = Black;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 20;
+instanceInterpolations = {
+UUID0 = 1;
+};
+name = Thin;
+weightClass = Thin;
+},
+{
+customParameters = (
+{
+name = weightClass;
+value = 275;
+},
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 33;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.14444;
+UUID0 = 0.85556;
+};
+name = ExtraLight;
+weightClass = ExtraLight;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 50;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.33333;
+UUID0 = 0.66667;
+};
+name = Light;
+weightClass = Light;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 71;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.56667;
+UUID0 = 0.43333;
+};
+name = Regular;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 96;
+instanceInterpolations = {
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.84444;
+UUID0 = 0.15556;
+};
+name = Medium;
+weightClass = Medium;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 125;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.12931;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.87069;
+};
+name = SemiBold;
+weightClass = SemiBold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 156;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.39655;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.60345;
+};
+isBold = 1;
+name = Bold;
+weightClass = Bold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 190;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 0.68966;
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = 0.31034;
+};
+name = ExtraBold;
+weightClass = ExtraBold;
+},
+{
+customParameters = (
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = Filter;
+value = AddExtremes;
+},
+{
+name = familyName;
+value = "Montserrat Alternates";
+}
+);
+interpolationWeight = 226;
+instanceInterpolations = {
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = 1;
+};
+name = Black;
+weightClass = Black;
+}
+);
+manufacturer = "Julieta Ulanovsky";
+manufacturerURL = "http://www.zkysky.com.ar/";
+unitsPerEm = 1000;
+userData = {
+GSDimensionPlugin.Dimensions = {
+"1C84A7F3-C40A-4DC1-B8B4-102D183C348F" = {
+HV = 20;
+};
+"5DA6E103-6A94-47F2-987D-4952DB8EA68E" = {
+HH = "194";
+HV = "236";
+OH = "191";
+OV = "238";
+nV = "226";
+nd = "190";
+oH = "176";
+oV = "229";
+tH = "165";
+};
+"708134FE-A11E-43C9-84F0-594DA15B6BD1" = {
+HH = "99";
+HV = "114";
+};
+"D46AABC6-AB7D-4C0B-AE2B-3079AD121F41" = {
+HV = 232;
+};
+UUID0 = {
+HH = 20;
+HV = 20;
+OH = 20;
+OV = 20;
+nV = 20;
+nd = 15;
+oH = 20;
+oV = 20;
+tH = 20;
+};
+UUID1 = {
+HH = 150;
+HV = 190;
+OH = 165;
+OV = 200;
+};
+};
+};
+versionMajor = 7;
+versionMinor = 200;
+}

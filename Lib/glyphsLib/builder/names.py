@@ -17,29 +17,45 @@ from __future__ import (print_function, division, absolute_import,
 
 from collections import deque
 
+from .constants import GLYPHS_PREFIX
+
 
 def to_ufo_names(self, ufo, master, family_name):
     width = master.width
     weight = master.weight
     custom = master.customName
+
+    if weight:
+        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+    if width:
+        ufo.lib[GLYPHS_PREFIX + 'width'] = width
+    if custom:
+        ufo.lib[GLYPHS_PREFIX + 'customName'] = master.customName
+
     is_italic = bool(master.italicAngle)
 
-    styleName = build_style_name(
-        width if width != 'Regular' else '',
+    styleName = master.name or build_style_name(
+        width if width != 'Medium (normal)' else '',
         weight if weight != 'Regular' else '',
         custom,
         is_italic
     )
-    styleMapFamilyName, styleMapStyleName = build_stylemap_names(
-        family_name=family_name,
-        style_name=styleName,
-        is_bold=(styleName == 'Bold'),
-        is_italic=is_italic
-    )
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
-    ufo.info.styleMapFamilyName = styleMapFamilyName
-    ufo.info.styleMapStyleName = styleMapStyleName
+
+    # FIXME: (jany) should be the responsibility of ufo2ft?
+    # Anyway, only generate the styleMap names if we're not round-tripping
+    # (i.e. generating UFOs for fontmake, the traditional use-case of
+    # glyphsLib.)
+    if not self.minimize_glyphs_diffs:
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
+            family_name=family_name,
+            style_name=styleName,
+            is_bold=(styleName == 'Bold'),
+            is_italic=is_italic
+        )
+        ufo.info.styleMapFamilyName = styleMapFamilyName
+        ufo.info.styleMapStyleName = styleMapStyleName
 
 
 def build_stylemap_names(family_name, style_name, is_bold=False,
@@ -65,7 +81,7 @@ def build_stylemap_names(family_name, style_name, is_bold=False,
     if not linked_style or linked_style == 'Regular':
         linked_style = _get_linked_style(style_name, is_bold, is_italic)
     if linked_style:
-        styleMapFamilyName = family_name + ' ' + linked_style
+        styleMapFamilyName = (family_name or '') + ' ' + linked_style
     else:
         styleMapFamilyName = family_name
     return styleMapFamilyName, styleMapStyleName
@@ -96,3 +112,22 @@ def _get_linked_style(style_name, is_bold, is_italic):
         else:
             linked_style.appendleft(part)
     return ' '.join(linked_style)
+
+
+def to_glyphs_family_names(self, ufo, merge=False):
+    if not merge:
+        # First UFO
+        self.font.familyName = ufo.info.familyName
+    else:
+        # Subsequent UFOs
+        if self.font.familyName != ufo.info.familyName:
+            raise RuntimeError('All UFOs should have the same family name.')
+
+
+def to_glyphs_master_names(self, ufo, master):
+    name = ufo.info.styleName
+    weight = ufo.lib.get(GLYPHS_PREFIX + 'weight')
+    width = ufo.lib.get(GLYPHS_PREFIX + 'width')
+    custom = ufo.lib.get(GLYPHS_PREFIX + 'customName')
+
+    master.set_all_name_components(name, weight, width, custom)

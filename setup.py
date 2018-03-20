@@ -156,6 +156,7 @@ with open('README.rst', 'r') as f:
 
 test_requires = [
     'pytest>=2.8',
+    'ufoNormalizer>=0.3.2',
 ]
 if sys.version_info < (3, 3):
     test_requires.append('mock>=2.0.0')
@@ -179,7 +180,7 @@ setup(
     setup_requires=pytest_runner + wheel + bump2version,
     tests_require=test_requires,
     install_requires=[
-        "fonttools>=3.4.0",
+        "fonttools>=3.24.0",
         "defcon>=0.3.0",
         "MutatorMath>=2.0.4",
     ],

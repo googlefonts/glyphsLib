@@ -17,18 +17,19 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from io import open
+import os
 import logging
 
 from fontTools.misc.py23 import tostr
 
-from glyphsLib.builder import to_ufos
-from glyphsLib.interpolation import interpolate, build_designspace
-from glyphsLib.parser import load, loads
-from glyphsLib.writer import dump, dumps
-from glyphsLib.util import write_ufo
-
 from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
+from glyphsLib.builder import to_ufos, to_designspace, to_glyphs
+from glyphsLib.builder.instances import InstanceData
+from glyphsLib.interpolation import interpolate
+from glyphsLib.parser import load, loads
+from glyphsLib.writer import dump, dumps
+from glyphsLib.util import clean_ufo
 
 __version__ = "2.2.2.dev0"
 
@@ -76,16 +77,29 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
         paths from the designspace and respective data from the Glyphs source.
     """
 
-    ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name,
-        propagate_anchors=propagate_anchors)
+    font = GSFont(filename)
+    instance_dir = None
     if designspace_instance_dir is not None:
-        designspace_path, instance_data = build_designspace(
-            ufos, master_dir, designspace_instance_dir, instance_data)
-        return ufos, designspace_path, instance_data
+        instance_dir = os.path.relpath(designspace_instance_dir, master_dir)
+    designspace = to_designspace(
+        font, family_name=family_name, propagate_anchors=propagate_anchors,
+        instance_dir=instance_dir)
+    ufos = []
+    for source in designspace.sources:
+        ufos.append(source.font)
+        ufo_path = os.path.join(master_dir, source.filename)
+        clean_ufo(ufo_path)
+        source.font.save(ufo_path)
+
+    if designspace_instance_dir is not None:
+        designspace_path = os.path.join(master_dir, designspace.filename)
+        designspace.write(designspace_path)
+        # All the instance data should be in the designspace. That's why for
+        # now we return the full designspace in place of `instance_data`.
+        # However, other functions still expect the instance data to have
+        # a list of (path, something) tuples, hence the class `InstanceData`.
+        return ufos, designspace_path, InstanceData(designspace)
     else:
-        for ufo in ufos:
-            write_ufo(ufo, master_dir)
         return ufos
 
 

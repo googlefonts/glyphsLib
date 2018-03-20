@@ -18,10 +18,14 @@ from __future__ import (print_function, division, absolute_import,
 from collections import deque, OrderedDict
 import logging
 
-from .common import to_ufo_time
-from .constants import GLYPHS_PREFIX
+from .common import to_ufo_time, from_ufo_time
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 
 logger = logging.getLogger(__name__)
+
+APP_VERSION_LIB_KEY = GLYPHS_PREFIX + 'appVersion'
+KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + 'keyboardIncrement'
+MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + 'fontMasterOrder'
 
 
 def to_ufo_font_attributes(self, family_name):
@@ -45,9 +49,16 @@ def to_ufo_font_attributes(self, family_name):
     designer_url = font.designerURL
     manufacturer = font.manufacturer
     manufacturer_url = font.manufacturerURL
+    note = font.note
+    glyph_order = list(glyph.name for glyph in font.glyphs)
 
-    for master in font.masters:
+    for index, master in enumerate(font.masters):
+        source = self._designspace.newSourceDescriptor()
         ufo = self.ufo_module.Font()
+        source.font = ufo
+
+        ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
+        ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
 
         if date_created is not None:
             ufo.info.openTypeHeadCreated = date_created
@@ -66,49 +77,21 @@ def to_ufo_font_attributes(self, family_name):
         if manufacturer_url:
             ufo.info.openTypeNameManufacturerURL = manufacturer_url
 
-        ufo.info.ascender = master.ascender
-        ufo.info.capHeight = master.capHeight
-        ufo.info.descender = master.descender
-        ufo.info.xHeight = master.xHeight
-
-        horizontal_stems = master.horizontalStems
-        vertical_stems = master.verticalStems
-        italic_angle = -master.italicAngle
-        if horizontal_stems:
-            ufo.info.postscriptStemSnapH = horizontal_stems
-        if vertical_stems:
-            ufo.info.postscriptStemSnapV = vertical_stems
-        if italic_angle:
-            ufo.info.italicAngle = italic_angle
-
-        width = master.width
-        weight = master.weight
-        if weight:
-            ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
-        if width:
-            ufo.lib[GLYPHS_PREFIX + 'width'] = width
-        for number in ('', '1', '2', '3'):
-            custom_name = getattr(master, 'customName' + number)
-            if custom_name:
-                ufo.lib[GLYPHS_PREFIX + 'customName' + number] = custom_name
-            custom_value = getattr(master, 'customValue' + number)
-            if custom_value:
-                ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
+        ufo.glyphOrder = glyph_order
 
         self.to_ufo_names(ufo, master, family_name)
-        self.to_ufo_blue_values(ufo, master)
         self.to_ufo_family_user_data(ufo)
-        self.to_ufo_master_user_data(ufo, master)
-        self.to_ufo_guidelines(ufo, master)
-        self.to_ufo_custom_params(ufo, master)
+        self.to_ufo_custom_params(ufo, font)
 
-        master_id = master.id
-        ufo.lib[GLYPHS_PREFIX + 'fontMasterID'] = master_id
-        # FIXME: (jany) in the future, yield this UFO (for memory, laze iter)
-        self._ufos[master_id] = ufo
+        self.to_ufo_master_attributes(source, master)
+
+        ufo.lib[MASTER_ORDER_LIB_KEY] = index
+        # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
+        self._designspace.addSource(source)
+        self._sources[master.id] = source
 
 
-def to_glyphs_font_attributes(self, ufo, master, is_initial):
+def to_glyphs_font_attributes(self, source, master, is_initial):
     """
     Copy font attributes from `ufo` either to `self.font` or to `master`.
 
@@ -118,5 +101,61 @@ def to_glyphs_font_attributes(self, ufo, master, is_initial):
     master -- The current master being written
     is_initial -- True iff this the first UFO that we process
     """
-    master.id = ufo.lib[GLYPHS_PREFIX + 'fontMasterID']
-    # TODO: all the other attributes
+    if is_initial:
+        _set_glyphs_font_attributes(self, source)
+    else:
+        _compare_and_merge_glyphs_font_attributes(self, source)
+
+
+def _set_glyphs_font_attributes(self, source):
+    font = self.font
+    ufo = source.font
+    info = ufo.info
+
+    if APP_VERSION_LIB_KEY in ufo.lib:
+        font.appVersion = ufo.lib[APP_VERSION_LIB_KEY]
+    if KEYBOARD_INCREMENT_KEY in ufo.lib:
+        font.keyboardIncrement = ufo.lib[KEYBOARD_INCREMENT_KEY]
+
+    if info.openTypeHeadCreated is not None:
+        # FIXME: (jany) should wrap in glyphs_datetime? or maybe the GSFont
+        #     should wrap in glyphs_datetime if needed?
+        font.date = from_ufo_time(info.openTypeHeadCreated)
+    font.upm = info.unitsPerEm
+    if info.versionMajor is not None:
+        font.versionMajor = info.versionMajor
+    if info.versionMinor is not None:
+        font.versionMinor = info.versionMinor
+
+    if info.copyright is not None:
+        font.copyright = info.copyright
+    if info.openTypeNameDesigner is not None:
+        font.designer = info.openTypeNameDesigner
+    if info.openTypeNameDesignerURL is not None:
+        font.designerURL = info.openTypeNameDesignerURL
+    if info.openTypeNameManufacturer is not None:
+        font.manufacturer = info.openTypeNameManufacturer
+    if info.openTypeNameManufacturerURL is not None:
+        font.manufacturerURL = info.openTypeNameManufacturerURL
+
+    self.to_glyphs_family_names(ufo)
+    self.to_glyphs_family_user_data_from_ufo(ufo)
+    self.to_glyphs_custom_params(ufo, font)
+
+
+def _compare_and_merge_glyphs_font_attributes(self, source):
+    ufo = source.font
+    self.to_glyphs_family_names(ufo, merge=True)
+
+
+def to_glyphs_ordered_masters(self):
+    """Modify in-place the list of UFOs to restore their original order in
+    the Glyphs file (if any, otherwise does not change the order)."""
+    return sorted(self.designspace.sources, key=_original_master_order)
+
+
+def _original_master_order(source):
+    try:
+        return source.font.lib[MASTER_ORDER_LIB_KEY]
+    except KeyError:
+        return 1 << 31

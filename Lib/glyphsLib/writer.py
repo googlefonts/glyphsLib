@@ -116,15 +116,15 @@ class Writer(object):
         self.file.write("}")
 
     def writeValue(self, value, forKey=None, forType=None):
-        if isinstance(value, (list, glyphsLib.classes.Proxy)):
+        if hasattr(value, "plistValue"):
+            value = value.plistValue()
+            if value is not None:
+                self.file.write(value)
+        elif isinstance(value, (list, glyphsLib.classes.Proxy)):
             if isinstance(value, glyphsLib.classes.UserDataProxy):
                 self.writeUserData(value)
             else:
                 self.writeArray(value)
-        elif hasattr(value, "plistValue"):
-            value = value.plistValue()
-            if value is not None:
-                self.file.write(value)
         elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
         elif type(value) == float:

@@ -20,23 +20,64 @@ from __future__ import (print_function, division, absolute_import,
 import unittest
 import subprocess
 import os
+import glob
 
-import test_helpers
+import glyphsLib.__main__
+import glyphsLib.parser
 
 
-class MainTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def test_parser_main(self):
-        """This is both a test for the "main" functionality of glyphsLib.parser
-        and for the round-trip of GlyphsUnitTestSans.glyphs.
-        """
-        filename = os.path.join(
-            os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
-        with open(filename) as f:
-            expected = f.read()
-        out = subprocess.check_output(
-            ['python', '-m', 'glyphsLib.parser', filename],
-            universal_newlines=True)  # Windows gives \r\n otherwise
-        self.assertLinesEqual(
-            str(expected.splitlines()),
-            str(out.splitlines()),
-            'The roundtrip should output the .glyphs file unmodified.')
+def test_glyphs_main_masters(tmpdir):
+    """Tests the main of glyphsLib and also the `build_masters` function
+    that `fontmake` uses.
+    """
+    filename = os.path.join(
+        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
+
+    glyphsLib.__main__.main(['-g', filename, '-m', master_dir])
+
+    assert glob.glob(master_dir + '/*.ufo')
+
+
+def test_glyphs_main_instances(tmpdir):
+    filename = os.path.join(
+        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
+    inst_dir = os.path.join(str(tmpdir), 'inst_ufos_test')
+
+    glyphsLib.__main__.main(['-g', filename, '-m', master_dir, '-n', inst_dir])
+
+    assert glob.glob(master_dir + '/*.ufo')
+    assert glob.glob(inst_dir + '/*.ufo')
+
+
+def test_glyphs_main_instances_relative_dir(tmpdir):
+    filename = os.path.join(
+        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+    master_dir = 'master_ufos_test'
+    inst_dir = 'inst_ufos_test'
+
+    cwd = os.getcwd()
+    try:
+        os.chdir(str(tmpdir))
+        glyphsLib.__main__.main(
+            ['-g', filename, '-m', master_dir, '-n', inst_dir])
+
+        assert glob.glob(master_dir + '/*.ufo')
+        assert glob.glob(inst_dir + '/*.ufo')
+    finally:
+        os.chdir(cwd)
+
+
+def test_parser_main(capsys):
+    """This is both a test for the "main" functionality of glyphsLib.parser
+    and for the round-trip of GlyphsUnitTestSans.glyphs.
+    """
+    filename = os.path.join(
+        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+    with open(filename) as f:
+        expected = f.read()
+
+    glyphsLib.parser.main([filename])
+    out, _err = capsys.readouterr()
+    assert expected == out, 'The roundtrip should output the .glyphs file unmodified.'

@@ -20,18 +20,19 @@ from __future__ import (
 
 import os
 import datetime
-import unittest
 import copy
+import unittest
+import pytest
 from fontTools.misc.py23 import unicode
 
 from glyphsLib.classes import (
     GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
     GSAnchor, GSComponent, GSAlignmentZone, GSClass, GSFeature, GSAnnotation,
     GSFeaturePrefix, GSGuideLine, GSHint, GSNode, GSSmartComponentAxis,
-    LayerComponentsProxy, LayerGuideLinesProxy,
+    GSBackgroundImage, LayerComponentsProxy, LayerGuideLinesProxy,
     STEM, TEXT, ARROW, CIRCLE, PLUS, MINUS
 )
-from glyphsLib.types import point, transform, rect, size
+from glyphsLib.types import Point, Transform, Rect, Size
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__),
@@ -514,7 +515,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         master.guides = []
         self.assertEqual(len(master.guides), 0)
         newGuide = GSGuideLine()
-        newGuide.position = point("{100, 100}")
+        newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         master.guides.append(newGuide)
         self.assertIsNotNone(master.guides[0].__repr__())
@@ -527,7 +528,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         master.guides = []
         self.assertEqual(len(master.guides), 0)
         newGuide = GSGuideLine()
-        newGuide.position = point("{100, 100}")
+        newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         master.guides.append(newGuide)
         self.assertIsNotNone(master.guides[0].__repr__())
@@ -562,21 +563,86 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual('Light', master.name)
 
         master.italicAngle = 11
-        self.assertEqual('Light Italic', master.name)
+        # self.assertEqual('Light Italic', master.name)
+        # That doesn't do anything in the latest Glyphs (1114)
+        self.assertEqual('Light', master.name)
         master.italicAngle = 0
 
         master.customName = 'Rounded'
         self.assertEqual('Light Rounded', master.name)
-        master.customName1 = 'Stretched'
-        master.customName2 = 'Filled'
-        master.customName3 = 'Rotated'
+        master.customName = 'Rounded Stretched Filled Rotated'
         self.assertEqual('Light Rounded Stretched Filled Rotated', master.name)
-        master.customName1 = ''
-        master.customName2 = ''
-        self.assertEqual('Light Rounded Rotated', master.name)
         master.customName = ''
-        master.customName3 = ''
         self.assertEqual('Light', master.name)
+
+        # Test the name of a master set to "Regular" in the UI dropdown
+        # but with a customName
+        thin = GSFontMaster()
+        thin.customName = 'Thin'
+        self.assertEqual('Thin', thin.name)
+
+    def test_name_assignment(self):
+        test_data = [
+            # Regular
+            ('Regular', '', '', ''),
+            # Weights from the dropdown
+            ('Light', 'Light', '', ''),
+            ('SemiLight', 'SemiLight', '', ''),
+            ('SemiBold', 'SemiBold', '', ''),
+            ('Bold', 'Bold', '', ''),
+            # Widths from the dropdown
+            ('Condensed', '', 'Condensed', ''),
+            ('SemiCondensed', '', 'SemiCondensed', ''),
+            ('SemiExtended', '', 'SemiExtended', ''),
+            ('Extended', '', 'Extended', ''),
+            # Mixed weight and width from dropdowns
+            ('Light Condensed', 'Light', 'Condensed', ''),
+            ('Bold SemiExtended', 'Bold', 'SemiExtended', ''),
+            # With italic -- in Glyphs 1114  works like a custom part
+            ('Light Italic', 'Light', '', 'Italic'),
+            ('SemiLight Italic', 'SemiLight', '', 'Italic'),
+            ('SemiBold Italic', 'SemiBold', '', 'Italic'),
+            ('Bold Italic', 'Bold', '', 'Italic'),
+            ('Condensed Italic', '', 'Condensed', 'Italic'),
+            ('SemiCondensed Italic', '', 'SemiCondensed', 'Italic'),
+            ('SemiExtended Italic', '', 'SemiExtended', 'Italic'),
+            ('Extended Italic', '', 'Extended', 'Italic'),
+            ('Light Condensed Italic', 'Light', 'Condensed', 'Italic'),
+            ('Bold SemiExtended Italic', 'Bold', 'SemiExtended', 'Italic'),
+            # With custom parts
+            ('Thin', '', '', 'Thin'),
+            ('SemiLight Ultra Expanded', 'SemiLight', '', 'Ultra Expanded'),
+            ('Bold Compressed', 'Bold', '', 'Compressed'),
+            ('Fat Condensed', '', 'Condensed', 'Fat'),
+            ('Ultra Light Extended', 'Light', 'Extended', 'Ultra'),
+            ('Hyper Light Condensed Dunhill', 'Light', 'Condensed', 'Hyper  Dunhill'),
+            ('Bold SemiExtended Rugged', 'Bold', 'SemiExtended', 'Rugged'),
+            ('Thin Italic', '', '', 'Thin Italic'),
+            ('SemiLight Ultra Expanded Italic', 'SemiLight', '', 'Ultra Expanded Italic'),
+            ('Bold Compressed Italic', 'Bold', '', 'Compressed Italic'),
+            ('Fat Condensed Italic', '', 'Condensed', 'Fat Italic'),
+            ('Ultra Light Extended Italic', 'Light', 'Extended', 'Ultra  Italic'),
+            ('Hyper Light Condensed Dunhill Italic', 'Light', 'Condensed', 'Hyper  Dunhill Italic'),
+            ('Bold SemiExtended Rugged Italic', 'Bold', 'SemiExtended', 'Rugged Italic'),
+            ('Green Light Red Extended Blue', 'Light', 'Extended', 'Green Red Blue'),
+            ('Green SemiExtended Red SemiBold Blue', 'SemiBold', 'SemiExtended', 'Green Red Blue'),
+        ]
+        master = GSFontMaster()
+        for name, weight, width, custom in test_data:
+            master.name = name
+            self.assertEqual(master.name, name)
+            self.assertEqual(master.weight, weight or 'Regular')
+            self.assertEqual(master.width, width or 'Regular')
+            self.assertEqual(master.customName, custom)
+
+    def test_default_values(self):
+        master = GSFontMaster()
+        self.assertEqual(master.weightValue, 100.0)
+        self.assertEqual(master.widthValue, 100.0)
+        self.assertEqual(master.customValue, 0.0)
+        self.assertEqual(master.customValue1, 0.0)
+        self.assertEqual(master.customValue2, 0.0)
+        self.assertEqual(master.customValue3, 0.0)
 
 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
@@ -698,6 +764,15 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         # self.assertIsInstance(instance.interpolatedFont, type(Glyphs.font))
 
         # TODO generate()
+
+    def test_default_values(self):
+        instance = GSInstance()
+        self.assertEqual(instance.weightValue, 100.0)
+        self.assertEqual(instance.widthValue, 100.0)
+        self.assertEqual(instance.customValue, 0.0)
+        self.assertEqual(instance.customValue1, 0.0)
+        self.assertEqual(instance.customValue2, 0.0)
+        self.assertEqual(instance.customValue3, 0.0)
 
 
 class GSGlyphFromFileTest(GSObjectsTestCase):
@@ -961,7 +1036,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         layer.guides = []
         self.assertEqual(len(layer.guides), 0)
         newGuide = GSGuideLine()
-        newGuide.position = point("{100, 100}")
+        newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         amount = len(layer.guides)
         layer.guides.append(newGuide)
@@ -1069,7 +1144,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         layer.anchors['top'] = GSAnchor()
         self.assertGreaterEqual(len(layer.anchors), 1)
         self.assertIsNotNone(layer.anchors['top'].__repr__())
-        layer.anchors['top'].position = point("{100, 100}")
+        layer.anchors['top'].position = Point("{100, 100}")
         # anchor = copy.copy(layer.anchors['top'])
         del layer.anchors['top']
         layer.anchors['top'] = GSAnchor()
@@ -1113,6 +1188,32 @@ class GSLayerFromFileTest(GSObjectsTestCase):
 
     def test_background(self):
         self.assertIn('GSBackgroundLayer', self.layer.background.__repr__())
+
+    def test_backgroundImage(self):
+        # The selected layer (0 of glyph 'a') doesn't have one
+        self.assertIsNone(self.layer.backgroundImage)
+
+        glyph = self.font.glyphs['A']
+        layer = glyph.layers[0]
+        image = layer.backgroundImage
+        self.assertIsInstance(image, GSBackgroundImage)
+        # Values from the file
+        self.assertEqual('A.jpg', image.path)
+        self.assertEqual([0.0, 0.0, 489.0, 637.0], list(image.crop))
+        # Default values
+        self.assertEqual(50, image.alpha)
+        self.assertEqual([1, 0, 0, 1, 0, 0], image.transform.value)
+        self.assertEqual(False, image.locked)
+
+        # Test documented behaviour of "alpha"
+        image.alpha = 10
+        self.assertEqual(10, image.alpha)
+        image.alpha = 9
+        self.assertEqual(50, image.alpha)
+        image.alpha = 100
+        self.assertEqual(100, image.alpha)
+        image.alpha = 101
+        self.assertEqual(50, image.alpha)
 
     # TODO?
     # bezierPath, openBezierPath, completeBezierPath, completeOpenBezierPath?
@@ -1205,7 +1306,7 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertEqual(len(layer.components), 2)
 
     def test_position(self):
-        self.assertIsInstance(self.component.position, point)
+        self.assertIsInstance(self.component.position, Point)
 
     def test_componentName(self):
         self.assertUnicode(self.component.componentName)
@@ -1217,11 +1318,11 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertFloat(self.component.rotation)
 
     def test_transform(self):
-        self.assertIsInstance(self.component.transform, transform)
+        self.assertIsInstance(self.component.transform, Transform)
         self.assertEqual(len(self.component.transform.value), 6)
 
     def test_bounds(self):
-        self.assertIsInstance(self.component.bounds, rect)
+        self.assertIsInstance(self.component.bounds, Rect)
         bounds = self.component.bounds
         self.assertEqual(bounds.origin.x, 80)
         self.assertEqual(bounds.origin.y, -10)
@@ -1322,16 +1423,16 @@ class GSPathFromFileTest(GSObjectsTestCase):
         for node in path.nodes:
             self.assertEqual(node.parent, path)
         amount = len(path.nodes)
-        newNode = GSNode(point("{100, 100}"))
+        newNode = GSNode(Point("{100, 100}"))
         path.nodes.append(newNode)
         self.assertEqual(newNode, path.nodes[-1])
         del path.nodes[-1]
-        newNode = GSNode(point("{20, 20}"))
+        newNode = GSNode(Point("{20, 20}"))
         path.nodes.insert(0, newNode)
         self.assertEqual(newNode, path.nodes[0])
         path.nodes.remove(path.nodes[0])
-        newNode1 = GSNode(point("{10, 10}"))
-        newNode2 = GSNode(point("{20, 20}"))
+        newNode1 = GSNode(Point("{10, 10}"))
+        newNode2 = GSNode(Point("{20, 20}"))
         path.nodes.extend([newNode1, newNode2])
         self.assertEqual(newNode1, path.nodes[-2])
         self.assertEqual(newNode2, path.nodes[-1])
@@ -1377,7 +1478,7 @@ class GSNodeFromFileTest(GSObjectsTestCase):
         self.assertIsNotNone(self.node.__repr__())
 
     def test_position(self):
-        self.assertIsInstance(self.node.position, point)
+        self.assertIsInstance(self.node.position, Point)
 
     def test_type(self):
         self.assertTrue(self.node.type in
@@ -1452,6 +1553,66 @@ class GSCustomParameterTest(unittest.TestCase):
             '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'
             '\nkey2 = value2;\n};\n}'
         )
+
+
+class GSBackgroundLayerTest(unittest.TestCase):
+    """Goal: forbid in glyphsLib all the GSLayer.background APIs that don't
+    work in Glyphs.app, so that the code we write for glyphsLib is sure to
+    work in Glyphs.app
+    """
+    def setUp(self):
+        self.layer = GSLayer()
+        self.bg = self.layer.background
+
+    def test_get_GSLayer_background(self):
+        """It should always return a GSLayer (actually a GSBackgroundLayer but
+        it's a subclass of GSLayer so it's ok)
+        """
+        self.assertIsInstance(self.bg, GSLayer)
+        bg2 = self.layer.background
+        self.assertEqual(self.bg, bg2)
+
+    def test_set_GSLayer_background(self):
+        """It should raise because it behaves strangely in Glyphs.app.
+        The only way to modify a background layer in glyphsLib is to get it
+        from a GSLayer object.
+        """
+        with pytest.raises(AttributeError):
+            self.layer.background = GSLayer()
+
+    def test_get_GSLayer_foreground(self):
+        """It should raise AttributeError, as in Glyphs.app"""
+        with pytest.raises(AttributeError):
+            fg = self.layer.foreground
+
+    def test_set_GSLayer_foreground(self):
+        with pytest.raises(AttributeError):
+            self.layer.foreground = GSLayer()
+
+    def test_get_GSBackgroundLayer_background(self):
+        """It should always return None, as in Glyphs.app"""
+        self.assertIsNone(self.bg.background)
+
+    def test_set_GSBackgroundLayer_background(self):
+        """It should raise because it should not be possible."""
+        with pytest.raises(AttributeError):
+            self.bg.background = GSLayer()
+
+    def test_get_GSBackgroundLayer_foreground(self):
+        """It should return the foreground layer.
+
+        WARNING: currently in Glyphs.app it is not implemented properly and it
+        returns some Objective C function.
+        """
+        self.assertEqual(self.layer, self.bg.foreground)
+
+    def test_set_GSBackgroundLayer_foreground(self):
+        """It should raise AttributeError, because it would be too complex to
+        implement properly and anyway in Glyphs.app it returns some Objective C
+        function.
+        """
+        with pytest.raises(AttributeError):
+            self.bg.foreground = GSLayer()
 
 
 if __name__ == '__main__':

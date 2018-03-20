@@ -17,46 +17,50 @@ from __future__ import (print_function, division, absolute_import,
 import logging
 logger = logging.getLogger(__name__)
 
-import glyphsLib
-from .common import to_ufo_time
+from defcon import Color
+
+import glyphsLib.glyphdata
+from .common import to_ufo_time, from_ufo_time, from_loose_ufo_time
 from .constants import (GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX,
                         PUBLIC_PREFIX)
 
+SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + 'script'
+ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + 'originalWidth'
+BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + 'backgroundWidth'
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
+
+def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     from glyphsLib import glyphdata  # Expensive import
 
-    uval = glyph_data.unicode
-    if uval is not None:
-        ufo_glyph.unicode = int(uval, 16)
-    note = glyph_data.note
+    ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
+    note = glyph.note
     if note is not None:
         ufo_glyph.note = note
-    last_change = glyph_data.lastChange
+    last_change = glyph.lastChange
     if last_change is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'lastChange'] = to_ufo_time(last_change)
-    color_index = glyph_data.color
+    color_index = glyph.color
     if color_index is not None:
-        ufo_glyph.lib[GLYPHLIB_PREFIX + 'ColorIndex'] = color_index
         color_tuple = None
         if isinstance(color_index, list):
             if not all(i in range(0, 256) for i in color_index):
                 logger.warn('Invalid color tuple {} for glyph {}. '
-                            'Values must be in range 0-255'.format(color_index, glyph_data.name))
+                            'Values must be in range 0-255'.format(color_index, glyph.name))
             else:
                 color_tuple = ','.join('{0:.4f}'.format(i/255) if i in range(1, 255) else str(i//255) for i in color_index)
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             color_tuple = GLYPHS_COLORS[color_index]
         else:
-            logger.warn('Invalid color index {} for {}'.format(color_index, glyph_data.name))
+            logger.warn('Invalid color index {} for {}'.format(color_index, glyph.name))
         if color_tuple is not None:
-            ufo_glyph.lib[PUBLIC_PREFIX + 'markColor'] = color_tuple
-    export = glyph_data.export
+            ufo_glyph.markColor = color_tuple
+    export = glyph.export
     if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
+    # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphdata.get_glyph(ufo_glyph.name)
-    production_name = glyph_data.production or glyphinfo.production_name
+    production_name = glyph.production or glyphinfo.production_name
     if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + 'postscriptNames'
         if postscriptNamesKey not in ufo_glyph.font.lib:
@@ -64,20 +68,24 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
         ufo_glyph.font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
     for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
-        glyph_metrics_key = getattr(layer, key)
-        if glyph_metrics_key is None:
-            glyph_metrics_key = getattr(glyph_data, key)
-        if glyph_metrics_key:
-            ufo_glyph.lib[GLYPHLIB_PREFIX + key] = glyph_metrics_key
+        value = getattr(layer, key, None)
+        if value:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + 'layer.' + key] = value
+        value = getattr(glyph, key, None)
+        if value:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + 'glyph.' + key] = value
+
+    if glyph.script is not None:
+        ufo_glyph.lib[SCRIPT_LIB_KEY] = glyph.script
 
     # if glyph contains custom 'category' and 'subCategory' overrides, store
     # them in the UFO glyph's lib
-    category = glyph_data.category
+    category = glyph.category
     if category is None:
         category = glyphinfo.category
     else:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'category'] = category
-    subCategory = glyph_data.subCategory
+    subCategory = glyph.subCategory
     if subCategory is None:
         subCategory = glyphinfo.subCategory
     else:
@@ -89,87 +97,157 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph_data):
         pass
     elif category == 'Mark' and subCategory == 'Nonspacing' and width > 0:
         # zero the width of Nonspacing Marks like Glyphs.app does on export
-        # TODO: check for customParameter DisableAllAutomaticBehaviour
-        ufo_glyph.lib[GLYPHLIB_PREFIX + 'originalWidth'] = width
+        # TODO: (jany) check for customParameter DisableAllAutomaticBehaviour
+        # FIXME: (jany) also don't do that when rt UFO -> glyphs -> UFO
+        ufo_glyph.lib[ORIGINAL_WIDTH_KEY] = width
         ufo_glyph.width = 0
     else:
         ufo_glyph.width = width
-    self.to_ufo_glyph_libdata(ufo_glyph, layer)
 
-    pen = ufo_glyph.getPointPen()
-    self.to_ufo_draw_paths(pen, layer.paths)
-    self.to_ufo_draw_components(pen, layer.components)
+    self.to_ufo_background_image(ufo_glyph, layer)
+    self.to_ufo_guidelines(ufo_glyph, layer)
+    self.to_ufo_glyph_background(ufo_glyph, layer)
+    self.to_ufo_annotations(ufo_glyph, layer)
+    self.to_ufo_hints(ufo_glyph, layer)
+    self.to_ufo_glyph_user_data(ufo_glyph.font, glyph)
+    self.to_ufo_layer_user_data(ufo_glyph, layer)
+    self.to_ufo_smart_component_axes(ufo_glyph, glyph)
+
+    self.to_ufo_paths(ufo_glyph, layer)
+    self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
 
 
-def to_ufo_glyph_background(self, glyph, background):
+def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
+    """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
+    If the matching GSGlyph does not exist, then it is created,
+    else it is updated with the new data.
+    In all cases, a matching GSLayer is created in the GSGlyph to hold paths.
+    """
+
+    # FIXME: (jany) split between glyph and layer attributes
+    #        have a write the first time, compare the next times for glyph
+    #        always write for the layer
+
+    if ufo_glyph.name in self.font.glyphs:
+        glyph = self.font.glyphs[ufo_glyph.name]
+    else:
+        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph.name)
+        # FIXME: (jany) ordering?
+        self.font.glyphs.append(glyph)
+
+    if ufo_glyph.unicodes:
+        glyph.unicodes = ['{:04X}'.format(c) for c in ufo_glyph.unicodes]
+    note = ufo_glyph.note
+    if note is not None:
+        glyph.note = note
+    if GLYPHLIB_PREFIX + 'lastChange' in ufo_glyph.lib:
+        last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + 'lastChange']
+        # We cannot be strict about the dateformat because it's not an official
+        # UFO field mentioned in the spec so it could happen to have a timezone
+        glyph.lastChange = from_loose_ufo_time(last_change)
+    if ufo_glyph.markColor:
+        glyph.color = _to_glyphs_color(self, ufo_glyph.markColor)
+    if GLYPHLIB_PREFIX + 'Export' in ufo_glyph.lib:
+        glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export']
+    ps_names_key = PUBLIC_PREFIX + 'postscriptNames'
+    if (ps_names_key in ufo_glyph.font.lib and
+            ufo_glyph.name in ufo_glyph.font.lib[ps_names_key]):
+        glyph.production = ufo_glyph.font.lib[ps_names_key][ufo_glyph.name]
+        # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
+        #        maybe don't write in glyph.production if glyphinfo already
+        #        has something
+        # glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+        # production_name = glyph.production or glyphinfo.production_name
+
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+
+    layer = self.to_glyphs_layer(ufo_layer, glyph, master)
+
+    for key in ['leftMetricsKey', 'rightMetricsKey', 'widthMetricsKey']:
+        # Also read the old version of the key that didn't have a prefix and
+        # store it on the layer (because without the "glyph"/"layer" prefix we
+        # didn't know whether it originally came from the layer of the glyph,
+        # so it's easier to put it back on the most specific level, i.e. the
+        # layer)
+        for prefix, glyphs_object in (('glyph.', glyph),
+                                      ('', layer),
+                                      ('layer.', layer)):
+            full_key = GLYPHLIB_PREFIX + prefix + key
+            if full_key in ufo_glyph.lib:
+                value = ufo_glyph.lib[full_key]
+                setattr(glyphs_object, key, value)
+
+    if SCRIPT_LIB_KEY in ufo_glyph.lib:
+        glyph.script = ufo_glyph.lib[SCRIPT_LIB_KEY]
+
+    if GLYPHLIB_PREFIX + 'category' in ufo_glyph.lib:
+        # TODO: (jany) store category only if different from glyphinfo?
+        category = ufo_glyph.lib[GLYPHLIB_PREFIX + 'category']
+        glyph.category = category
+    else:
+        category = glyphinfo.category
+    if GLYPHLIB_PREFIX + 'subCategory' in ufo_glyph.lib:
+        sub_category = ufo_glyph.lib[GLYPHLIB_PREFIX + 'subCategory']
+        glyph.subCategory = sub_category
+    else:
+        sub_category = glyphinfo.subCategory
+
+    # load width before background, which is loaded with lib data
+    if hasattr(layer, 'foreground'):
+        if ufo_glyph.width:
+            # Don't store "0", it's the default in UFO.
+            # Store in userData because the background's width is not relevant
+            # in Glyphs.
+            layer.userData[BACKGROUND_WIDTH_KEY] = ufo_glyph.width
+    else:
+        layer.width = ufo_glyph.width
+    if category == 'Mark' and sub_category == 'Nonspacing' and layer.width == 0:
+        # Restore originalWidth
+        if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
+            layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
+            # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
+
+    self.to_glyphs_background_image(ufo_glyph, layer)
+    self.to_glyphs_guidelines(ufo_glyph, layer)
+    self.to_glyphs_annotations(ufo_glyph, layer)
+    self.to_glyphs_hints(ufo_glyph, layer)
+    self.to_glyphs_glyph_user_data(ufo_glyph.font, glyph)
+    self.to_glyphs_layer_user_data(ufo_glyph, layer)
+    self.to_glyphs_smart_component_axes(ufo_glyph, glyph)
+
+    self.to_glyphs_paths(ufo_glyph, layer)
+    self.to_glyphs_components(ufo_glyph, layer)
+    self.to_glyphs_glyph_anchors(ufo_glyph, layer)
+
+
+def to_ufo_glyph_background(self, glyph, layer):
     """Set glyph background."""
 
-    if not background:
+    if not layer.hasBackground:
         return
 
-    if glyph.layer.name != 'public.default':
-        layer_name = glyph.layer.name + '.background'
-    else:
-        layer_name = 'public.background'
-    font = glyph.font
-    if layer_name not in font.layers:
-        layer = font.newLayer(layer_name)
-    else:
-        layer = font.layers[layer_name]
-    new_glyph = layer.newGlyph(glyph.name)
-    new_glyph.width = glyph.width
-    pen = new_glyph.getPointPen()
-    self.to_ufo_draw_paths(pen, background.paths)
-    self.to_ufo_draw_components(pen, background.components)
+    background = layer.background
+    ufo_layer = self.to_ufo_background_layer(glyph)
+    new_glyph = ufo_layer.newGlyph(glyph.name)
+
+    width = background.userData[BACKGROUND_WIDTH_KEY]
+    if width is not None:
+        new_glyph.width = width
+
+    self.to_ufo_background_image(new_glyph, background)
+    self.to_ufo_paths(new_glyph, background)
+    self.to_ufo_components(new_glyph, background)
     self.to_ufo_glyph_anchors(new_glyph, background.anchors)
     self.to_ufo_guidelines(new_glyph, background)
 
 
-def to_ufo_glyph_libdata(self, glyph, layer):
-    """Add to a glyph's lib data."""
+def _to_glyphs_color(self, color):
+    # color is a defcon Color
+    # Try to find a matching Glyphs color
+    for index, glyphs_color in enumerate(GLYPHS_COLORS):
+        if str(color) == glyphs_color:
+            return index
 
-    self.to_ufo_guidelines(glyph, layer)
-    self.to_ufo_glyph_background(glyph, layer.background)
-    for key in ['annotations', 'hints']:
-        try:
-            value = getattr(layer, key)
-        except KeyError:
-            continue
-        if key == 'annotations':
-            annotations = []
-            for an in list(value.values()):
-                annot = {}
-                for attr in ['angle', 'position', 'text', 'type', 'width']:
-                    val = getattr(an, attr, None)
-                    if attr == 'position' and val:
-                        val = list(val)
-                    if val:
-                        annot[attr] = val
-                annotations.append(annot)
-            value = annotations
-        elif key == 'hints':
-            hints = []
-            for hi in value:
-                hint = {}
-                for attr in ['horizontal', 'options', 'stem', 'type']:
-                    val = getattr(hi, attr, None)
-                    hint[attr] = val
-                for attr in ['origin', 'other1', 'other2', 'place', 'scale',
-                             'target']:
-                    val = getattr(hi, attr, None)
-                    if val is not None and not any(v is None for v in val):
-                        hint[attr] = list(val)
-                hints.append(hint)
-            value = hints
-
-        if value:
-            glyph.lib[GLYPHS_PREFIX + key] = value
-
-    # data related to components stored in lists of booleans
-    # each list's elements correspond to the components in order
-    for key in ['alignment', 'locked']:
-        values = [getattr(c, key) for c in layer.components]
-        if any(values):
-            key = key[0].upper() + key[1:]
-            glyph.lib['%scomponents%s' % (GLYPHS_PREFIX, key)] = values
+    # Otherwise, make a Glyphs-formatted color list
+    return [round(component * 255) for component in list(color)]

@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<designspace format="3">
+    <axes>
+        <axis default="400" maximum="800" minimum="300" name="Weight" tag="wght">
+            <labelname xml:lang="en">Weight</labelname>
+            <map input="300" output="300" />
+            <map input="400" output="400" />
+            <map input="500" output="500" />
+            <map input="700" output="700" />
+            <map input="800" output="800" />
+        </axis>
+    </axes>
+    <sources>
+        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-LightItalic.ufo" name="CoolFoundry Examplary Serif Light Italic" stylename="Light Italic">
+            <location>
+                <dimension name="Weight" xvalue="300" />
+            </location>
+        </source>
+        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-RegularItalic.ufo" name="CoolFoundry Examplary Serif Regular Italic" stylename="Regular Italic">
+            <lib copy="1" />
+            <groups copy="1" />
+            <features copy="1" />
+            <info copy="1" />
+            <location>
+                <dimension name="Weight" xvalue="400" />
+            </location>
+        </source>
+        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-MediumItalic.ufo" name="CoolFoundry Examplary Serif Medium Italic" stylename="Medium Italic">
+            <location>
+                <dimension name="Weight" xvalue="500" />
+            </location>
+        </source>
+        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-BoldItalic.ufo" name="CoolFoundry Examplary Serif Bold Italic" stylename="Bold Italic">
+            <location>
+                <dimension name="Weight" xvalue="700" />
+            </location>
+        </source>
+        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-XBoldItalic.ufo" name="CoolFoundry Examplary Serif XBold Italic" stylename="XBold Italic">
+            <location>
+                <dimension name="Weight" xvalue="800" />
+            </location>
+        </source>
+    </sources>
+</designspace>

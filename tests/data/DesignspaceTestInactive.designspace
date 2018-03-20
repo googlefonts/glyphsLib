@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <designspace format="3">
     <axes>
-        <axis default="600.0" maximum="600.0" minimum="600.0" name="weight" tag="wght">
-            <map input="600.0" output="128" />
+        <axis default="600" maximum="600" minimum="600" name="Weight" tag="wght">
             <labelname xml:lang="en">Weight</labelname>
+            <map input="600" output="128" />
         </axis>
     </axes>
     <sources>
@@ -13,22 +13,22 @@
             <features copy="1" />
             <info copy="1" />
             <location>
-                <dimension name="weight" xvalue="90.000000" />
+                <dimension name="Weight" xvalue="90" />
             </location>
         </source>
         <source familyname="DesignspaceTest Inactive" filename="DesignspaceTestInactive-Black.ufo" name="DesignspaceTest Inactive Black" stylename="Black">
             <location>
-                <dimension name="weight" xvalue="190.000000" />
+                <dimension name="Weight" xvalue="190" />
             </location>
         </source>
     </sources>
     <instances>
         <instance familyname="DesignspaceTest Inactive" filename="out/DesignspaceTestInactive-Semibold.ufo" name="DesignspaceTest Inactive Semibold" stylemapfamilyname="DesignspaceTest Inactive Semibold" stylemapstylename="regular" stylename="Semibold">
             <location>
-                <dimension name="weight" xvalue="128.000000" />
+                <dimension name="Weight" xvalue="128" />
             </location>
-            <info />
             <kerning />
+            <info />
         </instance>
     </instances>
 </designspace>

@@ -18,6 +18,8 @@ from __future__ import (print_function, division, absolute_import,
 
 from fontTools.misc.transform import Transform
 
+from glyphsLib.types import Point
+
 __all__ = ['to_ufo_propagate_font_anchors']
 
 
@@ -104,3 +106,12 @@ def to_ufo_glyph_anchors(self, glyph, anchors):
         x, y = anchor.position
         anchor_dict = {'name': anchor.name, 'x': x, 'y': y}
         glyph.appendAnchor(anchor_dict)
+
+
+def to_glyphs_glyph_anchors(self, ufo_glyph, layer):
+    """Add UFO glif anchors to a GSLayer."""
+    for ufo_anchor in ufo_glyph.anchors:
+        anchor = self.glyphs_module.GSAnchor()
+        anchor.name = ufo_anchor.name
+        anchor.position = Point(ufo_anchor.x, ufo_anchor.y)
+        layer.anchors.append(anchor)

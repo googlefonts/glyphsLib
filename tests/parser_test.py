@@ -23,9 +23,7 @@ import unittest
 import datetime
 
 from glyphsLib.parser import Parser
-from glyphsLib.classes import GSGlyph, GSLayer
-from glyphsLib.types import color, glyphs_datetime
-from fontTools.misc.py23 import unicode
+from glyphsLib.classes import GSGlyph
 
 GLYPH_DATA = '''\
 (
@@ -97,6 +95,12 @@ class ParserTest(unittest.TestCase):
             [('mystr', 'Inf')]
         )
 
+    def test_parse_multiple_unicodes(self):
+        self.run_test(
+            b'{unicode = 0000,0008,001D;}',
+            [('unicode', ["0000", "0008", "001D"])]
+        )
+
     def test_parse_str_nan(self):
         self.run_test(
             b'{mystr = nan;}',
@@ -120,33 +124,11 @@ class ParserTest(unittest.TestCase):
             [('outer', OrderedDict([('inner', 'turtles')]))]
         )
 
-
-GLYPH_ATTRIBUTES = {
-    "bottomKerningGroup": str,
-    "bottomMetricsKey": str,
-    "category": str,
-    "color": color,
-    "export": bool,
-    # "glyphname": str,
-    "lastChange": glyphs_datetime,
-    "layers": GSLayer,
-    "leftKerningGroup": str,
-    "leftMetricsKey": str,
-    "name": str,
-    "note": unicode,
-    "partsSettings": dict,
-    "production": str,
-    "rightKerningGroup": str,
-    "rightMetricsKey": str,
-    "script": str,
-    "subCategory": str,
-    "topKerningGroup": str,
-    "topMetricsKey": str,
-    "unicode": str,
-    "userData": dict,
-    "vertWidthMetricsKey": str,
-    "widthMetricsKey": str,
-}
+    def test_parse_base64_data(self):
+        self.run_test(
+            b'{key = <dmFsdWU=>;}',
+            [('key', b'value')]
+        )
 
 
 class ParserGlyphTest(unittest.TestCase):

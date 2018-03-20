@@ -20,7 +20,7 @@ from __future__ import (
 import datetime
 import unittest
 
-from glyphsLib.types import glyphs_datetime
+from glyphsLib.types import Transform, parse_datetime
 
 
 class GlyphsDateTimeTest(unittest.TestCase):
@@ -28,15 +28,13 @@ class GlyphsDateTimeTest(unittest.TestCase):
     def test_parsing_24hr_format(self):
         """Assert glyphs_datetime can parse 24 hour time formats"""
         string_24hrs = '2017-01-01 17:30:30 +0000'
-        test_time = glyphs_datetime()
-        self.assertEqual(test_time.read(string_24hrs),
+        self.assertEqual(parse_datetime(string_24hrs),
                          datetime.datetime(2017, 1, 1, 17, 30, 30))
 
     def test_parsing_12hr_format(self):
         """Assert glyphs_datetime can parse 12 hour time format"""
         string_12hrs = '2017-01-01 5:30:30 PM +0000'
-        test_time = glyphs_datetime()
-        self.assertEqual(test_time.read(string_12hrs),
+        self.assertEqual(parse_datetime(string_12hrs),
                          datetime.datetime(2017, 1, 1, 17, 30, 30))
 
     def test_parsing_timezone(self):
@@ -44,20 +42,26 @@ class GlyphsDateTimeTest(unittest.TestCase):
         formatted as UTC offset. If it's not explicitly specified, then
         +0000 is assumed.
         """
-        self.assertEqual(glyphs_datetime().read('2017-12-18 16:45:31 -0100'),
+        self.assertEqual(parse_datetime('2017-12-18 16:45:31 -0100'),
                          datetime.datetime(2017, 12, 18, 15, 45, 31))
 
-        self.assertEqual(glyphs_datetime().read('2017-12-18 14:15:31 +0130'),
+        self.assertEqual(parse_datetime('2017-12-18 14:15:31 +0130'),
                          datetime.datetime(2017, 12, 18, 15, 45, 31))
 
-        self.assertEqual(glyphs_datetime().read('2017-12-18 15:45:31'),
+        self.assertEqual(parse_datetime('2017-12-18 15:45:31'),
                          datetime.datetime(2017, 12, 18, 15, 45, 31))
 
-        self.assertEqual(glyphs_datetime().read('2017-12-18 03:45:31 PM'),
+        self.assertEqual(parse_datetime('2017-12-18 03:45:31 PM'),
                          datetime.datetime(2017, 12, 18, 15, 45, 31))
 
-        self.assertEqual(glyphs_datetime().read('2017-12-18 09:45:31 AM'),
+        self.assertEqual(parse_datetime('2017-12-18 09:45:31 AM'),
                          datetime.datetime(2017, 12, 18, 9, 45, 31))
+
+
+class TransformTest(unittest.TestCase):
+    def test_value_equality(self):
+        assert Transform(1, 0, 0, 1, 0, 0) == Transform(1, 0, 0, 1, 0, 0)
+        assert Transform(1, 0, 0, 1, 0, 0) == Transform(1.0, 0, 0, 1.0, 0, 0)
 
 
 if __name__ == '__main__':
