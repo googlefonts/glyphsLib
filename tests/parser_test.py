@@ -95,6 +95,12 @@ class ParserTest(unittest.TestCase):
             [('mystr', 'Inf')]
         )
 
+    def test_parse_multiple_unicodes(self):
+        self.run_test(
+            b'{unicode = 0000,0008,001D;}',
+            [('unicode', ["0000", "0008", "001D"])]
+        )
+
     def test_parse_str_nan(self):
         self.run_test(
             b'{mystr = nan;}',

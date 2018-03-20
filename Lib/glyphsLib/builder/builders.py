@@ -139,59 +139,38 @@ class UFOBuilder(_LoggerMixin):
         self.to_ufo_font_attributes(self.family_name)
 
         for glyph in self.font.glyphs:
-            glyph_name = glyph.name
-
             for layer in glyph.layers.values():
-                layer_id = layer.layerId
-                layer_name = layer.name
-
-                assoc_id = layer.associatedMasterId
-                if assoc_id != layer.layerId:
+                if layer.associatedMasterId != layer.layerId:
+                    # The layer is not the main layer of a master
                     # Store all layers, even the invalid ones, and just skip
                     # them and print a warning below.
-                    supplementary_layer_data.append((assoc_id, glyph_name,
-                                                     layer_name, layer))
+                    supplementary_layer_data.append((glyph, layer))
                     continue
 
-                ufo = self._sources[layer_id].font
-                ufo_glyph = ufo.newGlyph(glyph_name)
+                ufo_layer = self.to_ufo_layer(glyph, layer)
+                ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)
-                ufo_layer = ufo.layers.defaultLayer
-                if self.minimize_glyphs_diffs:
-                    ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
-                                  glyph.name] = self._layer_order_in_glyph(
-                                      layer)
 
-        for master_id, glyph_name, layer_name, layer \
-                in supplementary_layer_data:
-            if (layer.layerId not in master_layer_ids
-                    and layer.associatedMasterId not in master_layer_ids):
+        for glyph, layer in supplementary_layer_data:
+            if (layer.layerId not in master_layer_ids and
+                    layer.associatedMasterId not in master_layer_ids):
                 self.logger.warn(
                     '{}, glyph "{}": Layer "{}" is dangling and will be '
                     'skipped. Did you copy a glyph from a different font? If '
                     'so, you should clean up any phantom layers not associated '
                     'with an actual master.'.format(self.font.familyName,
-                                                    glyph_name, layer.layerId))
+                                                    glyph.name, layer.layerId))
                 continue
 
-            if not layer_name:
+            if not layer.name:
                 # Empty layer names are invalid according to the UFO spec.
                 self.logger.warn(
                     '{}, glyph "{}": Contains layer without a name which will '
-                    'be skipped.'.format(self.font.familyName, glyph_name))
+                    'be skipped.'.format(self.font.familyName, glyph.name))
                 continue
 
-            ufo_font = self._sources[master_id].font
-            if layer_name not in ufo_font.layers:
-                ufo_layer = ufo_font.newLayer(layer_name)
-            else:
-                ufo_layer = ufo_font.layers[layer_name]
-            # TODO: (jany) move as much as possible into layers.py
-            if self.minimize_glyphs_diffs:
-                ufo_layer.lib[GLYPHS_PREFIX + 'layerId'] = layer.layerId
-                ufo_layer.lib[GLYPHS_PREFIX + 'layerOrderInGlyph.' +
-                              glyph_name] = self._layer_order_in_glyph(layer)
-            ufo_glyph = ufo_layer.newGlyph(glyph_name)
+            ufo_layer = self.to_ufo_layer(glyph, layer)
+            ufo_glyph = ufo_layer.newGlyph(glyph.name)
             self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
         for source in self._sources.values():
@@ -208,20 +187,6 @@ class UFOBuilder(_LoggerMixin):
         for source in self._sources.values():
             yield source.font
 
-    def _layer_order_in_glyph(self, layer):
-        # TODO: move to layers.py
-        # TODO: optimize?
-        for order, glyph_layer in enumerate(layer.parent.layers.values()):
-            if glyph_layer is layer:
-                return order
-        return None
-
-    @property
-    def instances(self):
-        """Get an iterator over interpolated UFOs of instances."""
-        # TODO?
-        return []
-
     @property
     def designspace(self):
         """Get a designspace Document instance that links the masters together
@@ -231,7 +196,6 @@ class UFOBuilder(_LoggerMixin):
             return self._designspace
         self._designspace_is_complete = True
         ufos = list(self.masters)  # Make sure that the UFOs are built
-        # FIXME: (jany) feels wrong
         self.to_designspace_axes()
         self.to_designspace_sources()
         self.to_designspace_instances()
@@ -284,6 +248,7 @@ class UFOBuilder(_LoggerMixin):
     from .hints import to_ufo_hints
     from .instances import to_designspace_instances
     from .kerning import to_ufo_kerning
+    from .layers import to_ufo_layer, to_ufo_background_layer
     from .masters import to_ufo_master_attributes
     from .names import to_ufo_names
     from .paths import to_ufo_paths
@@ -319,7 +284,7 @@ class GlyphsBuilder(_LoggerMixin):
                 the designspace's sources. Instance and axis data will be
                 converted to Glyphs.
             * Both a designspace and some UFOs: not supported for now.
-                TODO: find out whether there is a use-case here?
+                TODO: (jany) find out whether there is a use-case here?
 
         Keyword arguments:
         ufos -- The list of UFOs to combine into a GSFont
@@ -405,7 +370,7 @@ class GlyphsBuilder(_LoggerMixin):
         """Make sure that the user-provided designspace has loaded fonts and
         that names are the same as those from the UFOs.
         """
-        # TODO: really make a copy to avoid modifying the original object
+        # TODO: (jany) really make a copy to avoid modifying the original object
         copy = designspace
         for source in copy.sources:
             if not hasattr(source, 'font') or source.font is None:

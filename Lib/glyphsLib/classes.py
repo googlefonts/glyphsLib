@@ -3139,11 +3139,11 @@ class GSFont(GSBase):
     def kerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
         if not self._kerning:
-            return EMPTY_KERNING_VALUE
+            return self.EMPTY_KERNING_VALUE
         try:
             return self._kerning[fontMasterId][leftKey][rightKey]
         except KeyError:
-            return EMPTY_KERNING_VALUE
+            return self.EMPTY_KERNING_VALUE
 
     def setKerningForPair(self, fontMasterId, leftKey, rightKey, value,
                           direction=LTR):

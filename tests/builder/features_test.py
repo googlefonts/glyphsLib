@@ -236,8 +236,8 @@ def test_different_features_in_different_UFOS(tmpdir):
     # If the input UFOs have different features, Glyphs cannot model the
     # differences easily.
     #
-    # TODO: A complex solution would be to put all the features that we find
-    # across all the UFOS into the GSFont's features, and then add custom
+    # TODO: (jany) A complex solution would be to put all the features that we
+    # find across all the UFOS into the GSFont's features, and then add custom
     # parameters "Replace Features" and "Remove features" to the GSFontMasters
     # of the UFOs that didn't have the feature originally.
     #

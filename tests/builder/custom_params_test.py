@@ -187,7 +187,7 @@ class SetCustomParamsTest(unittest.TestCase):
                          '500')
         # The xHeight from the property is not modified
         self.assertEqual(self.ufo.info.xHeight, 300)
-        # TODO: check that the instance custom param wins over the
+        # TODO: (jany) check that the instance custom param wins over the
         #       interpolated value
 
     def test_replace_feature(self):
@@ -261,8 +261,8 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.openTypeOS2Type, [])
 
     def test_version_string(self):
-        # TODO: test the automatic replacement that is described in the Glyphs
-        #   Handbook
+        # TODO: (jany) test the automatic replacement that is described in the
+        #   Glyphs Handbook
         self.font.customParameters['versionString'] = 'Version 2.040'
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeNameVersion, 'Version 2.040')

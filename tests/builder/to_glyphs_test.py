@@ -144,9 +144,9 @@ def test_groups():
     ufo.groups['public.kern2.hebrewLikeO'] = ['samekh-hb']
     groups_dict = dict(ufo.groups)
 
-    # TODO: add a test with 2 UFOs with conflicting data
-    # TODO: add a test with with both UFO groups and feature file classes
-    # TODO: add a test with UFO groups that conflict with feature file classes
+    # TODO: (jany) add a test with 2 UFOs with conflicting data
+    # TODO: (jany) add a test with with both UFO groups and feature file classes
+    # TODO: (jany) add a test with UFO groups that conflict with feature file classes
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
 
     # Kerning for existing glyphs is stored in GSGlyph.left/rightKerningGroup

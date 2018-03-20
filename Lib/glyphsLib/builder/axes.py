@@ -212,7 +212,7 @@ def to_glyphs_axes(self):
         axes_parameter.append({'Name': width.name or 'Width', 'Tag': 'wdth'})
         # TODO: (jany) store other data about this axis?
     elif customs:
-        # Add a dumb weight axis to not mess up the indices
+        # Add a dumb width axis to not mess up the indices
         # FIXME: (jany) I inferred this requirement from the code in
         # https://github.com/googlei18n/glyphsLib/pull/306
         # which seems to suggest that the first value is always weight and
@@ -279,13 +279,14 @@ class AxisDefinition(object):
         The user location is what the user sees on the slider in his
         variable-font-enabled UI. For weight it is a value between 0 and 1000,
         400 being Regular and 700 Bold.
-        For width... FIXME: clarify what it is for the width.
+        For width it's the same as the design location, a percentage of
+        extension with respect to the normal width.
         """
         assert isinstance(instance, classes.GSInstance)
         if self.tag == 'wdth':
-            # FIXME: (jany) existing test "DesignspaceTestTwoAxes.designspace"
-            # suggests that the user location is the same as the design loc
-            # for the width only
+            # The user location is by default the same as the design location.
+            # TODO: (jany) change that later if there is support for general
+            #   axis mappings in Glyphs
             return self.get_design_loc(instance)
 
         user_loc = self.default_user_loc

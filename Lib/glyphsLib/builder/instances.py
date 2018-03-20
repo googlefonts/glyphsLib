@@ -67,8 +67,10 @@ def _to_designspace_instance(self, instance):
         ufo_instance.familyName = self.family_name
     ufo_instance.styleName = instance.name
 
-    # TODO: investigate the possibility of storing a relative path in the
-    #   `filename` custom parameter. If yes, drop the key below.
+    # TODO: (jany) investigate the possibility of storing a relative path in
+    #   the `filename` custom parameter. If yes, drop the key below.
+    #   Maybe do the same for masters?
+    #   https://github.com/googlei18n/glyphsLib/issues/319
     fname = instance.customParameters[FULL_FILENAME_KEY]
     if fname is not None:
         if self.instance_dir:
@@ -149,29 +151,6 @@ def to_glyphs_instances(self):
     for ufo_instance in self.designspace.instances:
         instance = self.glyphs_module.GSInstance()
 
-        # TODO: lots of stuff!
-        # active
-        # name
-        # weight
-        # width
-        # weightValue
-        # widthValue
-        # customValue
-        # isItalic
-        # isBold
-        # linkStyle
-        # familyName
-        # preferredFamily
-        # preferredSubfamilyName
-        # windowsFamily
-        # windowsStyle
-        # windowsLinkedToStyle
-        # fontName
-        # fullName
-        # customParameters
-        # instanceInterpolations
-        # manualInterpolation
-
         try:
             instance.active = ufo_instance.lib[EXPORT_KEY]
         except KeyError:
@@ -191,11 +170,7 @@ def to_glyphs_instances(self):
 
             if axis_def.tag in ('wght', 'wdth'):
                 # Retrieve the user location (weightClass/widthClass)
-                # TODO: (jany) update comments
-                # First way: for UFOs/designspace of other origins, read
-                # the mapping backwards and check that the user location
-                # matches the instance's weight/width. If not, set the the
-                # custom param.
+                # Generic way: read the axis mapping backwards.
                 user_loc = design_loc
                 mapping = None
                 for axis in self.designspace.axes:
@@ -208,10 +183,16 @@ def to_glyphs_instances(self):
                     axis_def.set_user_loc(instance, user_loc)
 
         try:
-            # Restore the original weightClass when there is an ambiguity based
+            # Restore the original weight name when there is an ambiguity based
             # on the value, e.g. Thin, ExtraLight, UltraLight all map to 250.
             # No problem with width, because 1:1 mapping in WIDTH_CODES.
             weight = ufo_instance.lib[WEIGHT_KEY]
+            # Only use the lib value if:
+            # 1. we don't have a weight for the instance already
+            # 2. the value from lib is not "stale", i.e. it still maps to
+            #    the current userLocation of the instance. This is in case the
+            #    user changes the instance location of the instance by hand but
+            #    does not update the weight value in lib.
             if (not instance.weight or
                     WEIGHT_CODES[instance.weight] == WEIGHT_CODES[weight]):
                 instance.weight = weight

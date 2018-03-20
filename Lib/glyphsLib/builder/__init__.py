@@ -30,8 +30,7 @@ def to_ufos(font,
             propagate_anchors=True,
             ufo_module=defcon,
             minimize_glyphs_diffs=False):
-    # TODO: (jany) Update documentation
-    """Take .glyphs file data and load it into UFOs.
+    """Take a GSFont object and convert it into one UFO per master.
 
     Takes in data as Glyphs.app-compatible classes, as documented at
     https://docu.glyphsapp.com/
@@ -61,8 +60,16 @@ def to_designspace(font,
                    propagate_anchors=True,
                    ufo_module=defcon,
                    minimize_glyphs_diffs=False):
-    # TODO: (jany) Update documentation
-    """Take .glyphs file data and load it into a Designspace Document + UFOS.
+    """Take a GSFont object and convert it into a Designspace Document + UFOS.
+    The UFOs are available as the attribute `font` of each SourceDescriptor of
+    the DesignspaceDocument:
+
+        ufos = [source.font for source in designspace.sources]
+
+    The designspace and the UFOs are not written anywhere by default, they
+    are all in-memory. If you want to write them to the disk, consider using
+    the `filename` attribute of the DesignspaceDocument and of its
+    SourceDescriptor as possible file names.
 
     Takes in data as Glyphs.app-compatible classes, as documented at
     https://docu.glyphsapp.com/
@@ -87,9 +94,13 @@ def to_glyphs(ufos_or_designspace,
               glyphs_module=classes,
               minimize_ufo_diffs=False):
     """
-    Take a list of UFOs and combine them into a single .glyphs file.
+    Take a list of UFOs or a single DesignspaceDocument with attached UFOs
+    and converts it into a GSFont object.
 
-    This should be the inverse function of `to_ufos`,
+    The GSFont object is in-memory, it's up to the user to write it to the disk
+    if needed.
+
+    This should be the inverse function of `to_ufos` and `to_designspace`,
     so we should have to_glyphs(to_ufos(font)) == font
     and also to_glyphs(to_designspace(font)) == font
     """

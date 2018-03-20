@@ -186,9 +186,9 @@ def to_glyphs_features(self):
 
     # Handle differing feature files between input UFOs
     # For now: switch to very simple strategy if there is any difference
-    # TODO: later, use a merge-as-we-go strategy where all discovered features
-    #   go into the GSFont's features, and custom parameters are used to
-    #   disable features on masters that didn't have them originally.
+    # TODO: (jany) later, use a merge-as-we-go strategy where all discovered
+    #   features go into the GSFont's features, and custom parameters are used
+    #   to disable features on masters that didn't have them originally.
     if _features_are_different_across_ufos(self):
         if self.minimize_ufo_diffs:
             self.logger.warn(
@@ -211,8 +211,8 @@ def to_glyphs_features(self):
 
 
 def _features_are_different_across_ufos(self):
-    # FIXME: requires that features are in the same order in all feature files
-    #   only allowed deviation is whitespace
+    # FIXME: requires that features are in the same order in all feature files;
+    #   the only allowed differences are whitespace
     reference = self.designspace.sources[0].font.features.text or ''
     reference = _normalize_whitespace(reference)
     for source in self.designspace.sources[1:]:
@@ -393,8 +393,6 @@ class FeatureFileProcessor(object):
                     unhandled_root_elements.clear()
             else:
                 # FIXME: (jany) Maybe print warning about unhandled fea block?
-                # TODO: (jany) Check the list of all possible blocks in ast and
-                #   handle them all (even if dummy implem)
                 unhandled_root_elements.append(self.statements.peek())
                 self.statements.next()
         # Flush any unhandled root elements into an anonymous prefix
@@ -522,6 +520,9 @@ class FeatureFileProcessor(object):
         if not isinstance(st, ast.TableBlock) or st.name != 'GDEF':
             return False
         # TODO: read an existing GDEF table and do something with it?
+        # For now, this function returns False to say that it has not handled
+        # the GDEF table, so it will be stored in Glyphs as a prefix with other
+        # "unhandled root elements".
         return False
 
     def _pop_comment(self, statements, comment_re):

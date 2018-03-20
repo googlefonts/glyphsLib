@@ -152,7 +152,7 @@ def _glyph_kerning_attr(glyph, side):
 
 
 def _is_ltr(glyph):
-    # TODO: (jany) have a real implem?
+    # TODO: (jany) This needs a real implementation!
     # The following one is just to make my simple test pass
     if glyph.name.endswith('-hb'):
         return False
