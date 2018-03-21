@@ -45,16 +45,22 @@ Note:
     we use the InstanceDescriptor as a source of customParameters to put into
     the instance UFO.
 
-In the other direction, put information from UFO info or lib into
+In the other direction, put information from UFO info or lib into a GSFont or a
+GSFontMaster. The UFO source is wrapped in a UFOProxy that records which
+attributes are read/written.
 
-Custom parameter data can be pre-parsed out of Glyphs data and provided via
-the `parsed` argument, otherwise `data` should be provided and will be
-parsed. The `parsed` option is provided so that custom params can be popped
-from Glyphs data once and used several times; in general this is used for
-debugging purposes (to detect unused Glyphs data).
+In order to go in both directions, each known parameter is managed by a
+ParamHandler object that can implement special rules to translate the value
+between Glyphs and UFO formats. This files aims at providing at least one
+handler per defined UFO info attribute, plus a bunch of handlers for known
+Custom Paramerters or known UFO lib elements.
 
-The `non_info` argument can be used to specify potential UFO info attributes
-which should not be put in UFO info.
+To go for example from UFO to Glyphs, each registered ParamHandler is called,
+and each tries to find its parameter in the UFO's info or lib data. Accesses to
+the UFO lib are recorded by the UFO proxy. After all registered ParamHandlers
+have worked, we know which UFO lib fields have been "consumed" in a smart way,
+and we can stupidly copy the other ones over to the Glyphs side. Same when
+going from Glyphs to UFOs.
 """
 
 CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + 'customParameter.'
