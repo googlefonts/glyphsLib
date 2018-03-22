@@ -28,10 +28,10 @@ def to_ufo_propagate_font_anchors(self, ufo):
 
     processed = set()
     for glyph in ufo:
-        _propagate_glyph_anchors(ufo, glyph, processed)
+        _propagate_glyph_anchors(self, ufo, glyph, processed)
 
 
-def _propagate_glyph_anchors(ufo, parent, processed):
+def _propagate_glyph_anchors(self, ufo, parent, processed):
     """Propagate anchors for a single parent glyph."""
 
     if parent.name in processed:
@@ -43,13 +43,19 @@ def _propagate_glyph_anchors(ufo, parent, processed):
     anchor_names = set()
     to_add = {}
     for component in parent.components:
-        glyph = ufo[component.baseGlyph]
-        _propagate_glyph_anchors(ufo, glyph, processed)
-        if any(a.name.startswith('_') for a in glyph.anchors):
-            mark_components.append(component)
+        try:
+            glyph = ufo[component.baseGlyph]
+        except KeyError:
+            self.logger.warn(
+                'Anchors not propagated for inexistent component {} in glyph {}'.
+                format(component.baseGlyph, parent.name))
         else:
-            base_components.append(component)
-            anchor_names |= {a.name for a in glyph.anchors}
+            _propagate_glyph_anchors(self, ufo, glyph, processed)
+            if any(a.name.startswith('_') for a in glyph.anchors):
+                mark_components.append(component)
+            else:
+                base_components.append(component)
+                anchor_names |= {a.name for a in glyph.anchors}
 
     for anchor_name in anchor_names:
         # don't add if parent already contains this anchor OR any associated
