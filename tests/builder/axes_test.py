@@ -47,6 +47,9 @@ Goal: check how files with custom axes are roundtripped.
     ],
 ])
 def test_weight_width_custom(axes):
+    """Test that having axes in any order or quantity does not confuse
+    glyphsLib, even when the weight or width are not in the default positions.
+    """
     doc = _make_designspace_with_axes(axes)
 
     font = to_glyphs(doc)
@@ -88,3 +91,66 @@ def _make_designspace_with_axes(axes):
     return doc
 
 
+def test_masters_have_user_locations():
+    """Test the new axis definition with custom parameters.
+    See https://github.com/googlei18n/glyphsLib/issues/280.
+
+    For tests about the previous system with weight/width/custom,
+    see `tests/builder/interpolation_test.py`.
+    """
+    # Get a font with two masters
+    font = to_glyphs([defcon.Font(), defcon.Font()])
+    font.customParameters['Axes'] = [
+        {
+            'Tag': 'opsz',
+            'Name': 'Optical',
+        }
+    ]
+    # There is only one axis, so the design location is stored in the weight
+    font.masters[0].weightValue = 0
+    # The user location is stored as a custom parameter
+    font.masters[0].customParameters['Axis Location'] = [
+        {
+            'Axis': 'Optical',
+            'Location': 13,
+        }
+    ]
+    font.masters[1].weightValue = 1000
+    font.masters[1].customParameters['Axis Location'] = [
+        {
+            'Axis': 'Optical',
+            'Location': 100,
+        }
+    ]
+
+    doc = to_designspace(font)
+    assert len(doc.axes) == 1
+    assert doc.axes[0].map == [
+        (13, 0),
+        (100, 1000),
+    ]
+    assert len(doc.sources) == 2
+    assert doc.sources[0].location == {'Optical': 0}
+    assert doc.sources[1].location == {'Optical': 1000}
+
+    font = to_glyphs(doc)
+    assert font.customParameters['Axes'] == [
+        {
+            'Tag': 'opsz',
+            'Name': 'Optical',
+        }
+    ]
+    assert font.masters[0].weightValue == 0
+    assert font.masters[0].customParameters['Axis Location'] == [
+        {
+            'Axis': 'Optical',
+            'Location': 13,
+        }
+    ]
+    assert font.masters[1].weightValue == 1000
+    assert font.masters[1].customParameters['Axis Location'] == [
+        {
+            'Axis': 'Optical',
+            'Location': 100,
+        }
+    ]
