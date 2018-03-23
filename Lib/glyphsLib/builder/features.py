@@ -191,13 +191,13 @@ def to_glyphs_features(self):
     #   to disable features on masters that didn't have them originally.
     if _features_are_different_across_ufos(self):
         if self.minimize_ufo_diffs:
-            self.logger.warn(
+            self.logger.warning(
                 'Feature files are different across UFOs. The produced Glyphs '
                 'file will have no editable features.')
             # Do all UFOs, not only the first one
             _to_glyphs_features_basic(self)
             return
-        self.logger.warn(
+        self.logger.warning(
             'Feature files are different across UFOs. The produced Glyphs '
             'file will reflect only the features of the first UFO.')
 

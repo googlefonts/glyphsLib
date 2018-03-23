@@ -46,7 +46,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
         try:
             glyph = ufo[component.baseGlyph]
         except KeyError:
-            self.logger.warn(
+            self.logger.warning(
                 'Anchors not propagated for inexistent component {} in glyph {}'.
                 format(component.baseGlyph, parent.name))
         else:
