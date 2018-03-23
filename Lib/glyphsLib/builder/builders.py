@@ -100,7 +100,7 @@ class UFOBuilder(_LoggerMixin):
         # check that source was generated with at least stable version 2.3
         # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
         if int(font.appVersion) < 895:
-            self.logger.warn(
+            self.logger.warning(
                 'This Glyphs source was generated with an outdated version '
                 'of Glyphs. The resulting UFOs may be incorrect.')
 
@@ -154,7 +154,7 @@ class UFOBuilder(_LoggerMixin):
         for glyph, layer in supplementary_layer_data:
             if (layer.layerId not in master_layer_ids and
                     layer.associatedMasterId not in master_layer_ids):
-                self.logger.warn(
+                self.logger.warning(
                     '{}, glyph "{}": Layer "{}" is dangling and will be '
                     'skipped. Did you copy a glyph from a different font? If '
                     'so, you should clean up any phantom layers not associated '
@@ -164,7 +164,7 @@ class UFOBuilder(_LoggerMixin):
 
             if not layer.name:
                 # Empty layer names are invalid according to the UFO spec.
-                self.logger.warn(
+                self.logger.warning(
                     '{}, glyph "{}": Contains layer without a name which will '
                     'be skipped.'.format(self.font.familyName, glyph.name))
                 continue
@@ -385,7 +385,7 @@ class GlyphsBuilder(_LoggerMixin):
                 source.location = {}
             for name in ('familyName', 'styleName'):
                 if getattr(source, name) != getattr(source.font.info, name):
-                    self.logger.warn(dedent('''\
+                    self.logger.warning(dedent('''\
                         The {name} is different between the UFO and the designspace source:
                             source filename: {filename}
                             source {name}: {source_name}

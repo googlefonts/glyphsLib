@@ -148,10 +148,10 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
 
     def _warn(message, *args):
         if first_time:
-            self.logger.warn('Using UFO `%s` as a reference for groups:',
+            self.logger.warning('Using UFO `%s` as a reference for groups:',
                              _ufo_logging_ref(reference_ufo))
             first_time.clear()
-        self.logger.warn('   ' + message, *args)
+        self.logger.warning('   ' + message, *args)
 
     # Check for inconsistencies
     for group, glyphs in ufo.groups.items():

@@ -37,16 +37,14 @@ def _to_ufo_kerning(self, ufo, kerning_data):
         if left_is_class:
             left = 'public.kern1.%s' % match.group(1)
             if left not in ufo.groups:
-                # self.logger.warn(warning_msg % left)
-                pass
+                self.logger.warning(warning_msg % left)
         for right, kerning_val in pairs.items():
             match = re.match(r'@MMK_R_(.+)', right)
             right_is_class = bool(match)
             if right_is_class:
                 right = 'public.kern2.%s' % match.group(1)
                 if right not in ufo.groups:
-                    # self.logger.warn(warning_msg % right)
-                    pass
+                    self.logger.warning(warning_msg % right)
             if left_is_class != right_is_class:
                 if left_is_class:
                     pair = (left, right, True)
@@ -82,7 +80,7 @@ def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
         if (existing_rule is not None and
                 existing_rule[-1] != val and
                 pair not in ufo.kerning):
-            self.logger.warn(
+            self.logger.warning(
                 'Conflicting kerning rules found in %s master for glyph pair '
                 '"%s, %s" (%s and %s), removing pair from latter rule' %
                 ((ufo.info.styleName,) + pair + (existing_rule, rule)))
