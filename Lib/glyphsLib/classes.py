@@ -1622,7 +1622,7 @@ class GSPath(GSBase):
     @segments.setter
     def segments(self, value):
         if type(value) in (list, tuple):
-            self.setSegments(segments)
+            self.setSegments(value)
         else:
             raise TypeError
 
