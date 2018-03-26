@@ -128,3 +128,24 @@ def test_designspace_generation_regular_different_family_names(tmpdir):
     # REVIEW: reasonable requirement?
     with pytest.raises(Exception):
         font = to_glyphs([ufo_Lt, ufo_Rg])
+
+
+def test_designspace_generation_same_weight_name(tmpdir):
+    ufo_Bd = defcon.Font()
+    ufo_Bd.info.familyName = 'Test'
+    ufo_Bd.info.styleName = 'Bold'
+
+    ufo_ExBd = defcon.Font()
+    ufo_ExBd.info.familyName = 'Test'
+    ufo_ExBd.info.styleName = 'Bold'
+
+    ufo_XExBd = defcon.Font()
+    ufo_XExBd.info.familyName = 'Test'
+    ufo_XExBd.info.styleName = 'Bold'
+
+    font = to_glyphs([ufo_Bd, ufo_ExBd, ufo_XExBd])
+    designspace = to_designspace(font)
+
+    assert designspace.sources[0].filename != designspace.sources[1].filename
+    assert designspace.sources[1].filename != designspace.sources[2].filename
+    assert designspace.sources[0].filename != designspace.sources[2].filename
