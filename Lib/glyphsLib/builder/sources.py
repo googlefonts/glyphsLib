@@ -53,6 +53,15 @@ def _to_designspace_source(self, master, is_regular):
         source.filename = build_ufo_path(
             '', source.familyName, source.styleName)
 
+        # Make sure UFO filenames are unique, lest we overwrite masters that
+        # happen to have the same weight name.
+        n = "_"
+        while any(s != source and s.filename == source.filename
+                  for s in self._sources.values()):
+            source.filename = os.path.basename(
+                build_ufo_path('.', source.familyName, source.styleName + n))
+            n += "_"
+
     location = {}
     for axis_def in get_axis_definitions(self.font):
         location[axis_def.name] = axis_def.get_design_loc(master)
