@@ -1347,7 +1347,7 @@ class GSFontMaster(GSBase):
             self.customParameters['Master Name'] = name
 
     def _joinName(self):
-        names = [self.weight, self.width, self.customName]
+        names = [self.width, self.weight, self.customName]
         names = [n for n in names if n]  # Remove None and empty string
         # Remove all occurences of 'Regular'
         while len(names) > 1 and "Regular" in names:
