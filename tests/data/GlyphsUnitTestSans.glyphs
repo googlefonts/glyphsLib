@@ -115,6 +115,9 @@ GSOffsetVertical = 9;
 GSRoughenHorizontal = 15;
 GSRoughenSegmentLength = 15;
 GSRoughenVertical = 10;
+noodleExtremesAndInflections = 1;
+noodleRemoveOverlap = 0;
+noodleThickness = "106.0";
 };
 verticalStems = (
 17,
