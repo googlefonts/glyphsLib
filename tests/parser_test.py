@@ -130,6 +130,12 @@ class ParserTest(unittest.TestCase):
             [('key', b'value')]
         )
 
+    def test_parse_stringy_floats(self):
+        self.run_test(
+            b'{noodleThickness = "106.0";}',
+            [('noodleThickness', '106.0')]
+        )
+
 
 class ParserGlyphTest(unittest.TestCase):
     def test_parse_empty_glyphs(self):
