@@ -21,7 +21,7 @@ import pytest
 
 import defcon
 from fontTools import designspaceLib
-from glyphsLib import to_glyphs, to_designspace
+from glyphsLib import to_glyphs, to_designspace, to_ufos
 
 """
 Goal: check how files with custom axes are roundtripped.
@@ -154,3 +154,52 @@ def test_masters_have_user_locations():
             'Location': 100,
         }
     ]
+
+
+def test_master_user_location_goes_into_os2_classes():
+    font = to_glyphs([defcon.Font(), defcon.Font()])
+    font.customParameters['Axes'] = [
+        {
+            'Tag': 'wght',
+            'Name': 'Weight',
+        },
+        {
+            'Tag': 'wdth',
+            'Name': 'Width',
+        },
+    ]
+    font.masters[0].weightValue = 0
+    font.masters[0].widthValue = 1000
+    # This master will be Light Expanded
+    # as per https://docs.microsoft.com/en-gb/typography/opentype/spec/os2#uswidthclass
+    font.masters[0].customParameters['Axis Location'] = [
+        {
+            'Axis': 'Weight',
+            'Location': 300,
+        },
+        {
+            'Axis': 'Width',
+            'Location': 125,
+        },
+    ]
+    font.masters[1].weightValue = 1000
+    font.masters[1].widthValue = 0
+    # This master is Black Ultra-condensed but not quite
+    font.masters[1].customParameters['Axis Location'] = [
+        {
+            'Axis': 'Weight',
+            'Location': 920,  # instead of 900
+        },
+        {
+            'Axis': 'Width',
+            'Location': 55,  # instead of 50
+        },
+    ]
+
+    light, black = to_ufos(font)
+
+    assert light.info.openTypeOS2WeightClass == 300
+    assert light.info.openTypeOS2WidthClass == 7
+
+    assert black.info.openTypeOS2WeightClass == 920
+    assert black.info.openTypeOS2WidthClass == 1

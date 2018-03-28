@@ -334,7 +334,7 @@ class AxisDefinition(object):
         return user_loc
 
     def set_user_loc(self, master_or_instance, value):
-        """Set the user location of a Glyphs instance."""
+        """Set the user location of a Glyphs master or instance."""
         # Try to set the key if possible, i.e. if there is a key, and
         # if there exists a code that can represent the given value, e.g.
         # for "weight": 600 can be represented by SemiBold so we use that,
@@ -379,10 +379,11 @@ class AxisDefinition(object):
             setattr(instance, self.user_loc_key, code)
 
     def set_ufo_user_loc(self, ufo, value):
-        if self.name not in ('Weight', 'Width'):
+        if self.tag not in ('wght', 'wdth'):
             raise NotImplementedError
         class_ = user_loc_value_to_class(self.tag, value)
-        ufo_key = "".join(['openTypeOS2', self.name, 'Class'])
+        ufo_key = ('openTypeOS2WeightClass'
+                   if self.tag == 'wght' else 'openTypeOS2WidthClass')
         setattr(ufo.info, ufo_key, class_)
 
 
