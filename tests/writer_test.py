@@ -123,6 +123,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             'a': 'test',
             'b': [1, {'c': 2}],
             'd': [1, "1"],
+            'noodleThickness': "106.0",
         }
         # grid -> gridLength
         font.grid = 35
@@ -231,6 +232,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             1,
             "1"
             );
+            noodleThickness = "106.0";
             };
             versionMajor = 2;
             versionMinor = 104;

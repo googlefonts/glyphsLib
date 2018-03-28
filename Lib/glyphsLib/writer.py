@@ -209,6 +209,13 @@ def _needs_quotes(string):
     try:
         int(string)
     except ValueError:
+        pass
+    else:
+        return True
+
+    try:
+        float(string)
+    except ValueError:
         return False
     else:
         return True

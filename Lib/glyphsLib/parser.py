@@ -76,11 +76,8 @@ class Parser(object):
             return unicode
         if parsed[-1] != '"':
             try:
-                float_val = float(value)
-                if float_val.is_integer():
-                    current_type = int
-                else:
-                    current_type = float
+                v = float(value)
+                current_type = lambda _: v if not v.is_integer() else int(v)
             except:
                 current_type = unicode
         else:
