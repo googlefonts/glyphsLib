@@ -129,6 +129,12 @@ class Parser(object):
                 value = bool(int(value))  # bool(u'0') returns True
                 return value, i
 
+            if self.current_type == int:
+                if "." in value:
+                    decimals, fractionals = value.split(".")
+                    if all(f == "0" for f in fractionals):
+                        value = decimals
+
             value = self.current_type(value)
 
             return value, i
