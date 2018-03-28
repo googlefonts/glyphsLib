@@ -76,11 +76,8 @@ class Parser(object):
             return unicode
         if parsed[-1] != '"':
             try:
-                float_val = float(value)
-                if float_val.is_integer():
-                    current_type = int
-                else:
-                    current_type = float
+                v = float(value)
+                current_type = lambda _: v if not v.is_integer() else int(v)
             except:
                 current_type = unicode
         else:
@@ -128,12 +125,6 @@ class Parser(object):
             if self.current_type == bool:
                 value = bool(int(value))  # bool(u'0') returns True
                 return value, i
-
-            if self.current_type == int:
-                if "." in value:
-                    decimals, fractionals = value.split(".")
-                    if all(f == "0" for f in fractionals):
-                        value = decimals
 
             value = self.current_type(value)
 
