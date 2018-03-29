@@ -28,6 +28,8 @@ from .axes import (get_axis_definitions, is_instance_active, interp,
                    WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)
 from .custom_params import to_ufo_custom_params
 
+import defcon
+
 EXPORT_KEY = GLYPHS_PREFIX + 'export'
 WIDTH_KEY = GLYPHS_PREFIX + 'width'
 WEIGHT_KEY = GLYPHS_PREFIX + 'weight'
@@ -308,30 +310,39 @@ def set_width_class(ufo, designspace, instance):
     _set_class_from_instance(ufo, designspace, instance, WIDTH_AXIS_DEF)
 
 
-# DEPRECATED: needs better API
-def apply_instance_data(instance_data):
-    """Open instances, apply data, and re-save.
+def apply_instance_data(designspace_path, include_filenames=None,
+                        Font=defcon.Font):
+    """Open UFO instances referenced by designspace, apply Glyphs instance
+    data if present, re-save UFOs and return updated UFO Font objects.
 
     Args:
-        instance_data: an InstanceData object.
+        designspace_path: path to a designspace file.
+        include_filenames: optional set of instance filenames (relative to
+            the designspace path) to be included. By default all instaces are
+            processed.
+        Font: the class used to load the UFO (default: defcon.Font).
     Returns:
         List of opened and updated instance UFOs.
     """
-    import defcon
-    designspace = instance_data.designspace
+    from fontTools.designspaceLib import DesignSpaceDocument
 
+    designspace = DesignSpaceDocument()
+    designspace.read(designspace_path)
+    basedir = os.path.dirname(designspace_path)
     instance_ufos = []
-    for instance in designspace.instances:
-        path = instance.path
-        if path is None:
-            path = os.path.join(
-                os.path.dirname(designspace.path), instance.filename)
-        ufo = defcon.Font(path)
-        set_weight_class(ufo, designspace, instance)
-        set_width_class(ufo, designspace, instance)
+    for designspace_instance in designspace.instances:
+        fname = designspace_instance.filename
+        assert fname is not None, ("instance %r missing required filename" %
+                getattr(designspace_instance, "name", designspace_instance))
+        if include_filenames is not None:
+            fname = os.path.normcase(os.path.normpath(fname))
+            if fname not in include_filenames:
+                continue
+        ufo = Font(os.path.join(basedir, fname))
+        set_weight_class(ufo, designspace, designspace_instance)
+        set_width_class(ufo, designspace, designspace_instance)
 
-        glyphs_instance = InstanceDescriptorAsGSInstance(instance)
-        # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
+        glyphs_instance = InstanceDescriptorAsGSInstance(designspace_instance)
         to_ufo_custom_params(None, ufo, glyphs_instance)
         ufo.save()
         instance_ufos.append(ufo)
