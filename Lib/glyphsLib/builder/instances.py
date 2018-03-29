@@ -79,7 +79,7 @@ def _to_designspace_instance(self, instance):
             fname = self.instance_dir + '/' + os.path.basename(fname)
         ufo_instance.filename = fname
     if not ufo_instance.filename:
-        instance_dir = self.instance_dir or '.'
+        instance_dir = self.instance_dir or ''
         ufo_instance.filename = build_ufo_path(
             instance_dir, ufo_instance.familyName, ufo_instance.styleName)
 
