@@ -49,9 +49,8 @@ def _to_designspace_source(self, master, is_regular):
         source.filename = master.userData[UFO_FILENAME_KEY]
     else:
         # TODO: (jany) allow another naming convention?
-        source.filename = os.path.basename(
-            # FIXME: (jany) have this function not write the dot
-            build_ufo_path('.', source.familyName, source.styleName))
+        source.filename = build_ufo_path(
+            '', source.familyName, source.styleName)
 
     location = {}
     for axis_def in get_axis_definitions(self.font):
