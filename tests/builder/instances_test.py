@@ -1,4 +1,3 @@
-
 # coding=UTF-8
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
