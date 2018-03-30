@@ -52,7 +52,7 @@ def interpolate(ufos, master_dir, out_dir, instance_data, round_geometry=True):
     build(designspace_path, outputUFOFormatVersion=3,
           roundGeometry=round_geometry)
 
-    instance_ufos = apply_instance_data(designspace_path)
+    instance_ufos = apply_instance_data(instance_files)
     return instance_ufos
 
 

@@ -329,24 +329,37 @@ def apply_instance_data(designspace_path, include_filenames=None,
         List of opened and updated instance UFOs.
     """
     from fontTools.designspaceLib import DesignSpaceDocument
+    from os.path import normcase, normpath
 
-    designspace = DesignSpaceDocument()
-    designspace.read(designspace_path)
+    # in fontmake <= 1.4.0 using the old glyphsLib.build_masters API, the
+    # apply_instance_data function is passed an InstanceData object, instead
+    # of a path to a designspace file. We try to stay compatible so one can
+    # update glyphsLib without needing to also update fontmake.
+    # TODO: Drop this sometime in the next releases.
+    if isinstance(designspace_path, InstanceData):
+        designspace = designspace_path.designspace
+        designspace_path = designspace.path
+    else:
+        designspace = DesignSpaceDocument()
+        designspace.read(designspace_path)
     basedir = os.path.dirname(designspace_path)
     instance_ufos = []
     if include_filenames is not None:
-        include_filenames = {os.path.normcase(os.path.normpath(p))
+        include_filenames = {normcase(normpath(p))
                              for p in include_filenames}
     for designspace_instance in designspace.instances:
         fname = designspace_instance.filename
         assert fname is not None, ("instance %r missing required filename" %
                 getattr(designspace_instance, "name", designspace_instance))
         if include_filenames is not None:
-            fname = os.path.normcase(os.path.normpath(fname))
+            fname = normcase(normpath(fname))
             if fname not in include_filenames:
                 continue
         logger.debug("Appling instance data to %s", fname)
-        ufo = Font(os.path.join(basedir, fname))
+        # fontmake <= 1.4.0 compares the ufo paths returned from this function
+        # to the keys of a dict of designspace locations that have been passed
+        # through normpath (but not normcase). We do the same.
+        ufo = Font(normpath(os.path.join(basedir, fname)))
         set_weight_class(ufo, designspace, designspace_instance)
         set_width_class(ufo, designspace, designspace_instance)
 
