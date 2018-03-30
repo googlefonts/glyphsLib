@@ -334,6 +334,9 @@ def apply_instance_data(designspace_path, include_filenames=None,
     designspace.read(designspace_path)
     basedir = os.path.dirname(designspace_path)
     instance_ufos = []
+    if include_filenames is not None:
+        include_filenames = {os.path.normcase(os.path.normpath(p))
+                             for p in include_filenames}
     for designspace_instance in designspace.instances:
         fname = designspace_instance.filename
         assert fname is not None, ("instance %r missing required filename" %

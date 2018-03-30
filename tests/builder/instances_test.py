@@ -58,8 +58,7 @@ def test_apply_instance_data(tmpdir, instance_names):
         for name in instance_names:
             builder.readInstance(("stylename", name))
         # make relative filenames from paths returned by MutatorMath
-        include_filenames = {os.path.normcase(os.path.normpath(
-                                 os.path.relpath(instance_path, str(tmpdir))))
+        include_filenames = {os.path.relpath(instance_path, str(tmpdir))
                              for instance_path in builder.results.values()}
 
     ufos = apply_instance_data(designspace.path,
