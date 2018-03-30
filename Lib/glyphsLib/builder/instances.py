@@ -17,6 +17,7 @@ from __future__ import (print_function, division, absolute_import,
 
 from collections import OrderedDict
 import os
+import logging
 
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
@@ -37,6 +38,9 @@ FULL_FILENAME_KEY = GLYPHLIB_PREFIX + 'fullFilename'
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + 'manualInterpolation'
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + 'intanceInterpolations'
 CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + 'customParameters'
+
+
+logger = logging.getLogger(__name__)
 
 
 def to_designspace_instances(self):
@@ -338,6 +342,7 @@ def apply_instance_data(designspace_path, include_filenames=None,
             fname = os.path.normcase(os.path.normpath(fname))
             if fname not in include_filenames:
                 continue
+        logger.debug("Appling instance data to %s", fname)
         ufo = Font(os.path.join(basedir, fname))
         set_weight_class(ufo, designspace, designspace_instance)
         set_width_class(ufo, designspace, designspace_instance)
