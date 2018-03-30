@@ -20,7 +20,8 @@ import os
 from glyphsLib.util import build_ufo_path
 
 from .masters import UFO_FILENAME_KEY
-from .axes import get_axis_definitions, get_regular_master
+from .axes import (get_axis_definitions, get_regular_master,
+                   font_uses_new_axes, interp)
 
 
 def to_designspace_sources(self):
@@ -69,8 +70,19 @@ def _to_glyphs_source(self, master):
     # Retrieve the master locations: weight, width, custom 0 - 1 - 2 - 3
     for axis_def in get_axis_definitions(self.font):
         try:
-            axis_def.set_design_loc(master, source.location[axis_def.name])
+            design_location = source.location[axis_def.name]
         except KeyError:
             # The location does not have this axis?
-            pass
+            continue
 
+        axis_def.set_design_loc(master, design_location)
+        if font_uses_new_axes(self.font):
+            # The user location can be found by reading the mapping backwards
+            mapping = []
+            for axis in self.designspace.axes:
+                if axis.tag == axis_def.tag:
+                    mapping = axis.map
+                    break
+            reverse_mapping = [(dl, ul) for ul, dl in mapping]
+            user_location = interp(reverse_mapping, design_location)
+            axis_def.set_user_loc(master, user_location)
