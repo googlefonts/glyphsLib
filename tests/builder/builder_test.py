@@ -1142,16 +1142,22 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font)
+            to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("layer without a name")
+
+        # no warning if minimize_glyphs_diff=False
+        with CapturingLogHandler(self.logger, level="WARNING") as captor:
+            to_ufos(self.font, minimize_glyphs_diffs=False)
+
+        self.assertFalse(captor.records)
 
     def test_dangling_layer(self):
         self.font.glyphs[0].layers[0].layerId = "yyy"
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font)
+            to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("is dangling and will be skipped")
 

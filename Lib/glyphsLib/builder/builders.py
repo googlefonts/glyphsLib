@@ -154,19 +154,22 @@ class UFOBuilder(_LoggerMixin):
         for glyph, layer in supplementary_layer_data:
             if (layer.layerId not in master_layer_ids and
                     layer.associatedMasterId not in master_layer_ids):
-                self.logger.warning(
-                    '{}, glyph "{}": Layer "{}" is dangling and will be '
-                    'skipped. Did you copy a glyph from a different font? If '
-                    'so, you should clean up any phantom layers not associated '
-                    'with an actual master.'.format(self.font.familyName,
-                                                    glyph.name, layer.layerId))
+                if self.minimize_glyphs_diffs:
+                    self.logger.warning(
+                        '{}, glyph "{}": Layer "{}" is dangling and will be '
+                        'skipped. Did you copy a glyph from a different font?'
+                        ' If so, you should clean up any phantom layers not '
+                        'associated with an actual master.'.format(
+                            self.font.familyName, glyph.name, layer.layerId))
                 continue
 
             if not layer.name:
                 # Empty layer names are invalid according to the UFO spec.
-                self.logger.warning(
-                    '{}, glyph "{}": Contains layer without a name which will '
-                    'be skipped.'.format(self.font.familyName, glyph.name))
+                if self.minimize_glyphs_diffs:
+                    self.logger.warning(
+                        '{}, glyph "{}": Contains layer without a name which '
+                        'will be skipped.'.format(self.font.familyName,
+                                                  glyph.name))
                 continue
 
             ufo_layer = self.to_ufo_layer(glyph, layer)
