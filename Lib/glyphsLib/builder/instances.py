@@ -26,7 +26,7 @@ from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
 from .names import build_stylemap_names
 from .masters import UFO_FILENAME_KEY
 from .axes import (get_axis_definitions, is_instance_active, interp,
-                   WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)
+                   WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, AxisDefinitionFactory)
 from .custom_params import to_ufo_custom_params
 
 import defcon
@@ -274,44 +274,51 @@ class InstanceDescriptorAsGSInstance(object):
                 self.customParameters.append(GSCustomParameter(name, value))
 
 
-def _set_class_from_instance(ufo, designspace, instance, axis_def):
+def _set_class_from_instance(ufo, designspace, instance, axis_tag):
     # FIXME: (jany) copy-pasted from above, factor into method?
-    design_loc = None
+    assert axis_tag in ("wght", "wdth")
+
+    factory = AxisDefinitionFactory()
+    for axis in designspace.axes:
+        if axis.tag == axis_tag:
+            axis_def = factory.get(axis.tag, axis.name)
+            mapping = axis.map
+            break
+    else:
+        # axis not found, try use the default axis definition
+        axis_def = (WEIGHT_AXIS_DEF if axis_tag == "wght"
+                    else WIDTH_AXIS_DEF)
+        mapping = []
+
     try:
         design_loc = instance.location[axis_def.name]
     except KeyError:
-        # The location does not have this axis?
-        pass
+        # The location does not have this axis. Use default value
+        design_loc = axis_def.default_user_loc
 
-    # Retrieve the user location (weightClass/widthClass)
-    # by going through the axis mapping in reverse.
-    user_loc = design_loc
-    mapping = None
-    for axis in designspace.axes:
-        if axis.tag == axis_def.tag:
-            mapping = axis.map
     if mapping:
-        reverse_mapping = [(dl, ul) for ul, dl in mapping]
+        # Retrieve the user location (weightClass/widthClass)
+        # by going through the axis mapping in reverse.
+        reverse_mapping = sorted({dl: ul for ul, dl in mapping}.items())
         user_loc = interp(reverse_mapping, design_loc)
-
-    if user_loc is not None:
         axis_def.set_ufo_user_loc(ufo, user_loc)
     else:
-        axis_def.set_ufo_user_loc(ufo, axis_def.default_user_loc)
+        # no mapping means user space location is same as design space
+        axis_def.set_ufo_user_loc(ufo, design_loc)
 
 
 def set_weight_class(ufo, designspace, instance):
-    """ the `weightClass` instance attribute from the UFO lib, and set
-    the ufo.info.openTypeOS2WeightClass accordingly.
+    """ Set ufo.info.openTypeOS2WeightClass according to the user location
+    of the designspace instance, as calculated from the axis mapping.
     """
-    _set_class_from_instance(ufo, designspace, instance, WEIGHT_AXIS_DEF)
+    _set_class_from_instance(ufo, designspace, instance, "wght")
 
 
 def set_width_class(ufo, designspace, instance):
-    """Read the `widthClass` instance attribute from the UFO lib, and set the
-    ufo.info.openTypeOS2WidthClass accordingly.
+    """ Set ufo.info.openTypeOS2WidthClass according to the user location
+    of the designspace instance, as calculated from the axis mapping.
     """
-    _set_class_from_instance(ufo, designspace, instance, WIDTH_AXIS_DEF)
+    _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
 def apply_instance_data(designspace_path, include_filenames=None,
@@ -360,6 +367,7 @@ def apply_instance_data(designspace_path, include_filenames=None,
         # to the keys of a dict of designspace locations that have been passed
         # through normpath (but not normcase). We do the same.
         ufo = Font(normpath(os.path.join(basedir, fname)))
+
         set_weight_class(ufo, designspace, designspace_instance)
         set_width_class(ufo, designspace, designspace_instance)
 
