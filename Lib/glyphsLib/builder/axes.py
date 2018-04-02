@@ -140,11 +140,19 @@ def to_designspace_axes(self):
     regular_master = get_regular_master(self.font)
     assert isinstance(regular_master, classes.GSFontMaster)
 
+    # TODO also include the other registered axes?
+    standard_axes_names = {
+        WEIGHT_AXIS_DEF.tag: WEIGHT_AXIS_DEF.name,
+        WIDTH_AXIS_DEF.tag: WIDTH_AXIS_DEF.name
+    }
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
         axis.name = axis_def.name
-        axis.labelNames = {"en": axis_def.name}
+        # we can omit the default English labelnames for standard axes
+        if (axis_def.tag not in standard_axes_names or
+                standard_axes_names[axis_def.tag] != axis_def.name):
+            axis.labelNames = {"en": axis_def.name}
 
         # See https://github.com/googlei18n/glyphsLib/issues/280
         if font_uses_new_axes(self.font):
