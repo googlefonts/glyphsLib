@@ -16,6 +16,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from collections import OrderedDict
+import logging
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
@@ -37,6 +38,8 @@ WIDTH_CLASS_TO_VALUE = {
     8: 150,  # Extra-expanded
     9: 200,  # Ultra-expanded
 }
+
+logger = logging.getLogger(__name__)
 
 
 def class_to_value(axis, ufo_class):
@@ -68,11 +71,10 @@ def user_loc_string_to_value(axis_tag, user_loc):
     Returns None if the string is invalid.
 
     >>> user_loc_string_to_value('wght', 'ExtraLight')
-    250
+    200
     >>> user_loc_string_to_value('wdth', 'SemiCondensed')
     87.5
     >>> user_loc_string_to_value('wdth', 'Clearly Not From Glyphs UI')
-    None
     """
     if axis_tag == 'wght':
         try:
@@ -97,7 +99,7 @@ def user_loc_value_to_class(axis_tag, user_loc):
     width it is a percentage.
 
     >>> user_loc_value_to_class('wght', 310)
-    300
+    310
     >>> user_loc_value_to_class('wdth', 62)
     2
     """
@@ -114,9 +116,9 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     """Return the Glyphs UI string (from the instance dropdown) that is
     closest to the provided user location.
 
-    >>> user_loc_value_to_string('wght', 430)
-    'Regular'
-    >>> user_loc_value_to_string('wdth', 150)
+    >>> user_loc_value_to_instance_string('wght', 430)
+    'Normal'
+    >>> user_loc_value_to_instance_string('wdth', 150)
     'Extra Expanded'
     """
     codes = {}
@@ -148,33 +150,37 @@ def to_designspace_axes(self):
         if font_uses_new_axes(self.font):
             # Build the mapping from the "Axis Location" of the masters
             # TODO: (jany) use Virtual Masters as well?
-            mapping = []
+            mapping = {}
             for master in self.font.masters:
                 designLoc = axis_def.get_design_loc(master)
                 userLoc = axis_def.get_user_loc(master)
-                mapping.append((userLoc, designLoc))
-            mapping = sorted(set(mapping))
+                if userLoc in mapping and mapping[userLoc] != designLoc:
+                    logger.warning("Axis location (%s) was redefined by '%s'",
+                                   userLoc, master.name)
+                mapping[userLoc] = designLoc
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
             # Build the mapping from the isntances because they have both
             # a user location and a design location.
-            instance_mapping = []
+            instance_mapping = {}
             for instance in self.font.instances:
                 if is_instance_active(instance) or self.minimize_glyphs_diffs:
                     designLoc = axis_def.get_design_loc(instance)
                     userLoc = axis_def.get_user_loc(instance)
-                    instance_mapping.append((userLoc, designLoc))
-            instance_mapping = sorted(set(instance_mapping))  # avoid duplicates
+                    if (userLoc in instance_mapping and
+                            instance_mapping[userLoc] != designLoc):
+                        logger.warning(
+                            "Instance user-space location (%s) redefined by "
+                            "'%s'", userLoc, instance.name)
+                    instance_mapping[userLoc] = designLoc
 
-            master_mapping = []
+            master_mapping = {}
             for master in self.font.masters:
-                designLoc = axis_def.get_design_loc(master)
                 # Glyphs masters don't have a user location
-                userLoc = designLoc
-                master_mapping.append((userLoc, designLoc))
-            master_mapping = sorted(set(master_mapping))
+                userLoc = designLoc = axis_def.get_design_loc(master)
+                master_mapping[userLoc] = designLoc
 
             # Prefer the instance-based mapping
             mapping = instance_mapping or master_mapping
@@ -182,18 +188,19 @@ def to_designspace_axes(self):
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
-            reverse_mapping = [(dl, ul) for ul, dl in mapping]
+            reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
             regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+            # TODO make sure that the default is in mapping?
 
-        minimum = maximum = default = axis_def.default_user_loc
-        if mapping:
-            minimum = min([userLoc for userLoc, _ in mapping])
-            maximum = max([userLoc for userLoc, _ in mapping])
-            default = min(maximum, max(minimum, regularUserLoc))  # clamp
+        minimum = min(mapping)
+        maximum = max(mapping)
+        default = min(maximum, max(minimum, regularUserLoc))  # clamp
 
+        is_identity_map = all(uloc == dloc for uloc, dloc in mapping.items())
         if (minimum < maximum or minimum != axis_def.default_user_loc or
-                len(instance_mapping) > 1 or len(master_mapping) > 1):
-            axis.map = mapping
+                not is_identity_map):
+            if not is_identity_map:
+                axis.map = sorted(mapping.items())
             axis.minimum = minimum
             axis.maximum = maximum
             axis.default = default
@@ -517,7 +524,7 @@ def is_instance_active(instance):
 def interp(mapping, x):
     """Compute the piecewise linear interpolation given by mapping for input x.
 
-    >>> _interp(((1, 1), (2, 4)), 1.5)
+    >>> interp(((1, 1), (2, 4)), 1.5)
     2.5
     """
     mapping = sorted(mapping)

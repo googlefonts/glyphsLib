@@ -2320,6 +2320,12 @@ name = Black;
 weightClass = Black;
 },
 {
+customParameters = (
+{
+name = weightClass;
+value = 357;
+}
+);
 interpolationWeight = 75;
 instanceInterpolations = {
 "3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.79452;

@@ -151,9 +151,9 @@ RTLTTB = 2
 
 
 WEIGHT_CODES = {
-    'Thin': 250,
-    'ExtraLight': 250,
-    'UltraLight': 250,
+    'Thin': 100,
+    'ExtraLight': 200,
+    'UltraLight': 200,
     'Light': 300,
     None: 400,  # default value normally omitted in source
     'Normal': 400,

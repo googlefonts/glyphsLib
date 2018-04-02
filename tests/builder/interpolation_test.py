@@ -395,18 +395,14 @@ WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
 class SetWeightWidthClassesTest(unittest.TestCase):
 
-    def test_no_weigth_class(self):
+    def test_no_weight_class(self):
         ufo = defcon.Font()
-        # name here says "Bold", however no excplit weightClass
+        # name here says "Bold", however no explicit weightClass
         # is assigned
         doc, instance = makeInstanceDescriptor("Bold")
         set_weight_class(ufo, doc, instance)
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-        # non-empty value is stored in the UFO lib even if same as default
-        # FIXME: (jany) why do we want to write something Glyphs-specific in
-        #   the instance UFO? Does someone later in the toolchain rely on it?
-        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_weight_class(self):
         ufo = defcon.Font()
@@ -416,9 +412,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         )
 
         set_weight_class(ufo, doc, data)
-
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
-        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Bold")
 
     def test_explicit_default_weight(self):
         ufo = defcon.Font()
@@ -430,8 +424,6 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_weight_class(ufo, doc, data)
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-        # non-empty value is stored in the UFO lib even if same as default
-        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "Regular")
 
     def test_no_width_class(self):
         ufo = defcon.Font()
@@ -440,8 +432,6 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-        # non-empty value is stored in the UFO lib even if same as default
-        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_width_class(self):
         ufo = defcon.Font()
@@ -451,9 +441,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         )
 
         set_width_class(ufo, doc, data)
-
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
-        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Condensed")
 
     def test_explicit_default_width(self):
         ufo = defcon.Font()
@@ -465,8 +453,6 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
-        # non-empty value is stored in the UFO lib even if same as default
-        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "Medium (normal)")
 
     def test_weight_and_width_class(self):
         ufo = defcon.Font()
@@ -480,9 +466,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         set_width_class(ufo, doc, data)
 
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 800)
-        # self.assertEqual(ufo.lib[WEIGHT_CLASS_KEY], "ExtraBold")
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
-        # self.assertEqual(ufo.lib[WIDTH_CLASS_KEY], "SemiCondensed")
 
     def test_unknown_ui_string_but_defined_weight_class(self):
         ufo = defcon.Font()
@@ -518,11 +502,8 @@ class SetWeightWidthClassesTest(unittest.TestCase):
 
         set_weight_class(ufo, doc, data)
 
-        # we do not set any OS/2 weight class; user needs to provide
-        # a 'weightClass' custom parameter in this special case
-        # FIXME: (jany) the new code writes the default OS2 class instead of
-        #   None. Is that a problem?
-        self.assertTrue(ufo.info.openTypeOS2WeightClass == 400)
+        # the default OS/2 weight class is set
+        self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
 
 def test_apply_instance_data(tmpdir):
