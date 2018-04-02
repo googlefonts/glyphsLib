@@ -3,11 +3,6 @@
     <axes>
         <axis default="400" maximum="800" minimum="300" name="Weight" tag="wght">
             <labelname xml:lang="en">Weight</labelname>
-            <map input="300" output="300" />
-            <map input="400" output="400" />
-            <map input="500" output="500" />
-            <map input="700" output="700" />
-            <map input="800" output="800" />
         </axis>
     </axes>
     <sources>

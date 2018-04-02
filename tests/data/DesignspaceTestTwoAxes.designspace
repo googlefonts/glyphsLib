@@ -10,8 +10,6 @@
         </axis>
         <axis default="100" maximum="100" minimum="70" name="Width" tag="wdth">
             <labelname xml:lang="en">Width</labelname>
-            <map input="70" output="70" />
-            <map input="100" output="100" />
         </axis>
     </axes>
     <sources>
