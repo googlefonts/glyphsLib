@@ -144,7 +144,7 @@ def to_designspace_axes(self):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
         axis.name = axis_def.name
-        axis.labelNames = {"en": axis_def.name}
+        # TODO add support for localised axis.labelNames when Glyphs.app does
 
         # See https://github.com/googlei18n/glyphsLib/issues/280
         if font_uses_new_axes(self.font):
