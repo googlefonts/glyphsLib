@@ -417,7 +417,6 @@ class GlyphsBuilder(_LoggerMixin):
             axis = designspace.newAxisDescriptor()
             axis.tag = axis_def.tag
             axis.name = axis_def.name
-            axis.labelNames = {"en": axis_def.name}
             mapping = []
             for ufo in ufos:
                 user_loc = getattr(ufo.info, info_key)
