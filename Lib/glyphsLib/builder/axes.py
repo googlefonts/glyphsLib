@@ -71,11 +71,10 @@ def user_loc_string_to_value(axis_tag, user_loc):
     Returns None if the string is invalid.
 
     >>> user_loc_string_to_value('wght', 'ExtraLight')
-    250
+    200
     >>> user_loc_string_to_value('wdth', 'SemiCondensed')
     87.5
     >>> user_loc_string_to_value('wdth', 'Clearly Not From Glyphs UI')
-    None
     """
     if axis_tag == 'wght':
         try:
@@ -100,7 +99,7 @@ def user_loc_value_to_class(axis_tag, user_loc):
     width it is a percentage.
 
     >>> user_loc_value_to_class('wght', 310)
-    300
+    310
     >>> user_loc_value_to_class('wdth', 62)
     2
     """
@@ -117,9 +116,9 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     """Return the Glyphs UI string (from the instance dropdown) that is
     closest to the provided user location.
 
-    >>> user_loc_value_to_string('wght', 430)
-    'Regular'
-    >>> user_loc_value_to_string('wdth', 150)
+    >>> user_loc_value_to_instance_string('wght', 430)
+    'Normal'
+    >>> user_loc_value_to_instance_string('wdth', 150)
     'Extra Expanded'
     """
     codes = {}
@@ -525,7 +524,7 @@ def is_instance_active(instance):
 def interp(mapping, x):
     """Compute the piecewise linear interpolation given by mapping for input x.
 
-    >>> _interp(((1, 1), (2, 4)), 1.5)
+    >>> interp(((1, 1), (2, 4)), 1.5)
     2.5
     """
     mapping = sorted(mapping)
