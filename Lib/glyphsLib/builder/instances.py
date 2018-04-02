@@ -293,18 +293,17 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
     try:
         design_loc = instance.location[axis_def.name]
     except KeyError:
-        # The location does not have this axis. Use default value
-        design_loc = axis_def.default_user_loc
-
-    if mapping:
-        # Retrieve the user location (weightClass/widthClass)
-        # by going through the axis mapping in reverse.
-        reverse_mapping = sorted({dl: ul for ul, dl in mapping}.items())
-        user_loc = interp(reverse_mapping, design_loc)
-        axis_def.set_ufo_user_loc(ufo, user_loc)
+        user_loc = axis_def.default_user_loc
     else:
-        # no mapping means user space location is same as design space
-        axis_def.set_ufo_user_loc(ufo, design_loc)
+        if mapping:
+            # Retrieve the user location (weightClass/widthClass)
+            # by going through the axis mapping in reverse.
+            reverse_mapping = sorted({dl: ul for ul, dl in mapping}.items())
+            user_loc = interp(reverse_mapping, design_loc)
+        else:
+            # no mapping means user space location is same as design space
+            user_loc = design_loc
+    axis_def.set_ufo_user_loc(ufo, user_loc)
 
 
 def set_weight_class(ufo, designspace, instance):
