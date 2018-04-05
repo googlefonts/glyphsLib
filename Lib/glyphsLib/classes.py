@@ -1352,8 +1352,8 @@ class GSFontMaster(GSBase):
         # Remove all occurences of 'Regular'
         while len(names) > 1 and "Regular" in names:
             names.remove("Regular")
-        # if abs(self.italicAngle) > 0.01:
-        #     names.append("Italic")
+        if bool(self.italicAngle):
+            names.append("Italic")
         return " ".join(list(names))
 
     def _splitName(self, value):
