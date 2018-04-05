@@ -507,6 +507,7 @@ class FeatureFileProcessor(object):
             feature.notes = notes_text
         if disabled:
             feature.code = disabled_text
+            feature.disabled = True
             # FIXME: (jany) check that the user has not added more new code
             #    after the disabled comment. Maybe start by checking whether
             #    the block is only made of comments
@@ -572,7 +573,7 @@ class FeatureFileProcessor(object):
         # Keep the rest of the statements
         res.extend(list(st_iter))
         # Inside the comment block, drop the pound sign and any common indent
-        return (match, dedent(''.join(line[1:] for line in comments)), res)
+        return (match, dedent(''.join(c.text[1:] for c in comments)), res)
 
     def _rstrip_newlines(self, string, number=1):
         if len(string) >= number and string[-number:] == '\n' * number:
