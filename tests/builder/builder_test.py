@@ -38,7 +38,7 @@ from glyphsLib.types import Point
 from glyphsLib.builder import to_ufos, to_glyphs
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.paths import to_ufo_paths
-from glyphsLib.builder.names import build_stylemap_names, build_style_name
+from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.filters import parse_glyphs_filter
 from glyphsLib.builder.constants import (
     GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX,
@@ -47,40 +47,6 @@ from glyphsLib.builder.constants import (
 
 from classes_test import (generate_minimal_font, generate_instance_from_dict,
                           add_glyph, add_anchor, add_component)
-
-
-class BuildStyleNameTest(unittest.TestCase):
-
-    def test_style_regular_weight(self):
-        self.assertEqual(build_style_name(is_italic=False), 'Regular')
-        self.assertEqual(build_style_name(is_italic=True), 'Italic')
-
-    def test_style_nonregular_weight(self):
-        self.assertEqual(
-            build_style_name(weight='Thin', is_italic=False), 'Thin')
-        self.assertEqual(
-            build_style_name(weight='Thin', is_italic=True), 'Thin Italic')
-
-    def test_style_nonregular_width(self):
-        self.assertEqual(
-            build_style_name(width='Condensed', is_italic=False), 'Condensed')
-        self.assertEqual(
-            build_style_name(width='Condensed', is_italic=True),
-            'Condensed Italic')
-        self.assertEqual(
-            build_style_name(weight='Thin', width='Condensed',
-                             is_italic=False),
-            'Condensed Thin')
-        self.assertEqual(
-            build_style_name(weight='Thin', width='Condensed',
-                             is_italic=True),
-            'Condensed Thin Italic')
-
-    def test_style_custom(self):
-        self.assertEqual(
-            build_style_name(custom='Text', is_italic=False), 'Text')
-        self.assertEqual(
-            build_style_name(weight='Text', is_italic=True), 'Text Italic')
 
 
 class BuildStyleMapNamesTest(unittest.TestCase):

@@ -34,12 +34,7 @@ def to_ufo_names(self, ufo, master, family_name):
 
     is_italic = bool(master.italicAngle)
 
-    styleName = master.name or build_style_name(
-        width if width != 'Medium (normal)' else '',
-        weight if weight != 'Regular' else '',
-        custom,
-        is_italic
-    )
+    styleName = master.name
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
 
@@ -85,16 +80,6 @@ def build_stylemap_names(family_name, style_name, is_bold=False,
     else:
         styleMapFamilyName = family_name
     return styleMapFamilyName, styleMapStyleName
-
-
-def build_style_name(width='', weight='', custom='', is_italic=False):
-    """Build style name from width, weight, and custom style strings
-    and whether the style is italic.
-    """
-
-    return ' '.join(
-        s for s in (custom, width, weight, 'Italic' if is_italic else '') if s
-    ) or 'Regular'
 
 
 def _get_linked_style(style_name, is_bold, is_italic):
