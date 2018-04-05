@@ -567,9 +567,13 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual('Light', master.name)
 
         master.italicAngle = 11
-        # self.assertEqual('Light Italic', master.name)
-        # That doesn't do anything in the latest Glyphs (1114)
-        self.assertEqual('Light', master.name)
+        self.assertEqual('Light Italic', master.name)
+        master.italicAngle = 0
+
+        master.italicAngle = 11
+        master.width = 'Condensed'
+        self.assertEqual('Condensed Light Italic', master.name)
+        master.width = ''
         master.italicAngle = 0
 
         master.customName = 'Rounded'
