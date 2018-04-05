@@ -115,6 +115,9 @@ GSOffsetVertical = 9;
 GSRoughenHorizontal = 15;
 GSRoughenSegmentLength = 15;
 GSRoughenVertical = 10;
+noodleExtremesAndInflections = 1;
+noodleRemoveOverlap = 0;
+noodleThickness = "106.0";
 };
 verticalStems = (
 17,
@@ -2317,6 +2320,12 @@ name = Black;
 weightClass = Black;
 },
 {
+customParameters = (
+{
+name = weightClass;
+value = 357;
+}
+);
 interpolationWeight = 75;
 instanceInterpolations = {
 "3E7589AA-8194-470F-8E2F-13C1C581BE24" = 0.79452;

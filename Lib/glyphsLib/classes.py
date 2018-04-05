@@ -151,9 +151,9 @@ RTLTTB = 2
 
 
 WEIGHT_CODES = {
-    'Thin': 250,
-    'ExtraLight': 250,
-    'UltraLight': 250,
+    'Thin': 100,
+    'ExtraLight': 200,
+    'UltraLight': 200,
     'Light': 300,
     None: 400,  # default value normally omitted in source
     'Normal': 400,
@@ -1347,7 +1347,7 @@ class GSFontMaster(GSBase):
             self.customParameters['Master Name'] = name
 
     def _joinName(self):
-        names = [self.weight, self.width, self.customName]
+        names = [self.width, self.weight, self.customName]
         names = [n for n in names if n]  # Remove None and empty string
         # Remove all occurences of 'Regular'
         while len(names) > 1 and "Regular" in names:
@@ -1622,7 +1622,7 @@ class GSPath(GSBase):
     @segments.setter
     def segments(self, value):
         if type(value) in (list, tuple):
-            self.setSegments(segments)
+            self.setSegments(value)
         else:
             raise TypeError
 
@@ -3009,7 +3009,7 @@ class GSFont(GSBase):
                 "Please supply a file path to a .glyphs file"
             with open(path, 'r', encoding='utf-8') as fp:
                 p = Parser()
-                logger.info('Parsing .glyphs file into %r', self)
+                logger.info('Parsing "%s" file into <GSFont>' % path)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
             for master in self.masters:

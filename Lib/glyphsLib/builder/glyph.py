@@ -45,14 +45,16 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
         color_tuple = None
         if isinstance(color_index, list):
             if not all(i in range(0, 256) for i in color_index):
-                logger.warn('Invalid color tuple {} for glyph {}. '
-                            'Values must be in range 0-255'.format(color_index, glyph.name))
+                logger.warning('Invalid color tuple {} for glyph {}. '
+                               'Values must be in range 0-255'.format(
+                                   color_index, glyph.name))
             else:
                 color_tuple = ','.join('{0:.4f}'.format(i/255) if i in range(1, 255) else str(i//255) for i in color_index)
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             color_tuple = GLYPHS_COLORS[color_index]
         else:
-            logger.warn('Invalid color index {} for {}'.format(color_index, glyph.name))
+            logger.warning('Invalid color index {} for {}'.format(
+                color_index, glyph.name))
         if color_tuple is not None:
             ufo_glyph.markColor = color_tuple
     export = glyph.export

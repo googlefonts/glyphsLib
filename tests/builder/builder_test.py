@@ -474,6 +474,24 @@ class ToUfosTest(unittest.TestCase):
                 self.assertEqual(anchor.name, 'bottom_2')
                 self.assertEqual(anchor.x, 150)
 
+    def test_fail_during_anchor_propagation(self):
+        """Fix https://github.com/googlei18n/glyphsLib/issues/317"""
+        font = generate_minimal_font()
+
+        glyphs = (
+            # This glyph has components that don't exist in the font
+            ('yodyod', [('yod', 0, 0), ('yod', 100, 0)], []),
+        )
+        for name, component_data, anchor_data in glyphs:
+            add_glyph(font, name)
+            for n, x, y, in anchor_data:
+                add_anchor(font, name, n, x, y)
+            for n, x, y in component_data:
+                add_component(font, name, n, (1, 0, 0, 1, x, y))
+
+        # We just want the call to `to_ufos` to not crash
+        assert to_ufos(font)
+
     def test_postscript_name_from_data(self):
         font = generate_minimal_font()
         add_glyph(font, 'foo')['production'] = 'f_o_o.alt1'
@@ -1124,16 +1142,22 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font)
+            to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("layer without a name")
+
+        # no warning if minimize_glyphs_diff=False
+        with CapturingLogHandler(self.logger, level="WARNING") as captor:
+            to_ufos(self.font, minimize_glyphs_diffs=False)
+
+        self.assertFalse(captor.records)
 
     def test_dangling_layer(self):
         self.font.glyphs[0].layers[0].layerId = "yyy"
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font)
+            to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("is dangling and will be skipped")
 

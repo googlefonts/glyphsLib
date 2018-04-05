@@ -135,28 +135,12 @@ def _to_glyphs_kerning_group(self, name, glyphs):
 
 def _glyph_kerning_attr(glyph, side):
     """Return leftKerningGroup or rightKerningGroup depending on the UFO
-    group's side (1 or 2) and the glyph's direction (LTR or RTL).
+    group's side (1 or 2).
     """
-    side = int(side)
-    if _is_ltr(glyph):
-        if side == 1:
-            return 'rightKerningGroup'
-        else:
-            return 'leftKerningGroup'
+    if int(side) == 1:
+        return 'rightKerningGroup'
     else:
-        # RTL
-        if side == 1:
-            return 'leftKerningGroup'
-        else:
-            return 'rightKerningGroup'
-
-
-def _is_ltr(glyph):
-    # TODO: (jany) This needs a real implementation!
-    # The following one is just to make my simple test pass
-    if glyph.name.endswith('-hb'):
-        return False
-    return True
+        return 'leftKerningGroup'
 
 
 def _assert_groups_are_identical(self, reference_ufo, ufo):
@@ -164,10 +148,10 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
 
     def _warn(message, *args):
         if first_time:
-            self.logger.warn('Using UFO `%s` as a reference for groups:',
+            self.logger.warning('Using UFO `%s` as a reference for groups:',
                              _ufo_logging_ref(reference_ufo))
             first_time.clear()
-        self.logger.warn('   ' + message, *args)
+        self.logger.warning('   ' + message, *args)
 
     # Check for inconsistencies
     for group, glyphs in ufo.groups.items():

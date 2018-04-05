@@ -191,13 +191,13 @@ def to_glyphs_features(self):
     #   to disable features on masters that didn't have them originally.
     if _features_are_different_across_ufos(self):
         if self.minimize_ufo_diffs:
-            self.logger.warn(
+            self.logger.warning(
                 'Feature files are different across UFOs. The produced Glyphs '
                 'file will have no editable features.')
             # Do all UFOs, not only the first one
             _to_glyphs_features_basic(self)
             return
-        self.logger.warn(
+        self.logger.warning(
             'Feature files are different across UFOs. The produced Glyphs '
             'file will reflect only the features of the first UFO.')
 
@@ -507,6 +507,7 @@ class FeatureFileProcessor(object):
             feature.notes = notes_text
         if disabled:
             feature.code = disabled_text
+            feature.disabled = True
             # FIXME: (jany) check that the user has not added more new code
             #    after the disabled comment. Maybe start by checking whether
             #    the block is only made of comments
@@ -572,7 +573,8 @@ class FeatureFileProcessor(object):
         # Keep the rest of the statements
         res.extend(list(st_iter))
         # Inside the comment block, drop the pound sign and any common indent
-        return (match, dedent(''.join(line[1:] for line in comments)), res)
+        return (match, dedent(''.join(c.text[1:] + "\n" for c in comments)),
+                res)
 
     def _rstrip_newlines(self, string, number=1):
         if len(string) >= number and string[-number:] == '\n' * number:

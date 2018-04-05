@@ -557,6 +557,10 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         master = self.master
         self.assertEqual('Light', master.name)
 
+        master.width = 'Condensed'
+        self.assertEqual(master.name, 'Condensed Light')
+        master.width = ''
+
         master.customParameters['Master Name'] = 'My custom master name'
         self.assertEqual('My custom master name', master.name)
         del(master.customParameters['Master Name'])
@@ -583,6 +587,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
 
     def test_name_assignment(self):
         test_data = [
+            # <name>, <expected weight>, <expected width>, <expected custom>
             # Regular
             ('Regular', '', '', ''),
             # Weights from the dropdown

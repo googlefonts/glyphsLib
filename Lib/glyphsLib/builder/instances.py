@@ -17,6 +17,7 @@ from __future__ import (print_function, division, absolute_import,
 
 from collections import OrderedDict
 import os
+import logging
 
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
@@ -25,8 +26,10 @@ from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
 from .names import build_stylemap_names
 from .masters import UFO_FILENAME_KEY
 from .axes import (get_axis_definitions, is_instance_active, interp,
-                   WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF)
+                   WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, AxisDefinitionFactory)
 from .custom_params import to_ufo_custom_params
+
+import defcon
 
 EXPORT_KEY = GLYPHS_PREFIX + 'export'
 WIDTH_KEY = GLYPHS_PREFIX + 'width'
@@ -35,6 +38,9 @@ FULL_FILENAME_KEY = GLYPHLIB_PREFIX + 'fullFilename'
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + 'manualInterpolation'
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + 'intanceInterpolations'
 CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + 'customParameters'
+
+
+logger = logging.getLogger(__name__)
 
 
 def to_designspace_instances(self):
@@ -77,7 +83,7 @@ def _to_designspace_instance(self, instance):
             fname = self.instance_dir + '/' + os.path.basename(fname)
         ufo_instance.filename = fname
     if not ufo_instance.filename:
-        instance_dir = self.instance_dir or '.'
+        instance_dir = self.instance_dir or ''
         ufo_instance.filename = build_ufo_path(
             instance_dir, ufo_instance.familyName, ufo_instance.styleName)
 
@@ -268,70 +274,103 @@ class InstanceDescriptorAsGSInstance(object):
                 self.customParameters.append(GSCustomParameter(name, value))
 
 
-def _set_class_from_instance(ufo, designspace, instance, axis_def):
+def _set_class_from_instance(ufo, designspace, instance, axis_tag):
     # FIXME: (jany) copy-pasted from above, factor into method?
-    design_loc = None
+    assert axis_tag in ("wght", "wdth")
+
+    factory = AxisDefinitionFactory()
+    for axis in designspace.axes:
+        if axis.tag == axis_tag:
+            axis_def = factory.get(axis.tag, axis.name)
+            mapping = axis.map
+            break
+    else:
+        # axis not found, try use the default axis definition
+        axis_def = (WEIGHT_AXIS_DEF if axis_tag == "wght"
+                    else WIDTH_AXIS_DEF)
+        mapping = []
+
     try:
         design_loc = instance.location[axis_def.name]
     except KeyError:
-        # The location does not have this axis?
-        pass
-
-    # Retrieve the user location (weightClass/widthClass)
-    # by going through the axis mapping in reverse.
-    user_loc = design_loc
-    mapping = None
-    for axis in designspace.axes:
-        if axis.tag == axis_def.tag:
-            mapping = axis.map
-    if mapping:
-        reverse_mapping = [(dl, ul) for ul, dl in mapping]
-        user_loc = interp(reverse_mapping, design_loc)
-
-    if user_loc is not None:
-        axis_def.set_ufo_user_loc(ufo, user_loc)
+        user_loc = axis_def.default_user_loc
     else:
-        axis_def.set_ufo_user_loc(ufo, axis_def.default_user_loc)
+        if mapping:
+            # Retrieve the user location (weightClass/widthClass)
+            # by going through the axis mapping in reverse.
+            reverse_mapping = sorted({dl: ul for ul, dl in mapping}.items())
+            user_loc = interp(reverse_mapping, design_loc)
+        else:
+            # no mapping means user space location is same as design space
+            user_loc = design_loc
+    axis_def.set_ufo_user_loc(ufo, user_loc)
 
 
 def set_weight_class(ufo, designspace, instance):
-    """ the `weightClass` instance attribute from the UFO lib, and set
-    the ufo.info.openTypeOS2WeightClass accordingly.
+    """ Set ufo.info.openTypeOS2WeightClass according to the user location
+    of the designspace instance, as calculated from the axis mapping.
     """
-    _set_class_from_instance(ufo, designspace, instance, WEIGHT_AXIS_DEF)
+    _set_class_from_instance(ufo, designspace, instance, "wght")
 
 
 def set_width_class(ufo, designspace, instance):
-    """Read the `widthClass` instance attribute from the UFO lib, and set the
-    ufo.info.openTypeOS2WidthClass accordingly.
+    """ Set ufo.info.openTypeOS2WidthClass according to the user location
+    of the designspace instance, as calculated from the axis mapping.
     """
-    _set_class_from_instance(ufo, designspace, instance, WIDTH_AXIS_DEF)
+    _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
-# DEPRECATED: needs better API
-def apply_instance_data(instance_data):
-    """Open instances, apply data, and re-save.
+def apply_instance_data(designspace_path, include_filenames=None,
+                        Font=defcon.Font):
+    """Open UFO instances referenced by designspace, apply Glyphs instance
+    data if present, re-save UFOs and return updated UFO Font objects.
 
     Args:
-        instance_data: an InstanceData object.
+        designspace_path: path to a designspace file.
+        include_filenames: optional set of instance filenames (relative to
+            the designspace path) to be included. By default all instaces are
+            processed.
+        Font: the class used to load the UFO (default: defcon.Font).
     Returns:
         List of opened and updated instance UFOs.
     """
-    import defcon
-    designspace = instance_data.designspace
+    from fontTools.designspaceLib import DesignSpaceDocument
+    from os.path import normcase, normpath
 
+    # in fontmake <= 1.4.0 using the old glyphsLib.build_masters API, the
+    # apply_instance_data function is passed an InstanceData object, instead
+    # of a path to a designspace file. We try to stay compatible so one can
+    # update glyphsLib without needing to also update fontmake.
+    # TODO: Drop this sometime in the next releases.
+    if isinstance(designspace_path, InstanceData):
+        designspace = designspace_path.designspace
+        designspace_path = designspace.path
+    else:
+        designspace = DesignSpaceDocument()
+        designspace.read(designspace_path)
+    basedir = os.path.dirname(designspace_path)
     instance_ufos = []
-    for instance in designspace.instances:
-        path = instance.path
-        if path is None:
-            path = os.path.join(
-                os.path.dirname(designspace.path), instance.filename)
-        ufo = defcon.Font(path)
-        set_weight_class(ufo, designspace, instance)
-        set_width_class(ufo, designspace, instance)
+    if include_filenames is not None:
+        include_filenames = {normcase(normpath(p))
+                             for p in include_filenames}
+    for designspace_instance in designspace.instances:
+        fname = designspace_instance.filename
+        assert fname is not None, ("instance %r missing required filename" %
+                getattr(designspace_instance, "name", designspace_instance))
+        if include_filenames is not None:
+            fname = normcase(normpath(fname))
+            if fname not in include_filenames:
+                continue
+        logger.debug("Appling instance data to %s", fname)
+        # fontmake <= 1.4.0 compares the ufo paths returned from this function
+        # to the keys of a dict of designspace locations that have been passed
+        # through normpath (but not normcase). We do the same.
+        ufo = Font(normpath(os.path.join(basedir, fname)))
 
-        glyphs_instance = InstanceDescriptorAsGSInstance(instance)
-        # to_ufo_custom_params(self, ufo, data.parent)  # FIXME: (jany) needed?
+        set_weight_class(ufo, designspace, designspace_instance)
+        set_width_class(ufo, designspace, designspace_instance)
+
+        glyphs_instance = InstanceDescriptorAsGSInstance(designspace_instance)
         to_ufo_custom_params(None, ufo, glyphs_instance)
         ufo.save()
         instance_ufos.append(ufo)

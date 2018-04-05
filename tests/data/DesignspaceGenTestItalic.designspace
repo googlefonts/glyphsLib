@@ -1,14 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <designspace format="3">
     <axes>
-        <axis default="400" maximum="800" minimum="300" name="Weight" tag="wght">
-            <labelname xml:lang="en">Weight</labelname>
-            <map input="300" output="300" />
-            <map input="400" output="400" />
-            <map input="500" output="500" />
-            <map input="700" output="700" />
-            <map input="800" output="800" />
-        </axis>
+        <axis default="400" maximum="800" minimum="300" name="Weight" tag="wght" />
     </axes>
     <sources>
         <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-LightItalic.ufo" name="CoolFoundry Examplary Serif Light Italic" stylename="Light Italic">
