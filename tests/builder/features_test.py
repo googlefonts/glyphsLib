@@ -281,7 +281,11 @@ def test_different_features_in_different_UFOS(tmpdir):
 def test_roundtrip_disabled_feature():
     font = to_glyphs([defcon.Font()])
     feature = classes.GSFeature(name="ccmp")
-    feature.code = "sub c by c.ss03;"
+    feature.code = dedent("""\
+        sub a by a.ss03;
+        sub b by b.ss03;
+        sub c by c.ss03;
+    """)
     feature.disabled = True
     font.features.append(feature)
 
@@ -289,6 +293,8 @@ def test_roundtrip_disabled_feature():
     assert ufo.features.text == dedent('''\
         feature ccmp {
         # disabled
+        #sub a by a.ss03;
+        #sub b by b.ss03;
         #sub c by c.ss03;
         } ccmp;
     ''')
@@ -297,8 +303,15 @@ def test_roundtrip_disabled_feature():
     assert len(font_r.features) == 1
     feature_r = font_r.features[0]
     assert feature_r.name == "ccmp"
-    assert feature_r.code == "sub c by c.ss03;"
+    assert feature_r.code == feature.code
     assert feature_r.disabled is True
+
+    font_rr = to_glyphs(to_ufos(font_r))
+    assert len(font_rr.features) == 1
+    feature_rr = font_rr.features[0]
+    assert feature_rr.name == "ccmp"
+    assert feature_rr.code == feature.code
+    assert feature_rr.disabled is True
 
 
 def test_roundtrip_automatic_feature():
