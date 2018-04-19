@@ -22,6 +22,7 @@ import re
 import logging
 import sys
 import base64
+import binascii
 
 import glyphsLib
 
@@ -41,6 +42,7 @@ class Parser(object):
     list_delim_re = re.compile(r'\s*,')
     attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
     value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
+    hex_re = re.compile(r'\s*<([A-Fa-f0-9]+)>', re.DOTALL)
     bytes_re = re.compile(r'\s*<([A-Za-z0-9+/=]+)>', re.DOTALL)
 
     def __init__(self, current_type=OrderedDict):
@@ -129,6 +131,13 @@ class Parser(object):
             value = self.current_type(value)
 
             return value, i
+
+        m = self.hex_re.match(text, i)
+        if m:
+            parsed, value = m.group(0), m.group(1)
+            decoded = binascii.unhexlify(value)
+            i += len(parsed)
+            return decoded, i
 
         m = self.bytes_re.match(text, i)
         if m:
