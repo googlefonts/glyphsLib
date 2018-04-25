@@ -134,7 +134,7 @@ class Parser(object):
         m = self.hex_re.match(text, i)
         if m:
             parsed, value = m.group(0), m.group(1)
-            decoded = binascii.unhexlify(value)
+            decoded = bytearray(binascii.unhexlify(value))
             i += len(parsed)
             return decoded, i
         else:
