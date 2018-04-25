@@ -15,7 +15,6 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import binascii
 import os
 import pytest
 from collections import OrderedDict
@@ -108,8 +107,7 @@ def test_ufo_data_into_font_master_user_data(tmpdir):
 
     # The path in the glyphs file should be os-agnostic (forward slashes)
     assert font.masters[0].userData[GLYPHLIB_PREFIX + 'ufoData'] == {
-        # `decode`: not bytes in userData, only strings
-        'org.customTool/ufoData.bin': binascii.hexlify(data).decode()
+        'org.customTool/ufoData.bin': bytearray(data)
     }
 
     ufo, = to_ufos(font)
