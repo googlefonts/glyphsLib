@@ -130,6 +130,12 @@ class ParserTest(unittest.TestCase):
             [('key', b'value')]
         )
 
+    def test_parse_hex_data(self):
+        self.run_test(
+            b'{key = <48616c6c6f>;}',
+            [('key', b'Hallo')]
+        )
+
     def test_parse_stringy_floats(self):
         self.run_test(
             b'{noodleThickness = "106.0";}',
