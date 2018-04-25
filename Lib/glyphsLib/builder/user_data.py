@@ -15,7 +15,6 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import binascii
 import os
 import posixpath
 
@@ -51,7 +50,7 @@ def to_ufo_master_user_data(self, ufo, master):
     if UFO_DATA_KEY in master.userData:
         for filename, data in master.userData[UFO_DATA_KEY].items():
             os_filename = os.path.join(*filename.split('/'))
-            ufo.data[os_filename] = binascii.unhexlify(data)
+            ufo.data[os_filename] = bytes(data)
 
 
 def to_ufo_glyph_user_data(self, ufo, glyph):
@@ -114,10 +113,7 @@ def to_glyphs_master_user_data(self, ufo, master):
         ufo_data = {}
         for os_filename in ufo.data.fileNames:
             filename = posixpath.join(*os_filename.split(os.path.sep))
-            data_bytes = binascii.hexlify(ufo.data[os_filename])
-            # FIXME: (jany) The `decode` is here because putting bytes in
-            # userData doesn't work in Python 3. (comes out as `"b'stuff'"`)
-            ufo_data[filename] = data_bytes.decode()
+            ufo_data[filename] = bytearray(ufo.data[os_filename])
         master.userData[UFO_DATA_KEY] = ufo_data
 
 
