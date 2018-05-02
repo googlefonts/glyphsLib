@@ -21,7 +21,6 @@ from io import open
 import re
 import logging
 import sys
-import binascii
 
 import glyphsLib
 
@@ -133,8 +132,9 @@ class Parser(object):
 
         m = self.hex_re.match(text, i)
         if m:
+            from glyphsLib.types import BinaryData
             parsed, value = m.group(0), m.group(1)
-            decoded = bytearray(binascii.unhexlify(value))
+            decoded = BinaryData.fromHex(value)
             i += len(parsed)
             return decoded, i
         else:
