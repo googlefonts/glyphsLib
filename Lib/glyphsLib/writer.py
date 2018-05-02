@@ -19,7 +19,7 @@
 from __future__ import unicode_literals
 import sys
 import glyphsLib.classes
-from glyphsLib.types import floatToString, BinaryData
+from glyphsLib.types import floatToString
 import logging
 import datetime
 from collections import OrderedDict
