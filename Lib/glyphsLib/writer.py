@@ -18,9 +18,8 @@
 
 from __future__ import unicode_literals
 import sys
-import binascii
 import glyphsLib.classes
-from glyphsLib.types import floatToString
+from glyphsLib.types import floatToString, BinaryData
 import logging
 import datetime
 from collections import OrderedDict
@@ -139,9 +138,6 @@ class Writer(object):
                 self.file.write("0")
         elif type(value) == datetime.datetime:
             self.file.write("\"%s +0000\"" % str(value))
-        elif isinstance(value, bytearray):
-            value = "<%s>" % binascii.hexlify(value).decode()
-            self.file.write(value)
         else:
             value = unicode(value)
             if forKey != "unicode":
