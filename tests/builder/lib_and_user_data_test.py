@@ -22,6 +22,7 @@ from collections import OrderedDict
 import defcon
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib import classes
+from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import GLYPHLIB_PREFIX
 
 from glyphsLib import to_glyphs, to_ufos, to_designspace
@@ -107,7 +108,7 @@ def test_ufo_data_into_font_master_user_data(tmpdir):
 
     # The path in the glyphs file should be os-agnostic (forward slashes)
     assert font.masters[0].userData[GLYPHLIB_PREFIX + 'ufoData'] == {
-        'org.customTool/ufoData.bin': bytearray(data)
+        'org.customTool/ufoData.bin': BinaryData(data)
     }
 
     ufo, = to_ufos(font)

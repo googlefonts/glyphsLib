@@ -110,10 +110,11 @@ def to_glyphs_master_user_data(self, ufo, master):
 
     # Save UFO data files
     if ufo.data.fileNames:
+        from glyphsLib.types import BinaryData
         ufo_data = {}
         for os_filename in ufo.data.fileNames:
             filename = posixpath.join(*os_filename.split(os.path.sep))
-            ufo_data[filename] = bytearray(ufo.data[os_filename])
+            ufo_data[filename] = BinaryData(ufo.data[os_filename])
         master.userData[UFO_DATA_KEY] = ufo_data
 
 
