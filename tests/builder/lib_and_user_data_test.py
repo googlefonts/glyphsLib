@@ -15,7 +15,6 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import base64
 import os
 import pytest
 from collections import OrderedDict
@@ -23,6 +22,7 @@ from collections import OrderedDict
 import defcon
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib import classes
+from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import GLYPHLIB_PREFIX
 
 from glyphsLib import to_glyphs, to_ufos, to_designspace
@@ -108,8 +108,7 @@ def test_ufo_data_into_font_master_user_data(tmpdir):
 
     # The path in the glyphs file should be os-agnostic (forward slashes)
     assert font.masters[0].userData[GLYPHLIB_PREFIX + 'ufoData'] == {
-        # `decode`: not bytes in userData, only strings
-        'org.customTool/ufoData.bin': base64.b64encode(data).decode()
+        'org.customTool/ufoData.bin': BinaryData(data)
     }
 
     ufo, = to_ufos(font)

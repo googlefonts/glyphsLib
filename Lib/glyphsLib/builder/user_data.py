@@ -15,7 +15,6 @@
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
-import base64
 import os
 import posixpath
 
@@ -51,7 +50,7 @@ def to_ufo_master_user_data(self, ufo, master):
     if UFO_DATA_KEY in master.userData:
         for filename, data in master.userData[UFO_DATA_KEY].items():
             os_filename = os.path.join(*filename.split('/'))
-            ufo.data[os_filename] = base64.b64decode(data)
+            ufo.data[os_filename] = bytes(data)
 
 
 def to_ufo_glyph_user_data(self, ufo, glyph):
@@ -111,13 +110,11 @@ def to_glyphs_master_user_data(self, ufo, master):
 
     # Save UFO data files
     if ufo.data.fileNames:
+        from glyphsLib.types import BinaryData
         ufo_data = {}
         for os_filename in ufo.data.fileNames:
             filename = posixpath.join(*os_filename.split(os.path.sep))
-            data_bytes = base64.b64encode(ufo.data[os_filename])
-            # FIXME: (jany) The `decode` is here because putting bytes in
-            # userData doesn't work in Python 3. (comes out as `"b'stuff'"`)
-            ufo_data[filename] = data_bytes.decode()
+            ufo_data[filename] = BinaryData(ufo.data[os_filename])
         master.userData[UFO_DATA_KEY] = ufo_data
 
 

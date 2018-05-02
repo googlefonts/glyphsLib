@@ -21,6 +21,7 @@ import datetime
 import traceback
 import math
 import copy
+import binascii
 from fontTools.misc.py23 import unicode
 
 __all__ = [
@@ -372,3 +373,15 @@ class UnicodesList(list):
         if len(self) == 1:
             return self[0]
         return '"%s"' % ','.join(self)
+
+
+class BinaryData(bytes):
+
+    @classmethod
+    def fromHex(cls, data):
+        return cls(binascii.unhexlify(data))
+
+    def plistValue(self):
+        # TODO write hex bytes in chunks and split over multiple lines
+        # for better readability, like the fonttools xmlWriter does
+        return "<%s>" % binascii.hexlify(self).decode()

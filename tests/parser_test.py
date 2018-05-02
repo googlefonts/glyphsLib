@@ -124,12 +124,6 @@ class ParserTest(unittest.TestCase):
             [('outer', OrderedDict([('inner', 'turtles')]))]
         )
 
-    def test_parse_base64_data(self):
-        self.run_test(
-            b'{key = <dmFsdWU=>;}',
-            [('key', b'value')]
-        )
-
     def test_parse_hex_data(self):
         self.run_test(
             b'{key = <48616c6c6f>;}',
