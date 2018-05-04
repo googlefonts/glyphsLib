@@ -31,7 +31,7 @@ from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import clean_ufo
 
-__version__ = "2.3.0"
+__version__ = "2.3.1.dev0"
 
 # Doing `import *` from a module that uses unicode_literals, produces
 # "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
