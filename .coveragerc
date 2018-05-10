@@ -11,6 +11,7 @@ source = glyphsLib
 source =
     Lib/glyphsLib
     .tox/*/lib/python*/site-packages/glyphsLib
+    .tox/*/lib/site-packages/glyphsLib
     .tox/pypy*/site-packages/glyphsLib
 
 [report]
