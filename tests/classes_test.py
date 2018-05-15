@@ -19,6 +19,7 @@ from __future__ import (
     print_function, division, absolute_import, unicode_literals)
 
 import os
+import sys
 import datetime
 import copy
 import unittest
@@ -212,6 +213,15 @@ class GSObjectsTestCase(unittest.TestCase):
 class GSFontFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super(GSFontFromFileTest, self).setUp()
+
+    @pytest.mark.skipif(sys.version_info < (3,4), reason="pathlib available in >= 3.4.")
+    def test_pathlike_path(self):
+        from pathlib import Path
+        font = GSFont(TESTFILE_PATH)
+        self.assertEqual(font.filepath, TESTFILE_PATH)
+
+        font = GSFont(Path(TESTFILE_PATH))
+        self.assertEqual(font.filepath, TESTFILE_PATH)
 
     def test_masters(self):
         font = self.font

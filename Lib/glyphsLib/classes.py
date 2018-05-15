@@ -3003,6 +3003,11 @@ class GSFont(GSBase):
         self._userData = None
 
         if path:
+            # Support os.PathLike objects. 
+            # https://www.python.org/dev/peps/pep-0519/#backwards-compatibility
+            if hasattr(path, "__fspath__"):
+                path = path.__fspath__()
+
             assert isinstance(path, (str, unicode)), \
                 "Please supply a file path"
             assert path.endswith(".glyphs"), \
