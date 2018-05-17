@@ -20,7 +20,7 @@ from __future__ import (
 import datetime
 import unittest
 
-from glyphsLib.types import Transform, parse_datetime
+from glyphsLib.types import Transform, parse_datetime, parse_color
 
 
 class GlyphsDateTimeTest(unittest.TestCase):
@@ -62,6 +62,22 @@ class TransformTest(unittest.TestCase):
     def test_value_equality(self):
         assert Transform(1, 0, 0, 1, 0, 0) == Transform(1, 0, 0, 1, 0, 0)
         assert Transform(1, 0, 0, 1, 0, 0) == Transform(1.0, 0, 0, 1.0, 0, 0)
+
+
+class ColorTest(unittest.TestCase):
+    def test_color_parsing(self):
+        color_data = {
+            "(1, 2, 3, 4)": (1, 2, 3, 1),
+            "(255, 255, 255, 255)": (255, 255, 255, 1),
+            "(300, 300, 3000, 300)": (255, 255, 255, 1),
+            # "(0.1, 2.1, 3.9)": (0, 2, 3, 1),  # Glyphs saves (0,1,2,1) instead.
+            "(100, 200)": (100, 200, 0, 1),
+            "()": (0, 0, 0, 1),
+            "(-1)": (1, 0, 0, 1)
+        }
+
+        for key, value in color_data.items():
+            assert parse_color(key) == value
 
 
 if __name__ == '__main__':

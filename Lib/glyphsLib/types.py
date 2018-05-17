@@ -283,11 +283,19 @@ class Datetime(ValueType):
 def parse_color(src=None):
     if src is None:
         return None
-    if src[0] == "(":
-        src = src[1:-1]
-        color = src.split(",")
-        color = tuple([int(c) for c in color])
-    else:
+
+    # Color is either a fixed color (when coloring something from the UI, see
+    # the GLYPHS_COLORS constant) or a tuple of the format (u8, u8, u8, 1),
+    # negative numbers are abs()'d. Glyphs does not support an alpha channel
+    # as of 2.5.1 (confirmed by Georg Seifert).
+    if src[0] == "(":  # Tuple.
+        src = src[1:-1].split(",")
+        color = [0, 0, 0, 1]
+        for i, v in enumerate(src[:3]):  # Only consider first three values.
+            if v:  # Could be ""
+                color[i] = max(min(abs(int(v)), 255), 0)
+        color = tuple(color)
+    else:  # Constant.
         color = int(src)
     return color
 

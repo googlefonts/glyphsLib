@@ -1079,10 +1079,10 @@ class GlyphPropertiesTest(unittest.TestCase):
         glyph3.layers.append(layer3)
         glyph4.layers.append(layer4)
         ufo = to_ufos(font)[0]
-        self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.9569,0,0.5412,0.0039')
+        self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.957,0,0.541,1')
         self.assertEqual(ufo['b'].lib.get('public.markColor'), '0.97,1,0,1')
         self.assertEqual(ufo['c'].lib.get('public.markColor'), None)
-        self.assertEqual(ufo['d'].lib.get('public.markColor'), None)
+        self.assertEqual(ufo['d'].lib.get('public.markColor'), '1,0,0.541,1')
 
 
 class SkipDanglingAndNamelessLayers(unittest.TestCase):
