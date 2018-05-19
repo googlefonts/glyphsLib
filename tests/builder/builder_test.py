@@ -1061,7 +1061,7 @@ class GlyphPropertiesTest(unittest.TestCase):
         glyph.color = [244, 0, 138, 1]
         glyph2.color = 3
         glyph3.color = 88
-        glyph4.color = [800, 0, 138, 1]
+        glyph4.color = [800, 0, 138, 255]
         font.glyphs.append(glyph)
         font.glyphs.append(glyph2)
         font.glyphs.append(glyph3)
@@ -1079,7 +1079,7 @@ class GlyphPropertiesTest(unittest.TestCase):
         glyph3.layers.append(layer3)
         glyph4.layers.append(layer4)
         ufo = to_ufos(font)[0]
-        self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.957,0,0.541,1')
+        self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.957,0,0.541,0.004')
         self.assertEqual(ufo['b'].lib.get('public.markColor'), '0.97,1,0,1')
         self.assertEqual(ufo['c'].lib.get('public.markColor'), None)
         self.assertEqual(ufo['d'].lib.get('public.markColor'), '1,0,0.541,1')

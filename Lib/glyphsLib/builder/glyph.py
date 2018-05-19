@@ -44,14 +44,15 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     color_index = glyph.color
     if color_index is not None:
         # On writing a file, Glyphs clamps the color values to of a color
-        # tuple to uint8 range and sets the alpha channel to 1. .3f is enough
-        # precision to round-trip uint8 to float losslessly.
+        # tuple to uint8 range and sets the alpha channel to 1. Try to do
+        # the right thing for alpha instead. .3f is enough precision to
+        # round-trip uint8 to float losslessly.
         # https://github.com/unified-font-object/ufo-spec/issues/61#issuecomment-389759127
         if isinstance(color_index, list):
             color_values_clamped = tuple(
-                max(min(abs(int(v)), 255), 0) for v in color_index[:3])
+                max(min(abs(int(v)), 255), 0) for v in color_index[:4])
             ufo_glyph.markColor = ','.join(
-                '{0:.3f}'.format(v / 255) for v in color_values_clamped) + ",1"
+                '{0:.3f}'.format(v / 255) for v in color_values_clamped)
         elif isinstance(color_index, int) and color_index in range(
                 len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]
@@ -255,4 +256,4 @@ def _to_glyphs_color(color):
             return index
 
     # Otherwise, make a Glyphs-formatted color list: [u8, u8, u8, 1].
-    return [round(component * 255) for component in tuple(color)[:3]] + [1]
+    return [round(component * 255) for component in tuple(color)[:4]]

@@ -287,15 +287,16 @@ def parse_color(src=None):
     Color is either a fixed color (when coloring something from the UI, see
     the GLYPHS_COLORS constant) or a list of the format [u8, u8, u8, 1],
     negative numbers are abs()'d. Glyphs does not support an alpha channel
-    as of 2.5.1 (confirmed by Georg Seifert).
+    as of 2.5.1 (confirmed by Georg Seifert), and always writes a 1 to it.
+    This is probably wrong, so we handle it like the other RGB values.
     """
     if src is None:
         return None
 
-    # Tuple.
+    # Tuple. Also handle cases like () and (1) like Glyphs.
     if src[0] == "(":
-        rgb = src[1:-1].split(",")[:3]  # Ignore alpha channel.
-        color_template = [0, 0, 0, 1]
+        rgb = src[1:-1].split(",")
+        color_template = [0, 0, 0, 255]
         for i, v in enumerate(rgb):
             if v:  # Could be ""
                 color_template[i] = max(min(abs(int(v)), 255), 0)

@@ -252,7 +252,7 @@ def test_glyph_color():
     font = to_glyphs([ufo])
 
     assert font.glyphs['a'].color == 3
-    assert font.glyphs['b'].color == [4, 128, 0, 1]
+    assert font.glyphs['b'].color == [4, 128, 0, 255]
 
     ufo, = to_ufos(font)
 
