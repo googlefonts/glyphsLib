@@ -43,22 +43,19 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
 
     color_index = glyph.color
     if color_index is not None:
-        # On writing a file, Glyphs clamps the color values to of a color
-        # tuple to uint8 range and sets the alpha channel to 1. Try to do
-        # the right thing for alpha instead. .3f is enough precision to
-        # round-trip uint8 to float losslessly.
+        # .3f is enough precision to round-trip uint8 to float losslessly.
         # https://github.com/unified-font-object/ufo-spec/issues/61#issuecomment-389759127
-        if isinstance(color_index, list):
-            color_values_clamped = tuple(
-                max(min(abs(int(v)), 255), 0) for v in color_index[:4])
+        if isinstance(color_index, list) and len(color_index) == 4 and all(
+                0 <= v < 256 for v in color_index):
             ufo_glyph.markColor = ','.join(
-                '{0:.3f}'.format(v / 255) for v in color_values_clamped)
+                '{0:.3f}'.format(v / 255) for v in color_index)
         elif isinstance(color_index, int) and color_index in range(
                 len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]
         else:
-            logger.warning('Invalid color index {} for {}'.format(
-                color_index, glyph.name))
+            logger.warning(
+                'Glyph {}, layer {}: Invalid color index/tuple {}'.format(
+                    glyph.name, layer.name, color_index))
 
     export = glyph.export
     if not export:
@@ -255,5 +252,8 @@ def _to_glyphs_color(color):
         if str(color) == glyphs_color:
             return index
 
-    # Otherwise, make a Glyphs-formatted color list: [u8, u8, u8, 1].
-    return [round(component * 255) for component in tuple(color)[:4]]
+    # Otherwise, make a Glyphs-formatted RGBA color list: [u8, u8, u8, u8].
+    # Glyphs up to version 2.5.1 always set the alpha channel to 1. It should
+    # round-trip the actual value in later versions.
+    # https://github.com/googlei18n/glyphsLib/pull/363#issuecomment-390418497
+    return [round(component * 255) for component in tuple(color)]

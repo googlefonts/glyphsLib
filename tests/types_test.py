@@ -66,16 +66,14 @@ class TransformTest(unittest.TestCase):
 
 class ColorTest(unittest.TestCase):
     def test_color_parsing(self):
-        # Glyphs (2.5.1) actually turns the last number into 1. Try to do the
-        # correct thing instead.
         color_data = {
             "(1, 2, 3, 4)": (1, 2, 3, 4),
             "(255, 255, 255, 255)": (255, 255, 255, 255),
-            "(300, 300, 3000, 300)": (255, 255, 255, 255),
+            "(300, 300, 3000, 300)": (300, 300, 3000, 300),
             # "(0.1, 2.1, 3.9)": (0, 2, 3, 1),  # Glyphs saves (0,1,2,1) instead.
-            "(100, 200)": (100, 200, 0, 255),
-            "()": (0, 0, 0, 255),
-            "(-1)": (1, 0, 0, 255)
+            "(100, 200)": (100, 200),
+            "()": (),
+            "(-1)": (-1,)
         }
 
         for key, value in color_data.items():

@@ -1082,7 +1082,7 @@ class GlyphPropertiesTest(unittest.TestCase):
         self.assertEqual(ufo['a'].lib.get('public.markColor'), '0.957,0,0.541,0.004')
         self.assertEqual(ufo['b'].lib.get('public.markColor'), '0.97,1,0,1')
         self.assertEqual(ufo['c'].lib.get('public.markColor'), None)
-        self.assertEqual(ufo['d'].lib.get('public.markColor'), '1,0,0.541,1')
+        self.assertEqual(ufo['d'].lib.get('public.markColor'), None)
 
 
 class SkipDanglingAndNamelessLayers(unittest.TestCase):
