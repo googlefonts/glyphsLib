@@ -66,18 +66,21 @@ class TransformTest(unittest.TestCase):
 
 class ColorTest(unittest.TestCase):
     def test_color_parsing(self):
-        color_data = {
+        good_color_data = {
             "(1, 2, 3, 4)": (1, 2, 3, 4),
             "(255, 255, 255, 255)": (255, 255, 255, 255),
-            "(300, 300, 3000, 300)": (300, 300, 3000, 300),
-            # "(0.1, 2.1, 3.9)": (0, 2, 3, 1),  # Glyphs saves (0,1,2,1) instead.
-            "(100, 200)": (100, 200),
-            "()": (),
-            "(-1)": (-1,)
         }
 
-        for key, value in color_data.items():
+        for key, value in good_color_data.items():
             assert parse_color(key) == value
+
+        bad_color_data = [
+            "(300, 300, 3000, 300)", "(0.1, 2.1, 3.9)", "(100, 200)", "()",
+            "(-1)"
+        ]
+
+        for value in bad_color_data:
+            self.assertRaises(ValueError, parse_color, value)
 
 
 if __name__ == '__main__':

@@ -298,6 +298,12 @@ def parse_color(src=None):
     # Tuple.
     if src[0] == "(":
         rgba = tuple(int(v) for v in src[1:-1].split(",") if v)
+
+        if not (len(rgba) == 4 and all(0 <= v < 256 for v in rgba)):
+            raise ValueError(
+                "Broken color tuple: {}. Must have four values from 0 to 255.".
+                format(src))
+
         return rgba
 
     # Constant.

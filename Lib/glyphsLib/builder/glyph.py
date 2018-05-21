@@ -243,6 +243,7 @@ def to_ufo_glyph_background(self, glyph, layer):
     self.to_ufo_glyph_anchors(new_glyph, background.anchors)
     self.to_ufo_guidelines(new_glyph, background)
 
+
 def _to_glyphs_color(color):
     # type: (defcon.objects.color.Color) -> Union[int, List[int]]
 
