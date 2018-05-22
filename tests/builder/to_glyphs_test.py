@@ -247,7 +247,7 @@ def test_glyph_color():
     a = ufo.newGlyph('a')
     a.markColor = GLYPHS_COLORS[3]
     b = ufo.newGlyph('b')
-    b.markColor = '{:.04f},{:.04f},0,1'.format(4.0 / 255, 128.0 / 255)
+    b.markColor = '{:.3f},{:.3f},0,1'.format(4.0 / 255, 128.0 / 255)
 
     font = to_glyphs([ufo])
 

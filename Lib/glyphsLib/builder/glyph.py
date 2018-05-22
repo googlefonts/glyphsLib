@@ -40,23 +40,23 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     last_change = glyph.lastChange
     if last_change is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'lastChange'] = to_ufo_time(last_change)
+
     color_index = glyph.color
     if color_index is not None:
-        color_tuple = None
-        if isinstance(color_index, list):
-            if not all(i in range(0, 256) for i in color_index):
-                logger.warning('Invalid color tuple {} for glyph {}. '
-                               'Values must be in range 0-255'.format(
-                                   color_index, glyph.name))
-            else:
-                color_tuple = ','.join('{0:.4f}'.format(i/255) if i in range(1, 255) else str(i//255) for i in color_index)
-        elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
-            color_tuple = GLYPHS_COLORS[color_index]
+        # .3f is enough precision to round-trip uint8 to float losslessly.
+        # https://github.com/unified-font-object/ufo-spec/issues/61#issuecomment-389759127
+        if isinstance(color_index, list) and len(color_index) == 4 and all(
+                0 <= v < 256 for v in color_index):
+            ufo_glyph.markColor = ','.join(
+                '{0:.3f}'.format(v / 255) for v in color_index)
+        elif isinstance(color_index, int) and color_index in range(
+                len(GLYPHS_COLORS)):
+            ufo_glyph.markColor = GLYPHS_COLORS[color_index]
         else:
-            logger.warning('Invalid color index {} for {}'.format(
-                color_index, glyph.name))
-        if color_tuple is not None:
-            ufo_glyph.markColor = color_tuple
+            logger.warning(
+                'Glyph {}, layer {}: Invalid color index/tuple {}'.format(
+                    glyph.name, layer.name, color_index))
+
     export = glyph.export
     if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export'] = export
@@ -149,7 +149,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         # UFO field mentioned in the spec so it could happen to have a timezone
         glyph.lastChange = from_loose_ufo_time(last_change)
     if ufo_glyph.markColor:
-        glyph.color = _to_glyphs_color(self, ufo_glyph.markColor)
+        glyph.color = _to_glyphs_color(ufo_glyph.markColor)
     if GLYPHLIB_PREFIX + 'Export' in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + 'Export']
     ps_names_key = PUBLIC_PREFIX + 'postscriptNames'
@@ -244,12 +244,17 @@ def to_ufo_glyph_background(self, glyph, layer):
     self.to_ufo_guidelines(new_glyph, background)
 
 
-def _to_glyphs_color(self, color):
-    # color is a defcon Color
-    # Try to find a matching Glyphs color
+def _to_glyphs_color(color):
+    # type: (defcon.objects.color.Color) -> Union[int, List[int]]
+
+    # If the color matches one of Glyphs's predefined colors, return that
+    # index.
     for index, glyphs_color in enumerate(GLYPHS_COLORS):
         if str(color) == glyphs_color:
             return index
 
-    # Otherwise, make a Glyphs-formatted color list
-    return [round(component * 255) for component in list(color)]
+    # Otherwise, make a Glyphs-formatted RGBA color list: [u8, u8, u8, u8].
+    # Glyphs up to version 2.5.1 always set the alpha channel to 1. It should
+    # round-trip the actual value in later versions.
+    # https://github.com/googlei18n/glyphsLib/pull/363#issuecomment-390418497
+    return [round(component * 255) for component in tuple(color)]

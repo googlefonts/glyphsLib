@@ -281,15 +281,33 @@ class Datetime(ValueType):
 
 
 def parse_color(src=None):
+    # type: (Optional[str]) -> Optional[Union[Tuple[int, ...], int]]
+    """Parse a string representing a color value.
+
+    Color is either a fixed color (when coloring something from the UI, see
+    the GLYPHS_COLORS constant) or a list of the format [u8, u8, u8, u8],
+
+    Glyphs does not support an alpha channel as of 2.5.1 (confirmed by Georg
+    Seifert), and always writes a 1 to it. This was brought up and is probably
+    corrected in the next versions.
+    https://github.com/googlei18n/glyphsLib/pull/363#issuecomment-390418497
+    """
     if src is None:
         return None
+
+    # Tuple.
     if src[0] == "(":
-        src = src[1:-1]
-        color = src.split(",")
-        color = tuple([int(c) for c in color])
-    else:
-        color = int(src)
-    return color
+        rgba = tuple(int(v) for v in src[1:-1].split(",") if v)
+
+        if not (len(rgba) == 4 and all(0 <= v < 256 for v in rgba)):
+            raise ValueError(
+                "Broken color tuple: {}. Must have four values from 0 to 255.".
+                format(src))
+
+        return rgba
+
+    # Constant.
+    return int(src)
 
 
 # FIXME: (jany) not sure this is used

@@ -702,7 +702,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # layerId
         layer.layerId = 'L1'
         # color
-        layer.color = 2  # brown
+        layer.color = (1, 2, 3, 4)
         # colorObject: read-only, computed
         # components
         component = classes.GSComponent(glyph='glyphName')
@@ -777,7 +777,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             crop = "{{0, 0}, {0, 0}}";
             imagePath = "/path/to/file.jpg";
             };
-            color = 2;
+            color = (1, 2, 3, 4);
             components = (
             {
             name = glyphName;
