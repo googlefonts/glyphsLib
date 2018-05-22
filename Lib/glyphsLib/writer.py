@@ -120,6 +120,10 @@ class Writer(object):
             value = value.plistValue()
             if value is not None:
                 self.file.write(value)
+        elif forKey == "color" and hasattr(value, "__iter__"):
+            # We have to write color tuples on one line or Glyphs 2.4.x
+            # misreads it.
+            self.file.write(unicode(tuple(value)))
         elif isinstance(value, (list, glyphsLib.classes.Proxy)):
             if isinstance(value, glyphsLib.classes.UserDataProxy):
                 self.writeUserData(value)
