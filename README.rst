@@ -1,4 +1,4 @@
-|Travis Build Status| |PyPI Version| |Codecov|
+|Travis Build Status| |PyPI Version| |Codecov| |Gitter Chat|
 
 glyphsLib
 =========
@@ -135,3 +135,6 @@ things getting reordered...
    :target: https://pypi.org/project/glyphsLib/
 .. |Codecov| image:: https://codecov.io/gh/googlei18n/glyphsLib/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/googlei18n/glyphsLib
+.. |Gitter Chat| image:: https://badges.gitter.im/fonttools-dev/glyphsLib.svg
+   :alt: Join the chat at https://gitter.im/fonttools-dev/glyphsLib
+   :target: https://gitter.im/fonttools-dev/glyphsLib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
