@@ -212,7 +212,7 @@ def test_guidelines():
 
         assert angled.position.x == 10
         assert angled.position.y == 20
-        assert angled.angle == 330
+        assert angled.angle == 30
         assert angled.name == "lc [1,0,0,1] [#lc1]"
 
         assert vertical.position.x == 10
