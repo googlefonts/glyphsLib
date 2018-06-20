@@ -23,13 +23,11 @@ from glyphsLib.builder.instances import apply_instance_data
 import defcon
 
 import pytest
-from test_helpers import write_designspace_and_UFOs
+import py.path
+from ..test_helpers import write_designspace_and_UFOs
 
 
-TESTFILE_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(__file__)),
-    os.path.join('data', 'GlyphsUnitTestSans.glyphs')
-)
+DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
 @pytest.mark.parametrize(
@@ -42,7 +40,7 @@ TESTFILE_PATH = os.path.join(
     ids=["default", "include_1", "include_2"],
 )
 def test_apply_instance_data(tmpdir, instance_names):
-    font = glyphsLib.GSFont(TESTFILE_PATH)
+    font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans.glyphs"))
     instance_dir = "instances"
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
     path = str(tmpdir / (font.familyName + '.designspace'))
@@ -67,3 +65,28 @@ def test_apply_instance_data(tmpdir, instance_names):
         assert os.path.isdir(str(tmpdir / filename))
     assert len(ufos) == len(builder.results)
     assert isinstance(ufos[0], defcon.Font)
+
+
+def test_reencode_glyphs(tmpdir):
+    data_dir = py.path.local(DATA)
+
+    designspace_path = data_dir / "TestReencode.designspace"
+    designspace_path.copy(tmpdir)
+
+    ufo_path = data_dir / "TestReencode-Regular.ufo"
+    ufo_path.copy(tmpdir.ensure_dir("TestReencode-Regular.ufo"))
+
+    instance_dir = tmpdir.ensure_dir("instance_ufo")
+    ufo_path.copy(instance_dir.ensure_dir("TestReencode-Regular.ufo"))
+    ufo_path.copy(instance_dir.ensure_dir("TestReencodeUI-Regular.ufo"))
+
+    ufos = apply_instance_data(str(tmpdir / "TestReencode.designspace"))
+
+    assert len(ufos) == 2
+    assert ufos[0]["A"].unicode == 0x0041
+    assert ufos[0]["A.alt"].unicode is None
+    assert ufos[0]["C"].unicode == 0x0043
+    # Reencode Glyphs: A.alt=0041, C=
+    assert ufos[1]["A"].unicode is None
+    assert ufos[1]["A.alt"].unicode == 0x0041
+    assert ufos[1]["C"].unicode is None
