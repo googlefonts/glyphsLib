@@ -45,8 +45,8 @@ from glyphsLib.builder.constants import (
     UFO2FT_USE_PROD_NAMES_KEY, FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX)
 
-from classes_test import (generate_minimal_font, generate_instance_from_dict,
-                          add_glyph, add_anchor, add_component)
+from ..classes_test import (generate_minimal_font, generate_instance_from_dict,
+                            add_glyph, add_anchor, add_component)
 
 
 class BuildStyleMapNamesTest(unittest.TestCase):

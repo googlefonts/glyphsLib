@@ -564,6 +564,52 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
 register(ReplaceFeatureParamHandler())
 
 
+class ReencodeGlyphsParamHandler(AbstractParamHandler):
+    """ The "Reencode Glyphs" custom parameter contains a list of
+    'glyphname=unicodevalue' strings: e.g., ["smiley=E100", "logo=E101"].
+    It only applies to specific instance (not to master or globally) and is
+    meant to assign Unicode values to glyphs with the specied name at export
+    time.
+    When the Unicode value in question is already assigned to another glyph,
+    the latter's Unicode value is deleted.
+    When the Unicode value is left out, e.g., "f_f_i=", "f_f_j=", this will
+    strip "f_f_i" and "f_f_j" of their Unicode values.
+
+    This parameter handler only handles going from Glyphs to (instance) UFOs,
+    and not also in the opposite direction, as the parameter isn't stored in
+    the UFO lib, but directly applied to the UFO unicode values.
+    """
+
+    def to_ufo(self, glyphs, ufo):
+        # TODO Check that the wrapped glyphs object is indeed an instance, and
+        # not a GSFont or GSMaster (unlikely)
+        reencode_list = glyphs.get_custom_value("Reencode Glyphs")
+        if not reencode_list:
+            return
+        ufo = ufo._owner
+        cmap = {glyph.unicode: glyph.name for glyph in ufo}
+        for entry in reencode_list:
+            name, hexcode = entry.split("=")
+            if name not in ufo:
+                continue
+            if hexcode.strip() == "":
+                ufo[name].unicode = None
+            else:
+                codepoint = int(hexcode, 16)
+                if codepoint in cmap:
+                    previous = cmap[codepoint]
+                    ufo[previous].unicode = None
+                ufo[name].unicode = codepoint
+
+    def to_glyphs(self, glyphs, ufo):
+        # The 'Reencode Glyphs' parameter only applies to instances, which
+        # are not meant to be roundtripped. No need to handle it here.
+        pass
+
+
+register(ReencodeGlyphsParamHandler())
+
+
 def to_ufo_custom_params(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
     glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)

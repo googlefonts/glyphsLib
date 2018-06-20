@@ -27,7 +27,7 @@ from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 from glyphsLib import classes
 
-from fontTools.designspaceLib import DesignSpaceDocument
+from fontTools.designspaceLib import DesignSpaceDocument, AxisDescriptor
 
 # TODO: (jany) think hard about the ordering and RTL/LTR
 # TODO: (jany) make one generic test with data using pytest
@@ -321,11 +321,20 @@ def test_designspace_source_locations(tmpdir):
     bold_ufo_path = os.path.join(str(tmpdir), 'bold.ufo')
 
     designspace = DesignSpaceDocument()
+    wght = AxisDescriptor()
+    wght.minimum = 100
+    wght.maximum = 700
+    wght.default = 100
+    wght.name = "Weight"
+    wght.tag = "wght"
+    designspace.addAxis(wght)
     light_source = designspace.newSourceDescriptor()
     light_source.filename = 'light.ufo'
+    light_source.location = {"Weight": 100}
     designspace.addSource(light_source)
     bold_source = designspace.newSourceDescriptor()
     bold_source.path = bold_ufo_path
+    bold_source.location = {"Weight": 700}
     designspace.addSource(bold_source)
     designspace.write(designspace_path)
 

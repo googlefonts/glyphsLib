@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<designspace format="4.0">
+    <axes>
+        <axis default="400" maximum="400" minimum="400" name="Weight" tag="wght">
+            <map input="400" output="100" />
+        </axis>
+    </axes>
+    <sources>
+        <source familyname="Test Reencode" filename="TestReencode-Regular.ufo" name="Test Reencode Regular" stylename="Regular">
+            <lib copy="1" />
+            <groups copy="1" />
+            <features copy="1" />
+            <info copy="1" />
+            <location>
+                <dimension name="Weight" xvalue="100" />
+            </location>
+        </source>
+    </sources>
+    <instances>
+        <instance familyname="Test Reencode" filename="instance_ufo/TestReencode-Regular.ufo" name="Test Reencode Regular" stylemapfamilyname="Test Reencode" stylemapstylename="regular" stylename="Regular">
+            <location>
+                <dimension name="Weight" xvalue="100" />
+            </location>
+            <kerning />
+            <info />
+            <lib>
+                <dict>
+                    <key>com.schriftgestaltung.customParameters</key>
+                    <array>
+                        <array>
+                            <string>Keep Glyphs</string>
+                            <array>
+                                <string>space</string>
+                                <string>A</string>
+                                <string>B</string>
+                                <string>C</string>
+                                <string>D</string>
+                            </array>
+                        </array>
+                    </array>
+                </dict>
+            </lib>
+        </instance>
+        <instance familyname="Test Reencode UI" filename="instance_ufo/TestReencodeUI-Regular.ufo" name="Test Reencode UI Regular" stylemapfamilyname="Test Reencode UI" stylemapstylename="regular" stylename="Regular">
+            <location>
+                <dimension name="Weight" xvalue="100" />
+            </location>
+            <kerning />
+            <info />
+            <lib>
+                <dict>
+                    <key>com.schriftgestaltung.customParameters</key>
+                    <array>
+                        <array>
+                            <string>Keep Glyphs</string>
+                            <array>
+                                <string>space</string>
+                                <string>A.alt</string>
+                                <string>B</string>
+                                <string>C</string>
+                                <string>D</string>
+                            </array>
+                        </array>
+                        <array>
+                            <string>Reencode Glyphs</string>
+                            <array>
+                                <string>A.alt=0041</string>
+                                <string>C=</string>
+                                <string>D=0064</string>
+                                <string>Z=005A</string>
+                            </array>
+                        </array>
+                    </array>
+                </dict>
+            </lib>
+        </instance>
+    </instances>
+</designspace>
