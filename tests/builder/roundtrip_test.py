@@ -20,7 +20,7 @@ import os
 import glyphsLib
 from glyphsLib import classes
 
-import test_helpers
+from .. import test_helpers
 
 
 class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):

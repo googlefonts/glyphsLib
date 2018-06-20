@@ -28,7 +28,7 @@ from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
 from glyphsLib.parser import Parser
 
-import test_helpers
+from . import test_helpers
 
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
