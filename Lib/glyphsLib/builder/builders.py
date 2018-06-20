@@ -205,7 +205,7 @@ class UFOBuilder(_LoggerMixin):
         self.to_designspace_family_user_data()
 
         # append base style shared by all masters to designspace file name
-        base_family = self.font.familyName or 'Unnamed'
+        base_family = self.family_name or 'Unnamed'
         base_style = find_base_style(self.font.masters)
         if base_style:
             base_style = "-" + base_style
