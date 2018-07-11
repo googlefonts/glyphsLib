@@ -342,27 +342,42 @@ class AxisDefinition(object):
 
     def set_user_loc(self, master_or_instance, value):
         """Set the user location of a Glyphs master or instance."""
-        # Try to set the key if possible, i.e. if there is a key, and
-        # if there exists a code that can represent the given value, e.g.
-        # for "weight": 600 can be represented by SemiBold so we use that,
-        # but for 550 there is no code so we will have to set the custom
-        # parameter as well.
-        if (self.user_loc_key is not None and
-                hasattr(master_or_instance, self.user_loc_key)):
-            code = user_loc_value_to_instance_string(self.tag, value)
-            value_for_code = user_loc_string_to_value(self.tag, code)
-            setattr(master_or_instance, self.user_loc_key, code)
-            if self.user_loc_param is not None and value != value_for_code:
-                try:
-                    class_ = user_loc_value_to_class(self.tag, value)
-                    master_or_instance.customParameters[
-                        self.user_loc_param] = class_
-                except:
-                    pass
-
-        # Only masters can have an 'Axis Location' parameter
         if hasattr(master_or_instance, 'instanceInterpolations'):
+            # The following code is only valid for instances.
+            # Masters also the keys `weight` and `width` but they should not be
+            # used, they are deprecated and should only be used to store
+            # (parts of) the master's name, but not its location.
+
+            # Try to set the key if possible, i.e. if there is a key, and
+            # if there exists a code that can represent the given value, e.g.
+            # for "weight": 600 can be represented by SemiBold so we use that,
+            # but for 550 there is no code so we will have to set the custom
+            # parameter as well.
+            if (self.user_loc_key is not None and
+                    hasattr(master_or_instance, self.user_loc_key)):
+                code = user_loc_value_to_instance_string(self.tag, value)
+                value_for_code = user_loc_string_to_value(self.tag, code)
+                setattr(master_or_instance, self.user_loc_key, code)
+                if self.user_loc_param is not None and value != value_for_code:
+                    try:
+                        class_ = user_loc_value_to_class(self.tag, value)
+                        master_or_instance.customParameters[
+                            self.user_loc_param] = class_
+                    except NotImplementedError:
+                        # user_loc_value_to_class only works for weight & width
+                        pass
             return
+
+        # For masters, set directly the custom parameter (old way)
+        # and also the Axis Location (new way).
+        # Only masters can have an 'Axis Location' parameter.
+        if self.user_loc_param is not None:
+            try:
+                class_ = user_loc_value_to_class(self.tag, value)
+                master_or_instance.customParameters[
+                    self.user_loc_param] = class_
+            except NotImplementedError:
+                pass
 
         loc_param = master_or_instance.customParameters['Axis Location']
         if loc_param is None:
