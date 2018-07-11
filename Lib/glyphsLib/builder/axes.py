@@ -363,7 +363,8 @@ class AxisDefinition(object):
                         class_ = user_loc_value_to_class(self.tag, value)
                         master_or_instance.customParameters[
                             self.user_loc_param] = class_
-                    except:
+                    except NotImplementedError:
+                        # user_loc_value_to_class only works for weight & width
                         pass
             return
 
