@@ -376,7 +376,7 @@ class AxisDefinition(object):
                 class_ = user_loc_value_to_class(self.tag, value)
                 master_or_instance.customParameters[
                     self.user_loc_param] = class_
-            except:
+            except NotImplementedError:
                 pass
 
         loc_param = master_or_instance.customParameters['Axis Location']
