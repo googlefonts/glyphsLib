@@ -178,7 +178,7 @@ setup(
     packages=find_packages("Lib"),
     entry_points={
         "console_scripts": [
-            "glyphs2ufo = glyphsLib.__main__:main"
+            "glyphs-converter = glyphsLib.cli:main",
         ],
     },
     setup_requires=pytest_runner + wheel + bump2version,
@@ -186,7 +186,6 @@ setup(
     install_requires=[
         "fonttools>=3.24.0",
         "defcon>=0.3.0",
-        "MutatorMath>=2.0.4",
     ],
     cmdclass={
         "release": release,

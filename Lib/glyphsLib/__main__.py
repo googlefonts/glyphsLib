@@ -15,47 +15,9 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import sys
-import argparse
 
-import glyphsLib
-
-
-description = """\n
-Converts a Glyphs.app source file into UFO masters
-or UFO instances and MutatorMath designspace.
-"""
+import glyphsLib.cli
 
 
-def parse_options(args):
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument("--version", action="version",
-                        version='glyphsLib %s' % (glyphsLib.__version__))
-    parser.add_argument("-g", "--glyphs", metavar="GLYPHS", required=True,
-                        help="Glyphs file to convert.")
-    parser.add_argument("-m", "--masters", metavar="MASTERS",
-                        default="master_ufo",
-                        help="Ouput masters UFO to folder MASTERS. "
-                             "(default: %(default)s)")
-    parser.add_argument("-n", "--instances", metavar="INSTANCES", nargs="?",
-                        const="instance_ufo", default=None,
-                        help="Output and generate interpolated instances UFO "
-                             "to folder INSTANCES. "
-                             "(default: %(const)s)")
-    parser.add_argument("-r", "--round-instances", action="store_true",
-                        help="Apply integer rounding to all geometry when "
-                             "interpolating")
-    options = parser.parse_args(args)
-    return options
-
-
-def main(args=None):
-    opt = parse_options(args)
-    if opt.glyphs is not None:
-        if opt.instances is None:
-            glyphsLib.build_masters(opt.glyphs, opt.masters)
-        else:
-            glyphsLib.build_instances(opt.glyphs, opt.masters, opt.instances,
-                                      round_geometry=opt.round_instances)
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
+if __name__ == "__main__":
+    sys.exit(glyphsLib.cli.main())

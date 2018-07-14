@@ -4,7 +4,7 @@ glyphsLib
 =========
 
 This library provides a bridge from Glyphs source files (.glyphs) to
-UFOs via `defcon <https://github.com/typesupply/defcon/>`__.
+UFOs and Designspace files via `defcon <https://github.com/typesupply/defcon/>`__ and `designspaceLib <https://github.com/fonttools/fonttools>`__.
 
 The main methods for conversion are found in ``__init__.py``.
 Intermediate data can be accessed without actually writing UFOs, if
@@ -13,21 +13,14 @@ needed.
 Write and return UFOs
 ^^^^^^^^^^^^^^^^^^^^^
 
-Masters:
+The following code will write UFOs and a Designspace file to disk.
 
 .. code:: python
 
     master_dir = 'master_ufos'
-    ufos = glyphsLib.build_masters('MyFont.glyphs', master_dir)
+    ufos, designspace_path = glyphsLib.build_masters('MyFont.glyphs', master_dir)
 
-Interpolated instances (depends on
-`MutatorMath <https://github.com/LettError/mutatorMath>`__):
-
-.. code:: python
-
-    master_dir = 'master_ufos'
-    instance_dir = 'instance_ufos'
-    ufos = glyphsLib.build_instances('MyFont.glyphs', master_dir, instance_dir)
+If you want to interpolate instances, please use fontmake instead. It uses this library under the hood when dealing with Glyphs files.
 
 Load UFO objects without writing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

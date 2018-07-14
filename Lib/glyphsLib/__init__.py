@@ -17,6 +17,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 
 from io import open
+import collections
 import os
 import logging
 
@@ -25,11 +26,9 @@ from fontTools.misc.py23 import tostr
 from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs
-from glyphsLib.builder.instances import InstanceData
-from glyphsLib.interpolation import interpolate
 from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
-from glyphsLib.util import clean_ufo
+from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
 __version__ = "2.4.1.dev0"
 
@@ -43,6 +42,8 @@ __all__ = [tostr(s) for s in [
  ] + __all_classes__]
 
 logger = logging.getLogger(__name__)
+
+Masters = collections.namedtuple("Masters", ['ufos', 'designspace_path'])
 
 
 def load_to_ufos(file_or_path, include_instances=False, family_name=None,
@@ -60,9 +61,16 @@ def load_to_ufos(file_or_path, include_instances=False, family_name=None,
                    propagate_anchors=propagate_anchors)
 
 
-def build_masters(filename, master_dir, designspace_instance_dir=None,
-                  family_name=None, propagate_anchors=True):
-    """Write and return UFOs from the masters defined in a .glyphs file.
+def build_masters(filename,
+                  master_dir,
+                  designspace_instance_dir=None,
+                  designspace_path=None,
+                  family_name=None,
+                  propagate_anchors=True,
+                  minimize_glyphs_diffs=False,
+                  normalize_ufos=False):
+    """Write and return UFOs from the masters and the designspace defined in a
+    .glyphs file.
 
     Args:
         master_dir: Directory where masters are written.
@@ -72,52 +80,41 @@ def build_masters(filename, master_dir, designspace_instance_dir=None,
             only instances with this name will be included in the designspace.
 
     Returns:
-        A list of master UFOs, and if designspace_instance_dir is provided, a
-        path to a designspace and a list of (path, data) tuples with instance
-        paths from the designspace and respective data from the Glyphs source.
+        A named tuple of master UFOs (`ufos`) and the path to the designspace
+        file (`designspace_path`).
     """
 
     font = GSFont(filename)
-    instance_dir = None
-    if designspace_instance_dir is not None:
+
+    if designspace_instance_dir is None:
+        instance_dir = None
+    else:
         instance_dir = os.path.relpath(designspace_instance_dir, master_dir)
+
     designspace = to_designspace(
-        font, family_name=family_name, propagate_anchors=propagate_anchors,
-        instance_dir=instance_dir)
+        font,
+        family_name=family_name,
+        propagate_anchors=propagate_anchors,
+        instance_dir=instance_dir,
+        minimize_glyphs_diffs=minimize_glyphs_diffs)
+
     ufos = []
     for source in designspace.sources:
         ufos.append(source.font)
+
+        if minimize_glyphs_diffs:
+            ufo_create_background_layer_for_all_glyphs(source.font)
+
         ufo_path = os.path.join(master_dir, source.filename)
         clean_ufo(ufo_path)
         source.font.save(ufo_path)
 
-    if designspace_instance_dir is not None:
+        if normalize_ufos:
+            import ufonormalizer
+            ufonormalizer.normalizeUFO(ufo_path, writeModTimes=False)
+
+    if not designspace_path:
         designspace_path = os.path.join(master_dir, designspace.filename)
-        designspace.write(designspace_path)
-        # All the instance data should be in the designspace. That's why for
-        # now we return the full designspace in place of `instance_data`.
-        # However, other functions still expect the instance data to have
-        # a list of (path, something) tuples, hence the class `InstanceData`.
-        return ufos, designspace_path, InstanceData(designspace)
-    else:
-        return ufos
+    designspace.write(designspace_path)
 
-
-def build_instances(filename, master_dir, instance_dir, family_name=None,
-                    propagate_anchors=True, round_geometry=True):
-    """Write and return UFOs from the instances defined in a .glyphs file.
-
-    Args:
-        master_dir: Directory where masters are written.
-        instance_dir: Directory where instances are written.
-        family_name: If provided, the master UFOs will be given this name and
-            only instances with this name will be built.
-    """
-
-    master_ufos, instance_data = load_to_ufos(
-        filename, include_instances=True, family_name=family_name,
-        propagate_anchors=propagate_anchors)
-    instance_ufos = interpolate(
-        master_ufos, master_dir, instance_dir, instance_data,
-        round_geometry=round_geometry)
-    return instance_ufos
+    return Masters(ufos, designspace_path)

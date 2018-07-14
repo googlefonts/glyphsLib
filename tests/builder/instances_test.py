@@ -18,7 +18,7 @@ from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
 import os
 import glyphsLib
-from mutatorMath.ufo.document import DesignSpaceDocumentReader
+from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder.instances import apply_instance_data
 import defcon
 
@@ -45,26 +45,35 @@ def test_apply_instance_data(tmpdir, instance_names):
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
     path = str(tmpdir / (font.familyName + '.designspace'))
     write_designspace_and_UFOs(designspace, path)
-    builder = DesignSpaceDocumentReader(designspace.path, ufoVersion=3)
+
+    test_designspace = DesignSpaceDocument()
+    test_designspace.read(designspace.path)
     if instance_names is None:
-        # generate all instances
-        builder.process()
-        include_filenames = None
+        # Generate all instances.
+        test_instances = [
+            instance.filename for instance in test_designspace.instances
+        ]
     else:
-        # generate only selected instances
-        for name in instance_names:
-            builder.readInstance(("stylename", name))
-        # make relative filenames from paths returned by MutatorMath
-        include_filenames = {os.path.relpath(instance_path, str(tmpdir))
-                             for instance_path in builder.results.values()}
+        # Generate only selected instances.
+        test_instances = [
+            instance.filename for instance in test_designspace.instances
+            if instance.styleName in instance_names
+        ]
+    
+    for instance in test_instances:
+        ufo = defcon.Font()
+        ufo.save(str(tmpdir / instance))
 
-    ufos = apply_instance_data(designspace.path,
-                               include_filenames=include_filenames)
+    ufos = apply_instance_data(
+        designspace.path, include_filenames=test_instances)
 
-    for filename in include_filenames or ():
+    for filename in test_instances:
         assert os.path.isdir(str(tmpdir / filename))
-    assert len(ufos) == len(builder.results)
-    assert isinstance(ufos[0], defcon.Font)
+    assert len(ufos) == len(test_instances)
+
+    for ufo in ufos:
+        assert ufo.info.openTypeOS2WeightClass is not None
+        assert ufo.info.openTypeOS2WidthClass is not None
 
 
 def test_reencode_glyphs(tmpdir):
