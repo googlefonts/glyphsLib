@@ -25,7 +25,7 @@ def main(args=None):
     if not args:
         args = sys.argv[1:]
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prog="{} -m glyphsLib".format(sys.executable))
     subparsers = parser.add_subparsers()
 
     parser_glyphs2ufo = subparsers.add_parser(
@@ -169,6 +169,12 @@ def glyphs2ufo(options):
 
     return 0
 
+def _glyphs2ufo_entry_point():
+    """Provides entry point for a script to keep argparsing in main()."""
+    args = sys.argv[1:]
+    args.insert(0, "glyphs2ufo")
+    return main(args)
+
 
 def ufo2glyphs(options):
     """Convert one designspace file or one or more UFOs to a Glyphs file."""
@@ -224,3 +230,9 @@ def ufo2glyphs(options):
         font.save(filename_to_write)
 
     return 0
+
+def _ufo2glyphs_entry_point():
+    """Provides entry point for a script to keep argparsing in main()."""
+    args = sys.argv[1:]
+    args.insert(0, "ufo2glyphs")
+    return main(args)

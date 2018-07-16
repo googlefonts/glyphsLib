@@ -178,7 +178,8 @@ setup(
     packages=find_packages("Lib"),
     entry_points={
         "console_scripts": [
-            "glyphs-converter = glyphsLib.cli:main",
+            "ufo2glyphs = glyphsLib.cli:_ufo2glyphs_entry_point",
+            "glyphs2ufo = glyphsLib.cli:_glyphs2ufo_entry_point",
         ],
     },
     setup_requires=pytest_runner + wheel + bump2version,
