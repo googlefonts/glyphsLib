@@ -167,7 +167,6 @@ def glyphs2ufo(options):
         normalize_ufos=options.no_normalize_ufos,
     )
 
-    return 0
 
 def _glyphs2ufo_entry_point():
     """Provides entry point for a script to keep argparsing in main()."""
@@ -229,7 +228,6 @@ def ufo2glyphs(options):
             )
         font.save(filename_to_write)
 
-    return 0
 
 def _ufo2glyphs_entry_point():
     """Provides entry point for a script to keep argparsing in main()."""
