@@ -142,15 +142,15 @@ def glyphs2ufo(options):
     if options.output_dir is None:
         options.output_dir = os.path.dirname(options.glyphs_file)
 
-    if options.instance_dir is None:
-        options.instance_dir = os.path.join(options.output_dir, "instance_ufos")
-
     if options.designspace_path is None:
         options.designspace_path = os.path.join(
             options.output_dir,
             os.path.basename(os.path.splitext(options.glyphs_file)[0]) + ".designspace",
         )
 
+    # If options.instance_dir is None, instance UFO paths in the designspace
+    # file will either use the value in customParameter's FULL_FILENAME_KEY or be
+    # made relative to "instance_ufos/".
     glyphsLib.build_masters(
         options.glyphs_file,
         options.output_dir,
