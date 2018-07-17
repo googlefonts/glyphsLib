@@ -4,7 +4,7 @@ glyphsLib
 =========
 
 This library provides a bridge from Glyphs source files (.glyphs) to
-UFOs via `defcon <https://github.com/typesupply/defcon/>`__.
+UFOs and Designspace files via `defcon <https://github.com/typesupply/defcon/>`__ and `designspaceLib <https://github.com/fonttools/fonttools>`__.
 
 The main methods for conversion are found in ``__init__.py``.
 Intermediate data can be accessed without actually writing UFOs, if
@@ -13,26 +13,23 @@ needed.
 Write and return UFOs
 ^^^^^^^^^^^^^^^^^^^^^
 
-Masters:
+The following code will write UFOs and a Designspace file to disk.
 
 .. code:: python
 
-    master_dir = 'master_ufos'
-    ufos = glyphsLib.build_masters('MyFont.glyphs', master_dir)
-
-Interpolated instances (depends on
-`MutatorMath <https://github.com/LettError/mutatorMath>`__):
-
-.. code:: python
+    import glyphsLib
 
     master_dir = 'master_ufos'
-    instance_dir = 'instance_ufos'
-    ufos = glyphsLib.build_instances('MyFont.glyphs', master_dir, instance_dir)
+    ufos, designspace_path = glyphsLib.build_masters('MyFont.glyphs', master_dir)
+
+If you want to interpolate instances, please use fontmake instead. It uses this library under the hood when dealing with Glyphs files.
 
 Load UFO objects without writing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: python
+
+    import glyphsLib
 
     ufos = glyphsLib.load_to_ufos('MyFont.glyphs')
 
@@ -44,7 +41,6 @@ Read and write Glyphs data as Python objects
     from glyphsLib import GSFont
 
     font = GSFont(glyphs_file)
-
     font.save(glyphs_file)
 
 The ``glyphsLib.classes`` module aims to provide an interface similar to
@@ -60,41 +56,60 @@ is missing or does not work as expected, please open a issue.
 Go back and forth between UFOs and Glyphs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. Without a designspace file, using for example the `Inria fonts by Black[Foundry] <https://github.com/BlackFoundry/InriaFonts/tree/master/masters/INRIA-SANS>`__:
+1.  You can use the ``ufo2glyphs`` and ``glyphs2ufo`` command line scripts to
+    round-trip your source files. By default, the scripts try to preserve as
+    much metadata as possible.
 
-.. code:: python
+    .. code::
 
-    import glob
-    from defcon import Font
-    from glyphsLib import to_glyphs
-    ufos = [Font(path) for path in glob.glob('*Italic.ufo')]
-    # Sort the UFOs because glyphsLib will create masters in the same order
-    ufos = sorted(ufos, key=lambda ufo: ufo.info.openTypeOS2WeightClass)
-    font = to_glyphs(ufos)
-    font.save('InriaSansItalic.glyphs')
+        # Generate master UFOs and Designspace file
+        glyphs2ufo Example.glyphs
 
-`Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/InriaSansItalic.glyphs>`__
+        # Go back
+        ufo2glyphs Example.designspace
 
-2. With a designspace, using `Spectral from Production Type <https://github.com/productiontype/Spectral/tree/master/sources>`__:
+        # You can also combine single UFOs into a Glyphs source file.
+        ufo2glyphs Example-Regular.ufo Example-Bold.ufo
 
-.. code:: python
+2.  Without a designspace file, using for example the
+    `Inria fonts by Black[Foundry] <https://github.com/BlackFoundry/InriaFonts/tree/master/masters/INRIA-SANS>`__:
 
-    import glob
-    from fontTools.designspaceLib import DesignSpaceDocument
-    from glyphsLib import to_glyphs
-    doc = DesignSpaceDocument()
-    doc.read('spectral-build-roman.designspace')
-    font = to_glyphs(doc)
-    font.save('SpectralRoman.glyphs')
+    .. code:: python
 
-`Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/SpectralRoman.glyphs>`__
+        import glob
+        from defcon import Font
+        from glyphsLib import to_glyphs
 
-3. In both cases, if you intend to go back to UFOs after modifying the file
-with Glyphs, you should use the ``minimize_ufo_diffs`` parameter to minimize
-the amount of diffs that will show up in git after the back and forth. To do
-so, the glyphsLib will add some bookkeeping values in various ``userData``
-fields. For example, it will try to remember which GSClass came from
-groups.plist or from the feature file.
+        ufos = [Font(path) for path in glob.glob('*Italic.ufo')]
+        # Sort the UFOs because glyphsLib will create masters in the same order
+        ufos = sorted(ufos, key=lambda ufo: ufo.info.openTypeOS2WeightClass)
+        font = to_glyphs(ufos)
+        font.save('InriaSansItalic.glyphs')
+
+    `Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/InriaSansItalic.glyphs>`__
+
+3.  With a designspace, using
+    `Spectral from Production Type <https://github.com/productiontype/Spectral/tree/master/sources>`__:
+
+    .. code:: python
+
+        import glob
+        from fontTools.designspaceLib import DesignSpaceDocument
+        from glyphsLib import to_glyphs
+
+        doc = DesignSpaceDocument()
+        doc.read('spectral-build-roman.designspace')
+        font = to_glyphs(doc)
+        font.save('SpectralRoman.glyphs')
+
+    `Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/SpectralRoman.glyphs>`__
+
+4.  In both programmatic cases, if you intend to go back to UFOs after modifying
+    the file with Glyphs, you should use the ``minimize_ufo_diffs`` parameter to
+    minimize the amount of diffs that will show up in git after the back and
+    forth. To do so, the glyphsLib will add some bookkeeping values in various
+    ``userData`` fields. For example, it will try to remember which GSClass came
+    from groups.plist or from the feature file.
 
 The same option exists for people who want to do Glyphs->UFOs->Glyphs:
 ``minimize_glyphs_diffs``, which will add some bookkeeping data in UFO ``lib``.
@@ -107,6 +122,7 @@ to store those layer UUIDs in the UFOs.
     import os
     from fontTools.designspaceLib import DesignSpaceDocument
     from glyphsLib import to_glyphs, to_designspace, GSFont
+
     doc = DesignSpaceDocument()
     doc.read('spectral-build-roman.designspace')
     font = to_glyphs(doc, minimize_ufo_diffs=True)

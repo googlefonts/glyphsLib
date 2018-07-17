@@ -29,7 +29,7 @@ from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
-from glyphsLib import to_designspace, to_glyphs, build_instances
+from glyphsLib import to_designspace, to_glyphs
 from glyphsLib.builder.constants import UFO2FT_USE_PROD_NAMES_KEY
 
 
@@ -504,31 +504,6 @@ class SetWeightWidthClassesTest(unittest.TestCase):
 
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
-
-
-def test_apply_instance_data(tmpdir):
-    # Goal: test that the existing APIs used by fontmake and possibly others
-    # still work (especially `apply_instance_data`)
-    masters, instances = makeFamily()
-    gasp_table = {'65535': '15', '20': '7', '8': '10'}
-    instances[0].customParameters['GASP Table'] = gasp_table
-    instances[1].customParameters["Don't use Production Names"] = True
-    font = makeFont(masters, instances, 'Exemplary Sans')
-    filename = os.path.join(str(tmpdir), 'font.glyphs')
-    font.save(filename)
-
-    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
-    os.mkdir(master_dir)
-    instance_dir = os.path.join(str(tmpdir), 'instance_ufos_test')
-    os.mkdir(instance_dir)
-    ufos = build_instances(filename, master_dir, instance_dir)
-
-    ufo_range_records = ufos[0].info.openTypeGaspRangeRecords
-    assert ufo_range_records is not None
-    assert len(ufo_range_records) == 3
-
-    assert UFO2FT_USE_PROD_NAMES_KEY in ufos[1].lib
-    assert ufos[1].lib[UFO2FT_USE_PROD_NAMES_KEY] == False
 
 
 if __name__ == "__main__":

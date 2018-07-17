@@ -49,6 +49,21 @@ def clean_ufo(path):
         shutil.rmtree(path)
 
 
+def ufo_create_background_layer_for_all_glyphs(ufo_font):
+    # type: (defcon.Font) -> None
+    """Create a background layer for all glyphs in ufo_font if not present to
+    reduce roundtrip differences."""
+
+    if "public.background" in ufo_font.layers:
+        background = ufo_font.layers["public.background"]
+    else:
+        background = ufo_font.newLayer("public.background")
+
+    for glyph in ufo_font:
+        if glyph.name not in background:
+            background.newGlyph(glyph.name)
+
+
 def cast_to_number_or_bool(inputstr):
     """Cast a string to int, float or bool. Return original string if it can't be
     converted.

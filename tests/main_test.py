@@ -22,51 +22,36 @@ import subprocess
 import os
 import glob
 
-import glyphsLib.__main__
+import glyphsLib.cli
 import glyphsLib.parser
 
 
 def test_glyphs_main_masters(tmpdir):
-    """Tests the main of glyphsLib and also the `build_masters` function
-    that `fontmake` uses.
+    """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the 
+    `build_masters` function.
     """
+    import fontTools.designspaceLib
+
     filename = os.path.join(
         os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
     master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
 
-    glyphsLib.__main__.main(['-g', filename, '-m', master_dir])
+    glyphsLib.cli.main([
+        "glyphs2ufo", filename, '-m', master_dir, '-n',
+        os.path.join(master_dir, 'hurf'), '--no-normalize-ufo'
+    ])
 
     assert glob.glob(master_dir + '/*.ufo')
+    ds = glob.glob(master_dir + '/GlyphsUnitTestSans.designspace')
+    assert ds
+    designspace = fontTools.designspaceLib.DesignSpaceDocument()
+    designspace.read(ds[0])
+    for instance in designspace.instances:
+        assert str(instance.filename).startswith("hurf")
 
-
-def test_glyphs_main_instances(tmpdir):
-    filename = os.path.join(
-        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
-    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
-    inst_dir = os.path.join(str(tmpdir), 'inst_ufos_test')
-
-    glyphsLib.__main__.main(['-g', filename, '-m', master_dir, '-n', inst_dir])
-
-    assert glob.glob(master_dir + '/*.ufo')
-    assert glob.glob(inst_dir + '/*.ufo')
-
-
-def test_glyphs_main_instances_relative_dir(tmpdir):
-    filename = os.path.join(
-        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
-    master_dir = 'master_ufos_test'
-    inst_dir = 'inst_ufos_test'
-
-    cwd = os.getcwd()
-    try:
-        os.chdir(str(tmpdir))
-        glyphsLib.__main__.main(
-            ['-g', filename, '-m', master_dir, '-n', inst_dir])
-
-        assert glob.glob(master_dir + '/*.ufo')
-        assert glob.glob(inst_dir + '/*.ufo')
-    finally:
-        os.chdir(cwd)
+    glyphs_file = os.path.join(master_dir, "GlyphsUnitTestSans.glyphs")
+    glyphsLib.cli.main(["ufo2glyphs", ds[0], "--output-path", glyphs_file])
+    assert os.path.isfile(glyphs_file)
 
 
 def test_parser_main(capsys):

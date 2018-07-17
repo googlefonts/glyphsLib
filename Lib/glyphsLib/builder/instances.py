@@ -83,7 +83,7 @@ def _to_designspace_instance(self, instance):
             fname = self.instance_dir + '/' + os.path.basename(fname)
         ufo_instance.filename = fname
     if not ufo_instance.filename:
-        instance_dir = self.instance_dir or ''
+        instance_dir = self.instance_dir or 'instance_ufos'
         ufo_instance.filename = build_ufo_path(
             instance_dir, ufo_instance.familyName, ufo_instance.styleName)
 
@@ -121,10 +121,9 @@ def _to_designspace_instance(self, instance):
         ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
     # Strategy: dump all custom parameters into the InstanceDescriptor.
-    # Later, when using `glyphsLib.interpolation.apply_instance_data`,
-    # we will dig out those custom parameters using
-    # `InstanceDescriptorAsGSInstance` and apply them to the instance UFO
-    # with `to_ufo_custom_params`.
+    # Later, when using `apply_instance_data`, we will dig out those custom
+    # parameters using `InstanceDescriptorAsGSInstance` and apply them to the
+    # instance UFO with `to_ufo_custom_params`.
     # NOTE: customParameters are not a dict! One key can have several values
     params = []
     for p in instance.customParameters:
@@ -337,31 +336,24 @@ def apply_instance_data(designspace_path, include_filenames=None,
     from fontTools.designspaceLib import DesignSpaceDocument
     from os.path import normcase, normpath
 
-    # in fontmake <= 1.4.0 using the old glyphsLib.build_masters API, the
-    # apply_instance_data function is passed an InstanceData object, instead
-    # of a path to a designspace file. We try to stay compatible so one can
-    # update glyphsLib without needing to also update fontmake.
-    # TODO: Drop this sometime in the next releases.
-    if isinstance(designspace_path, InstanceData):
-        designspace = designspace_path.designspace
-        designspace_path = designspace.path
-    else:
-        designspace = DesignSpaceDocument()
-        designspace.read(designspace_path)
+    designspace = DesignSpaceDocument()
+    designspace.read(designspace_path)
     basedir = os.path.dirname(designspace_path)
     instance_ufos = []
     if include_filenames is not None:
-        include_filenames = {normcase(normpath(p))
-                             for p in include_filenames}
+        include_filenames = {normcase(normpath(p)) for p in include_filenames}
+
     for designspace_instance in designspace.instances:
         fname = designspace_instance.filename
-        assert fname is not None, ("instance %r missing required filename" %
-                getattr(designspace_instance, "name", designspace_instance))
+        assert fname is not None, (
+            "instance %r missing required filename" % getattr(
+                designspace_instance, "name", designspace_instance))
         if include_filenames is not None:
             fname = normcase(normpath(fname))
             if fname not in include_filenames:
                 continue
-        logger.debug("Appling instance data to %s", fname)
+
+        logger.debug("Applying instance data to %s", fname)
         # fontmake <= 1.4.0 compares the ufo paths returned from this function
         # to the keys of a dict of designspace locations that have been passed
         # through normpath (but not normcase). We do the same.
@@ -375,13 +367,3 @@ def apply_instance_data(designspace_path, include_filenames=None,
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos
-
-
-# DEPRECATED: supports deprecated APIs
-class InstanceData(list):
-    """A list wrapper that also holds a reference to a designspace.
-    It's only here to accomodate for existing APIs.
-    """
-    def __init__(self, designspace):
-        self.designspace = designspace
-        self.extend((i.path, i) for i in designspace.instances)
