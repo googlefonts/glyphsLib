@@ -25,7 +25,8 @@ def main(args=None):
     if not args:
         args = sys.argv[1:]
 
-    parser = argparse.ArgumentParser(prog="{} -m glyphsLib".format(sys.executable))
+    python_executable = os.path.basename(sys.executable)
+    parser = argparse.ArgumentParser(prog="{} -m glyphsLib".format(python_executable))
     subparsers = parser.add_subparsers()
 
     parser_glyphs2ufo = subparsers.add_parser("glyphs2ufo", help=glyphs2ufo.__doc__)
