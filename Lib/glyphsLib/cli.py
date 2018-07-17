@@ -28,10 +28,7 @@ def main(args=None):
     parser = argparse.ArgumentParser(prog="{} -m glyphsLib".format(sys.executable))
     subparsers = parser.add_subparsers()
 
-    parser_glyphs2ufo = subparsers.add_parser(
-        "glyphs2ufo",
-        help="Converts a Glyphs.app source file into UFO masters or UFO instances and MutatorMath designspace.",
-    )
+    parser_glyphs2ufo = subparsers.add_parser("glyphs2ufo", help=glyphs2ufo.__doc__)
     parser_glyphs2ufo.set_defaults(func=glyphs2ufo)
     parser_glyphs2ufo.add_argument(
         "--version", action="version", version="glyphsLib %s" % (glyphsLib.__version__)
@@ -91,10 +88,7 @@ def main(args=None):
         ),
     )
 
-    parser_ufo2glyphs = subparsers.add_parser(
-        "ufo2glyphs",
-        help="Convert one designspace file or one or more UFOs to a Glyphs file.",
-    )
+    parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
     parser_ufo2glyphs.add_argument(
         "--version", action="version", version="glyphsLib %s" % (glyphsLib.__version__)
@@ -143,8 +137,7 @@ def main(args=None):
 
 
 def glyphs2ufo(options):
-    """Converts a Glyphs.app source file into UFO masters or UFO instances and
-    MutatorMath designspace."""
+    """Converts a Glyphs.app source file into UFO masters and a designspace file."""
     if options.output_dir is None:
         options.output_dir = os.path.dirname(options.glyphs_file)
 
@@ -176,7 +169,7 @@ def _glyphs2ufo_entry_point():
 
 
 def ufo2glyphs(options):
-    """Convert one designspace file or one or more UFOs to a Glyphs file."""
+    """Convert one designspace file or one or more UFOs to a Glyphs.app source file."""
     import fontTools.designspaceLib
     import defcon
 
