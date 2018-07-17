@@ -49,17 +49,19 @@ def test_apply_instance_data(tmpdir, instance_names):
     test_designspace = DesignSpaceDocument()
     test_designspace.read(designspace.path)
     if instance_names is None:
-        # Generate all instances.
+        # Collect all instances.
         test_instances = [
             instance.filename for instance in test_designspace.instances
         ]
     else:
-        # Generate only selected instances.
+        # Collect only selected instances.
         test_instances = [
             instance.filename for instance in test_designspace.instances
             if instance.styleName in instance_names
         ]
     
+    # Generate dummy UFOs for collected instances so we don't actually need to
+    # interpolate.
     for instance in test_instances:
         ufo = defcon.Font()
         ufo.save(str(tmpdir / instance))
