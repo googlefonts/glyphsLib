@@ -30,7 +30,10 @@ from glyphsLib.parser import load, loads
 from glyphsLib.writer import dump, dumps
 from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
-__version__ = "2.4.1.dev0"
+try:
+    from ._version import version as __version__
+except ImportError:
+    __version__ = "0.0.0+unknown"
 
 # Doing `import *` from a module that uses unicode_literals, produces
 # "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
