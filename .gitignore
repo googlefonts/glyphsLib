@@ -8,6 +8,7 @@ __pycache__/
 *.eggs
 build
 dist
+_version.py
 
 # Unit test
 .cache/
