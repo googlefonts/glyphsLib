@@ -59,7 +59,7 @@ def test_apply_instance_data(tmpdir, instance_names):
             instance.filename for instance in test_designspace.instances
             if instance.styleName in instance_names
         ]
-    
+
     # Generate dummy UFOs for collected instances so we don't actually need to
     # interpolate.
     for instance in test_instances:
@@ -76,6 +76,13 @@ def test_apply_instance_data(tmpdir, instance_names):
     for ufo in ufos:
         assert ufo.info.openTypeOS2WeightClass is not None
         assert ufo.info.openTypeOS2WidthClass is not None
+
+
+def test_reexport_apply_instance_data():
+    # this is for compatibility with fontmake
+    # https://github.com/googlei18n/fontmake/issues/451
+    from glyphsLib.interpolation import apply_instance_data as reexported
+    assert reexported is apply_instance_data
 
 
 def test_reencode_glyphs(tmpdir):
