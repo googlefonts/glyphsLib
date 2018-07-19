@@ -335,3 +335,24 @@ def test_roundtrip_automatic_feature():
     assert feature_r.name == "ccmp"
     assert feature_r.code == "sub c by c.ss03;"
     assert feature_r.automatic is True
+
+
+def test_roundtrip_feature_prefix_with_only_a_comment():
+    font = to_glyphs([defcon.Font()])
+    prefix = classes.GSFeaturePrefix(name="include")
+    # Contents: just a comment
+    prefix.code = "#include(../family.fea)"
+    font.featurePrefixes.append(prefix)
+
+    ufo, = to_ufos(font)
+
+    assert ufo.features.text == dedent('''\
+        # Prefix: include
+        #include(../family.fea)
+    ''')
+
+    font_r = to_glyphs([ufo])
+    assert len(font_r.featurePrefixes) == 1
+    prefix_r = font_r.featurePrefixes[0]
+    assert prefix_r.name == 'include'
+    assert prefix_r.code == "#include(../family.fea)"

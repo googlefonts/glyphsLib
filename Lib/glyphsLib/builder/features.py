@@ -346,8 +346,8 @@ class PeekableIterator(object):
         self.index = 0
         self.list = list
 
-    def has_next(self):
-        return self.index < len(self.list)
+    def has_next(self, n=0):
+        return (self.index + n) < len(self.list)
 
     def next(self):
         res = self.list[self.index]
@@ -425,10 +425,11 @@ class FeatureFileProcessor(object):
                 if self.PREFIX_RE.match(st.text):
                     break
                 # ...or if it is the "automatic" comment just before a class
-                next_st = self.statements.peek(1)
-                if self.AUTOMATIC_RE.match(st.text) and isinstance(
-                        next_st, ast.GlyphClassDefinition):
-                    break
+                if self.statements.has_next(1):
+                    next_st = self.statements.peek(1)
+                    if self.AUTOMATIC_RE.match(st.text) and isinstance(
+                            next_st, ast.GlyphClassDefinition):
+                        break
             prefix_statements.append(st)
             self.statements.next()
 
@@ -576,7 +577,9 @@ class FeatureFileProcessor(object):
         return (match, dedent(''.join(c.text[1:] + "\n" for c in comments)),
                 res)
 
+    # Strip up to the given number of newlines from the right end of the string
     def _rstrip_newlines(self, string, number=1):
-        if len(string) >= number and string[-number:] == '\n' * number:
-            string = string[:-number]
+        for i in range(number):
+            if string and string[-1] == '\n':
+                string = string[:-1]
         return string
