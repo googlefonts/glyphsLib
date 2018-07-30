@@ -61,6 +61,10 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
         self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
         self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
+        self.assertEqual(cat("brevecomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232
