@@ -94,6 +94,6 @@ def _get_category(name, unistr, data=glyphdata_generated):
         return ("Letter", "Compatibility")
     ucat = _get_unicode_category(unistr)
     cat = data.DEFAULT_CATEGORIES.get(ucat, (None, None))
-    if "_" in basename:
+    if "_" in basename and cat[0] != "Mark":
         return (cat[0], "Ligature")
     return cat
