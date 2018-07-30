@@ -89,20 +89,26 @@ def get_glyph(name, data=glyphdata_generated):
     return Glyph(base_name, production_name, character, category, sub_category)
 
 
-def _get_unicode_category(unistr):
-    # We use data for a fixed Unicode version (3.2) so that our generated
-    # data files are independent of Python runtime that runs the rules.
-    # By switching to current Unicode data, we could save some entries
-    # in our exception tables, but the gains are not very large; only
-    # about one thousand entries.
-    if not unistr:
+def _get_unicode_category(character):
+    """Return the Unicode general category for a character.
+
+    We use data for a fixed Unicode version (3.2) so that our generated
+    data files are independent of Python runtime that runs the rules. By
+    switching to current Unicode data, we could save some entries in our
+    exception tables, but the gains are not very large; only about one
+    thousand entries.
+    """
+
+    if not character:
         return None
+
     if NARROW_PYTHON_BUILD:
-        utf32_str = unistr.encode("utf-32-be")
-        nchars = len(utf32_str)//4
+        utf32_str = character.encode("utf-32-be")
+        nchars = len(utf32_str) // 4
         first_char = unichr(struct.unpack('>%dL' % nchars, utf32_str)[0])
     else:
-        first_char = unistr[0]
+        first_char = character[0]
+
     return unicodedata.ucd_3_2_0.category(first_char)
 
 
