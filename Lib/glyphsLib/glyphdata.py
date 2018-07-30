@@ -32,27 +32,61 @@ Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 
 def get_glyph(name, data=glyphdata_generated):
-    prodname = data.PRODUCTION_NAMES.get(name)
-    # Some Glyphs files use production names (instead of Glyphs names).
+    """Return a named tuple (Glyph) containing information derived from a glyph
+    name akin to GSGlyphInfo.
+
+    The information is derived from an included copy of GlyphsData.xml,
+    going purely by the glyph name.
+    """
+
+    # First, get the base name of the glyph. .notdef and .null are exceptions.
+    # Periods denote glyph variants as per the AGLFN convetion, which should
+    # be in the same category as their base glyph.
+    if name in (".notdef", ".null"):
+        base_name = name
+    else:
+        base_name = name.split(".", maxsplit=1)[0]
+
+    # Next, look up the glyph name in Glyph's name database to get a Unicode
+    # pseudoname, or "production name" as found in a font's post table 
+    # (e.g. "A-cy" -> "uni0410") so that e.g. PDF readers can map from names
+    # to Unicode values. FontTool's agl module can turn this into the actual
+    # character.
+    production_name = data.PRODUCTION_NAMES.get(base_name)
+
+    # Some Glyphs files use production names instead of Glyph's "nice names".
     # We catch this here, so that we can return the same properties as if
     # the Glyphs file had been following the Glyphs naming conventions.
     # https://github.com/googlei18n/glyphsLib/issues/232
-    if prodname is None:
-        rev_prodname = data.PRODUCTION_NAMES_REVERSED.get(name)
+    if production_name is None:
+        rev_prodname = data.PRODUCTION_NAMES_REVERSED.get(base_name)
         if rev_prodname is not None:
-            prodname = name
-            name = rev_prodname
-    if prodname is None:
-        prodname = name
-    unistr = data.IRREGULAR_UNICODE_STRINGS.get(name)
-    if unistr is None:
-        unistr = agl.toUnicode(prodname)
-    if unistr != "" and name not in data.MISSING_UNICODE_STRINGS:
-        unistr_result = unistr
+            production_name = base_name
+            base_name = rev_prodname
+
+    # Finally, if we couldn't find a known production name one way or another,
+    # conclude that the glyph name doesn't carry any Uncode semantics. Use the
+    # bare name in that case.
+    if production_name is None:
+        production_name = name
+
+    # Next, derive the actual character from the production name, e.g.
+    # "uni0414" -> "Д". Two caveats:
+    # 1. For some glyphs, Glyphs does not have a category even when one could
+    #    be derived.
+    # 2. For some others, Glyphs has a different idea than the agl module.
+    if base_name in data.MISSING_UNICODE_STRINGS:  # 1.
+        character = None
     else:
-        unistr_result = None
-    category, subCategory = _get_category(name, unistr, data)
-    return Glyph(name, prodname, unistr_result, category, subCategory)
+        character = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
+        if character is None:
+            character = agl.toUnicode(production_name) or None
+
+    # Lastly, generate the category in the sense of Glyph's 
+    # GSGlyphInfo.category and .subCategory.
+    category, sub_category = _get_category(base_name, character, data)
+
+    return Glyph(base_name, production_name, character, category, sub_category)
 
 
 def _get_unicode_category(unistr):
