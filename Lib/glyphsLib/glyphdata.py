@@ -112,28 +112,32 @@ def _get_unicode_category(character):
     return unicodedata.ucd_3_2_0.category(first_char)
 
 
-def _get_category(name, unistr, data=glyphdata_generated):
-    cat = data.IRREGULAR_CATEGORIES.get(name)
-    if cat is not None:
-        return cat
+def _get_category(glyph_name, character, data=glyphdata_generated):
+    """Return category and subCategory of a glyph name as defined by
+    GlyphsData.xml."""
 
-    basename = name.split(".", 1)[0]  # "A.alt27" --> "A"
-    if not basename:  # handle ".notdef", ".null"
-        basename = name
-    cat = data.IRREGULAR_CATEGORIES.get(basename)
-    if cat is not None:
-        return cat
+    # Glyphs assigns some glyph names different categories than Unicode.
+    categories = data.IRREGULAR_CATEGORIES.get(glyph_name)
+    if categories is not None:
+        return categories
 
-    if basename.endswith("-ko"):
+    # More exceptions.
+    if glyph_name.endswith("-ko"):
         return ("Letter", "Syllable")
-    if basename.endswith("-ethiopic") or basename.endswith("-tifi"):
+    if glyph_name.endswith("-ethiopic") or glyph_name.endswith("-tifi"):
         return ("Letter", None)
-    if basename.startswith("box"):
+    if glyph_name.startswith("box"):
         return ("Symbol", "Geometry")
-    if basename.startswith("uniF9"):
+    if glyph_name.startswith("uniF9"):
         return ("Letter", "Compatibility")
-    ucat = _get_unicode_category(unistr)
-    cat = data.DEFAULT_CATEGORIES.get(ucat, (None, None))
-    if "_" in basename and cat[0] != "Mark":
-        return (cat[0], "Ligature")
-    return cat
+    
+    # Finally, look up the actual categories.
+    unicode_category = _get_unicode_category(character)
+    categories = data.DEFAULT_CATEGORIES.get(unicode_category, (None, None))
+    
+    # Special case: names like "one_two" are (_, Ligatures) but e.g.
+    # "brevecomb_acutecomb" is a (Mark, Nonspacing).
+    if "_" in glyph_name and categories[0] != "Mark":
+        return (categories[0], "Ligature")
+    
+    return categories
