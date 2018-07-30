@@ -32,6 +32,10 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("s_t"), "s_t")
         self.assertEqual(prod("Gcommaaccent"), "uni0122")
         self.assertEqual(prod("o_f_f_i.foo"), "o_f_f_i.foo")
+        self.assertEqual(prod("brevecomb"), "uni0306")
+        self.assertEqual(prod("brevecomb.case"), "uni0306.case")
+        self.assertEqual(prod("brevecomb_acutecomb"), "u'uni03060301")
+        self.assertEqual(prod("brevecomb_acutecomb.case"), "u'uni03060301.case")
 
     def test_unicode(self):
         uni = lambda n: get_glyph(n).unicode
@@ -44,6 +48,10 @@ class GlyphDataTest(unittest.TestCase):
         self.assertIsNone(uni("s_t"))  # no 'unicode' in GlyphsData
         self.assertEqual(uni("Gcommaaccent"), "Ģ")
         self.assertEqual(uni("o_f_f_i.foo"), "offi")
+        self.assertEqual(uni("brevecomb"), "̆")
+        self.assertEqual(uni("brevecomb.case"), None)
+        self.assertEqual(uni("brevecomb_acutecomb"), None)
+        self.assertEqual(uni("brevecomb_acutecomb.case"), None)
 
     def test_category(self):
         cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
