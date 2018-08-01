@@ -31,7 +31,7 @@ NARROW_PYTHON_BUILD = sys.maxunicode < 0x10FFFF
 Glyph = namedtuple("Glyph", "name,production_name,unicode,category,subCategory")
 
 
-def get_glyph(name, data=glyphdata_generated):
+def get_glyph(glyph_name, data=glyphdata_generated):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
@@ -40,19 +40,19 @@ def get_glyph(name, data=glyphdata_generated):
     """
 
     # First, get the base name of the glyph. .notdef and .null are exceptions.
-    # Periods denote glyph variants as per the AGLFN convetion, which should
+    # Periods denote glyph variants as per the AGLFN convention, which should
     # be in the same category as their base glyph.
-    if name in (".notdef", ".null"):
-        base_name = name
+    if glyph_name in (".notdef", ".null"):
+        base_name = glyph_name
     else:
-        base_name = name.split(".", maxsplit=1)[0]
+        base_name = glyph_name.split(".", 1)[0]
 
     # Next, look up the glyph name in Glyph's name database to get a Unicode
-    # pseudoname, or "production name" as found in a font's post table 
+    # pseudoname, or "production name" as found in a font's post table
     # (e.g. "A-cy" -> "uni0410") so that e.g. PDF readers can map from names
     # to Unicode values. FontTool's agl module can turn this into the actual
     # character.
-    production_name = data.PRODUCTION_NAMES.get(base_name)
+    production_name = _lookup_production_name(glyph_name)
 
     # Some Glyphs files use production names instead of Glyph's "nice names".
     # We catch this here, so that we can return the same properties as if
@@ -65,32 +65,143 @@ def get_glyph(name, data=glyphdata_generated):
             base_name = rev_prodname
 
     # Finally, if we couldn't find a known production name one way or another,
-    # conclude that the glyph name doesn't carry any Uncode semantics. Use the
+    # conclude that the glyph name doesn't carry any Unicode semantics. Use the
     # bare name in that case.
     if production_name is None:
-        production_name = name
+        production_name = glyph_name
 
     # Next, derive the actual character from the production name, e.g.
     # "uni0414" -> "Д". Two caveats:
-    # 1. For some glyphs, Glyphs does not have a category even when one could
-    #    be derived.
+    # 1. For some glyphs, Glyphs does not have a mapped character even when one 
+    #    could be derived.
     # 2. For some others, Glyphs has a different idea than the agl module.
-    if base_name in data.MISSING_UNICODE_STRINGS:  # 1.
-        character = None
-    else:
-        character = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
-        if character is None:
-            character = agl.toUnicode(production_name) or None
+    characters = None
+    if base_name not in data.MISSING_UNICODE_STRINGS:  # 1.
+        characters = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
+        if characters is None:
+            characters = agl.toUnicode(production_name) or None
 
-    # Lastly, generate the category in the sense of Glyph's 
+    # Lastly, generate the category in the sense of Glyph's
     # GSGlyphInfo.category and .subCategory.
-    category, sub_category = _get_category(base_name, character, data)
+    category, sub_category = _get_category(base_name, characters, data)
 
-    return Glyph(base_name, production_name, character, category, sub_category)
+    return Glyph(glyph_name, production_name, characters, category, sub_category)
+
+
+def _lookup_production_name(glyph_name, data=glyphdata_generated):
+    """Return the production name for a glyph name from the GlyphsData.xml
+    database according to the AGL specification.
+
+    Handles single glyphs (e.g. "brevecomb") and ligatures (e.g.
+    "brevecomb_acutecomb"). Returns None when a valid and semantically
+    meaningful production name can't be constructed or when the AGL
+    specification would be violated, get_glyph() will use the bare glyph
+    name then.
+
+    Note:
+    - Glyph name is the full name, e.g. "brevecomb_acutecomb.case".
+    - Base name is the base part, e.g. "brevecomb_acutecomb"
+    - Suffix is e.g. "case".
+    """
+
+    def is_unicode_u_value(name):
+        return name.startswith("u") and all(
+            part_char in "0123456789ABCDEF" for part_char in name[1:]
+        )
+
+    base_name, dot, suffix = glyph_name.partition(".")
+
+    # First, look up the full glyph name and base name in the AGLFN and in
+    # PRODUCTION_NAMES.
+    if (
+        glyph_name in agl.AGL2UV
+        or base_name in agl.AGL2UV
+        or glyph_name in (".notdef", ".null")
+    ):
+        return glyph_name
+
+    if glyph_name in data.PRODUCTION_NAMES:  # e.g. ain_alefMaksura-ar.fina -> uniFD13
+        return data.PRODUCTION_NAMES[glyph_name]
+    if base_name in data.PRODUCTION_NAMES:
+        final_production_name = data.PRODUCTION_NAMES[base_name] + dot + suffix
+        if len(final_production_name) > 31:
+            return None
+        return final_production_name
+
+    # If we aren't looking at a ligature and the name still hasn't been found,
+    # the glyph probably has no Unicode semantics, so return None.
+    if "_" not in base_name:
+        return None
+
+    # So we have a ligature that is not mapped in PRODUCTION_NAMES. Split it up and
+    # look up the individual parts.
+    base_name_parts = base_name.split("_")
+
+    # If all parts are in the AGLFN list, the glyph name is our production
+    # name already.
+    if all(part in agl.AGL2UV for part in base_name_parts):
+        if len(glyph_name) > 31:
+            return None
+        return glyph_name
+
+    _character_outside_BMP = False
+    production_names = []
+    for part in base_name_parts:
+        if part in agl.AGL2UV:
+            production_names.append(part)
+        else:
+            part_production_name = data.PRODUCTION_NAMES.get(part)
+            if part_production_name:
+                production_names.append(part_production_name)
+
+                # Note if there are any characters outside the Unicode BMP, e.g.
+                # "u10FFF" or "u10FFFF". Do not catch e.g. "u013B" though.
+                if len(part_production_name) > 5 and is_unicode_u_value(
+                    part_production_name
+                ):
+                    _character_outside_BMP = True
+
+            else:
+                return None
+
+    # Some names Glyphs uses resolve to other names that are not uniXXXX names and may
+    # contain dots (e.g. idotaccent -> i.loclTRK). If there is any name with a "." in
+    # it before the last element, punt. We'd have to introduce a "." into the ligature
+    # midway, which is invalid according to the AGL. Example: "a_i.loclTRK" is valid,
+    # but "a_i.loclTRK_a" isn't.
+    if any("." in part for part in production_names[:-1]):
+        return None
+
+    # If any production name starts with a "uni" there are none of the "uXXXXX" format,
+    # try to turn all parts into "uni" names and concatenate them.
+    if not _character_outside_BMP and any(
+        part.startswith("uni") for part in production_names
+    ):
+        uni_names = []
+
+        for part in production_names:
+            if part.startswith("uni"):
+                uni_names.append(part[3:])
+            elif len(part) == 5 and is_unicode_u_value(part):
+                uni_names.append(part[1:])
+            elif part in agl.AGL2UV:
+                uni_names.append("{:04X}".format(agl.AGL2UV[part]))
+            else:
+                return None
+
+        final_production_name = "uni{}".format("".join(uni_names)) + dot + suffix
+    else:
+        final_production_name = "{}".format("_".join(production_names)) + dot + suffix
+
+    if len(final_production_name) > 31:
+        return None
+
+    return final_production_name
 
 
 def _get_unicode_category(character):
-    """Return the Unicode general category for a character.
+    """Return the Unicode general category for a character (or the first
+    character of a string).
 
     We use data for a fixed Unicode version (3.2) so that our generated
     data files are independent of Python runtime that runs the rules. By

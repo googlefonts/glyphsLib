@@ -16,11 +16,48 @@
 
 from __future__ import (print_function, division, absolute_import,
                         unicode_literals)
-from glyphsLib.glyphdata import get_glyph
+from glyphsLib.glyphdata import get_glyph, _lookup_production_name
 import unittest
 
 
 class GlyphDataTest(unittest.TestCase):
+    def test__lookup_production_name(self):
+        # Our behavior differs from Glyphs, Glyphs 2.5.2 responses are in comments.
+        lkup = lambda n: _lookup_production_name(n)
+        self.assertEqual(lkup("a_a_acutecomb"), "a_a_acutecomb")
+        self.assertEqual(lkup("a_a_dieresiscomb"), "uni006100610308")
+        self.assertEqual(lkup("brevecomb_acutecomb"), "uni03060301")
+
+        self.assertEqual(lkup("a_idotaccent"), "a_i.loclTRK")
+        self.assertEqual(lkup("a_idotaccent_a"), None)  # "a_i.loclTRK_a"
+        self.assertEqual(lkup("a_idotaccent_aaa"), None)
+        self.assertEqual(lkup("a_idotaccent_dieresiscomb"), None)
+        self.assertEqual(lkup("a_idotaccent_acutecomb"), None)  # "a_i.loclTRK_acutecomb"
+
+        self.assertEqual(lkup("idotaccent"), "i.loclTRK")
+        self.assertEqual(lkup("dieresiscomb"), "uni0308")
+        self.assertEqual(lkup("idotaccent_dieresiscomb"), None)
+        self.assertEqual(lkup("idotaccent_acutecomb"), None)  # "i.loclTRK_acutecomb"
+        self.assertEqual(lkup("idotaccent_a"), None)  # "i.loclTRK_a"
+
+        self.assertEqual(lkup("aa"), "uniA733")
+        self.assertEqual(lkup("Dboldscript-math"), "u1D4D3")
+        self.assertEqual(lkup("Dboldscript-math_Dboldscript-math"), "u1D4D3_u1D4D3")
+        self.assertEqual(lkup("Dboldscript-math_a"), "u1D4D3_a")
+        self.assertEqual(lkup("Dboldscript-math_a_aa"), "u1D4D3_a_uniA733")  # None
+        self.assertEqual(lkup("Dboldscript-math_a_aaa"), None)
+        self.assertEqual(lkup("a_Dboldscript-math"), "a_u1D4D3")  # None
+        self.assertEqual(lkup("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")  # None
+        self.assertEqual(lkup("Dboldscript-math_brevecomb"), "u1D4D3_uni0306")  # None
+
+        self.assertEqual(lkup("a_a_a_a_a_a_a"), "a_a_a_a_a_a_a")
+        self.assertEqual(lkup("a_a_a_a_a_a_a_a_a_a_a_a_a_a_a_a"), "a_a_a_a_a_a_a_a_a_a_a_a_a_a_a_a")
+        self.assertEqual(lkup("a_a_a_a_a_a_a_a_a_a_a_a_a_a_a_a_A"), None)  # ...
+
+        # Made-up glyph names, should not have a distinct production name.
+        self.assertEqual(lkup('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), None)
+        self.assertEqual(lkup('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), None)
+
     def test_production_name(self):
         prod = lambda n: get_glyph(n).production_name
         self.assertEqual(prod(".notdef"), ".notdef")
@@ -34,8 +71,14 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("o_f_f_i.foo"), "o_f_f_i.foo")
         self.assertEqual(prod("brevecomb"), "uni0306")
         self.assertEqual(prod("brevecomb.case"), "uni0306.case")
-        self.assertEqual(prod("brevecomb_acutecomb"), "u'uni03060301")
-        self.assertEqual(prod("brevecomb_acutecomb.case"), "u'uni03060301.case")
+        self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
+        self.assertEqual(prod("brevecomb_acutecomb.case"), "uni03060301.case")
+        self.assertEqual(prod("brevecomb_a_a_a"), "uni0306006100610061")        
+        self.assertEqual(prod("brevecomb_a_a_a.case"), "uni0306006100610061.case")
+        self.assertEqual(prod("brevecomb_aaa.case"), "brevecomb_aaa.case")
+        self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
+        self.assertEqual(prod("brevecomb_Dboldscript-math.f.r"), "uni0306_u1D4D3.f.r")
+        self.assertEqual(prod("ain_alefMaksura-ar.fina"), "uniFD13")
 
     def test_unicode(self):
         uni = lambda n: get_glyph(n).unicode
@@ -49,9 +92,9 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(uni("Gcommaaccent"), "Ģ")
         self.assertEqual(uni("o_f_f_i.foo"), "offi")
         self.assertEqual(uni("brevecomb"), "̆")
-        self.assertEqual(uni("brevecomb.case"), None)
-        self.assertEqual(uni("brevecomb_acutecomb"), None)
-        self.assertEqual(uni("brevecomb_acutecomb.case"), None)
+        self.assertEqual(uni("brevecomb.case"), "̆")
+        self.assertEqual(uni("brevecomb_acutecomb"), "̆́")
+        self.assertEqual(uni("brevecomb_acutecomb.case"), "̆́")
 
     def test_category(self):
         cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
