@@ -70,7 +70,7 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     if production_name is None:
         production_name = glyph_name
 
-    # Next, derive the actual character from the production name, e.g.
+    # Next, derive the actual characters from the production name, e.g.
     # "uni0414" -> "Д". Two caveats:
     # 1. For some glyphs, Glyphs does not have a mapped character even when one 
     #    could be derived.
