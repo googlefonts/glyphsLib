@@ -143,7 +143,7 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
 
     def test_set_openTypeOS2CodePageRanges(self):
-        self.font.customParameters['openTypeOS2CodePageRanges'] = [0, 1]
+        self.font.customParameters['openTypeOS2CodePageRanges'] = [1252, 1250]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
 
