@@ -27,6 +27,7 @@ except ImportError:
     from mock import patch
     import mock
 
+import glyphsLib
 from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.custom_params import (to_ufo_custom_params,
@@ -139,13 +140,29 @@ class SetCustomParamsTest(unittest.TestCase):
 
     def test_set_codePageRanges(self):
         self.font.customParameters['codePageRanges'] = [1252, 1250]
+        self.font.customParameters['codePageRangesUnsupportedBits'] = [15]
         self.set_custom_params()
-        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
+        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(
+            self.font.customParameters['codePageRanges'], [1252, 1250]
+        )
+        self.assertEqual(
+            self.font.customParameters['codePageRangesUnsupportedBits'], [15]
+        )
 
     def test_set_openTypeOS2CodePageRanges(self):
         self.font.customParameters['openTypeOS2CodePageRanges'] = [1252, 1250]
+        self.font.customParameters['codePageRangesUnsupportedBits'] = [15]
         self.set_custom_params()
-        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1])
+        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(
+            self.font.customParameters['codePageRanges'], [1252, 1250]
+        )
+        self.assertEqual(
+            self.font.customParameters['codePageRangesUnsupportedBits'], [15]
+        )
 
     def test_gasp_table(self):
         gasp_table = {'65535': '15',
