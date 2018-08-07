@@ -138,6 +138,15 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -100)
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
+    def test_set_codePageRanges_empty(self):
+        self.font.customParameters['codePageRanges'] = []
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [])
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(
+            self.font.customParameters['codePageRanges'], []
+        )
+
     def test_set_codePageRanges(self):
         self.font.customParameters['codePageRanges'] = [1252, 1250]
         self.font.customParameters['codePageRangesUnsupportedBits'] = [15]
