@@ -397,8 +397,8 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
         codepages = glyphs.get_custom_value("codePageRanges")
         if codepages is None:
             codepages = glyphs.get_custom_value("openTypeOS2CodePageRanges")
-        if codepages is None:
-            return
+            if codepages is None:
+                return
 
         ufo_codepage_bits = [CODEPAGE_RANGES[v] for v in codepages]
         unsupported_codepage_bits = glyphs.get_custom_value(
