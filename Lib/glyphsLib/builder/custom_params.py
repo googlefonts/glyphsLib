@@ -372,12 +372,13 @@ register(EmptyListDefaultParamHandler('postscriptFamilyBlues'))
 register(EmptyListDefaultParamHandler('postscriptFamilyOtherBlues'))
 
 
-# Convert code page numbers to OS/2 ulCodePageRange bits.
+# Convert code page numbers to OS/2 ulCodePageRange bits. Empty lists stay empty lists.
 class OS2CodePageRangesParamHandler(AbstractParamHandler):
     def to_glyphs(self, glyphs, ufo):
         ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
         if ufo_codepage_bits is None:
             return
+
         codepages = []
         unsupported_codepage_bits = []
         for codepage in ufo_codepage_bits:
@@ -386,28 +387,27 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             else:
                 unsupported_codepage_bits.append(codepage)
 
-        if codepages:
-            glyphs.set_custom_value("codePageRanges", codepages)
+        glyphs.set_custom_value("codePageRanges", codepages)
         if unsupported_codepage_bits:
             glyphs.set_custom_value(
                 "codePageRangesUnsupportedBits", unsupported_codepage_bits
             )
 
     def to_ufo(self, glyphs, ufo):
-        ufo_codepage_bits = []
-        codepages = glyphs.get_custom_value(
-            "codePageRanges"
-        ) or glyphs.get_custom_value("openTypeOS2CodePageRanges")
-        if codepages:
-            ufo_codepage_bits.extend([CODEPAGE_RANGES[v] for v in codepages])
+        codepages = glyphs.get_custom_value("codePageRanges")
+        if codepages is None:
+            codepages = glyphs.get_custom_value("openTypeOS2CodePageRanges")
+        if codepages is None:
+            return
+
+        ufo_codepage_bits = [CODEPAGE_RANGES[v] for v in codepages]
         unsupported_codepage_bits = glyphs.get_custom_value(
             "codePageRangesUnsupportedBits"
         )
-
         if unsupported_codepage_bits:
             ufo_codepage_bits.extend(unsupported_codepage_bits)
-        if ufo_codepage_bits:
-            ufo.set_info_value("openTypeOS2CodePageRanges", sorted(ufo_codepage_bits))
+
+        ufo.set_info_value("openTypeOS2CodePageRanges", sorted(ufo_codepage_bits))
 
 
 register(OS2CodePageRangesParamHandler())
