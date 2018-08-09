@@ -372,24 +372,45 @@ register(EmptyListDefaultParamHandler('postscriptFamilyBlues'))
 register(EmptyListDefaultParamHandler('postscriptFamilyOtherBlues'))
 
 
-# convert code page numbers to OS/2 ulCodePageRange bits
-register(ParamHandler(
-    glyphs_name='codePageRanges',
-    ufo_name='openTypeOS2CodePageRanges',
-    value_to_ufo=lambda value: [CODEPAGE_RANGES[v] for v in value],
-    # TODO: (jany) handle KeyError, store into userData
-    value_to_glyphs=lambda value: [REVERSE_CODEPAGE_RANGES[v] for v in value if v in REVERSE_CODEPAGE_RANGES]
-))
-# But don't do the conversion if the Glyphs param name is written in full
-register(ParamHandler(
-    glyphs_name='openTypeOS2CodePageRanges',
-    ufo_name='openTypeOS2CodePageRanges',
-    # Don't do any conversion when writing to UFO
-    # value_to_ufo=identity,
-    # Don't use this handler to write back to Glyphs
-    value_to_glyphs=lambda value: value # TODO: (jany) only write if contains non-codepage values
-    # TODO: (jany) add test with non-codepage values
-))
+# Convert code page numbers to OS/2 ulCodePageRange bits. Empty lists stay empty lists.
+class OS2CodePageRangesParamHandler(AbstractParamHandler):
+    def to_glyphs(self, glyphs, ufo):
+        ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
+        if ufo_codepage_bits is None:
+            return
+
+        codepages = []
+        unsupported_codepage_bits = []
+        for codepage in ufo_codepage_bits:
+            if codepage in REVERSE_CODEPAGE_RANGES:
+                codepages.append(REVERSE_CODEPAGE_RANGES[codepage])
+            else:
+                unsupported_codepage_bits.append(codepage)
+
+        glyphs.set_custom_value("codePageRanges", codepages)
+        if unsupported_codepage_bits:
+            glyphs.set_custom_value(
+                "codePageRangesUnsupportedBits", unsupported_codepage_bits
+            )
+
+    def to_ufo(self, glyphs, ufo):
+        codepages = glyphs.get_custom_value("codePageRanges")
+        if codepages is None:
+            codepages = glyphs.get_custom_value("openTypeOS2CodePageRanges")
+            if codepages is None:
+                return
+
+        ufo_codepage_bits = [CODEPAGE_RANGES[v] for v in codepages]
+        unsupported_codepage_bits = glyphs.get_custom_value(
+            "codePageRangesUnsupportedBits"
+        )
+        if unsupported_codepage_bits:
+            ufo_codepage_bits.extend(unsupported_codepage_bits)
+
+        ufo.set_info_value("openTypeOS2CodePageRanges", sorted(ufo_codepage_bits))
+
+
+register(OS2CodePageRangesParamHandler())
 
 # enforce that winAscent/Descent are positive, according to UFO spec
 for glyphs_name in ('winAscent', 'winDescent'):
