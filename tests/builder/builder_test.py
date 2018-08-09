@@ -935,6 +935,24 @@ class ToUfosTest(unittest.TestCase):
         finally:
             shutil.rmtree(tmpdir)
 
+    def test_italic_angle(self):
+        font = generate_minimal_font()
+        ufo, = to_ufos(font)
+
+        ufo.info.italicAngle = 1
+        ufo_rt, = to_ufos(to_glyphs([ufo]))
+        assert ufo_rt.info.italicAngle == 1
+
+        ufo.info.italicAngle = 1.5
+        ufo_rt, = to_ufos(to_glyphs([ufo]))
+        assert ufo_rt.info.italicAngle == 1.5
+
+        ufo.info.italicAngle = 0
+        font_rt = to_glyphs([ufo])
+        assert font_rt.masters[0].italicAngle == 0
+        ufo_rt, = to_ufos(font_rt)
+        assert ufo_rt.info.italicAngle == 0
+
 
 class _PointDataPen(object):
 
