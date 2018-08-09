@@ -189,9 +189,9 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
             else:
                 return None
 
-        final_production_name = "uni{}".format("".join(uni_names)) + dot + suffix
+        final_production_name = "uni" + "".join(uni_names) + dot + suffix
     else:
-        final_production_name = "{}".format("_".join(production_names)) + dot + suffix
+        final_production_name = "_".join(production_names) + dot + suffix
 
     if len(final_production_name) > 31:
         return None
