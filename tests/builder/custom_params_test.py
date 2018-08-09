@@ -67,6 +67,42 @@ class SetCustomParamsTest(unittest.TestCase):
         self.set_custom_params()
         self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + 'glyphOrder'], ['A', 'B'])
 
+    def test_set_fsSelection_flags_none(self):
+        self.ufo.info.openTypeOS2Selection = None
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(self.font.customParameters["Use Typo Metrics"], None)
+        self.assertEqual(self.font.customParameters["Has WWS Names"], None)
+        self.assertEqual(
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"],
+            None,
+        )
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
+
+    def test_set_fsSelection_flags_empty(self):
+        self.ufo.info.openTypeOS2Selection = []
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(self.font.customParameters["Use Typo Metrics"], None)
+        self.assertEqual(self.font.customParameters["Has WWS Names"], None)
+        self.assertEqual(
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"],
+            [],
+        )
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, [])
+
+    def test_set_fsSelection_flags_all(self):
+        self.ufo.info.openTypeOS2Selection = [1, 2, 3, 4, 7, 8, 9]
+        self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(self.font.customParameters["Use Typo Metrics"], True)
+        self.assertEqual(self.font.customParameters["Has WWS Names"], True)
+        self.assertEqual(
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"],
+            [1, 2, 3, 4, 9],
+        )
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, [1, 2, 3, 4, 7, 8, 9])
+
     def test_set_fsSelection_flags(self):
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
