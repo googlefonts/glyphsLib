@@ -120,7 +120,7 @@ class SetCustomParamsTest(unittest.TestCase):
             GSCustomParameter(name='Has WWS Names', value=True),
         ]
         self.set_custom_params()
-        self.assertEqual(self.ufo.info.openTypeOS2Selection, [8, 7])
+        self.assertEqual(self.ufo.info.openTypeOS2Selection, [7, 8])
 
     def test_underlinePosition(self):
         self.master.customParameters['underlinePosition'] = -2
