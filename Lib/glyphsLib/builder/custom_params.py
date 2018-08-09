@@ -502,28 +502,42 @@ def append_unique(array, value):
 
 
 class OS2SelectionParamHandler(AbstractParamHandler):
-    flags = (
-        ('Has WWS Names', 8),
-        ('Use Typo Metrics', 7),
-    )
+    flags = {7: "Use Typo Metrics", 8: "Has WWS Names"}
 
+    # Note that en empty openTypeOS2Selection list should stay an empty list, as
+    # opposed to a non-existant list. In the latter case, we round-trip nothing, in the
+    # former, we at least write an empty list to openTypeOS2SelectionUnsupportedBits
+    # which we use to re-instate an empty list in the UFO on tripping back.
     def to_glyphs(self, glyphs, ufo):
-        ufo_flags = ufo.get_info_value('openTypeOS2Selection')
+        ufo_flags = ufo.get_info_value("openTypeOS2Selection")
         if ufo_flags is None:
             return
-        for glyphs_name, value in self.flags:
-            if value in ufo_flags:
-                glyphs.set_custom_value(glyphs_name, True)
+
+        unsupported_bits = []
+        for flag in ufo_flags:
+            if flag in self.flags:
+                glyphs.set_custom_value(self.flags[flag], True)
+            else:
+                unsupported_bits.append(flag)
+        glyphs.set_custom_value("openTypeOS2SelectionUnsupportedBits", unsupported_bits)
 
     def to_ufo(self, glyphs, ufo):
-        for glyphs_name, value in self.flags:
-            if glyphs.get_custom_value(glyphs_name):
-                selection = ufo.get_info_value('openTypeOS2Selection')
-                if selection is None:
-                    selection = []
-                if value not in selection:
-                    selection.append(value)
-                ufo.set_info_value('openTypeOS2Selection', selection)
+        use_typo_metrics = glyphs.get_custom_value(self.flags[7])
+        has_wws_name = glyphs.get_custom_value(self.flags[8])
+        unsupported_bits = glyphs.get_custom_value(
+            "openTypeOS2SelectionUnsupportedBits"
+        )
+        if not use_typo_metrics and not has_wws_name and unsupported_bits is None:
+            return
+
+        selection_bits = []
+        if use_typo_metrics:
+            selection_bits.append(7)
+        if has_wws_name:
+            selection_bits.append(8)
+        if unsupported_bits:
+            selection_bits.extend(unsupported_bits)
+        ufo.set_info_value("openTypeOS2Selection", sorted(selection_bits))
 
 
 register(OS2SelectionParamHandler())
