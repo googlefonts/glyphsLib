@@ -106,6 +106,12 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     - Suffix is e.g. "case".
     """
 
+    # The OpenType feature file specification says it's 63, the AGL says it's 31. We
+    # settle on 63. makeotf uses 63 as explained by Read Roberts from Adobe in
+    # https://github.com/fontforge/fontforge/pull/2500#issuecomment-143263393
+    # (Sep 25, 2015).
+    MAX_GLYPH_NAME_LENGTH = 63
+
     def is_unicode_u_value(name):
         return name.startswith("u") and all(
             part_char in "0123456789ABCDEF" for part_char in name[1:]
@@ -126,7 +132,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
         return data.PRODUCTION_NAMES[glyph_name]
     if base_name in data.PRODUCTION_NAMES:
         final_production_name = data.PRODUCTION_NAMES[base_name] + dot + suffix
-        if len(final_production_name) > 31:
+        if len(final_production_name) > MAX_GLYPH_NAME_LENGTH:
             return None
         return final_production_name
 
@@ -142,7 +148,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     # If all parts are in the AGLFN list, the glyph name is our production
     # name already.
     if all(part in agl.AGL2UV for part in base_name_parts):
-        if len(glyph_name) > 31:
+        if len(glyph_name) > MAX_GLYPH_NAME_LENGTH:
             return None
         return glyph_name
 
@@ -195,7 +201,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     else:
         final_production_name = "_".join(production_names) + dot + suffix
 
-    if len(final_production_name) > 31:
+    if len(final_production_name) > MAX_GLYPH_NAME_LENGTH:
         return None
 
     return final_production_name
