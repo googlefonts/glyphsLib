@@ -258,7 +258,7 @@ ufo_info_spec = [
         # Corresponds to the OpenType OS/2 table selection field.
         # Note: Bits 0 (italic), 5 (bold) and 6 (regular) must not be set here.
         # These bits should be taken from the generic styleMapStyle attribute.
-        Field('openTypeOS2Selection', [8, 7]),
+        Field('openTypeOS2Selection', [7, 8]),
         # openTypeOS2VendorID string Four character identifier for the creator
         # of the font. Corresponds to the OpenType OS/2 table achVendID field.
         Field('openTypeOS2VendorID', 'EXTY'),
