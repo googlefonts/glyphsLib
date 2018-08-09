@@ -72,20 +72,22 @@ def get_glyph(glyph_name, data=glyphdata_generated):
 
     # Next, derive the actual characters from the production name, e.g.
     # "uni0414" -> "Д". Two caveats:
-    # 1. For some glyphs, Glyphs does not have a mapped character even when one 
+    # 1. For some glyphs, Glyphs does not have a mapped character even when one
     #    could be derived.
     # 2. For some others, Glyphs has a different idea than the agl module.
-    characters = None
+    unicode_characters = None
     if base_name not in data.MISSING_UNICODE_STRINGS:  # 1.
-        characters = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
-        if characters is None:
-            characters = agl.toUnicode(production_name) or None
+        unicode_characters = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
+        if unicode_characters is None:
+            unicode_characters = agl.toUnicode(production_name) or None
 
     # Lastly, generate the category in the sense of Glyph's
     # GSGlyphInfo.category and .subCategory.
-    category, sub_category = _get_category(base_name, characters, data)
+    category, sub_category = _get_category(base_name, unicode_characters, data)
 
-    return Glyph(glyph_name, production_name, characters, category, sub_category)
+    return Glyph(
+        glyph_name, production_name, unicode_characters, category, sub_category
+    )
 
 
 def _lookup_production_name(glyph_name, data=glyphdata_generated):
@@ -199,7 +201,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     return final_production_name
 
 
-def _get_unicode_category(character):
+def _get_unicode_category(unicode_characters):
     """Return the Unicode general category for a character (or the first
     character of a string).
 
@@ -210,15 +212,15 @@ def _get_unicode_category(character):
     thousand entries.
     """
 
-    if not character:
+    if not unicode_characters:
         return None
 
     if NARROW_PYTHON_BUILD:
-        utf32_str = character.encode("utf-32-be")
+        utf32_str = unicode_characters.encode("utf-32-be")
         nchars = len(utf32_str) // 4
         first_char = unichr(struct.unpack('>%dL' % nchars, utf32_str)[0])
     else:
-        first_char = character[0]
+        first_char = unicode_characters[0]
 
     return unicodedata.ucd_3_2_0.category(first_char)
 
