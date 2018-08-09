@@ -41,7 +41,7 @@ def to_ufo_master_attributes(self, source, master):
         ufo.info.postscriptStemSnapH = horizontal_stems
     if vertical_stems:
         ufo.info.postscriptStemSnapV = vertical_stems
-    if italic_angle:
+    if italic_angle is not None:
         ufo.info.italicAngle = italic_angle
 
     year = master.userData[UFO_YEAR_KEY]
