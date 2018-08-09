@@ -180,8 +180,9 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     if any("." in part for part in production_names[:-1]):
         return None
 
-    # If any production name starts with a "uni" there are none of the "uXXXXX" format,
-    # try to turn all parts into "uni" names and concatenate them.
+    # If any production name starts with a "uni" and there are none of the
+    # "uXXXXX" format, try to turn all parts into "uni" names and concatenate
+    # them.
     if not _character_outside_BMP and any(
         part.startswith("uni") for part in production_names
     ):
