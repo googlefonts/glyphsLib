@@ -71,7 +71,8 @@ def build_masters(filename,
                   family_name=None,
                   propagate_anchors=True,
                   minimize_glyphs_diffs=False,
-                  normalize_ufos=False):
+                  normalize_ufos=False,
+                  create_background_layers=False):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
 
@@ -105,7 +106,7 @@ def build_masters(filename,
     for source in designspace.sources:
         ufos.append(source.font)
 
-        if minimize_glyphs_diffs:
+        if create_background_layers:
             ufo_create_background_layer_for_all_glyphs(source.font)
 
         ufo_path = os.path.join(master_dir, source.filename)

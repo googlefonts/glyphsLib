@@ -88,6 +88,15 @@ def main(args=None):
             "differences due to spacing, reordering of keys, etc."
         ),
     )
+    group.add_argument(
+        "--create-background-layers",
+        action="store_true",
+        help=(
+            "Create background layers for all glyphs unless present, "
+            "this can help in a workflow with multiple tools that "
+            "may create background layers automatically."
+        ),
+    )
 
     parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
@@ -159,6 +168,7 @@ def glyphs2ufo(options):
         minimize_glyphs_diffs=options.no_preserve_glyphsapp_metadata,
         propagate_anchors=options.propagate_anchors,
         normalize_ufos=options.no_normalize_ufos,
+        create_background_layers=options.create_background_layers,
     )
 
 
