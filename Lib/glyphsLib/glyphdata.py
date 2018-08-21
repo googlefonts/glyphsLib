@@ -106,10 +106,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     - Suffix is e.g. "case".
     """
 
-    # The OpenType feature file specification says it's 63, the AGL says it's 31. We
-    # settle on 63. makeotf uses 63 as explained by Read Roberts from Adobe in
-    # https://github.com/fontforge/fontforge/pull/2500#issuecomment-143263393
-    # (Sep 25, 2015).
+    # The AGLFN has been amended to allow a maximum of 63 characters in a glyph name.
     MAX_GLYPH_NAME_LENGTH = 63
 
     def is_unicode_u_value(name):
