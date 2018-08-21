@@ -116,11 +116,14 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
         return name.startswith("u") and all(
             part_char in "0123456789ABCDEF" for part_char in name[1:]
         )
+    # First, look up the full glyph name in PRODUCTION_NAMES before looking at
+    # the AGL. This is necessary to correctly process glyphs like
+    # "A.blackCircled", which can be "misinterpreted" as a variant glyph and get
+    # looked up in the AGLFN.
+    if glyph_name in data.PRODUCTION_NAMES:  # e.g. ain_alefMaksura-ar.fina -> uniFD13
+        return data.PRODUCTION_NAMES[glyph_name]
 
     base_name, dot, suffix = glyph_name.partition(".")
-
-    # First, look up the full glyph name and base name in the AGLFN and in
-    # PRODUCTION_NAMES.
     if (
         glyph_name in agl.AGL2UV
         or base_name in agl.AGL2UV
@@ -128,8 +131,6 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     ):
         return glyph_name
 
-    if glyph_name in data.PRODUCTION_NAMES:  # e.g. ain_alefMaksura-ar.fina -> uniFD13
-        return data.PRODUCTION_NAMES[glyph_name]
     if base_name in data.PRODUCTION_NAMES:
         final_production_name = data.PRODUCTION_NAMES[base_name] + dot + suffix
         if len(final_production_name) > MAX_GLYPH_NAME_LENGTH:
