@@ -52,7 +52,7 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     # (e.g. "A-cy" -> "uni0410") so that e.g. PDF readers can map from names
     # to Unicode values. FontTool's agl module can turn this into the actual
     # character.
-    production_name = _lookup_production_name(glyph_name)
+    production_name = _lookup_production_name(glyph_name, data=data)
 
     # Some Glyphs files use production names instead of Glyph's "nice names".
     # We catch this here, so that we can return the same properties as if
