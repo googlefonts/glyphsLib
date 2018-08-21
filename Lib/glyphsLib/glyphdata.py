@@ -83,7 +83,7 @@ def get_glyph(glyph_name, data=glyphdata_generated):
 
     # Lastly, generate the category in the sense of Glyph's
     # GSGlyphInfo.category and .subCategory.
-    category, sub_category = _get_category(base_name, unicode_characters, data)
+    category, sub_category = _get_category(base_name, unicode_characters, data=data)
 
     return Glyph(
         glyph_name, production_name, unicode_characters, category, sub_category
