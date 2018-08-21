@@ -90,6 +90,12 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     )
 
 
+def _is_unicode_u_value(name):
+    return name.startswith("u") and all(
+        part_char in "0123456789ABCDEF" for part_char in name[1:]
+    )
+
+
 def _lookup_production_name(glyph_name, data=glyphdata_generated):
     """Return the production name for a glyph name from the GlyphsData.xml
     database according to the AGL specification.
@@ -109,10 +115,6 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     # The AGLFN has been amended to allow a maximum of 63 characters in a glyph name.
     MAX_GLYPH_NAME_LENGTH = 63
 
-    def is_unicode_u_value(name):
-        return name.startswith("u") and all(
-            part_char in "0123456789ABCDEF" for part_char in name[1:]
-        )
     # First, look up the full glyph name in PRODUCTION_NAMES before looking at
     # the AGL. This is necessary to correctly process glyphs like
     # "A.blackCircled", which can be "misinterpreted" as a variant glyph and get
@@ -162,7 +164,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
 
                 # Note if there are any characters outside the Unicode BMP, e.g.
                 # "u10FFF" or "u10FFFF". Do not catch e.g. "u013B" though.
-                if len(part_production_name) > 5 and is_unicode_u_value(
+                if len(part_production_name) > 5 and _is_unicode_u_value(
                     part_production_name
                 ):
                     _character_outside_BMP = True
@@ -189,7 +191,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
         for part in production_names:
             if part.startswith("uni"):
                 uni_names.append(part[3:])
-            elif len(part) == 5 and is_unicode_u_value(part):
+            elif len(part) == 5 and _is_unicode_u_value(part):
                 uni_names.append(part[1:])
             elif part in agl.AGL2UV:
                 uni_names.append("{:04X}".format(agl.AGL2UV[part]))
