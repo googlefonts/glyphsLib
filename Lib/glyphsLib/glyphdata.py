@@ -244,7 +244,7 @@ def _get_category(glyph_name, character, data=glyphdata_generated):
     # More exceptions.
     if glyph_name.endswith("-ko"):
         return ("Letter", "Syllable")
-    if glyph_name.endswith("-ethiopic") or glyph_name.endswith("-tifi"):
+    if glyph_name.endswith(("-ethiopic", "-tifi", "-kannada")):
         return ("Letter", None)
     if glyph_name.startswith("box"):
         return ("Symbol", "Geometry")
