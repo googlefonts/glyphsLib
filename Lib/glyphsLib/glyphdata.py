@@ -76,8 +76,8 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     #    could be derived.
     # 2. For some others, Glyphs has a different idea than the agl module.
     unicode_characters = None
-    if base_name not in data.MISSING_UNICODE_STRINGS:  # 1.
-        unicode_characters = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
+    if glyph_name not in data.MISSING_UNICODE_STRINGS:  # 1.
+        unicode_characters = data.IRREGULAR_UNICODE_STRINGS.get(glyph_name)  # 2.
         if unicode_characters is None:
             unicode_characters = agl.toUnicode(production_name) or None
 
