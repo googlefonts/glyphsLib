@@ -134,6 +134,7 @@ def build_categories(glyphs):
     for key, value in counts.items():
         cat, _count = value.most_common(1)[0]
         default_categories[key] = cat
+    default_categories[None] = ("Letter", None)
 
     # Find irregular categories. Whether it makes much sense for
     # Glyphs.app to disagree with Unicode about Unicode categories,
