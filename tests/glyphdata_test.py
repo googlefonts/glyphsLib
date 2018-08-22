@@ -96,6 +96,11 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("yen-bamum.phaseD"), ("Letter", None))
+        self.assertEqual(cat("two_one.circled"), ("Number", "Decimal Digit"))
+        self.assertEqual(cat("tthuu-kannada"), ("Letter", None))
+        self.assertEqual(cat("rakar-deva"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("ttha-kannada.below"), ("Mark", "Nonspacing"))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232
