@@ -54,7 +54,12 @@ def _to_ufo_kerning(self, ufo, kerning_data):
             ufo.kerning[left, right] = kerning_val
 
     seen = {}
-    for classname, glyph, is_left_class in reversed(class_glyph_pairs):
+    # Sort by the 3rd tuple member: `is_left_class`, so that pairs with
+    # a class on the right are seen first, and thus have priority when
+    # solving ambiguous cases, as per the UFO spec at:
+    # http://unifiedfontobject.org/versions/ufo3/kerning.plist/#exception-conflict-resolution
+    for classname, glyph, is_left_class in sorted(
+            class_glyph_pairs, key=lambda pair: pair[2]):
         _remove_rule_if_conflict(self, ufo, seen, classname, glyph,
                                  is_left_class)
 
@@ -92,7 +97,8 @@ def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
         del ufo.kerning[original_pair]
         for member in new_glyphs:
             pair = (member, glyph) if is_left_class else (glyph, member)
-            ufo.kerning[pair] = val
+            if pair not in ufo.kerning:
+                ufo.kerning[pair] = val
 
 
 def to_glyphs_kerning(self):

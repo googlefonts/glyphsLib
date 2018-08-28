@@ -535,3 +535,127 @@ def test_custom_stylemap_style_name():
     ufo, = to_ufos(font)
 
     assert ufo.info.styleMapStyleName == 'bold'
+
+
+def test_weird_kerning_roundtrip():
+    groups = {
+        'public.kern1.i': [
+            'i', 'dotlessi', 'iacute', 'icircumflex', 'idieresis', 'igrave',
+            'imacron', 'iogonek', 'itilde', 'f_i', 'f_f_i', 'fi', 'ffi'
+        ],
+        'public.kern2.i': [
+            'i', 'dotlessi', 'iacute', 'icircumflex', 'idieresis', 'igrave',
+            'ij', 'imacron', 'iogonek', 'itilde', 'dotlessij', 'ijacute'
+        ]
+    }
+    kerning = {
+        ('icircumflex', 'public.kern2.i'): 20,
+        ('idieresis', 'idieresis'): 125,
+        ('idieresis', 'public.kern2.i'): 35,
+        ('itilde', 'public.kern2.i'): 10,
+        ('public.kern1.i', 'icircumflex'): 15,
+        ('public.kern1.i', 'idieresis'): 40,
+        ('public.kern1.i', 'itilde'): 10
+    }
+    glyphs = sorted(set([g for glyphs in groups.values() for g in glyphs]))
+
+    ufo = defcon.Font()
+    for glyph in glyphs:
+        ufo.newGlyph(glyph)
+    for k, v in groups.items():
+        ufo.groups[k] = v
+    for k, v in kerning.items():
+        ufo.kerning[k] = v
+
+    font = to_glyphs([ufo])
+    ufo, = to_ufos(font)
+
+    # At least the kerning should be equivalent
+    for left in glyphs:
+        for right in glyphs:
+            old = lookupKerningValue((left, right), kerning, groups)
+            new = lookupKerningValue((left, right), ufo.kerning, ufo.groups)
+            assert old == new
+
+    # FIXME: but also it should probably stay the same to avoid git diffs?
+    # assert ufo.groups == groups
+    # assert ufo.kerning == kerning
+
+
+# Copy-pasted from http://unifiedfontobject.org/versions/ufo3/kerning.plist/
+def lookupKerningValue(pair, kerning, groups, fallback=0):
+    """
+    Note: This expects kerning to be a flat dictionary
+    of kerning pairs, not the nested structure used
+    in kerning.plist.
+
+    >>> groups = {
+    ...     "public.kern1.O" : ["O", "D", "Q"],
+    ...     "public.kern2.E" : ["E", "F"]
+    ... }
+    >>> kerning = {
+    ...     ("public.kern1.O", "public.kern2.E") : -100,
+    ...     ("public.kern1.O", "F") : -200,
+    ...     ("D", "F") : -300
+    ... }
+    >>> lookupKerningValue(("D", "F"), kerning, groups)
+    -300
+    >>> lookupKerningValue(("O", "F"), kerning, groups)
+    -200
+    >>> lookupKerningValue(("O", "E"), kerning, groups)
+    -100
+    >>> lookupKerningValue(("O", "O"), kerning, groups)
+    0
+    >>> lookupKerningValue(("E", "E"), kerning, groups)
+    0
+    >>> lookupKerningValue(("E", "O"), kerning, groups)
+    0
+    >>> lookupKerningValue(("X", "X"), kerning, groups)
+    0
+    >>> lookupKerningValue(("public.kern1.O", "public.kern2.E"),
+    ...     kerning, groups)
+    -100
+    >>> lookupKerningValue(("public.kern1.O", "F"), kerning, groups)
+    -200
+    >>> lookupKerningValue(("O", "public.kern2.E"), kerning, groups)
+    -100
+    >>> lookupKerningValue(("public.kern1.X", "public.kern2.X"), kerning, groups)
+    0
+    """
+    # quickly check to see if the pair is in the kerning dictionary
+    if pair in kerning:
+        return kerning[pair]
+    # get group names and make sure first and second are glyph names
+    first, second = pair
+    firstGroup = secondGroup = None
+    if first.startswith("public.kern1."):
+        firstGroup = first
+        first = None
+    else:
+        for group, groupMembers in groups.items():
+            if group.startswith("public.kern1."):
+                if first in groupMembers:
+                    firstGroup = group
+                    break
+    if second.startswith("public.kern2."):
+        secondGroup = second
+        second = None
+    else:
+        for group, groupMembers in groups.items():
+            if group.startswith("public.kern2."):
+                if second in groupMembers:
+                    secondGroup = group
+                    break
+    # make an ordered list of pairs to look up
+    pairs = [
+        (first, second),
+        (first, secondGroup),
+        (firstGroup, second),
+        (firstGroup, secondGroup)
+    ]
+    # look up the pairs and return any matches
+    for pair in pairs:
+        if pair in kerning:
+            return kerning[pair]
+    # use the fallback value
+    return fallback
