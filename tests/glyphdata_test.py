@@ -58,6 +58,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("a_a_dieresiscomb"), "uni006100610308")
         self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
         self.assertEqual(prod("vaphalaa-malayalam"), "uni0D030D35.1")
+        self.assertEqual(prod("A.blackCircled"), "u1F150")
 
     def test_unicode(self):
         uni = lambda n: get_glyph(n).unicode
@@ -95,6 +96,11 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("yen-bamum.phaseD"), ("Letter", None))
+        self.assertEqual(cat("two_one.circled"), ("Number", "Decimal Digit"))
+        self.assertEqual(cat("tthuu-kannada"), ("Letter", None))
+        self.assertEqual(cat("rakar-deva"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("ttha-kannada.below"), ("Mark", "Nonspacing"))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232

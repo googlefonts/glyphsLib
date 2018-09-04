@@ -52,7 +52,7 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     # (e.g. "A-cy" -> "uni0410") so that e.g. PDF readers can map from names
     # to Unicode values. FontTool's agl module can turn this into the actual
     # character.
-    production_name = _lookup_production_name(glyph_name)
+    production_name = _lookup_production_name(glyph_name, data=data)
 
     # Some Glyphs files use production names instead of Glyph's "nice names".
     # We catch this here, so that we can return the same properties as if
@@ -76,17 +76,32 @@ def get_glyph(glyph_name, data=glyphdata_generated):
     #    could be derived.
     # 2. For some others, Glyphs has a different idea than the agl module.
     unicode_characters = None
-    if base_name not in data.MISSING_UNICODE_STRINGS:  # 1.
-        unicode_characters = data.IRREGULAR_UNICODE_STRINGS.get(base_name)  # 2.
+    if glyph_name not in data.MISSING_UNICODE_STRINGS:  # 1.
+        unicode_characters = data.IRREGULAR_UNICODE_STRINGS.get(glyph_name)  # 2.
         if unicode_characters is None:
             unicode_characters = agl.toUnicode(production_name) or None
 
     # Lastly, generate the category in the sense of Glyph's
-    # GSGlyphInfo.category and .subCategory.
-    category, sub_category = _get_category(base_name, unicode_characters, data)
+    # GSGlyphInfo.category and .subCategory. As some entries have a production name, 
+    # but no Unicode value, we need to generate Unicode characters for the categorizer 
+    # to get the correct result.
+    if production_name:
+        category, sub_category = _get_category(
+            glyph_name, agl.toUnicode(production_name), data=data
+        )
+    else:
+        category, sub_category = _get_category(
+            glyph_name, unicode_characters, data=data
+        )
 
     return Glyph(
         glyph_name, production_name, unicode_characters, category, sub_category
+    )
+
+
+def _is_unicode_u_value(name):
+    return name.startswith("u") and all(
+        part_char in "0123456789ABCDEF" for part_char in name[1:]
     )
 
 
@@ -106,21 +121,17 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     - Suffix is e.g. "case".
     """
 
-    # The OpenType feature file specification says it's 63, the AGL says it's 31. We
-    # settle on 63. makeotf uses 63 as explained by Read Roberts from Adobe in
-    # https://github.com/fontforge/fontforge/pull/2500#issuecomment-143263393
-    # (Sep 25, 2015).
+    # The AGLFN has been amended to allow a maximum of 63 characters in a glyph name.
     MAX_GLYPH_NAME_LENGTH = 63
 
-    def is_unicode_u_value(name):
-        return name.startswith("u") and all(
-            part_char in "0123456789ABCDEF" for part_char in name[1:]
-        )
+    # First, look up the full glyph name in PRODUCTION_NAMES before looking at
+    # the AGL. This is necessary to correctly process glyphs like
+    # "A.blackCircled", which can be "misinterpreted" as a variant glyph and get
+    # looked up in the AGLFN.
+    if glyph_name in data.PRODUCTION_NAMES:  # e.g. ain_alefMaksura-ar.fina -> uniFD13
+        return data.PRODUCTION_NAMES[glyph_name]
 
     base_name, dot, suffix = glyph_name.partition(".")
-
-    # First, look up the full glyph name and base name in the AGLFN and in
-    # PRODUCTION_NAMES.
     if (
         glyph_name in agl.AGL2UV
         or base_name in agl.AGL2UV
@@ -128,8 +139,6 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
     ):
         return glyph_name
 
-    if glyph_name in data.PRODUCTION_NAMES:  # e.g. ain_alefMaksura-ar.fina -> uniFD13
-        return data.PRODUCTION_NAMES[glyph_name]
     if base_name in data.PRODUCTION_NAMES:
         final_production_name = data.PRODUCTION_NAMES[base_name] + dot + suffix
         if len(final_production_name) > MAX_GLYPH_NAME_LENGTH:
@@ -164,7 +173,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
 
                 # Note if there are any characters outside the Unicode BMP, e.g.
                 # "u10FFF" or "u10FFFF". Do not catch e.g. "u013B" though.
-                if len(part_production_name) > 5 and is_unicode_u_value(
+                if len(part_production_name) > 5 and _is_unicode_u_value(
                     part_production_name
                 ):
                     _character_outside_BMP = True
@@ -191,7 +200,7 @@ def _lookup_production_name(glyph_name, data=glyphdata_generated):
         for part in production_names:
             if part.startswith("uni"):
                 uni_names.append(part[3:])
-            elif len(part) == 5 and is_unicode_u_value(part):
+            elif len(part) == 5 and _is_unicode_u_value(part):
                 uni_names.append(part[1:])
             elif part in agl.AGL2UV:
                 uni_names.append("{:04X}".format(agl.AGL2UV[part]))
@@ -244,7 +253,7 @@ def _get_category(glyph_name, character, data=glyphdata_generated):
     # More exceptions.
     if glyph_name.endswith("-ko"):
         return ("Letter", "Syllable")
-    if glyph_name.endswith("-ethiopic") or glyph_name.endswith("-tifi"):
+    if glyph_name.endswith(("-ethiopic", "-tifi", "-kannada")):
         return ("Letter", None)
     if glyph_name.startswith("box"):
         return ("Symbol", "Geometry")
