@@ -82,8 +82,17 @@ def get_glyph(glyph_name, data=glyphdata_generated):
             unicode_characters = agl.toUnicode(production_name) or None
 
     # Lastly, generate the category in the sense of Glyph's
-    # GSGlyphInfo.category and .subCategory.
-    category, sub_category = _get_category(glyph_name, unicode_characters, data=data)
+    # GSGlyphInfo.category and .subCategory. As some entries have a production name, 
+    # but no Unicode value, we need to generate Unicode characters for the categorizer 
+    # to get the correct result.
+    if production_name:
+        category, sub_category = _get_category(
+            glyph_name, agl.toUnicode(production_name), data=data
+        )
+    else:
+        category, sub_category = _get_category(
+            glyph_name, unicode_characters, data=data
+        )
 
     return Glyph(
         glyph_name, production_name, unicode_characters, category, sub_category
