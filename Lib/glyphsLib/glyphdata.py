@@ -18,20 +18,52 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import collections
 import os
-import struct
-import unicodedata
 import re
+import unicodedata
 import xml.etree.ElementTree
 
-import glyphsLib
 import fontTools.agl
+
+import glyphsLib
 
 # FIXME: (jany) Shouldn't this be the class GSGlyphInfo?
 Glyph = collections.namedtuple(
     "Glyph", "name, production_name, unicode, category, subCategory"
 )
 
-GLYPHDATA = None
+GLYPHSDATA = None
+
+
+class GlyphsData:
+    __slots__ = ["names", "alternative_names", "production_names"]
+
+    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping):
+        self.names = name_mapping
+        self.alternative_names = alt_name_mapping
+        self.production_names = production_name_mapping
+
+    @classmethod
+    def from_files(cls, *glyphdata_files):
+        name_mapping = {}
+        alt_name_mapping = {}
+        production_name_mapping = {}
+
+        for glyphdata_file in glyphdata_files:
+            glyph_data = xml.etree.ElementTree.parse(glyphdata_file).getroot()
+            for glyph in glyph_data:
+                glyph_name = glyph.attrib["name"]
+                glyph_name_alternatives = glyph.attrib.get("altNames")
+                glyph_name_production = glyph.attrib.get("production")
+
+                name_mapping[glyph_name] = glyph.attrib
+                if glyph_name_alternatives:
+                    alternatives = glyph_name_alternatives.replace(" ", "").split(",")
+                    for glyph_name_alternative in alternatives:
+                        alt_name_mapping[glyph_name_alternative] = glyph.attrib
+                if glyph_name_production:
+                    production_name_mapping[glyph_name_production] = glyph.attrib
+
+        return cls(name_mapping, alt_name_mapping, production_name_mapping)
 
 
 def get_glyph(glyph_name):
@@ -41,17 +73,18 @@ def get_glyph(glyph_name):
     The information is derived from an included copy of GlyphData.xml,
     going purely by the glyph name.
     """
-    global GLYPHDATA
+    global GLYPHSDATA
 
-    if GLYPHDATA is None:
-        GLYPHDATA = xml.etree.ElementTree.parse(
+    if GLYPHSDATA is None:
+        GLYPHSDATA = GlyphsData.from_files(
             os.path.join(os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml")
-        ).getroot()
+        )
 
     attributes = (
-        _find_in_data(name=glyph_name)
-        or _find_in_data(altNames=glyph_name)
-        or _find_in_data(production=glyph_name)
+        GLYPHSDATA.names.get(glyph_name)
+        or GLYPHSDATA.alternative_names.get(glyph_name)
+        or GLYPHSDATA.production_names.get(glyph_name)
+        or {}
     )
 
     production_name = attributes.get("production") or _construct_production_name(
@@ -60,9 +93,10 @@ def get_glyph(glyph_name):
     unicode_value = attributes.get("unicode")
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
+
     if category is None:
         base_name = glyph_name.split(".", 1)[0]
-        base_attribute = _find_in_data(name=base_name)
+        base_attribute = GLYPHSDATA.names.get(base_name) or {}
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
 
@@ -74,17 +108,6 @@ def get_glyph(glyph_name):
             )
 
     return Glyph(glyph_name, production_name, unicode_value, category, sub_category)
-
-
-def _find_in_data(**kwargs):
-    if len(kwargs) > 1:
-        raise ValueError("Only pass in one keyword argument.")
-
-    attribute, value = tuple(kwargs.items())[0]
-    entry = GLYPHDATA.find("./glyph/[@{}='{}']".format(attribute, value))
-    if entry is None:
-        return {}
-    return entry.attrib
 
 
 def _agl_compliant_name(glyph_name):
@@ -161,9 +184,10 @@ def _construct_production_name(glyph_name):
 
     base_name, dot, suffix = glyph_name.partition(".")
     glyphinfo = (
-        _find_in_data(name=base_name)
-        or _find_in_data(altNames=base_name)
-        or _find_in_data(production=base_name)
+        GLYPHSDATA.names.get(base_name)
+        or GLYPHSDATA.alternative_names.get(base_name)
+        or GLYPHSDATA.production_names.get(base_name)
+        or {}
     )
     if glyphinfo and glyphinfo.get("production"):
         return glyphinfo["production"] + dot + suffix
@@ -189,7 +213,7 @@ def _construct_production_name(glyph_name):
         if part in fontTools.agl.AGL2UV:
             production_names.append(part)
         else:
-            part_entry = _find_in_data(name=part)
+            part_entry = GLYPHSDATA.names.get(part) or {}
             part_production_name = part_entry.get("production")
             if part_production_name:
                 production_names.append(part_production_name)
