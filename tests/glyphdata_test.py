@@ -14,10 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
-from glyphsLib.glyphdata import get_glyph, _lookup_production_name
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import unittest
+
+from glyphsLib.glyphdata import get_glyph
 
 
 class GlyphDataTest(unittest.TestCase):
