@@ -35,8 +35,8 @@ import defcon
 
 
 def write_to_lines(glyphs_object):
-    """
-    Use the Writer to write the given object to a UnicodeIO.
+    """Use the Writer to write the given object to a UnicodeIO.
+
     Return an array of lines ready for diffing.
     """
     string = UnicodeIO()
@@ -49,13 +49,17 @@ class AssertLinesEqual(object):
     def assertLinesEqual(self, expected, actual, message):
         if actual != expected:
             if len(actual) < len(expected):
-                sys.stderr.write(dedent("""\
+                sys.stderr.write(
+                    dedent(
+                        """\
                     WARNING: the actual text is shorter that the expected text.
                              Some information may be LOST!
-                    """))
+                    """
+                    )
+                )
             for line in difflib.unified_diff(
-                    expected, actual, fromfile="<expected>",
-                    tofile="<actual>"):
+                expected, actual, fromfile="<expected>", tofile="<actual>"
+            ):
                 if not line.endswith("\n"):
                     line += "\n"
                 sys.stderr.write(line)
@@ -72,40 +76,56 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
         # Roundtrip again to check idempotence
         font = glyphsLib.loads("\n".join(actual))
         actual_idempotent = write_to_lines(font)
-        with open('expected.txt', 'w') as f:
-            f.write('\n'.join(expected))
-        with open('actual.txt', 'w') as f:
-            f.write('\n'.join(actual))
-        with open('actual_indempotent.txt', 'w') as f:
-            f.write('\n'.join(actual_idempotent))
+        with open("expected.txt", "w") as f:
+            f.write("\n".join(expected))
+        with open("actual.txt", "w") as f:
+            f.write("\n".join(actual))
+        with open("actual_indempotent.txt", "w") as f:
+            f.write("\n".join(actual_idempotent))
         # Assert idempotence first, because if that fails it's a big issue
         self.assertLinesEqual(
-            actual, actual_idempotent,
-            "The parser/writer should be idempotent. BIG PROBLEM!")
+            actual,
+            actual_idempotent,
+            "The parser/writer should be idempotent. BIG PROBLEM!",
+        )
         self.assertLinesEqual(
-            expected, actual,
-            "The writer should output exactly what the parser read")
+            expected, actual, "The writer should output exactly what the parser read"
+        )
 
 
 class AssertUFORoundtrip(AssertLinesEqual):
-    """Check .glyphs -> UFOs + designspace -> .glyphs"""
+    """Check .glyphs -> UFOs + designspace -> .glyphs."""
+
     def _normalize(self, font):
         # Order the kerning OrderedDict alphabetically
         # (because the ordering from Glyphs.app is random and that would be
         # a bit silly to store it only for the purpose of nicer diffs in tests)
-        font.kerning = OrderedDict(sorted(map(
-            lambda i: (i[0], OrderedDict(sorted(map(
-                lambda j: (j[0], OrderedDict(sorted(j[1].items()))),
-                i[1].items())
-            ))),
-            font.kerning.items())))
+        font.kerning = OrderedDict(
+            sorted(
+                map(
+                    lambda i: (
+                        i[0],
+                        OrderedDict(
+                            sorted(
+                                map(
+                                    lambda j: (j[0], OrderedDict(sorted(j[1].items()))),
+                                    i[1].items(),
+                                )
+                            )
+                        ),
+                    ),
+                    font.kerning.items(),
+                )
+            )
+        )
 
     def assertUFORoundtrip(self, font):
         self._normalize(font)
         expected = write_to_lines(font)
         # Don't propagate anchors when intending to round-trip
         designspace = to_designspace(
-            font, propagate_anchors=False, minimize_glyphs_diffs=True)
+            font, propagate_anchors=False, minimize_glyphs_diffs=True
+        )
 
         # Check that round-tripping in memory is the same as writing on disk
         roundtrip_in_mem = to_glyphs(designspace)
@@ -113,7 +133,7 @@ class AssertUFORoundtrip(AssertLinesEqual):
         actual_in_mem = write_to_lines(roundtrip_in_mem)
 
         directory = tempfile.mkdtemp()
-        path = os.path.join(directory, font.familyName + '.designspace')
+        path = os.path.join(directory, font.familyName + ".designspace")
         write_designspace_and_UFOs(designspace, path)
         designspace_roundtrip = DesignSpaceDocument()
         designspace_roundtrip.read(path)
@@ -121,18 +141,20 @@ class AssertUFORoundtrip(AssertLinesEqual):
         self._normalize(roundtrip)
         actual = write_to_lines(roundtrip)
 
-        with open('expected.txt', 'w') as f:
-            f.write('\n'.join(expected))
-        with open('actual_in_mem.txt', 'w') as f:
-            f.write('\n'.join(actual_in_mem))
-        with open('actual.txt', 'w') as f:
-            f.write('\n'.join(actual))
+        with open("expected.txt", "w") as f:
+            f.write("\n".join(expected))
+        with open("actual_in_mem.txt", "w") as f:
+            f.write("\n".join(actual_in_mem))
+        with open("actual.txt", "w") as f:
+            f.write("\n".join(actual))
         self.assertLinesEqual(
-            actual_in_mem, actual,
-            "The round-trip in memory or written to disk should be equivalent")
+            actual_in_mem,
+            actual,
+            "The round-trip in memory or written to disk should be equivalent",
+        )
         self.assertLinesEqual(
-            expected, actual,
-            "The font should not be modified by the roundtrip")
+            expected, actual, "The font should not be modified by the roundtrip"
+        )
 
 
 def write_designspace_and_UFOs(designspace, path):
@@ -147,8 +169,7 @@ def write_designspace_and_UFOs(designspace, path):
 
 def deboolized(object):
     if isinstance(object, OrderedDict):
-        return OrderedDict([
-            (key, deboolized(value)) for key, value in object.items()])
+        return OrderedDict([(key, deboolized(value)) for key, value in object.items()])
     if isinstance(object, dict):
         return {key: deboolized(value) for key, value in object.items()}
     if isinstance(object, list):
@@ -170,8 +191,7 @@ def deboolize(lib):
 
 def normalize_ufo_lib(path):
     """Go through each `lib` element recursively and transform `bools` into
-    `int` because that's what's going to happen on round-trip with Glyphs.
-    """
+    `int` because that's what's going to happen on round-trip with Glyphs."""
     font = defcon.Font(path)
     deboolize(font.lib)
     for layer in font.layers:
@@ -182,13 +202,13 @@ def normalize_ufo_lib(path):
 
 
 class AssertDesignspaceRoundtrip(object):
-    """Check UFOs + designspace -> .glyphs -> UFOs + designspace"""
-    def assertDesignspacesEqual(self, expected, actual, message=''):
+    """Check UFOs + designspace -> .glyphs -> UFOs + designspace."""
+
+    def assertDesignspacesEqual(self, expected, actual, message=""):
         directory = tempfile.mkdtemp()
 
         def git(*args):
-            return subprocess.check_output(["git", "-C", directory] +
-                                           list(args))
+            return subprocess.check_output(["git", "-C", directory] + list(args))
 
         def clean_git_folder():
             with os.scandir(directory) as entries:
@@ -199,7 +219,7 @@ class AssertDesignspaceRoundtrip(object):
                         shutil.rmtree(entry.path)
 
         # Strategy: init a git repo, dump expected, commit, dump actual, diff
-        designspace_filename = os.path.join(directory, 'test.designspace')
+        designspace_filename = os.path.join(directory, "test.designspace")
         git("init")
         write_designspace_and_UFOs(expected, designspace_filename)
         for source in expected.sources:
@@ -215,8 +235,9 @@ class AssertDesignspaceRoundtrip(object):
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         git("add", ".")
         status = git("status")
-        diff = git("diff", "--staged",
-                   "--src-prefix= original/", "--dst-prefix=roundtrip/")
+        diff = git(
+            "diff", "--staged", "--src-prefix= original/", "--dst-prefix=roundtrip/"
+        )
 
         if diff:
             sys.stderr.write(status)
@@ -231,27 +252,29 @@ class AssertDesignspaceRoundtrip(object):
         # Check that round-tripping in memory is the same as writing on disk
         roundtrip_in_mem = to_designspace(font, propagate_anchors=False)
 
-        tmpfont_path = os.path.join(directory, 'font.glyphs')
+        tmpfont_path = os.path.join(directory, "font.glyphs")
         font.save(tmpfont_path)
         font_rt = classes.GSFont(tmpfont_path)
         roundtrip = to_designspace(font_rt, propagate_anchors=False)
 
-        font.save('intermediary.glyphs')
+        font.save("intermediary.glyphs")
 
-        write_designspace_and_UFOs(designspace, 'expected/test.designspace')
+        write_designspace_and_UFOs(designspace, "expected/test.designspace")
         for source in designspace.sources:
             normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
-        write_designspace_and_UFOs(roundtrip, 'actual/test.designspace')
+        write_designspace_and_UFOs(roundtrip, "actual/test.designspace")
         for source in roundtrip.sources:
             normalize_ufo_lib(source.path)
             normalizeUFO(source.path, floatPrecision=3, writeModTimes=False)
         self.assertDesignspacesEqual(
-            roundtrip_in_mem, roundtrip,
-            "The round-trip in memory or written to disk should be equivalent")
+            roundtrip_in_mem,
+            roundtrip,
+            "The round-trip in memory or written to disk should be equivalent",
+        )
         self.assertDesignspacesEqual(
-            designspace, roundtrip,
-            "The font should not be modified by the roundtrip")
+            designspace, roundtrip, "The font should not be modified by the roundtrip"
+        )
 
 
 APP_VERSION_RE = re.compile('\\.appVersion = "(.*)"')
@@ -260,7 +283,7 @@ APP_VERSION_RE = re.compile('\\.appVersion = "(.*)"')
 def glyphs_files(directory):
     for root, _dirs, files in os.walk(directory):
         for filename in files:
-            if filename.endswith('.glyphs'):
+            if filename.endswith(".glyphs"):
                 yield os.path.join(root, filename)
 
 
@@ -276,5 +299,5 @@ def app_version(filename):
 def designspace_files(directory):
     for root, _dirs, files in os.walk(directory):
         for filename in files:
-            if filename.endswith('.designspace'):
+            if filename.endswith(".designspace"):
                 yield os.path.join(root, filename)

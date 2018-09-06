@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 from fontTools.misc.py23 import tounicode, unichr, unicode
 
 from collections import OrderedDict
@@ -31,17 +30,17 @@ class Parser(object):
     """Parses Python dictionaries from Glyphs source files."""
 
     value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
-    unicode_list_re = re.compile(r'\s*([0-9a-fA-F]+(,[0-9a-fA-F]+)+)')
-    start_dict_re = re.compile(r'\s*{')
-    end_dict_re = re.compile(r'\s*}')
-    dict_delim_re = re.compile(r'\s*;')
-    start_list_re = re.compile(r'\s*\(')
-    end_list_re = re.compile(r'\s*\)')
-    list_delim_re = re.compile(r'\s*,')
-    attr_re = re.compile(r'\s*%s\s*=' % value_re, re.DOTALL)
-    value_re = re.compile(r'\s*%s' % value_re, re.DOTALL)
-    hex_re = re.compile(r'\s*<([A-Fa-f0-9]+)>', re.DOTALL)
-    bytes_re = re.compile(r'\s*<([A-Za-z0-9+/=]+)>', re.DOTALL)
+    unicode_list_re = re.compile(r"\s*([0-9a-fA-F]+(,[0-9a-fA-F]+)+)")
+    start_dict_re = re.compile(r"\s*{")
+    end_dict_re = re.compile(r"\s*}")
+    dict_delim_re = re.compile(r"\s*;")
+    start_list_re = re.compile(r"\s*\(")
+    end_list_re = re.compile(r"\s*\)")
+    list_delim_re = re.compile(r"\s*,")
+    attr_re = re.compile(r"\s*%s\s*=" % value_re, re.DOTALL)
+    value_re = re.compile(r"\s*%s" % value_re, re.DOTALL)
+    hex_re = re.compile(r"\s*<([A-Fa-f0-9]+)>", re.DOTALL)
+    bytes_re = re.compile(r"\s*<([A-Za-z0-9+/=]+)>", re.DOTALL)
 
     def __init__(self, current_type=OrderedDict):
         self.current_type = current_type
@@ -49,28 +48,28 @@ class Parser(object):
     def parse(self, text):
         """Do the parsing."""
 
-        text = tounicode(text, encoding='utf-8')
+        text = tounicode(text, encoding="utf-8")
         result, i = self._parse(text, 0)
         if text[i:].strip():
-            self._fail('Unexpected trailing content', text, i)
+            self._fail("Unexpected trailing content", text, i)
         return result
 
     def parse_into_object(self, res, text):
         """Parse data into an existing GSFont instance."""
 
-        text = tounicode(text, encoding='utf-8')
+        text = tounicode(text, encoding="utf-8")
 
         m = self.start_dict_re.match(text, 0)
         if m:
             i = self._parse_dict_into_object(res, text, 1)
         else:
-            self._fail('not correct file format', text, i)
+            self._fail("not correct file format", text, i)
         if text[i:].strip():
-            self._fail('Unexpected trailing content', text, i)
+            self._fail("Unexpected trailing content", text, i)
         return i
 
     def _guess_current_type(self, parsed, value):
-        if value.lower() in ('infinity', 'inf', 'nan'):
+        if value.lower() in ("infinity", "inf", "nan"):
             # Those values would be accepted by `float()`
             # But `infinity` is a glyph name
             return unicode
@@ -118,8 +117,7 @@ class Parser(object):
                 value = reader.read(m.group(1))
                 return value, i
 
-            if (self.current_type is None
-                    or self.current_type in (dict, OrderedDict)):
+            if self.current_type is None or self.current_type in (dict, OrderedDict):
                 self.current_type = self._guess_current_type(parsed, value)
 
             if self.current_type == bool:
@@ -133,12 +131,13 @@ class Parser(object):
         m = self.hex_re.match(text, i)
         if m:
             from glyphsLib.types import BinaryData
+
             parsed, value = m.group(0), m.group(1)
             decoded = BinaryData.fromHex(value)
             i += len(parsed)
             return decoded, i
         else:
-            self._fail('Unexpected content', text, i)
+            self._fail("Unexpected content", text, i)
 
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
@@ -160,7 +159,7 @@ class Parser(object):
             old_current_type = self.current_type
             m = self.attr_re.match(text, i)
             if not m:
-                self._fail('Unexpected dictionary content', text, i)
+                self._fail("Unexpected dictionary content", text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
             if hasattr(res, "classForName"):
                 self.current_type = res.classForName(name)
@@ -179,8 +178,7 @@ class Parser(object):
 
             m = self.dict_delim_re.match(text, i)
             if not m:
-                self._fail('Missing delimiter in dictionary before content',
-                           text, i)
+                self._fail("Missing delimiter in dictionary before content", text, i)
             parsed = m.group(0)
             i += len(parsed)
 
@@ -205,8 +203,7 @@ class Parser(object):
             if not end_match:
                 m = self.list_delim_re.match(text, i)
                 if not m:
-                    self._fail('Missing delimiter in list before content',
-                               text, i)
+                    self._fail("Missing delimiter in list before content", text, i)
                 parsed = m.group(0)
                 i += len(parsed)
             self.current_type = old_current_type
@@ -217,7 +214,7 @@ class Parser(object):
 
     # glyphs only supports octal escapes between \000 and \077 and hexadecimal
     # escapes between \U0000 and \UFFFF
-    _unescape_re = re.compile(r'(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4})')
+    _unescape_re = re.compile(r"(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4})")
 
     @staticmethod
     def _unescape_fn(m):
@@ -226,8 +223,9 @@ class Parser(object):
         return unichr(int(m.group(2)[2:], 16))
 
     def _trim_value(self, value):
-        """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.
+        """Trim double quotes off the ends of a value, un-escaping inner double
+        quotes.
+
         Also convert escapes to unicode.
         """
 
@@ -239,23 +237,25 @@ class Parser(object):
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
-        raise ValueError('%s:\n%s' % (message, text[i:i + 79]))
+        raise ValueError("{}:\n{}".format(message, text[i : i + 79]))
 
 
 def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return a GSFont object.
+    """Read a .glyphs file.
+
+    'fp' should be (readable) file object. Return a GSFont object.
     """
     return loads(fp.read())
 
 
 def loads(s):
-    """Read a .glyphs file from a (unicode) str object, or from
-    a UTF-8 encoded bytes object.
+    """Read a .glyphs file from a (unicode) str object, or from a UTF-8 encoded
+    bytes object.
+
     Return a GSFont object.
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)
-    logger.info('Parsing .glyphs file')
+    logger.info("Parsing .glyphs file")
     data = p.parse(s)
     return data
 
@@ -263,8 +263,8 @@ def loads(s):
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
-        glyphsLib.dump(load(open(arg, 'r', encoding='utf-8')), sys.stdout)
+        glyphsLib.dump(load(open(arg, "r", encoding="utf-8")), sys.stdout)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(sys.argv[1:])

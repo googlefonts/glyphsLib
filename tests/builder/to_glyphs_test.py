@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import pytest
 import datetime
@@ -36,19 +35,19 @@ from fontTools.designspaceLib import DesignSpaceDocument, AxisDescriptor
 @pytest.mark.skip
 def test_anchors_with_same_name_correct_order_rtl():
     ufo = defcon.Font()
-    g = ufo.newGlyph('laam_alif')
+    g = ufo.newGlyph("laam_alif")
     # Append the anchors in the correct order
-    g.appendAnchor(dict(x=50, y=600, name='top'))
-    g.appendAnchor(dict(x=250, y=600, name='top'))
+    g.appendAnchor(dict(x=50, y=600, name="top"))
+    g.appendAnchor(dict(x=250, y=600, name="top"))
 
     font = to_glyphs([ufo])
 
-    top1, top2 = font.glyphs['laam_alif'].layers[0].anchors
+    top1, top2 = font.glyphs["laam_alif"].layers[0].anchors
 
-    assert top1.name == 'top_1'
+    assert top1.name == "top_1"
     assert top1.x == 50
     assert top1.y == 600
-    assert top2.name == 'top_2'
+    assert top2.name == "top_2"
     assert top2.x == 250
     assert top2.y == 600
 
@@ -56,20 +55,20 @@ def test_anchors_with_same_name_correct_order_rtl():
 @pytest.mark.skip
 def test_anchors_with_same_name_wrong_order_rtl():
     ufo = defcon.Font()
-    g = ufo.newGlyph('laam_alif')
+    g = ufo.newGlyph("laam_alif")
     # Append the anchors in the wrong order
-    g.appendAnchor(dict(x=250, y=600, name='top'))
-    g.appendAnchor(dict(x=50, y=600, name='top'))
+    g.appendAnchor(dict(x=250, y=600, name="top"))
+    g.appendAnchor(dict(x=50, y=600, name="top"))
 
     font = to_glyphs([ufo])
 
-    top1, top2 = font.glyphs['laam_alif'].layers[0].anchors
+    top1, top2 = font.glyphs["laam_alif"].layers[0].anchors
 
     # FIXME: (jany) think hard about the ordering and LTR
-    assert top1.name == 'top_1'
+    assert top1.name == "top_1"
     assert top1.x == 50
     assert top1.y == 600
-    assert top2.name == 'top_2'
+    assert top2.name == "top_2"
     assert top2.x == 250
     assert top2.y == 600
 
@@ -77,20 +76,20 @@ def test_anchors_with_same_name_wrong_order_rtl():
 @pytest.mark.skip
 def test_anchors_with_same_name_correct_order_ltr():
     ufo = defcon.Font()
-    g = ufo.newGlyph('laam_alif')
+    g = ufo.newGlyph("laam_alif")
     # Append the anchors in the correct order
-    g.appendAnchor(dict(x=50, y=600, name='top'))
-    g.appendAnchor(dict(x=250, y=600, name='top'))
+    g.appendAnchor(dict(x=50, y=600, name="top"))
+    g.appendAnchor(dict(x=250, y=600, name="top"))
 
     font = to_glyphs([ufo])
 
-    top1, top2 = font.glyphs['laam_alif'].layers[0].anchors
+    top1, top2 = font.glyphs["laam_alif"].layers[0].anchors
 
     # FIXME: (jany) think hard about the ordering and RTL/LTR
-    assert top1.name == 'top_1'
+    assert top1.name == "top_1"
     assert top1.x == 50
     assert top1.y == 600
-    assert top2.name == 'top_2'
+    assert top2.name == "top_2"
     assert top2.x == 250
     assert top2.y == 600
 
@@ -98,50 +97,50 @@ def test_anchors_with_same_name_correct_order_ltr():
 @pytest.mark.skip
 def test_anchors_with_same_name_wrong_order_ltr():
     ufo = defcon.Font()
-    g = ufo.newGlyph('laam_alif')
+    g = ufo.newGlyph("laam_alif")
     # Append the anchors in the wrong order
-    g.appendAnchor(dict(x=250, y=600, name='top'))
-    g.appendAnchor(dict(x=50, y=600, name='top'))
+    g.appendAnchor(dict(x=250, y=600, name="top"))
+    g.appendAnchor(dict(x=50, y=600, name="top"))
 
     font = to_glyphs([ufo])
 
-    top1, top2 = font.glyphs['laam_alif'].layers[0].anchors
+    top1, top2 = font.glyphs["laam_alif"].layers[0].anchors
 
     # FIXME: (jany) think hard about the ordering and LTR
-    assert top1.name == 'top_1'
+    assert top1.name == "top_1"
     assert top1.x == 50
     assert top1.y == 600
-    assert top2.name == 'top_2'
+    assert top2.name == "top_2"
     assert top2.x == 250
     assert top2.y == 600
 
 
 def test_groups():
     ufo = defcon.Font()
-    ufo.newGlyph('T')
-    ufo.newGlyph('e')
-    ufo.newGlyph('o')
-    samekh = ufo.newGlyph('samekh-hb')
+    ufo.newGlyph("T")
+    ufo.newGlyph("e")
+    ufo.newGlyph("o")
+    samekh = ufo.newGlyph("samekh-hb")
     samekh.unicode = 0x05E1
-    resh = ufo.newGlyph('resh-hb')
+    resh = ufo.newGlyph("resh-hb")
     resh.unicode = 0x05E8
-    ufo.groups['public.kern1.T'] = ['T']
-    ufo.groups['public.kern2.oe'] = ['o', 'e']
-    ufo.groups['com.whatever.Te'] = ['T', 'e']
+    ufo.groups["public.kern1.T"] = ["T"]
+    ufo.groups["public.kern2.oe"] = ["o", "e"]
+    ufo.groups["com.whatever.Te"] = ["T", "e"]
     # Groups can contain glyphs that are not in the font and that should
     # be preserved as well
-    ufo.groups['public.kern1.notInFont'] = ['L']
-    ufo.groups['public.kern1.halfInFont'] = ['o', 'b', 'p']
-    ufo.groups['com.whatever.notInFont'] = ['i', 'j']
+    ufo.groups["public.kern1.notInFont"] = ["L"]
+    ufo.groups["public.kern1.halfInFont"] = ["o", "b", "p"]
+    ufo.groups["com.whatever.notInFont"] = ["i", "j"]
     # Empty groups as well (found in the wild)
-    ufo.groups['public.kern1.empty'] = []
-    ufo.groups['com.whatever.empty'] = []
+    ufo.groups["public.kern1.empty"] = []
+    ufo.groups["com.whatever.empty"] = []
     # Groups for RTL glyphs. In a UFO RTL kerning pair, kern1 is for the glyph
     # on the left visually (the first that gets written when writing RTL)
     # The example below with Resh and Samekh comes from:
     # https://forum.glyphsapp.com/t/dramatic-bug-in-hebrew-kerning/4093
-    ufo.groups['public.kern1.hebrewLikeT'] = ['resh-hb']
-    ufo.groups['public.kern2.hebrewLikeO'] = ['samekh-hb']
+    ufo.groups["public.kern1.hebrewLikeT"] = ["resh-hb"]
+    ufo.groups["public.kern2.hebrewLikeO"] = ["samekh-hb"]
     groups_dict = dict(ufo.groups)
 
     # TODO: (jany) add a test with 2 UFOs with conflicting data
@@ -150,18 +149,18 @@ def test_groups():
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
 
     # Kerning for existing glyphs is stored in GSGlyph.left/rightKerningGroup
-    assert font.glyphs['T'].rightKerningGroup == 'T'
-    assert font.glyphs['o'].leftKerningGroup == 'oe'
-    assert font.glyphs['e'].leftKerningGroup == 'oe'
+    assert font.glyphs["T"].rightKerningGroup == "T"
+    assert font.glyphs["o"].leftKerningGroup == "oe"
+    assert font.glyphs["e"].leftKerningGroup == "oe"
     # ...and actually in Glyphs, the "rightKerningGroup" is NOT always on the
     # right, but always matches "public.kern1" in UFO, so there is nothing
     # special to do for RTL.
-    assert font.glyphs['resh-hb'].rightKerningGroup == 'hebrewLikeT'
-    assert font.glyphs['samekh-hb'].leftKerningGroup == 'hebrewLikeO'
+    assert font.glyphs["resh-hb"].rightKerningGroup == "hebrewLikeT"
+    assert font.glyphs["samekh-hb"].leftKerningGroup == "hebrewLikeO"
 
     # Non-kerning groups are stored as classes
-    assert font.classes['com.whatever.Te'].code == 'T e'
-    assert font.classes['com.whatever.notInFont'].code == 'i j'
+    assert font.classes["com.whatever.Te"].code == "T e"
+    assert font.classes["com.whatever.notInFont"].code == "i j"
     # Kerning groups with some characters not in the font are also saved
     # somehow, but we don't care how, that fact will be better tested by the
     # roundtrip test a few lines below
@@ -173,13 +172,13 @@ def test_groups():
 
     # Check that changing the `left/rightKerningGroup` fields in Glyphs
     # updates the UFO kerning groups
-    font.glyphs['T'].rightKerningGroup = 'newNameT'
-    font.glyphs['o'].rightKerningGroup = 'onItsOwnO'
+    font.glyphs["T"].rightKerningGroup = "newNameT"
+    font.glyphs["o"].rightKerningGroup = "onItsOwnO"
 
-    del groups_dict['public.kern1.T']
-    groups_dict['public.kern1.newNameT'] = ['T']
-    groups_dict['public.kern1.halfInFont'].remove('o')
-    groups_dict['public.kern1.onItsOwnO'] = ['o']
+    del groups_dict["public.kern1.T"]
+    groups_dict["public.kern1.newNameT"] = ["T"]
+    groups_dict["public.kern1.halfInFont"].remove("o")
+    groups_dict["public.kern1.onItsOwnO"] = ["o"]
 
     ufo, = to_ufos(font)
 
@@ -188,24 +187,20 @@ def test_groups():
 
 def test_guidelines():
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
+    a = ufo.newGlyph("a")
     for obj in [ufo, a]:
         # Complete guideline
-        obj.appendGuideline(dict(
-            x=10,
-            y=20,
-            angle=30,
-            name="lc",
-            color="1,0,0,1",
-            identifier="lc1"))
+        obj.appendGuideline(
+            dict(x=10, y=20, angle=30, name="lc", color="1,0,0,1", identifier="lc1")
+        )
         # Don't crash if a guideline misses information
-        obj.appendGuideline({'x': 10})
-        obj.appendGuideline({'y': 20})
+        obj.appendGuideline({"x": 10})
+        obj.appendGuideline({"y": 20})
         obj.appendGuideline({})
 
     font = to_glyphs([ufo])
 
-    for gobj in [font.masters[0], font.glyphs['a'].layers[0]]:
+    for gobj in [font.masters[0], font.glyphs["a"].layers[0]]:
         assert len(gobj.guides) == 4
 
         angled, vertical, horizontal, empty = gobj.guides
@@ -223,15 +218,15 @@ def test_guidelines():
 
     ufo, = to_ufos(font)
 
-    for obj in [ufo, ufo['a']]:
+    for obj in [ufo, ufo["a"]]:
         angled, vertical, horizontal, empty = obj.guidelines
 
         assert angled.x == 10
         assert angled.y == 20
         assert angled.angle == 30
-        assert angled.name == 'lc'
-        assert angled.color == '1,0,0,1'
-        assert angled.identifier == 'lc1'
+        assert angled.name == "lc"
+        assert angled.color == "1,0,0,1"
+        assert angled.identifier == "lc1"
 
         assert vertical.x == 10
         assert vertical.y is None
@@ -244,38 +239,36 @@ def test_guidelines():
 
 def test_glyph_color():
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
+    a = ufo.newGlyph("a")
     a.markColor = GLYPHS_COLORS[3]
-    b = ufo.newGlyph('b')
-    b.markColor = '{:.3f},{:.3f},0,1'.format(4.0 / 255, 128.0 / 255)
+    b = ufo.newGlyph("b")
+    b.markColor = "{:.3f},{:.3f},0,1".format(4.0 / 255, 128.0 / 255)
 
     font = to_glyphs([ufo])
 
-    assert font.glyphs['a'].color == 3
-    assert font.glyphs['b'].color == [4, 128, 0, 255]
+    assert font.glyphs["a"].color == 3
+    assert font.glyphs["b"].color == [4, 128, 0, 255]
 
     ufo, = to_ufos(font)
 
-    assert ufo['a'].markColor == GLYPHS_COLORS[3]
-    assert ufo['b'].markColor == b.markColor
+    assert ufo["a"].markColor == GLYPHS_COLORS[3]
+    assert ufo["b"].markColor == b.markColor
 
 
 def test_bad_ufo_date_format_in_glyph_lib():
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
-    a.lib[GLYPHLIB_PREFIX + 'lastChange'] = '2017-12-19 15:12:44 +0000'
+    a = ufo.newGlyph("a")
+    a.lib[GLYPHLIB_PREFIX + "lastChange"] = "2017-12-19 15:12:44 +0000"
 
     # Don't crash
     font = to_glyphs([ufo])
 
-    assert (font.glyphs['a'].lastChange ==
-            datetime.datetime(2017, 12, 19, 15, 12, 44))
+    assert font.glyphs["a"].lastChange == datetime.datetime(2017, 12, 19, 15, 12, 44)
 
 
 def test_have_default_interpolation_values():
     """When no designspace is provided, make sure that the Glyphs file has some
-    default "axis positions" for the masters.
-    """
+    default "axis positions" for the masters."""
     thin = defcon.Font()
     thin.info.openTypeOS2WidthClass = 5
     thin.info.openTypeOS2WeightClass = 100
@@ -313,12 +306,11 @@ def test_have_default_interpolation_values():
 
 
 def test_designspace_source_locations(tmpdir):
-    """Check that opening UFOs from their source descriptor works with both
-    the filename and the path attributes.
-    """
-    designspace_path = os.path.join(str(tmpdir), 'test.designspace')
-    light_ufo_path = os.path.join(str(tmpdir), 'light.ufo')
-    bold_ufo_path = os.path.join(str(tmpdir), 'bold.ufo')
+    """Check that opening UFOs from their source descriptor works with both the
+    filename and the path attributes."""
+    designspace_path = os.path.join(str(tmpdir), "test.designspace")
+    light_ufo_path = os.path.join(str(tmpdir), "light.ufo")
+    bold_ufo_path = os.path.join(str(tmpdir), "bold.ufo")
 
     designspace = DesignSpaceDocument()
     wght = AxisDescriptor()
@@ -329,7 +321,7 @@ def test_designspace_source_locations(tmpdir):
     wght.tag = "wght"
     designspace.addAxis(wght)
     light_source = designspace.newSourceDescriptor()
-    light_source.filename = 'light.ufo'
+    light_source.filename = "light.ufo"
     light_source.location = {"Weight": 100}
     designspace.addSource(light_source)
     bold_source = designspace.newSourceDescriptor()
@@ -356,15 +348,17 @@ def test_designspace_source_locations(tmpdir):
     assert font.masters[1].ascender == 40
 
 
-@pytest.mark.skip(reason='Should be better defined')
+@pytest.mark.skip(reason="Should be better defined")
 def test_ufo_filename_is_kept_the_same(tmpdir):
-    """Check that the filenames of existing UFOs are correctly written to
-    the designspace document when doing UFOs -> Glyphs -> designspace.
-    This only works when the option "minimize_ufo_diffs" is given, because
-    keeping track of this information adds stuff to the Glyphs file.
+    """Check that the filenames of existing UFOs are correctly written to the
+    designspace document when doing UFOs -> Glyphs -> designspace.
+
+    This only works when the option "minimize_ufo_diffs" is given,
+    because keeping track of this information adds stuff to the Glyphs
+    file.
     """
-    light_ufo_path = os.path.join(str(tmpdir), 'light.ufo')
-    bold_ufo_path = os.path.join(str(tmpdir), 'subdir/bold.ufo')
+    light_ufo_path = os.path.join(str(tmpdir), "light.ufo")
+    bold_ufo_path = os.path.join(str(tmpdir), "subdir/bold.ufo")
 
     light = defcon.Font()
     light.info.ascender = 30
@@ -382,10 +376,10 @@ def test_ufo_filename_is_kept_the_same(tmpdir):
     assert designspace.sources[1].path == bold_ufo_path
 
     # Second check: going from designspace -> Glyphs -> designspace
-    designspace_path = os.path.join(str(tmpdir), 'test.designspace')
+    designspace_path = os.path.join(str(tmpdir), "test.designspace")
     designspace = DesignSpaceDocument()
     light_source = designspace.newSourceDescriptor()
-    light_source.filename = 'light.ufo'
+    light_source.filename = "light.ufo"
     designspace.addSource(light_source)
     bold_source = designspace.newSourceDescriptor()
     bold_source.path = bold_ufo_path
@@ -394,42 +388,42 @@ def test_ufo_filename_is_kept_the_same(tmpdir):
 
     font = to_glyphs([light, bold], minimize_ufo_diffs=True)
 
-    assert designspace.sources[0].filename == 'light.ufo'
-    assert designspace.sources[1].filename == 'subdir/bold.ufo'
+    assert designspace.sources[0].filename == "light.ufo"
+    assert designspace.sources[1].filename == "subdir/bold.ufo"
 
 
 def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir):
     ufo = defcon.Font()
-    bg = ufo.newLayer('public.background')
+    bg = ufo.newLayer("public.background")
 
-    fg_a = ufo.newGlyph('a')
+    fg_a = ufo.newGlyph("a")
     fg_a.width = 100
-    bg_a = bg.newGlyph('a')
+    bg_a = bg.newGlyph("a")
 
-    fg_b = ufo.newGlyph('b')
+    fg_b = ufo.newGlyph("b")
     fg_b.width = 200
-    bg_b = bg.newGlyph('b')
+    bg_b = bg.newGlyph("b")
     bg_b.width = 300
 
-    fg_c = ufo.newGlyph('c')
+    fg_c = ufo.newGlyph("c")
     fg_c.width = 400
-    bg_c = bg.newGlyph('c')
+    bg_c = bg.newGlyph("c")
     bg_c.width = 400
 
     font = to_glyphs([ufo])
-    path = os.path.join(str(tmpdir), 'test.glyphs')
+    path = os.path.join(str(tmpdir), "test.glyphs")
     font.save(path)
     saved_font = classes.GSFont(path)
 
     for font in [font, saved_font]:
         ufo, = to_ufos(font)
 
-        assert ufo['a'].width == 100
-        assert ufo.layers['public.background']['a'].width == 0
-        assert ufo['b'].width == 200
-        assert ufo.layers['public.background']['b'].width == 300
-        assert ufo['c'].width == 400
-        assert ufo.layers['public.background']['c'].width == 400
+        assert ufo["a"].width == 100
+        assert ufo.layers["public.background"]["a"].width == 0
+        assert ufo["b"].width == 200
+        assert ufo.layers["public.background"]["b"].width == 300
+        assert ufo["c"].width == 400
+        assert ufo.layers["public.background"]["c"].width == 400
 
 
 def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():
@@ -439,26 +433,26 @@ def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():
 
 def test_double_unicodes(tmpdir):
     ufo = defcon.Font()
-    z = ufo.newGlyph('z')
+    z = ufo.newGlyph("z")
     z.unicodes = [0x005A, 0x007A]
 
     font = to_glyphs([ufo])
-    path = os.path.join(str(tmpdir), 'test.glyphs')
+    path = os.path.join(str(tmpdir), "test.glyphs")
     font.save(path)
     saved_font = classes.GSFont(path)
 
     for font in [font, saved_font]:
-        assert font.glyphs['z'].unicode == "005A"
-        assert font.glyphs['z'].unicodes == ["005A", "007A"]
+        assert font.glyphs["z"].unicode == "005A"
+        assert font.glyphs["z"].unicodes == ["005A", "007A"]
 
         ufo, = to_ufos(font)
 
-        assert ufo['z'].unicodes == [0x005A, 0x007A]
+        assert ufo["z"].unicodes == [0x005A, 0x007A]
 
 
 def test_open_contour():
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
+    a = ufo.newGlyph("a")
     pen = a.getPen()
     pen.moveTo((10, 20))
     pen.lineTo((30, 40))
@@ -466,24 +460,25 @@ def test_open_contour():
 
     font = to_glyphs([ufo])
 
-    path = font.glyphs['a'].layers[0].paths[0]
+    path = font.glyphs["a"].layers[0].paths[0]
     assert not path.closed
     assert len(path.nodes) == 2
     assert path.nodes[0].type == classes.LINE
 
     ufo_rt, = to_ufos(font)
 
-    assert ([(p.segmentType, p.x, p.y) for p in a[0]] ==
-            [(p.segmentType, p.x, p.y) for p in ufo_rt['a'][0]])
+    assert [(p.segmentType, p.x, p.y) for p in a[0]] == [
+        (p.segmentType, p.x, p.y) for p in ufo_rt["a"][0]
+    ]
 
 
 def test_background_before_foreground():
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
-    background = ufo.newLayer('public.background')
-    a_bg = background.newGlyph('a')
+    a = ufo.newGlyph("a")
+    background = ufo.newLayer("public.background")
+    a_bg = background.newGlyph("a")
 
-    ufo.layers.layerOrder = ['public.background', 'public.default']
+    ufo.layers.layerOrder = ["public.background", "public.default"]
 
     # Check that it does not crash
     font = to_glyphs([ufo])
@@ -491,8 +486,8 @@ def test_background_before_foreground():
 
 def test_only_background():
     ufo = defcon.Font()
-    background = ufo.newLayer('public.background')
-    a_bg = background.newGlyph('a')
+    background = ufo.newLayer("public.background")
+    a_bg = background.newGlyph("a")
 
     # Check that it does not crash
     font = to_glyphs([ufo])
@@ -500,38 +495,44 @@ def test_only_background():
 
 def test_warn_diff_between_designspace_and_ufos(caplog):
     ufo = defcon.Font()
-    ufo.info.familyName = 'UFO Family Name'
-    ufo.info.styleName = 'UFO Style Name'
+    ufo.info.familyName = "UFO Family Name"
+    ufo.info.styleName = "UFO Style Name"
     # ufo.info.styleMapFamilyName = 'UFO Stylemap Family Name'
     # ufo.info.styleMapStyleName = 'bold'
 
     doc = DesignSpaceDocument()
     source = doc.newSourceDescriptor()
     source.font = ufo
-    source.familyName = 'DS Family Name'
-    source.styleName = 'DS Style Name'
+    source.familyName = "DS Family Name"
+    source.styleName = "DS Style Name"
     doc.addSource(source)
 
     font = to_glyphs(doc, minimize_ufo_diffs=True)
-    assert any(record.levelname == 'WARNING' for record in caplog.records)
-    assert 'The familyName is different between the UFO and the designspace source' in caplog.text
-    assert 'The styleName is different between the UFO and the designspace source' in caplog.text
+    assert any(record.levelname == "WARNING" for record in caplog.records)
+    assert (
+        "The familyName is different between the UFO and the designspace source"
+        in caplog.text
+    )
+    assert (
+        "The styleName is different between the UFO and the designspace source"
+        in caplog.text
+    )
 
     doc = to_designspace(font)
     source = doc.sources[0]
 
     # The UFO info will prevail
-    assert ufo.info.familyName == 'UFO Family Name'
-    assert ufo.info.styleName == 'UFO Style Name'
-    assert source.font.info.familyName == 'UFO Family Name'
-    assert source.font.info.styleName == 'UFO Style Name'
+    assert ufo.info.familyName == "UFO Family Name"
+    assert ufo.info.styleName == "UFO Style Name"
+    assert source.font.info.familyName == "UFO Family Name"
+    assert source.font.info.styleName == "UFO Style Name"
 
 
 def test_custom_stylemap_style_name():
     ufo = defcon.Font()
-    ufo.info.styleMapStyleName = 'bold'  # Not "regular"
+    ufo.info.styleMapStyleName = "bold"  # Not "regular"
 
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
     ufo, = to_ufos(font)
 
-    assert ufo.info.styleMapStyleName == 'bold'
+    assert ufo.info.styleMapStyleName == "bold"

@@ -24,15 +24,13 @@ import copy
 import binascii
 from fontTools.misc.py23 import unicode
 
-__all__ = [
-    'Transform', 'Point', 'Rect'
-]
+__all__ = ["Transform", "Point", "Rect"]
 
 
 class ValueType(object):
-    """A base class for value types that are comparable in the Python sense
-    and readable/writable using the glyphsLib parser/writer.
-    """
+    """A base class for value types that are comparable in the Python sense and
+    readable/writable using the glyphsLib parser/writer."""
+
     default = None
 
     def __init__(self, value=None):
@@ -42,19 +40,19 @@ class ValueType(object):
             self.value = copy.deepcopy(self.default)
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.plistValue())
+        return "<{} {}>".format(self.__class__.__name__, self.plistValue())
 
     def fromString(self, src):
         """Return a typed value representing the structured glyphs strings."""
-        raise NotImplementedError('%s read' % type(self).__name__)
+        raise NotImplementedError("%s read" % type(self).__name__)
 
     def plistValue(self):
         """Return structured glyphs strings representing the typed value."""
-        raise NotImplementedError('%s write' % type(self).__name__)
+        raise NotImplementedError("%s write" % type(self).__name__)
 
     # https://stackoverflow.com/questions/390250/elegant-ways-to-support-equivalence-equality-in-python-classes
     def __eq__(self, other):
-        """Overrides the default implementation"""
+        """Overrides the default implementation."""
         if isinstance(self, other.__class__):
             return self.value == other.value
         return NotImplemented
@@ -67,7 +65,7 @@ class ValueType(object):
         return NotImplemented
 
     def __hash__(self):
-        """Overrides the default implementation"""
+        """Overrides the default implementation."""
         return hash(self.value)
 
 
@@ -75,30 +73,28 @@ class ValueType(object):
 def Vector(dim):
     class Vector(ValueType):
         """Base type for number vectors (points, rects, transform matrices)."""
+
         dimension = dim
         default = [0.0] * dimension
-        regex = re.compile('{%s}' % ', '.join(['([-.e\\d]+)'] * dimension))
+        regex = re.compile("{%s}" % ", ".join(["([-.e\\d]+)"] * dimension))
 
         def fromString(self, src):
             if isinstance(src, list):
                 assert len(src) == self.dimension
                 return src
-            src = src.replace('"', '')
+            src = src.replace('"', "")
             return [float(i) for i in self.regex.match(src).groups()]
 
         def plistValue(self):
-            assert (isinstance(self.value, list)
-                    and len(self.value) == self.dimension)
-            return '"{%s}"' % (', '.join(floatToString(v, 3) for v in self.value))
+            assert isinstance(self.value, list) and len(self.value) == self.dimension
+            return '"{%s}"' % (", ".join(floatToString(v, 3) for v in self.value))
 
         def __getitem__(self, key):
-            assert (isinstance(self.value, list) and
-                    len(self.value) == self.dimension)
+            assert isinstance(self.value, list) and len(self.value) == self.dimension
             return self.value[key]
 
         def __setitem__(self, key, value):
-            assert (isinstance(self.value, list) and
-                    len(self.value) == self.dimension)
+            assert isinstance(self.value, list) and len(self.value) == self.dimension
             self.value[key] = value
 
         def __len__(self):
@@ -113,15 +109,17 @@ class Point(Vector(2)):
     def __init__(self, value=None, value2=None, rect=None):
         if value is not None and value2 is not None:
             value = [value, value2]
-        assert (value is None or
-                isinstance(value, (str, unicode)) or
-                isinstance(value, (list, tuple)))
+        assert (
+            value is None
+            or isinstance(value, (str, unicode))
+            or isinstance(value, (list, tuple))
+        )
         super(Point, self).__init__(value)
 
         self.rect = rect
 
     def __repr__(self):
-        return '<point x=%s y=%s>' % (self.value[0], self.value[1])
+        return "<point x={} y={}>".format(self.value[0], self.value[1])
 
     @property
     def x(self):
@@ -148,7 +146,7 @@ class Point(Vector(2)):
 
 class Size(Point):
     def __repr__(self):
-        return '<size width=%s height=%s>' % (self.value[0], self.value[1])
+        return "<size width={} height={}>".format(self.value[0], self.value[1])
 
     @property
     def width(self):
@@ -175,7 +173,8 @@ class Size(Point):
 
 class Rect(Vector(4)):
     """Read/write a rect of two points in curly braces."""
-    regex = re.compile('{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}')
+
+    regex = re.compile("{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}")
 
     def __init__(self, value=None, value2=None):
         if value is not None and value2 is not None:
@@ -183,13 +182,11 @@ class Rect(Vector(4)):
         super(Rect, self).__init__(value)
 
     def plistValue(self):
-        assert (isinstance(self.value, list)
-                and len(self.value) == self.dimension)
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(
-            floatToString(v, 3) for v in self.value)
+        assert isinstance(self.value, list) and len(self.value) == self.dimension
+        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString(v, 3) for v in self.value)
 
     def __repr__(self):
-        return '<rect origin=%s size=%s>' % (str(self.origin), str(self.size))
+        return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
 
     @property
     def origin(self):
@@ -212,35 +209,36 @@ class Rect(Vector(4)):
 
 class Transform(Vector(6)):
     """Read/write a six-element vector."""
-    def __init__(self,
-                 value=None,
-                 value2=None,
-                 value3=None,
-                 value4=None,
-                 value5=None,
-                 value6=None):
+
+    def __init__(
+        self,
+        value=None,
+        value2=None,
+        value3=None,
+        value4=None,
+        value5=None,
+        value6=None,
+    ):
         if all(v is not None for v in (value, value2, value3, value4, value5, value6)):
             value = [value, value2, value3, value4, value5, value6]
         super(Transform, self).__init__(value)
 
     def __repr__(self):
-        return '<affine transformation %s>' % (' '.join(map(str, self.value)))
+        return "<affine transformation %s>" % (" ".join(map(str, self.value)))
 
     def plistValue(self):
-        assert (isinstance(self.value, list) and
-                len(self.value) == self.dimension)
-        return '"{%s}"' % (', '.join(floatToString(v, 5) for v in self.value))
+        assert isinstance(self.value, list) and len(self.value) == self.dimension
+        return '"{%s}"' % (", ".join(floatToString(v, 5) for v in self.value))
 
 
-UTC_OFFSET_RE = re.compile(
-    r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
+UTC_OFFSET_RE = re.compile(r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
 
 
 def parse_datetime(src=None):
     """Parse a datetime object from a string."""
     if src is None:
         return None
-    string = src.replace('"', '')
+    string = src.replace('"', "")
     # parse timezone ourselves, since %z is not always supported
     # see: http://bugs.python.org/issue6641
     m = UTC_OFFSET_RE.match(string)
@@ -253,25 +251,25 @@ def parse_datetime(src=None):
     else:
         # no explicit timezone
         offset = datetime.timedelta(0)
-    if 'AM' in string or 'PM' in string:
-        datetime_obj = datetime.datetime.strptime(
-            string, '%Y-%m-%d %I:%M:%S %p'
-        )
+    if "AM" in string or "PM" in string:
+        datetime_obj = datetime.datetime.strptime(string, "%Y-%m-%d %I:%M:%S %p")
     else:
-        datetime_obj = datetime.datetime.strptime(
-            string, '%Y-%m-%d %H:%M:%S'
-        )
+        datetime_obj = datetime.datetime.strptime(string, "%Y-%m-%d %H:%M:%S")
     return datetime_obj + offset
 
 
 # FIXME: (jany) Not sure this should be used
 class Datetime(ValueType):
-    """Read/write a datetime.  Doesn't maintain time zone offset."""
+    """Read/write a datetime.
+
+    Doesn't maintain time zone offset.
+    """
+
     def fromString(self, src):
         return parse_datetime(src)
 
     def plistValue(self):
-        return "\"%s +0000\"" % self.value
+        return '"%s +0000"' % self.value
 
     def strftime(self, val):
         try:
@@ -301,8 +299,10 @@ def parse_color(src=None):
 
         if not (len(rgba) == 4 and all(0 <= v < 256 for v in rgba)):
             raise ValueError(
-                "Broken color tuple: {}. Must have four values from 0 to 255.".
-                format(src))
+                "Broken color tuple: {}. Must have four values from 0 to 255.".format(
+                    src
+                )
+            )
 
         return rgba
 
@@ -376,11 +376,12 @@ def floatToString(Float, precision=3):
 
 class UnicodesList(list):
     """Represent a PLIST-able list of unicode codepoints as strings."""
+
     def __init__(self, value=None):
         if value is None:
             unicodes = []
         elif isinstance(value, (str, unicode)):
-            unicodes = value.split(',')
+            unicodes = value.split(",")
         else:
             unicodes = value
         super(UnicodesList, self).__init__(unicodes)
@@ -390,11 +391,10 @@ class UnicodesList(list):
             return None
         if len(self) == 1:
             return self[0]
-        return '"%s"' % ','.join(self)
+        return '"%s"' % ",".join(self)
 
 
 class BinaryData(bytes):
-
     @classmethod
     def fromHex(cls, data):
         return cls(binascii.unhexlify(data))

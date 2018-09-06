@@ -21,15 +21,18 @@ import glyphsLib
 def glyphs_files(directory):
     for root, _dirs, files in os.walk(directory):
         for filename in files:
-            if filename.endswith('.glyphs'):
+            if filename.endswith(".glyphs"):
                 yield os.path.join(root, filename)
 
 
 def main():
-    parser = argparse.ArgumentParser("Translate all .glyphs files into UFO+designspace in the specified directories.")
-    parser.add_argument('-o', '--out', metavar='OUTPUT_DIR', default='ufos',
-                        help='Output directory')
-    parser.add_argument('directories', nargs='*')
+    parser = argparse.ArgumentParser(
+        "Translate all .glyphs files into UFO+designspace in the specified directories."
+    )
+    parser.add_argument(
+        "-o", "--out", metavar="OUTPUT_DIR", default="ufos", help="Output directory"
+    )
+    parser.add_argument("directories", nargs="*")
     args = parser.parse_args()
 
     for directory in args.directories:
@@ -38,15 +41,17 @@ def main():
             try:
                 # Code for glyphsLib with roundtrip
                 from glyphsLib.builder import to_designspace
+
                 font = glyphsLib.GSFont(filename)
                 designspace = to_designspace(font)
-                dsname = font.familyName.replace(' ', '') + '.designspace'
+                dsname = font.familyName.replace(" ", "") + ".designspace"
                 designspace.write(os.path.join(args.out, dsname))
             except ImportError:
                 # This is the version that works with glyphsLib 2.1.0
-                glyphsLib.build_masters(filename, master_dir=args.out,
-                                        designspace_instance_dir=args.out)
+                glyphsLib.build_masters(
+                    filename, master_dir=args.out, designspace_instance_dir=args.out
+                )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
-

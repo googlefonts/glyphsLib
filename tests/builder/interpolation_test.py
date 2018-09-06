@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 import difflib
 import os.path
 import shutil
@@ -73,8 +72,9 @@ def makeMaster(styleName, weight=None, width=None):
     return m
 
 
-def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
-                 linked_style=None):
+def makeInstance(
+    name, weight=None, width=None, is_bold=None, is_italic=None, linked_style=None
+):
     inst = GSInstance()
     inst.name = name
     if weight is not None:
@@ -126,7 +126,7 @@ def makeInstance(name, weight=None, width=None, is_bold=None, is_italic=None,
 def makeInstanceDescriptor(*args, **kwargs):
     """Same as makeInstance but return the corresponding InstanceDescriptor."""
     ginst = makeInstance(*args, **kwargs)
-    font = makeFont([makeMaster('Regular')], [ginst], 'Family')
+    font = makeFont([makeMaster("Regular")], [ginst], "Family")
     doc = to_designspace(font)
     return doc, doc.instances[0]
 
@@ -157,7 +157,7 @@ class DesignspaceTest(unittest.TestCase):
         return self._expect_designspace(doc, expected_path)
 
     def _expect_designspace(self, doc, expected_path):
-        actual_path = self.write_to_tmp_path(doc, 'generated.designspace')
+        actual_path = self.write_to_tmp_path(doc, "generated.designspace")
         with open(actual_path, mode="r", encoding="utf-8") as f:
             actual = f.readlines()
         with open(expected_path, mode="r", encoding="utf-8") as f:
@@ -165,13 +165,13 @@ class DesignspaceTest(unittest.TestCase):
         if actual != expected:
             expected_name = os.path.basename(expected_path)
             for line in difflib.unified_diff(
-                    expected, actual,
-                    fromfile=expected_name, tofile="<generated>"):
+                expected, actual, fromfile=expected_name, tofile="<generated>"
+            ):
                 sys.stderr.write(line)
             self.fail("*.designspace file is different from expected")
 
     def expect_designspace_roundtrip(self, doc):
-        actual_path = self.write_to_tmp_path(doc, 'original.designspace')
+        actual_path = self.write_to_tmp_path(doc, "original.designspace")
         font = to_glyphs(doc, minimize_ufo_diffs=True)
         rtdoc = to_designspace(font)
         return self._expect_designspace(rtdoc, actual_path)
@@ -179,7 +179,7 @@ class DesignspaceTest(unittest.TestCase):
     def test_basic(self):
         masters, instances = makeFamily()
         font = makeFont(masters, instances, "DesignspaceTest Basic")
-        doc = to_designspace(font, instance_dir='out')
+        doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestBasic.designspace")
         self.expect_designspace_roundtrip(doc)
 
@@ -191,7 +191,7 @@ class DesignspaceTest(unittest.TestCase):
             if inst.name != "Semibold":
                 inst.exports = False
         font = makeFont(masters, instances, "DesignspaceTest Inactive")
-        doc = to_designspace(font, instance_dir='out')
+        doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestInactive.designspace")
         self.expect_designspace_roundtrip(doc)
 
@@ -204,12 +204,9 @@ class DesignspaceTest(unittest.TestCase):
         masters, _ = makeFamily()
         customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
         customFamily.customParameters["familyName"] = "Custom Family"
-        instances = [
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            customFamily,
-        ]
+        instances = [makeInstance("Regular", weight=("Regular", 400, 90)), customFamily]
         font = makeFont(masters, instances, "DesignspaceTest FamilyName")
-        doc = to_designspace(font, instance_dir='out')
+        doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestFamilyName.designspace")
         self.expect_designspace_roundtrip(doc)
 
@@ -222,7 +219,7 @@ class DesignspaceTest(unittest.TestCase):
             customFileName,
         ]
         font = makeFont(masters, instances, "DesignspaceTest FamilyName")
-        doc = to_designspace(font, instance_dir='out')
+        doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestFileName.designspace")
         self.expect_designspace_roundtrip(doc)
 
@@ -231,18 +228,15 @@ class DesignspaceTest(unittest.TestCase):
         # if the default axis value does not happen to be at the
         # location of one of the interpolation masters.
         # glyhpsLib tries to work around this downstream limitation.
-        masters = [
-            makeMaster("Thin", weight=26),
-            makeMaster("Black", weight=190),
-        ]
+        masters = [makeMaster("Thin", weight=26), makeMaster("Black", weight=190)]
         instances = [
             makeInstance("Black", weight=("Black", 900, 190)),
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Bold", weight=("Thin", 100, 26)),
         ]
         font = makeFont(masters, instances, "NoRegularMaster")
-        designspace = to_designspace(font, instance_dir='out')
-        path = self.write_to_tmp_path(designspace, 'noregular.designspace')
+        designspace = to_designspace(font, instance_dir="out")
+        path = self.write_to_tmp_path(designspace, "noregular.designspace")
         doc = etree.parse(path)
         weightAxis = doc.find('axes/axis[@tag="wght"]')
         self.assertEqual(weightAxis.attrib["minimum"], "100")
@@ -256,13 +250,14 @@ class DesignspaceTest(unittest.TestCase):
         thin, black = makeInstance("Thin"), makeInstance("Black")
         black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
         font = makeFont([master], [thin, black], "PSNameTest")
-        designspace = to_designspace(font, instance_dir='out')
-        path = self.write_to_tmp_path(designspace, 'psname.designspace')
+        designspace = to_designspace(font, instance_dir="out")
+        path = self.write_to_tmp_path(designspace, "psname.designspace")
         d = etree.parse(path)
 
         def psname(doc, style):
             inst = doc.find('instances/instance[@stylename="%s"]' % style)
-            return inst.attrib.get('postscriptfontname')
+            return inst.attrib.get("postscriptfontname")
+
         self.assertIsNone(psname(d, "Thin"))
         self.assertEqual(psname(d, "Black"), "PSNameTest-Superfat")
 
@@ -279,9 +274,8 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
         ]
         font = makeFont(masters, instances, "DesignspaceTest InstanceOrder")
-        doc = to_designspace(font, instance_dir='out')
-        self.expect_designspace(doc,
-                                "DesignspaceTestInstanceOrder.designspace")
+        doc = to_designspace(font, instance_dir="out")
+        self.expect_designspace(doc, "DesignspaceTestInstanceOrder.designspace")
         self.expect_designspace_roundtrip(doc)
 
     def test_twoAxes(self):
@@ -302,18 +296,24 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("Regular", weight=("Regular", 400, 90)),
             makeInstance("Semibold", weight=("SemiBold", 600, 128)),
             makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("ExtraCondensed Thin",
-                         weight=("Thin", 100, 26),
-                         width=("Extra Condensed", 2, 70)),
-            makeInstance("ExtraCondensed",
-                         weight=("Regular", 400, 90),
-                         width=("Extra Condensed", 2, 70)),
-            makeInstance("ExtraCondensed Black",
-                         weight=("Black", 900, 190),
-                         width=("Extra Condensed", 2, 70)),
+            makeInstance(
+                "ExtraCondensed Thin",
+                weight=("Thin", 100, 26),
+                width=("Extra Condensed", 2, 70),
+            ),
+            makeInstance(
+                "ExtraCondensed",
+                weight=("Regular", 400, 90),
+                width=("Extra Condensed", 2, 70),
+            ),
+            makeInstance(
+                "ExtraCondensed Black",
+                weight=("Black", 900, 190),
+                width=("Extra Condensed", 2, 70),
+            ),
         ]
         font = makeFont(masters, instances, familyName)
-        doc = to_designspace(font, instance_dir='out')
+        doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestTwoAxes.designspace")
         self.expect_designspace_roundtrip(doc)
 
@@ -335,8 +335,8 @@ class DesignspaceTest(unittest.TestCase):
         ]
         font = makeFont(masters, instances, "Family")
         font.customParameters["Variation Font Origin"] = "Medium"
-        designspace = to_designspace(font, instance_dir='out')
-        path = self.write_to_tmp_path(designspace, 'varfontorig.designspace')
+        designspace = to_designspace(font, instance_dir="out")
+        path = self.write_to_tmp_path(designspace, "varfontorig.designspace")
         doc = etree.parse(path)
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
@@ -346,24 +346,34 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace_roundtrip(designspace)
 
     def test_designspace_name(self):
-        doc = to_designspace(makeFont([
-            makeMaster("Regular", weight=100),
-            makeMaster("Bold", weight=190),
-        ], [], "Family Name"))
+        doc = to_designspace(
+            makeFont(
+                [makeMaster("Regular", weight=100), makeMaster("Bold", weight=190)],
+                [],
+                "Family Name",
+            )
+        )
         # no shared base style name, only write the family name
         self.assertEqual(doc.filename, "FamilyName.designspace")
 
-        doc = to_designspace(makeFont([
-            makeMaster("Italic", weight=100),
-            makeMaster("Bold Italic", weight=190),
-        ], [], "Family Name"))
+        doc = to_designspace(
+            makeFont(
+                [
+                    makeMaster("Italic", weight=100),
+                    makeMaster("Bold Italic", weight=190),
+                ],
+                [],
+                "Family Name",
+            )
+        )
         # 'Italic' is the base style; append to designspace name
         self.assertEqual(doc.filename, "FamilyName-Italic.designspace")
 
     def test_instance_filtering_by_family_name(self):
         # See https://github.com/googlei18n/fontmake/issues/257
-        path = os.path.join(os.path.dirname(__file__), '..', 'data',
-                            'MontserratStrippedDown.glyphs')
+        path = os.path.join(
+            os.path.dirname(__file__), "..", "data", "MontserratStrippedDown.glyphs"
+        )
         font = GSFont(path)
 
         # By default (no special parameter), all instances are exported
@@ -373,19 +383,20 @@ class DesignspaceTest(unittest.TestCase):
         # If we specify that we want the same familyName as the masters,
         # we only get instances that have that same family name, and the
         # masters are copied as-is. (basically a subset of the previous doc)
-        designspace_no_alternates = to_designspace(
-            font, family_name='Montserrat')
+        designspace_no_alternates = to_designspace(font, family_name="Montserrat")
         assert len(designspace_no_alternates.instances) == 9
 
         # If we specify the alternate family name, we only get the instances
         # that have that family name, and the masters are renamed to have the
         # given family name.
         designspace_alternates = to_designspace(
-            font, family_name='Montserrat Alternates')
-        assert (designspace_alternates.sources[0].familyName ==
-                'Montserrat Alternates')
-        assert (designspace_alternates.sources[0].font.info.familyName ==
-                'Montserrat Alternates')
+            font, family_name="Montserrat Alternates"
+        )
+        assert designspace_alternates.sources[0].familyName == "Montserrat Alternates"
+        assert (
+            designspace_alternates.sources[0].font.info.familyName
+            == "Montserrat Alternates"
+        )
         assert len(designspace_alternates.instances) == 9
 
 
@@ -394,7 +405,6 @@ WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
 
 class SetWeightWidthClassesTest(unittest.TestCase):
-
     def test_no_weight_class(self):
         ufo = defcon.Font()
         # name here says "Bold", however no explicit weightClass
@@ -406,20 +416,14 @@ class SetWeightWidthClassesTest(unittest.TestCase):
 
     def test_weight_class(self):
         ufo = defcon.Font()
-        doc, data = makeInstanceDescriptor(
-            "Bold",
-            weight=("Bold", None, 150)
-        )
+        doc, data = makeInstanceDescriptor("Bold", weight=("Bold", None, 150))
 
         set_weight_class(ufo, doc, data)
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_explicit_default_weight(self):
         ufo = defcon.Font()
-        doc, data = makeInstanceDescriptor(
-            "Regular",
-            weight=("Regular", None, 100)
-        )
+        doc, data = makeInstanceDescriptor("Regular", weight=("Regular", None, 100))
 
         set_weight_class(ufo, doc, data)
         # the default OS/2 weight class is set
@@ -435,20 +439,14 @@ class SetWeightWidthClassesTest(unittest.TestCase):
 
     def test_width_class(self):
         ufo = defcon.Font()
-        doc, data = makeInstanceDescriptor(
-            "Condensed",
-            width=("Condensed", 3, 80)
-        )
+        doc, data = makeInstanceDescriptor("Condensed", width=("Condensed", 3, 80))
 
         set_width_class(ufo, doc, data)
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
 
     def test_explicit_default_width(self):
         ufo = defcon.Font()
-        doc, data = makeInstanceDescriptor(
-            "Regular",
-            width=("Medium (normal)", 5, 100)
-        )
+        doc, data = makeInstanceDescriptor("Regular", width=("Medium (normal)", 5, 100))
 
         set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
@@ -459,7 +457,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         doc, data = makeInstanceDescriptor(
             "SemiCondensed ExtraBold",
             weight=("ExtraBold", None, 160),
-            width=("SemiCondensed", 4, 90)
+            width=("SemiCondensed", 4, 90),
         )
 
         set_weight_class(ufo, doc, data)
@@ -477,8 +475,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         # string as instance 'weightClass' since the choice is constrained
         # by a drop-down menu.
         doc, data = makeInstanceDescriptor(
-            "DemiLight Italic",
-            weight=("DemiLight", 350, 70)
+            "DemiLight Italic", weight=("DemiLight", 350, 70)
         )
 
         set_weight_class(ufo, doc, data)
@@ -496,8 +493,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         # string as instance 'weightClass' since the choice is constrained
         # by a drop-down menu.
         doc, data = makeInstanceDescriptor(
-            "DemiLight Italic",
-            weight=("DemiLight", None, 70)
+            "DemiLight Italic", weight=("DemiLight", None, 70)
         )
 
         set_weight_class(ufo, doc, data)

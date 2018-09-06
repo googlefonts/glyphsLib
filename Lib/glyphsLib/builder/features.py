@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import re
 from textwrap import dedent
@@ -29,12 +28,12 @@ import glyphsLib
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
-ANONYMOUS_FEATURE_PREFIX_NAME = '<anonymous>'
-ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + 'originalFeatureCode'
+ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
+ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + "originalFeatureCode"
 
 
 def autostr(automatic):
-    return '# automatic\n' if automatic else ''
+    return "# automatic\n" if automatic else ""
 
 
 def to_ufo_features(self):
@@ -56,38 +55,39 @@ def _to_ufo_features(self, master, ufo):
     for prefix in self.font.featurePrefixes:
         strings = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
-            strings.append('# Prefix: %s\n' % prefix.name)
+            strings.append("# Prefix: %s\n" % prefix.name)
         strings.append(autostr(prefix.automatic))
         strings.append(prefix.code)
-        prefixes.append(''.join(strings))
+        prefixes.append("".join(strings))
 
-    prefix_str = '\n\n'.join(prefixes)
+    prefix_str = "\n\n".join(prefixes)
 
     class_defs = []
     for class_ in self.font.classes:
-        prefix = '@' if not class_.name.startswith('@') else ''
+        prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
-        class_defs.append('%s%s = [ %s ];' % (autostr(class_.automatic), name,
-                                              class_.code))
-    class_str = '\n\n'.join(class_defs)
+        class_defs.append(
+            "{}{} = [ {} ];".format(autostr(class_.automatic), name, class_.code)
+        )
+    class_str = "\n\n".join(class_defs)
 
     feature_defs = []
     for feature in self.font.features:
         code = feature.code
-        lines = ['feature %s {' % feature.name]
+        lines = ["feature %s {" % feature.name]
         if feature.notes:
-            lines.append('# notes:')
-            lines.extend('# ' + line for line in feature.notes.splitlines())
+            lines.append("# notes:")
+            lines.extend("# " + line for line in feature.notes.splitlines())
         if feature.automatic:
-            lines.append('# automatic')
+            lines.append("# automatic")
         if feature.disabled:
-            lines.append('# disabled')
-            lines.extend('#' + line for line in code.splitlines())
+            lines.append("# disabled")
+            lines.extend("#" + line for line in code.splitlines())
         else:
             lines.append(code)
-        lines.append('} %s;' % feature.name)
-        feature_defs.append('\n'.join(lines))
-    fea_str = '\n\n'.join(feature_defs)
+        lines.append("} %s;" % feature.name)
+        feature_defs.append("\n".join(lines))
+    fea_str = "\n\n".join(feature_defs)
 
     # Don't add a GDEF when planning to round-trip
     gdef_str = None
@@ -95,9 +95,10 @@ def _to_ufo_features(self, master, ufo):
         gdef_str = _build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
-    full_text = '\n\n'.join(
-        filter(None, [prefix_str, class_str, fea_str, gdef_str])) + '\n'
-    ufo.features.text = full_text if full_text.strip() else ''
+    full_text = (
+        "\n\n".join(filter(None, [prefix_str, class_str, fea_str, gdef_str])) + "\n"
+    )
+    ufo.features.text = full_text if full_text.strip() else ""
 
 
 def _build_gdef(ufo):
@@ -105,16 +106,16 @@ def _build_gdef(ufo):
     from glyphsLib import glyphdata  # Expensive import
 
     bases, ligatures, marks, carets = set(), set(), set(), {}
-    category_key = GLYPHLIB_PREFIX + 'category'
-    subCategory_key = GLYPHLIB_PREFIX + 'subCategory'
+    category_key = GLYPHLIB_PREFIX + "category"
+    subCategory_key = GLYPHLIB_PREFIX + "subCategory"
     for glyph in ufo:
         has_attaching_anchor = False
         for anchor in glyph.anchors:
             name = anchor.name
-            if name and not name.startswith('_'):
+            if name and not name.startswith("_"):
                 has_attaching_anchor = True
-            if name and name.startswith('caret_') and 'x' in anchor:
-                carets.setdefault(glyph.name, []).append(round(anchor['x']))
+            if name and name.startswith("caret_") and "x" in anchor:
+                carets.setdefault(glyph.name, []).append(round(anchor["x"]))
         lib = glyph.lib
         glyphinfo = glyphdata.get_glyph(glyph.name)
         # first check glyph.lib for category/subCategory overrides; else use
@@ -142,41 +143,48 @@ def _build_gdef(ufo):
         #
         # https://github.com/googlei18n/glyphsLib/issues/85
         # https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
-        if subCategory == 'Ligature' and has_attaching_anchor:
+        if subCategory == "Ligature" and has_attaching_anchor:
             ligatures.add(glyph.name)
-        elif category == 'Mark' and (subCategory == 'Nonspacing' or
-                                     subCategory == 'Spacing Combining'):
+        elif category == "Mark" and (
+            subCategory == "Nonspacing" or subCategory == "Spacing Combining"
+        ):
             marks.add(glyph.name)
         elif has_attaching_anchor:
             bases.add(glyph.name)
     if not any((bases, ligatures, marks, carets)):
         return None
-    lines = ['table GDEF {', '  # automatic']
-    glyphOrder = ufo.lib[PUBLIC_PREFIX + 'glyphOrder']
+    lines = ["table GDEF {", "  # automatic"]
+    glyphOrder = ufo.lib[PUBLIC_PREFIX + "glyphOrder"]
     glyphIndex = lambda glyph: glyphOrder.index(glyph)
-    fmt = lambda g: ('[%s]' % ' '.join(sorted(g, key=glyphIndex))) if g else ''
-    lines.extend([
-        '  GlyphClassDef',
-        '    %s, # Base' % fmt(bases),
-        '    %s, # Liga' % fmt(ligatures),
-        '    %s, # Mark' % fmt(marks),
-        '    ;'])
+    fmt = lambda g: ("[%s]" % " ".join(sorted(g, key=glyphIndex))) if g else ""
+    lines.extend(
+        [
+            "  GlyphClassDef",
+            "    %s, # Base" % fmt(bases),
+            "    %s, # Liga" % fmt(ligatures),
+            "    %s, # Mark" % fmt(marks),
+            "    ;",
+        ]
+    )
     for glyph, caretPos in sorted(carets.items()):
-        lines.append('  LigatureCaretByPos %s %s;' %
-                     (glyph, ' '.join(unicode(p) for p in sorted(caretPos))))
-    lines.append('} GDEF;')
-    return '\n'.join(lines)
+        lines.append(
+            "  LigatureCaretByPos %s %s;"
+            % (glyph, " ".join(unicode(p) for p in sorted(caretPos)))
+        )
+    lines.append("} GDEF;")
+    return "\n".join(lines)
 
 
 def replace_feature(tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
     return re.sub(
-        r"(?<=^feature %(tag)s {\n)(.*?)(?=^} %(tag)s;$)" % {"tag": tag},
+        r"(?<=^feature {tag} {{\n)(.*?)(?=^}} {tag};$)".format(tag=tag),
         repl,
         features,
         count=1,
-        flags=re.DOTALL | re.MULTILINE)
+        flags=re.DOTALL | re.MULTILINE,
+    )
 
 
 def to_glyphs_features(self):
@@ -192,14 +200,16 @@ def to_glyphs_features(self):
     if _features_are_different_across_ufos(self):
         if self.minimize_ufo_diffs:
             self.logger.warning(
-                'Feature files are different across UFOs. The produced Glyphs '
-                'file will have no editable features.')
+                "Feature files are different across UFOs. The produced Glyphs "
+                "file will have no editable features."
+            )
             # Do all UFOs, not only the first one
             _to_glyphs_features_basic(self)
             return
         self.logger.warning(
-            'Feature files are different across UFOs. The produced Glyphs '
-            'file will reflect only the features of the first UFO.')
+            "Feature files are different across UFOs. The produced Glyphs "
+            "file will reflect only the features of the first UFO."
+        )
 
     # Split the feature file of the first UFO into GSFeatures
     ufo = self.designspace.sources[0].font
@@ -213,10 +223,10 @@ def to_glyphs_features(self):
 def _features_are_different_across_ufos(self):
     # FIXME: requires that features are in the same order in all feature files;
     #   the only allowed differences are whitespace
-    reference = self.designspace.sources[0].font.features.text or ''
+    reference = self.designspace.sources[0].font.features.text or ""
     reference = _normalize_whitespace(reference)
     for source in self.designspace.sources[1:]:
-        other = _normalize_whitespace(source.font.features.text or '')
+        other = _normalize_whitespace(source.font.features.text or "")
         if reference != other:
             return True
     return False
@@ -225,19 +235,21 @@ def _features_are_different_across_ufos(self):
 def _normalize_whitespace(text):
     # FIXME: does not take into account "significant" whitespace like
     # whitespace in a UI string
-    return re.sub(r'\s+', ' ', text)
+    return re.sub(r"\s+", " ", text)
 
 
 def _to_glyphs_features_basic(self):
     prefix = self.glyphs_module.GSFeaturePrefix()
-    prefix.name = 'WARNING'
-    prefix.code = dedent('''\
+    prefix.name = "WARNING"
+    prefix.code = dedent(
+        """\
         # Do not use Glyphs to edit features.
         #
         # This Glyphs file was made from several UFOs that had different
         # features. As a result, the features are not editable in Glyphs and
         # the original features will be restored when you go back to UFOs.
-    ''')
+    """
+    )
     self.font.featurePrefixes.append(prefix)
     for master_id, source in self._sources.items():
         master = self.font.masters[master_id]
@@ -246,6 +258,7 @@ def _to_glyphs_features_basic(self):
 
 class FeaDocument(object):
     """Parse the string of a fea code into statements."""
+
     def __init__(self, text, glyph_set):
         feature_file = StringIO(text)
         parser_ = parser.Parser(feature_file, glyph_set, followIncludes=False)
@@ -255,20 +268,19 @@ class FeaDocument(object):
         self._build_end_locations()
 
     def text(self, statements):
-        """Recover the original fea code of the given statements from the
-        given block.
-        """
-        return ''.join(self._statement_text(st) for st in statements)
+        """Recover the original fea code of the given statements from the given
+        block."""
+        return "".join(self._statement_text(st) for st in statements)
 
     def _statement_text(self, statement):
         _, begin_line, begin_char = statement.location
         _, end_line, end_char = statement.end_location
-        lines = self._lines[begin_line - 1:end_line]
+        lines = self._lines[begin_line - 1 : end_line]
         if lines:
             # In case it's the same line, we need to trim the end first
             lines[-1] = lines[-1][:end_char]
-            lines[0] = lines[0][begin_char - 1:]
-        return ''.join(lines)
+            lines[0] = lines[0][begin_char - 1 :]
+        return "".join(lines)
 
     def _build_end_locations(self):
         # The statements in the ast only have their start location, but we also
@@ -277,9 +289,11 @@ class FeaDocument(object):
         # Add a fake statement at the end, it's the only one that won't get
         # a proper end_location, but its presence will help compute the
         # end_location of the real last statement(s).
-        self._lines.append('#')  # Line corresponding to the fake statement
+        self._lines.append("#")  # Line corresponding to the fake statement
         fake_location = (None, len(self._lines), 1)
-        self._doc.statements.append(ast.Comment(text="Sentinel", location=fake_location))
+        self._doc.statements.append(
+            ast.Comment(text="Sentinel", location=fake_location)
+        )
         self._build_end_locations_rec(self._doc)
         # Remove the fake last statement
         self._lines.pop()
@@ -293,22 +307,21 @@ class FeaDocument(object):
         previous = None
         previous_in_block = None
         for st in block.statements:
-            if hasattr(st, 'statements'):
+            if hasattr(st, "statements"):
                 self._build_end_locations_rec(st)
             if previous is not None:
                 _, line, char = st.location
                 line, char = self._previous_char(line, char)
                 previous.end_location = (None, line, char)
             if previous_in_block is not None:
-                previous_in_block.end_location = self._in_block_end_location(
-                    previous)
+                previous_in_block.end_location = self._in_block_end_location(previous)
                 previous_in_block = None
             previous = st
-            if hasattr(st, 'statements'):
+            if hasattr(st, "statements"):
                 previous_in_block = st.statements[-1]
 
-    WHITESPACE_RE = re.compile('\\s')
-    WHITESPACE_OR_NAME_RE = re.compile('\\w|\\s')
+    WHITESPACE_RE = re.compile("\\s")
+    WHITESPACE_OR_NAME_RE = re.compile("\\w|\\s")
 
     def _previous_char(self, line, char):
         char -= 1
@@ -324,7 +337,7 @@ class FeaDocument(object):
             return self._lines[line - 1][char - 1]
 
         # Find the semicolon
-        while current_char(line, char) != ';':
+        while current_char(line, char) != ";":
             assert self.WHITESPACE_RE.match(current_char(line, char))
             line, char = self._previous_char(line, char)
         # Skip it
@@ -333,7 +346,7 @@ class FeaDocument(object):
         while self.WHITESPACE_OR_NAME_RE.match(current_char(line, char)):
             line, char = self._previous_char(line, char)
         # It should be the closing bracket
-        assert current_char(line, char) == '}'
+        assert current_char(line, char) == "}"
         # Skip it and we're done
         line, char = self._previous_char(line, char)
 
@@ -342,6 +355,7 @@ class FeaDocument(object):
 
 class PeekableIterator(object):
     """Helper class to iterate and peek over a list."""
+
     def __init__(self, list):
         self.index = 0
         self.list = list
@@ -360,6 +374,7 @@ class PeekableIterator(object):
 
 class FeatureFileProcessor(object):
     """Put fea statements into the correct fields of a GSFont."""
+
     def __init__(self, doc, glyphs_module):
         self.doc = doc
         self.glyphs_module = glyphs_module
@@ -371,24 +386,27 @@ class FeatureFileProcessor(object):
         self._font
         self._process_file()
 
-    PREFIX_RE = re.compile('^# Prefix: (.*)$')
-    AUTOMATIC_RE = re.compile('^# automatic$')
-    DISABLED_RE = re.compile('^# disabled$')
-    NOTES_RE = re.compile('^# notes:$')
+    PREFIX_RE = re.compile("^# Prefix: (.*)$")
+    AUTOMATIC_RE = re.compile("^# automatic$")
+    DISABLED_RE = re.compile("^# disabled$")
+    NOTES_RE = re.compile("^# notes:$")
 
     def _process_file(self):
         unhandled_root_elements = []
         while self.statements.has_next():
-            if (self._process_prefix() or
-                    self._process_glyph_class_definition() or
-                    self._process_feature_block() or
-                    self._process_gdef_table_block()):
+            if (
+                self._process_prefix()
+                or self._process_glyph_class_definition()
+                or self._process_feature_block()
+                or self._process_gdef_table_block()
+            ):
                 # Flush any unhandled root elements into an anonymous prefix
                 if unhandled_root_elements:
                     prefix = self.glyphs_module.GSFeaturePrefix()
                     prefix.name = ANONYMOUS_FEATURE_PREFIX_NAME
                     prefix.code = self._rstrip_newlines(
-                        self.doc.text(unhandled_root_elements))
+                        self.doc.text(unhandled_root_elements)
+                    )
                     self._font.featurePrefixes.append(prefix)
                     unhandled_root_elements.clear()
             else:
@@ -399,8 +417,7 @@ class FeatureFileProcessor(object):
         if unhandled_root_elements:
             prefix = self.glyphs_module.GSFeaturePrefix()
             prefix.name = ANONYMOUS_FEATURE_PREFIX_NAME
-            prefix.code = self._rstrip_newlines(
-                self.doc.text(unhandled_root_elements))
+            prefix.code = self._rstrip_newlines(self.doc.text(unhandled_root_elements))
             self._font.featurePrefixes.append(prefix)
 
     def _process_prefix(self):
@@ -417,8 +434,9 @@ class FeatureFileProcessor(object):
         while self.statements.has_next():
             st = self.statements.peek()
             # Don't consume statements that are treated specially
-            if isinstance(st, (ast.GlyphClassDefinition, ast.FeatureBlock,
-                               ast.TableBlock)):
+            if isinstance(
+                st, (ast.GlyphClassDefinition, ast.FeatureBlock, ast.TableBlock)
+            ):
                 break
             # Don't comsume a comment if it is the start of another prefix...
             if isinstance(st, ast.Comment):
@@ -428,7 +446,8 @@ class FeatureFileProcessor(object):
                 if self.statements.has_next(1):
                     next_st = self.statements.peek(1)
                     if self.AUTOMATIC_RE.match(st.text) and isinstance(
-                            next_st, ast.GlyphClassDefinition):
+                        next_st, ast.GlyphClassDefinition
+                    ):
                         break
             prefix_statements.append(st)
             self.statements.next()
@@ -436,10 +455,10 @@ class FeatureFileProcessor(object):
         prefix = self.glyphs_module.GSFeaturePrefix()
         prefix.name = match.group(1)
         automatic, prefix_statements = self._pop_comment(
-            prefix_statements, self.AUTOMATIC_RE)
+            prefix_statements, self.AUTOMATIC_RE
+        )
         prefix.automatic = bool(automatic)
-        prefix.code = self._rstrip_newlines(
-            self.doc.text(prefix_statements), 2)
+        prefix.code = self._rstrip_newlines(self.doc.text(prefix_statements), 2)
         self._font.featurePrefixes.append(prefix)
         return True
 
@@ -470,12 +489,12 @@ class FeatureFileProcessor(object):
                 for glyph in st.glyphs.original:
                     try:
                         # Class name (GlyphClassName object)
-                        elements.append('@' + glyph.glyphclass.name)
+                        elements.append("@" + glyph.glyphclass.name)
                     except AttributeError:
                         try:
                             # Class name (GlyphClassDefinition object)
                             # FIXME: (jany) why not always the same type?
-                            elements.append('@' + glyph.name)
+                            elements.append("@" + glyph.name)
                         except AttributeError:
                             # Glyph name
                             elements.append(glyph)
@@ -483,8 +502,8 @@ class FeatureFileProcessor(object):
                 elements = st.glyphSet()
         except AttributeError:
             # Single class
-            elements.append('@' + st.glyphs.glyphclass.name)
-        glyph_class.code = ' '.join(elements)
+            elements.append("@" + st.glyphs.glyphclass.name)
+        glyph_class.code = " ".join(elements)
         glyph_class.automatic = bool(automatic)
         self._font.classes.append(glyph_class)
         return True
@@ -495,12 +514,11 @@ class FeatureFileProcessor(object):
             return False
         self.statements.next()
         contents = st.statements
-        automatic, contents = self._pop_comment(
-            contents, self.AUTOMATIC_RE)
+        automatic, contents = self._pop_comment(contents, self.AUTOMATIC_RE)
         disabled, disabled_text, contents = self._pop_comment_block(
-            contents, self.DISABLED_RE)
-        notes, notes_text, contents = self._pop_comment_block(
-            contents, self.NOTES_RE)
+            contents, self.DISABLED_RE
+        )
+        notes, notes_text, contents = self._pop_comment_block(contents, self.NOTES_RE)
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
@@ -519,7 +537,7 @@ class FeatureFileProcessor(object):
 
     def _process_gdef_table_block(self):
         st = self.statements.peek()
-        if not isinstance(st, ast.TableBlock) or st.name != 'GDEF':
+        if not isinstance(st, ast.TableBlock) or st.name != "GDEF":
             return False
         # TODO: read an existing GDEF table and do something with it?
         # For now, this function returns False to say that it has not handled
@@ -529,8 +547,9 @@ class FeatureFileProcessor(object):
 
     def _pop_comment(self, statements, comment_re):
         """Look for the comment that matches the given regex.
-        If it matches, return the regex match object and list of statements
-        without the special one.
+
+        If it matches, return the regex match object and list of
+        statements without the special one.
         """
         res = []
         match = None
@@ -545,7 +564,9 @@ class FeatureFileProcessor(object):
 
     def _pop_comment_block(self, statements, header_re):
         """Look for a series of comments that start with one that matches the
-        regex. If the first comment is found, all subsequent comments are
+        regex.
+
+        If the first comment is found, all subsequent comments are
         popped from statements, concatenated and dedented and returned.
         """
         res = []
@@ -574,12 +595,11 @@ class FeatureFileProcessor(object):
         # Keep the rest of the statements
         res.extend(list(st_iter))
         # Inside the comment block, drop the pound sign and any common indent
-        return (match, dedent(''.join(c.text[1:] + "\n" for c in comments)),
-                res)
+        return (match, dedent("".join(c.text[1:] + "\n" for c in comments)), res)
 
     # Strip up to the given number of newlines from the right end of the string
     def _rstrip_newlines(self, string, number=1):
         for i in range(number):
-            if string and string[-1] == '\n':
+            if string and string[-1] == "\n":
                 string = string[:-1]
         return string

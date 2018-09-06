@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
 import posixpath
 
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
-UFO_DATA_KEY = GLYPHLIB_PREFIX + 'ufoData'
-FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + 'fontUserData'
-LAYER_LIB_KEY = GLYPHLIB_PREFIX + 'layerLib'
-GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + 'glyphUserData'
-NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + 'nodeUserData'
+UFO_DATA_KEY = GLYPHLIB_PREFIX + "ufoData"
+FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "fontUserData"
+LAYER_LIB_KEY = GLYPHLIB_PREFIX + "layerLib"
+GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + "glyphUserData"
+NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + "nodeUserData"
 
 
 def to_designspace_family_user_data(self):
@@ -49,18 +48,18 @@ def to_ufo_master_user_data(self, ufo, master):
     # Restore UFO data files
     if UFO_DATA_KEY in master.userData:
         for filename, data in master.userData[UFO_DATA_KEY].items():
-            os_filename = os.path.join(*filename.split('/'))
+            os_filename = os.path.join(*filename.split("/"))
             ufo.data[os_filename] = bytes(data)
 
 
 def to_ufo_glyph_user_data(self, ufo, glyph):
-    key = GLYPH_USER_DATA_KEY + '.' + glyph.name
+    key = GLYPH_USER_DATA_KEY + "." + glyph.name
     if glyph.userData:
         ufo.lib[key] = dict(glyph.userData)
 
 
 def to_ufo_layer_lib(self, ufo_layer):
-    key = LAYER_LIB_KEY + '.' + ufo_layer.name
+    key = LAYER_LIB_KEY + "." + ufo_layer.name
     if key in self.font.userData.keys():
         ufo_layer.lib = self.font.userData[key]
 
@@ -76,7 +75,7 @@ def to_ufo_node_user_data(self, ufo_glyph, node):
     user_data = node.userData
     if user_data:
         path_index, node_index = node._indices()
-        key = '{}.{}.{}'.format(NODE_USER_DATA_KEY, path_index, node_index)
+        key = "{}.{}.{}".format(NODE_USER_DATA_KEY, path_index, node_index)
         ufo_glyph.lib[key] = dict(user_data)
 
 
@@ -111,6 +110,7 @@ def to_glyphs_master_user_data(self, ufo, master):
     # Save UFO data files
     if ufo.data.fileNames:
         from glyphsLib.types import BinaryData
+
         ufo_data = {}
         for os_filename in ufo.data.fileNames:
             filename = posixpath.join(*os_filename.split(os.path.sep))
@@ -119,7 +119,7 @@ def to_glyphs_master_user_data(self, ufo, master):
 
 
 def to_glyphs_glyph_user_data(self, ufo, glyph):
-    key = GLYPH_USER_DATA_KEY + '.' + glyph.name
+    key = GLYPH_USER_DATA_KEY + "." + glyph.name
     if key in ufo.lib:
         glyph.userData = ufo.lib[key]
 
@@ -131,7 +131,7 @@ def to_glyphs_layer_lib(self, ufo_layer):
             user_data[key] = value
 
     if user_data:
-        key = LAYER_LIB_KEY + '.' + ufo_layer.name
+        key = LAYER_LIB_KEY + "." + ufo_layer.name
         self.font.userData[key] = user_data
 
 
@@ -144,7 +144,7 @@ def to_glyphs_layer_user_data(self, ufo_glyph, layer):
 
 def to_glyphs_node_user_data(self, ufo_glyph, node):
     path_index, node_index = node._indices()
-    key = '{}.{}.{}'.format(NODE_USER_DATA_KEY, path_index, node_index)
+    key = "{}.{}.{}".format(NODE_USER_DATA_KEY, path_index, node_index)
     if key in ufo_glyph.lib:
         node.userData = ufo_glyph.lib[key]
 

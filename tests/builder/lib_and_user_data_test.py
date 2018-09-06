@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
 import pytest
@@ -34,21 +33,21 @@ from glyphsLib import to_glyphs, to_ufos, to_designspace
 
 def test_designspace_lib_equivalent_to_font_user_data(tmpdir):
     designspace = DesignSpaceDocument()
-    designspace.lib['designspaceLibKey1'] = 'designspaceLibValue1'
+    designspace.lib["designspaceLibKey1"] = "designspaceLibValue1"
 
     # Save to disk and reload the designspace to test the write/read of lib
-    path = os.path.join(str(tmpdir), 'test.designspace')
+    path = os.path.join(str(tmpdir), "test.designspace")
     designspace.write(path)
     designspace = DesignSpaceDocument()
     designspace.read(path)
 
     font = to_glyphs(designspace)
 
-    assert font.userData['designspaceLibKey1'] == 'designspaceLibValue1'
+    assert font.userData["designspaceLibKey1"] == "designspaceLibValue1"
 
     designspace = to_designspace(font)
 
-    assert designspace.lib['designspaceLibKey1'] == 'designspaceLibValue1'
+    assert designspace.lib["designspaceLibKey1"] == "designspaceLibValue1"
 
 
 def test_font_user_data_to_ufo_lib():
@@ -58,57 +57,57 @@ def test_font_user_data_to_ufo_lib():
     font = classes.GSFont()
     font.masters.append(classes.GSFontMaster())
     font.masters.append(classes.GSFontMaster())
-    font.userData['fontUserDataKey'] = 'fontUserDataValue'
+    font.userData["fontUserDataKey"] = "fontUserDataValue"
 
     ufo1, ufo2 = to_ufos(font)
 
-    assert ufo1.lib[GLYPHLIB_PREFIX + 'fontUserData'] == {
-        'fontUserDataKey': 'fontUserDataValue'
+    assert ufo1.lib[GLYPHLIB_PREFIX + "fontUserData"] == {
+        "fontUserDataKey": "fontUserDataValue"
     }
-    assert ufo2.lib[GLYPHLIB_PREFIX + 'fontUserData'] == {
-        'fontUserDataKey': 'fontUserDataValue'
+    assert ufo2.lib[GLYPHLIB_PREFIX + "fontUserData"] == {
+        "fontUserDataKey": "fontUserDataValue"
     }
 
     font = to_glyphs([ufo1, ufo2])
 
-    assert font.userData['fontUserDataKey'] == 'fontUserDataValue'
+    assert font.userData["fontUserDataKey"] == "fontUserDataValue"
 
 
 def test_ufo_lib_equivalent_to_font_master_user_data():
     ufo1 = defcon.Font()
-    ufo1.lib['ufoLibKey1'] = 'ufoLibValue1'
+    ufo1.lib["ufoLibKey1"] = "ufoLibValue1"
     ufo2 = defcon.Font()
-    ufo2.lib['ufoLibKey2'] = 'ufoLibValue2'
+    ufo2.lib["ufoLibKey2"] = "ufoLibValue2"
 
     font = to_glyphs([ufo1, ufo2])
 
-    assert font.masters[0].userData['ufoLibKey1'] == 'ufoLibValue1'
-    assert font.masters[1].userData['ufoLibKey2'] == 'ufoLibValue2'
+    assert font.masters[0].userData["ufoLibKey1"] == "ufoLibValue1"
+    assert font.masters[1].userData["ufoLibKey2"] == "ufoLibValue2"
 
     ufo1, ufo2 = to_ufos(font)
 
-    assert ufo1.lib['ufoLibKey1'] == 'ufoLibValue1'
-    assert ufo2.lib['ufoLibKey2'] == 'ufoLibValue2'
-    assert 'ufoLibKey2' not in ufo1.lib
-    assert 'ufoLibKey1' not in ufo2.lib
+    assert ufo1.lib["ufoLibKey1"] == "ufoLibValue1"
+    assert ufo2.lib["ufoLibKey2"] == "ufoLibValue2"
+    assert "ufoLibKey2" not in ufo1.lib
+    assert "ufoLibKey1" not in ufo2.lib
 
 
 def test_ufo_data_into_font_master_user_data(tmpdir):
-    filename = os.path.join('org.customTool', 'ufoData.bin')
-    data = b'\x00\x01\xFF'
+    filename = os.path.join("org.customTool", "ufoData.bin")
+    data = b"\x00\x01\xFF"
     ufo = defcon.Font()
     ufo.data[filename] = data
 
     font = to_glyphs([ufo])
     # Round-trip to disk for this one because I'm not sure there are other
     # tests that read-write binary data
-    path = os.path.join(str(tmpdir), 'font.glyphs')
+    path = os.path.join(str(tmpdir), "font.glyphs")
     font.save(path)
     font = classes.GSFont(path)
 
     # The path in the glyphs file should be os-agnostic (forward slashes)
-    assert font.masters[0].userData[GLYPHLIB_PREFIX + 'ufoData'] == {
-        'org.customTool/ufoData.bin': BinaryData(data)
+    assert font.masters[0].userData[GLYPHLIB_PREFIX + "ufoData"] == {
+        "org.customTool/ufoData.bin": BinaryData(data)
     }
 
     ufo, = to_ufos(font)
@@ -118,34 +117,34 @@ def test_ufo_data_into_font_master_user_data(tmpdir):
 
 def test_layer_lib_into_font_user_data():
     ufo = defcon.Font()
-    ufo.layers['public.default'].lib['layerLibKey1'] = 'layerLibValue1'
-    layer = ufo.newLayer('sketches')
-    layer.lib['layerLibKey2'] = 'layerLibValue2'
+    ufo.layers["public.default"].lib["layerLibKey1"] = "layerLibValue1"
+    layer = ufo.newLayer("sketches")
+    layer.lib["layerLibKey2"] = "layerLibValue2"
     # layers won't roundtrip if they contain no glyph, except for the default
-    layer.newGlyph('bob')
+    layer.newGlyph("bob")
 
     font = to_glyphs([ufo])
 
-    assert font.userData[GLYPHLIB_PREFIX + 'layerLib.public.default'] == {
-        'layerLibKey1': 'layerLibValue1'
+    assert font.userData[GLYPHLIB_PREFIX + "layerLib.public.default"] == {
+        "layerLibKey1": "layerLibValue1"
     }
-    assert font.userData[GLYPHLIB_PREFIX + 'layerLib.sketches'] == {
-        'layerLibKey2': 'layerLibValue2'
+    assert font.userData[GLYPHLIB_PREFIX + "layerLib.sketches"] == {
+        "layerLibKey2": "layerLibValue2"
     }
 
     ufo, = to_ufos(font)
 
-    assert ufo.layers['public.default'].lib['layerLibKey1'] == 'layerLibValue1'
-    assert 'layerLibKey1' not in ufo.layers['sketches'].lib
-    assert ufo.layers['sketches'].lib['layerLibKey2'] == 'layerLibValue2'
-    assert 'layerLibKey2' not in ufo.layers['public.default'].lib
+    assert ufo.layers["public.default"].lib["layerLibKey1"] == "layerLibValue1"
+    assert "layerLibKey1" not in ufo.layers["sketches"].lib
+    assert ufo.layers["sketches"].lib["layerLibKey2"] == "layerLibValue2"
+    assert "layerLibKey2" not in ufo.layers["public.default"].lib
 
 
 def test_glyph_user_data_into_ufo_lib():
     font = classes.GSFont()
     font.masters.append(classes.GSFontMaster())
-    glyph = classes.GSGlyph('a')
-    glyph.userData['glyphUserDataKey'] = 'glyphUserDataValue'
+    glyph = classes.GSGlyph("a")
+    glyph.userData["glyphUserDataKey"] = "glyphUserDataValue"
     font.glyphs.append(glyph)
     layer = classes.GSLayer()
     layer.layerId = font.masters[0].id
@@ -153,54 +152,52 @@ def test_glyph_user_data_into_ufo_lib():
 
     ufo, = to_ufos(font)
 
-    assert ufo.lib[GLYPHLIB_PREFIX + 'glyphUserData.a'] == {
-        'glyphUserDataKey': 'glyphUserDataValue'
+    assert ufo.lib[GLYPHLIB_PREFIX + "glyphUserData.a"] == {
+        "glyphUserDataKey": "glyphUserDataValue"
     }
 
     font = to_glyphs([ufo])
 
-    assert font.glyphs['a'].userData[
-        'glyphUserDataKey'] == 'glyphUserDataValue'
+    assert font.glyphs["a"].userData["glyphUserDataKey"] == "glyphUserDataValue"
 
 
 def test_glif_lib_equivalent_to_layer_user_data():
     ufo = defcon.Font()
     # This glyph is in the `public.default` layer
-    a = ufo.newGlyph('a')
-    a.lib['glifLibKeyA'] = 'glifLibValueA'
-    customLayer = ufo.newLayer('middleground')
+    a = ufo.newGlyph("a")
+    a.lib["glifLibKeyA"] = "glifLibValueA"
+    customLayer = ufo.newLayer("middleground")
     # "a" is in both layers
-    customLayer.newGlyph('a')
+    customLayer.newGlyph("a")
     # "b" is only in the second layer
-    b = customLayer.newGlyph('b')
-    b.lib['glifLibKeyB'] = 'glifLibValueB'
+    b = customLayer.newGlyph("b")
+    b.lib["glifLibKeyB"] = "glifLibValueB"
 
     font = to_glyphs([ufo])
 
-    for layer_id in font.glyphs['a'].layers.keys():
-        layer = font.glyphs['a'].layers[layer_id]
+    for layer_id in font.glyphs["a"].layers.keys():
+        layer = font.glyphs["a"].layers[layer_id]
         if layer.layerId == font.masters[0].id:
             default_layer = layer
         else:
             middleground = layer
-    assert default_layer.userData['glifLibKeyA'] == 'glifLibValueA'
-    assert 'glifLibKeyA' not in middleground.userData.keys()
+    assert default_layer.userData["glifLibKeyA"] == "glifLibValueA"
+    assert "glifLibKeyA" not in middleground.userData.keys()
 
-    for layer_id in font.glyphs['b'].layers.keys():
-        layer = font.glyphs['b'].layers[layer_id]
+    for layer_id in font.glyphs["b"].layers.keys():
+        layer = font.glyphs["b"].layers[layer_id]
         if layer.layerId == font.masters[0].id:
             default_layer = layer
         else:
             middleground = layer
-    assert 'glifLibKeyB' not in default_layer.userData.keys()
-    assert middleground.userData['glifLibKeyB'] == 'glifLibValueB'
+    assert "glifLibKeyB" not in default_layer.userData.keys()
+    assert middleground.userData["glifLibKeyB"] == "glifLibValueB"
 
     ufo, = to_ufos(font)
 
-    assert ufo['a'].lib['glifLibKeyA'] == 'glifLibValueA'
-    assert 'glifLibKeyA' not in ufo.layers['middleground']['a']
-    assert ufo.layers['middleground']['b'].lib[
-        'glifLibKeyB'] == 'glifLibValueB'
+    assert ufo["a"].lib["glifLibKeyA"] == "glifLibValueA"
+    assert "glifLibKeyA" not in ufo.layers["middleground"]["a"]
+    assert ufo.layers["middleground"]["b"].lib["glifLibKeyB"] == "glifLibValueB"
 
 
 def test_node_user_data_into_glif_lib():
@@ -208,7 +205,7 @@ def test_node_user_data_into_glif_lib():
     master = classes.GSFontMaster()
     master.id = "M1"
     font.masters.append(master)
-    glyph = classes.GSGlyph('a')
+    glyph = classes.GSGlyph("a")
     layer = classes.GSLayer()
     layer.layerId = "M1"
     layer.associatedMasterId = "M1"
@@ -217,9 +214,9 @@ def test_node_user_data_into_glif_lib():
     path = classes.GSPath()
     layer.paths.append(path)
     node1 = classes.GSNode()
-    node1.userData['nodeUserDataKey1'] = 'nodeUserDataValue1'
+    node1.userData["nodeUserDataKey1"] = "nodeUserDataValue1"
     node2 = classes.GSNode()
-    node2.userData['nodeUserDataKey2'] = 'nodeUserDataValue2'
+    node2.userData["nodeUserDataKey2"] = "nodeUserDataValue2"
     path.nodes.append(classes.GSNode())
     path.nodes.append(node1)
     path.nodes.append(classes.GSNode())
@@ -228,40 +225,40 @@ def test_node_user_data_into_glif_lib():
 
     ufo, = to_ufos(font, minimize_glyphs_diffs=True)
 
-    assert ufo['a'].lib[
-        GLYPHLIB_PREFIX + 'nodeUserData.0.1'] == {
-            'nodeUserDataKey1': 'nodeUserDataValue1'
-        }
-    assert ufo['a'].lib[
-        GLYPHLIB_PREFIX + 'nodeUserData.0.4'] == {
-            'nodeUserDataKey2': 'nodeUserDataValue2'
-        }
+    assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.1"] == {
+        "nodeUserDataKey1": "nodeUserDataValue1"
+    }
+    assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.4"] == {
+        "nodeUserDataKey2": "nodeUserDataValue2"
+    }
 
     font = to_glyphs([ufo])
 
-    path = font.glyphs['a'].layers['M1'].paths[0]
-    assert path.nodes[1].userData['nodeUserDataKey1'] == 'nodeUserDataValue1'
-    assert path.nodes[4].userData['nodeUserDataKey2'] == 'nodeUserDataValue2'
+    path = font.glyphs["a"].layers["M1"].paths[0]
+    assert path.nodes[1].userData["nodeUserDataKey1"] == "nodeUserDataValue1"
+    assert path.nodes[4].userData["nodeUserDataKey2"] == "nodeUserDataValue2"
 
 
 def test_lib_data_types(tmpdir):
     # Test the roundtrip of a few basic types both at the top level and in a
     # nested object.
-    data = OrderedDict({
-        'boolean': True,
-        'smooth': False,
-        'integer': 1,
-        'float': 0.5,
-        'array': [],
-        'dict': {},
-    })
+    data = OrderedDict(
+        {
+            "boolean": True,
+            "smooth": False,
+            "integer": 1,
+            "float": 0.5,
+            "array": [],
+            "dict": {},
+        }
+    )
     ufo = defcon.Font()
-    a = ufo.newGlyph('a')
+    a = ufo.newGlyph("a")
     for key, value in data.items():
         a.lib[key] = value
-        a.lib['nestedDict'] = dict(data)
-        a.lib['nestedArray'] = list(data.values())
-        a.lib['crazyNesting'] = [{'a': [{'b': [dict(data)]}]}]
+        a.lib["nestedDict"] = dict(data)
+        a.lib["nestedArray"] = list(data.values())
+        a.lib["crazyNesting"] = [{"a": [{"b": [dict(data)]}]}]
 
     font = to_glyphs([ufo])
 
@@ -275,11 +272,11 @@ def test_lib_data_types(tmpdir):
     ufo, = to_ufos(font)
 
     for index, (key, value) in enumerate(data.items()):
-        assert value == ufo['a'].lib[key]
-        assert value == ufo['a'].lib['nestedDict'][key]
-        assert value == ufo['a'].lib['nestedArray'][index]
-        assert value == ufo['a'].lib['crazyNesting'][0]['a'][0]['b'][0][key]
-        assert type(value) == type(ufo['a'].lib[key])
-        assert type(value) == type(ufo['a'].lib['nestedDict'][key])
-        assert type(value) == type(ufo['a'].lib['nestedArray'][index])
-        assert type(value) == type(ufo['a'].lib['crazyNesting'][0]['a'][0]['b'][0][key])
+        assert value == ufo["a"].lib[key]
+        assert value == ufo["a"].lib["nestedDict"][key]
+        assert value == ufo["a"].lib["nestedArray"][index]
+        assert value == ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key]
+        assert type(value) == type(ufo["a"].lib[key])
+        assert type(value) == type(ufo["a"].lib["nestedDict"][key])
+        assert type(value) == type(ufo["a"].lib["nestedArray"][index])
+        assert type(value) == type(ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key])
