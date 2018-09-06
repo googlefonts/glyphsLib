@@ -14,7 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import collections
 import os
@@ -37,7 +42,9 @@ GLYPHSDATA = None
 class GlyphsData:
     __slots__ = ["names", "alternative_names", "production_names"]
 
-    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping):
+    def __init__(
+        self, name_mapping, alt_name_mapping, production_name_mapping
+    ):
         self.names = name_mapping
         self.alternative_names = alt_name_mapping
         self.production_names = production_name_mapping
@@ -57,11 +64,15 @@ class GlyphsData:
 
                 name_mapping[glyph_name] = glyph.attrib
                 if glyph_name_alternatives:
-                    alternatives = glyph_name_alternatives.replace(" ", "").split(",")
+                    alternatives = glyph_name_alternatives.replace(
+                        " ", ""
+                    ).split(",")
                     for glyph_name_alternative in alternatives:
                         alt_name_mapping[glyph_name_alternative] = glyph.attrib
                 if glyph_name_production:
-                    production_name_mapping[glyph_name_production] = glyph.attrib
+                    production_name_mapping[
+                        glyph_name_production
+                    ] = glyph.attrib
 
         return cls(name_mapping, alt_name_mapping, production_name_mapping)
 
@@ -77,9 +88,13 @@ def get_glyph(glyph_name):
 
     if GLYPHSDATA is None:
         GLYPHSDATA = GlyphsData.from_files(
-            os.path.join(os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"),
             os.path.join(
-                os.path.dirname(glyphsLib.__file__), "data", "GlyphData_Ideographs.xml"
+                os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
+            ),
+            os.path.join(
+                os.path.dirname(glyphsLib.__file__),
+                "data",
+                "GlyphData_Ideographs.xml",
             ),
         )
 
@@ -90,9 +105,9 @@ def get_glyph(glyph_name):
         or {}
     )
 
-    production_name = attributes.get("production") or _construct_production_name(
-        glyph_name
-    )
+    production_name = attributes.get(
+        "production"
+    ) or _construct_production_name(glyph_name)
     unicode_value = attributes.get("unicode")
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
@@ -110,7 +125,9 @@ def get_glyph(glyph_name):
                 glyph_name, unicodedata.category(character[0])
             )
 
-    return Glyph(glyph_name, production_name, unicode_value, category, sub_category)
+    return Glyph(
+        glyph_name, production_name, unicode_value, category, sub_category
+    )
 
 
 def _agl_compliant_name(glyph_name):
@@ -161,7 +178,9 @@ def _construct_category(glyph_name, unicode_category):
         "Zs": ("Separator", "Space"),
     }
 
-    glyphs_category = DEFAULT_CATEGORIES.get(unicode_category, ("Letter", None))
+    glyphs_category = DEFAULT_CATEGORIES.get(
+        unicode_category, ("Letter", None)
+    )
 
     if "_" in glyph_name and glyphs_category[0] != "Mark":
         return (glyphs_category[0], "Ligature")
