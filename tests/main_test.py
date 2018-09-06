@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import unittest
 import subprocess
@@ -32,17 +31,23 @@ def test_glyphs_main_masters(tmpdir):
     """
     import fontTools.designspaceLib
 
-    filename = os.path.join(
-        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
-    master_dir = os.path.join(str(tmpdir), 'master_ufos_test')
+    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
+    master_dir = os.path.join(str(tmpdir), "master_ufos_test")
 
-    glyphsLib.cli.main([
-        "glyphs2ufo", filename, '-m', master_dir, '-n',
-        os.path.join(master_dir, 'hurf'), '--no-normalize-ufo'
-    ])
+    glyphsLib.cli.main(
+        [
+            "glyphs2ufo",
+            filename,
+            "-m",
+            master_dir,
+            "-n",
+            os.path.join(master_dir, "hurf"),
+            "--no-normalize-ufo",
+        ]
+    )
 
-    assert glob.glob(master_dir + '/*.ufo')
-    ds = glob.glob(master_dir + '/GlyphsUnitTestSans.designspace')
+    assert glob.glob(master_dir + "/*.ufo")
+    ds = glob.glob(master_dir + "/GlyphsUnitTestSans.designspace")
     assert ds
     designspace = fontTools.designspaceLib.DesignSpaceDocument()
     designspace.read(ds[0])
@@ -58,11 +63,10 @@ def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(
-        os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
     with open(filename) as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
     out, _err = capsys.readouterr()
-    assert expected == out, 'The roundtrip should output the .glyphs file unmodified.'
+    assert expected == out, "The roundtrip should output the .glyphs file unmodified."

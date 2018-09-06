@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import re
 
-UFO_KERN_GROUP_PATTERN = re.compile('^public\\.kern([12])\\.(.*)$')
+UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 
 def to_ufo_kerning(self):
@@ -28,21 +27,21 @@ def to_ufo_kerning(self):
 def _to_ufo_kerning(self, ufo, kerning_data):
     """Add .glyphs kerning to an UFO."""
 
-    warning_msg = 'Non-existent glyph class %s found in kerning rules.'
+    warning_msg = "Non-existent glyph class %s found in kerning rules."
     class_glyph_pairs = []
 
     for left, pairs in kerning_data.items():
-        match = re.match(r'@MMK_L_(.+)', left)
+        match = re.match(r"@MMK_L_(.+)", left)
         left_is_class = bool(match)
         if left_is_class:
-            left = 'public.kern1.%s' % match.group(1)
+            left = "public.kern1.%s" % match.group(1)
             if left not in ufo.groups:
                 self.logger.warning(warning_msg % left)
         for right, kerning_val in pairs.items():
-            match = re.match(r'@MMK_R_(.+)', right)
+            match = re.match(r"@MMK_R_(.+)", right)
             right_is_class = bool(match)
             if right_is_class:
-                right = 'public.kern2.%s' % match.group(1)
+                right = "public.kern2.%s" % match.group(1)
                 if right not in ufo.groups:
                     self.logger.warning(warning_msg % right)
             if left_is_class != right_is_class:
@@ -55,8 +54,7 @@ def _to_ufo_kerning(self, ufo, kerning_data):
 
     seen = {}
     for classname, glyph, is_left_class in reversed(class_glyph_pairs):
-        _remove_rule_if_conflict(self, ufo, seen, classname, glyph,
-                                 is_left_class)
+        _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class)
 
 
 def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
@@ -77,13 +75,16 @@ def _remove_rule_if_conflict(self, ufo, seen, classname, glyph, is_left_class):
     for member in old_glyphs:
         pair = (member, glyph) if is_left_class else (glyph, member)
         existing_rule = seen.get(pair)
-        if (existing_rule is not None and
-                existing_rule[-1] != val and
-                pair not in ufo.kerning):
+        if (
+            existing_rule is not None
+            and existing_rule[-1] != val
+            and pair not in ufo.kerning
+        ):
             self.logger.warning(
-                'Conflicting kerning rules found in %s master for glyph pair '
-                '"%s, %s" (%s and %s), removing pair from latter rule' %
-                ((ufo.info.styleName,) + pair + (existing_rule, rule)))
+                "Conflicting kerning rules found in %s master for glyph pair "
+                '"%s, %s" (%s and %s), removing pair from latter rule'
+                % ((ufo.info.styleName,) + pair + (existing_rule, rule))
+            )
         else:
             new_glyphs.append(member)
             seen[pair] = rule
@@ -102,8 +103,8 @@ def to_glyphs_kerning(self):
             left_match = UFO_KERN_GROUP_PATTERN.match(left)
             right_match = UFO_KERN_GROUP_PATTERN.match(right)
             if left_match:
-                left = '@MMK_L_{}'.format(left_match.group(2))
+                left = "@MMK_L_{}".format(left_match.group(2))
             if right_match:
-                right = '@MMK_R_{}'.format(right_match.group(2))
+                right = "@MMK_R_{}".format(right_match.group(2))
             self.font.setKerningForPair(master_id, left, right, value)
     # FIXME: (jany) handle conflicts?

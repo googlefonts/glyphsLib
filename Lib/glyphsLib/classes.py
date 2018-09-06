@@ -26,8 +26,18 @@ import uuid
 import logging
 import glyphsLib
 from glyphsLib.types import (
-    ValueType, Transform, Point, Rect, Size, parse_datetime, parse_color,
-    floatToString, readIntlist, writeIntlist, UnicodesList)
+    ValueType,
+    Transform,
+    Point,
+    Rect,
+    Size,
+    parse_datetime,
+    parse_color,
+    floatToString,
+    readIntlist,
+    writeIntlist,
+    UnicodesList,
+)
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer, escape_string
 from collections import OrderedDict
@@ -58,12 +68,52 @@ __all__ = [
     "GSAnnotation",
     "GSHint",
     "GSBackgroundImage",
-
     # Constants
-    "MOVE", "LINE", "CURVE", "OFFCURVE", "GSMOVE", "GSLINE", "GSCURVE", "GSOFFCURVE", "GSSHARP", "GSSMOOTH",
-    "TAG", "TOPGHOST", "STEM", "BOTTOMGHOST", "TTANCHOR", "TTSTEM", "TTALIGN", "TTINTERPOLATE", "TTDIAGONAL", "TTDELTA", "CORNER", "CAP", "TTDONTROUND", "TTROUND", "TTROUNDUP", "TTROUNDDOWN", "TRIPLE",
-    "TEXT", "ARROW", "CIRCLE", "PLUS", "MINUS",
-    "LTR", "RTL", "LTRTTB", "RTLTTB", "GSTopLeft", "GSTopCenter", "GSTopRight", "GSCenterLeft", "GSCenterCenter", "GSCenterRight", "GSBottomLeft", "GSBottomCenter", "GSBottomRight",
+    "MOVE",
+    "LINE",
+    "CURVE",
+    "OFFCURVE",
+    "GSMOVE",
+    "GSLINE",
+    "GSCURVE",
+    "GSOFFCURVE",
+    "GSSHARP",
+    "GSSMOOTH",
+    "TAG",
+    "TOPGHOST",
+    "STEM",
+    "BOTTOMGHOST",
+    "TTANCHOR",
+    "TTSTEM",
+    "TTALIGN",
+    "TTINTERPOLATE",
+    "TTDIAGONAL",
+    "TTDELTA",
+    "CORNER",
+    "CAP",
+    "TTDONTROUND",
+    "TTROUND",
+    "TTROUNDUP",
+    "TTROUNDDOWN",
+    "TRIPLE",
+    "TEXT",
+    "ARROW",
+    "CIRCLE",
+    "PLUS",
+    "MINUS",
+    "LTR",
+    "RTL",
+    "LTRTTB",
+    "RTLTTB",
+    "GSTopLeft",
+    "GSTopCenter",
+    "GSTopRight",
+    "GSCenterLeft",
+    "GSCenterCenter",
+    "GSCenterRight",
+    "GSBottomLeft",
+    "GSBottomCenter",
+    "GSBottomRight",
 ]
 
 # CONSTANTS
@@ -119,18 +169,18 @@ RTLTTB = 2  # Right To Left, Top To Bottom
 
 # Reverse lookup for __repr__
 hintConstants = {
-    -2: 'Tag',
-    -1: 'TopGhost',
-    0: 'Stem',
-    1: 'BottomGhost',
-    2: 'TTAnchor',
-    3: 'TTStem',
-    4: 'TTAlign',
-    5: 'TTInterpolate',
-    6: 'TTDiagonal',
-    7: 'TTDelta',
-    16: 'Corner',
-    17: 'Cap',
+    -2: "Tag",
+    -1: "TopGhost",
+    0: "Stem",
+    1: "BottomGhost",
+    2: "TTAnchor",
+    3: "TTStem",
+    4: "TTAlign",
+    5: "TTInterpolate",
+    6: "TTDiagonal",
+    7: "TTDelta",
+    16: "Corner",
+    17: "Cap",
 }
 
 GSTopLeft = 6
@@ -151,40 +201,43 @@ RTLTTB = 2
 
 
 WEIGHT_CODES = {
-    'Thin': 100,
-    'ExtraLight': 200,
-    'UltraLight': 200,
-    'Light': 300,
+    "Thin": 100,
+    "ExtraLight": 200,
+    "UltraLight": 200,
+    "Light": 300,
     None: 400,  # default value normally omitted in source
-    'Normal': 400,
-    'Regular': 400,
-    'Medium': 500,
-    'DemiBold': 600,
-    'SemiBold': 600,
-    'Bold': 700,
-    'UltraBold': 800,
-    'ExtraBold': 800,
-    'Black': 900,
-    'Heavy': 900,
+    "Normal": 400,
+    "Regular": 400,
+    "Medium": 500,
+    "DemiBold": 600,
+    "SemiBold": 600,
+    "Bold": 700,
+    "UltraBold": 800,
+    "ExtraBold": 800,
+    "Black": 900,
+    "Heavy": 900,
 }
 
 WIDTH_CODES = {
-    'Ultra Condensed': 1,
-    'Extra Condensed': 2,
-    'Condensed': 3,
-    'SemiCondensed': 4,
+    "Ultra Condensed": 1,
+    "Extra Condensed": 2,
+    "Condensed": 3,
+    "SemiCondensed": 4,
     None: 5,  # default value normally omitted in source
-    'Medium (normal)': 5,
-    'Semi Expanded': 6,
-    'Expanded': 7,
-    'Extra Expanded': 8,
-    'Ultra Expanded': 9,
+    "Medium (normal)": 5,
+    "Semi Expanded": 6,
+    "Expanded": 7,
+    "Extra Expanded": 8,
+    "Ultra Expanded": 9,
 }
 
 
 class OnlyInGlyphsAppError(NotImplementedError):
     def __init__(self):
-        NotImplementedError.__init__(self, "This property/method is only available in the real UI-based version of Glyphs.app.")
+        NotImplementedError.__init__(
+            self,
+            "This property/method is only available in the real UI-based version of Glyphs.app.",
+        )
 
 
 def parse_hint_target(line=None):
@@ -232,7 +285,6 @@ def transformStructToScaleAndRotation(transform):
 
 
 class GSApplication(object):
-
     def __init__(self):
         self.font = None
         self.fonts = []
@@ -244,7 +296,8 @@ class GSApplication(object):
         return newFont
 
     def __repr__(self):
-        return '<glyphsLib>'
+        return "<glyphsLib>"
+
 
 Glyphs = GSApplication()
 
@@ -281,7 +334,6 @@ class GSBase(object):
     def default_attr_value(self, attr_name):
         """Return the default value of the given attribute, if any."""
 
-
     # Note:
     # The dictionary API exposed by GS* classes is "private" in the sense that:
     #  * it should only be used by the parser, so it should only
@@ -295,7 +347,7 @@ class GSBase(object):
         if isinstance(value, bytes) and key in self._classesForName:
             new_type = self._classesForName[key]
             if new_type is unicode:
-                value = value.decode('utf-8')
+                value = value.decode("utf-8")
             else:
                 try:
                     value = new_type().read(value)
@@ -309,8 +361,10 @@ class GSBase(object):
         value = getattr(self, getKey)
         klass = self._classesForName[key]
         default = self._defaultsForName.get(key, None)
-        if (isinstance(value, (list, glyphsLib.classes.Proxy,
-                               str, unicode)) and len(value) == 0):
+        if (
+            isinstance(value, (list, glyphsLib.classes.Proxy, str, unicode))
+            and len(value) == 0
+        ):
             return False
         if default is not None:
             return default != value
@@ -330,7 +384,7 @@ class Proxy(object):
         strings = []
         for currItem in self:
             strings.append("%s" % (currItem))
-        return "(%s)" % (', '.join(strings))
+        return "(%s)" % (", ".join(strings))
 
     def __len__(self):
         values = self.values()
@@ -344,7 +398,7 @@ class Proxy(object):
             del self[i]
             return node
         else:
-            raise(KeyError)
+            raise (KeyError)
 
     def __iter__(self):
         values = self.values()
@@ -365,9 +419,11 @@ class Proxy(object):
         method = self.setterMethod()
         if type(values) == list:
             method(values)
-        elif (type(values) == tuple or
-                values.__class__.__name__ == "__NSArrayM" or
-                type(values) == type(self)):
+        elif (
+            type(values) == tuple
+            or values.__class__.__name__ == "__NSArrayM"
+            or type(values) == type(self)
+        ):
             method(list(values))
         elif values is None:
             method(list())
@@ -431,6 +487,7 @@ class FontFontMasterProxy(Proxy):
         for master in Font.masters:
         ...
     """
+
     def __getitem__(self, Key):
         if type(Key) == slice:
             return self.values().__getitem__(Key)
@@ -443,7 +500,7 @@ class FontFontMasterProxy(Proxy):
                 if master.id == Key:
                     return master
         else:
-            raise(KeyError)
+            raise (KeyError)
 
     def __setitem__(self, Key, FontMaster):
         FontMaster.font = self._owner
@@ -459,7 +516,7 @@ class FontFontMasterProxy(Proxy):
             Index = self._owner._masters.index(OldFontMaster)
             self._owner._masters[Index] = FontMaster
         else:
-            raise(KeyError)
+            raise (KeyError)
 
     def __delitem__(self, Key):
         if type(Key) is int:
@@ -491,7 +548,10 @@ class FontFontMasterProxy(Proxy):
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
             for layer in glyph.layers:
-                if layer.associatedMasterId == FontMaster.id or layer.layerId == FontMaster.id:
+                if (
+                    layer.associatedMasterId == FontMaster.id
+                    or layer.layerId == FontMaster.id
+                ):
                     glyph.layers.remove(layer)
 
         self._owner._masters.remove(FontMaster)
@@ -520,6 +580,7 @@ class FontGlyphsProxy(Proxy):
         for glyph in Font.glyphs:
         ...
     """
+
     def __getitem__(self, key):
         if type(key) == slice:
             return self.values().__getitem__(key)
@@ -542,7 +603,7 @@ class FontGlyphsProxy(Proxy):
 
     def __delitem__(self, key):
         if type(key) is int:
-            del(self._owner._glyph[key])
+            del (self._owner._glyph[key])
         else:
             raise KeyError  # TODO: add other access methods
 
@@ -599,14 +660,15 @@ class FontGlyphsProxy(Proxy):
         for g in self._owner._glyphs:
             g.parent = self._owner
             for layer in g.layers.values():
-                if (not hasattr(layer, "associatedMasterId") or
-                        layer.associatedMasterId is None or
-                        len(layer.associatedMasterId) == 0):
+                if (
+                    not hasattr(layer, "associatedMasterId")
+                    or layer.associatedMasterId is None
+                    or len(layer.associatedMasterId) == 0
+                ):
                     g._setupLayer(layer, layer.layerId)
 
 
 class FontClassesProxy(Proxy):
-
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
@@ -700,7 +762,7 @@ class GlyphLayerProxy(Proxy):
                 key = self.__len__() + key
             Layer = self.__getitem__(key)
             key = Layer.layerId
-        del(self._owner._layers[key])
+        del (self._owner._layers[key])
 
     def __iter__(self):
         return LayersIterator(self._owner)
@@ -740,9 +802,7 @@ class GlyphLayerProxy(Proxy):
 
     def setter(self, values):
         newLayers = OrderedDict()
-        if (type(values) == list or
-                type(values) == tuple or
-                type(values) == type(self)):
+        if type(values) == list or type(values) == tuple or type(values) == type(self):
             for layer in values:
                 newLayers[layer.layerId] = layer
         elif type(values) == dict:  # or isinstance(values, NSDictionary)
@@ -773,7 +833,6 @@ class GlyphLayerProxy(Proxy):
 
 
 class LayerAnchorsProxy(Proxy):
-
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
@@ -1013,7 +1072,6 @@ class CustomParametersProxy(Proxy):
 
 
 class UserDataProxy(Proxy):
-
     def __getitem__(self, key):
         if self._owner._userData is None:
             return None
@@ -1064,69 +1122,118 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
-    _classesForName = {
-        "name": unicode,
-        "value": None,
-    }
+    _classesForName = {"name": unicode, "value": None}
 
-    _CUSTOM_INT_PARAMS = frozenset((
-        'ascender', 'blueShift', 'capHeight', 'descender', 'hheaAscender',
-        'hheaDescender', 'hheaLineGap', 'macintoshFONDFamilyID',
-        'openTypeHeadLowestRecPPEM', 'openTypeHheaAscender',
-        'openTypeHheaCaretOffset',
-        'openTypeHheaCaretSlopeRise', 'openTypeHheaCaretSlopeRun',
-        'openTypeHheaDescender', 'openTypeHheaLineGap',
-        'openTypeOS2StrikeoutPosition', 'openTypeOS2StrikeoutSize',
-        'openTypeOS2SubscriptXOffset', 'openTypeOS2SubscriptXSize',
-        'openTypeOS2SubscriptYOffset', 'openTypeOS2SubscriptYSize',
-        'openTypeOS2SuperscriptXOffset', 'openTypeOS2SuperscriptXSize',
-        'openTypeOS2SuperscriptYOffset', 'openTypeOS2SuperscriptYSize',
-        'openTypeOS2TypoAscender', 'openTypeOS2TypoDescender',
-        'openTypeOS2TypoLineGap', 'openTypeOS2WeightClass',
-        'openTypeOS2WidthClass',
-        'openTypeOS2WinAscent', 'openTypeOS2WinDescent',
-        'openTypeVheaCaretOffset',
-        'openTypeVheaCaretSlopeRise', 'openTypeVheaCaretSlopeRun',
-        'openTypeVheaVertTypoAscender', 'openTypeVheaVertTypoDescender',
-        'openTypeVheaVertTypoLineGap', 'postscriptBlueFuzz',
-        'postscriptBlueShift',
-        'postscriptDefaultWidthX',
-        'postscriptUnderlinePosition', 'postscriptUnderlineThickness',
-        'postscriptUniqueID', 'postscriptWindowsCharacterSet',
-        'shoulderHeight',
-        'smallCapHeight', 'typoAscender', 'typoDescender', 'typoLineGap',
-        'underlinePosition', 'underlineThickness', 'unitsPerEm',
-        'vheaVertAscender',
-        'vheaVertDescender', 'vheaVertLineGap', 'weightClass', 'widthClass',
-        'winAscent', 'winDescent', 'year', 'Grid Spacing'))
-    _CUSTOM_FLOAT_PARAMS = frozenset((
-        'postscriptSlantAngle', 'postscriptBlueScale',))
+    _CUSTOM_INT_PARAMS = frozenset(
+        (
+            "ascender",
+            "blueShift",
+            "capHeight",
+            "descender",
+            "hheaAscender",
+            "hheaDescender",
+            "hheaLineGap",
+            "macintoshFONDFamilyID",
+            "openTypeHeadLowestRecPPEM",
+            "openTypeHheaAscender",
+            "openTypeHheaCaretOffset",
+            "openTypeHheaCaretSlopeRise",
+            "openTypeHheaCaretSlopeRun",
+            "openTypeHheaDescender",
+            "openTypeHheaLineGap",
+            "openTypeOS2StrikeoutPosition",
+            "openTypeOS2StrikeoutSize",
+            "openTypeOS2SubscriptXOffset",
+            "openTypeOS2SubscriptXSize",
+            "openTypeOS2SubscriptYOffset",
+            "openTypeOS2SubscriptYSize",
+            "openTypeOS2SuperscriptXOffset",
+            "openTypeOS2SuperscriptXSize",
+            "openTypeOS2SuperscriptYOffset",
+            "openTypeOS2SuperscriptYSize",
+            "openTypeOS2TypoAscender",
+            "openTypeOS2TypoDescender",
+            "openTypeOS2TypoLineGap",
+            "openTypeOS2WeightClass",
+            "openTypeOS2WidthClass",
+            "openTypeOS2WinAscent",
+            "openTypeOS2WinDescent",
+            "openTypeVheaCaretOffset",
+            "openTypeVheaCaretSlopeRise",
+            "openTypeVheaCaretSlopeRun",
+            "openTypeVheaVertTypoAscender",
+            "openTypeVheaVertTypoDescender",
+            "openTypeVheaVertTypoLineGap",
+            "postscriptBlueFuzz",
+            "postscriptBlueShift",
+            "postscriptDefaultWidthX",
+            "postscriptUnderlinePosition",
+            "postscriptUnderlineThickness",
+            "postscriptUniqueID",
+            "postscriptWindowsCharacterSet",
+            "shoulderHeight",
+            "smallCapHeight",
+            "typoAscender",
+            "typoDescender",
+            "typoLineGap",
+            "underlinePosition",
+            "underlineThickness",
+            "unitsPerEm",
+            "vheaVertAscender",
+            "vheaVertDescender",
+            "vheaVertLineGap",
+            "weightClass",
+            "widthClass",
+            "winAscent",
+            "winDescent",
+            "year",
+            "Grid Spacing",
+        )
+    )
+    _CUSTOM_FLOAT_PARAMS = frozenset(("postscriptSlantAngle", "postscriptBlueScale"))
 
-    _CUSTOM_BOOL_PARAMS = frozenset((
-        'isFixedPitch', 'postscriptForceBold', 'postscriptIsFixedPitch',
-        'Don\u2019t use Production Names', 'DisableAllAutomaticBehaviour',
-        'Use Typo Metrics', 'Has WWS Names', 'Use Extension Kerning',
-        'Disable Subroutines', 'Don\'t use Production Names',
-        'Disable Last Change'))
-    _CUSTOM_INTLIST_PARAMS = frozenset((
-        'fsType', 'openTypeOS2CodePageRanges', 'openTypeOS2FamilyClass',
-        'openTypeOS2Panose', 'openTypeOS2Type', 'openTypeOS2UnicodeRanges',
-        'panose', 'unicodeRanges', 'codePageRanges', 'openTypeHeadFlags'))
-    _CUSTOM_DICT_PARAMS = frozenset((
-        'GASP Table'))
+    _CUSTOM_BOOL_PARAMS = frozenset(
+        (
+            "isFixedPitch",
+            "postscriptForceBold",
+            "postscriptIsFixedPitch",
+            "Don\u2019t use Production Names",
+            "DisableAllAutomaticBehaviour",
+            "Use Typo Metrics",
+            "Has WWS Names",
+            "Use Extension Kerning",
+            "Disable Subroutines",
+            "Don't use Production Names",
+            "Disable Last Change",
+        )
+    )
+    _CUSTOM_INTLIST_PARAMS = frozenset(
+        (
+            "fsType",
+            "openTypeOS2CodePageRanges",
+            "openTypeOS2FamilyClass",
+            "openTypeOS2Panose",
+            "openTypeOS2Type",
+            "openTypeOS2UnicodeRanges",
+            "panose",
+            "unicodeRanges",
+            "codePageRanges",
+            "openTypeHeadFlags",
+        )
+    )
+    _CUSTOM_DICT_PARAMS = frozenset(("GASP Table"))
 
     def __init__(self, name="New Value", value="New Parameter"):
         self.name = name
         self.value = value
 
     def __repr__(self):
-        return "<%s %s: %s>" % \
-            (self.__class__.__name__, self.name, self._value)
+        return "<%s %s: %s>" % (self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
         string = UnicodeIO()
         writer = Writer(string)
-        writer.writeDict({'name': self.name, 'value': self.value})
+        writer.writeDict({"name": self.name, "value": self.value})
         return string.getvalue()
 
     def getValue(self):
@@ -1145,7 +1252,7 @@ class GSCustomParameter(GSBase):
         elif self.name in self._CUSTOM_DICT_PARAMS:
             parser = Parser()
             value = parser.parse(value)
-        elif self.name == 'note':
+        elif self.name == "note":
             value = unicode(value)
         self._value = value
 
@@ -1166,15 +1273,17 @@ class GSAlignmentZone(GSBase):
         return self
 
     def __repr__(self):
-        return "<%s pos:%g size:%g>" % \
-            (self.__class__.__name__, self.position, self.size)
+        return "<%s pos:%g size:%g>" % (
+            self.__class__.__name__,
+            self.position,
+            self.size,
+        )
 
     def __lt__(self, other):
         return (self.position, self.size) < (other.position, other.size)
 
     def plistValue(self):
-        return '"{%s, %s}"' % \
-            (floatToString(self.position), floatToString(self.size))
+        return '"{%s, %s}"' % (floatToString(self.position), floatToString(self.size))
 
 
 class GSGuideLine(GSBase):
@@ -1188,25 +1297,26 @@ class GSGuideLine(GSBase):
         "name": unicode,
     }
     _parent = None
-    _defaultsForName = {
-        "position": Point(0, 0),
-    }
+    _defaultsForName = {"position": Point(0, 0)}
 
     def __init__(self):
         super(GSGuideLine, self).__init__()
 
     def __repr__(self):
-        return "<%s x=%.1f y=%.1f angle=%.1f>" % \
-            (self.__class__.__name__, self.position.x, self.position.y,
-             self.angle)
+        return "<%s x=%.1f y=%.1f angle=%.1f>" % (
+            self.__class__.__name__,
+            self.position.x,
+            self.position.y,
+            self.angle,
+        )
 
     @property
     def parent(self):
         return self._parent
 
 
-MASTER_NAME_WEIGHTS = ('Light', 'SemiLight', 'SemiBold', 'Bold')
-MASTER_NAME_WIDTHS = ('Condensed', 'SemiCondensed', 'Extended', 'SemiExtended')
+MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
+MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 
 class GSFontMaster(GSBase):
@@ -1282,7 +1392,7 @@ class GSFontMaster(GSBase):
         "weightValue",
         "width",
         "widthValue",
-        "xHeight"
+        "xHeight",
     )
 
     def __init__(self):
@@ -1293,13 +1403,16 @@ class GSFontMaster(GSBase):
         self._customParameters = []
         self.italicAngle = 0.0
         self._userData = None
-        self.customName = ''
-        for number in ('', '1', '2', '3'):
-            setattr(self, 'customValue' + number, 0.0)
+        self.customName = ""
+        for number in ("", "1", "2", "3"):
+            setattr(self, "customValue" + number, 0.0)
 
     def __repr__(self):
-        return '<GSFontMaster "%s" width %s weight %s>' % \
-            (self.name, self.widthValue, self.weightValue)
+        return '<GSFontMaster "%s" width %s weight %s>' % (
+            self.name,
+            self.widthValue,
+            self.weightValue,
+        )
 
     def shouldWriteValueForKey(self, key):
         if key in ("weight", "width"):
@@ -1314,7 +1427,7 @@ class GSFontMaster(GSBase):
 
     @property
     def name(self):
-        name = self.customParameters['Master Name']
+        name = self.customParameters["Master Name"]
         if name:
             return name
         if self._name:
@@ -1335,16 +1448,16 @@ class GSFontMaster(GSBase):
         master.weight, master.width, and master.customName match the given
         values.
         """
-        self.weight = weight or 'Regular'
-        self.width = width or 'Regular'
-        self.customName = custom_name or ''
+        self.weight = weight or "Regular"
+        self.width = width or "Regular"
+        self.customName = custom_name or ""
         # Only store the requested name if we can't build it from the parts
         if self._joinName() == name:
             self._name = None
-            del self.customParameters['Master Name']
+            del self.customParameters["Master Name"]
         else:
             self._name = name
-            self.customParameters['Master Name'] = name
+            self.customParameters["Master Name"] = name
 
     def _joinName(self):
         names = [self.width, self.weight, self.customName]
@@ -1358,25 +1471,25 @@ class GSFontMaster(GSBase):
 
     def _splitName(self, value):
         if value is None:
-            value = ''
-        weight = 'Regular'
-        width = 'Regular'
-        custom = ''
+            value = ""
+        weight = "Regular"
+        width = "Regular"
+        custom = ""
         names = []
         previous_was_removed = False
         for name in value.split(" "):
-            if name == 'Regular':
+            if name == "Regular":
                 pass
             elif name in MASTER_NAME_WEIGHTS:
                 if previous_was_removed:
                     # Get the double space in custom
-                    names.append('')
+                    names.append("")
                 previous_was_removed = True
                 weight = name
             elif name in MASTER_NAME_WIDTHS:
                 if previous_was_removed:
                     # Get the double space in custom
-                    names.append('')
+                    names.append("")
                 previous_was_removed = True
                 width = name
             else:
@@ -1387,17 +1500,21 @@ class GSFontMaster(GSBase):
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
-        lambda self, value: CustomParametersProxy(self).setter(value))
+        lambda self, value: CustomParametersProxy(self).setter(value),
+    )
 
     userData = property(
         lambda self: UserDataProxy(self),
-        lambda self, value: UserDataProxy(self).setter(value))
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
 
 class GSNode(GSBase):
     _PLIST_VALUE_RE = re.compile(
         '"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        '(?: (SMOOTH))?(?: (\{.*\}))?"', re.DOTALL)
+        '(?: (SMOOTH))?(?: (\{.*\}))?"',
+        re.DOTALL,
+    )
     MOVE = "move"
     LINE = "line"
     CURVE = "curve"
@@ -1405,8 +1522,7 @@ class GSNode(GSBase):
     QCURVE = "qcurve"
     _parent = None
 
-    def __init__(self, position=(0, 0), nodetype=LINE,
-                 smooth=False, name=None):
+    def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
         super(GSNode, self).__init__()
         self.position = Point(position[0], position[1])
         self.type = nodetype
@@ -1419,13 +1535,17 @@ class GSNode(GSBase):
         content = self.type
         if self.smooth:
             content += " smooth"
-        return "<%s %g %g %s>" % \
-            (self.__class__.__name__, self.position.x, self.position.y,
-             content)
+        return "<%s %g %g %s>" % (
+            self.__class__.__name__,
+            self.position.x,
+            self.position.y,
+            content,
+        )
 
     userData = property(
         lambda self: UserDataProxy(self),
-        lambda self, value: UserDataProxy(self).setter(value))
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
     @property
     def parent(self):
@@ -1439,11 +1559,13 @@ class GSNode(GSBase):
             string = UnicodeIO()
             writer = Writer(string)
             writer.writeDict(self._userData)
-            content += ' '
+            content += " "
             content += self._encode_dict_as_string(string.getvalue())
-        return '"%s %s %s"' % \
-            (floatToString(self.position[0]), floatToString(self.position[1]),
-             content)
+        return '"%s %s %s"' % (
+            floatToString(self.position[0]),
+            floatToString(self.position[1]),
+            content,
+        )
 
     def read(self, line):
         m = self._PLIST_VALUE_RE.match(line).groups()
@@ -1468,7 +1590,7 @@ class GSNode(GSBase):
     def name(self, value):
         if value is None:
             if "name" in self.userData:
-                del(self.userData["name"])
+                del (self.userData["name"])
         else:
             self.userData["name"] = value
 
@@ -1497,11 +1619,11 @@ class GSNode(GSBase):
 
     def makeNodeFirst(self):
         assert self.parent
-        if self.type == 'offcurve':
-            raise ValueError('Off-curve points cannot become start points.')
+        if self.type == "offcurve":
+            raise ValueError("Off-curve points cannot become start points.")
         nodes = self.parent.nodes
         index = self.index
-        newNodes = nodes[index:len(nodes)] + nodes[0:index]
+        newNodes = nodes[index : len(nodes)] + nodes[0:index]
         self.parent.nodes = newNodes
 
     def toggleConnection(self):
@@ -1522,23 +1644,23 @@ class GSNode(GSBase):
         encoded such that it can be included in the string representation
         of a GSNode."""
         # Strip the first and last newlines
-        if value.startswith('{\n'):
-            value = '{' + value[2:]
-        if value.endswith('\n}'):
-            value = value[:-2] + '}'
+        if value.startswith("{\n"):
+            value = "{" + value[2:]
+        if value.endswith("\n}"):
+            value = value[:-2] + "}"
         value = value.replace('"', '\\"')
-        value = value.replace('\n', '\\n')
+        value = value.replace("\n", "\\n")
         return value
 
-    _ESCAPED_CHAR_RE = re.compile(r'\\(.)')
+    _ESCAPED_CHAR_RE = re.compile(r"\\(.)")
 
     @staticmethod
     def _unescape_char(m):
         char = m.group(1)
-        if char == '\\':
-            return '\\'
-        if char == 'n':
-            return '\n'
+        if char == "\\":
+            return "\\"
+        if char == "n":
+            return "\n"
         if char == '"':
             return '"'
         return m.group(0)
@@ -1560,13 +1682,8 @@ class GSNode(GSBase):
 
 
 class GSPath(GSBase):
-    _classesForName = {
-        "nodes": GSNode,
-        "closed": bool
-    }
-    _defaultsForName = {
-        "closed": True,
-    }
+    _classesForName = {"nodes": GSNode, "closed": bool}
+    _defaultsForName = {"closed": True}
     _parent = None
 
     def __init__(self):
@@ -1584,7 +1701,8 @@ class GSPath(GSBase):
 
     nodes = property(
         lambda self: PathNodesProxy(self),
-        lambda self, value: PathNodesProxy(self).setter(value))
+        lambda self, value: PathNodesProxy(self).setter(value),
+    )
 
     @property
     def segments(self):
@@ -1601,14 +1719,14 @@ class GSPath(GSBase):
             if nodeCount == 0:
                 newSegment.appendNode(self.nodes[-1])
             else:
-                newSegment.appendNode(self.nodes[nodeCount-1])
+                newSegment.appendNode(self.nodes[nodeCount - 1])
 
-            if self.nodes[nodeCount].type == 'offcurve':
+            if self.nodes[nodeCount].type == "offcurve":
                 newSegment.appendNode(self.nodes[nodeCount])
-                newSegment.appendNode(self.nodes[nodeCount+1])
-                newSegment.appendNode(self.nodes[nodeCount+2])
+                newSegment.appendNode(self.nodes[nodeCount + 1])
+                newSegment.appendNode(self.nodes[nodeCount + 2])
                 nodeCount += 3
-            elif self.nodes[nodeCount].type == 'line':
+            elif self.nodes[nodeCount].type == "line":
                 newSegment.appendNode(self.nodes[nodeCount])
                 nodeCount += 1
 
@@ -1663,7 +1781,9 @@ class GSPath(GSBase):
         for i in range(len(self.nodes)):
             thisNode = self.nodes[i]
             nextNode = thisNode.nextNode
-            direction += (nextNode.position.x - thisNode.position.x) * (nextNode.position.y + thisNode.position.y)
+            direction += (nextNode.position.x - thisNode.position.x) * (
+                nextNode.position.y + thisNode.position.y
+            )
         if direction < 0:
             return -1
         else:
@@ -1684,13 +1804,13 @@ class GSPath(GSBase):
             if s == len(segments) - 1:
                 nextSegment = segments[0]
             else:
-                nextSegment = segments[s+1]
-            if len(segment.nodes) == 2 and segment.nodes[-1].type == 'curve':
-                segment.nodes[-1].type = 'line'
-                nextSegment.nodes[0].type = 'line'
-            elif len(segment.nodes) == 4 and segment.nodes[-1].type == 'line':
-                segment.nodes[-1].type = 'curve'
-                nextSegment.nodes[0].type = 'curve'
+                nextSegment = segments[s + 1]
+            if len(segment.nodes) == 2 and segment.nodes[-1].type == "curve":
+                segment.nodes[-1].type = "line"
+                nextSegment.nodes[0].type = "line"
+            elif len(segment.nodes) == 4 and segment.nodes[-1].type == "line":
+                segment.nodes[-1].type = "curve"
+                nextSegment.nodes[0].type = "curve"
         self.setSegments(segments)
 
     # TODO
@@ -1707,21 +1827,22 @@ class GSPath(GSBase):
         assert len(transformationMatrix) == 6
         for node in self.nodes:
             transformation = (
-                Affine.translation(transformationMatrix[4],
-                                   transformationMatrix[5]) *
-                Affine.scale(transformationMatrix[0],
-                             transformationMatrix[3]) *
-                Affine.shear(transformationMatrix[2] * 45.0,
-                             transformationMatrix[1] * 45.0))
+                Affine.translation(transformationMatrix[4], transformationMatrix[5])
+                * Affine.scale(transformationMatrix[0], transformationMatrix[3])
+                * Affine.shear(
+                    transformationMatrix[2] * 45.0, transformationMatrix[1] * 45.0
+                )
+            )
             x, y = (node.position.x, node.position.y) * transformation
             node.position.x = x
             node.position.y = y
 
 
 class segment(list):
-
     def appendNode(self, node):
-        if not hasattr(self, 'nodes'): # instead of defining this in __init__(), because I hate super()
+        if not hasattr(
+            self, "nodes"
+        ):  # instead of defining this in __init__(), because I hate super()
             self.nodes = []
         self.nodes.append(node)
         self.append(Point(node.position.x, node.position.y))
@@ -1752,7 +1873,16 @@ class segment(list):
             top = max(self[0].y, self[1].y)
             return left, bottom, right, top
         elif len(self) == 4:
-            left, bottom, right, top = self.bezierMinMax(self[0].x, self[0].y, self[1].x, self[1].y, self[2].x, self[2].y, self[3].x, self[3].y)
+            left, bottom, right, top = self.bezierMinMax(
+                self[0].x,
+                self[0].y,
+                self[1].x,
+                self[1].y,
+                self[2].x,
+                self[2].y,
+                self[3].x,
+                self[3].y,
+            )
             return left, bottom, right, top
         else:
             raise ValueError
@@ -1794,12 +1924,22 @@ class segment(list):
         for j in range(len(tvalues) - 1, -1, -1):
             t = tvalues[j]
             mt = 1 - t
-            newxValue = (mt * mt * mt * x0) + (3 * mt * mt * t * x1) + (3 * mt * t * t * x2) + (t * t * t * x3)
+            newxValue = (
+                (mt * mt * mt * x0)
+                + (3 * mt * mt * t * x1)
+                + (3 * mt * t * t * x2)
+                + (t * t * t * x3)
+            )
             if len(xvalues) > 0:
                 xvalues[j] = newxValue
             else:
                 xvalues.append(newxValue)
-            newyValue = (mt * mt * mt * y0) + (3 * mt * mt * t * y1) + (3 * mt * t * t * y2) + (t * t * t * y3)
+            newyValue = (
+                (mt * mt * mt * y0)
+                + (3 * mt * mt * t * y1)
+                + (3 * mt * t * t * y2)
+                + (t * t * t * y3)
+            )
             if len(yvalues) > 0:
                 yvalues[j] = newyValue
             else:
@@ -1822,12 +1962,8 @@ class GSComponent(GSBase):
         "piece": dict,
         "transform": Transform,
     }
-    _wrapperKeysTranslate = {
-        "piece": "smartComponentValues",
-    }
-    _defaultsForName = {
-        "transform": Transform(1, 0, 0, 1, 0, 0),
-    }
+    _wrapperKeysTranslate = {"piece": "smartComponentValues"}
+    _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
     _parent = None
 
     # TODO: glyph arg is required
@@ -1848,8 +1984,11 @@ class GSComponent(GSBase):
             self.name = glyph.name
 
     def __repr__(self):
-        return '<GSComponent "%s" x=%.1f y=%.1f>' % \
-            (self.name, self.transform[4], self.transform[5])
+        return '<GSComponent "%s" x=%.1f y=%.1f>' % (
+            self.name,
+            self.transform[4],
+            self.transform[5],
+        )
 
     def shouldWriteValueForKey(self, key):
         if key == "piece":
@@ -1865,6 +2004,7 @@ class GSComponent(GSBase):
     @property
     def position(self):
         return Point(self.transform[4], self.transform[5])
+
     @position.setter
     def position(self, value):
         self.transform[4] = value[0]
@@ -1873,11 +2013,16 @@ class GSComponent(GSBase):
     # .scale
     @property
     def scale(self):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
+            self.transform.value
+        )
         return (self._sX, self._sY)
+
     @scale.setter
     def scale(self, value):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
+            self.transform.value
+        )
         if type(value) in [int, float]:
             self._sX = value
             self._sY = value
@@ -1890,21 +2035,33 @@ class GSComponent(GSBase):
     # .rotation
     @property
     def rotation(self):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
+            self.transform.value
+        )
         return self._R
+
     @rotation.setter
     def rotation(self, value):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
+            self.transform.value
+        )
         self._R = value
         self.updateAffineTransform()
 
     def updateAffineTransform(self):
-        affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(self._R))[:6]
-        self.transform = Transform(affine[0], affine[1], affine[3], affine[4], affine[2], affine[5])
+        affine = list(
+            Affine.translation(self.transform[4], self.transform[5])
+            * Affine.scale(self._sX, self._sY)
+            * Affine.rotation(self._R)
+        )[:6]
+        self.transform = Transform(
+            affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
+        )
 
     @property
     def componentName(self):
         return self.name
+
     @componentName.setter
     def componentName(self, value):
         self.name = value
@@ -1937,7 +2094,12 @@ class GSComponent(GSBase):
             left, bottom = self.applyTransformation(left, bottom)
             right, top = self.applyTransformation(right, top)
 
-            if left is not None and bottom is not None and right is not None and top is not None:
+            if (
+                left is not None
+                and bottom is not None
+                and right is not None
+                and top is not None
+            ):
                 return Rect(Point(left, bottom), Point(right - left, top - bottom))
 
     # smartComponentValues = property(
@@ -1953,13 +2115,7 @@ class GSSmartComponentAxis(GSBase):
         "topName": unicode,
         "topValue": float,
     }
-    _keyOrder = (
-        "name",
-        "bottomName",
-        "bottomValue",
-        "topName",
-        "topValue",
-    )
+    _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
     def shouldWriteValueForKey(self, key):
         if key in ("bottomValue", "topValue"):
@@ -1968,14 +2124,9 @@ class GSSmartComponentAxis(GSBase):
 
 
 class GSAnchor(GSBase):
-    _classesForName = {
-        "name": unicode,
-        "position": Point,
-    }
+    _classesForName = {"name": unicode, "position": Point}
     _parent = None
-    _defaultsForName = {
-        "position": Point(0, 0),
-    }
+    _defaultsForName = {"position": Point(0, 0)}
 
     def __init__(self, name=None, position=None):
         super(GSAnchor, self).__init__()
@@ -1985,12 +2136,15 @@ class GSAnchor(GSBase):
             self.position = position
 
     def __repr__(self):
-        return '<%s "%s" x=%.1f y=%.1f>' % \
-                (self.__class__.__name__, self.name, self.position[0],
-                 self.position[1])
+        return '<%s "%s" x=%.1f y=%.1f>' % (
+            self.__class__.__name__,
+            self.name,
+            self.position[0],
+            self.position[1],
+        )
 
     def shouldWriteValueForKey(self, key):
-        if key == 'position':
+        if key == "position":
             return True
         return super(GSAnchor, self).shouldWriteValueForKey(key)
 
@@ -2012,7 +2166,7 @@ class GSHint(GSBase):
         "target": parse_hint_target,  # Index path to node or 'up'/'down'
         "type": str,
         "name": unicode,
-        "settings": dict
+        "settings": dict,
     }
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
@@ -2035,7 +2189,7 @@ class GSHint(GSBase):
         "stem",
         "name",
         "options",
-        "settings"
+        "settings",
     )
 
     def shouldWriteValueForKey(self, key):
@@ -2064,12 +2218,15 @@ class GSHint(GSBase):
             direction = "horizontal"
         else:
             direction = "vertical"
-        if self.type == 'BOTTOMGHOST' or self.type == 'TOPGHOST':
+        if self.type == "BOTTOMGHOST" or self.type == "TOPGHOST":
             return "<GSHint %s origin=(%s)>" % (self.type, self._origin_pos())
-        elif self.type == 'STEM':
+        elif self.type == "STEM":
             return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (
-                direction, self._origin_pos(), self._width_pos())
-        elif self.type == 'CORNER' or self.type == 'CAP':
+                direction,
+                self._origin_pos(),
+                self._width_pos(),
+            )
+        elif self.type == "CORNER" or self.type == "CAP":
             return "<GSHint %s %s>" % (self.type, self.name)
         else:
             return "<GSHint %s %s>" % (self.type, direction)
@@ -2199,16 +2356,21 @@ class GSFeature(GSBase):
 
     def setCode(self, code):
         replacements = (
-            ('\\012', '\n'), ('\\011', '\t'), ('\\U2018', "'"),
-            ('\\U2019', "'"), ('\\U201C', '"'), ('\\U201D', '"'))
+            ("\\012", "\n"),
+            ("\\011", "\t"),
+            ("\\U2018", "'"),
+            ("\\U2019", "'"),
+            ("\\U201C", '"'),
+            ("\\U201D", '"'),
+        )
         for escaped, unescaped in replacements:
             code = code.replace(escaped, unescaped)
         self._code = code
+
     code = property(getCode, setCode)
 
     def __repr__(self):
-        return '<%s "%s">' % \
-            (self.__class__.__name__, self.name)
+        return '<%s "%s">' % (self.__class__.__name__, self.name)
 
     @property
     def parent(self):
@@ -2325,7 +2487,8 @@ class GSInstance(GSBase):
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
-        lambda self, value: CustomParametersProxy(self).setter(value))
+        lambda self, value: CustomParametersProxy(self).setter(value),
+    )
 
     @property
     def exports(self):
@@ -2431,18 +2594,15 @@ class GSBackgroundImage(GSBase):
         "transform": Transform,
         "alpha": int,
     }
-    _defaultsForName = {
-        "alpha": 50,
-        "transform": Transform(1, 0, 0, 1, 0, 0),
-    }
-    _wrapperKeysTranslate = {
-        "alpha": "_alpha",
-    }
+    _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
+    _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
         super(GSBackgroundImage, self).__init__()
         self.imagePath = path
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(self.transform.value)
+        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
+            self.transform.value
+        )
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -2451,6 +2611,7 @@ class GSBackgroundImage(GSBase):
     @property
     def path(self):
         return self.imagePath
+
     @path.setter
     def path(self, value):
         # FIXME: (jany) use posix pathnames here?
@@ -2466,6 +2627,7 @@ class GSBackgroundImage(GSBase):
     @property
     def position(self):
         return Point(self.transform[4], self.transform[5])
+
     @position.setter
     def position(self, value):
         self.transform[4] = value[0]
@@ -2475,6 +2637,7 @@ class GSBackgroundImage(GSBase):
     @property
     def scale(self):
         return (self._sX, self._sY)
+
     @scale.setter
     def scale(self, value):
         if type(value) in [int, float]:
@@ -2490,6 +2653,7 @@ class GSBackgroundImage(GSBase):
     @property
     def rotation(self):
         return self._R
+
     @rotation.setter
     def rotation(self, value):
         self._R = value
@@ -2507,8 +2671,14 @@ class GSBackgroundImage(GSBase):
         self._alpha = value
 
     def updateAffineTransform(self):
-        affine = list(Affine.translation(self.transform[4], self.transform[5]) * Affine.scale(self._sX, self._sY) * Affine.rotation(self._R))[:6]
-        self.transform = Transform(affine[0], affine[1], affine[3], affine[4], affine[2], affine[5])
+        affine = list(
+            Affine.translation(self.transform[4], self.transform[5])
+            * Affine.scale(self._sX, self._sY)
+            * Affine.rotation(self._R)
+        )[:6]
+        self.transform = Transform(
+            affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
+        )
 
 
 class GSLayer(GSBase):
@@ -2541,10 +2711,7 @@ class GSLayer(GSBase):
         "rightMetricsKey": None,
         "widthMetricsKey": None,
     }
-    _wrapperKeysTranslate = {
-        "guideLines": "guides",
-        "background": "_background",
-    }
+    _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
     _keyOrder = (
         "anchors",
         "annotations",
@@ -2588,17 +2755,20 @@ class GSLayer(GSBase):
             # assert self.name
             name = self.name
         except:
-            name = 'orphan (n)'
+            name = "orphan (n)"
         try:
             assert self.parent.name
             parent = self.parent.name
         except:
-            parent = 'orphan'
-        return "<%s \"%s\" (%s)>" % (self.__class__.__name__, name, parent)
+            parent = "orphan"
+        return '<%s "%s" (%s)>' % (self.__class__.__name__, name, parent)
 
     def __lt__(self, other):
         if self.master and other.master and self.associatedMasterId == self.layerId:
-            return self.master.weightValue < other.master.weightValue or self.master.widthValue < other.master.widthValue
+            return (
+                self.master.weightValue < other.master.weightValue
+                or self.master.widthValue < other.master.widthValue
+            )
 
     @property
     def layerId(self):
@@ -2610,7 +2780,7 @@ class GSLayer(GSBase):
         # Update the layer map in the parent glyph, if any.
         # The "hasattr" is here because this setter is called by the GSBase
         # __init__() method before the parent property is set.
-        if hasattr(self, 'parent') and self.parent:
+        if hasattr(self, "parent") and self.parent:
             parent_layers = OrderedDict()
             updated = False
             for id, layer in self.parent._layers.items():
@@ -2635,14 +2805,20 @@ class GSLayer(GSBase):
         if key == "associatedMasterId":
             return self.layerId != self.associatedMasterId
         if key == "name":
-            return (self.name is not None and len(self.name) > 0 and
-                    self.layerId != self.associatedMasterId)
+            return (
+                self.name is not None
+                and len(self.name) > 0
+                and self.layerId != self.associatedMasterId
+            )
         return super(GSLayer, self).shouldWriteValueForKey(key)
 
     @property
     def name(self):
-        if (self.associatedMasterId and
-                self.associatedMasterId == self.layerId and self.parent):
+        if (
+            self.associatedMasterId
+            and self.associatedMasterId == self.layerId
+            and self.parent
+        ):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name
@@ -2654,31 +2830,38 @@ class GSLayer(GSBase):
 
     anchors = property(
         lambda self: LayerAnchorsProxy(self),
-        lambda self, value: LayerAnchorsProxy(self).setter(value))
+        lambda self, value: LayerAnchorsProxy(self).setter(value),
+    )
 
     hints = property(
         lambda self: LayerHintsProxy(self),
-        lambda self, value: LayerHintsProxy(self).setter(value))
+        lambda self, value: LayerHintsProxy(self).setter(value),
+    )
 
     paths = property(
         lambda self: LayerPathsProxy(self),
-        lambda self, value: LayerPathsProxy(self).setter(value))
+        lambda self, value: LayerPathsProxy(self).setter(value),
+    )
 
     components = property(
         lambda self: LayerComponentsProxy(self),
-        lambda self, value: LayerComponentsProxy(self).setter(value))
+        lambda self, value: LayerComponentsProxy(self).setter(value),
+    )
 
     guides = property(
         lambda self: LayerGuideLinesProxy(self),
-        lambda self, value: LayerGuideLinesProxy(self).setter(value))
+        lambda self, value: LayerGuideLinesProxy(self).setter(value),
+    )
 
     annotations = property(
         lambda self: LayerAnnotationProxy(self),
-        lambda self, value: LayerAnnotationProxy(self).setter(value))
+        lambda self, value: LayerAnnotationProxy(self).setter(value),
+    )
 
     userData = property(
         lambda self: UserDataProxy(self),
-        lambda self, value: UserDataProxy(self).setter(value))
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
     @property
     def smartComponentPoleMapping(self):
@@ -2717,7 +2900,12 @@ class GSLayer(GSBase):
             else:
                 top = max(top, newTop)
 
-        if left is not None and bottom is not None and right is not None and top is not None:
+        if (
+            left is not None
+            and bottom is not None
+            and right is not None
+            and top is not None
+        ):
             return Rect(Point(left, bottom), Point(right - left, top - bottom))
 
     def _find_node_by_indices(self, point):
@@ -2752,7 +2940,7 @@ class GSLayer(GSBase):
 
 class GSBackgroundLayer(GSLayer):
     def shouldWriteValueForKey(self, key):
-        if key == 'width':
+        if key == "width":
             return False
         return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
 
@@ -2777,7 +2965,7 @@ class GSBackgroundLayer(GSLayer):
         pass
 
 
-GSLayer._classesForName['background'] = GSBackgroundLayer
+GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
@@ -2873,8 +3061,10 @@ class GSGlyph(GSBase):
             return getattr(self, key) is not None
         return super(GSGlyph, self).shouldWriteValueForKey(key)
 
-    layers = property(lambda self: GlyphLayerProxy(self),
-                      lambda self, value: GlyphLayerProxy(self).setter(value))
+    layers = property(
+        lambda self: GlyphLayerProxy(self),
+        lambda self, value: GlyphLayerProxy(self).setter(value),
+    )
 
     def _setupLayer(self, layer, key):
         assert isinstance(key, (str, unicode))
@@ -2904,15 +3094,17 @@ class GSGlyph(GSBase):
 
     userData = property(
         lambda self: UserDataProxy(self),
-        lambda self, value: UserDataProxy(self).setter(value))
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
     glyphname = property(
-        lambda self: self.name,
-        lambda self, value: setattr(self, "name", value))
+        lambda self: self.name, lambda self, value: setattr(self, "name", value)
+    )
 
     smartComponentAxes = property(
         lambda self: self.partsSettings,
-        lambda self, value: setattr(self, "partsSettings", value))
+        lambda self, value: setattr(self, "partsSettings", value),
+    )
 
     @property
     def id(self):
@@ -2973,7 +3165,7 @@ class GSFont(GSBase):
         "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridLength": "grid",
-        "gridSubDivision": "gridSubDivisions"
+        "gridSubDivision": "gridSubDivisions",
     }
     _defaultsForName = {
         "classes": [],
@@ -3003,16 +3195,16 @@ class GSFont(GSBase):
         self._userData = None
 
         if path:
-            # Support os.PathLike objects. 
+            # Support os.PathLike objects.
             # https://www.python.org/dev/peps/pep-0519/#backwards-compatibility
             if hasattr(path, "__fspath__"):
                 path = path.__fspath__()
 
-            assert isinstance(path, (str, unicode)), \
-                "Please supply a file path"
-            assert path.endswith(".glyphs"), \
-                "Please supply a file path to a .glyphs file"
-            with open(path, 'r', encoding='utf-8') as fp:
+            assert isinstance(path, (str, unicode)), "Please supply a file path"
+            assert path.endswith(
+                ".glyphs"
+            ), "Please supply a file path to a .glyphs file"
+            with open(path, "r", encoding="utf-8") as fp:
                 p = Parser()
                 logger.info('Parsing "%s" file into <GSFont>' % path)
                 p.parse_into_object(self, fp.read())
@@ -3021,7 +3213,7 @@ class GSFont(GSBase):
                 master.font = self
 
     def __repr__(self):
-        return "<%s \"%s\">" % (self.__class__.__name__, self.familyName)
+        return '<%s "%s">' % (self.__class__.__name__, self.familyName)
 
     def shouldWriteValueForKey(self, key):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):
@@ -3034,9 +3226,9 @@ class GSFont(GSBase):
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
-        with open(path, 'w', encoding='utf-8') as fp:
+        with open(path, "w", encoding="utf-8") as fp:
             w = Writer(fp)
-            logger.info('Writing %r to .glyphs file', self)
+            logger.info("Writing %r to .glyphs file", self)
             w.write(self)
 
     def getVersionMinor(self):
@@ -3049,15 +3241,19 @@ class GSFont(GSBase):
 
     versionMinor = property(getVersionMinor, setVersionMinor)
 
-    glyphs = property(lambda self: FontGlyphsProxy(self),
-                      lambda self, value: FontGlyphsProxy(self).setter(value))
+    glyphs = property(
+        lambda self: FontGlyphsProxy(self),
+        lambda self, value: FontGlyphsProxy(self).setter(value),
+    )
 
     def _setupGlyph(self, glyph):
         glyph.parent = self
         for layer in glyph.layers:
-            if (not hasattr(layer, "associatedMasterId") or
-                    layer.associatedMasterId is None or
-                    len(layer.associatedMasterId) == 0):
+            if (
+                not hasattr(layer, "associatedMasterId")
+                or layer.associatedMasterId is None
+                or len(layer.associatedMasterId) == 0
+            ):
                 glyph._setupLayer(layer, layer.layerId)
 
     @property
@@ -3072,8 +3268,10 @@ class GSFont(GSBase):
         for g in self._features:
             g._parent = self
 
-    masters = property(lambda self: FontFontMasterProxy(self),
-                       lambda self, value: FontFontMasterProxy(self).setter(value))
+    masters = property(
+        lambda self: FontFontMasterProxy(self),
+        lambda self, value: FontFontMasterProxy(self).setter(value),
+    )
 
     def masterForId(self, key):
         for master in self._masters:
@@ -3094,15 +3292,18 @@ class GSFont(GSBase):
 
     classes = property(
         lambda self: FontClassesProxy(self),
-        lambda self, value: FontClassesProxy(self).setter(value))
+        lambda self, value: FontClassesProxy(self).setter(value),
+    )
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
-        lambda self, value: CustomParametersProxy(self).setter(value))
+        lambda self, value: CustomParametersProxy(self).setter(value),
+    )
 
     userData = property(
         lambda self: UserDataProxy(self),
-        lambda self, value: UserDataProxy(self).setter(value))
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
     @property
     def kerning(self):
@@ -3134,7 +3335,7 @@ class GSFont(GSBase):
 
     @property
     def gridLength(self):
-        if (self.gridSubDivisions > 0):
+        if self.gridSubDivisions > 0:
             return self.grid / self.gridSubDivisions
         else:
             return self.grid
@@ -3150,8 +3351,7 @@ class GSFont(GSBase):
         except KeyError:
             return self.EMPTY_KERNING_VALUE
 
-    def setKerningForPair(self, fontMasterId, leftKey, rightKey, value,
-                          direction=LTR):
+    def setKerningForPair(self, fontMasterId, leftKey, rightKey, value, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
         if not self._kerning:
             self._kerning = {}
@@ -3161,8 +3361,7 @@ class GSFont(GSBase):
             self._kerning[fontMasterId][leftKey] = {}
         self._kerning[fontMasterId][leftKey][rightKey] = value
 
-    def removeKerningForPair(self, fontMasterId, leftKey, rightKey,
-                             direction=LTR):
+    def removeKerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
         if not self._kerning:
             return
@@ -3172,8 +3371,8 @@ class GSFont(GSBase):
             return
         if rightKey not in self._kerning[fontMasterId][leftKey]:
             return
-        del(self._kerning[fontMasterId][leftKey][rightKey])
+        del (self._kerning[fontMasterId][leftKey][rightKey])
         if not self._kerning[fontMasterId][leftKey]:
-            del(self._kerning[fontMasterId][leftKey])
+            del (self._kerning[fontMasterId][leftKey])
         if not self._kerning[fontMasterId]:
-            del(self._kerning[fontMasterId])
+            del (self._kerning[fontMasterId])

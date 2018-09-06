@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 
 def to_ufo_blue_values(self, ufo, master):
@@ -39,7 +38,7 @@ def to_glyphs_blue_values(self, ufo, master):
     blue_values = _pairs(ufo.info.postscriptBlueValues)
     other_blues = _pairs(ufo.info.postscriptOtherBlues)
     for y1, y2 in blue_values:
-        size = (y2 - y1)
+        size = y2 - y1
         if y2 == 0:
             pos = 0
             size = -size
@@ -47,7 +46,7 @@ def to_glyphs_blue_values(self, ufo, master):
             pos = y1
         zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
     for y1, y2 in other_blues:
-        size = (y1 - y2)
+        size = y1 - y2
         pos = y2
         zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
 
@@ -55,4 +54,4 @@ def to_glyphs_blue_values(self, ufo, master):
 
 
 def _pairs(list):
-    return [list[i:i+2] for i in range(0, len(list), 2)]
+    return [list[i : i + 2] for i in range(0, len(list), 2)]

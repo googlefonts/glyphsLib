@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import defaultdict
 import os
@@ -22,9 +21,9 @@ import re
 from glyphsLib import classes
 from .constants import GLYPHLIB_PREFIX
 
-UFO_ORIGINAL_KERNING_GROUPS_KEY = GLYPHLIB_PREFIX + 'originalKerningGroups'
-UFO_GROUPS_NOT_IN_FEATURE_KEY = GLYPHLIB_PREFIX + 'groupsNotInFeature'
-UFO_KERN_GROUP_PATTERN = re.compile('^public\\.kern([12])\\.(.*)$')
+UFO_ORIGINAL_KERNING_GROUPS_KEY = GLYPHLIB_PREFIX + "originalKerningGroups"
+UFO_GROUPS_NOT_IN_FEATURE_KEY = GLYPHLIB_PREFIX + "groupsNotInFeature"
+UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 
 def to_ufo_groups(self):
@@ -39,7 +38,7 @@ def to_ufo_groups(self):
         for gsclass in self.font.classes.values():
             if gsclass.name in group_names:
                 if gsclass.code:
-                    groups[gsclass.name] = gsclass.code.split(' ')
+                    groups[gsclass.name] = gsclass.code.split(" ")
                 else:
                     # Empty group: using split like above would produce ['']
                     groups[gsclass.name] = []
@@ -62,8 +61,10 @@ def to_ufo_groups(self):
                 side = match.group(1)
                 group_name = match.group(2)
                 glyph = self.font.glyphs[glyph_name]
-                if not glyph or getattr(
-                        glyph, _glyph_kerning_attr(glyph, side)) == group_name:
+                if (
+                    not glyph
+                    or getattr(glyph, _glyph_kerning_attr(glyph, side)) == group_name
+                ):
                     # The original grouping is still valid
                     groups[group].append(glyph_name)
                     # Remember not to add this glyph again later
@@ -77,7 +78,7 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 group = getattr(glyph, attr)
                 if group:
-                    group = 'public.kern%s.%s' % (side, group)
+                    group = "public.kern%s.%s" % (side, group)
                     groups[group].append(glyph.name)
 
     # Update all UFOs with the same info
@@ -111,8 +112,7 @@ def to_glyphs_groups(self):
 
 
 def _is_kerning_group(name):
-    return (name.startswith('public.kern1.') or
-            name.startswith('public.kern2.'))
+    return name.startswith("public.kern1.") or name.startswith("public.kern2.")
 
 
 def _to_glyphs_kerning_group(self, name, glyphs):
@@ -138,9 +138,9 @@ def _glyph_kerning_attr(glyph, side):
     group's side (1 or 2).
     """
     if int(side) == 1:
-        return 'rightKerningGroup'
+        return "rightKerningGroup"
     else:
-        return 'leftKerningGroup'
+        return "leftKerningGroup"
 
 
 def _assert_groups_are_identical(self, reference_ufo, ufo):
@@ -148,24 +148,33 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
 
     def _warn(message, *args):
         if first_time:
-            self.logger.warning('Using UFO `%s` as a reference for groups:',
-                             _ufo_logging_ref(reference_ufo))
+            self.logger.warning(
+                "Using UFO `%s` as a reference for groups:",
+                _ufo_logging_ref(reference_ufo),
+            )
             first_time.clear()
-        self.logger.warning('   ' + message, *args)
+        self.logger.warning("   " + message, *args)
 
     # Check for inconsistencies
     for group, glyphs in ufo.groups.items():
         if group not in reference_ufo.groups:
-            _warn("group `%s` from `%s` will be lost because it's not "
-                  "defined in the reference UFO", group, _ufo_logging_ref(ufo))
+            _warn(
+                "group `%s` from `%s` will be lost because it's not "
+                "defined in the reference UFO",
+                group,
+                _ufo_logging_ref(ufo),
+            )
             continue
         reference_glyphs = reference_ufo.groups[group]
         if set(glyphs) != set(reference_glyphs):
-            _warn("group `%s` from `%s` will not be stored accurately because "
-                  "it is different from the reference UFO", group,
-                  _ufo_logging_ref(ufo))
-            _warn("    reference = %s", ' '.join(sorted(glyphs)))
-            _warn("    current   = %s", ' '.join(sorted(reference_glyphs)))
+            _warn(
+                "group `%s` from `%s` will not be stored accurately because "
+                "it is different from the reference UFO",
+                group,
+                _ufo_logging_ref(ufo),
+            )
+            _warn("    reference = %s", " ".join(sorted(glyphs)))
+            _warn("    current   = %s", " ".join(sorted(reference_glyphs)))
 
 
 def _ufo_logging_ref(ufo):

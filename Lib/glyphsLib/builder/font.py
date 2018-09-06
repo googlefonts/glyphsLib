@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import deque, OrderedDict
 import logging
@@ -23,9 +22,9 @@ from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 
 logger = logging.getLogger(__name__)
 
-APP_VERSION_LIB_KEY = GLYPHS_PREFIX + 'appVersion'
-KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + 'keyboardIncrement'
-MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + 'fontMasterOrder'
+APP_VERSION_LIB_KEY = GLYPHS_PREFIX + "appVersion"
+KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + "keyboardIncrement"
+MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + "fontMasterOrder"
 
 
 def to_ufo_font_attributes(self, family_name):
@@ -38,7 +37,7 @@ def to_ufo_font_attributes(self, family_name):
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
     # https://github.com/googlei18n/glyphsLib/issues/134
-    date_created = getattr(font, 'date', None)
+    date_created = getattr(font, "date", None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)
     units_per_em = font.upm

@@ -25,32 +25,32 @@ import datetime
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, open, BytesIO, UnicodeIO
 
-'''
+"""
     Usage
 
     >> fp = open('Path/to/File.glyphs', 'w')
     >> writer = Writer(fp)
     >> writer.write(font)
     >> fp.close()
-'''
+"""
 
 logger = logging.getLogger(__name__)
 
 
 class Writer(object):
-
     def __init__(self, fp):
         # figure out whether file object expects bytes or unicodes
         try:
-            fp.write(b'')
+            fp.write(b"")
         except TypeError:
-            fp.write(u'')  # this better not fail...
+            fp.write("")  # this better not fail...
             # file already accepts unicodes; use it directly
             self.file = fp
         else:
             # file expects bytes; wrap it in a UTF-8 codecs.StreamWriter
             import codecs
-            self.file = codecs.getwriter('utf-8')(fp)
+
+            self.file = codecs.getwriter("utf-8")(fp)
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -82,8 +82,9 @@ class Writer(object):
                 continue
             if value is None:
                 continue
-            if (hasattr(dictValue, "shouldWriteValueForKey") and
-                    not dictValue.shouldWriteValueForKey(key)):
+            if hasattr(
+                dictValue, "shouldWriteValueForKey"
+            ) and not dictValue.shouldWriteValueForKey(key):
                 continue
             self.writeKey(key)
             self.writeValue(value, key, forType=forType)
@@ -141,7 +142,7 @@ class Writer(object):
             else:
                 self.file.write("0")
         elif type(value) == datetime.datetime:
-            self.file.write("\"%s +0000\"" % str(value))
+            self.file.write('"%s +0000"' % str(value))
         else:
             value = unicode(value)
             if forKey != "unicode":
@@ -158,7 +159,7 @@ def dump(obj, fp):
     'fp' should be a (writable) file object.
     """
     writer = Writer(fp)
-    logger.info('Writing .glyphs file')
+    logger.info("Writing .glyphs file")
     writer.write(obj)
 
 
@@ -173,30 +174,142 @@ def dumps(obj):
 
 NSPropertyListNameSet = (
     # 0
-    False, False, False, False, False, False, False, False,
-    False, False, False, False, False, False, False, False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
     # 16
-    False, False, False, False, False, False, False, False,
-    False, False, False, False, False, False, False, False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
     # 32
-    False, False, False, False, True, False, False, False,
-    False, False, False, False, False, False, True, False,
+    False,
+    False,
+    False,
+    False,
+    True,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
+    True,
+    False,
     # 48
-    True, True, True, True, True, True, True, True,
-    True, True, False, False, False, False, False, False,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    False,
+    False,
+    False,
+    False,
+    False,
+    False,
     # 64
-    False, True, True, True, True, True, True, True,
-    True, True, True, True, True, True, True, True,
+    False,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
     # 80
-    True, True, True, True, True, True, True, True,
-    True, True, True, False, False, False, False, True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    False,
+    False,
+    False,
+    False,
+    True,
     # 96
-    False, True, True, True, True, True, True, True,
-    True, True, True, True, True, True, True, True,
+    False,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
     # 112
-    True, True, True, True, True, True, True, True,
-    True, True, True, False, False, False, False, False
-    )
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    True,
+    False,
+    False,
+    False,
+    False,
+    False,
+)
 
 
 def _needs_quotes(string):
@@ -228,7 +341,7 @@ def _needs_quotes(string):
 def escape_string(string):
     if _needs_quotes(string):
         string = string.replace("\\", "\\\\")
-        string = string.replace("\"", "\\\"")
+        string = string.replace('"', '\\"')
         string = string.replace("\n", "\\012")
         string = '"%s"' % string
     return string

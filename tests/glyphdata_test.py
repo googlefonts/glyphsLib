@@ -14,12 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import unittest
@@ -47,25 +42,17 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
         self.assertEqual(prod("brevecomb_acutecomb.case"), "uni03060301.case")
         self.assertEqual(prod("brevecomb_a_a_a"), "uni0306006100610061")
-        self.assertEqual(
-            prod("brevecomb_a_a_a.case"), "uni0306006100610061.case"
-        )
+        self.assertEqual(prod("brevecomb_a_a_a.case"), "uni0306006100610061.case")
         self.assertEqual(prod("brevecomb_aaa.case"), "brevecomb_aaa.case")
 
         # brevecomb_Dboldscript-math
         self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
 
         # brevecomb_Dboldscript-math.f.r
-        self.assertEqual(
-            prod("brevecomb_Dboldscript-math.f.r"), "uni0306_u1D4D3.f.r"
-        )
+        self.assertEqual(prod("brevecomb_Dboldscript-math.f.r"), "uni0306_u1D4D3.f.r")
 
-        self.assertEqual(
-            prod("Dboldscript-math_Dboldscript-math"), "u1D4D3_u1D4D3"
-        )
-        self.assertEqual(
-            prod("Dboldscript-math_Dboldscript-math.f"), "u1D4D3_u1D4D3.f"
-        )
+        self.assertEqual(prod("Dboldscript-math_Dboldscript-math"), "u1D4D3_u1D4D3")
+        self.assertEqual(prod("Dboldscript-math_Dboldscript-math.f"), "u1D4D3_u1D4D3.f")
         self.assertEqual(prod("Dboldscript-math_a"), "u1D4D3_a")
 
         # a_Dboldscript-math
@@ -74,9 +61,7 @@ class GlyphDataTest(unittest.TestCase):
         # Dboldscript-math_a_aa
         self.assertEqual(prod("Dboldscript-math_a_aa"), "u1D4D3_a_uniA733")
 
-        self.assertEqual(
-            prod("Dboldscript-math_a_aaa"), "Dboldscriptmath_a_aaa"
-        )
+        self.assertEqual(prod("Dboldscript-math_a_aaa"), "Dboldscriptmath_a_aaa")
 
         # brevecomb_Dboldscript-math
         self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
@@ -128,26 +113,18 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("one_two.foo"), ("Number", "Ligature"))
         self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
         self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
-        self.assertEqual(
-            cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature")
-        )
+        self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
         self.assertEqual(cat("brevecomb"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(
-            cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing")
-        )
+        self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232
         u, g = get_glyph("uni07F0"), get_glyph("longlowtonecomb-nko")
         self.assertEqual((u.category, g.category), ("Mark", "Mark"))
-        self.assertEqual(
-            (u.subCategory, g.subCategory), ("Nonspacing", "Nonspacing")
-        )
-        self.assertEqual(
-            (u.production_name, g.production_name), ("uni07F0", "uni07F0")
-        )
+        self.assertEqual((u.subCategory, g.subCategory), ("Nonspacing", "Nonspacing"))
+        self.assertEqual((u.production_name, g.production_name), ("uni07F0", "uni07F0"))
         self.assertEqual((u.unicode, g.unicode), ("07F0", "07F0"))
 
     def test_glyphdata_no_duplicates(self):
@@ -158,13 +135,9 @@ class GlyphDataTest(unittest.TestCase):
         production_names = set()
 
         xml_files = [
+            os.path.join(os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"),
             os.path.join(
-                os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
-            ),
-            os.path.join(
-                os.path.dirname(glyphsLib.__file__),
-                "data",
-                "GlyphData_Ideographs.xml",
+                os.path.dirname(glyphsLib.__file__), "data", "GlyphData_Ideographs.xml"
             ),
         ]
 
@@ -178,9 +151,7 @@ class GlyphDataTest(unittest.TestCase):
                 assert glyph_name not in names
                 names.add(glyph_name)
                 if glyph_name_alternatives:
-                    alternatives = glyph_name_alternatives.replace(
-                        " ", ""
-                    ).split(",")
+                    alternatives = glyph_name_alternatives.replace(" ", "").split(",")
                     for glyph_name_alternative in alternatives:
                         assert glyph_name_alternative not in alt_names
                         alt_names.add(glyph_name_alternative)
