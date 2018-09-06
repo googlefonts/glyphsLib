@@ -38,7 +38,7 @@ def test_glyphs_main_masters(tmpdir):
 
     glyphsLib.cli.main([
         "glyphs2ufo", filename, '-m', master_dir, '-n',
-        os.path.join(master_dir, 'hurf'), '--no-normalize-ufo'
+        os.path.join(master_dir, 'hurf'),
     ])
 
     assert glob.glob(master_dir + '/*.ufo')
