@@ -81,6 +81,7 @@ def main(args=None):
         ),
     )
     group.add_argument(
+        "-N",
         "--normalize-ufos",
         action="store_true",
         help=(
