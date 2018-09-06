@@ -81,10 +81,11 @@ def main(args=None):
         ),
     )
     group.add_argument(
-        "--no-normalize-ufos",
-        action="store_false",
+        "-N",
+        "--normalize-ufos",
+        action="store_true",
         help=(
-            "Skip normalizing UFOs with ufonormalizer, which would avoid "
+            "Normalize UFOs with ufonormalizer, which avoids "
             "differences due to spacing, reordering of keys, etc."
         ),
     )
@@ -167,7 +168,7 @@ def glyphs2ufo(options):
         designspace_path=options.designspace_path,
         minimize_glyphs_diffs=options.no_preserve_glyphsapp_metadata,
         propagate_anchors=options.propagate_anchors,
-        normalize_ufos=options.no_normalize_ufos,
+        normalize_ufos=options.normalize_ufos,
         create_background_layers=options.create_background_layers,
     )
 
