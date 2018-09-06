@@ -38,6 +38,8 @@ import fontTools.agl
 
 import glyphsLib
 
+__all__ = ["get_glyph"]
+
 # This is an internally-used named tuple and not meant to be a GSGlyphData replacement.
 Glyph = collections.namedtuple(
     "Glyph",
