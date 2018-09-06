@@ -10,7 +10,9 @@ branches:
 
 install: pip install tox-travis
 
-script: tox
+script:
+  - tox -e lint
+  - tox
 
 after_success: tox -e codecov
 
