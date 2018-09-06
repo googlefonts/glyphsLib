@@ -33,9 +33,8 @@ from . import test_helpers
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
     def assertWrites(self, glyphs_object, text):
-        """Assert that the given object, when given to the writer,
-        produces the given text.
-        """
+        """Assert that the given object, when given to the writer, produces the
+        given text."""
         expected = text.splitlines()
         actual = test_helpers.write_to_lines(glyphs_object)
         self.assertLinesEqual(
@@ -43,7 +42,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
 
     def assertWritesValue(self, glyphs_value, text):
-        """Assert that the writer produces the given text for the given value."""
+        """Assert that the writer produces the given text for the given
+        value."""
         expected = (
             dedent(
                 """\
@@ -62,7 +62,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
 
     def test_write_font_attributes(self):
-        """Test the writer on all GSFont attributes"""
+        """Test the writer on all GSFont attributes."""
         font = classes.GSFont()
         # List of properties from https://docu.glyphsapp.com/#gsfont
         # parent: not handled because it's internal and read-only
@@ -258,7 +258,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn("versionMinor = 0;", written)
 
     def test_write_font_master_attributes(self):
-        """Test the writer on all GSFontMaster attributes"""
+        """Test the writer on all GSFontMaster attributes."""
         master = classes.GSFontMaster()
         # List of properties from https://docu.glyphsapp.com/#gsfontmaster
         # id

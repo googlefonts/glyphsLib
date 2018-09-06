@@ -275,8 +275,7 @@ def to_glyphs_instances(self):
 class InstanceDescriptorAsGSInstance(object):
     """Wraps a designspace InstanceDescriptor and makes it behave like a
     GSInstance, just enough to use the descriptor as a source of custom
-    parameters for `to_ufo_custom_parameters`
-    """
+    parameters for `to_ufo_custom_parameters`"""
 
     def __init__(self, descriptor):
         self._descriptor = descriptor
@@ -321,22 +320,20 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
 
 
 def set_weight_class(ufo, designspace, instance):
-    """ Set ufo.info.openTypeOS2WeightClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
+    """Set ufo.info.openTypeOS2WeightClass according to the user location of
+    the designspace instance, as calculated from the axis mapping."""
     _set_class_from_instance(ufo, designspace, instance, "wght")
 
 
 def set_width_class(ufo, designspace, instance):
-    """ Set ufo.info.openTypeOS2WidthClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
+    """Set ufo.info.openTypeOS2WidthClass according to the user location of the
+    designspace instance, as calculated from the axis mapping."""
     _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
 def apply_instance_data(designspace_path, include_filenames=None, Font=defcon.Font):
-    """Open UFO instances referenced by designspace, apply Glyphs instance
-    data if present, re-save UFOs and return updated UFO Font objects.
+    """Open UFO instances referenced by designspace, apply Glyphs instance data
+    if present, re-save UFOs and return updated UFO Font objects.
 
     Args:
         designspace_path: path to a designspace file.

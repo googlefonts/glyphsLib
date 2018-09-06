@@ -26,9 +26,8 @@ import glyphsLib.parser
 
 
 def test_glyphs_main_masters(tmpdir):
-    """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the 
-    `build_masters` function.
-    """
+    """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the
+    `build_masters` function."""
     import fontTools.designspaceLib
 
     filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
@@ -60,9 +59,8 @@ def test_glyphs_main_masters(tmpdir):
 
 
 def test_parser_main(capsys):
-    """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of GlyphsUnitTestSans.glyphs.
-    """
+    """This is both a test for the "main" functionality of glyphsLib.parser and
+    for the round-trip of GlyphsUnitTestSans.glyphs."""
     filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
     with open(filename) as f:
         expected = f.read()

@@ -75,7 +75,8 @@ def identity(value):
 
 
 class GlyphsObjectProxy(object):
-    """Accelerate and record access to the glyphs object's custom parameters"""
+    """Accelerate and record access to the glyphs object's custom
+    parameters."""
 
     def __init__(self, glyphs_object, glyphs_module):
         self._owner = glyphs_object
@@ -99,7 +100,8 @@ class GlyphsObjectProxy(object):
         setattr(self._owner, key, value)
 
     def get_custom_value(self, key):
-        """Return the first and only custom parameter matching the given name."""
+        """Return the first and only custom parameter matching the given
+        name."""
         self._handled.add(key)
         values = self._lookup[key]
         if len(values) > 1:
@@ -117,8 +119,9 @@ class GlyphsObjectProxy(object):
 
     def set_custom_value(self, key, value):
         """Set one custom parameter with the given value.
-        We assume that the list of custom parameters does not already contain
-        the given parameter so we only append.
+
+        We assume that the list of custom parameters does not already
+        contain the given parameter so we only append.
         """
         self._owner.customParameters.append(
             self._glyphs_module.GSCustomParameter(name=key, value=value)
@@ -126,6 +129,7 @@ class GlyphsObjectProxy(object):
 
     def set_custom_values(self, key, values):
         """Set several values for the customParameter with the given key.
+
         We append one GSCustomParameter per value.
         """
         for value in values:
@@ -138,7 +142,7 @@ class GlyphsObjectProxy(object):
 
 
 class UFOProxy(object):
-    """Record access to the UFO's lib custom parameters"""
+    """Record access to the UFO's lib custom parameters."""
 
     def __init__(self, ufo):
         self._owner = ufo
@@ -487,7 +491,7 @@ register(
 
 
 class MiscParamHandler(ParamHandler):
-    """Copy GSFont attributes to ufo lib"""
+    """Copy GSFont attributes to ufo lib."""
 
     def _read_from_glyphs(self, glyphs):
         return glyphs.get_attribute_value(self.glyphs_name)
@@ -622,19 +626,19 @@ register(ReplaceFeatureParamHandler())
 
 
 class ReencodeGlyphsParamHandler(AbstractParamHandler):
-    """ The "Reencode Glyphs" custom parameter contains a list of
-    'glyphname=unicodevalue' strings: e.g., ["smiley=E100", "logo=E101"].
-    It only applies to specific instance (not to master or globally) and is
-    meant to assign Unicode values to glyphs with the specied name at export
-    time.
+    """The "Reencode Glyphs" custom parameter contains a list of
+    'glyphname=unicodevalue' strings: e.g., ["smiley=E100", "logo=E101"]. It
+    only applies to specific instance (not to master or globally) and is meant
+    to assign Unicode values to glyphs with the specied name at export time.
     When the Unicode value in question is already assigned to another glyph,
-    the latter's Unicode value is deleted.
-    When the Unicode value is left out, e.g., "f_f_i=", "f_f_j=", this will
-    strip "f_f_i" and "f_f_j" of their Unicode values.
+    the latter's Unicode value is deleted. When the Unicode value is left out,
+    e.g., "f_f_i=", "f_f_j=", this will strip "f_f_i" and "f_f_j" of their
+    Unicode values.
 
-    This parameter handler only handles going from Glyphs to (instance) UFOs,
-    and not also in the opposite direction, as the parameter isn't stored in
-    the UFO lib, but directly applied to the UFO unicode values.
+    This parameter handler only handles going from Glyphs to (instance)
+    UFOs, and not also in the opposite direction, as the parameter isn't
+    stored in the UFO lib, but directly applied to the UFO unicode
+    values.
     """
 
     def to_ufo(self, glyphs, ufo):
@@ -706,8 +710,9 @@ def to_glyphs_custom_params(self, ufo, glyphs_object):
 
 def _normalize_custom_param_name(name):
     """Replace curved quotes with straight quotes in a custom parameter name.
-    These should be the only keys with problematic (non-ascii) characters,
-    since they can be user-generated.
+
+    These should be the only keys with problematic (non-ascii)
+    characters, since they can be user-generated.
     """
 
     replacements = (("\u2018", "'"), ("\u2019", "'"), ("\u201C", '"'), ("\u201D", '"'))
@@ -728,8 +733,7 @@ DEFAULT_PARAMETERS = (
 
 
 def _set_default_params(ufo):
-    """ Set Glyphs.app's default parameters when different from ufo2ft ones.
-    """
+    """Set Glyphs.app's default parameters when different from ufo2ft ones."""
     for _, ufo_name, default_value in DEFAULT_PARAMETERS:
         if getattr(ufo.info, ufo_name) is None:
             if isinstance(default_value, list):
@@ -740,7 +744,8 @@ def _set_default_params(ufo):
 
 
 def _unset_default_params(glyphs):
-    """ Unset Glyphs.app's parameters that have default values.
+    """Unset Glyphs.app's parameters that have default values.
+
     FIXME: (jany) maybe this should be taken care of in the writer? and/or
         classes should have better default values?
     """

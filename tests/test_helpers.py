@@ -35,8 +35,8 @@ import defcon
 
 
 def write_to_lines(glyphs_object):
-    """
-    Use the Writer to write the given object to a UnicodeIO.
+    """Use the Writer to write the given object to a UnicodeIO.
+
     Return an array of lines ready for diffing.
     """
     string = UnicodeIO()
@@ -94,7 +94,7 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
 
 
 class AssertUFORoundtrip(AssertLinesEqual):
-    """Check .glyphs -> UFOs + designspace -> .glyphs"""
+    """Check .glyphs -> UFOs + designspace -> .glyphs."""
 
     def _normalize(self, font):
         # Order the kerning OrderedDict alphabetically
@@ -191,8 +191,7 @@ def deboolize(lib):
 
 def normalize_ufo_lib(path):
     """Go through each `lib` element recursively and transform `bools` into
-    `int` because that's what's going to happen on round-trip with Glyphs.
-    """
+    `int` because that's what's going to happen on round-trip with Glyphs."""
     font = defcon.Font(path)
     deboolize(font.lib)
     for layer in font.layers:
@@ -203,7 +202,7 @@ def normalize_ufo_lib(path):
 
 
 class AssertDesignspaceRoundtrip(object):
-    """Check UFOs + designspace -> .glyphs -> UFOs + designspace"""
+    """Check UFOs + designspace -> .glyphs -> UFOs + designspace."""
 
     def assertDesignspacesEqual(self, expected, actual, message=""):
         directory = tempfile.mkdtemp()

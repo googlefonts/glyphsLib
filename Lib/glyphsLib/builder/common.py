@@ -31,8 +31,8 @@ def from_ufo_time(string):
 
 
 def from_loose_ufo_time(string):
-    """Parses a datetime as specified for UFOs into a datetime object,
-    or as the Glyphs formet."""
+    """Parses a datetime as specified for UFOs into a datetime object, or as
+    the Glyphs formet."""
     try:
         return from_ufo_time(string)
     except ValueError:

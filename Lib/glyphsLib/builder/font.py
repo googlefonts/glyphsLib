@@ -91,8 +91,7 @@ def to_ufo_font_attributes(self, family_name):
 
 
 def to_glyphs_font_attributes(self, source, master, is_initial):
-    """
-    Copy font attributes from `ufo` either to `self.font` or to `master`.
+    """Copy font attributes from `ufo` either to `self.font` or to `master`.
 
     Arguments:
     self -- The UFOBuilder
@@ -148,8 +147,8 @@ def _compare_and_merge_glyphs_font_attributes(self, source):
 
 
 def to_glyphs_ordered_masters(self):
-    """Modify in-place the list of UFOs to restore their original order in
-    the Glyphs file (if any, otherwise does not change the order)."""
+    """Modify in-place the list of UFOs to restore their original order in the
+    Glyphs file (if any, otherwise does not change the order)."""
     return sorted(self.designspace.sources, key=_original_master_order)
 
 

@@ -25,7 +25,7 @@ import test_helpers
 
 # Kinds of tests that can be run
 class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
-    """Test the parser & writer for .glyphs files only"""
+    """Test the parser & writer for .glyphs files only."""
 
     @classmethod
     def add_tests(cls, testable):
@@ -47,7 +47,7 @@ class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
 
 
 class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
-    """Test the whole chain from .glyphs to designspace + UFOs and back"""
+    """Test the whole chain from .glyphs to designspace + UFOs and back."""
 
     @classmethod
     def add_tests(cls, testable):
@@ -71,7 +71,7 @@ class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
 
 
 class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRoundtrip):
-    """Test the whole chain from designspace + UFOs to .glyphs and back"""
+    """Test the whole chain from designspace + UFOs to .glyphs and back."""
 
     @classmethod
     def add_tests(cls, testable):
@@ -93,7 +93,7 @@ class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRou
 
 
 class UFOsToGlyphsRT(unittest.TestCase):
-    """The the whole chain from a collection of UFOs to .glyphs and back"""
+    """The the whole chain from a collection of UFOs to .glyphs and back."""
 
     @classmethod
     def add_tests(cls, testable):

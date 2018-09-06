@@ -268,9 +268,8 @@ class FeaDocument(object):
         self._build_end_locations()
 
     def text(self, statements):
-        """Recover the original fea code of the given statements from the
-        given block.
-        """
+        """Recover the original fea code of the given statements from the given
+        block."""
         return "".join(self._statement_text(st) for st in statements)
 
     def _statement_text(self, statement):
@@ -548,8 +547,9 @@ class FeatureFileProcessor(object):
 
     def _pop_comment(self, statements, comment_re):
         """Look for the comment that matches the given regex.
-        If it matches, return the regex match object and list of statements
-        without the special one.
+
+        If it matches, return the regex match object and list of
+        statements without the special one.
         """
         res = []
         match = None
@@ -564,7 +564,9 @@ class FeatureFileProcessor(object):
 
     def _pop_comment_block(self, statements, header_re):
         """Look for a series of comments that start with one that matches the
-        regex. If the first comment is found, all subsequent comments are
+        regex.
+
+        If the first comment is found, all subsequent comments are
         popped from statements, concatenated and dedented and returned.
         """
         res = []

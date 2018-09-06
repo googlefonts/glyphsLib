@@ -1,4 +1,4 @@
-"""Affine transformation matrices
+"""Affine transformation matrices.
 
 The 3x3 augmented affine transformation matrix for transformations in two
 dimensions is illustrated below.
@@ -55,7 +55,8 @@ EPSILON2 = EPSILON ** 2
 
 def set_epsilon(epsilon):
     """Set the global absolute error value and rounding limit for approximate
-    floating point comparison operations. This value is accessible via the
+    floating point comparison operations. This value is accessible via the.
+
     :attr:`planar.EPSILON` global variable.
 
     The default value of ``0.00001`` is suitable for values
@@ -69,7 +70,7 @@ def set_epsilon(epsilon):
 
 
 class TransformNotInvertibleError(Exception):
-    """The transform could not be inverted"""
+    """The transform could not be inverted."""
 
 
 # Define assert_unorderable() depending on the language
@@ -80,7 +81,7 @@ try:
 except TypeError:  # pragma: no cover
     # No implicit ordering (newer Python)
     def assert_unorderable(a, b):
-        """Assert that a and b are unorderable"""
+        """Assert that a and b are unorderable."""
         return NotImplemented
 
 
@@ -89,17 +90,15 @@ else:  # pragma: no cover
     # We must raise an exception ourselves
     # To prevent nonsensical ordering
     def assert_unorderable(a, b):
-        """Assert that a and b are unorderable"""
+        """Assert that a and b are unorderable."""
         raise TypeError(
             "unorderable types: {} and {}".format(type(a).__name__, type(b).__name__)
         )
 
 
 def cached_property(func):
-    """Special property decorator that caches the computed
-    property value in the object's instance dict the first
-    time it is accessed.
-    """
+    """Special property decorator that caches the computed property value in
+    the object's instance dict the first time it is accessed."""
     name = func.__name__
     doc = func.__doc__
 
@@ -115,10 +114,8 @@ def cached_property(func):
 
 
 def cos_sin_deg(deg):
-    """Return the cosine and sin for the given angle
-    in degrees, with special-case handling of multiples
-    of 90 for perfect right angles
-    """
+    """Return the cosine and sin for the given angle in degrees, with special-
+    case handling of multiples of 90 for perfect right angles."""
     deg = deg % 360.0
     if deg == 90.0:
         return 0.0, 1.0
@@ -132,8 +129,8 @@ def cos_sin_deg(deg):
 
 class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))):
     """Two dimensional affine transform for linear mapping from 2D coordinates
-    to other 2D coordinates. Parallel lines are preserved by these
-    transforms. Affine transforms can perform any combination of translations,
+    to other 2D coordinates. Parallel lines are preserved by these transforms.
+    Affine transforms can perform any combination of translations,
     scales/flips, shears, and rotations.  Class methods are provided to
     conveniently compose transforms from these operations.
 
@@ -211,8 +208,8 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
 
     @classmethod
     def rotation(cls, angle, pivot=None):
-        """Create a rotation transform at the specified angle,
-        optionally about the specified pivot point.
+        """Create a rotation transform at the specified angle, optionally about
+        the specified pivot point.
 
         :param angle: Rotation angle in degrees
         :type angle: float
@@ -264,26 +261,25 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
 
     @cached_property
     def determinant(self):
-        """The determinant of the transform matrix. This value
-        is equal to the area scaling factor when the transform
-        is applied to a shape.
+        """The determinant of the transform matrix.
+
+        This value is equal to the area scaling factor when the
+        transform is applied to a shape.
         """
         a, b, c, d, e, f, g, h, i = self
         return a * e - b * d
 
     @cached_property
     def is_identity(self):
-        """True if this transform equals the identity matrix,
-        within rounding limits.
-        """
+        """True if this transform equals the identity matrix, within rounding
+        limits."""
         return self is identity or self.almost_equals(identity)
 
     @cached_property
     def is_rectilinear(self):
         """True if the transform is rectilinear, i.e., whether a shape would
         remain axis-aligned, within rounding limits, after applying the
-        transform.
-        """
+        transform."""
         a, b, c, d, e, f, g, h, i = self
         return (abs(a) < EPSILON and abs(e) < EPSILON) or (
             abs(d) < EPSILON and abs(b) < EPSILON
@@ -293,6 +289,7 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
     def is_conformal(self):
         """True if the transform is conformal, i.e., if angles between points
         are preserved after applying the transform, within rounding limits.
+
         This implies that the transform has no effective shear.
         """
         a, b, c, d, e, f, g, h, i = self
@@ -300,11 +297,13 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
 
     @cached_property
     def is_orthonormal(self):
-        """True if the transform is orthonormal, which means that the
-        transform represents a rigid motion, which has no effective scaling or
-        shear. Mathematically, this means that the axis vectors of the
+        """True if the transform is orthonormal, which means that the transform
+        represents a rigid motion, which has no effective scaling or shear.
+
+        Mathematically, this means that the axis vectors of the
         transform matrix are perpendicular and unit-length.  Applying an
-        orthonormal transform to a shape always results in a congruent shape.
+        orthonormal transform to a shape always results in a congruent
+        shape.
         """
         a, b, c, d, e, f, g, h, i = self
         return (
@@ -316,14 +315,15 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
     @cached_property
     def is_degenerate(self):
         """True if this transform is degenerate, which means that it will
-        collapse a shape to an effective area of zero. Degenerate transforms
-        cannot be inverted.
+        collapse a shape to an effective area of zero.
+
+        Degenerate transforms cannot be inverted.
         """
         return abs(self.determinant) < EPSILON
 
     @property
     def column_vectors(self):
-        """The values of the transform as three 2D column vectors"""
+        """The values of the transform as three 2D column vectors."""
         a, b, c, d, e, f, _, _, _ = self
         return (a, d), (b, e), (c, f)
 

@@ -268,8 +268,7 @@ def test_bad_ufo_date_format_in_glyph_lib():
 
 def test_have_default_interpolation_values():
     """When no designspace is provided, make sure that the Glyphs file has some
-    default "axis positions" for the masters.
-    """
+    default "axis positions" for the masters."""
     thin = defcon.Font()
     thin.info.openTypeOS2WidthClass = 5
     thin.info.openTypeOS2WeightClass = 100
@@ -307,9 +306,8 @@ def test_have_default_interpolation_values():
 
 
 def test_designspace_source_locations(tmpdir):
-    """Check that opening UFOs from their source descriptor works with both
-    the filename and the path attributes.
-    """
+    """Check that opening UFOs from their source descriptor works with both the
+    filename and the path attributes."""
     designspace_path = os.path.join(str(tmpdir), "test.designspace")
     light_ufo_path = os.path.join(str(tmpdir), "light.ufo")
     bold_ufo_path = os.path.join(str(tmpdir), "bold.ufo")
@@ -352,10 +350,12 @@ def test_designspace_source_locations(tmpdir):
 
 @pytest.mark.skip(reason="Should be better defined")
 def test_ufo_filename_is_kept_the_same(tmpdir):
-    """Check that the filenames of existing UFOs are correctly written to
-    the designspace document when doing UFOs -> Glyphs -> designspace.
-    This only works when the option "minimize_ufo_diffs" is given, because
-    keeping track of this information adds stuff to the Glyphs file.
+    """Check that the filenames of existing UFOs are correctly written to the
+    designspace document when doing UFOs -> Glyphs -> designspace.
+
+    This only works when the option "minimize_ufo_diffs" is given,
+    because keeping track of this information adds stuff to the Glyphs
+    file.
     """
     light_ufo_path = os.path.join(str(tmpdir), "light.ufo")
     bold_ufo_path = os.path.join(str(tmpdir), "subdir/bold.ufo")

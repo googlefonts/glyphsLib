@@ -147,7 +147,8 @@ def main(args=None):
 
 
 def glyphs2ufo(options):
-    """Converts a Glyphs.app source file into UFO masters and a designspace file."""
+    """Converts a Glyphs.app source file into UFO masters and a designspace
+    file."""
     if options.output_dir is None:
         options.output_dir = os.path.dirname(options.glyphs_file)
 
@@ -180,7 +181,8 @@ def _glyphs2ufo_entry_point():
 
 
 def ufo2glyphs(options):
-    """Convert one designspace file or one or more UFOs to a Glyphs.app source file."""
+    """Convert one designspace file or one or more UFOs to a Glyphs.app source
+    file."""
     import fontTools.designspaceLib
     import defcon
 

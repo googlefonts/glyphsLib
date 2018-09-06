@@ -50,8 +50,8 @@ Goal: check how files with custom axes are roundtripped.
 )
 def test_weight_width_custom(axes):
     """Test that having axes in any order or quantity does not confuse
-    glyphsLib, even when the weight or width are not in the default positions.
-    """
+    glyphsLib, even when the weight or width are not in the default
+    positions."""
     doc = _make_designspace_with_axes(axes)
 
     font = to_glyphs(doc)
@@ -92,11 +92,11 @@ def _make_designspace_with_axes(axes):
 
 
 def test_masters_have_user_locations():
-    """Test the new axis definition with custom parameters.
-    See https://github.com/googlei18n/glyphsLib/issues/280.
+    """Test the new axis definition with custom parameters. See
+    https://github.com/googlei18n/glyphsLib/issues/280.
 
-    For tests about the previous system with weight/width/custom,
-    see `tests/builder/interpolation_test.py`.
+    For tests about the previous system with weight/width/custom, see
+    `tests/builder/interpolation_test.py`.
     """
     # Get a font with two masters
     font = to_glyphs([defcon.Font(), defcon.Font()])

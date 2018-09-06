@@ -25,11 +25,12 @@ from glyphsLib import to_glyphs, to_designspace
 
 
 def test_default_master_roundtrips():
-    """This test comes from a common scenario while using glyphsLib to go
-    back and forth several times with "minimize diffs" in both directions.
+    """This test comes from a common scenario while using glyphsLib to go back
+    and forth several times with "minimize diffs" in both directions.
+
     In the end we get UFOs that have information as below, and there was
-    a bug that turned "Regular" into "Normal" and changed the default axis
-    value.
+    a bug that turned "Regular" into "Normal" and changed the default
+    axis value.
     """
     thin = defcon.Font()
     thin.info.familyName = "CustomFont"

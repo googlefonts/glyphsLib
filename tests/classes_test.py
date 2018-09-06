@@ -892,11 +892,11 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         )
 
     def test_layers_missing_master(self):
-        """
-        font.glyph['a'] has its layers in a different order
-        than the font.masters and an extra layer.
-        Adding a master but not adding it as a layer to the glyph should not
-        affect glyph.layers unexpectedly.
+        """font.glyph['a'] has its layers in a different order than the
+        font.masters and an extra layer.
+
+        Adding a master but not adding it as a layer to the glyph should
+        not affect glyph.layers unexpectedly.
         """
         glyph = self.glyph
         num_layers = len(glyph.layers)
@@ -1616,22 +1616,22 @@ class GSBackgroundLayerTest(unittest.TestCase):
 
     def test_get_GSLayer_background(self):
         """It should always return a GSLayer (actually a GSBackgroundLayer but
-        it's a subclass of GSLayer so it's ok)
-        """
+        it's a subclass of GSLayer so it's ok)"""
         self.assertIsInstance(self.bg, GSLayer)
         bg2 = self.layer.background
         self.assertEqual(self.bg, bg2)
 
     def test_set_GSLayer_background(self):
         """It should raise because it behaves strangely in Glyphs.app.
-        The only way to modify a background layer in glyphsLib is to get it
-        from a GSLayer object.
+
+        The only way to modify a background layer in glyphsLib is to get
+        it from a GSLayer object.
         """
         with pytest.raises(AttributeError):
             self.layer.background = GSLayer()
 
     def test_get_GSLayer_foreground(self):
-        """It should raise AttributeError, as in Glyphs.app"""
+        """It should raise AttributeError, as in Glyphs.app."""
         with pytest.raises(AttributeError):
             fg = self.layer.foreground
 
@@ -1640,7 +1640,7 @@ class GSBackgroundLayerTest(unittest.TestCase):
             self.layer.foreground = GSLayer()
 
     def test_get_GSBackgroundLayer_background(self):
-        """It should always return None, as in Glyphs.app"""
+        """It should always return None, as in Glyphs.app."""
         self.assertIsNone(self.bg.background)
 
     def test_set_GSBackgroundLayer_background(self):
@@ -1659,8 +1659,7 @@ class GSBackgroundLayerTest(unittest.TestCase):
     def test_set_GSBackgroundLayer_foreground(self):
         """It should raise AttributeError, because it would be too complex to
         implement properly and anyway in Glyphs.app it returns some Objective C
-        function.
-        """
+        function."""
         with pytest.raises(AttributeError):
             self.bg.foreground = GSLayer()
 

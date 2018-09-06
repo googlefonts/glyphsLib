@@ -156,6 +156,7 @@ class Writer(object):
 
 def dump(obj, fp):
     """Write a GSFont object to a .glyphs file.
+
     'fp' should be a (writable) file object.
     """
     writer = Writer(fp)
@@ -165,6 +166,7 @@ def dump(obj, fp):
 
 def dumps(obj):
     """Serialize a GSFont object to a .glyphs file format.
+
     Return a (unicode) str object.
     """
     fp = UnicodeIO()

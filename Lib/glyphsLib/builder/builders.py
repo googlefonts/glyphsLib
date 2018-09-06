@@ -118,8 +118,8 @@ class UFOBuilder(_LoggerMixin):
 
     @property
     def masters(self):
-        """Get an iterator over master UFOs that match the given family_name.
-        """
+        """Get an iterator over master UFOs that match the given
+        family_name."""
         if self._sources:
             for source in self._sources.values():
                 yield source.font
@@ -199,8 +199,7 @@ class UFOBuilder(_LoggerMixin):
     @property
     def designspace(self):
         """Get a designspace Document instance that links the masters together
-        and holds instance data.
-        """
+        and holds instance data."""
         if self._designspace_is_complete:
             return self._designspace
         self._designspace_is_complete = True
@@ -274,9 +273,8 @@ class UFOBuilder(_LoggerMixin):
 
 
 def filter_instances_by_family(instances, family_name=None):
-    """Yield instances whose 'familyName' custom parameter is
-    equal to 'family_name'.
-    """
+    """Yield instances whose 'familyName' custom parameter is equal to
+    'family_name'."""
     return (i for i in instances if i.familyName == family_name)
 
 
@@ -378,8 +376,7 @@ class GlyphsBuilder(_LoggerMixin):
 
     def _valid_designspace(self, designspace):
         """Make sure that the user-provided designspace has loaded fonts and
-        that names are the same as those from the UFOs.
-        """
+        that names are the same as those from the UFOs."""
         # TODO: (jany) really make a copy to avoid modifying the original object
         copy = designspace
         for source in copy.sources:
@@ -417,8 +414,7 @@ class GlyphsBuilder(_LoggerMixin):
 
     def _fake_designspace(self, ufos):
         """Build a fake designspace with the given UFOs as sources, so that all
-        builder functions can rely on the presence of a designspace.
-        """
+        builder functions can rely on the presence of a designspace."""
         designspace = designspaceLib.DesignSpaceDocument()
 
         ufo_to_location = defaultdict(dict)

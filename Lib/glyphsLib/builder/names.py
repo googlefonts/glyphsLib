@@ -56,8 +56,8 @@ def build_stylemap_names(
     family_name, style_name, is_bold=False, is_italic=False, linked_style=None
 ):
     """Build UFO `styleMapFamilyName` and `styleMapStyleName` based on the
-    family and style names, and the entries in the "Style Linking" section
-    of the "Instances" tab in the "Font Info".
+    family and style names, and the entries in the "Style Linking" section of
+    the "Instances" tab in the "Font Info".
 
     The value of `styleMapStyleName` can be either "regular", "bold", "italic"
     or "bold italic", depending on the values of `is_bold` and `is_italic`.

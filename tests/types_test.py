@@ -24,22 +24,23 @@ from glyphsLib.types import Transform, parse_datetime, parse_color
 
 class GlyphsDateTimeTest(unittest.TestCase):
     def test_parsing_24hr_format(self):
-        """Assert glyphs_datetime can parse 24 hour time formats"""
+        """Assert glyphs_datetime can parse 24 hour time formats."""
         string_24hrs = "2017-01-01 17:30:30 +0000"
         self.assertEqual(
             parse_datetime(string_24hrs), datetime.datetime(2017, 1, 1, 17, 30, 30)
         )
 
     def test_parsing_12hr_format(self):
-        """Assert glyphs_datetime can parse 12 hour time format"""
+        """Assert glyphs_datetime can parse 12 hour time format."""
         string_12hrs = "2017-01-01 5:30:30 PM +0000"
         self.assertEqual(
             parse_datetime(string_12hrs), datetime.datetime(2017, 1, 1, 17, 30, 30)
         )
 
     def test_parsing_timezone(self):
-        """Assert glyphs_datetime can parse the (optional) timezone
-        formatted as UTC offset. If it's not explicitly specified, then
+        """Assert glyphs_datetime can parse the (optional) timezone formatted
+        as UTC offset. If it's not explicitly specified, then.
+
         +0000 is assumed.
         """
         self.assertEqual(

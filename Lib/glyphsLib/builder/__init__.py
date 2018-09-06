@@ -97,8 +97,7 @@ def to_designspace(
 
 
 def to_glyphs(ufos_or_designspace, glyphs_module=classes, minimize_ufo_diffs=False):
-    """
-    Take a list of UFOs or a single DesignspaceDocument with attached UFOs
+    """Take a list of UFOs or a single DesignspaceDocument with attached UFOs
     and converts it into a GSFont object.
 
     The GSFont object is in-memory, it's up to the user to write it to the disk

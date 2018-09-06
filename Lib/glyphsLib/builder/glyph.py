@@ -126,9 +126,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
-    If the matching GSGlyph does not exist, then it is created,
-    else it is updated with the new data.
-    In all cases, a matching GSLayer is created in the GSGlyph to hold paths.
+
+    If the matching GSGlyph does not exist, then it is created, else it
+    is updated with the new data. In all cases, a matching GSLayer is
+    created in the GSGlyph to hold paths.
     """
 
     # FIXME: (jany) split between glyph and layer attributes

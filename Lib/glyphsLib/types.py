@@ -28,9 +28,8 @@ __all__ = ["Transform", "Point", "Rect"]
 
 
 class ValueType(object):
-    """A base class for value types that are comparable in the Python sense
-    and readable/writable using the glyphsLib parser/writer.
-    """
+    """A base class for value types that are comparable in the Python sense and
+    readable/writable using the glyphsLib parser/writer."""
 
     default = None
 
@@ -53,7 +52,7 @@ class ValueType(object):
 
     # https://stackoverflow.com/questions/390250/elegant-ways-to-support-equivalence-equality-in-python-classes
     def __eq__(self, other):
-        """Overrides the default implementation"""
+        """Overrides the default implementation."""
         if isinstance(self, other.__class__):
             return self.value == other.value
         return NotImplemented
@@ -66,7 +65,7 @@ class ValueType(object):
         return NotImplemented
 
     def __hash__(self):
-        """Overrides the default implementation"""
+        """Overrides the default implementation."""
         return hash(self.value)
 
 
@@ -261,7 +260,10 @@ def parse_datetime(src=None):
 
 # FIXME: (jany) Not sure this should be used
 class Datetime(ValueType):
-    """Read/write a datetime.  Doesn't maintain time zone offset."""
+    """Read/write a datetime.
+
+    Doesn't maintain time zone offset.
+    """
 
     def fromString(self, src):
         return parse_datetime(src)

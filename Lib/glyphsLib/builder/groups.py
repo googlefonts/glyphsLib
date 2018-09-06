@@ -135,8 +135,7 @@ def _to_glyphs_kerning_group(self, name, glyphs):
 
 def _glyph_kerning_attr(glyph, side):
     """Return leftKerningGroup or rightKerningGroup depending on the UFO
-    group's side (1 or 2).
-    """
+    group's side (1 or 2)."""
     if int(side) == 1:
         return "rightKerningGroup"
     else:

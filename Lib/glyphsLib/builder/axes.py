@@ -70,8 +70,8 @@ def _nospace_lookup(dict, key):
 
 
 def user_loc_string_to_value(axis_tag, user_loc):
-    """Go from Glyphs UI strings to user space location.
-    Returns None if the string is invalid.
+    """Go from Glyphs UI strings to user space location. Returns None if the
+    string is invalid.
 
     >>> user_loc_string_to_value('wght', 'ExtraLight')
     200
@@ -118,8 +118,8 @@ def user_loc_value_to_class(axis_tag, user_loc):
 
 
 def user_loc_value_to_instance_string(axis_tag, user_loc):
-    """Return the Glyphs UI string (from the instance dropdown) that is
-    closest to the provided user location.
+    """Return the Glyphs UI string (from the instance dropdown) that is closest
+    to the provided user location.
 
     >>> user_loc_value_to_instance_string('wght', 430)
     'Normal'
@@ -272,8 +272,7 @@ def to_glyphs_axes(self):
 
 class AxisDefinition(object):
     """Centralize the code that deals with axis locations, user location versus
-    design location, associated OS/2 table codes, etc.
-    """
+    design location, associated OS/2 table codes, etc."""
 
     def __init__(
         self,
@@ -294,10 +293,12 @@ class AxisDefinition(object):
         self.default_user_loc = default_user_loc
 
     def get_design_loc(self, glyphs_master_or_instance):
-        """Get the design location (aka interpolation value) of a Glyphs
-        master or instance along this axis. For example for the weight
-        axis it could be the thickness of a stem, for the width a percentage
-        of extension with respect to the normal width.
+        """Get the design location (aka interpolation value) of a Glyphs master
+        or instance along this axis.
+
+        For example for the weight axis it could be the thickness of a
+        stem, for the width a percentage of extension with respect to
+        the normal width.
         """
         return getattr(glyphs_master_or_instance, self.design_loc_key)
 
@@ -307,13 +308,13 @@ class AxisDefinition(object):
 
     def get_user_loc(self, master_or_instance):
         """Get the user location of a Glyphs master or instance.
-        Masters in Glyphs can have a user location in the "Axis Location"
-        custom parameter.
-        The user location is what the user sees on the slider in his
-        variable-font-enabled UI. For weight it is a value between 0 and 1000,
-        400 being Regular and 700 Bold.
-        For width it's the same as the design location, a percentage of
-        extension with respect to the normal width.
+
+        Masters in Glyphs can have a user location in the "Axis
+        Location" custom parameter. The user location is what the user
+        sees on the slider in his variable-font-enabled UI. For weight
+        it is a value between 0 and 1000, 400 being Regular and 700
+        Bold. For width it's the same as the design location, a
+        percentage of extension with respect to the normal width.
         """
         user_loc = self.default_user_loc
 
@@ -434,10 +435,11 @@ class AxisDefinitionFactory(object):
     """Creates a set of axis definitions, making sure to recognize default axes
     (weight and width) and also keeping track of indices of custom axes.
 
-    From looking at a Glyphs file with only one custom axis, it looks like
-    when there is an "Axes" customParameter, the axis design locations are
-    stored in `weightValue` for the first axis (regardless of whether it is
-    a weight axis, `widthValue` for the second axis, etc.
+    From looking at a Glyphs file with only one custom axis, it looks
+    like when there is an "Axes" customParameter, the axis design
+    locations are stored in `weightValue` for the first axis (regardless
+    of whether it is a weight axis, `widthValue` for the second axis,
+    etc.
     """
 
     def __init__(self):
@@ -507,12 +509,11 @@ def _is_subset_of_default_axes(axes_parameter):
 def get_regular_master(font):
     """Find the "regular" master among the GSFontMasters.
 
-    Tries to find the master with the passed 'regularName'.
-    If there is no such master or if regularName is None,
-    tries to find a base style shared between all masters
-    (defaulting to "Regular"), and then tries to find a master
-    with that style name. If there is no master with that name,
-    returns the first master in the list.
+    Tries to find the master with the passed 'regularName'. If there is
+    no such master or if regularName is None, tries to find a base style
+    shared between all masters (defaulting to "Regular"), and then tries
+    to find a master with that style name. If there is no master with
+    that name, returns the first master in the list.
     """
     if not font.masters:
         return None
@@ -539,6 +540,7 @@ def get_regular_master(font):
 
 def find_base_style(masters):
     """Find a base style shared between all masters.
+
     Return empty string if none is found.
     """
     if not masters:

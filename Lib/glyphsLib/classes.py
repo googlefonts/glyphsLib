@@ -380,7 +380,7 @@ class Proxy(object):
         self._owner = owner
 
     def __repr__(self):
-        """Return list-lookalike of representation string of objects"""
+        """Return list-lookalike of representation string of objects."""
         strings = []
         for currItem in self:
             strings.append("%s" % (currItem))
@@ -1433,6 +1433,7 @@ class GSFontMaster(GSBase):
     def name(self, name):
         """This function will take the given name and split it into components
         weight, width, customName, and possibly the full name.
+
         This is what Glyphs 1113 seems to be doing, approximately.
         """
         weight, width, custom_name = self._splitName(name)
@@ -1441,8 +1442,7 @@ class GSFontMaster(GSBase):
     def set_all_name_components(self, name, weight, width, custom_name):
         """This function ensures that after being called, the master.name,
         master.weight, master.width, and master.customName match the given
-        values.
-        """
+        values."""
         self.weight = weight or "Regular"
         self.width = width or "Regular"
         self.customName = custom_name or ""
@@ -1631,8 +1631,8 @@ class GSNode(GSBase):
 
     def _encode_dict_as_string(self, value):
         """Takes the PLIST string of a dict, and returns the same string
-        encoded such that it can be included in the string representation
-        of a GSNode."""
+        encoded such that it can be included in the string representation of a
+        GSNode."""
         # Strip the first and last newlines
         if value.startswith("{\n"):
             value = "{" + value[2:]
@@ -1656,7 +1656,7 @@ class GSNode(GSBase):
         return m.group(0)
 
     def _decode_dict_as_string(self, value):
-        """Reverse function of _encode_string_as_dict"""
+        """Reverse function of _encode_string_as_dict."""
         return self._ESCAPED_CHAR_RE.sub(self._unescape_char, value)
 
     def _indices(self):
@@ -2903,7 +2903,10 @@ class GSLayer(GSBase):
 
     @property
     def background(self):
-        """Only a getter on purpose. See the tests."""
+        """Only a getter on purpose.
+
+        See the tests.
+        """
         if self._background is None:
             self._background = GSBackgroundLayer()
             self._background._foreground = self
@@ -3091,7 +3094,7 @@ class GSGlyph(GSBase):
 
     @property
     def id(self):
-        """An unique identifier for each glyph"""
+        """An unique identifier for each glyph."""
         return self.name
 
     @property

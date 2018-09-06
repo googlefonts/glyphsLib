@@ -223,8 +223,9 @@ class Parser(object):
         return unichr(int(m.group(2)[2:], 16))
 
     def _trim_value(self, value):
-        """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.
+        """Trim double quotes off the ends of a value, un-escaping inner double
+        quotes.
+
         Also convert escapes to unicode.
         """
 
@@ -240,15 +241,17 @@ class Parser(object):
 
 
 def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
-    Return a GSFont object.
+    """Read a .glyphs file.
+
+    'fp' should be (readable) file object. Return a GSFont object.
     """
     return loads(fp.read())
 
 
 def loads(s):
-    """Read a .glyphs file from a (unicode) str object, or from
-    a UTF-8 encoded bytes object.
+    """Read a .glyphs file from a (unicode) str object, or from a UTF-8 encoded
+    bytes object.
+
     Return a GSFont object.
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)
