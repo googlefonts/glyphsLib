@@ -21,7 +21,9 @@ from __future__ import (
     unicode_literals,
 )
 
+import os
 import unittest
+import xml.etree.ElementTree
 
 from glyphsLib.glyphdata import get_glyph
 
@@ -147,6 +149,44 @@ class GlyphDataTest(unittest.TestCase):
             (u.production_name, g.production_name), ("uni07F0", "uni07F0")
         )
         self.assertEqual((u.unicode, g.unicode), ("07F0", "07F0"))
+
+    def test_glyphdata_no_duplicates(self):
+        import glyphsLib
+
+        names = set()
+        alt_names = set()
+        production_names = set()
+
+        xml_files = [
+            os.path.join(
+                os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
+            ),
+            os.path.join(
+                os.path.dirname(glyphsLib.__file__),
+                "data",
+                "GlyphData_Ideographs.xml",
+            ),
+        ]
+
+        for glyphdata_file in xml_files:
+            glyph_data = xml.etree.ElementTree.parse(glyphdata_file).getroot()
+            for glyph in glyph_data:
+                glyph_name = glyph.attrib["name"]
+                glyph_name_alternatives = glyph.attrib.get("altNames")
+                glyph_name_production = glyph.attrib.get("production")
+
+                assert glyph_name not in names
+                names.add(glyph_name)
+                if glyph_name_alternatives:
+                    alternatives = glyph_name_alternatives.replace(
+                        " ", ""
+                    ).split(",")
+                    for glyph_name_alternative in alternatives:
+                        assert glyph_name_alternative not in alt_names
+                        alt_names.add(glyph_name_alternative)
+                if glyph_name_production:
+                    assert glyph_name_production not in production_names
+                    production_names.add(glyph_name_production)
 
 
 if __name__ == "__main__":
