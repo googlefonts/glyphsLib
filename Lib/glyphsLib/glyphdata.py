@@ -14,6 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""This module holds internally-used functions to determine various properties
+of a glyph.
+
+These properties assist in applying automatisms to glyphs when round-
+tripping.
+"""
+
 from __future__ import (
     absolute_import,
     division,
@@ -31,16 +38,25 @@ import fontTools.agl
 
 import glyphsLib
 
-# FIXME: (jany) Shouldn't this be the class GSGlyphInfo?
+# This is an internally-used named tuple and not meant to be a GSGlyphData replacement.
 Glyph = collections.namedtuple(
     "Glyph",
     "name, production_name, unicode, category, subCategory, script, description",
 )
 
+# Global variable holding the actual GlyphData data, assigned on first use.
 GLYPHDATA = None
 
 
 class GlyphData:
+    """Map (alternative) names and production names to GlyphData data.
+
+    This class holds the GlyphData data as provided on
+    https://github.com/schriftgestalt/GlyphsInfo and provides lookup by
+    name, alternative name and production name through normal
+    dictionaries.
+    """
+
     __slots__ = ["names", "alternative_names", "production_names"]
 
     def __init__(
@@ -52,6 +68,7 @@ class GlyphData:
 
     @classmethod
     def from_files(cls, *glyphdata_files):
+        """Return GlyphData holding data from a list of XML file paths."""
         name_mapping = {}
         alt_name_mapping = {}
         production_name_mapping = {}
@@ -82,11 +99,12 @@ def get_glyph(glyph_name):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
-    The information is derived from an included copy of GlyphData.xml,
-    going purely by the glyph name.
+    The information is derived from an included copy of GlyphData.xml
+    and GlyphData_Ideographs.xml, going purely by the glyph name.
     """
-    global GLYPHDATA
 
+    # Read data on first use.
+    global GLYPHDATA
     if GLYPHDATA is None:
         GLYPHDATA = GlyphData.from_files(
             os.path.join(
@@ -99,6 +117,8 @@ def get_glyph(glyph_name):
             ),
         )
 
+    # Look up data by full glyph name first. Also try the full alternative name for
+    # legacy projects and production name (Issue #232).
     attributes = (
         GLYPHDATA.names.get(glyph_name)
         or GLYPHDATA.alternative_names.get(glyph_name)
@@ -115,12 +135,18 @@ def get_glyph(glyph_name):
     script = attributes.get("script")
     description = attributes.get("description")
 
+    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
+    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
+    # the same category as its base glyph.
     if category is None:
         base_name = glyph_name.split(".", 1)[0]
         base_attribute = GLYPHDATA.names.get(base_name) or {}
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
 
+    # Still nothing? Maybe someone we're looking at something like "uni1234.alt", try
+    # one more time using fontTools' AGL module to convert the base name to something
+    # meaningful.
     if category is None:
         character = fontTools.agl.toUnicode(base_name)
         if character:
@@ -140,6 +166,7 @@ def get_glyph(glyph_name):
 
 
 def _agl_compliant_name(glyph_name):
+    """Return an AGL-compliant name string or None if we can't make one."""
     MAX_GLYPH_NAME_LENGTH = 63
     clean_name = re.sub("[^0-9a-zA-Z_.]", "", glyph_name)
     if len(clean_name) > MAX_GLYPH_NAME_LENGTH:
@@ -148,12 +175,15 @@ def _agl_compliant_name(glyph_name):
 
 
 def _is_unicode_u_value(name):
+    """Return whether we are looking at a uXXXX value."""
     return name.startswith("u") and all(
         part_char in "0123456789ABCDEF" for part_char in name[1:]
     )
 
 
 def _construct_category(glyph_name, unicode_category):
+    """Return a translation from Unicode category letters to Glyphs
+    categories."""
     DEFAULT_CATEGORIES = {
         None: ("Letter", None),
         "Cc": ("Separator", None),
@@ -191,6 +221,8 @@ def _construct_category(glyph_name, unicode_category):
         unicode_category, ("Letter", None)
     )
 
+    # Exception: Something like "one_two" should be a (_, Ligature),
+    # "acutecomb_brevecomb" should however stay (Mark, Nonspacing).
     if "_" in glyph_name and glyphs_category[0] != "Mark":
         return (glyphs_category[0], "Ligature")
 
@@ -200,6 +232,9 @@ def _construct_category(glyph_name, unicode_category):
 def _construct_production_name(glyph_name):
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
+
+    This should be run only if there is no official entry with a production
+    name in it.
 
     Handles single glyphs (e.g. "brevecomb") and ligatures (e.g.
     "brevecomb_acutecomb"). Returns None when a valid and semantically
@@ -213,6 +248,8 @@ def _construct_production_name(glyph_name):
     - Suffix is e.g. "case".
     """
 
+    # At this point, we have already checked the data for the full glyph name, so
+    # directly go to the base name here (e.g. when looking at "fi.alt").
     base_name, dot, suffix = glyph_name.partition(".")
     glyphinfo = (
         GLYPHDATA.names.get(base_name)
@@ -221,15 +258,20 @@ def _construct_production_name(glyph_name):
         or {}
     )
     if glyphinfo and glyphinfo.get("production"):
+        # Found the base glyph.
         return glyphinfo["production"] + dot + suffix
 
     if glyph_name in fontTools.agl.AGL2UV or base_name in fontTools.agl.AGL2UV:
+        # Glyph name is actually an AGLFN name.
         return glyph_name
 
     if "_" not in base_name:
+        # Nothing found so far and the glyph name isn't a ligature ("_"
+        # somewhere in it). The name does not carry any discernable Unicode
+        # semantics, so just return something sanitized.
         return _agl_compliant_name(glyph_name)
 
-    # So we have a ligature that is not mapped in PRODUCTION_NAMES. Split it up and
+    # So we have a ligature that is not mapped in the data. Split it up and
     # look up the individual parts.
     base_name_parts = base_name.split("_")
 
@@ -238,10 +280,12 @@ def _construct_production_name(glyph_name):
     if all(part in fontTools.agl.AGL2UV for part in base_name_parts):
         return _agl_compliant_name(glyph_name)
 
+    # Turn all parts of the ligature into production names.
     _character_outside_BMP = False
     production_names = []
     for part in base_name_parts:
         if part in fontTools.agl.AGL2UV:
+            # A name present in the AGLFN is a production name already.
             production_names.append(part)
         else:
             part_entry = GLYPHDATA.names.get(part) or {}
@@ -249,13 +293,17 @@ def _construct_production_name(glyph_name):
             if part_production_name:
                 production_names.append(part_production_name)
 
-                # Note if there are any characters outside the Unicode BMP, e.g.
-                # "u10FFF" or "u10FFFF". Do not catch e.g. "u013B" though.
+                # Take note if there are any characters outside the Unicode
+                # BMP, e.g. "u10FFF" or "u10FFFF". Do not catch e.g. "u013B"
+                # though.
                 if len(part_production_name) > 5 and _is_unicode_u_value(
                     part_production_name
                 ):
                     _character_outside_BMP = True
             else:
+                # We hit a part that does not seem to be a valid glyph name known to us,
+                # so the entire glyph name can't carry Unicode meaning. Return it
+                # sanitized.
                 return _agl_compliant_name(glyph_name)
 
     # Some names Glyphs uses resolve to other names that are not uniXXXX names and may
