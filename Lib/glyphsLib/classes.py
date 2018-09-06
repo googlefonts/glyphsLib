@@ -1506,8 +1506,8 @@ class GSFontMaster(GSBase):
 
 class GSNode(GSBase):
     _PLIST_VALUE_RE = re.compile(
-        '"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        '(?: (SMOOTH))?(?: (\{.*\}))?"',
+        r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
+        r'(?: (SMOOTH))?(?: (\{.*\}))?"',
         re.DOTALL,
     )
     MOVE = "move"
@@ -3295,8 +3295,8 @@ class GSFont(GSBase):
     @kerning.setter
     def kerning(self, kerning):
         self._kerning = kerning
-        for master_id, master_map in kerning.items():
-            for left_glyph, glyph_map in master_map.items():
+        for master_map in kerning.values():
+            for glyph_map in master_map.values():
                 for right_glyph, value in glyph_map.items():
                     glyph_map[right_glyph] = float(value)
 
