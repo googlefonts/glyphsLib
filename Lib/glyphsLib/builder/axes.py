@@ -12,19 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import OrderedDict
 import logging
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
-from .constants import (GLYPHS_PREFIX, GLYPHLIB_PREFIX,
-                        FONT_CUSTOM_PARAM_PREFIX, MASTER_CUSTOM_PARAM_PREFIX)
+from .constants import (
+    GLYPHS_PREFIX,
+    GLYPHLIB_PREFIX,
+    FONT_CUSTOM_PARAM_PREFIX,
+    MASTER_CUSTOM_PARAM_PREFIX,
+)
 
 # This is a key into GSFont.userData to store axes defined in the designspace
-AXES_KEY = GLYPHLIB_PREFIX + 'axes'
+AXES_KEY = GLYPHLIB_PREFIX + "axes"
 
 # From the spec: https://docs.microsoft.com/en-gb/typography/opentype/spec/os2#uswidthclass
 WIDTH_CLASS_TO_VALUE = {
@@ -47,10 +50,10 @@ def class_to_value(axis, ufo_class):
     >>> class_to_value('wdth', 7)
     125
     """
-    if axis == 'wght':
+    if axis == "wght":
         # 600.0 => 600, 250 => 250
         return int(ufo_class)
-    elif axis == 'wdth':
+    elif axis == "wdth":
         return WIDTH_CLASS_TO_VALUE[int(ufo_class)]
 
     raise NotImplementedError
@@ -62,7 +65,7 @@ def _nospace_lookup(dict, key):
     except KeyError:
         # Even though the Glyphs UI strings are supposed to be fixed,
         # some Noto files contain variants of them that have spaces.
-        key = ''.join(str(key).split())
+        key = "".join(str(key).split())
         return dict[key]
 
 
@@ -76,18 +79,18 @@ def user_loc_string_to_value(axis_tag, user_loc):
     87.5
     >>> user_loc_string_to_value('wdth', 'Clearly Not From Glyphs UI')
     """
-    if axis_tag == 'wght':
+    if axis_tag == "wght":
         try:
             value = _nospace_lookup(WEIGHT_CODES, user_loc)
         except KeyError:
             return None
-        return class_to_value('wght', value)
-    elif axis_tag == 'wdth':
+        return class_to_value("wght", value)
+    elif axis_tag == "wdth":
         try:
             value = _nospace_lookup(WIDTH_CODES, user_loc)
         except KeyError:
             return None
-        return class_to_value('wdth', value)
+        return class_to_value("wdth", value)
 
     # Currently this function should only be called with a width or weight
     raise NotImplementedError
@@ -103,11 +106,13 @@ def user_loc_value_to_class(axis_tag, user_loc):
     >>> user_loc_value_to_class('wdth', 62)
     2
     """
-    if axis_tag == 'wght':
+    if axis_tag == "wght":
         return int(user_loc)
-    elif axis_tag == 'wdth':
-        return min(sorted(WIDTH_CLASS_TO_VALUE.items()),
-                   key=lambda item: abs(item[1] - user_loc))[0]
+    elif axis_tag == "wdth":
+        return min(
+            sorted(WIDTH_CLASS_TO_VALUE.items()),
+            key=lambda item: abs(item[1] - user_loc),
+        )[0]
 
     raise NotImplementedError
 
@@ -122,16 +127,17 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     'Extra Expanded'
     """
     codes = {}
-    if axis_tag == 'wght':
+    if axis_tag == "wght":
         codes = WEIGHT_CODES
-    elif axis_tag == 'wdth':
+    elif axis_tag == "wdth":
         codes = WIDTH_CODES
     else:
         raise NotImplementedError
     class_ = user_loc_value_to_class(axis_tag, user_loc)
-    return min(sorted((code, class_) for code, class_ in codes.items()
-                      if code is not None),
-               key=lambda item: abs(item[1] - class_))[0]
+    return min(
+        sorted((code, class_) for code, class_ in codes.items() if code is not None),
+        key=lambda item: abs(item[1] - class_),
+    )[0]
 
 
 def to_designspace_axes(self):
@@ -155,8 +161,9 @@ def to_designspace_axes(self):
                 designLoc = axis_def.get_design_loc(master)
                 userLoc = axis_def.get_user_loc(master)
                 if userLoc in mapping and mapping[userLoc] != designLoc:
-                    logger.warning("Axis location (%s) was redefined by '%s'",
-                                   userLoc, master.name)
+                    logger.warning(
+                        "Axis location (%s) was redefined by '%s'", userLoc, master.name
+                    )
                 mapping[userLoc] = designLoc
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
@@ -169,11 +176,15 @@ def to_designspace_axes(self):
                 if is_instance_active(instance) or self.minimize_glyphs_diffs:
                     designLoc = axis_def.get_design_loc(instance)
                     userLoc = axis_def.get_user_loc(instance)
-                    if (userLoc in instance_mapping and
-                            instance_mapping[userLoc] != designLoc):
+                    if (
+                        userLoc in instance_mapping
+                        and instance_mapping[userLoc] != designLoc
+                    ):
                         logger.warning(
-                            "Instance user-space location (%s) redefined by "
-                            "'%s'", userLoc, instance.name)
+                            "Instance user-space location (%s) redefined by " "'%s'",
+                            userLoc,
+                            instance.name,
+                        )
                     instance_mapping[userLoc] = designLoc
 
             master_mapping = {}
@@ -197,8 +208,11 @@ def to_designspace_axes(self):
         default = min(maximum, max(minimum, regularUserLoc))  # clamp
 
         is_identity_map = all(uloc == dloc for uloc, dloc in mapping.items())
-        if (minimum < maximum or minimum != axis_def.default_user_loc or
-                not is_identity_map):
+        if (
+            minimum < maximum
+            or minimum != axis_def.default_user_loc
+            or not is_identity_map
+        ):
             if not is_identity_map:
                 axis.map = sorted(mapping.items())
             axis.minimum = minimum
@@ -213,8 +227,9 @@ def font_uses_new_axes(font):
     # resort to using instances or other old tricks to get the mapping.
     # https://github.com/googlei18n/glyphsLib/issues/409
     # https://github.com/googlei18n/glyphsLib/issues/411
-    return font.customParameters['Axes'] and all(
-        master.customParameters['Axis Location'] for master in font.masters)
+    return font.customParameters["Axes"] and all(
+        master.customParameters["Axis Location"] for master in font.masters
+    )
 
 
 def to_glyphs_axes(self):
@@ -222,31 +237,28 @@ def to_glyphs_axes(self):
     width = None
     customs = []
     for axis in self.designspace.axes:
-        if axis.tag == 'wght':
+        if axis.tag == "wght":
             weight = axis
-        elif axis.tag == 'wdth':
+        elif axis.tag == "wdth":
             width = axis
         else:
             customs.append(axis)
 
     axes_parameter = []
     if weight is not None:
-        axes_parameter.append({'Name': weight.name or 'Weight', 'Tag': 'wght'})
+        axes_parameter.append({"Name": weight.name or "Weight", "Tag": "wght"})
         # TODO: (jany) store other data about this axis?
 
     if width is not None:
-        axes_parameter.append({'Name': width.name or 'Width', 'Tag': 'wdth'})
+        axes_parameter.append({"Name": width.name or "Width", "Tag": "wdth"})
         # TODO: (jany) store other data about this axis?
 
     for custom in customs:
-        axes_parameter.append({
-            'Name': custom.name,
-            'Tag': custom.tag,
-        })
+        axes_parameter.append({"Name": custom.name, "Tag": custom.tag})
         # TODO: (jany) store other data about this axis?
 
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
-        self.font.customParameters['Axes'] = axes_parameter
+        self.font.customParameters["Axes"] = axes_parameter
 
     if self.minimize_ufo_diffs:
         # TODO: (jany) later, when Glyphs can manage general designspace axes
@@ -270,8 +282,16 @@ class AxisDefinition(object):
     design location, associated OS/2 table codes, etc.
     """
 
-    def __init__(self, tag, name, design_loc_key, default_design_loc=0.0,
-                 user_loc_key=None, user_loc_param=None, default_user_loc=0.0):
+    def __init__(
+        self,
+        tag,
+        name,
+        design_loc_key,
+        default_design_loc=0.0,
+        user_loc_key=None,
+        user_loc_param=None,
+        default_user_loc=0.0,
+    ):
         self.tag = tag
         self.name = name
         self.design_loc_key = design_loc_key
@@ -304,7 +324,7 @@ class AxisDefinition(object):
         """
         user_loc = self.default_user_loc
 
-        if self.tag != 'wght':
+        if self.tag != "wght":
             # The user location is by default the same as the design location.
             user_loc = self.get_design_loc(master_or_instance)
 
@@ -312,9 +332,10 @@ class AxisDefinition(object):
         # location (regardless of the OS/2 width class and prescribed mapping
         # to a percentage), as enforced by DesignspaceTest::test_twoAxes
         # in tests/builder/interpolation_test.py
-        if (self.tag != 'wdth'):
-            if (self.user_loc_key is not None and
-                    hasattr(master_or_instance, self.user_loc_key)):
+        if self.tag != "wdth":
+            if self.user_loc_key is not None and hasattr(
+                master_or_instance, self.user_loc_key
+            ):
                 # Instances have special ways to specify a user location.
                 # Only weight and with have a custom user location via a key.
                 # The `user_loc_key` gives a "location code" = Glyphs UI string
@@ -328,19 +349,18 @@ class AxisDefinition(object):
             #       key = "weight" -> "Bold" -> 700
             # but param = "weightClass" -> 600       => 600 wins
             if self.user_loc_param is not None:
-                class_ = master_or_instance.customParameters[
-                    self.user_loc_param]
+                class_ = master_or_instance.customParameters[self.user_loc_param]
                 if class_ is not None:
                     user_loc = class_to_value(self.tag, class_)
 
         # Masters have a customParameter that specifies a user location
         # along custom axes. If this is present it takes precedence over
         # everything else.
-        loc_param = master_or_instance.customParameters['Axis Location']
+        loc_param = master_or_instance.customParameters["Axis Location"]
         try:
             for location in loc_param:
-                if location.get('Axis') == self.name:
-                    user_loc = location['Location']
+                if location.get("Axis") == self.name:
+                    user_loc = location["Location"]
         except:
             pass
 
@@ -348,7 +368,7 @@ class AxisDefinition(object):
 
     def set_user_loc(self, master_or_instance, value):
         """Set the user location of a Glyphs master or instance."""
-        if hasattr(master_or_instance, 'instanceInterpolations'):
+        if hasattr(master_or_instance, "instanceInterpolations"):
             # The following code is only valid for instances.
             # Masters also the keys `weight` and `width` but they should not be
             # used, they are deprecated and should only be used to store
@@ -359,8 +379,9 @@ class AxisDefinition(object):
             # for "weight": 600 can be represented by SemiBold so we use that,
             # but for 550 there is no code so we will have to set the custom
             # parameter as well.
-            if (self.user_loc_key is not None and
-                    hasattr(master_or_instance, self.user_loc_key)):
+            if self.user_loc_key is not None and hasattr(
+                master_or_instance, self.user_loc_key
+            ):
                 code = user_loc_value_to_instance_string(self.tag, value)
                 value_for_code = user_loc_string_to_value(self.tag, code)
                 setattr(master_or_instance, self.user_loc_key, code)
@@ -368,7 +389,8 @@ class AxisDefinition(object):
                     try:
                         class_ = user_loc_value_to_class(self.tag, value)
                         master_or_instance.customParameters[
-                            self.user_loc_param] = class_
+                            self.user_loc_param
+                        ] = class_
                     except NotImplementedError:
                         # user_loc_value_to_class only works for weight & width
                         pass
@@ -380,23 +402,22 @@ class AxisDefinition(object):
         if self.user_loc_param is not None:
             try:
                 class_ = user_loc_value_to_class(self.tag, value)
-                master_or_instance.customParameters[
-                    self.user_loc_param] = class_
+                master_or_instance.customParameters[self.user_loc_param] = class_
             except NotImplementedError:
                 pass
 
-        loc_param = master_or_instance.customParameters['Axis Location']
+        loc_param = master_or_instance.customParameters["Axis Location"]
         if loc_param is None:
             loc_param = []
-            master_or_instance.customParameters['Axis Location'] = loc_param
+            master_or_instance.customParameters["Axis Location"] = loc_param
         location = None
         for loc in loc_param:
-            if loc.get('Axis') == self.name:
+            if loc.get("Axis") == self.name:
                 location = loc
         if location is None:
-            loc_param.append({'Axis': self.name, 'Location': value})
+            loc_param.append({"Axis": self.name, "Location": value})
         else:
-            location['Location'] = value
+            location["Location"] = value
 
     def set_user_loc_code(self, instance, code):
         assert isinstance(instance, classes.GSInstance)
@@ -407,11 +428,12 @@ class AxisDefinition(object):
             setattr(instance, self.user_loc_key, code)
 
     def set_ufo_user_loc(self, ufo, value):
-        if self.tag not in ('wght', 'wdth'):
+        if self.tag not in ("wght", "wdth"):
             raise NotImplementedError
         class_ = user_loc_value_to_class(self.tag, value)
-        ufo_key = ('openTypeOS2WeightClass'
-                   if self.tag == 'wght' else 'openTypeOS2WidthClass')
+        ufo_key = (
+            "openTypeOS2WeightClass" if self.tag == "wght" else "openTypeOS2WidthClass"
+        )
         setattr(ufo.info, ufo_key, class_)
 
 
@@ -424,42 +446,45 @@ class AxisDefinitionFactory(object):
     stored in `weightValue` for the first axis (regardless of whether it is
     a weight axis, `widthValue` for the second axis, etc.
     """
+
     def __init__(self):
         self.axis_index = -1
 
-    def get(self, tag=None, name='Custom'):
+    def get(self, tag=None, name="Custom"):
         self.axis_index += 1
         design_loc_key = self._design_loc_key()
         if tag is None:
             if self.axis_index == 0:
-                tag = 'XXXX'
+                tag = "XXXX"
             else:
-                tag = 'XXX%d' % self.axis_index
+                tag = "XXX%d" % self.axis_index
 
-        if tag == 'wght':
-            return AxisDefinition(tag, name, design_loc_key, 100.0, 'weight',
-                                  'weightClass', 400.0)
-        if tag == 'wdth':
-            return AxisDefinition(tag, name, design_loc_key, 100.0, 'width',
-                                  'widthClass', 100.0)
+        if tag == "wght":
+            return AxisDefinition(
+                tag, name, design_loc_key, 100.0, "weight", "weightClass", 400.0
+            )
+        if tag == "wdth":
+            return AxisDefinition(
+                tag, name, design_loc_key, 100.0, "width", "widthClass", 100.0
+            )
         return AxisDefinition(tag, name, design_loc_key, 0.0, None, None, 0.0)
 
     def _design_loc_key(self):
         if self.axis_index == 0:
-            return 'weightValue'
+            return "weightValue"
         elif self.axis_index == 1:
-            return 'widthValue'
+            return "widthValue"
         elif self.axis_index == 2:
-            return 'customValue'
+            return "customValue"
         else:
-            return 'customValue%d' % (self.axis_index - 2)
+            return "customValue%d" % (self.axis_index - 2)
 
 
 defaults_factory = AxisDefinitionFactory()
 
-WEIGHT_AXIS_DEF = defaults_factory.get('wght', 'Weight')
-WIDTH_AXIS_DEF = defaults_factory.get('wdth', 'Width')
-CUSTOM_AXIS_DEF = defaults_factory.get('XXXX', 'Custom')
+WEIGHT_AXIS_DEF = defaults_factory.get("wght", "Weight")
+WIDTH_AXIS_DEF = defaults_factory.get("wdth", "Width")
+CUSTOM_AXIS_DEF = defaults_factory.get("XXXX", "Custom")
 DEFAULT_AXES_DEFS = (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, CUSTOM_AXIS_DEF)
 
 
@@ -470,21 +495,18 @@ def get_axis_definitions(font):
         return DEFAULT_AXES_DEFS
 
     factory = AxisDefinitionFactory()
-    return [
-        factory.get(axis.get('Tag'), axis['Name'])
-        for axis in axesParameter
-    ]
+    return [factory.get(axis.get("Tag"), axis["Name"]) for axis in axesParameter]
 
 
 def _is_subset_of_default_axes(axes_parameter):
     if len(axes_parameter) > 3:
         return False
     for axis, axis_def in zip(axes_parameter, DEFAULT_AXES_DEFS):
-        if set(axis.keys()) != {'Name', 'Tag'}:
+        if set(axis.keys()) != {"Name", "Tag"}:
             return False
-        if axis['Name'] != axis_def.name:
+        if axis["Name"] != axis_def.name:
             return False
-        if axis['Tag'] != axis_def.tag:
+        if axis["Tag"] != axis_def.tag:
             return False
     return True
 
@@ -501,21 +523,22 @@ def get_regular_master(font):
     """
     if not font.masters:
         return None
-    regular_name = font.customParameters['Variation Font Origin']
+    regular_name = font.customParameters["Variation Font Origin"]
     if regular_name is not None:
         for master in font.masters:
             if master.name == regular_name:
                 return master
     base_style = find_base_style(font.masters)
     if not base_style:
-        base_style = 'Regular'
+        base_style = "Regular"
     for master in font.masters:
         if master.name == base_style:
             return master
     # Second try: maybe the base style has regular in it as well
     for master in font.masters:
-        name_without_regular = ' '.join(
-            n for n in master.name.split(' ') if n != 'Regular')
+        name_without_regular = " ".join(
+            n for n in master.name.split(" ") if n != "Regular"
+        )
         if name_without_regular == base_style:
             return master
     return font.masters[0]
@@ -526,12 +549,12 @@ def find_base_style(masters):
     Return empty string if none is found.
     """
     if not masters:
-        return ''
-    base_style = (masters[0].name or '').split()
+        return ""
+    base_style = (masters[0].name or "").split()
     for master in masters:
         style = master.name.split()
         base_style = [s for s in style if s in base_style]
-    base_style = ' '.join(base_style)
+    base_style = " ".join(base_style)
     return base_style
 
 
@@ -539,7 +562,7 @@ def is_instance_active(instance):
     # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
     # to mark instances as inactive. Inactive instances should get ignored.
     # https://github.com/googlei18n/glyphsLib/issues/129
-    return instance.exports and getattr(instance, 'active', True)
+    return instance.exports and getattr(instance, "active", True)
 
 
 def interp(mapping, x):

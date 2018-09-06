@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 import os
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -32,31 +31,26 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 @pytest.mark.parametrize(
     "instance_names",
-    [
-        None,
-        ["Extra Light"],
-        ["Regular", "Bold"],
-    ],
+    [None, ["Extra Light"], ["Regular", "Bold"]],
     ids=["default", "include_1", "include_2"],
 )
 def test_apply_instance_data(tmpdir, instance_names):
     font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans.glyphs"))
     instance_dir = "instances"
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
-    path = str(tmpdir / (font.familyName + '.designspace'))
+    path = str(tmpdir / (font.familyName + ".designspace"))
     write_designspace_and_UFOs(designspace, path)
 
     test_designspace = DesignSpaceDocument()
     test_designspace.read(designspace.path)
     if instance_names is None:
         # Collect all instances.
-        test_instances = [
-            instance.filename for instance in test_designspace.instances
-        ]
+        test_instances = [instance.filename for instance in test_designspace.instances]
     else:
         # Collect only selected instances.
         test_instances = [
-            instance.filename for instance in test_designspace.instances
+            instance.filename
+            for instance in test_designspace.instances
             if instance.styleName in instance_names
         ]
 
@@ -66,8 +60,7 @@ def test_apply_instance_data(tmpdir, instance_names):
         ufo = defcon.Font()
         ufo.save(str(tmpdir / instance))
 
-    ufos = apply_instance_data(
-        designspace.path, include_filenames=test_instances)
+    ufos = apply_instance_data(designspace.path, include_filenames=test_instances)
 
     for filename in test_instances:
         assert os.path.isdir(str(tmpdir / filename))
@@ -82,6 +75,7 @@ def test_reexport_apply_instance_data():
     # this is for compatibility with fontmake
     # https://github.com/googlei18n/fontmake/issues/451
     from glyphsLib.interpolation import apply_instance_data as reexported
+
     assert reexported is apply_instance_data
 
 

@@ -21,12 +21,7 @@ These properties assist in applying automatisms to glyphs when round-
 tripping.
 """
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import collections
 import os
@@ -61,9 +56,7 @@ class GlyphData:
 
     __slots__ = ["names", "alternative_names", "production_names"]
 
-    def __init__(
-        self, name_mapping, alt_name_mapping, production_name_mapping
-    ):
+    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping):
         self.names = name_mapping
         self.alternative_names = alt_name_mapping
         self.production_names = production_name_mapping
@@ -84,15 +77,11 @@ class GlyphData:
 
                 name_mapping[glyph_name] = glyph.attrib
                 if glyph_name_alternatives:
-                    alternatives = glyph_name_alternatives.replace(
-                        " ", ""
-                    ).split(",")
+                    alternatives = glyph_name_alternatives.replace(" ", "").split(",")
                     for glyph_name_alternative in alternatives:
                         alt_name_mapping[glyph_name_alternative] = glyph.attrib
                 if glyph_name_production:
-                    production_name_mapping[
-                        glyph_name_production
-                    ] = glyph.attrib
+                    production_name_mapping[glyph_name_production] = glyph.attrib
 
         return cls(name_mapping, alt_name_mapping, production_name_mapping)
 
@@ -111,9 +100,7 @@ def get_glyph(glyph_name, data=None):
         if GLYPHDATA is None:
             GLYPHDATA = GlyphData.from_files(
                 os.path.join(
-                    os.path.dirname(glyphsLib.__file__),
-                    "data",
-                    "GlyphData.xml",
+                    os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
                 ),
                 os.path.join(
                     os.path.dirname(glyphsLib.__file__),
@@ -132,9 +119,9 @@ def get_glyph(glyph_name, data=None):
         or {}
     )
 
-    production_name = attributes.get(
-        "production"
-    ) or _construct_production_name(glyph_name, data=data)
+    production_name = attributes.get("production") or _construct_production_name(
+        glyph_name, data=data
+    )
     unicode_value = attributes.get("unicode")
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
@@ -223,9 +210,7 @@ def _construct_category(glyph_name, unicode_category):
         "Zs": ("Separator", "Space"),
     }
 
-    glyphs_category = DEFAULT_CATEGORIES.get(
-        unicode_category, ("Letter", None)
-    )
+    glyphs_category = DEFAULT_CATEGORIES.get(unicode_category, ("Letter", None))
 
     # Exception: Something like "one_two" should be a (_, Ligature),
     # "acutecomb_brevecomb" should however stay (Mark, Nonspacing).

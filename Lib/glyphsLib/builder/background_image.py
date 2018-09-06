@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from .constants import GLYPHS_PREFIX
 from glyphsLib.types import Transform, Rect, Point, Size
 
-BACKGROUND_IMAGE_PREFIX = GLYPHS_PREFIX + 'backgroundImage.'
-CROP_KEY = BACKGROUND_IMAGE_PREFIX + 'crop'
-LOCKED_KEY = BACKGROUND_IMAGE_PREFIX + 'locked'
-ALPHA_KEY = BACKGROUND_IMAGE_PREFIX + 'alpha'
+BACKGROUND_IMAGE_PREFIX = GLYPHS_PREFIX + "backgroundImage."
+CROP_KEY = BACKGROUND_IMAGE_PREFIX + "crop"
+LOCKED_KEY = BACKGROUND_IMAGE_PREFIX + "locked"
+ALPHA_KEY = BACKGROUND_IMAGE_PREFIX + "alpha"
 
 
 def to_ufo_background_image(self, ufo_glyph, layer):

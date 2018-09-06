@@ -12,32 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
-PUBLIC_PREFIX = 'public.'
-GLYPHS_PREFIX = 'com.schriftgestaltung.'
-GLYPHLIB_PREFIX = GLYPHS_PREFIX + 'Glyphs.'
-ROBOFONT_PREFIX = 'com.typemytype.robofont.'
-UFO2FT_FILTERS_KEY = 'com.github.googlei18n.ufo2ft.filters'
-UFO2FT_USE_PROD_NAMES_KEY = 'com.github.googlei18n.ufo2ft.useProductionNames'
+PUBLIC_PREFIX = "public."
+GLYPHS_PREFIX = "com.schriftgestaltung."
+GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
+ROBOFONT_PREFIX = "com.typemytype.robofont."
+UFO2FT_FILTERS_KEY = "com.github.googlei18n.ufo2ft.filters"
+UFO2FT_USE_PROD_NAMES_KEY = "com.github.googlei18n.ufo2ft.useProductionNames"
 
-MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + 'customParameter.GSFontMaster.'
-FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + 'customParameter.GSFont.'
+MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
+FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
 
 GLYPHS_COLORS = (
-    '0.85,0.26,0.06,1',
-    '0.99,0.62,0.11,1',
-    '0.65,0.48,0.2,1',
-    '0.97,1,0,1',
-    '0.67,0.95,0.38,1',
-    '0.04,0.57,0.04,1',
-    '0,0.67,0.91,1',
-    '0.18,0.16,0.78,1',
-    '0.5,0.09,0.79,1',
-    '0.98,0.36,0.67,1',
-    '0.75,0.75,0.75,1',
-    '0.25,0.25,0.25,1')
+    "0.85,0.26,0.06,1",
+    "0.99,0.62,0.11,1",
+    "0.65,0.48,0.2,1",
+    "0.97,1,0,1",
+    "0.67,0.95,0.38,1",
+    "0.04,0.57,0.04,1",
+    "0,0.67,0.91,1",
+    "0.18,0.16,0.78,1",
+    "0.5,0.09,0.79,1",
+    "0.98,0.36,0.67,1",
+    "0.75,0.75,0.75,1",
+    "0.25,0.25,0.25,1",
+)
 
 # https://www.microsoft.com/typography/otspec/os2.htm#cpr
 CODEPAGE_RANGES = {

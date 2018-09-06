@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from textwrap import dedent
 import unittest
+
 # unittest.mock is only available for python 3.3+
 try:
     from unittest import mock
@@ -30,15 +30,29 @@ except ImportError:
 import glyphsLib
 from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
-from glyphsLib.builder.custom_params import (to_ufo_custom_params,
-                                             _set_default_params)
+from glyphsLib.builder.custom_params import to_ufo_custom_params, _set_default_params
 from glyphsLib.builder.constants import (
-    GLYPHS_PREFIX, PUBLIC_PREFIX, GLYPHLIB_PREFIX,
-    UFO2FT_USE_PROD_NAMES_KEY, FONT_CUSTOM_PARAM_PREFIX,
-    MASTER_CUSTOM_PARAM_PREFIX)
+    GLYPHS_PREFIX,
+    PUBLIC_PREFIX,
+    GLYPHLIB_PREFIX,
+    UFO2FT_USE_PROD_NAMES_KEY,
+    FONT_CUSTOM_PARAM_PREFIX,
+    MASTER_CUSTOM_PARAM_PREFIX,
+)
 from glyphsLib.classes import (
-    GSFont, GSFontMaster, GSInstance, GSCustomParameter, GSGlyph, GSLayer,
-    GSPath, GSNode, GSAnchor, GSComponent, GSAlignmentZone, GSGuideLine)
+    GSFont,
+    GSFontMaster,
+    GSInstance,
+    GSCustomParameter,
+    GSGlyph,
+    GSLayer,
+    GSPath,
+    GSNode,
+    GSAnchor,
+    GSComponent,
+    GSAlignmentZone,
+    GSGuideLine,
+)
 
 
 class SetCustomParamsTest(unittest.TestCase):
@@ -55,17 +69,17 @@ class SetCustomParamsTest(unittest.TestCase):
 
     def test_normalizes_curved_quotes_in_names(self):
         self.master.customParameters = [
-            GSCustomParameter(name='‘bad’', value=1),
-            GSCustomParameter(name='“also bad”', value=2),
+            GSCustomParameter(name="‘bad’", value=1),
+            GSCustomParameter(name="“also bad”", value=2),
         ]
         self.set_custom_params()
         self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + "'bad'", self.ufo.lib)
         self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + '"also bad"', self.ufo.lib)
 
     def test_set_glyphOrder(self):
-        self.master.customParameters['glyphOrder'] = ['A', 'B']
+        self.master.customParameters["glyphOrder"] = ["A", "B"]
         self.set_custom_params()
-        self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + 'glyphOrder'], ['A', 'B'])
+        self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"], ["A", "B"])
 
     def test_set_fsSelection_flags_none(self):
         self.ufo.info.openTypeOS2Selection = None
@@ -73,8 +87,7 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.font.customParameters["Use Typo Metrics"], None)
         self.assertEqual(self.font.customParameters["Has WWS Names"], None)
         self.assertEqual(
-            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"],
-            None,
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"], None
         )
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
@@ -85,8 +98,7 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.font.customParameters["Use Typo Metrics"], None)
         self.assertEqual(self.font.customParameters["Has WWS Names"], None)
         self.assertEqual(
-            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"],
-            [],
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"], []
         )
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [])
@@ -106,67 +118,73 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_set_fsSelection_flags(self):
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        self.master.customParameters['Has WWS Names'] = False
+        self.master.customParameters["Has WWS Names"] = False
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        self.master.customParameters['Use Typo Metrics'] = True
+        self.master.customParameters["Use Typo Metrics"] = True
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [7])
 
         self.ufo = Font()
         self.master.customParameters = [
-            GSCustomParameter(name='Use Typo Metrics', value=True),
-            GSCustomParameter(name='Has WWS Names', value=True),
+            GSCustomParameter(name="Use Typo Metrics", value=True),
+            GSCustomParameter(name="Has WWS Names", value=True),
         ]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [7, 8])
 
     def test_underlinePosition(self):
-        self.master.customParameters['underlinePosition'] = -2
+        self.master.customParameters["underlinePosition"] = -2
         self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -2)
 
         # self.master.customParameters['underlinePosition'] = 1
         for param in self.master.customParameters:
-            if param.name == 'underlinePosition':
+            if param.name == "underlinePosition":
                 param.value = 1
                 break
         self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlinePosition, 1)
 
     def test_underlineThickness(self):
-        self.master.customParameters['underlineThickness'] = 100
+        self.master.customParameters["underlineThickness"] = 100
         self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
 
         # self.master.customParameters['underlineThickness'] = 0
         for param in self.master.customParameters:
-            if param.name == 'underlineThickness':
+            if param.name == "underlineThickness":
                 param.value = 0
                 break
         self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
-    @patch('glyphsLib.builder.custom_params.parse_glyphs_filter')
+    @patch("glyphsLib.builder.custom_params.parse_glyphs_filter")
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
-        pre_filter = 'AddExtremes'
-        filter1 = 'Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335'
-        filter2 = 'Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335'
-        self.master.customParameters.extend([
-                GSCustomParameter(name='PreFilter', value=pre_filter),
-                GSCustomParameter(name='Filter', value=filter1),
-                GSCustomParameter(name='Filter', value=filter2),
-            ])
+        pre_filter = "AddExtremes"
+        filter1 = "Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335"
+        filter2 = "Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335"
+        self.master.customParameters.extend(
+            [
+                GSCustomParameter(name="PreFilter", value=pre_filter),
+                GSCustomParameter(name="Filter", value=filter1),
+                GSCustomParameter(name="Filter", value=filter2),
+            ]
+        )
         self.set_custom_params()
 
         self.assertEqual(mock_parse_glyphs_filter.call_count, 3)
-        self.assertEqual(mock_parse_glyphs_filter.call_args_list[0],
-                         mock.call(pre_filter, is_pre=True))
-        self.assertEqual(mock_parse_glyphs_filter.call_args_list[1],
-                         mock.call(filter1, is_pre=False))
-        self.assertEqual(mock_parse_glyphs_filter.call_args_list[2],
-                         mock.call(filter2, is_pre=False))
+        self.assertEqual(
+            mock_parse_glyphs_filter.call_args_list[0],
+            mock.call(pre_filter, is_pre=True),
+        )
+        self.assertEqual(
+            mock_parse_glyphs_filter.call_args_list[1], mock.call(filter1, is_pre=False)
+        )
+        self.assertEqual(
+            mock_parse_glyphs_filter.call_args_list[2], mock.call(filter2, is_pre=False)
+        )
 
     def test_set_defaults(self):
         _set_default_params(self.ufo)
@@ -175,85 +193,77 @@ class SetCustomParamsTest(unittest.TestCase):
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 50)
 
     def test_set_codePageRanges_empty(self):
-        self.font.customParameters['codePageRanges'] = []
+        self.font.customParameters["codePageRanges"] = []
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(
-            self.font.customParameters['codePageRanges'], []
-        )
+        self.assertEqual(self.font.customParameters["codePageRanges"], [])
 
     def test_set_codePageRanges(self):
-        self.font.customParameters['codePageRanges'] = [1252, 1250]
-        self.font.customParameters['codePageRangesUnsupportedBits'] = [15]
+        self.font.customParameters["codePageRanges"] = [1252, 1250]
+        self.font.customParameters["codePageRangesUnsupportedBits"] = [15]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(self.font.customParameters["codePageRanges"], [1252, 1250])
         self.assertEqual(
-            self.font.customParameters['codePageRanges'], [1252, 1250]
-        )
-        self.assertEqual(
-            self.font.customParameters['codePageRangesUnsupportedBits'], [15]
+            self.font.customParameters["codePageRangesUnsupportedBits"], [15]
         )
 
     def test_set_openTypeOS2CodePageRanges(self):
-        self.font.customParameters['openTypeOS2CodePageRanges'] = [1252, 1250]
-        self.font.customParameters['codePageRangesUnsupportedBits'] = [15]
+        self.font.customParameters["openTypeOS2CodePageRanges"] = [1252, 1250]
+        self.font.customParameters["codePageRangesUnsupportedBits"] = [15]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
+        self.assertEqual(self.font.customParameters["codePageRanges"], [1252, 1250])
         self.assertEqual(
-            self.font.customParameters['codePageRanges'], [1252, 1250]
-        )
-        self.assertEqual(
-            self.font.customParameters['codePageRangesUnsupportedBits'], [15]
+            self.font.customParameters["codePageRangesUnsupportedBits"], [15]
         )
 
     def test_gasp_table(self):
-        gasp_table = {'65535': '15',
-                      '20': '7',
-                      '8': '10'}
-        self.font.customParameters['GASP Table'] = gasp_table
+        gasp_table = {"65535": "15", "20": "7", "8": "10"}
+        self.font.customParameters["GASP Table"] = gasp_table
         self.set_custom_params()
 
         ufo_range_records = self.ufo.info.openTypeGaspRangeRecords
         self.assertIsNotNone(ufo_range_records)
         self.assertEqual(len(ufo_range_records), 3)
         rec1, rec2, rec3 = ufo_range_records
-        self.assertEqual(rec1['rangeMaxPPEM'], 8)
-        self.assertEqual(rec1['rangeGaspBehavior'], [1, 3])
-        self.assertEqual(rec2['rangeMaxPPEM'], 20)
-        self.assertEqual(rec2['rangeGaspBehavior'], [0, 1, 2])
-        self.assertEqual(rec3['rangeMaxPPEM'], 65535)
-        self.assertEqual(rec3['rangeGaspBehavior'], [0, 1, 2, 3])
+        self.assertEqual(rec1["rangeMaxPPEM"], 8)
+        self.assertEqual(rec1["rangeGaspBehavior"], [1, 3])
+        self.assertEqual(rec2["rangeMaxPPEM"], 20)
+        self.assertEqual(rec2["rangeGaspBehavior"], [0, 1, 2])
+        self.assertEqual(rec3["rangeMaxPPEM"], 65535)
+        self.assertEqual(rec3["rangeGaspBehavior"], [0, 1, 2, 3])
 
     def test_set_disables_nice_names(self):
         self.font.disablesNiceNames = False
         self.set_custom_params()
-        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX +
-                                            'useNiceNames'])
+        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "useNiceNames"])
 
     def test_set_disable_last_change(self):
-        self.font.customParameters['Disable Last Change'] = True
+        self.font.customParameters["Disable Last Change"] = True
         self.set_custom_params()
-        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX +
-                                            'disablesLastChange'])
+        self.assertEqual(
+            True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"]
+        )
 
     # https://github.com/googlei18n/glyphsLib/issues/268
     def test_xHeight(self):
         self.ufo.info.xHeight = 300
-        self.master.customParameters['xHeight'] = '500'
+        self.master.customParameters["xHeight"] = "500"
         self.set_custom_params()
         # Additional xHeight values are Glyphs-specific and stored in lib
-        self.assertEqual(self.ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + 'xHeight'],
-                         '500')
+        self.assertEqual(self.ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + "xHeight"], "500")
         # The xHeight from the property is not modified
         self.assertEqual(self.ufo.info.xHeight, 300)
         # TODO: (jany) check that the instance custom param wins over the
         #       interpolated value
 
     def test_replace_feature(self):
-        self.ufo.features.text = dedent("""
+        self.ufo.features.text = dedent(
+            """
             feature liga {
             # only the first match is replaced
             sub f i by fi;
@@ -266,14 +276,18 @@ class SetCustomParamsTest(unittest.TestCase):
             feature liga {
             sub f l by fl;
             } liga;
-        """)
+        """
+        )
 
         repl = "liga; sub f f by ff;"
 
         self.master.customParameters["Replace Feature"] = repl
         self.set_custom_params()
 
-        self.assertEqual(self.ufo.features.text, dedent("""
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent(
+                """
             feature liga {
             sub f f by ff;
             } liga;
@@ -285,7 +299,9 @@ class SetCustomParamsTest(unittest.TestCase):
             feature liga {
             sub f l by fl;
             } liga;
-        """))
+        """
+            ),
+        )
 
         # only replace feature body if tag already present
         original = self.ufo.features.text
@@ -302,8 +318,7 @@ class SetCustomParamsTest(unittest.TestCase):
             self.set_custom_params()
 
             self.assertIn(UFO2FT_USE_PROD_NAMES_KEY, self.ufo.lib)
-            self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY],
-                             not value)
+            self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY], not value)
 
     def test_default_fstype(self):
         # No specified fsType => set default value
@@ -325,6 +340,6 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_version_string(self):
         # TODO: (jany) test the automatic replacement that is described in the
         #   Glyphs Handbook
-        self.font.customParameters['versionString'] = 'Version 2.040'
+        self.font.customParameters["versionString"] = "Version 2.040"
         self.set_custom_params()
-        self.assertEqual(self.ufo.info.openTypeNameVersion, 'Version 2.040')
+        self.assertEqual(self.ufo.info.openTypeNameVersion, "Version 2.040")

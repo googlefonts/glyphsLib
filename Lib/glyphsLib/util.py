@@ -26,18 +26,18 @@ def build_ufo_path(out_dir, family_name, style_name):
     """Build string to use as a UFO path."""
 
     return os.path.join(
-        out_dir, '%s-%s.ufo' % (
-            (family_name or '').replace(' ', ''),
-            (style_name or '').replace(' ', '')))
+        out_dir,
+        "%s-%s.ufo"
+        % ((family_name or "").replace(" ", ""), (style_name or "").replace(" ", "")),
+    )
 
 
 def write_ufo(ufo, out_dir):
     """Write a UFO."""
 
-    out_path = build_ufo_path(
-        out_dir, ufo.info.familyName, ufo.info.styleName)
+    out_path = build_ufo_path(out_dir, ufo.info.familyName, ufo.info.styleName)
 
-    logger.info('Writing %s' % out_path)
+    logger.info("Writing %s" % out_path)
     clean_ufo(out_path)
     ufo.save(out_path)
 
@@ -45,7 +45,7 @@ def write_ufo(ufo, out_dir):
 def clean_ufo(path):
     """Make sure old UFO data is removed, as it may contain deleted glyphs."""
 
-    if path.endswith('.ufo') and os.path.exists(path):
+    if path.endswith(".ufo") and os.path.exists(path):
         shutil.rmtree(path)
 
 
@@ -70,9 +70,9 @@ def cast_to_number_or_bool(inputstr):
 
     Scientific expression is converted into float.
     """
-    if inputstr.strip().lower() == 'true':
+    if inputstr.strip().lower() == "true":
         return True
-    elif inputstr.strip().lower() == 'false':
+    elif inputstr.strip().lower() == "false":
         return False
     try:
         return int(inputstr)
@@ -85,15 +85,15 @@ def cast_to_number_or_bool(inputstr):
 
 def reverse_cast_to_number_or_bool(input):
     if input is True:
-        return 'true'  # FIXME: (jany) dubious, glyphs handbook says should be 1
+        return "true"  # FIXME: (jany) dubious, glyphs handbook says should be 1
     if input is False:
-        return 'false'  # FIXME: (jany) dubious, glyphs handbook says should be 0
+        return "false"  # FIXME: (jany) dubious, glyphs handbook says should be 0
     return str(input)
 
 
 def bin_to_int_list(value):
     string = num2binary(value)
-    string = string.replace(' ', '')  # num2binary add a space every 8 digits
+    string = string.replace(" ", "")  # num2binary add a space every 8 digits
     return [i for i, v in enumerate(reversed(string)) if v == "1"]
 
 

@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
 from collections import OrderedDict
@@ -21,10 +20,10 @@ from collections import OrderedDict
 from .axes import font_uses_new_axes, get_axis_definitions
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 
-MASTER_ID_LIB_KEY = GLYPHS_PREFIX + 'fontMasterID'
-UFO_FILENAME_KEY = GLYPHLIB_PREFIX + 'ufoFilename'
-UFO_YEAR_KEY = GLYPHLIB_PREFIX + 'ufoYear'
-UFO_NOTE_KEY = GLYPHLIB_PREFIX + 'ufoNote'
+MASTER_ID_LIB_KEY = GLYPHS_PREFIX + "fontMasterID"
+UFO_FILENAME_KEY = GLYPHLIB_PREFIX + "ufoFilename"
+UFO_YEAR_KEY = GLYPHLIB_PREFIX + "ufoYear"
+UFO_NOTE_KEY = GLYPHLIB_PREFIX + "ufoNote"
 
 
 def to_ufo_master_attributes(self, source, master):
@@ -58,19 +57,19 @@ def to_ufo_master_attributes(self, source, master):
     widthValue = master.widthValue
     weightValue = master.weightValue
     if weightValue is not None:
-        ufo.lib[GLYPHS_PREFIX + 'weightValue'] = weightValue
+        ufo.lib[GLYPHS_PREFIX + "weightValue"] = weightValue
     if widthValue:
-        ufo.lib[GLYPHS_PREFIX + 'widthValue'] = widthValue
-    for number in ('', '1', '2', '3'):
-        custom_value = getattr(master, 'customValue' + number)
+        ufo.lib[GLYPHS_PREFIX + "widthValue"] = widthValue
+    for number in ("", "1", "2", "3"):
+        custom_value = getattr(master, "customValue" + number)
         if custom_value:
-            ufo.lib[GLYPHS_PREFIX + 'customValue' + number] = custom_value
+            ufo.lib[GLYPHS_PREFIX + "customValue" + number] = custom_value
 
     if font_uses_new_axes(self.font):
         # Set the OS/2 weightClass and widthClas according the this master's
         # user location ("Axis Location" parameter)
         for axis in get_axis_definitions(self.font):
-            if axis.tag in ('wght', 'wdth'):
+            if axis.tag in ("wght", "wdth"):
                 user_loc = axis.get_user_loc(master)
                 axis.set_ufo_user_loc(ufo, user_loc)
 
