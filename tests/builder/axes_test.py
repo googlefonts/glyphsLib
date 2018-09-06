@@ -203,3 +203,35 @@ def test_master_user_location_goes_into_os2_classes():
 
     assert black.info.openTypeOS2WeightClass == 920
     assert black.info.openTypeOS2WidthClass == 1
+
+
+def test_mapping_is_same_regardless_of_axes_custom_parameter():
+    # https://github.com/googlei18n/glyphsLib/issues/409
+    # https://github.com/googlei18n/glyphsLib/issues/411
+
+    # First, try without the custom param
+    font = to_glyphs([defcon.Font(), defcon.Font(), defcon.Font()])
+    font.masters[0].name = 'ExtraLight'
+    font.masters[0].weightValue = 200
+    font.masters[1].name = 'Regular'
+    font.masters[1].weightValue = 400
+    font.masters[2].name = 'Bold'
+    font.masters[2].weightValue = 700
+
+    doc = to_designspace(font)
+    assert doc.axes[0].minimum == 200
+    assert doc.axes[0].maximum == 700
+    assert doc.axes[0].map == []
+
+    # Now with the custom parameter. Should produce the same results
+    font.customParameters['Axes'] = [
+        {
+            'Name': 'Weight',
+            'Tag': 'wght'
+        }
+    ]
+
+    doc = to_designspace(font)
+    assert doc.axes[0].minimum == 200
+    assert doc.axes[0].maximum == 700
+    assert doc.axes[0].map == []
