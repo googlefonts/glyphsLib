@@ -33,7 +33,8 @@ import glyphsLib
 
 # FIXME: (jany) Shouldn't this be the class GSGlyphInfo?
 Glyph = collections.namedtuple(
-    "Glyph", "name, production_name, unicode, category, subCategory"
+    "Glyph",
+    "name, production_name, unicode, category, subCategory, script, description",
 )
 
 GLYPHDATA = None
@@ -111,6 +112,8 @@ def get_glyph(glyph_name):
     unicode_value = attributes.get("unicode")
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
+    script = attributes.get("script")
+    description = attributes.get("description")
 
     if category is None:
         base_name = glyph_name.split(".", 1)[0]
@@ -126,7 +129,13 @@ def get_glyph(glyph_name):
             )
 
     return Glyph(
-        glyph_name, production_name, unicode_value, category, sub_category
+        glyph_name,
+        production_name,
+        unicode_value,
+        category,
+        sub_category,
+        script,
+        description,
     )
 
 
