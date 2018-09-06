@@ -42,6 +42,7 @@ setup(
     license="Apache Software License 2.0",
     package_dir={"": "Lib"},
     packages=find_packages("Lib"),
+    package_data={"glyphsLib": ["data/*.xml", "data/GlyphData_LICENSE"]},
     entry_points={
         "console_scripts": [
             "ufo2glyphs = glyphsLib.cli:_ufo2glyphs_entry_point",

@@ -25,7 +25,7 @@ import defcon
 
 from fontTools import designspaceLib
 
-from glyphsLib import classes, glyphdata_generated
+from glyphsLib import classes
 from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX
 from .axes import (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style,
                    class_to_value)
