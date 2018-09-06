@@ -55,6 +55,9 @@ setup(
         "fonttools>=3.24.0",
         "defcon>=0.3.0",
     ],
+    extras_require = {
+        "ufo_normalization":  ["ufonormalizer"]
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         "Environment :: Console",
