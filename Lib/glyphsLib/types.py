@@ -41,7 +41,7 @@ class ValueType(object):
             self.value = copy.deepcopy(self.default)
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.plistValue())
+        return "<{} {}>".format(self.__class__.__name__, self.plistValue())
 
     def fromString(self, src):
         """Return a typed value representing the structured glyphs strings."""
@@ -120,7 +120,7 @@ class Point(Vector(2)):
         self.rect = rect
 
     def __repr__(self):
-        return "<point x=%s y=%s>" % (self.value[0], self.value[1])
+        return "<point x={} y={}>".format(self.value[0], self.value[1])
 
     @property
     def x(self):
@@ -147,7 +147,7 @@ class Point(Vector(2)):
 
 class Size(Point):
     def __repr__(self):
-        return "<size width=%s height=%s>" % (self.value[0], self.value[1])
+        return "<size width={} height={}>".format(self.value[0], self.value[1])
 
     @property
     def width(self):
@@ -187,7 +187,7 @@ class Rect(Vector(4)):
         return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString(v, 3) for v in self.value)
 
     def __repr__(self):
-        return "<rect origin=%s size=%s>" % (str(self.origin), str(self.size))
+        return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
 
     @property
     def origin(self):

@@ -46,7 +46,7 @@ def _to_designspace_source(self, master, is_regular):
     source.styleName = ufo.info.styleName
     # TODO: recover original source name from userData
     # UFO_SOURCE_NAME_KEY
-    source.name = "%s %s" % (source.familyName, source.styleName)
+    source.name = "{} {}".format(source.familyName, source.styleName)
 
     if UFO_FILENAME_KEY in master.userData:
         source.filename = master.userData[UFO_FILENAME_KEY]

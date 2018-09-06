@@ -91,7 +91,7 @@ else:  # pragma: no cover
     def assert_unorderable(a, b):
         """Assert that a and b are unorderable"""
         raise TypeError(
-            "unorderable types: %s and %s" % (type(a).__name__, type(b).__name__)
+            "unorderable types: {} and {}".format(type(a).__name__, type(b).__name__)
         )
 
 

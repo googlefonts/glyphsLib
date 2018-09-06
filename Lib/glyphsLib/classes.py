@@ -326,7 +326,7 @@ class GSBase(object):
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
-        return "<%s %s>" % (self.__class__.__name__, content)
+        return "<{} {}>".format(self.__class__.__name__, content)
 
     def classForName(self, name):
         return self._classesForName.get(name, str)
@@ -1228,7 +1228,7 @@ class GSCustomParameter(GSBase):
         self.value = value
 
     def __repr__(self):
-        return "<%s %s: %s>" % (self.__class__.__name__, self.name, self._value)
+        return "<{} {}: {}>".format(self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
         string = UnicodeIO()
@@ -1273,17 +1273,17 @@ class GSAlignmentZone(GSBase):
         return self
 
     def __repr__(self):
-        return "<%s pos:%g size:%g>" % (
-            self.__class__.__name__,
-            self.position,
-            self.size,
+        return "<{} pos:{:g} size:{:g}>".format(
+            self.__class__.__name__, self.position, self.size
         )
 
     def __lt__(self, other):
         return (self.position, self.size) < (other.position, other.size)
 
     def plistValue(self):
-        return '"{%s, %s}"' % (floatToString(self.position), floatToString(self.size))
+        return '"{{{}, {}}}"'.format(
+            floatToString(self.position), floatToString(self.size)
+        )
 
 
 class GSGuideLine(GSBase):
@@ -1303,11 +1303,8 @@ class GSGuideLine(GSBase):
         super(GSGuideLine, self).__init__()
 
     def __repr__(self):
-        return "<%s x=%.1f y=%.1f angle=%.1f>" % (
-            self.__class__.__name__,
-            self.position.x,
-            self.position.y,
-            self.angle,
+        return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
+            self.__class__.__name__, self.position.x, self.position.y, self.angle
         )
 
     @property
@@ -1408,10 +1405,8 @@ class GSFontMaster(GSBase):
             setattr(self, "customValue" + number, 0.0)
 
     def __repr__(self):
-        return '<GSFontMaster "%s" width %s weight %s>' % (
-            self.name,
-            self.widthValue,
-            self.weightValue,
+        return '<GSFontMaster "{}" width {} weight {}>'.format(
+            self.name, self.widthValue, self.weightValue
         )
 
     def shouldWriteValueForKey(self, key):
@@ -1535,11 +1530,8 @@ class GSNode(GSBase):
         content = self.type
         if self.smooth:
             content += " smooth"
-        return "<%s %g %g %s>" % (
-            self.__class__.__name__,
-            self.position.x,
-            self.position.y,
-            content,
+        return "<{} {:g} {:g} {}>".format(
+            self.__class__.__name__, self.position.x, self.position.y, content
         )
 
     userData = property(
@@ -1561,10 +1553,8 @@ class GSNode(GSBase):
             writer.writeDict(self._userData)
             content += " "
             content += self._encode_dict_as_string(string.getvalue())
-        return '"%s %s %s"' % (
-            floatToString(self.position[0]),
-            floatToString(self.position[1]),
-            content,
+        return '"{} {} {}"'.format(
+            floatToString(self.position[0]), floatToString(self.position[1]), content
         )
 
     def read(self, line):
@@ -1984,10 +1974,8 @@ class GSComponent(GSBase):
             self.name = glyph.name
 
     def __repr__(self):
-        return '<GSComponent "%s" x=%.1f y=%.1f>' % (
-            self.name,
-            self.transform[4],
-            self.transform[5],
+        return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
+            self.name, self.transform[4], self.transform[5]
         )
 
     def shouldWriteValueForKey(self, key):
@@ -2136,11 +2124,8 @@ class GSAnchor(GSBase):
             self.position = position
 
     def __repr__(self):
-        return '<%s "%s" x=%.1f y=%.1f>' % (
-            self.__class__.__name__,
-            self.name,
-            self.position[0],
-            self.position[1],
+        return '<{} "{}" x={:.1f} y={:.1f}>'.format(
+            self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
 
     def shouldWriteValueForKey(self, key):
@@ -2219,17 +2204,15 @@ class GSHint(GSBase):
         else:
             direction = "vertical"
         if self.type == "BOTTOMGHOST" or self.type == "TOPGHOST":
-            return "<GSHint %s origin=(%s)>" % (self.type, self._origin_pos())
+            return "<GSHint {} origin=({})>".format(self.type, self._origin_pos())
         elif self.type == "STEM":
-            return "<GSHint %s Stem origin=(%s) target=(%s) %s>" % (
-                direction,
-                self._origin_pos(),
-                self._width_pos(),
+            return "<GSHint {} Stem origin=({}) target=({}) {}>".format(
+                direction, self._origin_pos(), self._width_pos()
             )
         elif self.type == "CORNER" or self.type == "CAP":
-            return "<GSHint %s %s>" % (self.type, self.name)
+            return "<GSHint {} {}>".format(self.type, self.name)
         else:
-            return "<GSHint %s %s>" % (self.type, direction)
+            return "<GSHint {} {}>".format(self.type, direction)
 
     @property
     def parent(self):
@@ -2370,7 +2353,7 @@ class GSFeature(GSBase):
     code = property(getCode, setCode)
 
     def __repr__(self):
-        return '<%s "%s">' % (self.__class__.__name__, self.name)
+        return '<{} "{}">'.format(self.__class__.__name__, self.name)
 
     @property
     def parent(self):
@@ -2761,7 +2744,7 @@ class GSLayer(GSBase):
             parent = self.parent.name
         except:
             parent = "orphan"
-        return '<%s "%s" (%s)>' % (self.__class__.__name__, name, parent)
+        return '<{} "{}" ({})>'.format(self.__class__.__name__, name, parent)
 
     def __lt__(self, other):
         if self.master and other.master and self.associatedMasterId == self.layerId:
@@ -3054,7 +3037,7 @@ class GSGlyph(GSBase):
         self._userData = None
 
     def __repr__(self):
-        return '<GSGlyph "%s" with %s layers>' % (self.name, len(self.layers))
+        return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
 
     def shouldWriteValueForKey(self, key):
         if key in ("script", "category", "subCategory"):
@@ -3213,7 +3196,7 @@ class GSFont(GSBase):
                 master.font = self
 
     def __repr__(self):
-        return '<%s "%s">' % (self.__class__.__name__, self.familyName)
+        return '<{} "{}">'.format(self.__class__.__name__, self.familyName)
 
     def shouldWriteValueForKey(self, key):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):

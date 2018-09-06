@@ -98,7 +98,7 @@ def _to_designspace_instance(self, instance):
             instance_dir, ufo_instance.familyName, ufo_instance.styleName
         )
 
-    designspace_axis_tags = set(a.tag for a in self.designspace.axes)
+    designspace_axis_tags = {a.tag for a in self.designspace.axes}
     location = {}
     for axis_def in get_axis_definitions(self.font):
         # Only write locations along defined axes

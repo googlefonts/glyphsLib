@@ -50,7 +50,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
             and all(0 <= v < 256 for v in color_index)
         ):
             ufo_glyph.markColor = ",".join(
-                "{0:.3f}".format(v / 255) for v in color_index
+                "{:.3f}".format(v / 255) for v in color_index
             )
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]

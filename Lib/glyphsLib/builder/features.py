@@ -67,7 +67,7 @@ def _to_ufo_features(self, master, ufo):
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
-            "%s%s = [ %s ];" % (autostr(class_.automatic), name, class_.code)
+            "{}{} = [ {} ];".format(autostr(class_.automatic), name, class_.code)
         )
     class_str = "\n\n".join(class_defs)
 
@@ -179,7 +179,7 @@ def replace_feature(tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
     return re.sub(
-        r"(?<=^feature %(tag)s {\n)(.*?)(?=^} %(tag)s;$)" % {"tag": tag},
+        r"(?<=^feature {tag} {{\n)(.*?)(?=^}} {tag};$)".format(tag=tag),
         repl,
         features,
         count=1,

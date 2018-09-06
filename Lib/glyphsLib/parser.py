@@ -236,7 +236,7 @@ class Parser(object):
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
 
-        raise ValueError("%s:\n%s" % (message, text[i : i + 79]))
+        raise ValueError("{}:\n{}".format(message, text[i : i + 79]))
 
 
 def load(fp):

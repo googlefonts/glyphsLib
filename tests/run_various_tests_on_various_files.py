@@ -36,7 +36,7 @@ class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
                 self.assertParseWriteRoundtrip(filename)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
+            test_name = "test_n{:0>3d}_{}_v{}_{}".format(
                 index,
                 testable["name"],
                 test_helpers.app_version(filename),
@@ -60,7 +60,7 @@ class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
                 self.assertUFORoundtrip(font)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
+            test_name = "test_n{:0>3d}_{}_v{}_{}".format(
                 index,
                 testable["name"],
                 test_helpers.app_version(filename),
@@ -84,7 +84,7 @@ class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRou
                 self.assertDesignspaceRoundtrip(doc)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_{2}".format(
+            test_name = "test_n{:0>3d}_{}_{}".format(
                 index, testable["name"], file_basename.replace(r"[^a-zA-Z]", "")
             )
             test_method.__name__ = test_name

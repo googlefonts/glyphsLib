@@ -52,7 +52,7 @@ def to_glyphs_components(self, ufo_glyph, layer):
 
 def _lib_key(key):
     key = key[0].upper() + key[1:]
-    return "%scomponents%s" % (GLYPHS_PREFIX, key)
+    return "{}components{}".format(GLYPHS_PREFIX, key)
 
 
 AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"

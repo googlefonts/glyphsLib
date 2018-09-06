@@ -901,8 +901,8 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         glyph = self.glyph
         num_layers = len(glyph.layers)
         self.assertEqual(
-            set(l.layerId for l in glyph.layers),
-            set(l.layerId for l in glyph.layers.values()),
+            {l.layerId for l in glyph.layers},
+            {l.layerId for l in glyph.layers.values()},
         )
         self.assertNotEqual(
             [l.layerId for l in glyph.layers],
@@ -912,8 +912,8 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         self.font.masters.insert(0, new_fontMaster)
         self.assertEqual(num_layers, len(glyph.layers))
         self.assertEqual(
-            set(l.layerId for l in glyph.layers),
-            set(l.layerId for l in glyph.layers.values()),
+            {l.layerId for l in glyph.layers},
+            {l.layerId for l in glyph.layers.values()},
         )
         self.assertNotEqual(
             [l.layerId for l in glyph.layers],
