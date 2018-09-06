@@ -38,7 +38,7 @@ import fontTools.agl
 
 import glyphsLib
 
-__all__ = ["get_glyph"]
+__all__ = ["get_glyph", "GlyphData"]
 
 # This is an internally-used named tuple and not meant to be a GSGlyphData replacement.
 Glyph = collections.namedtuple(
@@ -97,7 +97,7 @@ class GlyphData:
         return cls(name_mapping, alt_name_mapping, production_name_mapping)
 
 
-def get_glyph(glyph_name):
+def get_glyph(glyph_name, data=None):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
@@ -106,31 +106,35 @@ def get_glyph(glyph_name):
     """
 
     # Read data on first use.
-    global GLYPHDATA
-    if GLYPHDATA is None:
-        GLYPHDATA = GlyphData.from_files(
-            os.path.join(
-                os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
-            ),
-            os.path.join(
-                os.path.dirname(glyphsLib.__file__),
-                "data",
-                "GlyphData_Ideographs.xml",
-            ),
-        )
+    if data is None:
+        global GLYPHDATA
+        if GLYPHDATA is None:
+            GLYPHDATA = GlyphData.from_files(
+                os.path.join(
+                    os.path.dirname(glyphsLib.__file__),
+                    "data",
+                    "GlyphData.xml",
+                ),
+                os.path.join(
+                    os.path.dirname(glyphsLib.__file__),
+                    "data",
+                    "GlyphData_Ideographs.xml",
+                ),
+            )
+        data = GLYPHDATA
 
     # Look up data by full glyph name first. Also try the full alternative name for
     # legacy projects and production name (Issue #232).
     attributes = (
-        GLYPHDATA.names.get(glyph_name)
-        or GLYPHDATA.alternative_names.get(glyph_name)
-        or GLYPHDATA.production_names.get(glyph_name)
+        data.names.get(glyph_name)
+        or data.alternative_names.get(glyph_name)
+        or data.production_names.get(glyph_name)
         or {}
     )
 
     production_name = attributes.get(
         "production"
-    ) or _construct_production_name(glyph_name)
+    ) or _construct_production_name(glyph_name, data=data)
     unicode_value = attributes.get("unicode")
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
@@ -142,7 +146,7 @@ def get_glyph(glyph_name):
     # the same category as its base glyph.
     if category is None:
         base_name = glyph_name.split(".", 1)[0]
-        base_attribute = GLYPHDATA.names.get(base_name) or {}
+        base_attribute = data.names.get(base_name) or {}
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
 
@@ -231,7 +235,7 @@ def _construct_category(glyph_name, unicode_category):
     return glyphs_category
 
 
-def _construct_production_name(glyph_name):
+def _construct_production_name(glyph_name, data=None):
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
 
@@ -254,9 +258,9 @@ def _construct_production_name(glyph_name):
     # directly go to the base name here (e.g. when looking at "fi.alt").
     base_name, dot, suffix = glyph_name.partition(".")
     glyphinfo = (
-        GLYPHDATA.names.get(base_name)
-        or GLYPHDATA.alternative_names.get(base_name)
-        or GLYPHDATA.production_names.get(base_name)
+        data.names.get(base_name)
+        or data.alternative_names.get(base_name)
+        or data.production_names.get(base_name)
         or {}
     )
     if glyphinfo and glyphinfo.get("production"):
@@ -290,7 +294,7 @@ def _construct_production_name(glyph_name):
             # A name present in the AGLFN is a production name already.
             production_names.append(part)
         else:
-            part_entry = GLYPHDATA.names.get(part) or {}
+            part_entry = data.names.get(part) or {}
             part_production_name = part_entry.get("production")
             if part_production_name:
                 production_names.append(part_production_name)
