@@ -65,12 +65,13 @@ def _to_designspace_source(self, master, is_regular):
             source.filename = os.path.basename(
                 build_ufo_path('', source.familyName, source.styleName + n))
             n += "_"
-            logger.warn("The master with id {} has the same style name ({}) "
-                        "as another one. All masters should have distinctive "
-                        "(style) names. Use the 'Master name' custom parameter"
-                        " on a master to give it a unique name. Proceeding "
-                        "with an unchanged name, but appending '_' to the file"
-                        " name on disk.".format(master.id, source.styleName))
+            logger.warning(
+                "The master with id {} has the same style name ({}) "
+                "as another one. All masters should have distinctive "
+                "(style) names. Use the 'Master name' custom parameter"
+                " on a master to give it a unique name. Proceeding "
+                "with an unchanged name, but appending '_' to the file"
+                " name on disk.".format(master.id, source.styleName))
 
     location = {}
     for axis_def in get_axis_definitions(self.font):

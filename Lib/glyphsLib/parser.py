@@ -105,7 +105,7 @@ class Parser(object):
                 parsed = m.group(0)
                 i += len(parsed)
                 unicode_list = m.group(1).split(",")
-                return len(unicode_list)==1 and unicode_list[0] or unicode_list, i
+                return unicode_list, i
 
         m = self.value_re.match(text, i)
         if m:
