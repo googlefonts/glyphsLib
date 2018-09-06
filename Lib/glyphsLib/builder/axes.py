@@ -208,7 +208,13 @@ def to_designspace_axes(self):
 
 
 def font_uses_new_axes(font):
-    return bool(font.customParameters['Axes'])
+    # It's possible for fonts to have the 'Axes' parameter but to NOT specify
+    # the master locations using 'Axis Location', in which case we have to
+    # resort to using instances or other old tricks to get the mapping.
+    # https://github.com/googlei18n/glyphsLib/issues/409
+    # https://github.com/googlei18n/glyphsLib/issues/411
+    return font.customParameters['Axes'] and all(
+        master.customParameters['Axis Location'] for master in font.masters)
 
 
 def to_glyphs_axes(self):
