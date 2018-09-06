@@ -77,7 +77,10 @@ def get_glyph(glyph_name):
 
     if GLYPHSDATA is None:
         GLYPHSDATA = GlyphsData.from_files(
-            os.path.join(os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml")
+            os.path.join(os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"),
+            os.path.join(
+                os.path.dirname(glyphsLib.__file__), "data", "GlyphData_Ideographs.xml"
+            ),
         )
 
     attributes = (
