@@ -92,6 +92,8 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("a_a_dieresiscomb"), "uni006100610308")
         self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
         self.assertEqual(prod("vaphalaa-malayalam"), "uni0D030D35.1")
+        self.assertEqual(prod("onethird"), "uni2153")
+        self.assertEqual(prod("Jacute"), "uni00A40301")
 
     def test_unicode(self):
         uni = lambda n: get_glyph(n).unicode
