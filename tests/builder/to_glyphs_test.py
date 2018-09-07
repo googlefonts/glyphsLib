@@ -474,23 +474,23 @@ def test_open_contour():
 
 def test_background_before_foreground():
     ufo = defcon.Font()
-    a = ufo.newGlyph("a")
+    ufo.newGlyph("a")
     background = ufo.newLayer("public.background")
-    a_bg = background.newGlyph("a")
+    background.newGlyph("a")
 
     ufo.layers.layerOrder = ["public.background", "public.default"]
 
     # Check that it does not crash
-    font = to_glyphs([ufo])
+    to_glyphs([ufo])
 
 
 def test_only_background():
     ufo = defcon.Font()
     background = ufo.newLayer("public.background")
-    a_bg = background.newGlyph("a")
+    background.newGlyph("a")
 
     # Check that it does not crash
-    font = to_glyphs([ufo])
+    to_glyphs([ufo])
 
 
 def test_warn_diff_between_designspace_and_ufos(caplog):

@@ -203,7 +203,7 @@ class UFOBuilder(_LoggerMixin):
         if self._designspace_is_complete:
             return self._designspace
         self._designspace_is_complete = True
-        ufos = list(self.masters)  # Make sure that the UFOs are built
+        list(self.masters)  # Make sure that the UFOs are built
         self.to_designspace_axes()
         self.to_designspace_sources()
         self.to_designspace_instances()

@@ -780,7 +780,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bounds: read-only, computed
         # selectionBounds: read-only, computed
         # background
-        bg = layer.background
+        # XXX bg is unused?
+        bg = layer.background  # noqa: F841
         # backgroundImage
         image = classes.GSBackgroundImage("/path/to/file.jpg")
         layer.backgroundImage = image

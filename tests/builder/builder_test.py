@@ -288,7 +288,7 @@ class ParseGlyphsFilterTest(unittest.TestCase):
     def test_empty_string(self):
         inputstr = ""
         with CapturingLogHandler(builder.logger, "ERROR") as captor:
-            result = parse_glyphs_filter(inputstr)
+            parse_glyphs_filter(inputstr)
         self.assertGreater(
             len(
                 [r for r in captor.records if "Failed to parse glyphs filter" in r.msg]
@@ -300,7 +300,7 @@ class ParseGlyphsFilterTest(unittest.TestCase):
     def test_no_name(self):
         inputstr = ";OffsetX:2"
         with CapturingLogHandler(builder.logger, "ERROR") as captor:
-            result = parse_glyphs_filter(inputstr)
+            parse_glyphs_filter(inputstr)
         self.assertGreater(
             len(
                 [r for r in captor.records if "Failed to parse glyphs filter" in r.msg]

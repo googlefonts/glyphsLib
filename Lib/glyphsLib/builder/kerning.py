@@ -28,7 +28,6 @@ def _to_ufo_kerning(self, ufo, kerning_data):
     """Add .glyphs kerning to an UFO."""
 
     warning_msg = "Non-existent glyph class %s found in kerning rules."
-    class_glyph_pairs = []
 
     for left, pairs in kerning_data.items():
         match = re.match(r"@MMK_L_(.+)", left)

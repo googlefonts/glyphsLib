@@ -47,7 +47,8 @@ def to_ufo_font_attributes(self, family_name):
     designer_url = font.designerURL
     manufacturer = font.manufacturer
     manufacturer_url = font.manufacturerURL
-    note = font.note
+    # XXX note is unused?
+    # note = font.note
     glyph_order = list(glyph.name for glyph in font.glyphs)
 
     for index, master in enumerate(font.masters):

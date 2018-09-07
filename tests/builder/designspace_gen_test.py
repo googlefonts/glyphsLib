@@ -128,7 +128,7 @@ def test_designspace_generation_regular_different_family_names(tmpdir):
     # Different family names are not allowed
     # REVIEW: reasonable requirement?
     with pytest.raises(Exception):
-        font = to_glyphs([ufo_Lt, ufo_Rg])
+        to_glyphs([ufo_Lt, ufo_Rg])
 
 
 def test_designspace_generation_same_weight_name(tmpdir):

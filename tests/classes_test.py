@@ -1633,7 +1633,7 @@ class GSBackgroundLayerTest(unittest.TestCase):
     def test_get_GSLayer_foreground(self):
         """It should raise AttributeError, as in Glyphs.app"""
         with pytest.raises(AttributeError):
-            fg = self.layer.foreground
+            self.layer.foreground
 
     def test_set_GSLayer_foreground(self):
         with pytest.raises(AttributeError):
