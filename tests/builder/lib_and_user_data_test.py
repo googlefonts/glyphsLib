@@ -275,7 +275,9 @@ def test_lib_data_types(tmpdir):
         assert value == ufo["a"].lib["nestedDict"][key]
         assert value == ufo["a"].lib["nestedArray"][index]
         assert value == ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key]
-        assert type(value) == type(ufo["a"].lib[key])
-        assert type(value) == type(ufo["a"].lib["nestedDict"][key])
-        assert type(value) == type(ufo["a"].lib["nestedArray"][index])
-        assert type(value) == type(ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key])
+        assert type(value) is type(ufo["a"].lib[key])  # noqa: E721
+        assert type(value) is type(ufo["a"].lib["nestedDict"][key])  # noqa: E721
+        assert type(value) is type(ufo["a"].lib["nestedArray"][index])  # noqa: E721
+        assert type(value) is type(
+            ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key]
+        )  # noqa: E721
