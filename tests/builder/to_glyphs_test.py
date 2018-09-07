@@ -535,3 +535,43 @@ def test_custom_stylemap_style_name():
     ufo, = to_ufos(font)
 
     assert ufo.info.styleMapStyleName == 'bold'
+
+
+def test_weird_kerning_roundtrip():
+    groups = {
+        'public.kern1.i': [
+            'i', 'dotlessi', 'iacute', 'icircumflex', 'idieresis', 'igrave',
+            'imacron', 'iogonek', 'itilde', 'f_i', 'f_f_i', 'fi', 'ffi'
+        ],
+        'public.kern2.i': [
+            'i', 'dotlessi', 'iacute', 'icircumflex', 'idieresis', 'igrave',
+            'ij', 'imacron', 'iogonek', 'itilde', 'dotlessij', 'ijacute'
+        ]
+    }
+    kerning = {
+        ('icircumflex', 'public.kern2.i'): 20,
+        ('idieresis', 'idieresis'): 125,
+        ('idieresis', 'public.kern2.i'): 35,
+        ('itilde', 'public.kern2.i'): 10,
+        ('public.kern1.i', 'icircumflex'): 15,
+        ('public.kern1.i', 'idieresis'): 40,
+        ('public.kern1.i', 'itilde'): 10
+    }
+    glyphs = sorted(set([g for glyphs in groups.values() for g in glyphs]))
+
+    ufo = defcon.Font()
+    for glyph in glyphs:
+        ufo.newGlyph(glyph)
+    for k, v in groups.items():
+        ufo.groups[k] = v
+    for k, v in kerning.items():
+        ufo.kerning[k] = v
+
+    font = to_glyphs([ufo])
+    ufo, = to_ufos(font)
+
+    # The kerning and groups should round-trip untouched
+    for name, glyphs in groups.items():
+        assert set(glyphs) == set(ufo.groups[name])
+
+    assert ufo.kerning == kerning

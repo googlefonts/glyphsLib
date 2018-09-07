@@ -354,12 +354,11 @@ class ToUfosTest(unittest.TestCase):
                               if "outdated version" in r.msg]), 1)
 
     def test_load_kerning(self):
-        """Test that kerning conflicts are resolved correctly.
-
-        Correct resolution is defined as such: the last time a pair is found in
-        a kerning rule, that rule is used for the pair.
+        """Test that kerning conflicts are left untouched.
+        Discussion at: https://github.com/googlei18n/glyphsLib/pull/407
+        It turns out that Glyphs and the UFO spec agree on how to treat
+        ambiguous kerning, so keep it ambiguous, it minimizes diffs.
         """
-
         font = generate_minimal_font()
 
         # generate classes 'A': ['A', 'a'] and 'V': ['V', 'v']
@@ -383,13 +382,9 @@ class ToUfosTest(unittest.TestCase):
         ufos = to_ufos(font)
         ufo = ufos[0]
 
-        # these rules should be obvious
         self.assertEqual(ufo.kerning['public.kern1.A', 'public.kern2.V'], -250)
+        self.assertEqual(ufo.kerning['public.kern1.A', 'v'], -100)
         self.assertEqual(ufo.kerning['a', 'public.kern2.V'], 100)
-
-        # this rule results from breaking up (kern1.A, v, -100)
-        # due to conflict with (a, kern2.V, 100)
-        self.assertEqual(ufo.kerning['A', 'v'], -100)
 
     def test_propagate_anchors(self):
         """Test anchor propagation for some relatively complicated cases."""
