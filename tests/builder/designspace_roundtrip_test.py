@@ -75,7 +75,7 @@ def test_default_master_roundtrips():
     reg = doc.sources[1]
     assert reg.styleName == "Regular"
     assert reg.font.info.styleName == "Regular"
-    assert reg.copyFeatures == True
-    assert reg.copyGroups == True
-    assert reg.copyInfo == True
-    assert reg.copyLib == True
+    assert reg.copyFeatures is True
+    assert reg.copyGroups is True
+    assert reg.copyInfo is True
+    assert reg.copyLib is True
