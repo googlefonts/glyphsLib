@@ -23,7 +23,7 @@ import logging
 from fontTools.misc.py23 import tostr
 
 from glyphsLib.classes import __all__ as __all_classes__
-from glyphsLib.classes import *
+from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
 from glyphsLib.parser import load, loads  # noqa
 from glyphsLib.writer import dump, dumps  # noqa
