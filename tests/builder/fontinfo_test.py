@@ -27,6 +27,7 @@ http://unifiedfontobject.org/versions/ufo3/fontinfo.plist/
 
 import os
 import pytest
+from collections import namedtuple
 
 import defcon
 
@@ -41,10 +42,7 @@ def skip_section(name, *fields):
     return pytest.param(fields, id=name, marks=pytest.mark.skip)
 
 
-class Field(object):
-    def __init__(self, name, test_value):
-        self.name = name
-        self.test_value = test_value
+Field = namedtuple("Field", "name test_value")
 
 
 ufo_info_spec = [
