@@ -325,7 +325,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeHeadFlags",
     "openTypeNameVersion",
     "openTypeNameUniqueID",
-    # TODO: (jany) look at https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
+    # TODO: (jany) look at
+    # https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
     # Use Name Table Entry for the next param
     "openTypeNameRecords",
     "openTypeOS2FamilyClass",
@@ -721,7 +722,8 @@ DEFAULT_PARAMETERS = (
     # Glyphs.app defaults to Bit 3 ("Editable embedding")
     ("fsType", "openTypeOS2Type", [3]),
     # Reference:
-    # https://glyphsapp.com/content/1-get-started/2-manuals/1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=200
+    # https://glyphsapp.com/content/1-get-started/2-manuals/
+    # 1-handbook-glyphs-2-0/Glyphs-Handbook-2.3.pdf#page=200
     ("underlineThickness", "postscriptUnderlineThickness", 50),
     ("underlinePosition", "postscriptUnderlinePosition", -100),
 )

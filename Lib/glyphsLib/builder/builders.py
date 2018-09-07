@@ -398,12 +398,12 @@ class GlyphsBuilder(_LoggerMixin):
                     self.logger.warning(
                         dedent(
                             """\
-                        The {name} is different between the UFO and the designspace source:
-                            source filename: {filename}
-                            source {name}: {source_name}
-                            ufo {name}: {ufo_name}
+                    The {name} is different between the UFO and the designspace source:
+                        source filename: {filename}
+                        source {name}: {source_name}
+                        ufo {name}: {ufo_name}
 
-                        The UFO name will be used.
+                    The UFO name will be used.
                     """
                         ).format(
                             name=name,

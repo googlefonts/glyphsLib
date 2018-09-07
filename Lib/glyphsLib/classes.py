@@ -236,7 +236,8 @@ class OnlyInGlyphsAppError(NotImplementedError):
     def __init__(self):
         NotImplementedError.__init__(
             self,
-            "This property/method is only available in the real UI-based version of Glyphs.app.",
+            "This property/method is only available in the real UI-based "
+            "version of Glyphs.app.",
         )
 
 
@@ -313,7 +314,8 @@ class GSBase(object):
                 klass = self._classesForName[key]
                 if inspect.isclass(klass) and issubclass(klass, GSBase):
                     # FIXME: (jany) Why?
-                    # For GSLayer::backgroundImage, I was getting [] instead of None when no image
+                    # For GSLayer::backgroundImage, I was getting []
+                    # instead of None when no image
                     value = []
                 elif key in self._defaultsForName:
                     value = self._defaultsForName.get(key)
@@ -815,7 +817,8 @@ class GlyphLayerProxy(Proxy):
         self._owner._layers = newLayers
 
     def _ensureMasterLayers(self):
-        # Ensure existence of master-linked layers (even for iteration, len() etc.) if accidentally deleted
+        # Ensure existence of master-linked layers (even for iteration, len() etc.)
+        # if accidentally deleted
         if not self._owner.parent:
             return
         for master in self._owner.parent.masters:
@@ -2601,7 +2604,8 @@ class GSBackgroundImage(GSBase):
         # FIXME: (jany) the following code must have never been tested.
         #   Also it would require to keep track of the parent for background
         #   images.
-        # if os.path.dirname(os.path.abspath(value)) == os.path.dirname(os.path.abspath(self.parent.parent.parent.filepath)):
+        # if os.path.dirname(os.path.abspath(value)) == \
+        #       os.path.dirname(os.path.abspath(self.parent.parent.parent.filepath)):
         #     self.imagePath = os.path.basename(value)
         # else:
         self.imagePath = value

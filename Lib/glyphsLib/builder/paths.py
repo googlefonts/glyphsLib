@@ -23,9 +23,9 @@ def to_ufo_paths(self, ufo_glyph, layer):
     pen = ufo_glyph.getPointPen()
 
     for path in layer.paths:
-        nodes = list(
-            path.nodes
-        )  # the list is changed below, otherwise you can't draw more than once per session.
+        # the list is changed below, otherwise you can't draw more than once
+        # per session.
+        nodes = list(path.nodes)
         for node in nodes:
             self.to_ufo_node_user_data(ufo_glyph, node)
 

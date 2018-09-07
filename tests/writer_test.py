@@ -1022,7 +1022,12 @@ rememberToDownloadARealRemindersApp = 1;}"',
         for key, value in test_user_data.items():
             node.userData[key] = value
         # This is the output of Glyphs 1089
-        expected_output = '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" = \\"\\\\"\'value\\012several lines\\012;\\012\\";\\n\\";\\" = \\";\\012\\";\\nescapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+        expected_output = (
+            '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" '
+            '= \\"\\\\"\'value\\012several lines\\012;\\012\\"'
+            ';\\n\\";\\" = \\";\\012\\";\\n'
+            'escapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+        )
         self.assertWritesValue(node, expected_output)
         # Check that we can read the userData back
         node = Parser(classes.GSNode).parse(expected_output)

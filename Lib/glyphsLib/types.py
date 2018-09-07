@@ -51,7 +51,8 @@ class ValueType(object):
         """Return structured glyphs strings representing the typed value."""
         raise NotImplementedError("%s write" % type(self).__name__)
 
-    # https://stackoverflow.com/questions/390250/elegant-ways-to-support-equivalence-equality-in-python-classes
+    # https://stackoverflow.com/questions/390250/
+    # elegant-ways-to-support-equivalence-equality-in-python-classes
     def __eq__(self, other):
         """Overrides the default implementation"""
         if isinstance(self, other.__class__):

@@ -258,7 +258,10 @@ class BuildStyleMapNamesTest(unittest.TestCase):
 
 class ParseGlyphsFilterTest(unittest.TestCase):
     def test_complete_parameter(self):
-        inputstr = "Transformations;LSB:+23;RSB:-22;SlantCorrection:true;OffsetX:10;OffsetY:-10;Origin:0;exclude:uni0334,uni0335 uni0336"
+        inputstr = (
+            "Transformations;LSB:+23;RSB:-22;SlantCorrection:true;"
+            "OffsetX:10;OffsetY:-10;Origin:0;exclude:uni0334,uni0335 uni0336"
+        )
         expected = {
             "name": "Transformations",
             "kwargs": {
@@ -331,7 +334,10 @@ class ParseGlyphsFilterTest(unittest.TestCase):
                 ]
             ),
             0,
-            msg="The parse_glyphs_filter should warn user that the exclude/include should only be the last argument in the filter string.",
+            msg=(
+                "The parse_glyphs_filter should warn user that the exclude/include "
+                "should only be the last argument in the filter string."
+            ),
         )
         self.assertEqual(result, expected)
 

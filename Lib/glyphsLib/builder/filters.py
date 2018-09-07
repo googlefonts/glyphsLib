@@ -59,9 +59,8 @@ def parse_glyphs_filter(filter_str, is_pre=False):
             if key.lower() in ["include", "exclude"]:
                 if idx != len(elements[1:]) - 1:
                     logger.error(
-                        "{} can only present as the last argument in the filter. {} is ignored.".format(
-                            key, elem
-                        )
+                        "{} can only present as the last argument in the filter. "
+                        "{} is ignored.".format(key, elem)
                     )
                     continue
                 result[key.lower()] = re.split("[ ,]+", value)

@@ -111,13 +111,15 @@ def _to_designspace_instance(self, instance):
     # has a linkStyle set up, or if we're not round-tripping (i.e. generating
     # UFOs for fontmake, the traditional use-case of glyphsLib.)
     if instance.linkStyle or not self.minimize_glyphs_diffs:
-        ufo_instance.styleMapFamilyName, ufo_instance.styleMapStyleName = build_stylemap_names(
+        styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=ufo_instance.familyName,
             style_name=ufo_instance.styleName,
             is_bold=instance.isBold,
             is_italic=instance.isItalic,
             linked_style=instance.linkStyle,
         )
+        ufo_instance.styleMapFamilyName = styleMapFamilyName
+        ufo_instance.styleMapStyleName = styleMapStyleName
 
     ufo_instance.name = " ".join(
         (ufo_instance.familyName or "", ufo_instance.styleName or "")

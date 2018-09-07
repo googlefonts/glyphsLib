@@ -43,7 +43,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     color_index = glyph.color
     if color_index is not None:
         # .3f is enough precision to round-trip uint8 to float losslessly.
-        # https://github.com/unified-font-object/ufo-spec/issues/61#issuecomment-389759127
+        # https://github.com/unified-font-object/ufo-spec/issues/61
+        # #issuecomment-389759127
         if (
             isinstance(color_index, list)
             and len(color_index) == 4

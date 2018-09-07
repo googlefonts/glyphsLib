@@ -230,11 +230,13 @@ def test_feature(tmpdir):
       # default lookups included under the DEU language..
                   sub s s by germandbls;   # This is also included.
                language TRK exclude_dflt;   # default lookups are excluded.
-                lookup NO_I;             #Only this lookup is included under the TRK language
+                lookup NO_I;             # Only this lookup is included
+                                         # under the TRK language
 
             script cyrl;
                language SRB;
-                  sub c t by c_t; # this rule will apply only under script cyrl language SRB.
+                  sub c t by c_t; # this rule will apply only under
+                                  # script cyrl language SRB.
       } liga;
     """
     )
