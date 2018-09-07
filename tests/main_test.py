@@ -16,8 +16,6 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-import unittest
-import subprocess
 import os
 import glob
 
@@ -26,7 +24,7 @@ import glyphsLib.parser
 
 
 def test_glyphs_main_masters(tmpdir):
-    """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the 
+    """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the
     `build_masters` function.
     """
     import fontTools.designspaceLib

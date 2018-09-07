@@ -17,11 +17,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from defcon import Color
+from defcon import Color  # noqa
 
 import glyphsLib.glyphdata
-from .common import to_ufo_time, from_ufo_time, from_loose_ufo_time
-from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, GLYPHS_PREFIX, PUBLIC_PREFIX
+from .common import to_ufo_time, from_loose_ufo_time
+from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, PUBLIC_PREFIX
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
 ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"

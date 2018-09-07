@@ -398,7 +398,7 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir):
 
     fg_a = ufo.newGlyph("a")
     fg_a.width = 100
-    bg_a = bg.newGlyph("a")
+    bg.newGlyph("a")
 
     fg_b = ufo.newGlyph("b")
     fg_b.width = 200

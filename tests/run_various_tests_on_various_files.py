@@ -16,7 +16,6 @@ import subprocess
 import os
 import unittest
 import pytest
-import re
 
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument

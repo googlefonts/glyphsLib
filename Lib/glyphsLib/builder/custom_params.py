@@ -21,7 +21,6 @@ from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter, write_glyphs_filter
 from .constants import (
     GLYPHS_PREFIX,
-    PUBLIC_PREFIX,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,

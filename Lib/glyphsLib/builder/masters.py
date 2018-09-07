@@ -15,7 +15,6 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
-from collections import OrderedDict
 
 from .axes import font_uses_new_axes, get_axis_definitions
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX

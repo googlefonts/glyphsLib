@@ -53,7 +53,7 @@ from glyphsLib.classes import (
     PLUS,
     MINUS,
 )
-from glyphsLib.types import Point, Transform, Rect, Size
+from glyphsLib.types import Point, Transform, Rect
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans.glyphs")

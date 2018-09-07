@@ -30,7 +30,7 @@ import pytest
 
 import defcon
 
-from glyphsLib import to_glyphs, to_designspace, to_ufos, classes
+from glyphsLib import to_glyphs, to_ufos, classes
 
 
 def section(name, *fields):

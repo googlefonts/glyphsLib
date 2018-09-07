@@ -17,13 +17,12 @@
 # limitations under the License.
 
 from __future__ import unicode_literals
-import sys
 import glyphsLib.classes
 from glyphsLib.types import floatToString
 import logging
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, open, BytesIO, UnicodeIO
+from fontTools.misc.py23 import unicode, UnicodeIO
 
 """
     Usage

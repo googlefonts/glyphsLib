@@ -14,20 +14,13 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from collections import OrderedDict
 import os
 import logging
 
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
-from .constants import (
-    GLYPHS_PREFIX,
-    GLYPHLIB_PREFIX,
-    FONT_CUSTOM_PARAM_PREFIX,
-    MASTER_CUSTOM_PARAM_PREFIX,
-)
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
 from .names import build_stylemap_names
-from .masters import UFO_FILENAME_KEY
 from .axes import (
     get_axis_definitions,
     is_instance_active,

@@ -29,30 +29,15 @@ except ImportError:
 
 import glyphsLib
 from defcon import Font
-from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
-from glyphsLib.builder.custom_params import to_ufo_custom_params, _set_default_params
+from glyphsLib.builder.builders import UFOBuilder
+from glyphsLib.builder.custom_params import _set_default_params
 from glyphsLib.builder.constants import (
     GLYPHS_PREFIX,
-    PUBLIC_PREFIX,
-    GLYPHLIB_PREFIX,
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
 )
-from glyphsLib.classes import (
-    GSFont,
-    GSFontMaster,
-    GSInstance,
-    GSCustomParameter,
-    GSGlyph,
-    GSLayer,
-    GSPath,
-    GSNode,
-    GSAnchor,
-    GSComponent,
-    GSAlignmentZone,
-    GSGuideLine,
-)
+from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter
 
 
 class SetCustomParamsTest(unittest.TestCase):

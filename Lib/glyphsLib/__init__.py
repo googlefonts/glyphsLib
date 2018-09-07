@@ -24,9 +24,9 @@ from fontTools.misc.py23 import tostr
 
 from glyphsLib.classes import __all__ as __all_classes__
 from glyphsLib.classes import *
-from glyphsLib.builder import to_ufos, to_designspace, to_glyphs
-from glyphsLib.parser import load, loads
-from glyphsLib.writer import dump, dumps
+from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
+from glyphsLib.parser import load, loads  # noqa
+from glyphsLib.writer import dump, dumps  # noqa
 from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
 try:
@@ -44,6 +44,9 @@ __all__ = [
         "build_masters",
         "build_instances",
         "load_to_ufos",
+        "to_ufos",
+        "to_designspace",
+        "to_glyphs",
         "load",
         "loads",
         "dump",

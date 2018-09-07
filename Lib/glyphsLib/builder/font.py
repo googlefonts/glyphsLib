@@ -14,11 +14,10 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from collections import deque, OrderedDict
 import logging
 
 from .common import to_ufo_time, from_ufo_time
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
+from .constants import GLYPHS_PREFIX
 
 logger = logging.getLogger(__name__)
 

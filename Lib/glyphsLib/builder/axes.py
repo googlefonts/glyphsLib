@@ -14,17 +14,11 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from collections import OrderedDict
 import logging
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
-from .constants import (
-    GLYPHS_PREFIX,
-    GLYPHLIB_PREFIX,
-    FONT_CUSTOM_PARAM_PREFIX,
-    MASTER_CUSTOM_PARAM_PREFIX,
-)
+from .constants import GLYPHLIB_PREFIX
 
 # This is a key into GSFont.userData to store axes defined in the designspace
 AXES_KEY = GLYPHLIB_PREFIX + "axes"

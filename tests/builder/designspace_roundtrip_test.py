@@ -15,9 +15,7 @@
 # limitations under the License.
 
 from __future__ import print_function, division, absolute_import, unicode_literals
-import os
 
-import pytest
 import defcon
 from fontTools import designspaceLib
 

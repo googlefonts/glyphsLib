@@ -17,9 +17,6 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 import collections
-import datetime
-from textwrap import dedent
-import io
 import logging
 import unittest
 import tempfile
@@ -32,14 +29,10 @@ from glyphsLib import builder
 from glyphsLib.classes import (
     GSFont,
     GSFontMaster,
-    GSInstance,
-    GSCustomParameter,
     GSGlyph,
     GSLayer,
     GSPath,
     GSNode,
-    GSAnchor,
-    GSComponent,
     GSAlignmentZone,
     GSGuideLine,
 )
@@ -52,11 +45,8 @@ from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.filters import parse_glyphs_filter
 from glyphsLib.builder.constants import (
     GLYPHS_PREFIX,
-    PUBLIC_PREFIX,
     GLYPHLIB_PREFIX,
-    UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
-    MASTER_CUSTOM_PARAM_PREFIX,
 )
 
 from ..classes_test import (

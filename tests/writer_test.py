@@ -15,14 +15,12 @@
 # limitations under the License.
 
 import unittest
-import math
 from textwrap import dedent
 from collections import OrderedDict
 import os
 
 from fontTools.misc.py23 import UnicodeIO
 
-import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps

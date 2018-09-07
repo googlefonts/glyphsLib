@@ -17,8 +17,6 @@ import logging
 from glyphsLib import classes
 import defcon
 
-from fontTools.designspaceLib import DesignSpaceDocument
-
 from .builders import UFOBuilder, GlyphsBuilder
 
 logger = logging.getLogger(__name__)

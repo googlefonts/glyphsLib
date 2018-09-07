@@ -16,7 +16,6 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 from collections import OrderedDict, defaultdict
 import logging
-import tempfile
 import os
 from textwrap import dedent
 
@@ -25,7 +24,7 @@ import defcon
 from fontTools import designspaceLib
 
 from glyphsLib import classes
-from .constants import PUBLIC_PREFIX, GLYPHS_PREFIX, FONT_CUSTOM_PARAM_PREFIX
+from .constants import PUBLIC_PREFIX, FONT_CUSTOM_PARAM_PREFIX
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"

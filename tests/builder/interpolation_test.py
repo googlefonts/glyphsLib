@@ -29,7 +29,6 @@ from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
 from glyphsLib import to_designspace, to_glyphs
-from glyphsLib.builder.constants import UFO2FT_USE_PROD_NAMES_KEY
 
 
 # Current limitation of glyphsLib for designspace to designspace round-trip:

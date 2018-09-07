@@ -17,12 +17,11 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
-import pytest
 from textwrap import dedent
 
 import defcon
 
-from glyphsLib import to_glyphs, to_designspace, to_ufos, classes
+from glyphsLib import to_glyphs, to_ufos, classes
 
 
 def make_font(features):

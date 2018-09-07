@@ -24,7 +24,6 @@ from fontTools.feaLib import ast, parser
 
 import re
 
-import glyphsLib
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 

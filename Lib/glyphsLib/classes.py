@@ -18,10 +18,8 @@
 from __future__ import print_function, division, unicode_literals
 
 import re
-import os
 import math
 import inspect
-import traceback
 import uuid
 import logging
 import glyphsLib
@@ -30,16 +28,14 @@ from glyphsLib.types import (
     Transform,
     Point,
     Rect,
-    Size,
     parse_datetime,
     parse_color,
     floatToString,
     readIntlist,
-    writeIntlist,
     UnicodesList,
 )
 from glyphsLib.parser import Parser
-from glyphsLib.writer import Writer, escape_string
+from glyphsLib.writer import Writer
 from collections import OrderedDict
 from fontTools.misc.py23 import unicode, basestring, UnicodeIO, unichr, open
 from glyphsLib.affine import Affine
