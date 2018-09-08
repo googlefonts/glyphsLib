@@ -2452,9 +2452,6 @@ class GSInstance(GSBase):
         "interpolationCustom3": "customValue3",
     }
 
-    def interpolateFont():
-        pass
-
     def __init__(self):
         super(GSInstance, self).__init__()
         # TODO: (jany) review this and move as much as possible into
