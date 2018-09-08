@@ -147,10 +147,10 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
     :type members: float
     """
 
-    def __new__(self, *members):
+    def __new__(cls, *members):
         if len(members) == 6:
             mat3x3 = [x * 1.0 for x in members] + [0.0, 0.0, 1.0]
-            return tuple.__new__(Affine, mat3x3)
+            return tuple.__new__(cls, mat3x3)
         else:
             raise TypeError("Expected 6 number args, got %s" % len(members))
 
