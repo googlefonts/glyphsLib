@@ -159,7 +159,8 @@ def _is_instance_included_in_family(self, instance):
     return instance.familyName == self.family_name
 
 
-def to_glyphs_instances(self):
+# TODO: function is too complex (35), split it up
+def to_glyphs_instances(self):  # noqa: C901
     if self.designspace is None:
         return
 
