@@ -283,7 +283,11 @@ class GlyphsBuilder(_LoggerMixin):
     """Builder for UFO + designspace to Glyphs."""
 
     def __init__(
-        self, ufos=[], designspace=None, glyphs_module=classes, minimize_ufo_diffs=False
+        self,
+        ufos=None,
+        designspace=None,
+        glyphs_module=classes,
+        minimize_ufo_diffs=False,
     ):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
