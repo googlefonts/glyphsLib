@@ -152,8 +152,13 @@ def _build_gdef(ufo):
         return None
     lines = ["table GDEF {", "  # automatic"]
     glyphOrder = ufo.lib[PUBLIC_PREFIX + "glyphOrder"]
-    glyphIndex = lambda glyph: glyphOrder.index(glyph)
-    fmt = lambda g: ("[%s]" % " ".join(sorted(g, key=glyphIndex))) if g else ""
+
+    def glyphIndex(glyph):
+        return glyphOrder.index(glyph)
+
+    def fmt(g):
+        return ("[%s]" % " ".join(sorted(g, key=glyphIndex))) if g else ""
+
     lines.extend(
         [
             "  GlyphClassDef",

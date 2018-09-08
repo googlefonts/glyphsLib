@@ -26,7 +26,9 @@ from glyphsLib.glyphdata import get_glyph
 class GlyphDataTest(unittest.TestCase):
     def test_production_name(self):
         # Our behavior differs from Glyphs, Glyphs 2.5.2 responses are in comments.
-        prod = lambda n: get_glyph(n).production_name
+        def prod(n):
+            return get_glyph(n).production_name
+
         self.assertEqual(prod(".notdef"), ".notdef")
         self.assertEqual(prod("eacute"), "eacute")
         self.assertEqual(prod("Abreveacute"), "uni1EAE")
@@ -83,7 +85,9 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(prod("Jacute"), "uni00A40301")
 
     def test_unicode(self):
-        uni = lambda n: get_glyph(n).unicode
+        def uni(n):
+            return get_glyph(n).unicode
+
         self.assertIsNone(uni(".notdef"))
         self.assertEqual(uni("eacute"), "00E9")
         self.assertEqual(uni("Abreveacute"), "1EAE")
@@ -99,7 +103,9 @@ class GlyphDataTest(unittest.TestCase):
         self.assertIsNone(uni("brevecomb_acutecomb.case"))
 
     def test_category(self):
-        cat = lambda n: (get_glyph(n).category, get_glyph(n).subCategory)
+        def cat(n):
+            return get_glyph(n).category, get_glyph(n).subCategory
+
         self.assertEqual(cat(".notdef"), ("Separator", None))
         self.assertEqual(cat("uni000D"), ("Separator", None))
         self.assertEqual(cat("boxHeavyUp"), ("Symbol", "Geometry"))
