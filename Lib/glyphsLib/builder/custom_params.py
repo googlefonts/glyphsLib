@@ -745,7 +745,7 @@ def _unset_default_params(glyphs):
     FIXME: (jany) maybe this should be taken care of in the writer? and/or
         classes should have better default values?
     """
-    for glyphs_name, ufo_name, default_value in DEFAULT_PARAMETERS:
+    for glyphs_name, _, default_value in DEFAULT_PARAMETERS:
         if (
             glyphs_name in glyphs.customParameters
             and glyphs.customParameters[glyphs_name] == default_value

@@ -597,7 +597,7 @@ class FeatureFileProcessor(object):
 
     # Strip up to the given number of newlines from the right end of the string
     def _rstrip_newlines(self, string, number=1):
-        for i in range(number):
+        for _ in range(number):
             if string and string[-1] == "\n":
                 string = string[:-1]
         return string

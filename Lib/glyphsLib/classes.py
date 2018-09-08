@@ -804,7 +804,7 @@ class GlyphLayerProxy(Proxy):
             for layer in values:
                 newLayers[layer.layerId] = layer
         elif type(values) == dict:  # or isinstance(values, NSDictionary)
-            for (key, layer) in values.items():
+            for layer in values.values():
                 newLayers[layer.layerId] = layer
         else:
             raise TypeError
