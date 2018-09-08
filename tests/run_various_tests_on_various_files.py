@@ -78,7 +78,7 @@ class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRou
         for index, filename in enumerate(sorted(files)):
 
             def test_method(self, filename=filename):
-                doc = DesignSpaceDocument(writerClass=InMemoryDocWriter)
+                doc = DesignSpaceDocument()
                 doc.read(filename)
                 self.assertDesignspaceRoundtrip(doc)
 
