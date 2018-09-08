@@ -22,8 +22,6 @@ from fontTools.misc.py23 import StringIO
 
 from fontTools.feaLib import ast, parser
 
-import re
-
 from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
 
 
