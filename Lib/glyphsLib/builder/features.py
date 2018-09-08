@@ -363,10 +363,15 @@ class PeekableIterator(object):
     def has_next(self, n=0):
         return (self.index + n) < len(self.list)
 
-    def next(self):
+    def __iter__(self):
+        return self
+
+    def __next__(self):
         res = self.list[self.index]
         self.index += 1
         return res
+
+    next = __next__
 
     def peek(self, n=0):
         return self.list[self.index + n]
@@ -411,8 +416,7 @@ class FeatureFileProcessor(object):
                     unhandled_root_elements.clear()
             else:
                 # FIXME: (jany) Maybe print warning about unhandled fea block?
-                unhandled_root_elements.append(self.statements.peek())
-                self.statements.next()
+                unhandled_root_elements.append(next(self.statements))
         # Flush any unhandled root elements into an anonymous prefix
         if unhandled_root_elements:
             prefix = self.glyphs_module.GSFeaturePrefix()
@@ -427,7 +431,7 @@ class FeatureFileProcessor(object):
         match = self.PREFIX_RE.match(st.text)
         if not match:
             return False
-        self.statements.next()
+        next(self.statements)
 
         # Consume statements that are part of the feature prefix
         prefix_statements = []
@@ -449,8 +453,7 @@ class FeatureFileProcessor(object):
                         next_st, ast.GlyphClassDefinition
                     ):
                         break
-            prefix_statements.append(st)
-            self.statements.next()
+            prefix_statements.append(next(self.statements))
 
         prefix = self.glyphs_module.GSFeaturePrefix()
         prefix.name = match.group(1)
@@ -474,8 +477,8 @@ class FeatureFileProcessor(object):
         if not isinstance(st, ast.GlyphClassDefinition):
             return False
         if automatic:
-            self.statements.next()
-        self.statements.next()
+            next(self.statements)
+        next(self.statements)
         glyph_class = self.glyphs_module.GSClass()
         glyph_class.name = st.name
         # Call st.glyphs.asFea() because it updates the 'original' field
@@ -512,7 +515,7 @@ class FeatureFileProcessor(object):
         st = self.statements.peek()
         if not isinstance(st, ast.FeatureBlock):
             return False
-        self.statements.next()
+        next(self.statements)
         contents = st.statements
         automatic, contents = self._pop_comment(contents, self.AUTOMATIC_RE)
         disabled, disabled_text, contents = self._pop_comment_block(
