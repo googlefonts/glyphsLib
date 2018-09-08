@@ -18,7 +18,6 @@
 from __future__ import unicode_literals
 import re
 import datetime
-import traceback
 import math
 import copy
 import binascii
@@ -271,10 +270,7 @@ class Datetime(ValueType):
         return '"%s +0000"' % self.value
 
     def strftime(self, val):
-        try:
-            return self.value.strftime(val)
-        except:
-            return None
+        return self.value.strftime(val)
 
 
 def parse_color(src=None):
@@ -353,24 +349,21 @@ def actualPrecition(Float):
 
 
 def floatToString(Float, precision=3):
-    try:
-        ActualPrecition = actualPrecition(Float)
-        precision = min(precision, ActualPrecition)
-        fractional = math.modf(math.fabs(Float))[0]
-        if precision >= 5 and fractional >= 0.000005 and fractional <= 0.999995:
-            return "%.5f" % Float
-        elif precision >= 4 and fractional >= 0.00005 and fractional <= 0.99995:
-            return "%.4f" % Float
-        elif precision >= 3 and fractional >= 0.0005 and fractional <= 0.9995:
-            return "%.3f" % Float
-        elif precision >= 2 and fractional >= 0.005 and fractional <= 0.995:
-            return "%.2f" % Float
-        elif precision >= 1 and fractional >= 0.05 and fractional <= 0.95:
-            return "%.1f" % Float
-        else:
-            return "%.0f" % Float
-    except:
-        print(traceback.format_exc())
+    ActualPrecition = actualPrecition(Float)
+    precision = min(precision, ActualPrecition)
+    fractional = math.modf(math.fabs(Float))[0]
+    if precision >= 5 and fractional >= 0.000005 and fractional <= 0.999995:
+        return "%.5f" % Float
+    elif precision >= 4 and fractional >= 0.00005 and fractional <= 0.99995:
+        return "%.4f" % Float
+    elif precision >= 3 and fractional >= 0.0005 and fractional <= 0.9995:
+        return "%.3f" % Float
+    elif precision >= 2 and fractional >= 0.005 and fractional <= 0.995:
+        return "%.2f" % Float
+    elif precision >= 1 and fractional >= 0.05 and fractional <= 0.95:
+        return "%.1f" % Float
+    else:
+        return "%.0f" % Float
 
 
 class UnicodesList(list):

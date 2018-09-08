@@ -349,7 +349,8 @@ class GSBase(object):
             else:
                 try:
                     value = new_type().read(value)
-                except:
+                except Exception:
+                    # FIXME: too broad, should only catch specific exceptions
                     value = new_type(value)
         key = self._wrapperKeysTranslate.get(key, key)
         setattr(self, key, value)
@@ -2734,12 +2735,12 @@ class GSLayer(GSBase):
         try:
             # assert self.name
             name = self.name
-        except:
+        except AttributeError:
             name = "orphan (n)"
         try:
             assert self.parent.name
             parent = self.parent.name
-        except:
+        except (AttributeError, AssertionError):
             parent = "orphan"
         return '<{} "{}" ({})>'.format(self.__class__.__name__, name, parent)
 

@@ -356,7 +356,7 @@ class AxisDefinition(object):
             for location in loc_param:
                 if location.get("Axis") == self.name:
                     user_loc = location["Location"]
-        except:
+        except (TypeError, KeyError):
             pass
 
         return user_loc

@@ -80,7 +80,7 @@ class Parser(object):
                 def current_type(_):
                     return v if not v.is_integer() else int(v)
 
-            except:
+            except ValueError:
                 current_type = unicode
         else:
             current_type = unicode
@@ -175,7 +175,7 @@ class Parser(object):
 
             try:
                 res[name], i = result
-            except:
+            except (TypeError, KeyError):  # hmmm...
                 res = {}  # ugly, this fixes nested dicts in customparameters
                 res[name], i = result
 
