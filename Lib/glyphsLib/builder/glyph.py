@@ -15,13 +15,13 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 import logging
 
-logger = logging.getLogger(__name__)
-
 from defcon import Color  # noqa
 
 import glyphsLib.glyphdata
 from .common import to_ufo_time, from_loose_ufo_time
 from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, PUBLIC_PREFIX
+
+logger = logging.getLogger(__name__)
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
 ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
