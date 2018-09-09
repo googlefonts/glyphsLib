@@ -232,7 +232,7 @@ class Transform(Vector(6)):
         return '"{%s}"' % (", ".join(floatToString(v, 5) for v in self.value))
 
 
-UTC_OFFSET_RE = re.compile(r".* (?P<sign>\+|\-)(?P<hours>\d\d)(?P<minutes>\d\d)$")
+UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
 
 
 def parse_datetime(src=None):

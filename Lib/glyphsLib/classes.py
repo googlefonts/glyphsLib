@@ -1507,7 +1507,7 @@ class GSFontMaster(GSBase):
 class GSNode(GSBase):
     _PLIST_VALUE_RE = re.compile(
         r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        r'(?: (SMOOTH))?(?: (\{.*\}))?"',
+        r'(?: (SMOOTH))?(?: ({.*}))?"',
         re.DOTALL,
     )
     MOVE = "move"
