@@ -47,8 +47,7 @@ def parse_glyphs_filter(filter_str, is_pre=False):
         )
         return None
 
-    result = {}
-    result["name"] = elements[0]
+    result = {"name": elements[0]}
     for idx, elem in enumerate(elements[1:]):
         if not elem:
             # skip empty arguments
