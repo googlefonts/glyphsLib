@@ -215,7 +215,7 @@ def _construct_category(glyph_name, unicode_category):
     # Exception: Something like "one_two" should be a (_, Ligature),
     # "acutecomb_brevecomb" should however stay (Mark, Nonspacing).
     if "_" in glyph_name and glyphs_category[0] != "Mark":
-        return (glyphs_category[0], "Ligature")
+        return glyphs_category[0], "Ligature"
 
     return glyphs_category
 

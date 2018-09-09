@@ -569,7 +569,7 @@ register(ParamHandler("glyphOrder", ufo_prefix=GLYPHS_PREFIX))
 # See https://github.com/googlei18n/glyphsLib/issues/214
 class FilterParamHandler(AbstractParamHandler):
     def glyphs_names(self):
-        return ("Filter", "PreFilter")
+        return "Filter", "PreFilter"
 
     def ufo_names(self):
         return (UFO2FT_FILTERS_KEY,)

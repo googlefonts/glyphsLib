@@ -385,7 +385,7 @@ class Proxy(object):
         """Return list-lookalike of representation string of objects"""
         strings = []
         for currItem in self:
-            strings.append("%s" % (currItem))
+            strings.append("%s" % currItem)
         return "(%s)" % (", ".join(strings))
 
     def __len__(self):
@@ -400,7 +400,7 @@ class Proxy(object):
             del self[i]
             return node
         else:
-            raise (KeyError)
+            raise KeyError
 
     def __iter__(self):
         values = self.values()
@@ -502,7 +502,7 @@ class FontFontMasterProxy(Proxy):
                 if master.id == Key:
                     return master
         else:
-            raise (KeyError)
+            raise KeyError
 
     def __setitem__(self, Key, FontMaster):
         FontMaster.font = self._owner
@@ -518,7 +518,7 @@ class FontFontMasterProxy(Proxy):
             Index = self._owner._masters.index(OldFontMaster)
             self._owner._masters[Index] = FontMaster
         else:
-            raise (KeyError)
+            raise KeyError
 
     def __delitem__(self, Key):
         if type(Key) is int:
@@ -1224,7 +1224,7 @@ class GSCustomParameter(GSBase):
             "openTypeHeadFlags",
         )
     )
-    _CUSTOM_DICT_PARAMS = frozenset(("GASP Table"))
+    _CUSTOM_DICT_PARAMS = frozenset("GASP Table")
 
     def __init__(self, name="New Value", value="New Parameter"):
         self.name = name
@@ -1494,7 +1494,7 @@ class GSFontMaster(GSBase):
                 previous_was_removed = False
                 names.append(name)
         custom = " ".join(names).strip()
-        return (weight, width, custom)
+        return weight, width, custom
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2007,7 +2007,7 @@ class GSComponent(GSBase):
         self._sX, self._sY, self._R = transformStructToScaleAndRotation(
             self.transform.value
         )
-        return (self._sX, self._sY)
+        return self._sX, self._sY
 
     @scale.setter
     def scale(self, value):
@@ -2620,7 +2620,7 @@ class GSBackgroundImage(GSBase):
     # .scale
     @property
     def scale(self):
-        return (self._sX, self._sY)
+        return self._sX, self._sY
 
     @scale.setter
     def scale(self, value):

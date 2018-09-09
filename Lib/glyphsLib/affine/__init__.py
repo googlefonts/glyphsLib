@@ -250,10 +250,10 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
 
     def __repr__(self):
         """Precise string representation."""
-        return ("Affine(%r, %r, %r,\n" "       %r, %r, %r)") % self[:6]
+        return "Affine(%r, %r, %r,\n" "       %r, %r, %r)" % self[:6]
 
     def to_gdal(self):
-        return (self.c, self.a, self.b, self.f, self.d, self.e)
+        return self.c, self.a, self.b, self.f, self.d, self.e
 
     @property
     def xoff(self):
@@ -387,7 +387,7 @@ class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))
                 vx, vy = other
             except Exception:
                 return NotImplemented
-            return (vx * sa + vy * sd + sc, vx * sb + vy * se + sf)
+            return vx * sa + vy * sd + sc, vx * sb + vy * se + sf
 
     def __rmul__(self, other):
         # We should not be called if other is an affine instance

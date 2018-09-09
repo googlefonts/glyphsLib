@@ -32,7 +32,7 @@ def main(args=None):
     parser_glyphs2ufo = subparsers.add_parser("glyphs2ufo", help=glyphs2ufo.__doc__)
     parser_glyphs2ufo.set_defaults(func=glyphs2ufo)
     parser_glyphs2ufo.add_argument(
-        "--version", action="version", version="glyphsLib %s" % (glyphsLib.__version__)
+        "--version", action="version", version="glyphsLib %s" % glyphsLib.__version__
     )
     parser_glyphs2ufo.add_argument(
         "glyphs_file", metavar="GLYPHS_FILE", help="Glyphs file to convert."
@@ -102,7 +102,7 @@ def main(args=None):
     parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
     parser_ufo2glyphs.add_argument(
-        "--version", action="version", version="glyphsLib %s" % (glyphsLib.__version__)
+        "--version", action="version", version="glyphsLib %s" % glyphsLib.__version__
     )
     parser_ufo2glyphs.add_argument(
         "designspace_file_or_UFOs",

@@ -331,7 +331,7 @@ class FeaDocument(object):
         while char == 0:
             line -= 1
             char = len(self._lines[line - 1])
-        return (line, char)
+        return line, char
 
     def _in_block_end_location(self, block):
         _, line, char = block.end_location
@@ -353,7 +353,7 @@ class FeaDocument(object):
         # Skip it and we're done
         line, char = self._previous_char(line, char)
 
-        return (None, line, char)
+        return None, line, char
 
 
 class PeekableIterator(object):
@@ -565,7 +565,7 @@ class FeatureFileProcessor(object):
             match = comment_re.match(st.text)
             if not match:
                 res.append(st)
-        return (match, res)
+        return match, res
 
     def _pop_comment_block(self, statements, header_re):
         """Look for a series of comments that start with one that matches the
@@ -598,7 +598,7 @@ class FeatureFileProcessor(object):
         # Keep the rest of the statements
         res.extend(list(st_iter))
         # Inside the comment block, drop the pound sign and any common indent
-        return (match, dedent("".join(c.text[1:] + "\n" for c in comments)), res)
+        return match, dedent("".join(c.text[1:] + "\n" for c in comments)), res
 
     # Strip up to the given number of newlines from the right end of the string
     def _rstrip_newlines(self, string, number=1):
