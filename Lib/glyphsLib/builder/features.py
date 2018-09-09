@@ -391,7 +391,6 @@ class FeatureFileProcessor(object):
 
     def to_glyphs(self, font):
         self._font = font
-        self._font
         self._process_file()
 
     PREFIX_RE = re.compile("^# Prefix: (.*)$")

@@ -1727,7 +1727,6 @@ class GSPath(GSBase):
             self._segmentLength += 1
             segmentCount += 1
 
-        self._segments
         return self._segments
 
     @segments.setter
