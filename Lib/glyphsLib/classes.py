@@ -65,6 +65,7 @@ __all__ = [
     "GSHint",
     "GSBackgroundImage",
     # Constants
+    "__all__",
     "MOVE",
     "LINE",
     "CURVE",
@@ -110,6 +111,8 @@ __all__ = [
     "GSBottomLeft",
     "GSBottomCenter",
     "GSBottomRight",
+    "WEIGHT_CODES",
+    "WIDTH_CODES",
 ]
 
 # CONSTANTS

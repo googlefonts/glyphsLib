@@ -19,7 +19,11 @@ from fontTools.misc.transform import Transform
 
 from glyphsLib.types import Point
 
-__all__ = ["to_ufo_propagate_font_anchors"]
+__all__ = [
+    "to_ufo_propagate_font_anchors",
+    "to_ufo_glyph_anchors",
+    "to_glyphs_glyph_anchors",
+]
 
 
 def to_ufo_propagate_font_anchors(self, ufo):

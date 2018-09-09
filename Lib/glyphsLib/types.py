@@ -23,7 +23,19 @@ import copy
 import binascii
 from fontTools.misc.py23 import unicode
 
-__all__ = ["Transform", "Point", "Rect"]
+__all__ = [
+    "Transform",
+    "Point",
+    "Rect",
+    "Size",
+    "ValueType",
+    "parse_datetime",
+    "parse_color",
+    "floatToString",
+    "readIntlist",
+    "UnicodesList",
+    "BinaryData",
+]
 
 
 class ValueType(object):
