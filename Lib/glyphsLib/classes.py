@@ -1896,7 +1896,7 @@ class segment(list):
                 if abs(b) < 1e-12:
                     continue
                 t = -c / b
-                if 0 < t and t < 1:
+                if 0 < t < 1:
                     tvalues.append(t)
                 continue
 
@@ -1905,10 +1905,10 @@ class segment(list):
                 continue
             sqrtb2ac = math.sqrt(b2ac)
             t1 = (-b + sqrtb2ac) / (2 * a)
-            if 0 < t1 and t1 < 1:
+            if 0 < t1 < 1:
                 tvalues.append(t1)
             t2 = (-b - sqrtb2ac) / (2 * a)
-            if 0 < t2 and t2 < 1:
+            if 0 < t2 < 1:
                 tvalues.append(t2)
 
         for j in range(len(tvalues) - 1, -1, -1):
@@ -3217,7 +3217,7 @@ class GSFont(GSBase):
 
     def setVersionMinor(self, value):
         """Ensure that the minor version number is between 0 and 999."""
-        assert value >= 0 and value <= 999
+        assert 0 <= value <= 999
         self._versionMinor = value
 
     versionMinor = property(getVersionMinor, setVersionMinor)
