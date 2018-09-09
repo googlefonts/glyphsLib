@@ -45,12 +45,13 @@ from collections import namedtuple
 import math
 
 
-__all__ = ['Affine']
+__all__ = ["Affine"]
 __author__ = "Sean Gillies"
 __version__ = "1.0"
 
-EPSILON=1e-5
-EPSILON2=EPSILON**2
+EPSILON = 1e-5
+EPSILON2 = EPSILON ** 2
+
 
 def set_epsilon(epsilon):
     """Set the global absolute error value and rounding limit for approximate
@@ -63,31 +64,37 @@ def set_epsilon(epsilon):
     for very small values close to zero. Otherwise approximate
     comparison operations will not behave as expected.
     """
+    global EPSILON, EPSILON2
     EPSILON = float(epsilon)
-    EPSILON2 = EPSILON**2
+    EPSILON2 = EPSILON ** 2
 
 
 class TransformNotInvertibleError(Exception):
     """The transform could not be inverted"""
+
 
 # Define assert_unorderable() depending on the language
 # implicit ordering rules. This keeps things consistent
 # across major Python versions
 try:
     3 > ""
-except TypeError: # pragma: no cover
+except TypeError:  # pragma: no cover
     # No implicit ordering (newer Python)
     def assert_unorderable(a, b):
         """Assert that a and b are unorderable"""
         return NotImplemented
-else: # pragma: no cover
+
+
+else:  # pragma: no cover
     # Implicit ordering by default (older Python)
     # We must raise an exception ourselves
     # To prevent nonsensical ordering
     def assert_unorderable(a, b):
         """Assert that a and b are unorderable"""
-        raise TypeError("unorderable types: %s and %s"
-            % (type(a).__name__, type(b).__name__))
+        raise TypeError(
+            "unorderable types: {} and {}".format(type(a).__name__, type(b).__name__)
+        )
+
 
 def cached_property(func):
     """Special property decorator that caches the computed
@@ -96,14 +103,17 @@ def cached_property(func):
     """
     name = func.__name__
     doc = func.__doc__
+
     def getter(self, name=name):
         try:
             return self.__dict__[name]
         except KeyError:
             self.__dict__[name] = value = func(self)
             return value
+
     getter.func_name = name
     return property(getter, doc=doc)
+
 
 def cos_sin_deg(deg):
     """Return the cosine and sin for the given angle
@@ -121,8 +131,7 @@ def cos_sin_deg(deg):
     return math.cos(rad), math.sin(rad)
 
 
-class Affine(
-        namedtuple('Affine', ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'))):
+class Affine(namedtuple("Affine", ("a", "b", "c", "d", "e", "f", "g", "h", "i"))):
     """Two dimensional affine transform for linear mapping from 2D coordinates
     to other 2D coordinates. Parallel lines are preserved by these
     transforms. Affine transforms can perform any combination of translations,
@@ -138,13 +147,12 @@ class Affine(
     :type members: float
     """
 
-    def __new__(self, *members):
+    def __new__(cls, *members):
         if len(members) == 6:
             mat3x3 = [x * 1.0 for x in members] + [0.0, 0.0, 1.0]
-            return tuple.__new__(Affine, mat3x3)
+            return tuple.__new__(cls, mat3x3)
         else:
-            raise TypeError(
-                "Expected 6 number args, got %s" % len(members))
+            raise TypeError("Expected 6 number args, got %s" % len(members))
 
     @classmethod
     def from_gdal(cls, c, a, b, f, d, e):
@@ -170,10 +178,7 @@ class Affine(
         :type yoff: float
         :rtype: Affine
         """
-        return tuple.__new__(cls,
-            (1.0, 0.0, xoff,
-             0.0, 1.0, yoff,
-             0.0, 0.0, 1.0))
+        return tuple.__new__(cls, (1.0, 0.0, xoff, 0.0, 1.0, yoff, 0.0, 0.0, 1.0))
 
     @classmethod
     def scale(cls, *scaling):
@@ -189,10 +194,7 @@ class Affine(
             sx = sy = float(scaling[0])
         else:
             sx, sy = scaling
-        return tuple.__new__(cls,
-            (sx, 0.0, 0.0,
-             0.0, sy, 0.0,
-             0.0, 0.0, 1.0))
+        return tuple.__new__(cls, (sx, 0.0, 0.0, 0.0, sy, 0.0, 0.0, 0.0, 1.0))
 
     @classmethod
     def shear(cls, x_angle=0, y_angle=0):
@@ -206,10 +208,7 @@ class Affine(
         """
         sx = math.tan(math.radians(x_angle))
         sy = math.tan(math.radians(y_angle))
-        return tuple.__new__(cls,
-            (1.0, sy, 0.0,
-             sx, 1.0, 0.0,
-             0.0, 0.0, 1.0))
+        return tuple.__new__(cls, (1.0, sy, 0.0, sx, 1.0, 0.0, 0.0, 0.0, 1.0))
 
     @classmethod
     def rotation(cls, angle, pivot=None):
@@ -225,27 +224,33 @@ class Affine(
         """
         ca, sa = cos_sin_deg(angle)
         if pivot is None:
-            return tuple.__new__(cls,
-                (ca, sa, 0.0,
-                -sa, ca, 0.0,
-                 0.0, 0.0, 1.0))
+            return tuple.__new__(cls, (ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0))
         else:
             px, py = pivot
-            return tuple.__new__(cls,
-                (ca, sa, px - px*ca + py*sa,
-                -sa, ca, py - px*sa - py*ca,
-                 0.0, 0.0, 1.0))
+            return tuple.__new__(
+                cls,
+                (
+                    ca,
+                    sa,
+                    px - px * ca + py * sa,
+                    -sa,
+                    ca,
+                    py - px * sa - py * ca,
+                    0.0,
+                    0.0,
+                    1.0,
+                ),
+            )
 
     def __str__(self):
         """Concise string representation."""
-        return ("|% .2f,% .2f,% .2f|\n"
-                "|% .2f,% .2f,% .2f|\n"
-                "|% .2f,% .2f,% .2f|") % self
+        return (
+            "|% .2f,% .2f,% .2f|\n" "|% .2f,% .2f,% .2f|\n" "|% .2f,% .2f,% .2f|"
+        ) % self
 
     def __repr__(self):
         """Precise string representation."""
-        return ("Affine(%r, %r, %r,\n"
-                "       %r, %r, %r)") % self[:6]
+        return ("Affine(%r, %r, %r,\n" "       %r, %r, %r)") % self[:6]
 
     def to_gdal(self):
         return (self.c, self.a, self.b, self.f, self.d, self.e)
@@ -265,7 +270,7 @@ class Affine(
         is applied to a shape.
         """
         a, b, c, d, e, f, g, h, i = self
-        return a*e - b*d
+        return a * e - b * d
 
     @cached_property
     def is_identity(self):
@@ -281,8 +286,9 @@ class Affine(
         transform.
         """
         a, b, c, d, e, f, g, h, i = self
-        return ((abs(a) < EPSILON and abs(e) < EPSILON)
-            or (abs(d) < EPSILON and abs(b) < EPSILON))
+        return (abs(a) < EPSILON and abs(e) < EPSILON) or (
+            abs(d) < EPSILON and abs(b) < EPSILON
+        )
 
     @cached_property
     def is_conformal(self):
@@ -291,7 +297,7 @@ class Affine(
         This implies that the transform has no effective shear.
         """
         a, b, c, d, e, f, g, h, i = self
-        return abs(a*b + d*e) < EPSILON
+        return abs(a * b + d * e) < EPSILON
 
     @cached_property
     def is_orthonormal(self):
@@ -302,9 +308,11 @@ class Affine(
         orthonormal transform to a shape always results in a congruent shape.
         """
         a, b, c, d, e, f, g, h, i = self
-        return (self.is_conformal
-            and abs(1.0 - (a*a + d*d)) < EPSILON
-            and abs(1.0 - (b*b + e*e)) < EPSILON)
+        return (
+            self.is_conformal
+            and abs(1.0 - (a * a + d * d)) < EPSILON
+            and abs(1.0 - (b * b + e * e)) < EPSILON
+        )
 
     @cached_property
     def is_degenerate(self):
@@ -360,16 +368,26 @@ class Affine(
         sa, sb, sc, sd, se, sf, _, _, _ = self
         if isinstance(other, Affine):
             oa, ob, oc, od, oe, of, _, _, _ = other
-            return tuple.__new__(Affine,
-                (sa*oa + sb*od, sa*ob + sb*oe, sa*oc + sb*of + sc,
-                 sd*oa + se*od, sd*ob + se*oe, sd*oc + se*of + sf,
-                 0.0, 0.0, 1.0))
+            return tuple.__new__(
+                Affine,
+                (
+                    sa * oa + sb * od,
+                    sa * ob + sb * oe,
+                    sa * oc + sb * of + sc,
+                    sd * oa + se * od,
+                    sd * ob + se * oe,
+                    sd * oc + se * of + sf,
+                    0.0,
+                    0.0,
+                    1.0,
+                ),
+            )
         else:
             try:
                 vx, vy = other
             except Exception:
                 return NotImplemented
-            return (vx*sa + vy*sd + sc, vx*sb + vy*se + sf)
+            return (vx * sa + vy * sd + sc, vx * sb + vy * se + sf)
 
     def __rmul__(self, other):
         # We should not be called if other is an affine instance
@@ -394,7 +412,7 @@ class Affine(
         if self is not identity and self != identity:
             sa, sb, sc, sd, se, sf, _, _, _ = self
             for i, (x, y) in enumerate(seq):
-                seq[i] = (x*sa + y*sd + sc, x*sb + y*se + sf)
+                seq[i] = (x * sa + y * sd + sc, x * sb + y * se + sf)
 
     def __invert__(self):
         """Return the inverse transform.
@@ -403,20 +421,19 @@ class Affine(
             is degenerate.
         """
         if self.is_degenerate:
-            raise TransformNotInvertibleError(
-                "Cannot invert degenerate transform")
+            raise TransformNotInvertibleError("Cannot invert degenerate transform")
         idet = 1.0 / self.determinant
         sa, sb, sc, sd, se, sf, _, _, _ = self
         ra = se * idet
         rb = -sb * idet
         rd = -sd * idet
         re = sa * idet
-        return tuple.__new__(Affine,
-            (ra, rb, -sc*ra - sf*rb,
-             rd, re, -sc*rd - sf*re,
-             0.0, 0.0, 1.0))
+        return tuple.__new__(
+            Affine,
+            (ra, rb, -sc * ra - sf * rb, rd, re, -sc * rd - sf * re, 0.0, 0.0, 1.0),
+        )
 
-    __hash__ = tuple.__hash__ # hash is not inherited in Py 3
+    __hash__ = tuple.__hash__  # hash is not inherited in Py 3
 
 
 identity = Affine(1, 0, 0, 0, 1, 0)
@@ -424,4 +441,3 @@ identity = Affine(1, 0, 0, 0, 1, 0)
 
 
 # vim: ai ts=4 sts=4 et sw=4 tw=78
-

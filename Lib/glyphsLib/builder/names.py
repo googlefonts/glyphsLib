@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import deque
 
@@ -26,11 +25,11 @@ def to_ufo_names(self, ufo, master, family_name):
     custom = master.customName
 
     if weight:
-        ufo.lib[GLYPHS_PREFIX + 'weight'] = weight
+        ufo.lib[GLYPHS_PREFIX + "weight"] = weight
     if width:
-        ufo.lib[GLYPHS_PREFIX + 'width'] = width
+        ufo.lib[GLYPHS_PREFIX + "width"] = width
     if custom:
-        ufo.lib[GLYPHS_PREFIX + 'customName'] = master.customName
+        ufo.lib[GLYPHS_PREFIX + "customName"] = master.customName
 
     is_italic = bool(master.italicAngle)
 
@@ -46,15 +45,16 @@ def to_ufo_names(self, ufo, master, family_name):
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=family_name,
             style_name=styleName,
-            is_bold=(styleName == 'Bold'),
-            is_italic=is_italic
+            is_bold=(styleName == "Bold"),
+            is_italic=is_italic,
         )
         ufo.info.styleMapFamilyName = styleMapFamilyName
         ufo.info.styleMapStyleName = styleMapStyleName
 
 
-def build_stylemap_names(family_name, style_name, is_bold=False,
-                         is_italic=False, linked_style=None):
+def build_stylemap_names(
+    family_name, style_name, is_bold=False, is_italic=False, linked_style=None
+):
     """Build UFO `styleMapFamilyName` and `styleMapStyleName` based on the
     family and style names, and the entries in the "Style Linking" section
     of the "Instances" tab in the "Font Info".
@@ -70,13 +70,16 @@ def build_stylemap_names(family_name, style_name, is_bold=False,
     'Bold' and 'Italic' stripped from it.
     """
 
-    styleMapStyleName = ' '.join(s for s in (
-        'bold' if is_bold else '',
-        'italic' if is_italic else '') if s) or 'regular'
-    if not linked_style or linked_style == 'Regular':
+    styleMapStyleName = (
+        " ".join(
+            s for s in ("bold" if is_bold else "", "italic" if is_italic else "") if s
+        )
+        or "regular"
+    )
+    if not linked_style or linked_style == "Regular":
         linked_style = _get_linked_style(style_name, is_bold, is_italic)
     if linked_style:
-        styleMapFamilyName = (family_name or '') + ' ' + linked_style
+        styleMapFamilyName = (family_name or "") + " " + linked_style
     else:
         styleMapFamilyName = family_name
     return styleMapFamilyName, styleMapStyleName
@@ -88,15 +91,15 @@ def _get_linked_style(style_name, is_bold, is_italic):
     linked_style = deque()
     is_regular = not (is_bold or is_italic)
     for part in reversed(style_name.split()):
-        if part == 'Regular' and is_regular:
+        if part == "Regular" and is_regular:
             is_regular = False
-        elif part == 'Bold' and is_bold:
+        elif part == "Bold" and is_bold:
             is_bold = False
-        elif part == 'Italic' and is_italic:
+        elif part == "Italic" and is_italic:
             is_italic = False
         else:
             linked_style.appendleft(part)
-    return ' '.join(linked_style)
+    return " ".join(linked_style)
 
 
 def to_glyphs_family_names(self, ufo, merge=False):
@@ -106,13 +109,13 @@ def to_glyphs_family_names(self, ufo, merge=False):
     else:
         # Subsequent UFOs
         if self.font.familyName != ufo.info.familyName:
-            raise RuntimeError('All UFOs should have the same family name.')
+            raise RuntimeError("All UFOs should have the same family name.")
 
 
 def to_glyphs_master_names(self, ufo, master):
     name = ufo.info.styleName
-    weight = ufo.lib.get(GLYPHS_PREFIX + 'weight')
-    width = ufo.lib.get(GLYPHS_PREFIX + 'width')
-    custom = ufo.lib.get(GLYPHS_PREFIX + 'customName')
+    weight = ufo.lib.get(GLYPHS_PREFIX + "weight")
+    width = ufo.lib.get(GLYPHS_PREFIX + "width")
+    custom = ufo.lib.get(GLYPHS_PREFIX + "customName")
 
     master.set_all_name_components(name, weight, width, custom)

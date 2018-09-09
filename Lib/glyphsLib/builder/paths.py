@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from glyphsLib import types
 from glyphsLib import classes
@@ -24,7 +23,9 @@ def to_ufo_paths(self, ufo_glyph, layer):
     pen = ufo_glyph.getPointPen()
 
     for path in layer.paths:
-        nodes = list(path.nodes) # the list is changed below, otherwise you can't draw more than once per session.
+        # the list is changed below, otherwise you can't draw more than once
+        # per session.
+        nodes = list(path.nodes)
         for node in nodes:
             self.to_ufo_node_user_data(ufo_glyph, node)
 
@@ -34,15 +35,17 @@ def to_ufo_paths(self, ufo_glyph, layer):
             continue
         if not path.closed:
             node = nodes.pop(0)
-            assert node.type == 'line', 'Open path starts with off-curve points'
-            pen.addPoint(tuple(node.position), segmentType='move')
+            assert node.type == "line", "Open path starts with off-curve points"
+            pen.addPoint(tuple(node.position), segmentType="move")
         else:
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
         for node in nodes:
             node_type = _to_ufo_node_type(node.type)
-            pen.addPoint(tuple(node.position), segmentType=node_type, smooth=node.smooth)
+            pen.addPoint(
+                tuple(node.position), segmentType=node_type, smooth=node.smooth
+            )
         pen.endPath()
 
 
@@ -66,7 +69,7 @@ def to_glyphs_paths(self, ufo_glyph, layer):
 
 
 def _to_ufo_node_type(node_type):
-    if node_type not in ['line', 'curve', 'qcurve']:
+    if node_type not in ["line", "curve", "qcurve"]:
         return None
     return node_type
 
@@ -74,6 +77,6 @@ def _to_ufo_node_type(node_type):
 def _to_glyphs_node_type(node_type):
     if node_type is None:
         return classes.OFFCURVE
-    if node_type == 'move':
+    if node_type == "move":
         return classes.LINE
     return node_type

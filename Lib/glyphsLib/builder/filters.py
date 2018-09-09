@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import logging
 import re
@@ -38,50 +37,55 @@ def parse_glyphs_filter(filter_str, is_pre=False):
             A dictionary contains the structured filter.
             Return None if parse failed.
     """
-    elements = filter_str.split(';')
+    elements = filter_str.split(";")
 
-    if elements[0] == '':
-        logger.error('Failed to parse glyphs filter, expecting a filter name: \
-             %s', filter_str)
+    if elements[0] == "":
+        logger.error(
+            "Failed to parse glyphs filter, expecting a filter name: \
+             %s",
+            filter_str,
+        )
         return None
 
-    result = {}
-    result['name'] = elements[0]
+    result = {"name": elements[0]}
     for idx, elem in enumerate(elements[1:]):
         if not elem:
             # skip empty arguments
             continue
-        if ':' in elem:
+        if ":" in elem:
             # Key value pair
-            key, value = elem.split(':', 1)
-            if key.lower() in ['include', 'exclude']:
+            key, value = elem.split(":", 1)
+            if key.lower() in ["include", "exclude"]:
                 if idx != len(elements[1:]) - 1:
-                    logger.error('{} can only present as the last argument in the filter. {} is ignored.'.format(key, elem))
+                    logger.error(
+                        "{} can only present as the last argument in the filter. "
+                        "{} is ignored.".format(key, elem)
+                    )
                     continue
-                result[key.lower()] = re.split('[ ,]+', value)
+                result[key.lower()] = re.split("[ ,]+", value)
             else:
-                if 'kwargs' not in result:
-                    result['kwargs'] = {}
-                result['kwargs'][key] = cast_to_number_or_bool(value)
+                if "kwargs" not in result:
+                    result["kwargs"] = {}
+                result["kwargs"][key] = cast_to_number_or_bool(value)
         else:
-            if 'args' not in result:
-                result['args'] = []
-            result['args'].append(cast_to_number_or_bool(elem))
+            if "args" not in result:
+                result["args"] = []
+            result["args"].append(cast_to_number_or_bool(elem))
     if is_pre:
-        result['pre'] = True
+        result["pre"] = True
     return result
 
 
 def write_glyphs_filter(result):
-    elements = [result['name']]
-    if 'args' in result:
-        for arg in result['args']:
+    elements = [result["name"]]
+    if "args" in result:
+        for arg in result["args"]:
             elements.append(reverse_cast_to_number_or_bool(arg))
-    if 'kwargs' in result:
-        for key, arg in result['kwargs'].items():
-            if key.lower() not in ('include', 'exclude'):
-                elements.append(key + ':' + reverse_cast_to_number_or_bool(arg))
-        for key, arg in result['kwargs'].items():
-            if key.lower() in ('include', 'exclude'):
-                elements.append(key + ':' + reverse_cast_to_number_or_bool(arg))
-    return ';'.join(elements)
+    if "kwargs" in result:
+        for key, arg in result["kwargs"].items():
+            if key.lower() not in ("include", "exclude"):
+                elements.append(key + ":" + reverse_cast_to_number_or_bool(arg))
+        for key, arg in result["kwargs"].items():
+            if key.lower() in ("include", "exclude"):
+                elements.append(key + ":" + reverse_cast_to_number_or_bool(arg))
+    return ";".join(elements)

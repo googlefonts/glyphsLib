@@ -15,8 +15,7 @@
 # limitations under the License.
 
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import OrderedDict
 import unittest
@@ -25,7 +24,7 @@ import datetime
 from glyphsLib.parser import Parser
 from glyphsLib.classes import GSGlyph
 
-GLYPH_DATA = '''\
+GLYPH_DATA = """\
 (
 {
 glyphname="A";
@@ -36,7 +35,7 @@ leftKerningGroup = A;
 rightKerningGroup = A;
 unicode = 0041;
 }
-)'''
+)"""
 
 
 class ParserTest(unittest.TestCase):
@@ -46,119 +45,71 @@ class ParserTest(unittest.TestCase):
 
     def test_parse(self):
         self.run_test(
-            '{myval=1; mylist=(1,2,3);}',
-            [('myval', 1), ('mylist', [1, 2, 3])])
+            "{myval=1; mylist=(1,2,3);}", [("myval", 1), ("mylist", [1, 2, 3])]
+        )
 
     def test_trim_value(self):
-        self.run_test(
-            '{mystr="a\\"s\\077d\\U2019f";}',
-            [('mystr', 'a"s?d’f')])
+        self.run_test('{mystr="a\\"s\\077d\\U2019f";}', [("mystr", 'a"s?d’f')])
 
     def test_trailing_content(self):
         with self.assertRaises(ValueError):
-            self.run_test(
-                '{myval=1;}trailing',
-                [('myval', '1')])
+            self.run_test("{myval=1;}trailing", [("myval", "1")])
 
     def test_unexpected_content(self):
         with self.assertRaises(ValueError):
-            self.run_test(
-                '{myval=@unexpected;}',
-                [('myval', '@unexpected')])
+            self.run_test("{myval=@unexpected;}", [("myval", "@unexpected")])
 
     def test_with_utf8(self):
-        self.run_test(
-            b'{mystr="Don\xe2\x80\x99t crash";}',
-            [('mystr', 'Don’t crash')])
+        self.run_test(b'{mystr="Don\xe2\x80\x99t crash";}', [("mystr", "Don’t crash")])
 
     def test_parse_str_infinity(self):
-        self.run_test(
-            b'{mystr = infinity;}',
-            [('mystr', 'infinity')]
-        )
-        self.run_test(
-            b'{mystr = Infinity;}',
-            [('mystr', 'Infinity')]
-        )
-        self.run_test(
-            b'{mystr = InFiNItY;}',
-            [('mystr', 'InFiNItY')]
-        )
+        self.run_test(b"{mystr = infinity;}", [("mystr", "infinity")])
+        self.run_test(b"{mystr = Infinity;}", [("mystr", "Infinity")])
+        self.run_test(b"{mystr = InFiNItY;}", [("mystr", "InFiNItY")])
 
     def test_parse_str_inf(self):
-        self.run_test(
-            b'{mystr = inf;}',
-            [('mystr', 'inf')]
-        )
-        self.run_test(
-            b'{mystr = Inf;}',
-            [('mystr', 'Inf')]
-        )
+        self.run_test(b"{mystr = inf;}", [("mystr", "inf")])
+        self.run_test(b"{mystr = Inf;}", [("mystr", "Inf")])
 
     def test_parse_multiple_unicodes(self):
         self.run_test(
-            b'{unicode = 0000,0008,001D;}',
-            [('unicode', ["0000", "0008", "001D"])]
+            b"{unicode = 0000,0008,001D;}", [("unicode", ["0000", "0008", "001D"])]
         )
 
     def test_parse_single_unicodes(self):
-        self.run_test(
-            b'{unicode = 0008;}',
-            [('unicode', ["0008"])]
-        )
+        self.run_test(b"{unicode = 0008;}", [("unicode", ["0008"])])
 
     def test_parse_str_nan(self):
-        self.run_test(
-            b'{mystr = nan;}',
-            [('mystr', 'nan')]
-        )
-        self.run_test(
-            b'{mystr = NaN;}',
-            [('mystr', 'NaN')]
-        )
+        self.run_test(b"{mystr = nan;}", [("mystr", "nan")])
+        self.run_test(b"{mystr = NaN;}", [("mystr", "NaN")])
 
     def test_dont_crash_on_string_that_looks_like_a_dict(self):
         # https://github.com/googlei18n/glyphsLib/issues/238
-        self.run_test(
-            b'{UUID0 = "{0.5, 0.5}";}',
-            [('UUID0', '{0.5, 0.5}')]
-        )
+        self.run_test(b'{UUID0 = "{0.5, 0.5}";}', [("UUID0", "{0.5, 0.5}")])
 
     def test_parse_dict_in_dict(self):
         self.run_test(
             b'{outer = {inner = "turtles";};}',
-            [('outer', OrderedDict([('inner', 'turtles')]))]
+            [("outer", OrderedDict([("inner", "turtles")]))],
         )
 
     def test_parse_hex_data(self):
-        self.run_test(
-            b'{key = <48616c6c6f>;}',
-            [('key', b'Hallo')]
-        )
+        self.run_test(b"{key = <48616c6c6f>;}", [("key", b"Hallo")])
 
     def test_parse_stringy_floats(self):
-        self.run_test(
-            b'{noodleThickness = "106.0";}',
-            [('noodleThickness', '106.0')]
-        )
+        self.run_test(b'{noodleThickness = "106.0";}', [("noodleThickness", "106.0")])
 
     def test_parse_float_no_frac_as_int(self):
-        self.run_test(
-            b'{noodleThickness = 106.0;}',
-            [('noodleThickness', 106)]
-        )
+        self.run_test(b"{noodleThickness = 106.0;}", [("noodleThickness", 106)])
 
     def test_parse_float_as_float(self):
-        self.run_test(
-            b'{noodleThickness = 106.1;}',
-            [('noodleThickness', 106.1)]
-        )
+        self.run_test(b"{noodleThickness = 106.1;}", [("noodleThickness", 106.1)])
 
 
 class ParserGlyphTest(unittest.TestCase):
     def test_parse_empty_glyphs(self):
         # data = '({glyphname="A";})'
-        data = '({})'
+        data = "({})"
         parser = Parser(GSGlyph)
         result = parser.parse(data)
         self.assertEqual(len(result), 1)
@@ -182,9 +133,7 @@ class ParserGlyphTest(unittest.TestCase):
         for attr in defaults_as_none:
             self.assertIsNone(getattr(glyph, attr))
         self.assertIsNotNone(glyph.userData)
-        defaults_as_true = [
-            "export",
-        ]
+        defaults_as_true = ["export"]
         for attr in defaults_as_true:
             self.assertTrue(getattr(glyph, attr))
 
@@ -195,12 +144,11 @@ class ParserGlyphTest(unittest.TestCase):
         glyph = result[0]
         self.assertEqual(glyph.name, "A")
         self.assertEqual(glyph.color, 5)
-        self.assertEqual(glyph.lastChange,
-                         datetime.datetime(2017, 4, 30, 13, 57, 4))
+        self.assertEqual(glyph.lastChange, datetime.datetime(2017, 4, 30, 13, 57, 4))
         self.assertEqual(glyph.leftKerningGroup, "A")
         self.assertEqual(glyph.rightKerningGroup, "A")
         self.assertEqual(glyph.unicode, "0041")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

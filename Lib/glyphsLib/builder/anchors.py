@@ -13,14 +13,17 @@
 # limitations under the License.
 
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from fontTools.misc.transform import Transform
 
 from glyphsLib.types import Point
 
-__all__ = ['to_ufo_propagate_font_anchors']
+__all__ = [
+    "to_ufo_propagate_font_anchors",
+    "to_ufo_glyph_anchors",
+    "to_glyphs_glyph_anchors",
+]
 
 
 def to_ufo_propagate_font_anchors(self, ufo):
@@ -47,11 +50,13 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
             glyph = ufo[component.baseGlyph]
         except KeyError:
             self.logger.warning(
-                'Anchors not propagated for inexistent component {} in glyph {}'.
-                format(component.baseGlyph, parent.name))
+                "Anchors not propagated for inexistent component {} in glyph {}".format(
+                    component.baseGlyph, parent.name
+                )
+            )
         else:
             _propagate_glyph_anchors(self, ufo, glyph, processed)
-            if any(a.name.startswith('_') for a in glyph.anchors):
+            if any(a.name.startswith("_") for a in glyph.anchors):
                 mark_components.append(component)
             else:
                 base_components.append(component)
@@ -68,7 +73,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
 
     # we sort propagated anchors to append in a deterministic order
     for name, (x, y) in sorted(to_add.items()):
-        anchor_dict = {'name': name, 'x': x, 'y': y}
+        anchor_dict = {"name": name, "x": x, "y": y}
         parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
 
 
@@ -84,7 +89,7 @@ def _get_anchor_data(anchor_data, ufo, components, anchor_name):
     if len(anchors) > 1:
         for i, (anchor, component) in enumerate(anchors):
             t = Transform(*component.transformation)
-            name = '%s_%d' % (anchor.name, i + 1)
+            name = "%s_%d" % (anchor.name, i + 1)
             anchor_data[name] = t.transformPoint((anchor.x, anchor.y))
     elif anchors:
         anchor, component = anchors[0]
@@ -100,8 +105,9 @@ def _adjust_anchors(anchor_data, ufo, component):
     for anchor in glyph.anchors:
         # only adjust if this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top")
-        if (anchor.name in anchor_data and
-                any(a.name == '_' + anchor.name for a in glyph.anchors)):
+        if anchor.name in anchor_data and any(
+            a.name == "_" + anchor.name for a in glyph.anchors
+        ):
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
@@ -110,7 +116,7 @@ def to_ufo_glyph_anchors(self, glyph, anchors):
 
     for anchor in anchors:
         x, y = anchor.position
-        anchor_dict = {'name': anchor.name, 'x': x, 'y': y}
+        anchor_dict = {"name": anchor.name, "x": x, "y": y}
         glyph.appendAnchor(anchor_dict)
 
 

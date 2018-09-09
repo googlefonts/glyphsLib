@@ -13,13 +13,12 @@
 # limitations under the License.
 
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from .constants import GLYPHS_PREFIX
 from glyphsLib.types import Point
 
-LIB_KEY = GLYPHS_PREFIX + 'annotations'
+LIB_KEY = GLYPHS_PREFIX + "annotations"
 
 
 def to_ufo_annotations(self, ufo_glyph, layer):
@@ -30,9 +29,9 @@ def to_ufo_annotations(self, ufo_glyph, layer):
     annotations = []
     for an in list(value.values()):
         annot = {}
-        for attr in ['angle', 'position', 'text', 'type', 'width']:
+        for attr in ["angle", "position", "text", "type", "width"]:
             val = getattr(an, attr, None)
-            if attr == 'position' and val:
+            if attr == "position" and val:
                 val = list(val)
             if val:
                 annot[attr] = val
@@ -48,11 +47,11 @@ def to_glyphs_annotations(self, ufo_glyph, layer):
 
     for annot in ufo_glyph.lib[LIB_KEY]:
         annotation = self.glyphs_module.GSAnnotation()
-        for attr in ['angle', 'position', 'text', 'type', 'width']:
+        for attr in ["angle", "position", "text", "type", "width"]:
             if attr in annot and annot[attr]:
-                if attr == 'position':
+                if attr == "position":
                     # annot['position'] can be either "{1, 2}" or (1, 2)
-                    position = Point(annot['position'])
+                    position = Point(annot["position"])
                     annotation.position = position
                 else:
                     setattr(annotation, attr, annot[attr])

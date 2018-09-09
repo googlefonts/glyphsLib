@@ -16,7 +16,6 @@ import subprocess
 import os
 import unittest
 import pytest
-import re
 
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -36,15 +35,17 @@ class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
                 self.assertParseWriteRoundtrip(filename)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
-                index, testable['name'], test_helpers.app_version(filename),
-                file_basename.replace(r'[^a-zA-Z]', ''))
+            test_name = "test_n{:0>3d}_{}_v{}_{}".format(
+                index,
+                testable["name"],
+                test_helpers.app_version(filename),
+                file_basename.replace(r"[^a-zA-Z]", ""),
+            )
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
 
 
-class GlyphsToDesignspaceRT(unittest.TestCase,
-                            test_helpers.AssertUFORoundtrip):
+class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
     """Test the whole chain from .glyphs to designspace + UFOs and back"""
 
     @classmethod
@@ -58,15 +59,17 @@ class GlyphsToDesignspaceRT(unittest.TestCase,
                 self.assertUFORoundtrip(font)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_v{2}_{3}".format(
-                index, testable['name'], test_helpers.app_version(filename),
-                file_basename.replace(r'[^a-zA-Z]', ''))
+            test_name = "test_n{:0>3d}_{}_v{}_{}".format(
+                index,
+                testable["name"],
+                test_helpers.app_version(filename),
+                file_basename.replace(r"[^a-zA-Z]", ""),
+            )
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
 
 
-class DesignspaceToGlyphsRT(unittest.TestCase,
-                            test_helpers.AssertDesignspaceRoundtrip):
+class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRoundtrip):
     """Test the whole chain from designspace + UFOs to .glyphs and back"""
 
     @classmethod
@@ -75,14 +78,14 @@ class DesignspaceToGlyphsRT(unittest.TestCase,
         for index, filename in enumerate(sorted(files)):
 
             def test_method(self, filename=filename):
-                doc = DesignSpaceDocument(writerClass=InMemoryDocWriter)
+                doc = DesignSpaceDocument()
                 doc.read(filename)
                 self.assertDesignspaceRoundtrip(doc)
 
             file_basename = os.path.basename(filename)
-            test_name = "test_n{0:0>3d}_{1}_{2}".format(
-                index, testable['name'],
-                file_basename.replace(r'[^a-zA-Z]', ''))
+            test_name = "test_n{:0>3d}_{}_{}".format(
+                index, testable["name"], file_basename.replace(r"[^a-zA-Z]", "")
+            )
             test_method.__name__ = test_name
             setattr(cls, test_name, test_method)
             print("adding test", test_name)
@@ -99,24 +102,24 @@ class UFOsToGlyphsRT(unittest.TestCase):
 TESTABLES = [
     # The following contain .glyphs files
     {
-        'name': 'noto_moyogo',  # dirname inside `downloaded/`
-        'git_url': 'https://github.com/moyogo/noto-source.git',
-        'git_ref': 'normalized-1071',
-        'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+        "name": "noto_moyogo",  # dirname inside `downloaded/`
+        "git_url": "https://github.com/moyogo/noto-source.git",
+        "git_ref": "normalized-1071",
+        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     {
         # https://github.com/googlei18n/glyphsLib/issues/238
-        'name': 'montserrat',
-        'git_url': 'https://github.com/JulietaUla/Montserrat',
-        'git_ref': 'master',
-        'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+        "name": "montserrat",
+        "git_url": "https://github.com/JulietaUla/Montserrat",
+        "git_ref": "master",
+        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     {
         # https://github.com/googlei18n/glyphsLib/issues/282
-        'name': 'cantarell_madig',
-        'git_url': 'https://github.com/madig/cantarell-fonts/',
-        'git_ref': 'f17124d041e6ee370a9fcddcc084aa6cbf3d5500',
-        'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+        "name": "cantarell_madig",
+        "git_url": "https://github.com/madig/cantarell-fonts/",
+        "git_ref": "f17124d041e6ee370a9fcddcc084aa6cbf3d5500",
+        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     # {
     #     # This one has truckloads of smart components
@@ -127,47 +130,47 @@ TESTABLES = [
     # },
     {
         # This one has truckloads of smart components
-        'name': 'vt323_jany',
-        'git_url': 'https://github.com/belluzj/VT323',
-        'git_ref': 'glyphs-1089',
-        'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+        "name": "vt323_jany",
+        "git_url": "https://github.com/belluzj/VT323",
+        "git_ref": "glyphs-1089",
+        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     # The following contain .designspace files
     {
-        'name': 'spectral',
-        'git_url': 'https://github.com/productiontype/Spectral',
-        'git_ref': 'master',
-        'classes': (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
+        "name": "spectral",
+        "git_url": "https://github.com/productiontype/Spectral",
+        "git_ref": "master",
+        "classes": (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
     },
     {
-        'name': 'amstelvar',
-        'git_url': 'https://github.com/TypeNetwork/fb-Amstelvar',
-        'git_ref': 'master',
-        'classes': (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
+        "name": "amstelvar",
+        "git_url": "https://github.com/TypeNetwork/fb-Amstelvar",
+        "git_ref": "master",
+        "classes": (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
     },
 ]
 
 
 def directory(testable):
-    return os.path.join(
-        os.path.dirname(__file__), 'downloaded', testable['name'])
+    return os.path.join(os.path.dirname(__file__), "downloaded", testable["name"])
 
 
 for testable in TESTABLES:
-    print("#### Downloading ", testable['name'])
+    print("#### Downloading ", testable["name"])
     if not os.path.exists(directory(testable)):
-        subprocess.call(
-            ["git", "clone", testable['git_url'], directory(testable)])
+        subprocess.call(["git", "clone", testable["git_url"], directory(testable)])
     subprocess.check_call(
-        ["git", "-C", directory(testable), "checkout", testable['git_ref']])
+        ["git", "-C", directory(testable), "checkout", testable["git_ref"]]
+    )
     print()
 
 for testable in TESTABLES:
-    for cls in testable['classes']:
+    for cls in testable["classes"]:
         cls.add_tests(testable)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     # Run pytest.main because it's easier to filter tests, drop into PDB, etc.
     sys.exit(pytest.main(sys.argv))

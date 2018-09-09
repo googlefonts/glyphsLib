@@ -17,19 +17,19 @@ import logging
 from glyphsLib import classes
 import defcon
 
-from fontTools.designspaceLib import DesignSpaceDocument
-
 from .builders import UFOBuilder, GlyphsBuilder
 
 logger = logging.getLogger(__name__)
 
 
-def to_ufos(font,
-            include_instances=False,
-            family_name=None,
-            propagate_anchors=True,
-            ufo_module=defcon,
-            minimize_glyphs_diffs=False):
+def to_ufos(
+    font,
+    include_instances=False,
+    family_name=None,
+    propagate_anchors=True,
+    ufo_module=defcon,
+    minimize_glyphs_diffs=False,
+):
     """Take a GSFont object and convert it into one UFO per master.
 
     Takes in data as Glyphs.app-compatible classes, as documented at
@@ -45,7 +45,8 @@ def to_ufos(font,
         ufo_module=ufo_module,
         family_name=family_name,
         propagate_anchors=propagate_anchors,
-        minimize_glyphs_diffs=minimize_glyphs_diffs)
+        minimize_glyphs_diffs=minimize_glyphs_diffs,
+    )
 
     result = list(builder.masters)
 
@@ -54,12 +55,14 @@ def to_ufos(font,
     return result
 
 
-def to_designspace(font,
-                   family_name=None,
-                   instance_dir=None,
-                   propagate_anchors=True,
-                   ufo_module=defcon,
-                   minimize_glyphs_diffs=False):
+def to_designspace(
+    font,
+    family_name=None,
+    instance_dir=None,
+    propagate_anchors=True,
+    ufo_module=defcon,
+    minimize_glyphs_diffs=False,
+):
     """Take a GSFont object and convert it into a Designspace Document + UFOS.
     The UFOs are available as the attribute `font` of each SourceDescriptor of
     the DesignspaceDocument:
@@ -86,13 +89,12 @@ def to_designspace(font,
         instance_dir=instance_dir,
         propagate_anchors=propagate_anchors,
         use_designspace=True,
-        minimize_glyphs_diffs=minimize_glyphs_diffs)
+        minimize_glyphs_diffs=minimize_glyphs_diffs,
+    )
     return builder.designspace
 
 
-def to_glyphs(ufos_or_designspace,
-              glyphs_module=classes,
-              minimize_ufo_diffs=False):
+def to_glyphs(ufos_or_designspace, glyphs_module=classes, minimize_ufo_diffs=False):
     """
     Take a list of UFOs or a single DesignspaceDocument with attached UFOs
     and converts it into a GSFont object.
@@ -104,12 +106,16 @@ def to_glyphs(ufos_or_designspace,
     so we should have to_glyphs(to_ufos(font)) == font
     and also to_glyphs(to_designspace(font)) == font
     """
-    if hasattr(ufos_or_designspace, 'sources'):
-        builder = GlyphsBuilder(designspace=ufos_or_designspace,
-                                glyphs_module=glyphs_module,
-                                minimize_ufo_diffs=minimize_ufo_diffs)
+    if hasattr(ufos_or_designspace, "sources"):
+        builder = GlyphsBuilder(
+            designspace=ufos_or_designspace,
+            glyphs_module=glyphs_module,
+            minimize_ufo_diffs=minimize_ufo_diffs,
+        )
     else:
-        builder = GlyphsBuilder(ufos=ufos_or_designspace,
-                                glyphs_module=glyphs_module,
-                                minimize_ufo_diffs=minimize_ufo_diffs)
+        builder = GlyphsBuilder(
+            ufos=ufos_or_designspace,
+            glyphs_module=glyphs_module,
+            minimize_ufo_diffs=minimize_ufo_diffs,
+        )
     return builder.font

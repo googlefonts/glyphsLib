@@ -15,14 +15,12 @@
 # limitations under the License.
 
 import unittest
-import math
 from textwrap import dedent
 from collections import OrderedDict
 import os
 
 from fontTools.misc.py23 import UnicodeIO
 
-import glyphsLib
 from glyphsLib import classes
 from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
@@ -32,7 +30,6 @@ from . import test_helpers
 
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-
     def assertWrites(self, glyphs_object, text):
         """Assert that the given object, when given to the writer,
         produces the given text.
@@ -40,21 +37,27 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         expected = text.splitlines()
         actual = test_helpers.write_to_lines(glyphs_object)
         self.assertLinesEqual(
-            expected, actual,
-            "The writer has not produced the expected output")
+            expected, actual, "The writer has not produced the expected output"
+        )
 
     def assertWritesValue(self, glyphs_value, text):
         """Assert that the writer produces the given text for the given value."""
-        expected = dedent("""\
+        expected = (
+            dedent(
+                """\
         {{
         writtenValue = {0};
         }}
-        """).format(text).splitlines()
+        """
+            )
+            .format(text)
+            .splitlines()
+        )
         # We wrap the value in a dict to use the same test helper
-        actual = test_helpers.write_to_lines({'writtenValue': glyphs_value})
+        actual = test_helpers.write_to_lines({"writtenValue": glyphs_value})
         self.assertLinesEqual(
-            expected, actual,
-            "The writer has not produced the expected output")
+            expected, actual, "The writer has not produced the expected output"
+        )
 
     def test_write_font_attributes(self):
         """Test the writer on all GSFont attributes"""
@@ -74,7 +77,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         font.instances.append(i1)
         # glyphs
         g1 = classes.GSGlyph()
-        g1.name = 'G1'
+        g1.name = "G1"
         font.glyphs.append(g1)
         # classes
         c1 = classes.GSClass()
@@ -103,7 +106,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # versionMinor
         font.versionMinor = 104
         # date
-        font.date = parse_datetime('2017-10-03 07:35:46 +0000')
+        font.date = parse_datetime("2017-10-03 07:35:46 +0000")
         # familyName
         font.familyName = "Sans Rien"
         # upm
@@ -111,19 +114,15 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # note
         font.note = "Was bored, made this"
         # kerning
-        font.kerning = OrderedDict([
-            ('M1', OrderedDict([
-                ('@MMK_L_G1', OrderedDict([
-                    ('@MMK_R_G1', 0.1)
-                ]))
-            ]))
-        ])
+        font.kerning = OrderedDict(
+            [("M1", OrderedDict([("@MMK_L_G1", OrderedDict([("@MMK_R_G1", 0.1)]))]))]
+        )
         # userData
         font.userData = {
-            'a': 'test',
-            'b': [1, {'c': 2}],
-            'd': [1, "1"],
-            'noodleThickness': "106.0",
+            "a": "test",
+            "b": [1, {"c": 2}],
+            "d": [1, "1"],
+            "noodleThickness": "106.0",
         }
         # grid -> gridLength
         font.grid = 35
@@ -134,7 +133,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # disablesNiceNames
         font.disablesNiceNames = True
         # customParameters
-        font.customParameters['ascender'] = 300
+        font.customParameters["ascender"] = 300
         # selection: not written
         # selectedLayers: not written
         # selectedFontMaster: not written
@@ -147,7 +146,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # tools: not handled because it is a read-only list of GUI features
         # .appVersion (extra property that is not in the docs!)
         font.appVersion = "895"
-        self.assertWrites(font, dedent("""\
+        self.assertWrites(
+            font,
+            dedent(
+                """\
             {
             .appVersion = "895";
             classes = (
@@ -237,7 +239,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             versionMajor = 2;
             versionMinor = 104;
             }
-        """))
+        """
+            ),
+        )
 
         # Don't write the keyboardIncrement if it's 1 (default)
         font.keyboardIncrement = 1
@@ -259,7 +263,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.id = "MASTER-ID"
         # name
         master._name = "Name Hairline Megawide"
-        master.customParameters['Master Name'] = "Param Hairline Megawide"
+        master.customParameters["Master Name"] = "Param Hairline Megawide"
         # weight
         master.weight = "Thin"
         # width
@@ -292,9 +296,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.horizontalStems = [4, 5, 6]
         # alignmentZones
         zone = classes.GSAlignmentZone(0, -30)
-        master.alignmentZones = [
-            zone
-        ]
+        master.alignmentZones = [zone]
         # blueValues: not handled because it is read-only
         # otherBlues: not handled because it is read-only
         # guides
@@ -302,10 +304,13 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         guide.name = "middle"
         master.guides.append(guide)
         # userData
-        master.userData['rememberToMakeTea'] = True
+        master.userData["rememberToMakeTea"] = True
         # customParameters
-        master.customParameters['underlinePosition'] = -135
-        self.assertWrites(master, dedent("""\
+        master.customParameters["underlinePosition"] = -135
+        self.assertWrites(
+            master,
+            dedent(
+                """\
             {
             alignmentZones = (
             "{0, -30}"
@@ -355,7 +360,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             widthValue = 0.99;
             xHeight = 59.1;
             }
-        """))
+        """
+            ),
+        )
 
         # Write the capHeight and xHeight even if they are "0"
         master.xHeight = 0
@@ -396,7 +403,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # preferredFamily
         instance.preferredFamily = "Sans Rien (preferredFamily)"
         # preferredSubfamilyName
-        instance.preferredSubfamilyName = "Semi Bold Compressed (preferredSubFamilyName)"
+        instance.preferredSubfamilyName = (
+            "Semi Bold Compressed (preferredSubFamilyName)"
+        )
         # windowsFamily
         instance.windowsFamily = "Sans Rien MS (windowsFamily)"
         # windowsStyle: read only
@@ -406,17 +415,17 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # fullName
         instance.fullName = "Sans Rien Semi Bold Compressed (fullName)"
         # customParameters
-        instance.customParameters['hheaLineGap'] = 10
+        instance.customParameters["hheaLineGap"] = 10
         # instanceInterpolations
-        instance.instanceInterpolations = {
-            'M1': 0.2,
-            'M2': 0.8
-        }
+        instance.instanceInterpolations = {"M1": 0.2, "M2": 0.8}
         # manualInterpolation
         instance.manualInterpolation = True
         # interpolatedFont: read only
 
-        self.assertWrites(instance, dedent("""\
+        self.assertWrites(
+            instance,
+            dedent(
+                """\
             {
             customParameters = (
             {
@@ -463,73 +472,97 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             weightClass = "SemiBold (weight)";
             widthClass = "Compressed (width)";
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_custom_parameter(self):
         # Name without quotes
         self.assertWritesValue(
-            classes.GSCustomParameter('myParam', 'myValue'),
-            "{\nname = myParam;\nvalue = myValue;\n}")
+            classes.GSCustomParameter("myParam", "myValue"),
+            "{\nname = myParam;\nvalue = myValue;\n}",
+        )
         # Name with quotes
         self.assertWritesValue(
-            classes.GSCustomParameter('my param', 'myValue'),
-            "{\nname = \"my param\";\nvalue = myValue;\n}")
+            classes.GSCustomParameter("my param", "myValue"),
+            '{\nname = "my param";\nvalue = myValue;\n}',
+        )
         # Value with quotes
         self.assertWritesValue(
-            classes.GSCustomParameter('myParam', 'my value'),
-            "{\nname = myParam;\nvalue = \"my value\";\n}")
+            classes.GSCustomParameter("myParam", "my value"),
+            '{\nname = myParam;\nvalue = "my value";\n}',
+        )
         # Int param (ascender): should convert the value to string
         self.assertWritesValue(
-            classes.GSCustomParameter('ascender', 12),
-            "{\nname = ascender;\nvalue = 12;\n}")
+            classes.GSCustomParameter("ascender", 12),
+            "{\nname = ascender;\nvalue = 12;\n}",
+        )
         # Float param (postscriptBlueScale): should convert the value to string
         self.assertWritesValue(
-            classes.GSCustomParameter('postscriptBlueScale', 0.125),
-            "{\nname = postscriptBlueScale;\nvalue = 0.125;\n}")
+            classes.GSCustomParameter("postscriptBlueScale", 0.125),
+            "{\nname = postscriptBlueScale;\nvalue = 0.125;\n}",
+        )
         # Bool param (isFixedPitch): should convert the boolean value to 0/1
         self.assertWritesValue(
-            classes.GSCustomParameter('isFixedPitch', True),
-            "{\nname = isFixedPitch;\nvalue = 1;\n}")
+            classes.GSCustomParameter("isFixedPitch", True),
+            "{\nname = isFixedPitch;\nvalue = 1;\n}",
+        )
         # Intlist param: should map list of int to list of strings
         self.assertWritesValue(
-            classes.GSCustomParameter('fsType', [1, 2]),
-            "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}")
+            classes.GSCustomParameter("fsType", [1, 2]),
+            "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}",
+        )
 
     def test_write_class(self):
         class_ = classes.GSClass()
         class_.name = "e"
         class_.code = "e eacute egrave"
         class_.automatic = True
-        self.assertWrites(class_, dedent("""\
+        self.assertWrites(
+            class_,
+            dedent(
+                """\
             {
             automatic = 1;
             code = "e eacute egrave";
             name = e;
             }
-        """))
+        """
+            ),
+        )
 
         # When the code is an empty string, write an empty string
         class_.code = ""
-        self.assertWrites(class_, dedent("""\
+        self.assertWrites(
+            class_,
+            dedent(
+                """\
             {
             automatic = 1;
             code = "";
             name = e;
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_feature_prefix(self):
         fp = classes.GSFeaturePrefix()
         fp.name = "Languagesystems"
         fp.code = "languagesystem DFLT dflt;"
         fp.automatic = True
-        self.assertWrites(fp, dedent("""\
+        self.assertWrites(
+            fp,
+            dedent(
+                """\
             {
             automatic = 1;
             code = "languagesystem DFLT dflt;";
             name = Languagesystems;
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_feature(self):
         feature = classes.GSFeature()
@@ -537,14 +570,19 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         feature.code = "    sub @standard by @sups;"
         feature.automatic = True
         feature.notes = "notes about sups"
-        self.assertWrites(feature, dedent("""\
+        self.assertWrites(
+            feature,
+            dedent(
+                """\
             {
             automatic = 1;
             code = "    sub @standard by @sups;";
             name = sups;
             notes = "notes about sups";
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_glyph(self):
         glyph = classes.GSGlyph()
@@ -599,15 +637,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # selected: not written
         # mastersCompatible: not stored
         # userData
-        glyph.userData['rememberToMakeCoffe'] = True
+        glyph.userData["rememberToMakeCoffe"] = True
         # Check that empty collections are written
-        glyph.userData['com.someoneelse.coolsoftware.customdata'] = [
-            OrderedDict([
-                ('zero', 0),
-                ('emptyList', []),
-                ('emptyDict', {}),
-                ('emptyString', ""),
-            ]),
+        glyph.userData["com.someoneelse.coolsoftware.customdata"] = [
+            OrderedDict(
+                [("zero", 0), ("emptyList", []), ("emptyDict", {}), ("emptyString", "")]
+            ),
             [],
             {},
             "",
@@ -620,8 +655,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         axis.name = "crotchDepth"
         glyph.smartComponentAxes.append(axis)
         # lastChange
-        glyph.lastChange = parse_datetime('2017-10-03 07:35:46 +0000')
-        self.assertWrites(glyph, dedent("""\
+        glyph.lastChange = parse_datetime("2017-10-03 07:35:46 +0000")
+        self.assertWrites(
+            glyph,
+            dedent(
+                """\
             {
             color = 11;
             export = 0;
@@ -674,7 +712,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
             );
             }
-        """))
+        """
+            ),
+        )
 
         # Write the script even when it's an empty string
         # Same for category and subCategory
@@ -687,7 +727,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn('subCategory = "";', written)
 
         # Write double unicodes
-        glyph.unicodes = ['00C1', 'E002']
+        glyph.unicodes = ["00C1", "E002"]
         written = test_helpers.write_to_lines(glyph)
         self.assertIn('unicode = "00C1,E002";', written)
 
@@ -696,34 +736,34 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # http://docu.glyphsapp.com/#gslayer
         # parent: not written
         # name
-        layer.name = '{125, 100}'
+        layer.name = "{125, 100}"
         # associatedMasterId
-        layer.associatedMasterId = 'M1'
+        layer.associatedMasterId = "M1"
         # layerId
-        layer.layerId = 'L1'
+        layer.layerId = "L1"
         # color
         layer.color = (1, 2, 3, 4)
         # colorObject: read-only, computed
         # components
-        component = classes.GSComponent(glyph='glyphName')
+        component = classes.GSComponent(glyph="glyphName")
         layer.components.append(component)
         # guides
         guide = classes.GSGuideLine()
-        guide.name = 'xheight'
+        guide.name = "xheight"
         layer.guides.append(guide)
         # annotations
         annotation = classes.GSAnnotation()
         annotation.type = classes.TEXT
-        annotation.text = 'Fuck, this curve is ugly!'
+        annotation.text = "Fuck, this curve is ugly!"
         layer.annotations.append(annotation)
         # hints
         hint = classes.GSHint()
-        hint.name = 'hintName'
+        hint.name = "hintName"
         layer.hints.append(hint)
         # anchors
         anchor = classes.GSAnchor()
-        anchor.name = 'top'
-        layer.anchors['top'] = anchor
+        anchor.name = "top"
+        layer.anchors["top"] = anchor
         # paths
         path = classes.GSPath()
         layer.paths.append(path)
@@ -740,9 +780,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bounds: read-only, computed
         # selectionBounds: read-only, computed
         # background
-        bg = layer.background
+        # XXX bg is unused?
+        bg = layer.background  # noqa: F841
         # backgroundImage
-        image = classes.GSBackgroundImage('/path/to/file.jpg')
+        image = classes.GSBackgroundImage("/path/to/file.jpg")
         layer.backgroundImage = image
         # bezierPath: read-only, objective-c
         # openBezierPath: read-only, objective-c
@@ -752,11 +793,14 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         #   is this computed from each component's alignment?
         # layer.isAligned = False
         # userData
-        layer.userData['rememberToMakeCoffe'] = True
+        layer.userData["rememberToMakeCoffe"] = True
         # smartComponentPoleMapping
-        layer.smartComponentPoleMapping['crotchDepth'] = 2  # Top pole
-        layer.smartComponentPoleMapping['shoulderWidth'] = 1  # Bottom pole
-        self.assertWrites(layer, dedent("""\
+        layer.smartComponentPoleMapping["crotchDepth"] = 2  # Top pole
+        layer.smartComponentPoleMapping["shoulderWidth"] = 1  # Bottom pole
+        self.assertWrites(
+            layer,
+            dedent(
+                """\
             {
             anchors = (
             {
@@ -812,7 +856,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             width = 890.4;
             }
-        """))
+        """
+            ),
+        )
 
         # Don't write a blank layer name
         layer.name = ""
@@ -822,25 +868,35 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # Write the width even if 0
         layer.width = 0
         written = test_helpers.write_to_lines(layer)
-        self.assertIn('width = 0;', written)
+        self.assertIn("width = 0;", written)
 
     def test_write_anchor(self):
-        anchor = classes.GSAnchor('top', Point(23, 45.5))
-        self.assertWrites(anchor, dedent("""\
+        anchor = classes.GSAnchor("top", Point(23, 45.5))
+        self.assertWrites(
+            anchor,
+            dedent(
+                """\
             {
             name = top;
             position = "{23, 45.5}";
             }
-        """))
+        """
+            ),
+        )
 
         # Write a position of 0, 0
-        anchor = classes.GSAnchor('top', Point(0, 0))
-        self.assertWrites(anchor, dedent("""\
+        anchor = classes.GSAnchor("top", Point(0, 0))
+        self.assertWrites(
+            anchor,
+            dedent(
+                """\
             {
             name = top;
             position = "{0, 0}";
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_component(self):
         component = classes.GSComponent("dieresis")
@@ -862,11 +918,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         component.anchor = "top"
         # selected: not written
         # smartComponentValues
-        component.smartComponentValues = {
-            "crotchDepth": -77,
-        }
+        component.smartComponentValues = {"crotchDepth": -77}
         # bezierPath: read-only, objective-c
-        self.assertWrites(component, dedent("""\
+        self.assertWrites(
+            component,
+            dedent(
+                """\
             {
             anchor = top;
             name = dieresis;
@@ -875,7 +932,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             transform = "{0, 2, -2, 0, 45.5, 250}";
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_smart_component_axis(self):
         axis = classes.GSSmartComponentAxis()
@@ -885,7 +944,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         axis.topValue = 0
         axis.bottomName = "Low"
         axis.bottomValue = -100
-        self.assertWrites(axis, dedent("""\
+        self.assertWrites(
+            axis,
+            dedent(
+                """\
             {
             name = crotchDepth;
             bottomName = Low;
@@ -893,7 +955,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             topName = High;
             topValue = 0;
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_path(self):
         path = classes.GSPath()
@@ -909,14 +973,19 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bounds: computed
         # selected: not written
         # bezierPath: computed
-        self.assertWrites(path, dedent("""\
+        self.assertWrites(
+            path,
+            dedent(
+                """\
             {
             closed = 1;
             nodes = (
             "0 0 LINE"
             );
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_node(self):
         node = classes.GSNode(Point(10, 30), classes.GSNode.CURVE)
@@ -935,27 +1004,29 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertWritesValue(
             node,
             '"10 30 CURVE SMOOTH {name = \\"top-left corner\\";\\n\
-rememberToDownloadARealRemindersApp = 1;}"'
+rememberToDownloadARealRemindersApp = 1;}"',
         )
 
         # Write floating point coordinates
         node = classes.GSNode(Point(499.99, 512.01), classes.GSNode.OFFCURVE)
-        self.assertWritesValue(
-            node,
-            '"499.99 512.01 OFFCURVE"'
-        )
+        self.assertWritesValue(node, '"499.99 512.01 OFFCURVE"')
 
         # Write userData with special characters
         test_user_data = {
-            '\nkey"\';\n\n\n': '"\'value\nseveral lines\n;\n',
-            ';': ';\n',
-            'escapeception': '\\"\\\'\\n\\\\n',
+            "\nkey\"';\n\n\n": "\"'value\nseveral lines\n;\n",
+            ";": ";\n",
+            "escapeception": "\\\"\\'\\n\\\\n",
         }
         node = classes.GSNode(Point(130, 431), classes.GSNode.LINE)
         for key, value in test_user_data.items():
             node.userData[key] = value
         # This is the output of Glyphs 1089
-        expected_output = '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" = \\"\\\\"\'value\\012several lines\\012;\\012\\";\\n\\";\\" = \\";\\012\\";\\nescapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+        expected_output = (
+            '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" '
+            '= \\"\\\\"\'value\\012several lines\\012;\\012\\"'
+            ';\\n\\";\\" = \\";\\012\\";\\n'
+            'escapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+        )
         self.assertWritesValue(node, expected_output)
         # Check that we can read the userData back
         node = Parser(classes.GSNode).parse(expected_output)
@@ -968,13 +1039,18 @@ rememberToDownloadARealRemindersApp = 1;}"'
         line.angle = 11.0
         line.name = "italic angle"
         # selected: not written
-        self.assertWrites(line, dedent("""\
+        self.assertWrites(
+            line,
+            dedent(
+                """\
             {
             angle = 11;
             name = "italic angle";
             position = "{56, 45}";
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_annotation(self):
         annotation = classes.GSAnnotation()
@@ -984,7 +1060,10 @@ rememberToDownloadARealRemindersApp = 1;}"'
         annotation.text = "Look here"
         annotation.angle = 123.5
         annotation.width = 135
-        self.assertWrites(annotation, dedent("""\
+        self.assertWrites(
+            annotation,
+            dedent(
+                """\
             {
             angle = 123.5;
             position = "{12, 34}";
@@ -992,7 +1071,9 @@ rememberToDownloadARealRemindersApp = 1;}"'
             type = 1;
             width = 135;
             }
-        """))
+        """
+            ),
+        )
 
     def test_write_hint(self):
         hint = classes.GSHint()
@@ -1023,7 +1104,10 @@ rememberToDownloadARealRemindersApp = 1;}"'
         hint.horizontal = True
         # selected: not written
         hint.name = "My favourite hint"
-        self.assertWrites(hint, dedent("""\
+        self.assertWrites(
+            hint,
+            dedent(
+                """\
             {
             horizontal = 1;
             origin = "{0, 0}";
@@ -1034,7 +1118,9 @@ rememberToDownloadARealRemindersApp = 1;}"'
             name = "My favourite hint";
             options = 128;
             }
-        """))
+        """
+            ),
+        )
 
         # FIXME: (jany) What about the undocumented scale & stem?
         #   -> Add a test for that
@@ -1047,7 +1133,7 @@ rememberToDownloadARealRemindersApp = 1;}"'
         # self.assertIn('target = up;', written)
 
     def test_write_background_image(self):
-        image = classes.GSBackgroundImage('/tmp/img.jpg')
+        image = classes.GSBackgroundImage("/tmp/img.jpg")
         # http://docu.glyphsapp.com/#gsbackgroundimage
         # path: already set
         # image: read-only, objective-c
@@ -1058,7 +1144,10 @@ rememberToDownloadARealRemindersApp = 1;}"'
         image.scale = (1.1, 1.2)
         image.rotation = 0.3
         # transform: Already set with scale/rotation
-        self.assertWrites(image, dedent("""\
+        self.assertWrites(
+            image,
+            dedent(
+                """\
             {
             alpha = 70;
             crop = "{{0, 10}, {500, 510}}";
@@ -1066,7 +1155,9 @@ rememberToDownloadARealRemindersApp = 1;}"'
             locked = 1;
             transform = "{1.09998, 0.00576, -0.00628, 1.19998, 40, 90}";
             }
-        """))
+        """
+            ),
+        )
 
 
 class WriterDumpInterfaceTest(unittest.TestCase):
@@ -1086,13 +1177,13 @@ class WriterDumpInterfaceTest(unittest.TestCase):
         self.assertTrue(string)
 
 
-class WriterRoundtripTest(unittest.TestCase,
-                          test_helpers.AssertParseWriteRoundtrip):
+class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
     def test_roundtrip_on_file(self):
         filename = os.path.join(
-            os.path.dirname(__file__), 'data/GlyphsUnitTestSans.glyphs')
+            os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs"
+        )
         self.assertParseWriteRoundtrip(filename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

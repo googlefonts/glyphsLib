@@ -13,8 +13,7 @@
 # limitations under the License.
 
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 from io import open
 import collections
@@ -23,11 +22,11 @@ import logging
 
 from fontTools.misc.py23 import tostr
 
-from glyphsLib.classes import __all__ as __all_classes__
-from glyphsLib.classes import *
-from glyphsLib.builder import to_ufos, to_designspace, to_glyphs
-from glyphsLib.parser import load, loads
-from glyphsLib.writer import dump, dumps
+from glyphsLib.classes import GSFont, __all__ as __all_classes__
+from glyphsLib.classes import *  # noqa
+from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
+from glyphsLib.parser import load, loads  # noqa
+from glyphsLib.writer import dump, dumps  # noqa
 from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
 try:
@@ -39,40 +38,58 @@ except ImportError:
 # "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
 # Thus we need to encode the unicode literals as ascii bytes.
 # https://bugs.python.org/issue21720
-__all__ = [tostr(s) for s in [
-    "build_masters", "build_instances", "load_to_ufos",
-    "load", "loads", "dump", "dumps",
- ] + __all_classes__]
+__all__ = [
+    tostr(s)
+    for s in [
+        "build_masters",
+        "build_instances",
+        "load_to_ufos",
+        "to_ufos",
+        "to_designspace",
+        "to_glyphs",
+        "load",
+        "loads",
+        "dump",
+        "dumps",
+    ]
+    + __all_classes__
+]
 
 logger = logging.getLogger(__name__)
 
-Masters = collections.namedtuple("Masters", ['ufos', 'designspace_path'])
+Masters = collections.namedtuple("Masters", ["ufos", "designspace_path"])
 
 
-def load_to_ufos(file_or_path, include_instances=False, family_name=None,
-                 propagate_anchors=True):
+def load_to_ufos(
+    file_or_path, include_instances=False, family_name=None, propagate_anchors=True
+):
     """Load an unpacked .glyphs object to UFO objects."""
 
-    if hasattr(file_or_path, 'read'):
+    if hasattr(file_or_path, "read"):
         font = load(file_or_path)
     else:
-        with open(file_or_path, 'r', encoding='utf-8') as ifile:
+        with open(file_or_path, "r", encoding="utf-8") as ifile:
             font = load(ifile)
-    logger.info('Loading to UFOs')
-    return to_ufos(font, include_instances=include_instances,
-                   family_name=family_name,
-                   propagate_anchors=propagate_anchors)
+    logger.info("Loading to UFOs")
+    return to_ufos(
+        font,
+        include_instances=include_instances,
+        family_name=family_name,
+        propagate_anchors=propagate_anchors,
+    )
 
 
-def build_masters(filename,
-                  master_dir,
-                  designspace_instance_dir=None,
-                  designspace_path=None,
-                  family_name=None,
-                  propagate_anchors=True,
-                  minimize_glyphs_diffs=False,
-                  normalize_ufos=False,
-                  create_background_layers=False):
+def build_masters(
+    filename,
+    master_dir,
+    designspace_instance_dir=None,
+    designspace_path=None,
+    family_name=None,
+    propagate_anchors=True,
+    minimize_glyphs_diffs=False,
+    normalize_ufos=False,
+    create_background_layers=False,
+):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
 
@@ -100,7 +117,8 @@ def build_masters(filename,
         family_name=family_name,
         propagate_anchors=propagate_anchors,
         instance_dir=instance_dir,
-        minimize_glyphs_diffs=minimize_glyphs_diffs)
+        minimize_glyphs_diffs=minimize_glyphs_diffs,
+    )
 
     ufos = []
     for source in designspace.sources:
@@ -115,6 +133,7 @@ def build_masters(filename,
 
         if normalize_ufos:
             import ufonormalizer
+
             ufonormalizer.normalizeUFO(ufo_path, writeModTimes=False)
 
     if not designspace_path:

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import (print_function, division, absolute_import,
-                        unicode_literals)
+from __future__ import print_function, division, absolute_import, unicode_literals
 
 import datetime
 from glyphsLib.types import parse_datetime
 
-UFO_FORMAT = '%Y/%m/%d %H:%M:%S'
+UFO_FORMAT = "%Y/%m/%d %H:%M:%S"
 
 
 def to_ufo_time(datetime_obj):
