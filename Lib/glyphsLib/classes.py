@@ -2206,7 +2206,7 @@ class GSHint(GSBase):
         if self.type == "BOTTOMGHOST" or self.type == "TOPGHOST":
             return "<GSHint {} origin=({})>".format(self.type, self._origin_pos())
         elif self.type == "STEM":
-            return "<GSHint {} Stem origin=({}) target=({}) {}>".format(
+            return "<GSHint {} Stem origin=({}) target=({})>".format(
                 direction, self._origin_pos(), self._width_pos()
             )
         elif self.type == "CORNER" or self.type == "CAP":
