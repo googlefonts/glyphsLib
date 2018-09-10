@@ -1,6 +1,11 @@
 sudo: false
 language: python
 
+env:
+  global:
+    - TWINE_USERNAME="anthrotype"
+    - secure: v0Pz3ULWoFLIXzzF3bX9sv55S+LNx50xEU0cLbPwWtlzhODscyNoBFzfR220WbBO/T28k6hjmPFpdTjWiX1Zm+2O9TIf5HohU3OEryxYCIfl7BGqkuv6rgRRsnZuGV4KgFD6SGxAr/U69vooykmRRC/ejumbSwrAdFuvDxdxZwqm7EbPbOIyd1Werbu8HPIpgwIN/138SQTD8MNSOk1dSySBs+DQSxoIXVF+1W+QWaPR6jrI54qzJt+/TwID5X5PS+KiLFya4u8Urt3LJgwCgprPHmcoOvpn4YWdOmy/FezqR1v0w1/VIS1TJ31tYebJdIim6UxokgiFuZ84QMnyOjknQIGpUra26wU9RA/mYUmJMljGbx/CRUY0VED4t6D06+piAKxiItEmP7OqcW5lVpJcLncy0J3SCWHfho0LE4mQzNEhZvo5nFaO2XYnOIHGJYCqSNaWhBYGpjUnXZXeyjm0AO06kX78rS5oU390CUKBFZ1yJNZ9hk9E1d2dRQKaAZGibtKQuEsglEpgz8A+1Wpha7k4603vsURuGhznAruCPwyFNKVEFI+GbzW8+L0yeGCJY7ARauDxoZkUYMYMDRKcJgMFUTYejrASWQtQgYN0ov5+XPB3+kW5cYy4QnhafSqcm+m3r/oO06DATrI0u6dKh1fCiYd8yo9tA2DFk0Q=
+
 branches:
   only:
     - master
@@ -21,19 +26,12 @@ script:
 after_success:
   - |
     if [[ $TOXENV != lint ]]; then
-        tox -e codecov
+        if [ -n "$TRAVIS_TAG" ] && [ "$TRAVIS_REPO_SLUG" == "googlei18n/glyphsLib" ] && [ "$TRAVIS_PYTHON_VERSION" == "3.6" ]; then
+            pip install --upgrade twine pip setuptools wheel
+            python setup.py sdist
+            pip wheel --no-deps --wheel-dir dist .
+            twine upload dist/*.whl dist/*.zip
+        else
+            tox -e codecov
+        fi
     fi
-
-deploy:
-  # deploy to PyPI on tags
-  provider: pypi
-  server: https://upload.pypi.org/legacy/
-  on:
-    repo: googlei18n/glyphsLib
-    tags: true
-    all_branches: true
-    python: 3.6
-  user: anthrotype
-  password:
-    secure: MFfm+XsmNZmrFzmIytS5MhoIcSHle695sv036Q5pKugtBBn187fSBR/zCfM0C2qRy7rFUyCXKJAhiVb94VCsr3B+lFM03A5uSWLzDXPk3qGGkut39+BQU3wQ3YZx5ozo/PHOWPTo9CdHHmFFgeWJDo+pj6t9rE8m2MYFEf6QC9VGE2Tn4pgMOqRsHqtiRoV0sTe0Ulkek1c9iWR6Lpw5Eq+BgdFFaqYx1vjMywGwrlzgu5Q37G7QZ6C4X1UbzERXcoexDC6Qlrt/DGKsh4NEENfsE43b7llVMpWwxs/FxKt4fJA1cMacDQdwLc7iIyplTzdKYfau2qg07hKAfC+q/jG7D/g8K/K9nROVGwJCaWM2cdnlvMFRfoznYx3l0Qb8Kqf0uFahdSY3k3f60Fi4kF2v5ZWUIRlBm6Lb15h+mfIefqUbKy4V9ptzsUMXYGC3nutWdqDPNF8KUoC/LCykgDQ17ZK7knPUl40Ivj2PuVy6fyUvxEGh2+2pE1Ku2Lk1m7eE/AW2s7Zx0gWQ+xR++kTgc6XQZuGJDWKeYwKCPFopENwPkHX76dJpV6U8ALirYYyro4noB8V3RmNsJbqfcCB/aVbrmT97eb5M7R0W3H5CNhnXWtjxqYp16KHzBqoPYNpuYQLpky5lNjpE0KI4RXF/eb3ywLL/MVs0Z1Vklfw=
-  distributions: sdist bdist_wheel
