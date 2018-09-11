@@ -64,7 +64,8 @@ class SetCustomParamsTest(unittest.TestCase):
     def test_set_glyphOrder(self):
         self.master.customParameters["glyphOrder"] = ["A", "B"]
         self.set_custom_params()
-        self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"], ["A", "B"])
+        self.assertEqual(self.ufo.glyphOrder, ["A", "B"])
+        self.assertNotIn(GLYPHS_PREFIX + "glyphOrder", self.ufo.lib)
 
     def test_set_fsSelection_flags_none(self):
         self.ufo.info.openTypeOS2Selection = None
