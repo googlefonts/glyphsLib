@@ -32,7 +32,6 @@ from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder.custom_params import _set_default_params
 from glyphsLib.builder.constants import (
-    GLYPHS_PREFIX,
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
