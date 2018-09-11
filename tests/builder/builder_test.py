@@ -341,8 +341,7 @@ class ParseGlyphsFilterTest(unittest.TestCase):
 class ToUfosTest(unittest.TestCase):
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
-        some cases that additional redundant data is not set.
-        """
+        some cases that additional redundant data is not set."""
 
         font = generate_minimal_font()
         family_name = font.familyName
@@ -372,6 +371,7 @@ class ToUfosTest(unittest.TestCase):
 
     def test_load_kerning(self):
         """Test that kerning conflicts are left untouched.
+
         Discussion at: https://github.com/googlei18n/glyphsLib/pull/407
         It turns out that Glyphs and the UFO spec agree on how to treat
         ambiguous kerning, so keep it ambiguous, it minimizes diffs.
@@ -451,7 +451,7 @@ class ToUfosTest(unittest.TestCase):
                 self.assertEqual(anchor.x, 150)
 
     def test_fail_during_anchor_propagation(self):
-        """Fix https://github.com/googlei18n/glyphsLib/issues/317"""
+        """Fix https://github.com/googlei18n/glyphsLib/issues/317."""
         font = generate_minimal_font()
 
         glyphs = (
