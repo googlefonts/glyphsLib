@@ -137,9 +137,9 @@ def get_glyph(glyph_name, data=None):
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
 
-    # Still nothing? Maybe someone we're looking at something like "uni1234.alt", try
-    # one more time using fontTools' AGL module to convert the base name to something
-    # meaningful.
+    # Still nothing? Maybe we're looking at something like "uni1234.alt", try
+    # one more time using fontTools' AGL module to convert the base name to
+    # something meaningful.
     if category is None:
         character = fontTools.agl.toUnicode(base_name)
         if character:
