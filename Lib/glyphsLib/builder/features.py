@@ -93,7 +93,7 @@ def _to_ufo_features(self, master, ufo):
 
     # make sure feature text is a unicode string, for defcon
     full_text = (
-        "\n\n".join(filter(None, [prefix_str, class_str, fea_str, gdef_str])) + "\n"
+        "\n\n".join(filter(None, [class_str, prefix_str, fea_str, gdef_str])) + "\n"
     )
     ufo.features.text = full_text if full_text.strip() else ""
 
