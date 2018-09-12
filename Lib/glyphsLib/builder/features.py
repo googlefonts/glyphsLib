@@ -415,7 +415,7 @@ class FeatureFileProcessor(object):
                         self.doc.text(unhandled_root_elements)
                     )
                     self._font.featurePrefixes.append(prefix)
-                    unhandled_root_elements.clear()
+                    del unhandled_root_elements[:]  # list.clear() in Python 3.
             else:
                 # FIXME: (jany) Maybe print warning about unhandled fea block?
                 unhandled_root_elements.append(next(self.statements))
