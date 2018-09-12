@@ -25,6 +25,7 @@ from .constants import (
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,
     REVERSE_CODEPAGE_RANGES,
+    PUBLIC_PREFIX,
 )
 from .features import replace_feature
 
@@ -134,6 +135,11 @@ class GlyphsObjectProxy(object):
         for param in self._owner.customParameters:
             if param.name not in self._handled:
                 yield param
+
+    def is_font(self):
+        """Returns whether we are looking at a top-level GSFont object as
+        opposed to a master or instance."""
+        return hasattr(self._owner, "glyphs")
 
 
 class UFOProxy(object):
@@ -562,8 +568,34 @@ class OS2SelectionParamHandler(AbstractParamHandler):
 
 register(OS2SelectionParamHandler())
 
-# Do NOT use public.glyphOrder
-register(ParamHandler("glyphOrder", ufo_prefix=GLYPHS_PREFIX))
+
+class GlyphOrderParamHandler(AbstractParamHandler):
+    """Translate between Glyphs.app's glyphOrder parameter and UFO's
+    public.glyphOrder.
+
+    See the GlyphOrderTest class for a thorough explanation.
+    """
+
+    def to_glyphs(self, glyphs, ufo):
+        if glyphs.is_font():
+            glyphs_glyphOrder = ufo.get_lib_value(GLYPHS_PREFIX + "glyphOrder")
+            if isinstance(glyphs_glyphOrder, list):
+                glyphs.set_custom_value("glyphOrder", glyphs_glyphOrder)
+            elif glyphs_glyphOrder is None:
+                ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+                if ufo_glyphOrder:
+                    glyphs.set_custom_value("glyphOrder", ufo_glyphOrder)
+
+    def to_ufo(self, glyphs, ufo):
+        if glyphs.is_font():
+            glyphs_glyphOrder = glyphs.get_custom_value("glyphOrder")
+            if glyphs_glyphOrder:
+                ufo.set_lib_value(PUBLIC_PREFIX + "glyphOrder", glyphs_glyphOrder)
+            else:
+                ufo.set_lib_value(GLYPHS_PREFIX + "glyphOrder", False)
+
+
+register(GlyphOrderParamHandler())
 
 
 # See https://github.com/googlei18n/glyphsLib/issues/214

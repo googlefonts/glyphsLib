@@ -32,7 +32,6 @@ from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder.custom_params import _set_default_params
 from glyphsLib.builder.constants import (
-    GLYPHS_PREFIX,
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
@@ -60,11 +59,6 @@ class SetCustomParamsTest(unittest.TestCase):
         self.set_custom_params()
         self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + "'bad'", self.ufo.lib)
         self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + '"also bad"', self.ufo.lib)
-
-    def test_set_glyphOrder(self):
-        self.master.customParameters["glyphOrder"] = ["A", "B"]
-        self.set_custom_params()
-        self.assertEqual(self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"], ["A", "B"])
 
     def test_set_fsSelection_flags_none(self):
         self.ufo.info.openTypeOS2Selection = None

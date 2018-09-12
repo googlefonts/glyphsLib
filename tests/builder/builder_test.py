@@ -341,8 +341,7 @@ class ParseGlyphsFilterTest(unittest.TestCase):
 class ToUfosTest(unittest.TestCase):
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
-        some cases that additional redundant data is not set.
-        """
+        some cases that additional redundant data is not set."""
 
         font = generate_minimal_font()
         family_name = font.familyName
@@ -372,6 +371,7 @@ class ToUfosTest(unittest.TestCase):
 
     def test_load_kerning(self):
         """Test that kerning conflicts are left untouched.
+
         Discussion at: https://github.com/googlei18n/glyphsLib/pull/407
         It turns out that Glyphs and the UFO spec agree on how to treat
         ambiguous kerning, so keep it ambiguous, it minimizes diffs.
@@ -451,7 +451,7 @@ class ToUfosTest(unittest.TestCase):
                 self.assertEqual(anchor.x, 150)
 
     def test_fail_during_anchor_propagation(self):
-        """Fix https://github.com/googlei18n/glyphsLib/issues/317"""
+        """Fix https://github.com/googlei18n/glyphsLib/issues/317."""
         font = generate_minimal_font()
 
         glyphs = (
@@ -1144,20 +1144,61 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
 class GlyphOrderTest(unittest.TestCase):
     """Check that the glyphOrder data is persisted correctly in all directions.
 
-    In Glyphs, there are two pieces of information to save:
-     * The custom parameter 'glyphOrder', if provided
-     * The actual order of glyphs in the font.
+    Problem: Glyphs.app (tested 2.4.1 and 2.5.2) does not import and export a
+    UFO's public.glyphOrder lib key verbatim. To prevent the glyph order from
+    changing when exporting to UFO from within Glyphs.app, working on the UFO
+    and re-opening it in Glyphs.app, it will:
 
-    We need both because:
-     * There can be glyphs in the font that are not in the glyphOrder
-     * Those extraneous glyphs are ordered automatically by Glyphs.app but
-       we don't know how, so if we want to reproduce the original ordering
-       with glyphsLib, we must store it.
-       FIXME: ask Georg how/whether we can order like Glyphs.app in glyphsLib
+    1. if a glyphOrder parameter is present, write it verbatim to the
+       `com.schriftgestaltung.glyphOrder` as a list and write a
+       cleaned-up version of it (e.g. only existing glyphs plus ones not covered
+       in it but present in the font) to `public.glyphOrder`.
+    2. if a glyphOrder parameter is not present, write the implicit order of the
+       font to `public.glyphOrder` and write the
+       `com.schriftgestaltung.glyphOrder` lib key with the value `False`.
 
-    To match the Glyphs.app export/import behaviour, we will:
-     * set UFO's public.glyphOrder to the actual order in the font
-     * store the custom parameter 'glyphOrder' in UFO's lib, if provided.
+    On reading a UFO, Glyphs.app will:
+
+    1. if a `com.schriftgestaltung.glyphOrder` lib key is present and holds a
+       list, copy it to the `glyphOrder` parameter.
+    2. if a `com.schriftgestaltung.glyphOrder` lib key is present and holds the
+       value `False`, not set a `glyphOrder` parameter and use its own ordering
+       instead. Side-note: Glyphs.app will get confused if the
+       `public.glyphOrder` now contains non-existant glyphs and may crash on
+       saving.
+    3. if no `com.schriftgestaltung.glyphOrder` lib key is present, copy
+       `public.glyphOrder` to the `glyphOrder` parameter.
+    4. if no `public.glyphOrder` exist, maybe get confused and crash.
+
+    To work with this instead of against it and reduce Git diff noise on
+    round-tripping, do the following:
+
+    1. Glyphs to UFO: If a .glyphs file has...
+        1. no `glyphOrder` parameter set, the implicit order of glyphs becomes
+           the `public.glyphOrder` lib key and the
+           `com.schriftgestaltung.glyphOrder` lib key is set to `False`.
+        2. a `glyphOrder` parameter set, it gets copied to the
+           `public.glyphOrder` lib key, the `com.schriftgestaltung.glyphOrder`
+           lib key is not written.
+    2. UFO to Glyphs: If a UFO has...
+        1. a `com.schriftgestaltung.glyphOrder` lib key holding a list, it gets
+           copied to the `glyphOrder` parameter.
+        2. a `com.schriftgestaltung.glyphOrder` lib key holding the value
+           `False`, do not set a `glyphOrder` parameter.
+        3. a `public.glyphOrder` and no `com.schriftgestaltung.glyphOrder` key,
+           copy `public.glyphOrder` to the `glyphOrder` parameter.
+        4. no `public.glyphOrder` lib key, do not set the `glyphOrder`
+           parameter.
+
+    This covers the case of using Glyphs' UFO exporting mechanism and using
+    glyphslib to turn it into a Glyphs file again, as well as using glyphsLib to
+    produce UFOs from a .glyphs file and opening them in Glyphs.app again. It
+    also preserves existing public.glyphOrder from other tools.
+
+    TODO: these test cases do not exhaustively check for the glyph order in
+    GSFont objects, because we don't know Glyphs.app's ordering rules. E.g. a
+    test should set a UFOs `public.glyphOrder` to ["d", "c", "b", "a"] and check
+    that the resulting GSFont glyph order is ["c", "a", "f"].
     """
 
     def setUp(self):
@@ -1179,34 +1220,41 @@ class GlyphOrderTest(unittest.TestCase):
         builder = GlyphsBuilder([self.ufo])
         return builder.font
 
-    def test_from_glyphs_no_custom_order(self):
+    def test_glyphs_to_ufo_no_glyphOrder(self):
         ufo = self.from_glyphs()
         self.assertEqual(["a", "c", "f"], ufo.glyphOrder)
-        self.assertNotIn(GLYPHS_PREFIX + "glyphOrder", ufo.lib)
+        self.assertFalse(ufo.lib[GLYPHS_PREFIX + "glyphOrder"])
 
-    def test_from_glyphs_with_custom_order(self):
+    def test_glyphs_to_ufo_with_glyphOrder(self):
         self.font.customParameters["glyphOrder"] = ["a", "b", "c", "d"]
         ufo = self.from_glyphs()
-        self.assertEqual(["a", "c", "f"], ufo.glyphOrder)
-        self.assertEqual(["a", "b", "c", "d"], ufo.lib[GLYPHS_PREFIX + "glyphOrder"])
+        self.assertEqual(["a", "b", "c", "d"], ufo.glyphOrder)
+        self.assertNotIn(GLYPHS_PREFIX + "glyphOrder", ufo.lib)
 
-    def test_from_ufo_partial_public_order_no_custom_order(self):
-        """When we import a UFO that was not produced by glyphsLib.
-        If there was more than just 'f' that is not included in
-        public.glyphOrder, we could not know how to order them like Glyphs.app
-        """
-        self.ufo.glyphOrder = ["a", "b", "c", "d"]
-        font = self.from_ufo()
-        self.assertEqual(["a", "c", "f"], list(glyph.name for glyph in font.glyphs))
-        self.assertNotIn("glyphOrder", font.customParameters)
-
-    def test_from_ufo_complete_public_order_with_custom_order(self):
-        """Import a UFO generated by glyphsLib"""
-        self.ufo.glyphOrder = ["a", "c", "f"]
+    def test_ufo_to_glyphs_with_csgO_list(self):
         self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"] = ["a", "b", "c", "d"]
         font = self.from_ufo()
-        self.assertEqual(["a", "c", "f"], list(glyph.name for glyph in font.glyphs))
         self.assertEqual(["a", "b", "c", "d"], font.customParameters["glyphOrder"])
+        self.assertEqual(["a", "c", "f"], [glyph.name for glyph in font.glyphs])
+
+    def test_ufo_to_glyphs_with_csgO_false(self):
+        self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"] = False
+        font = self.from_ufo()
+        self.assertNotIn("glyphOrder", font.customParameters)
+        self.assertEqual(["a", "c", "f"], [glyph.name for glyph in font.glyphs])
+
+    def test_ufo_to_glyphs_only_pgO(self):
+        font = self.from_ufo()
+        self.assertEqual(["a", "c", "f"], font.customParameters["glyphOrder"])
+        self.assertEqual(["a", "c", "f"], [glyph.name for glyph in font.glyphs])
+
+    def test_ufo_to_glyphs_no_pgO(self):
+        del self.ufo.lib["public.glyphOrder"]
+        font = self.from_ufo()
+        self.assertNotIn("glyphOrder", font.customParameters)
+        self.assertEqual(
+            [glyph.name for glyph in self.ufo], [glyph.name for glyph in font.glyphs]
+        )
 
 
 if __name__ == "__main__":
