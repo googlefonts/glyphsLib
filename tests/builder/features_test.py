@@ -388,3 +388,33 @@ def test_roundtrip_feature_prefix_with_only_a_comment():
     prefix_r = font_r.featurePrefixes[0]
     assert prefix_r.name == "include"
     assert prefix_r.code == "#include(../family.fea)"
+
+
+def test_groups_remain_at_top(tmpdir):
+    ufo = defcon.Font()
+    ufo.newGlyph("zero")
+    ufo.newGlyph("zero.alt")
+    fea_example = dedent(
+        """\
+        @FIG_DFLT = [zero];
+        @FIG_ALT = [zero.alt];
+
+        lookup pnum_text {
+            sub @FIG_DFLT by @FIG_ALT;
+        } pnum_text;
+
+        feature pnum {
+            lookup pnum_text;
+        } pnum;
+        """
+    )
+    ufo.features.text = fea_example
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    filename = os.path.join(str(tmpdir), "font.glyphs")
+    font.save(filename)
+    font = classes.GSFont(filename)
+    rtufo, = to_ufos(font)
+
+    fea_rt = rtufo.features.text
+    assert fea_rt.index("@FIG_DFLT") < fea_rt.index("lookup") < fea_rt.index("feature")
