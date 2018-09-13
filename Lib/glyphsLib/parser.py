@@ -63,7 +63,7 @@ class Parser(object):
         if m:
             i = self._parse_dict_into_object(res, text, 1)
         else:
-            self._fail("not correct file format", text, i)
+            self._fail("not correct file format", text, 0)
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
         return i
