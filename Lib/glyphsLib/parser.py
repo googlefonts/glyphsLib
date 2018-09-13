@@ -111,7 +111,7 @@ class Parser(object):
 
         m = self.value_re.match(text, i)
         if m:
-            parsed, value = m.group(0), self._trim_value(m.group(1))
+            parsed = m.group(0)
             i += len(parsed)
             if hasattr(self.current_type, "read"):
                 reader = self.current_type()
@@ -119,6 +119,8 @@ class Parser(object):
                 # `plistValue` which handles the escaping itself.
                 value = reader.read(m.group(1))
                 return value, i
+            else:
+                value = self._trim_value(m.group(1))
 
             if self.current_type is None or self.current_type in (dict, OrderedDict):
                 self.current_type = self._guess_current_type(parsed, value)
