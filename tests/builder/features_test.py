@@ -391,6 +391,12 @@ def test_roundtrip_feature_prefix_with_only_a_comment():
 
 
 def test_roundtrip_preserve_gdef(tmpdir):
+    """Test that the GDEF table is preserved unchanged regardless of
+    minimize_ufo_diffs.
+
+    See https://github.com/googlei18n/fontmake/issues/457.
+    """
+
     ufo = defcon.Font()
     gdef_example = dedent(
         """\
