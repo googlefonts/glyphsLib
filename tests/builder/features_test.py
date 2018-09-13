@@ -390,6 +390,37 @@ def test_roundtrip_feature_prefix_with_only_a_comment():
     assert prefix_r.code == "#include(../family.fea)"
 
 
+def test_roundtrip_preserve_gdef(tmpdir):
+    ufo = defcon.Font()
+    gdef_example = dedent(
+        """\
+        table GDEF {
+        GlyphClassDef
+            [A], # Base
+            , # Liga
+            [dieresiscomb], # Mark
+            ;
+        } GDEF;
+        """
+    )
+    ufo.features.text = gdef_example
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    filename = os.path.join(str(tmpdir), "font.glyphs")
+    font.save(filename)
+    font = classes.GSFont(filename)
+    rtufo, = to_ufos(font)
+
+    assert rtufo.features.text == gdef_example
+
+    font = to_glyphs([rtufo], minimize_ufo_diffs=False)
+    font.save(filename)
+    font = classes.GSFont(filename)
+    rtufo, = to_ufos(font)
+
+    assert rtufo.features.text == gdef_example
+
+
 def test_groups_remain_at_top(tmpdir):
     ufo = defcon.Font()
     ufo.newGlyph("zero")
