@@ -50,6 +50,7 @@ class ParserTest(unittest.TestCase):
 
     def test_trim_value(self):
         self.run_test('{mystr="a\\"s\\077d\\U2019f";}', [("mystr", 'a"s?d’f')])
+        self.run_test('{mystr="\\\\backslash";}', [("mystr", "\\backslash")])
 
     def test_trailing_content(self):
         with self.assertRaises(ValueError):
