@@ -99,7 +99,25 @@ def _to_ufo_features(self, master, ufo):
 
 
 def _build_gdef(ufo):
-    """Build a table GDEF statement for ligature carets."""
+    """Build a GDEF table statement (GlyphClassDef and LigatureCaretByPos).
+
+    Building GlyphClassDef requires anchor propagation or user care to work as
+    expected, as Glyphs.app also looks at anchors for classification:
+
+    * Base: any glyph that has an attaching anchor (such as "top"; "_top" does
+      not count) and is neither classified as Ligature nor Mark using the
+      definitions below;
+    * Ligature: if subCategory is "Ligature" and the glyph has at least one
+      attaching anchor;
+    * Mark: if category is "Mark" and subCategory is either "Nonspacing" or
+      "Spacing Combining";
+    * Compound: never assigned by Glyphs.app.
+
+    See:
+
+    * https://github.com/googlei18n/glyphsLib/issues/85
+    * https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
+    """
     from glyphsLib import glyphdata
 
     bases, ligatures, marks, carets = set(), set(), set(), {}
@@ -115,28 +133,12 @@ def _build_gdef(ufo):
             if name and name.startswith("caret_") and "x" in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor["x"]))
 
-        # first check glyph.lib for category/subCategory overrides; else use
-        # global values from GlyphData
+        # First check glyph.lib for category/subCategory overrides. Otherwise,
+        # use global values from GlyphData.
         glyphinfo = glyphdata.get_glyph(glyph.name)
         category = glyph.lib.get(category_key) or glyphinfo.category
         subCategory = glyph.lib.get(subCategory_key) or glyphinfo.subCategory
 
-        # Glyphs.app assigns glyph classes like this:
-        #
-        # * Base: any glyph that has an attaching anchor
-        #   (such as "top"; "_top" does not count) and is neither
-        #   classified as Ligature nor Mark using the definitions below;
-        #
-        # * Ligature: if subCategory is "Ligature" and the glyph has
-        #   at least one attaching anchor;
-        #
-        # * Mark: if category is "Mark" and subCategory is either
-        #   "Nonspacing" or "Spacing Combining";
-        #
-        # * Compound: never assigned by Glyphs.app.
-        #
-        # https://github.com/googlei18n/glyphsLib/issues/85
-        # https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
         if subCategory == "Ligature" and has_attaching_anchor:
             ligatures.add(glyph.name)
         elif category == "Mark" and (
