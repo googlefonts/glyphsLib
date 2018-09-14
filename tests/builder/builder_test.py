@@ -949,6 +949,28 @@ class ToUfosTest(unittest.TestCase):
         ufo_rt, = to_ufos(font_rt)
         assert ufo_rt.info.italicAngle == 0
 
+    def test_unique_masterid(self):
+        font = generate_minimal_font()
+        master2 = GSFontMaster()
+        master2.ascender = 0
+        master2.capHeight = 0
+        master2.descender = 0
+        master2.xHeight = 0
+        font.masters.append(master2)
+        ufos = to_ufos(font, minimize_glyphs_diffs=True)
+
+        try:
+            to_glyphs(ufos)
+        except Exception as e:
+            self.fail("Unexpected exception: " + str(e))
+
+        ufos[1].lib["com.schriftgestaltung.fontMasterID"] = (
+            ufos[0].lib["com.schriftgestaltung.fontMasterID"].lower()
+        )
+
+        with self.assertRaises(ValueError):
+            to_glyphs(ufos)
+
 
 class _PointDataPen(object):
     def __init__(self):
