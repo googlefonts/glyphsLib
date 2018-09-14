@@ -86,7 +86,9 @@ def _to_ufo_features(self, master, ufo):
         feature_defs.append("\n".join(lines))
     fea_str = "\n\n".join(feature_defs)
 
-    # Don't add a GDEF when planning to round-trip
+    # Don't add a GDEF table when planning to round-trip. To get Glyphs.app-like
+    # results, we would need anchor propagation or user intervention. Glyphs.app
+    # only generates it on generating binaries.
     gdef_str = None
     if not self.minimize_glyphs_diffs:
         gdef_str = _build_gdef(ufo)
