@@ -219,13 +219,13 @@ class Parser(object):
 
     # glyphs only supports octal escapes between \000 and \077 and hexadecimal
     # escapes between \U0000 and \UFFFF
-    _unescape_re = re.compile(r"(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4})")
+    _unescape_re = re.compile(r"\\(?:(0[0-7]{2})|(?:U([0-9a-fA-F]{4})))")
 
     @staticmethod
     def _unescape_fn(m):
         if m.group(1):
-            return unichr(int(m.group(1)[1:], 8))
-        return unichr(int(m.group(2)[2:], 16))
+            return unichr(int(m.group(1), 8))
+        return unichr(int(m.group(2), 16))
 
     def _trim_value(self, value):
         """Trim double quotes off the ends of a value, un-escaping inner
