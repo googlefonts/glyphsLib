@@ -229,14 +229,15 @@ class Parser(object):
 
     def _trim_value(self, value):
         """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.
-        Also convert escapes to unicode.
+        double quotes and literal backslashes. Also convert escapes to unicode.
+        If the string is not quoted, return it unmodified.
         """
 
         if value[0] == '"':
             assert value[-1] == '"'
-            value = value[1:-1].replace('\\"', '"')
-        return Parser._unescape_re.sub(Parser._unescape_fn, value)
+            value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+            return Parser._unescape_re.sub(Parser._unescape_fn, value)
+        return value
 
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""
