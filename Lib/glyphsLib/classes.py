@@ -1632,7 +1632,8 @@ class GSNode(GSBase):
     def selected(self):
         raise OnlyInGlyphsAppError
 
-    def _encode_dict_as_string(self, value):
+    @staticmethod
+    def _encode_dict_as_string(value):
         """Takes the PLIST string of a dict, and returns the same string
         encoded such that it can be included in the string representation
         of a GSNode."""
@@ -1641,26 +1642,24 @@ class GSNode(GSBase):
             value = "{" + value[2:]
         if value.endswith("\n}"):
             value = value[:-2] + "}"
-        value = value.replace('"', '\\"')
-        value = value.replace("\n", "\\n")
-        return value
+        # escape double quotes and newlines
+        return value.replace('"', '\\"').replace("\\n", "\\\\n").replace("\n", "\\n")
 
-    _ESCAPED_CHAR_RE = re.compile(r"\\(.)")
+    _ESCAPED_CHAR_RE = re.compile(r'\\(\\*)(?:(n)|("))')
 
     @staticmethod
     def _unescape_char(m):
-        char = m.group(1)
-        if char == "\\":
-            return "\\"
-        if char == "n":
-            return "\n"
-        if char == '"':
-            return '"'
-        return m.group(0)
+        backslashes = m.group(1) or ""
+        if m.group(2):
+            return "\n" if not backslashes else backslashes + "n"
+        else:
+            return backslashes + '"'
 
-    def _decode_dict_as_string(self, value):
+    @classmethod
+    def _decode_dict_as_string(cls, value):
         """Reverse function of _encode_string_as_dict"""
-        return self._ESCAPED_CHAR_RE.sub(self._unescape_char, value)
+        # strip one level of backslashes preceding quotes and newlines
+        return cls._ESCAPED_CHAR_RE.sub(cls._unescape_char, value)
 
     def _indices(self):
         """Find the path_index and node_index that identify the given node."""

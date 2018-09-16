@@ -111,7 +111,7 @@ class Parser(object):
 
         m = self.value_re.match(text, i)
         if m:
-            parsed, value = m.group(0), self._trim_value(m.group(1))
+            parsed = m.group(0)
             i += len(parsed)
             if hasattr(self.current_type, "read"):
                 reader = self.current_type()
@@ -119,6 +119,8 @@ class Parser(object):
                 # `plistValue` which handles the escaping itself.
                 value = reader.read(m.group(1))
                 return value, i
+            else:
+                value = self._trim_value(m.group(1))
 
             if self.current_type is None or self.current_type in (dict, OrderedDict):
                 self.current_type = self._guess_current_type(parsed, value)
@@ -217,24 +219,25 @@ class Parser(object):
 
     # glyphs only supports octal escapes between \000 and \077 and hexadecimal
     # escapes between \U0000 and \UFFFF
-    _unescape_re = re.compile(r"(\\0[0-7]{2})|(\\U[0-9a-fA-F]{4})")
+    _unescape_re = re.compile(r"\\(?:(0[0-7]{2})|(?:U([0-9a-fA-F]{4})))")
 
     @staticmethod
     def _unescape_fn(m):
         if m.group(1):
-            return unichr(int(m.group(1)[1:], 8))
-        return unichr(int(m.group(2)[2:], 16))
+            return unichr(int(m.group(1), 8))
+        return unichr(int(m.group(2), 16))
 
     def _trim_value(self, value):
         """Trim double quotes off the ends of a value, un-escaping inner
-        double quotes.
-        Also convert escapes to unicode.
+        double quotes and literal backslashes. Also convert escapes to unicode.
+        If the string is not quoted, return it unmodified.
         """
 
         if value[0] == '"':
             assert value[-1] == '"'
-            value = value[1:-1].replace('\\"', '"')
-        return Parser._unescape_re.sub(Parser._unescape_fn, value)
+            value = value[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+            return Parser._unescape_re.sub(Parser._unescape_fn, value)
+        return value
 
     def _fail(self, message, text, i):
         """Raise an exception with given message and text at i."""

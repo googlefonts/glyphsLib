@@ -1025,7 +1025,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             '"130 431 LINE {\\"\\012key\\\\"\';\\012\\012\\012\\" '
             '= \\"\\\\"\'value\\012several lines\\012;\\012\\"'
             ';\\n\\";\\" = \\";\\012\\";\\n'
-            'escapeception = \\"\\\\\\\\"\\\\\'\\\\n\\\\\\\\n\\";}"'
+            'escapeception = \\"\\\\\\\\"\\\\\'\\\\\\n\\\\\\\\\\n\\";}"'
         )
         self.assertWritesValue(node, expected_output)
         # Check that we can read the userData back
