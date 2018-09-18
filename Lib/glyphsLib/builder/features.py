@@ -86,7 +86,9 @@ def _to_ufo_features(self, master, ufo):
         feature_defs.append("\n".join(lines))
     fea_str = "\n\n".join(feature_defs)
 
-    # Don't add a GDEF when planning to round-trip
+    # Don't add a GDEF table when planning to round-trip. To get Glyphs.app-like
+    # results, we would need anchor propagation or user intervention. Glyphs.app
+    # only generates it on generating binaries.
     gdef_str = None
     if not self.minimize_glyphs_diffs:
         gdef_str = _build_gdef(ufo)
@@ -99,12 +101,31 @@ def _to_ufo_features(self, master, ufo):
 
 
 def _build_gdef(ufo):
-    """Build a table GDEF statement for ligature carets."""
-    from glyphsLib import glyphdata  # Expensive import
+    """Build a GDEF table statement (GlyphClassDef and LigatureCaretByPos).
+
+    Building GlyphClassDef requires anchor propagation or user care to work as
+    expected, as Glyphs.app also looks at anchors for classification:
+
+    * Base: any glyph that has an attaching anchor (such as "top"; "_top" does
+      not count) and is neither classified as Ligature nor Mark using the
+      definitions below;
+    * Ligature: if subCategory is "Ligature" and the glyph has at least one
+      attaching anchor;
+    * Mark: if category is "Mark" and subCategory is either "Nonspacing" or
+      "Spacing Combining";
+    * Compound: never assigned by Glyphs.app.
+
+    See:
+
+    * https://github.com/googlei18n/glyphsLib/issues/85
+    * https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
+    """
+    from glyphsLib import glyphdata
 
     bases, ligatures, marks, carets = set(), set(), set(), {}
     category_key = GLYPHLIB_PREFIX + "category"
     subCategory_key = GLYPHLIB_PREFIX + "subCategory"
+
     for glyph in ufo:
         has_attaching_anchor = False
         for anchor in glyph.anchors:
@@ -113,33 +134,13 @@ def _build_gdef(ufo):
                 has_attaching_anchor = True
             if name and name.startswith("caret_") and "x" in anchor:
                 carets.setdefault(glyph.name, []).append(round(anchor["x"]))
-        lib = glyph.lib
-        glyphinfo = glyphdata.get_glyph(glyph.name)
-        # first check glyph.lib for category/subCategory overrides; else use
-        # global values from GlyphData
-        category = lib.get(category_key)
-        if category is None:
-            category = glyphinfo.category
-        subCategory = lib.get(subCategory_key)
-        if subCategory is None:
-            subCategory = glyphinfo.subCategory
 
-        # Glyphs.app assigns glyph classes like this:
-        #
-        # * Base: any glyph that has an attaching anchor
-        #   (such as "top"; "_top" does not count) and is neither
-        #   classified as Ligature nor Mark using the definitions below;
-        #
-        # * Ligature: if subCategory is "Ligature" and the glyph has
-        #   at least one attaching anchor;
-        #
-        # * Mark: if category is "Mark" and subCategory is either
-        #   "Nonspacing" or "Spacing Combining";
-        #
-        # * Compound: never assigned by Glyphs.app.
-        #
-        # https://github.com/googlei18n/glyphsLib/issues/85
-        # https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
+        # First check glyph.lib for category/subCategory overrides. Otherwise,
+        # use global values from GlyphData.
+        glyphinfo = glyphdata.get_glyph(glyph.name)
+        category = glyph.lib.get(category_key) or glyphinfo.category
+        subCategory = glyph.lib.get(subCategory_key) or glyphinfo.subCategory
+
         if subCategory == "Ligature" and has_attaching_anchor:
             ligatures.add(glyph.name)
         elif category == "Mark" and (
@@ -148,32 +149,29 @@ def _build_gdef(ufo):
             marks.add(glyph.name)
         elif has_attaching_anchor:
             bases.add(glyph.name)
+
     if not any((bases, ligatures, marks, carets)):
         return None
-    lines = ["table GDEF {", "  # automatic"]
-    glyphOrder = ufo.lib[PUBLIC_PREFIX + "glyphOrder"]
-
-    def glyphIndex(glyph):
-        return glyphOrder.index(glyph)
 
     def fmt(g):
-        return ("[%s]" % " ".join(sorted(g, key=glyphIndex))) if g else ""
+        return ("[%s]" % " ".join(sorted(g, key=ufo.glyphOrder.index))) if g else ""
 
-    lines.extend(
-        [
-            "  GlyphClassDef",
-            "    %s, # Base" % fmt(bases),
-            "    %s, # Liga" % fmt(ligatures),
-            "    %s, # Mark" % fmt(marks),
-            "    ;",
-        ]
-    )
+    lines = [
+        "table GDEF {",
+        "  # automatic",
+        "  GlyphClassDef",
+        "    %s, # Base" % fmt(bases),
+        "    %s, # Liga" % fmt(ligatures),
+        "    %s, # Mark" % fmt(marks),
+        "    ;",
+    ]
     for glyph, caretPos in sorted(carets.items()):
         lines.append(
             "  LigatureCaretByPos %s %s;"
             % (glyph, " ".join(unicode(p) for p in sorted(caretPos)))
         )
     lines.append("} GDEF;")
+
     return "\n".join(lines)
 
 
