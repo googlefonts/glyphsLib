@@ -122,9 +122,12 @@ class AssertUFORoundtrip(AssertLinesEqual):
     def assertUFORoundtrip(self, font):
         self._normalize(font)
         expected = write_to_lines(font)
-        # Don't propagate anchors when intending to round-trip
+        # Don't propagate anchors nor generate GDEF when intending to round-trip
         designspace = to_designspace(
-            font, propagate_anchors=False, minimize_glyphs_diffs=True
+            font,
+            propagate_anchors=False,
+            minimize_glyphs_diffs=True,
+            generate_GDEF=False,
         )
 
         # Check that round-tripping in memory is the same as writing on disk

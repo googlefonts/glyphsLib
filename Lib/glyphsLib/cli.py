@@ -81,6 +81,14 @@ def main(args=None):
         ),
     )
     group.add_argument(
+        "--generate-GDEF",
+        action="store_true",
+        help=(
+            "write a `table GDEF {...}` statement in the UFO features "
+            "containing `GlyphClassDef` and `LigatureCaretByPos` statements"
+        ),
+    )
+    group.add_argument(
         "-N",
         "--normalize-ufos",
         action="store_true",
@@ -170,6 +178,7 @@ def glyphs2ufo(options):
         propagate_anchors=options.propagate_anchors,
         normalize_ufos=options.normalize_ufos,
         create_background_layers=options.create_background_layers,
+        generate_GDEF=options.generate_GDEF,
     )
 
 

@@ -89,6 +89,7 @@ def build_masters(
     minimize_glyphs_diffs=False,
     normalize_ufos=False,
     create_background_layers=False,
+    generate_GDEF=True,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
@@ -118,6 +119,7 @@ def build_masters(
         propagate_anchors=propagate_anchors,
         instance_dir=instance_dir,
         minimize_glyphs_diffs=minimize_glyphs_diffs,
+        generate_GDEF=generate_GDEF,
     )
 
     ufos = []
