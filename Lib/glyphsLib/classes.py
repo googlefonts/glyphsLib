@@ -1458,14 +1458,16 @@ class GSFontMaster(GSBase):
             self.customParameters["Master Name"] = name
 
     def _joinName(self):
-        names = [self.width, self.weight, self.customName]
-        names = [n for n in names if n]  # Remove None and empty string
-        # Remove all occurences of 'Regular'
+        # Remove None and empty string
+        names = list(filter(None, [self.width, self.weight, self.customName]))
+        # Remove redundant occurences of 'Regular'
         while len(names) > 1 and "Regular" in names:
             names.remove("Regular")
-        if bool(self.italicAngle):
+        if self.italicAngle:
+            if names == ["Regular"]:
+                return "Italic"
             names.append("Italic")
-        return " ".join(list(names))
+        return " ".join(names)
 
     def _splitName(self, value):
         if value is None:
