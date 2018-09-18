@@ -626,6 +626,14 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         thin.customName = "Thin"
         self.assertEqual("Thin", thin.name)
 
+        # Test that we don't get an extra "Regular" in the name of "Italic"
+        # https://github.com/googlei18n/glyphsLib/issues/380
+        master = GSFontMaster()
+        master.weight = "Regular"
+        master.width = "Regular"
+        master.italicAngle = 10.0
+        self.assertEqual("Italic", master.name)
+
     def test_name_assignment(self):
         test_data = [
             # <name>, <expected weight>, <expected width>, <expected custom>
