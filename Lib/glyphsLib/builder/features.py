@@ -22,7 +22,7 @@ from fontTools.misc.py23 import StringIO
 
 from fontTools.feaLib import ast, parser
 
-from .constants import GLYPHLIB_PREFIX, PUBLIC_PREFIX
+from .constants import GLYPHLIB_PREFIX
 
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
