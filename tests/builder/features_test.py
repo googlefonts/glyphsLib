@@ -23,6 +23,8 @@ import defcon
 
 from glyphsLib import to_glyphs, to_ufos, classes
 
+import pytest
+
 
 def make_font(features):
     ufo = defcon.Font()
@@ -390,15 +392,10 @@ def test_roundtrip_feature_prefix_with_only_a_comment():
     assert prefix_r.code == "#include(../family.fea)"
 
 
-def test_roundtrip_preserve_gdef(tmpdir):
-    """Test that the GDEF table is preserved unchanged regardless of
-    minimize_ufo_diffs.
-
-    See https://github.com/googlei18n/fontmake/issues/457.
-    """
-
+@pytest.fixture
+def ufo_with_GDEF():
     ufo = defcon.Font()
-    gdef_example = dedent(
+    gdef = dedent(
         """\
         table GDEF {
         GlyphClassDef
@@ -409,22 +406,34 @@ def test_roundtrip_preserve_gdef(tmpdir):
         } GDEF;
         """
     )
-    ufo.features.text = gdef_example
+    ufo.features.text = gdef
+    return ufo, gdef
 
-    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+
+def test_roundtrip_existing_GDEF(tmpdir, ufo_with_GDEF):
+    """Test that an existing GDEF table in UFO is preserved unchanged and
+    no extra GDEF table is generated upon roundtripping to UFO when
+    `generate_GDEF` is False.
+    """
+    ufo, gdef = ufo_with_GDEF
+    font = to_glyphs([ufo])
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    rtufo, = to_ufos(font)
+    rtufo, = to_ufos(font, generate_GDEF=False)
 
-    assert rtufo.features.text == gdef_example
+    assert rtufo.features.text == gdef
 
-    font = to_glyphs([rtufo], minimize_ufo_diffs=False)
+
+def test_generate_GDEF_already_exists(tmpdir, ufo_with_GDEF):
+    ufo = ufo_with_GDEF[0]
+    font = to_glyphs([ufo])
+    filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    rtufo, = to_ufos(font)
 
-    assert rtufo.features.text == gdef_example
+    with pytest.raises(ValueError, match="features already contain a `table GDEF"):
+        to_ufos(font, generate_GDEF=True)
 
 
 def test_groups_remain_at_top(tmpdir):

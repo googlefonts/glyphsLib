@@ -29,6 +29,7 @@ def to_ufos(
     propagate_anchors=True,
     ufo_module=defcon,
     minimize_glyphs_diffs=False,
+    generate_GDEF=True,
 ):
     """Take a GSFont object and convert it into one UFO per master.
 
@@ -39,6 +40,9 @@ def to_ufos(
 
     If family_name is provided, the master UFOs will be given this name and
     only instances with this name will be returned.
+
+    If generate_GDEF is True, write a `table GDEF {...}` statement in the
+    UFO's features.fea, containing GlyphClassDef and LigatureCaretByPos.
     """
     builder = UFOBuilder(
         font,
@@ -46,6 +50,7 @@ def to_ufos(
         family_name=family_name,
         propagate_anchors=propagate_anchors,
         minimize_glyphs_diffs=minimize_glyphs_diffs,
+        generate_GDEF=generate_GDEF,
     )
 
     result = list(builder.masters)
@@ -62,6 +67,7 @@ def to_designspace(
     propagate_anchors=True,
     ufo_module=defcon,
     minimize_glyphs_diffs=False,
+    generate_GDEF=True,
 ):
     """Take a GSFont object and convert it into a Designspace Document + UFOS.
     The UFOs are available as the attribute `font` of each SourceDescriptor of
@@ -81,6 +87,9 @@ def to_designspace(
 
     If family_name is provided, the master UFOs will be given this name and
     only instances with this name will be returned.
+
+    If generate_GDEF is True, write a `table GDEF {...}` statement in the
+    UFO's features.fea, containing GlyphClassDef and LigatureCaretByPos.
     """
     builder = UFOBuilder(
         font,
@@ -90,6 +99,7 @@ def to_designspace(
         propagate_anchors=propagate_anchors,
         use_designspace=True,
         minimize_glyphs_diffs=minimize_glyphs_diffs,
+        generate_GDEF=generate_GDEF,
     )
     return builder.designspace
 

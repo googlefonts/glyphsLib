@@ -90,7 +90,12 @@ def _to_ufo_features(self, master, ufo):
     # results, we would need anchor propagation or user intervention. Glyphs.app
     # only generates it on generating binaries.
     gdef_str = None
-    if not self.minimize_glyphs_diffs:
+    if self.generate_GDEF:
+        if re.search(r"^\s*table\s+GDEF\s+{", prefix_str, flags=re.MULTILINE):
+            raise ValueError(
+                "The features already contain a `table GDEF {...}` statement. "
+                "Either delete it or set generate_GDEF to False."
+            )
         gdef_str = _build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
