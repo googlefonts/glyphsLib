@@ -1,2 +1,2 @@
-fonttools==3.29.1
+fonttools==3.30.0
 defcon==0.5.3
