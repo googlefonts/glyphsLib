@@ -30,7 +30,6 @@ class Parser(object):
     """Parses Python dictionaries from Glyphs source files."""
 
     value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
-    unicode_list_re = re.compile(r"\s*([0-9a-fA-F]+(,[0-9a-fA-F]+)*)")
     start_dict_re = re.compile(r"\s*{")
     end_dict_re = re.compile(r"\s*}")
     dict_delim_re = re.compile(r"\s*;")
@@ -86,7 +85,7 @@ class Parser(object):
             current_type = unicode
         return current_type
 
-    def _parse(self, text, i, _parsing_unicodes=False):
+    def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
 
         m = self.start_dict_re.match(text, i)
@@ -100,14 +99,6 @@ class Parser(object):
             parsed = m.group(0)
             i += len(parsed)
             return self._parse_list(text, i)
-
-        if _parsing_unicodes:
-            m = self.unicode_list_re.match(text, i)
-            if m:
-                parsed = m.group(0)
-                i += len(parsed)
-                unicode_list = m.group(1).split(",")
-                return unicode_list, i
 
         m = self.value_re.match(text, i)
         if m:
@@ -170,10 +161,7 @@ class Parser(object):
                 self.current_type = res.classForName(name)
             i += len(parsed)
 
-            if name == "unicode":
-                result = self._parse(text, i, _parsing_unicodes=True)
-            else:
-                result = self._parse(text, i)
+            result = self._parse(text, i)
 
             try:
                 res[name], i = result

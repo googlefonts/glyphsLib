@@ -387,13 +387,17 @@ class UnicodesList(list):
         elif isinstance(value, (str, unicode)):
             unicodes = value.split(",")
         else:
-            unicodes = value
+            unicodes = [unicode(v) for v in value]
         super(UnicodesList, self).__init__(unicodes)
 
     def plistValue(self):
         if not self:
             return None
-        if len(self) == 1:
+        # only write it unquoted if it's one, and it can't be confused
+        # with a decimal number. Here we only check the first letter:
+        # if it's NOT a digit (0-9) then we can omit the quotes since
+        # the parser will unambiguously parse it as string.
+        if len(self) == 1 and not self[0][0].isdigit():
             return self[0]
         return '"%s"' % ",".join(self)
 
