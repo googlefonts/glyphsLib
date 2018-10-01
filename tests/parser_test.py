@@ -73,12 +73,22 @@ class ParserTest(unittest.TestCase):
         self.run_test(b"{mystr = Inf;}", [("mystr", "Inf")])
 
     def test_parse_multiple_unicodes(self):
-        self.run_test(
-            b"{unicode = 0000,0008,001D;}", [("unicode", ["0000", "0008", "001D"])]
-        )
+        # unquoted comma-separated list of unicodes is not valid plist;
+        # it used to be written by some old versions of Glyphs.app but
+        # the current version always writes multiple unicodes within quotes.
+        # Thus, we no longer support this in glyphsLib either.
+        with self.assertRaises(ValueError):
+            self.run_test(
+                b"{unicode = 0000,0008,001D;}", [("unicode", "0000,0008,001D")]
+            )
+
+        # this is the correct form
+        self.run_test(b'{unicode = "0000,0008,001D";}', [("unicode", "0000,0008,001D")])
 
     def test_parse_single_unicodes(self):
-        self.run_test(b"{unicode = 0008;}", [("unicode", ["0008"])])
+        # test both quoted and unquoted
+        self.run_test(b'{unicode = "0008";}', [("unicode", "0008")])
+        self.run_test(b"{unicode = ABCD;}", [("unicode", "ABCD")])
 
     def test_parse_str_nan(self):
         self.run_test(b"{mystr = nan;}", [("mystr", "nan")])

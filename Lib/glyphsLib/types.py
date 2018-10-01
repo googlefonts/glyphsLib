@@ -387,7 +387,7 @@ class UnicodesList(list):
         elif isinstance(value, (str, unicode)):
             unicodes = value.split(",")
         else:
-            unicodes = value
+            unicodes = [unicode(v) for v in value]
         super(UnicodesList, self).__init__(unicodes)
 
     def plistValue(self):
