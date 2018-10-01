@@ -679,7 +679,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             note = "Stunning one-bedroom A with renovated acute accent";
             rightKerningGroup = A;
             rightMetricsKey = A;
-            unicode = "00C1";
+            unicode = 00C1;
             script = latin;
             category = Letter;
             subCategory = Uppercase;
@@ -725,11 +725,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn('script = "";', written)
         self.assertIn('category = "";', written)
         self.assertIn('subCategory = "";', written)
-
-        # Write unicode that doesn't start with digit (unequivocally a string)
-        glyph.unicodes = ["E002"]
-        written = test_helpers.write_to_lines(glyph)
-        self.assertIn("unicode = E002;", written)
 
         # Write double unicodes
         glyph.unicodes = ["00C1", "E002"]

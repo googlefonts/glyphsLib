@@ -464,7 +464,7 @@ width = 593;
 );
 leftKerningGroup = A;
 rightKerningGroup = A;
-unicode = "0041";
+unicode = 0041;
 script = "";
 category = "";
 subCategory = "";
@@ -512,7 +512,7 @@ layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
 width = 753;
 }
 );
-unicode = "00C4";
+unicode = 00C4;
 },
 {
 glyphname = a;
@@ -1037,7 +1037,7 @@ width = 496;
 leftKerningGroup = a;
 rightKerningGroup = a;
 rightMetricsKey = m;
-unicode = "0061";
+unicode = 0061;
 },
 {
 glyphname = adieresis;
@@ -1083,7 +1083,7 @@ layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
 width = 518;
 }
 );
-unicode = "00E4";
+unicode = 00E4;
 },
 {
 glyphname = h;
@@ -1146,7 +1146,7 @@ width = 560;
 );
 leftMetricsKey = m;
 rightMetricsKey = m;
-unicode = "0068";
+unicode = 0068;
 },
 {
 glyphname = m;
@@ -1219,7 +1219,7 @@ layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
 width = 760;
 }
 );
-unicode = "006D";
+unicode = 006D;
 },
 {
 glyphname = n;
@@ -1356,7 +1356,7 @@ leftKerningGroup = n;
 leftMetricsKey = m;
 rightKerningGroup = n;
 rightMetricsKey = m;
-unicode = "006E";
+unicode = 006E;
 },
 {
 color = 10;
@@ -1601,7 +1601,7 @@ nodes = (
 width = 600;
 }
 );
-unicode = "00A8";
+unicode = 00A8;
 },
 {
 export = 0;

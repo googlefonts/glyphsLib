@@ -33,7 +33,7 @@ lastChange = "2017-04-30 13:57:04 +0000";
 layers = ();
 leftKerningGroup = A;
 rightKerningGroup = A;
-unicode = "0041";
+unicode = 0041;
 }
 )"""
 
