@@ -17,7 +17,13 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 import posixpath
 
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, PUBLIC_PREFIX
+from .constants import (
+    GLYPHS_PREFIX,
+    GLYPHLIB_PREFIX,
+    PUBLIC_PREFIX,
+    UFO2FT_FEATURE_WRITERS_KEY,
+    DEFAULT_FEATURE_WRITERS,
+)
 
 UFO_DATA_KEY = GLYPHLIB_PREFIX + "ufoData"
 FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "fontUserData"
@@ -26,11 +32,26 @@ GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + "glyphUserData"
 NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + "nodeUserData"
 
 
+def _has_manual_kern_feature(font):
+    """Return true if the GSFont contains a manually written 'kern' feature."""
+    return any(f for f in font.features if f.name == "kern" and not f.automatic)
+
+
 def to_designspace_family_user_data(self):
     if self.use_designspace:
         for key, value in dict(self.font.userData).items():
             if _user_data_has_no_special_meaning(key):
                 self.designspace.lib[key] = value
+
+        # only write our custom ufo2ft featureWriters settings if the font
+        # does have a manually written 'kern' feature; and if the lib key wasn't
+        # already set in font.userData (in which case we assume the user knows
+        # what she's doing).
+        if (
+            _has_manual_kern_feature(self.font)
+            and UFO2FT_FEATURE_WRITERS_KEY not in self.designspace.lib
+        ):
+            self.designspace.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
 
 def to_ufo_family_user_data(self, ufo):
@@ -83,6 +104,10 @@ def to_glyphs_family_user_data_from_designspace(self):
     """Set the GSFont userData from the designspace family-wide lib data."""
     target_user_data = self.font.userData
     for key, value in self.designspace.lib.items():
+        if key == UFO2FT_FEATURE_WRITERS_KEY and value == DEFAULT_FEATURE_WRITERS:
+            # if the designspace contains featureWriters settings that are the
+            # same as glyphsLib default settings, there's no need to store them
+            continue
         if _user_data_has_no_special_meaning(key):
             target_user_data[key] = value
 

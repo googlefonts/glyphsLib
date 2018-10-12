@@ -81,3 +81,21 @@ CODEPAGE_RANGES = {
 }
 
 REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}
+
+UFO2FT_FEATURE_WRITERS_KEY = "com.github.googlei18n.ufo2ft.featureWriters"
+
+# ufo2ft KernFeatureWriter default to "skip" mode (i.e. do not write features
+# if they are already present), while Glyphs.app always adds its automatic
+# kerning to any user written kern lookups. So we need to pass custom "append"
+# mode for the ufo2ft KernFeatureWriter whenever the GSFont contain a non-automatic
+# 'kern' feature.
+# See https://glyphsapp.com/tutorials/contextual-kerning
+# NOTE: Even though we use the default "skip" mode for the MarkFeatureWriter,
+# we still must include it this custom featureWriters list, as this is used
+# instead of the default ufo2ft list of feature writers.
+# This also means that if ufo2ft adds new writers to that default list, we
+# would need to update this accordingly... :-/
+DEFAULT_FEATURE_WRITERS = [
+    {"class": "KernFeatureWriter", "options": {"mode": "append"}},
+    {"class": "MarkFeatureWriter", "options": {"mode": "skip"}},
+]
