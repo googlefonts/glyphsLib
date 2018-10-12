@@ -56,6 +56,7 @@ def test_apply_instance_data(tmpdir, instance_names):
 
     # Generate dummy UFOs for collected instances so we don't actually need to
     # interpolate.
+    tmpdir.mkdir(instance_dir)
     for instance in test_instances:
         ufo = defcon.Font()
         ufo.save(str(tmpdir / instance))
