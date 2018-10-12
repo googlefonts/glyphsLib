@@ -108,6 +108,9 @@ def build_masters(
 
     font = GSFont(filename)
 
+    if not os.path.isdir(master_dir):
+        os.mkdir(master_dir)
+
     if designspace_instance_dir is None:
         instance_dir = None
     else:
