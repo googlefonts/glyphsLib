@@ -784,9 +784,7 @@ class ToUfosTest(unittest.TestCase):
         layer.layerId = font.masters[0].id
         layer.width = 0
         for guide_data in data_in:
-            pt = Point(
-                x=guide_data["position"][0], y=guide_data["position"][1]
-            )
+            pt = Point(x=guide_data["position"][0], y=guide_data["position"][1])
             guide = GSGuideLine()
             guide.position = pt
             guide.angle = guide_data["angle"]
