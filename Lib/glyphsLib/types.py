@@ -119,17 +119,20 @@ def Vector(dim):
 class Point(Vector(2)):
     """Read/write a vector in curly braces."""
 
-    def __init__(self, value=None, value2=None, rect=None):
-        if value is not None and value2 is not None:
-            value = [value, value2]
+    def __init__(self, value=None, x=None, y=None, rect=None):
+        self.rect = rect
+        
+        if x is not None and y is not None:
+            self.value = [x, y]
+            return
+        if value is None:
+            self.value = None
+            return
         assert (
-            value is None
             or isinstance(value, (str, unicode))
             or isinstance(value, (list, tuple))
         )
         super(Point, self).__init__(value)
-
-        self.rect = rect
 
     def __repr__(self):
         return "<point x={} y={}>".format(self.value[0], self.value[1])

@@ -1300,7 +1300,7 @@ class GSGuideLine(GSBase):
         "name": unicode,
     }
     _parent = None
-    _defaultsForName = {"position": Point(0, 0)}
+    _defaultsForName = {"position": Point(x=0, y=0)}
 
     def __init__(self):
         super(GSGuideLine, self).__init__()
@@ -1523,13 +1523,13 @@ class GSNode(GSBase):
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
-        super(GSNode, self).__init__()
-        self.position = Point(position[0], position[1])
+        self.position = Point(x=position[0], y=position[1])
         self.type = nodetype
         self.smooth = smooth
         self._parent = None
         self._userData = None
-        self.name = name
+        if name:
+            self.name = name
 
     def __repr__(self):
         content = self.type
@@ -1564,7 +1564,7 @@ class GSNode(GSBase):
 
     def read(self, line):
         m = self._PLIST_VALUE_RE.match(line).groups()
-        self.position = Point(float(m[0]), float(m[1]))
+        self.position.value = [float(m[0]), float(m[1])]
         self.type = m[2].lower()
         self.smooth = bool(m[3])
 
@@ -1671,7 +1671,7 @@ class GSNode(GSBase):
             if path == layer.paths[path_index]:
                 for node_index in range(len(path.nodes)):
                     if self == path.nodes[node_index]:
-                        return Point(path_index, node_index)
+                        return Point(x=path_index, y=node_index)
         return None
 
 
@@ -1766,7 +1766,7 @@ class GSPath(GSBase):
                 top = newTop
             else:
                 top = max(top, newTop)
-        return Rect(Point(left, bottom), Point(right - left, top - bottom))
+        return Rect(Point(x=left, y=bottom), Point(x=right - left, y=top - bottom))
 
     @property
     def direction(self):
@@ -1838,7 +1838,7 @@ class segment(list):
         ):  # instead of defining this in __init__(), because I hate super()
             self.nodes = []
         self.nodes.append(node)
-        self.append(Point(node.position.x, node.position.y))
+        self.append(Point(x=node.position.x, y=node.position.y))
 
     @property
     def nextSegment(self):
@@ -1994,7 +1994,7 @@ class GSComponent(GSBase):
     # .position
     @property
     def position(self):
-        return Point(self.transform[4], self.transform[5])
+        return Point(x=self.transform[4], y=self.transform[5])
 
     @position.setter
     def position(self, value):
@@ -2091,7 +2091,7 @@ class GSComponent(GSBase):
                 and right is not None
                 and top is not None
             ):
-                return Rect(Point(left, bottom), Point(right - left, top - bottom))
+                return Rect(Point(x=left, y=bottom), Point(x=right - left, y=top - bottom))
 
     # smartComponentValues = property(
     #     lambda self: self.piece,
@@ -2117,14 +2117,11 @@ class GSSmartComponentAxis(GSBase):
 class GSAnchor(GSBase):
     _classesForName = {"name": unicode, "position": Point}
     _parent = None
-    _defaultsForName = {"position": Point(0, 0)}
+    _defaultsForName = {"position": Point(x=0, y=0)}
 
     def __init__(self, name=None, position=None):
-        super(GSAnchor, self).__init__()
-        if name is not None:
-            self.name = name
-        if position is not None:
-            self.position = position
+        self.name = name
+        self.position = position
 
     def __repr__(self):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
@@ -2381,7 +2378,7 @@ class GSAnnotation(GSBase):
     }
     _defaultsForName = {
         "angle": 0.0,
-        "position": Point(),
+        "position": Point(x=0, y=0),
         "text": None,
         "type": 0,
         "width": 100.0,
@@ -2610,7 +2607,7 @@ class GSBackgroundImage(GSBase):
     # .position
     @property
     def position(self):
-        return Point(self.transform[4], self.transform[5])
+        return Point(x=self.transform[4], y=self.transform[5])
 
     @position.setter
     def position(self, value):
@@ -2890,7 +2887,7 @@ class GSLayer(GSBase):
             and right is not None
             and top is not None
         ):
-            return Rect(Point(left, bottom), Point(right - left, top - bottom))
+            return Rect(Point(x=left, y=bottom), Point(x=right - left, y=top - bottom))
 
     def _find_node_by_indices(self, point):
         """"Find the GSNode that is refered to by the given indices.
