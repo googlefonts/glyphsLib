@@ -156,15 +156,17 @@ class Point(Vector(2)):
         if self.rect:
             self.rect.value[1] = value
 
+
 class IndexPath(Vector(4)):
     def __repr__(self):
         return "<indexPath [{}]>".format(", ".join([str(i) for i in self.value]))
-    
+
     def fromString(self, line):
         src = line[1:-1]
         elements = src.split(", ")
         self.dimension = len(elements)
         return [int(i) for i in elements]
+
 
 class Size(Point):
     def __repr__(self):
