@@ -534,6 +534,8 @@ class FontFontMasterProxy(Proxy):
 
     def append(self, FontMaster):
         FontMaster.font = self._owner
+        if FontMaster.id and len(FontMaster.id) > 0 and self[FontMaster.id]:
+            FontMaster.id = None
         if not FontMaster.id:
             FontMaster.id = str(uuid.uuid4()).upper()
         self._owner._masters.append(FontMaster)
