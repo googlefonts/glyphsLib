@@ -129,8 +129,7 @@ class Point(Vector(2)):
             self.value = None
             return
         assert (
-            or isinstance(value, (str, unicode))
-            or isinstance(value, (list, tuple))
+            isinstance(value, (str, unicode, list, tuple))
         )
         super(Point, self).__init__(value)
 
