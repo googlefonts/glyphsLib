@@ -121,16 +121,14 @@ class Point(Vector(2)):
 
     def __init__(self, value=None, x=None, y=None, rect=None):
         self.rect = rect
-        
+
         if x is not None and y is not None:
             self.value = [x, y]
             return
         if value is None:
             self.value = None
             return
-        assert (
-            isinstance(value, (str, unicode, list, tuple))
-        )
+        assert isinstance(value, (str, unicode, list, tuple))
         super(Point, self).__init__(value)
 
     def __repr__(self):

@@ -2091,7 +2091,9 @@ class GSComponent(GSBase):
                 and right is not None
                 and top is not None
             ):
-                return Rect(Point(x=left, y=bottom), Point(x=right - left, y=top - bottom))
+                return Rect(
+                    Point(x=left, y=bottom), Point(x=right - left, y=top - bottom)
+                )
 
     # smartComponentValues = property(
     #     lambda self: self.piece,
