@@ -871,7 +871,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn("width = 0;", written)
 
     def test_write_anchor(self):
-        anchor = classes.GSAnchor("top", Point(23, 45.5))
+        anchor = classes.GSAnchor("top", Point(x=23, y=45.5))
         self.assertWrites(
             anchor,
             dedent(
@@ -885,7 +885,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
 
         # Write a position of 0, 0
-        anchor = classes.GSAnchor("top", Point(0, 0))
+        anchor = classes.GSAnchor("top", Point(x=0, y=0))
         self.assertWrites(
             anchor,
             dedent(
@@ -902,7 +902,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         component = classes.GSComponent("dieresis")
         # http://docu.glyphsapp.com/#gscomponent
         # position
-        component.position = Point(45.5, 250)
+        component.position = Point(x=45.5, y=250)
         # scale
         component.scale = 2.0
         # rotation
@@ -988,7 +988,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
 
     def test_write_node(self):
-        node = classes.GSNode(Point(10, 30), classes.GSNode.CURVE)
+        node = classes.GSNode(Point(x=10, y=30), classes.GSNode.CURVE)
         # http://docu.glyphsapp.com/#gsnode
         # position: already set
         # type: already set
@@ -1008,7 +1008,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         )
 
         # Write floating point coordinates
-        node = classes.GSNode(Point(499.99, 512.01), classes.GSNode.OFFCURVE)
+        node = classes.GSNode(Point(x=499.99, y=512.01), classes.GSNode.OFFCURVE)
         self.assertWritesValue(node, '"499.99 512.01 OFFCURVE"')
 
         # Write userData with special characters
@@ -1017,7 +1017,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             ";": ";\n",
             "escapeception": "\\\"\\'\\n\\\\n",
         }
-        node = classes.GSNode(Point(130, 431), classes.GSNode.LINE)
+        node = classes.GSNode(Point(x=130, y=431), classes.GSNode.LINE)
         for key, value in test_user_data.items():
             node.userData[key] = value
         # This is the output of Glyphs 1089
@@ -1035,7 +1035,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
     def test_write_guideline(self):
         line = classes.GSGuideLine()
         # http://docu.glyphsapp.com/#GSGuideLine
-        line.position = Point(56, 45)
+        line.position = Point(x=56, y=45)
         line.angle = 11.0
         line.name = "italic angle"
         # selected: not written
@@ -1055,7 +1055,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
     def test_write_annotation(self):
         annotation = classes.GSAnnotation()
         # http://docu.glyphsapp.com/#gsannotation
-        annotation.position = Point(12, 34)
+        annotation.position = Point(x=12, y=34)
         annotation.type = classes.TEXT
         annotation.text = "Look here"
         annotation.angle = 123.5
@@ -1085,17 +1085,17 @@ rememberToDownloadARealRemindersApp = 1;}"',
         path1.nodes.append(node1)
         hint.originNode = node1
 
-        node2 = classes.GSNode(Point(200, 200))
+        node2 = classes.GSNode(Point(x=200, y=200))
         path1.nodes.append(node2)
         hint.targetNode = node2
 
-        node3 = classes.GSNode(Point(300, 300))
+        node3 = classes.GSNode(Point(x=300, y=300))
         path1.nodes.append(node3)
         hint.otherNode1 = node3
 
         path2 = classes.GSPath()
         layer.paths.append(path2)
-        node4 = classes.GSNode(Point(400, 400))
+        node4 = classes.GSNode(Point(x=400, y=400))
         path2.nodes.append(node4)
         hint.otherNode2 = node4
 
@@ -1137,10 +1137,10 @@ rememberToDownloadARealRemindersApp = 1;}"',
         # http://docu.glyphsapp.com/#gsbackgroundimage
         # path: already set
         # image: read-only, objective-c
-        image.crop = Rect(Point(0, 10), Point(500, 510))
+        image.crop = Rect(Point(x=0, y=10), Point(x=500, y=510))
         image.locked = True
         image.alpha = 70
-        image.position = Point(40, 90)
+        image.position = Point(x=40, y=90)
         image.scale = (1.1, 1.2)
         image.rotation = 0.3
         # transform: Already set with scale/rotation

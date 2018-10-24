@@ -2123,6 +2123,8 @@ class GSAnchor(GSBase):
 
     def __init__(self, name=None, position=None):
         self.name = name
+        if position is None:
+            position = Point(x=0, y=0)
         self.position = position
 
     def __repr__(self):

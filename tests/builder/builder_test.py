@@ -785,7 +785,7 @@ class ToUfosTest(unittest.TestCase):
         layer.width = 0
         for guide_data in data_in:
             pt = Point(
-                value=guide_data["position"][0], value2=guide_data["position"][1]
+                x=guide_data["position"][0], y=guide_data["position"][1]
             )
             guide = GSGuideLine()
             guide.position = pt

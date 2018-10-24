@@ -128,6 +128,8 @@ class Point(Vector(2)):
         if value is None:
             self.value = None
             return
+        if value is not None and x is not None:
+            value = [value, x]
         assert isinstance(value, (str, unicode, list, tuple))
         super(Point, self).__init__(value)
 
@@ -203,7 +205,7 @@ class Rect(Vector(4)):
 
     @property
     def origin(self):
-        return Point(self.value[0], self.value[1], rect=self)
+        return Point(x=self.value[0], y=self.value[1], rect=self)
 
     @origin.setter
     def origin(self, value):
@@ -212,7 +214,7 @@ class Rect(Vector(4)):
 
     @property
     def size(self):
-        return Size(self.value[2], self.value[3], rect=self)
+        return Size(x=self.value[2], y=self.value[3], rect=self)
 
     @size.setter
     def size(self, value):
