@@ -158,7 +158,7 @@ def main(args=None):
 def glyphs2ufo(options):
     """Converts a Glyphs.app source file into UFO masters and a designspace file."""
     if options.output_dir is None:
-        options.output_dir = os.path.dirname(options.glyphs_file)
+        options.output_dir = os.path.dirname(options.glyphs_file) or "."
 
     if options.designspace_path is None:
         options.designspace_path = os.path.join(
