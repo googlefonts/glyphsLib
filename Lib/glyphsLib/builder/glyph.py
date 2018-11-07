@@ -16,6 +16,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import logging
 
 from defcon import Color  # noqa
+from fontTools.misc.py23 import round
 
 import glyphsLib.glyphdata
 from .common import to_ufo_time, from_loose_ufo_time
