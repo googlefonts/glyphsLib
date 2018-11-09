@@ -605,9 +605,12 @@ class FontGlyphsProxy(Proxy):
 
     def __delitem__(self, key):
         if type(key) is int:
-        else:
-            raise KeyError  # TODO: add other access methods
             del (self._owner._glyphs[key])
+        elif isString(key):
+            glyph = self.__getitem__(key)
+            if not glyph:
+                raise KeyError, "No glyph '%s' in the font" % key
+            self._owner._glyphs.remove(glyph)
 
     def __contains__(self, item):
         if isString(item):
