@@ -355,7 +355,7 @@ class AxisDefinition(object):
         try:
             for location in loc_param:
                 if location.get("Axis") == self.name:
-                    user_loc = location["Location"]
+                    user_loc = float(location["Location"])
         except (TypeError, KeyError):
             pass
 
