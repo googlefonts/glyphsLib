@@ -2381,7 +2381,7 @@ class GSAnnotation(GSBase):
     }
     _defaultsForName = {
         "angle": 0.0,
-        "position": Point(),
+        "position": Point(0, 0),
         "text": None,
         "type": 0,
         "width": 100.0,

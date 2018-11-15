@@ -119,17 +119,26 @@ def Vector(dim):
 class Point(Vector(2)):
     """Read/write a vector in curly braces."""
 
-    def __init__(self, value=None, value2=None, rect=None):
-        if value is not None and value2 is not None:
-            value = [value, value2]
-        assert (
-            value is None
-            or isinstance(value, (str, unicode))
-            or isinstance(value, (list, tuple))
-        )
-        super(Point, self).__init__(value)
+    __slots__ = ("value", "rect")
 
+    def __init__(self, value=None, value2=None, rect=None):
         self.rect = rect
+
+        # Invoked like Point(100, 200) or Point(value=100, value2=200).
+        if value is not None and value2 is not None:
+            self.value = [value, value2]
+        # Invoked like Point("{800, 10}").
+        elif isinstance(value, (str, unicode)):
+            self.value = self.fromString(value)
+        # Invoked like Point([100, 200]).
+        elif isinstance(value, (list, tuple)):
+            self.value = value
+        # 🤷
+        else:
+            raise TypeError(
+                "Point must be constructed with two ints or a string representing "
+                "a point or a list representing a point."
+            )
 
     def __repr__(self):
         return "<point x={} y={}>".format(self.value[0], self.value[1])
