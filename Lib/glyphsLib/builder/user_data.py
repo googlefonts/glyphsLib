@@ -66,11 +66,10 @@ def to_ufo_master_user_data(self, ufo, master):
         if _user_data_has_no_special_meaning(key):
             ufo.lib[key] = master.userData[key]
 
-    # Restore UFO data files
+    # Restore UFO data files. This code assumes that all paths are POSIX paths.
     if UFO_DATA_KEY in master.userData:
         for filename, data in master.userData[UFO_DATA_KEY].items():
-            os_filename = os.path.join(*filename.split("/"))
-            ufo.data[os_filename] = bytes(data)
+            ufo.data[filename] = bytes(data)
 
 
 def to_ufo_glyph_user_data(self, ufo, glyph):
