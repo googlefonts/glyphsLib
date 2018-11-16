@@ -84,20 +84,12 @@ def to_ufo_master_attributes(self, source, master):
 
 def to_glyphs_master_attributes(self, source, master):
     ufo = source.font
-    try:
-        master.id = ufo.lib[MASTER_ID_LIB_KEY]
-    except KeyError:
-        # GSFontMaster has a random id by default
-        pass
 
-    if master.id.lower() in (m.id.lower() for m in self.font.masters):
-        raise ValueError(
-            "{} contains a '{}' lib key with the duplicate value '{}'. All given "
-            "masters must have a unique ID or data will get corrupted. Please "
-            "check for this lib key and either remove it (will be regenerated) or "
-            "change the value. If there is no key, you just witnessed something "
-            "unlikely.".format(ufo.path, MASTER_ID_LIB_KEY, master.id)
-        )
+    # Glyphs ensures that the master ID is unique by simply making up a new one when
+    # finding a duplicate.
+    ufo_master_id_lib_key = ufo.lib.get(MASTER_ID_LIB_KEY)
+    if ufo_master_id_lib_key and not self.font.masters[ufo_master_id_lib_key]:
+        master.id = ufo_master_id_lib_key
 
     if source.filename is not None and self.minimize_ufo_diffs:
         master.userData[UFO_FILENAME_KEY] = source.filename

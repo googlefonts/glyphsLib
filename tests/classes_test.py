@@ -139,6 +139,18 @@ class GlyphLayersTest(unittest.TestCase):
         layer = glyph.layers["XYZ123"]
         self.assertIsNone(layer)
 
+    def test_append_layer_same_id(self):
+        font = generate_minimal_font()
+        font.masters[0].id = "abc"
+        master2 = GSFontMaster()
+        master2.ascender = 0
+        master2.capHeight = 0
+        master2.descender = 0
+        master2.xHeight = 0
+        master2.id = "abc"
+        font.masters.append(master2)
+        assert len({m.id for m in font.masters}) == 2
+
 
 class GSFontTest(unittest.TestCase):
     def test_init(self):

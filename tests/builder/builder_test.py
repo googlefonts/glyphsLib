@@ -964,12 +964,12 @@ class ToUfosTest(unittest.TestCase):
         except Exception as e:
             self.fail("Unexpected exception: " + str(e))
 
-        ufos[1].lib["com.schriftgestaltung.fontMasterID"] = (
-            ufos[0].lib["com.schriftgestaltung.fontMasterID"].lower()
-        )
+        ufos[1].lib["com.schriftgestaltung.fontMasterID"] = ufos[0].lib[
+            "com.schriftgestaltung.fontMasterID"
+        ]
 
-        with self.assertRaises(ValueError):
-            to_glyphs(ufos)
+        font_rt = to_glyphs(ufos)
+        assert len({m.id for m in font_rt.masters}) == 2
 
 
 class _PointDataPen(object):
