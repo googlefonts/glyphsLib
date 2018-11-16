@@ -498,6 +498,7 @@ class FontFontMasterProxy(Proxy):
                 Key = self.__len__() + Key
             return self.values()[Key]
         elif isString(Key):
+            # UUIDs are case-sensitive in Glyphs.app.
             for master in self.values():
                 if master.id == Key:
                     return master
@@ -534,7 +535,9 @@ class FontFontMasterProxy(Proxy):
 
     def append(self, FontMaster):
         FontMaster.font = self._owner
-        if not FontMaster.id:
+        # If the master to be appended has no ID yet or it's a duplicate,
+        # make up a new one.
+        if not FontMaster.id or self[FontMaster.id]:
             FontMaster.id = str(uuid.uuid4()).upper()
         self._owner._masters.append(FontMaster)
 
@@ -1397,7 +1400,7 @@ class GSFontMaster(GSBase):
 
     def __init__(self):
         super(GSFontMaster, self).__init__()
-        self.id = str(uuid.uuid4())
+        self.id = str(uuid.uuid4()).upper()
         self.font = None
         self._name = None
         self._customParameters = []
