@@ -153,7 +153,7 @@ def test_ufo_lib_equivalent_to_font_master_user_data():
 
 
 def test_ufo_data_into_font_master_user_data(tmpdir):
-    filename = os.path.join("org.customTool", "ufoData.bin")
+    filename = "org.customTool/ufoData.bin"
     data = b"\x00\x01\xFF"
     ufo = defcon.Font()
     ufo.data[filename] = data
