@@ -518,10 +518,10 @@ def get_regular_master(font):
     """
     if not font.masters:
         return None
-    regular_name = font.customParameters["Variation Font Origin"]
-    if regular_name is not None:
+    user_origin = font.customParameters["Variation Font Origin"]
+    if user_origin is not None:
         for master in font.masters:
-            if master.name == regular_name:
+            if master.id == user_origin:
                 return master
     base_style = find_base_style(font.masters)
     if not base_style:
