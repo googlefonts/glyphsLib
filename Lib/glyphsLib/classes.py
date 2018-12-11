@@ -609,7 +609,7 @@ class FontGlyphsProxy(Proxy):
         elif isString(key):
             glyph = self.__getitem__(key)
             if not glyph:
-                raise KeyError, "No glyph '%s' in the font" % key
+                raise KeyError("No glyph '%s' in the font" % key)
             self._owner._glyphs.remove(glyph)
 
     def __contains__(self, item):
