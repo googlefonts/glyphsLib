@@ -635,7 +635,7 @@ register(FilterParamHandler())
 class ReplaceFeatureParamHandler(AbstractParamHandler):
     def to_ufo(self, glyphs, ufo):
         for value in glyphs.get_custom_values("Replace Feature"):
-            tag, repl = re.split("\s*;\s*", value, 1)
+            tag, repl = re.split(r"\s*;\s*", value, 1)
             ufo._owner.features.text = replace_feature(
                 tag, repl, ufo._owner.features.text or ""
             )
