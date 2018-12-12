@@ -611,6 +611,8 @@ class FontGlyphsProxy(Proxy):
             if not glyph:
                 raise KeyError("No glyph '%s' in the font" % key)
             self._owner._glyphs.remove(glyph)
+        else:
+            raise KeyError
 
     def __contains__(self, item):
         if isString(item):
