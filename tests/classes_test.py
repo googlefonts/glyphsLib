@@ -55,6 +55,7 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import Point, Transform, Rect
 
+
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans.glyphs")
 )
@@ -1671,6 +1672,26 @@ class GSBackgroundLayerTest(unittest.TestCase):
         """
         with pytest.raises(AttributeError):
             self.bg.foreground = GSLayer()
+
+
+class FontGlyphsProxyTest(unittest.TestCase):
+    def setUp(self):
+        self.font = GSFont(TESTFILE_PATH)
+
+    def test_remove_glyphs(self):
+        assert self.font.glyphs[0].name == "A"
+        del self.font.glyphs[0]
+        assert self.font.glyphs[0].name != "A"
+
+        assert self.font.glyphs["Adieresis"].name == "Adieresis"
+        del self.font.glyphs["Adieresis"]
+        assert self.font.glyphs["Adieresis"] is None
+
+        with pytest.raises(KeyError):
+            del self.font.glyphs["xxxzzz"]
+
+        with pytest.raises(KeyError):
+            del self.font.glyphs[self.font]
 
 
 if __name__ == "__main__":
