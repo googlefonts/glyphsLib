@@ -16,6 +16,7 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 import os
+from xmldiff import main, formatting
 
 import pytest
 import defcon
@@ -54,16 +55,15 @@ def test_designspace_generation_regular_same_family_name(tmpdir):
 
     path = os.path.join(str(tmpdir), "actual.designspace")
     designspace.write(path)
-    with open(path) as fp:
-        actual = fp.read()
 
     expected_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "DesignspaceGenTestRegular.designspace"
     )
-    with open(expected_path) as fp:
-        expected = fp.read()
 
-    assert expected == actual
+    assert (
+        len(main.diff_files(path, expected_path, formatter=formatting.DiffFormatter()))
+        == 0
+    )
 
 
 def test_designspace_generation_italic_same_family_name(tmpdir):
@@ -102,16 +102,15 @@ def test_designspace_generation_italic_same_family_name(tmpdir):
 
     path = os.path.join(str(tmpdir), "actual.designspace")
     designspace.write(path)
-    with open(path) as fp:
-        actual = fp.read()
 
     expected_path = os.path.join(
         os.path.dirname(__file__), "..", "data", "DesignspaceGenTestItalic.designspace"
     )
-    with open(expected_path) as fp:
-        expected = fp.read()
 
-    assert expected == actual
+    assert (
+        len(main.diff_files(path, expected_path, formatter=formatting.DiffFormatter()))
+        == 0
+    )
 
 
 def test_designspace_generation_regular_different_family_names(tmpdir):

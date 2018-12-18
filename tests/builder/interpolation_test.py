@@ -15,16 +15,15 @@
 # limitations under the License.
 
 from __future__ import print_function, division, absolute_import, unicode_literals
-import difflib
 import os.path
 import shutil
 import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as etree
+from xmldiff import main, formatting
 
 import defcon
-from fontTools.misc.py23 import open
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
@@ -157,16 +156,14 @@ class DesignspaceTest(unittest.TestCase):
 
     def _expect_designspace(self, doc, expected_path):
         actual_path = self.write_to_tmp_path(doc, "generated.designspace")
-        with open(actual_path, mode="r", encoding="utf-8") as f:
-            actual = f.readlines()
-        with open(expected_path, mode="r", encoding="utf-8") as f:
-            expected = f.readlines()
-        if actual != expected:
+        actual_diff = main.diff_files(
+            actual_path, expected_path, formatter=formatting.DiffFormatter()
+        )
+        if len(actual_diff) != 0:
             expected_name = os.path.basename(expected_path)
-            for line in difflib.unified_diff(
-                expected, actual, fromfile=expected_name, tofile="<generated>"
-            ):
-                sys.stderr.write(line)
+            sys.stderr.write("%s discrepancies (per xmldiff):\n" % (expected_name))
+            for line in actual_diff.split("\n"):
+                sys.stderr.write("  %s" % (line))
             self.fail("*.designspace file is different from expected")
 
     def expect_designspace_roundtrip(self, doc):
