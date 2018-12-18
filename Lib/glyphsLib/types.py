@@ -196,7 +196,7 @@ class Size(Point):
 class Rect(Vector(4)):
     """Read/write a rect of two points in curly braces."""
 
-    regex = re.compile("{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}")
+    regex = re.compile(r"{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}")
 
     def __init__(self, value=None, value2=None):
         if value is not None and value2 is not None:
