@@ -37,6 +37,14 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
 
+    def test_BraceTestFont(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "../data/BraceTestFont.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+        self.assertUFORoundtrip(font)
+
 
 if __name__ == "__main__":
     unittest.main()
