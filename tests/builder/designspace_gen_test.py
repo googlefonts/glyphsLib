@@ -21,7 +21,8 @@ from xmldiff import main, formatting
 import pytest
 import defcon
 
-from glyphsLib import to_glyphs, to_designspace
+import glyphsLib
+from glyphsLib import to_designspace, to_glyphs
 
 
 def test_designspace_generation_regular_same_family_name(tmpdir):
@@ -149,3 +150,55 @@ def test_designspace_generation_same_weight_name(tmpdir):
     assert designspace.sources[0].filename != designspace.sources[1].filename
     assert designspace.sources[1].filename != designspace.sources[2].filename
     assert designspace.sources[0].filename != designspace.sources[2].filename
+
+
+def test_designspace_generation_brace_layers(datadir):
+    font = glyphsLib.loads(str(datadir.join("BraceTestFont.glyphs")))
+    designspace = to_designspace(font)
+
+    axes_order = [
+        (a.name, a.minimum, a.default, a.maximum, a.map) for a in designspace.axes
+    ]
+    assert axes_order == [
+        ("Width", 50, 100, 100, []),
+        ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
+    ]
+
+    source_order = [(s.filename, s.layerName) for s in designspace.sources]
+    assert source_order == [
+        ("NewFont-Light.ufo", None),
+        ("NewFont-Light.ufo", "{75}"),
+        ("NewFont-Bold.ufo", None),
+        ("NewFont-Bold.ufo", "{75}"),
+        ("NewFont-Bold.ufo", "Test2 {90, 500}"),
+        ("NewFont-Bold.ufo", "Test1 {90, 600}"),
+        ("NewFont-CondensedLight.ufo", None),
+        ("NewFont-CondensedBold.ufo", None),
+    ]
+
+    # Check that all sources have a font object attached and sources with the same
+    # filename have the same font object attached.
+    masters = {}
+    for source in designspace.sources:
+        assert source.font
+        if source.filename in masters:
+            assert masters[source.filename] is source.font
+        masters[source.filename] = source.font
+
+
+def test_designspace_generation_instances(datadir):
+    font = glyphsLib.loads(str(datadir.join("BraceTestFont.glyphs")))
+    designspace = to_designspace(font)
+
+    instances_order = [
+        (i.name, i.styleMapStyleName, i.location) for i in designspace.instances
+    ]
+    assert instances_order == [
+        ("New Font Thin", "regular", {"Width": 100.0, "Weight": 100.0}),
+        ("New Font Regular", "regular", {"Width": 100.0, "Weight": 500.0}),
+        ("New Font Bold", "bold", {"Width": 100.0, "Weight": 1000.0}),
+        ("New Font Semi Consensed", "regular", {"Width": 75.0, "Weight": 500.0}),
+        ("New Font Thin Condensed", "regular", {"Width": 50.0, "Weight": 100.0}),
+        ("New Font Condensed", "regular", {"Width": 50.0, "Weight": 500.0}),
+        ("New Font Bold Condensed", "bold", {"Width": 50.0, "Weight": 1000.0}),
+    ]
