@@ -142,10 +142,10 @@ def _to_designspace_source_layer(self):
                 )
 
             # If we have more locations than axes, ignore the extra locations.
-            layer_coordinates_mapping = {
-                axis.name: location
+            layer_coordinates_mapping = collections.OrderedDict(
+                (axis.name, location)
                 for axis, location in zip(designspace.axes, master_coordinates)
-            }
+            )
 
             s = fontTools.designspaceLib.SourceDescriptor()
             s.filename = master.filename
