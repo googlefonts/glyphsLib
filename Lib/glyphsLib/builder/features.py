@@ -228,9 +228,11 @@ def to_glyphs_features(self):
 def _features_are_different_across_ufos(self):
     # FIXME: requires that features are in the same order in all feature files;
     #   the only allowed differences are whitespace
-    reference = self.designspace.sources[0].font.features.text or ""
+    # Construct iterator over full UFOs, layer sources do not have a font object set.
+    full_sources = (s for s in self.designspace.sources if not s.layerName)
+    reference = next(full_sources).font.features.text or ""
     reference = _normalize_whitespace(reference)
-    for source in self.designspace.sources[1:]:
+    for source in full_sources:
         other = _normalize_whitespace(source.font.features.text or "")
         if reference != other:
             return True

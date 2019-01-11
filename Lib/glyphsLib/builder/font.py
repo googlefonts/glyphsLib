@@ -156,5 +156,6 @@ def to_glyphs_ordered_masters(self):
 def _original_master_order(source):
     try:
         return source.font.lib[MASTER_ORDER_LIB_KEY]
-    except KeyError:
+    # Key may not be found or source.font be None if it's a layer source.
+    except (KeyError, AttributeError):
         return 1 << 31
