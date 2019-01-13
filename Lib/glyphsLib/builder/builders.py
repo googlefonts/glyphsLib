@@ -392,7 +392,7 @@ class GlyphsBuilder(_LoggerMixin):
         """
         # TODO: (jany) really make a copy to avoid modifying the original object
         copy = designspace
-        # Load only full UFO masters, sparse or "brace" layer sources are assumed 
+        # Load only full UFO masters, sparse or "brace" layer sources are assumed
         # to point to existing layers within one of the full masters.
         for source in (s for s in copy.sources if not s.layerName):
             if not hasattr(source, "font") or source.font is None:
