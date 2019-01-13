@@ -342,9 +342,12 @@ class GlyphsBuilder(_LoggerMixin):
         # Sort UFOS in the original order from the Glyphs file
         sorted_sources = self.to_glyphs_ordered_masters()
 
+        # Convert all full source UFOs to Glyphs masters. Sources with layer names
+        # are assumed to be sparse or "brace" layers and are ignored because Glyphs
+        # considers them to be special layers and will handle them itself.
         self._font = self.glyphs_module.GSFont()
         self._sources = OrderedDict()  # Same as in UFOBuilder
-        for index, source in enumerate(sorted_sources):
+        for index, source in enumerate(s for s in sorted_sources if not s.layerName):
             master = self.glyphs_module.GSFontMaster()
             self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
             self.to_glyphs_master_attributes(source, master)
@@ -389,7 +392,9 @@ class GlyphsBuilder(_LoggerMixin):
         """
         # TODO: (jany) really make a copy to avoid modifying the original object
         copy = designspace
-        for source in copy.sources:
+        # Load only full UFO masters, sparse or "brace" layer sources are assumed
+        # to point to existing layers within one of the full masters.
+        for source in (s for s in copy.sources if not s.layerName):
             if not hasattr(source, "font") or source.font is None:
                 if source.path:
                     # FIXME: (jany) consider not changing the caller's objects

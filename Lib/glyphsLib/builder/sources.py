@@ -14,9 +14,11 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import collections
 import logging
 import os
 
+import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
 
 from .masters import UFO_FILENAME_KEY
@@ -30,6 +32,7 @@ def to_designspace_sources(self):
     regular_master = get_regular_master(self.font)
     for master in self.font.masters:
         _to_designspace_source(self, master, (master is regular_master))
+    _to_designspace_source_layer(self)
 
 
 def _to_designspace_source(self, master, is_regular):
@@ -78,6 +81,88 @@ def _to_designspace_source(self, master, is_regular):
     for axis_def in get_axis_definitions(self.font):
         location[axis_def.name] = axis_def.get_design_loc(master)
     source.location = location
+
+
+def _to_designspace_source_layer(self):
+    # To construct a source layer, we need
+    # 1. The Designspace source filename and font object which holds the layer.
+    # 2. The (brace) layer name itself.
+    # 3. The location of the intermediate master in the design space.
+    # (For logging purposes, it's nice to know which glyphs contain the layer.)
+    #
+    # Note that a brace layer can be associated with different master layers (e.g. the
+    # 'a' can have a '{400}' brace layer associated with 'Thin', and 'b''s can be
+    # associte with 'Black').
+    # Also note that if a brace layer name has less values than there are axes, they
+    # are supposed to take on the values from the associated master as the missing
+    # values.
+
+    # First, collect all brace layers in the font and which glyphs and which masters
+    # they belong to.
+    layer_name_to_master_ids = collections.defaultdict(set)
+    layer_name_to_glyph_names = collections.defaultdict(list)
+    for glyph in self.font.glyphs:
+        for layer in glyph.layers:
+            if (
+                "{" in layer.name
+                and "}" in layer.name
+                and ".background" not in layer.name
+            ):
+                layer_name_to_master_ids[layer.name].add(layer.associatedMasterId)
+                layer_name_to_glyph_names[layer.name].append(glyph.name)
+
+    # Next, insert the brace layers in a defined location in the existing designspace.
+    designspace = self._designspace
+    layers_to_insert = collections.defaultdict(list)
+    for layer_name, master_ids in layer_name_to_master_ids.items():
+        # Construct coordinates first...
+        brace_coordinates = [
+            int(c)
+            for c in layer_name[
+                layer_name.index("{") + 1 : layer_name.index("}")
+            ].split(",")
+        ]
+
+        for master_id in master_ids:
+            # ... as they may need to be filled up with the values of the associated
+            # master.
+            master = self._sources[master_id]
+            master_coordinates = brace_coordinates
+            if len(master_coordinates) < len(designspace.axes):
+                master_locations = [master.location[a.name] for a in designspace.axes]
+                master_coordinates = (
+                    brace_coordinates + master_locations[len(brace_coordinates) :]
+                )
+            elif len(master_coordinates) > len(designspace.axes):
+                logger.warning(
+                    "Glyph(s) %s, brace layer '%s' defines more locations than "
+                    "there are design axes.",
+                    layer_name_to_glyph_names[layer_name],
+                    layer_name,
+                )
+
+            # If we have more locations than axes, ignore the extra locations.
+            layer_coordinates_mapping = collections.OrderedDict(
+                (axis.name, location)
+                for axis, location in zip(designspace.axes, master_coordinates)
+            )
+
+            s = fontTools.designspaceLib.SourceDescriptor()
+            s.filename = master.filename
+            s.font = master.font
+            s.layerName = layer_name
+            s.location = layer_coordinates_mapping
+
+            # We collect all generated SourceDescriptors first, grouped by the masters
+            # they belong to, so we can insert them in a defined order in the next step.
+            layers_to_insert[master_id].append(s)
+
+    # Splice brace layers into the appropriate location after their master.
+    for master_id, brace_layers in layers_to_insert.items():
+        master = self._sources[master_id]
+        insert_index = designspace.sources.index(master) + 1
+        brace_layers.sort(key=lambda x: tuple(x.location.values()))
+        designspace.sources[insert_index:insert_index] = brace_layers
 
 
 def to_glyphs_sources(self):
