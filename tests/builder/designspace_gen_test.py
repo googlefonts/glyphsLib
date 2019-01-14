@@ -160,7 +160,7 @@ def test_designspace_generation_brace_layers(datadir):
         (a.name, a.minimum, a.default, a.maximum, a.map) for a in designspace.axes
     ]
     assert axes_order == [
-        ("Width", 50, 100, 100, []),
+        ("Width", 75, 100, 100, [(75, 50.0), (100, 100.0)]),
         ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
     ]
 
