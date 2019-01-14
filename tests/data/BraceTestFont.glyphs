@@ -82,7 +82,7 @@ name = "Axis Location";
 value = (
 {
 Axis = Width;
-Location = 50;
+Location = 75;
 },
 {
 Axis = Weight;
@@ -108,7 +108,7 @@ name = "Axis Location";
 value = (
 {
 Axis = Width;
-Location = 50;
+Location = 75;
 },
 {
 Axis = Weight;
