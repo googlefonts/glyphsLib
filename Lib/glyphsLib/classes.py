@@ -1474,7 +1474,8 @@ class GSFontMaster(GSBase):
         if self.italicAngle:
             if names == ["Regular"]:
                 return "Italic"
-            names.append("Italic")
+            if "Italic" not in self.customName:
+                names.append("Italic")
         return " ".join(names)
 
     def _splitName(self, value):

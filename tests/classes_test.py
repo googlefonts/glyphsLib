@@ -647,6 +647,15 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         master.italicAngle = 10.0
         self.assertEqual("Italic", master.name)
 
+        # Test that we don't get an extra "Italic" in the name of masters
+        # whose customName already contain the string "Italic"
+        master = GSFontMaster()
+        master.weight = "Regular"
+        master.width = "Regular"
+        master.customName = "Italic"
+        master.italicAngle = 10.0
+        self.assertEqual("Italic", master.name)
+
     def test_name_assignment(self):
         test_data = [
             # <name>, <expected weight>, <expected width>, <expected custom>
