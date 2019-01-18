@@ -17,6 +17,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 import logging
 
+from fontTools.misc.py23 import basestring
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
@@ -330,12 +331,13 @@ def set_width_class(ufo, designspace, instance):
     _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
-def apply_instance_data(designspace_path, include_filenames=None, Font=defcon.Font):
+def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
     """Open UFO instances referenced by designspace, apply Glyphs instance
     data if present, re-save UFOs and return updated UFO Font objects.
 
     Args:
-        designspace_path: path to a designspace file.
+        designspace: DesignSpaceDocument object or path (str or PathLike) to
+            a designspace file.
         include_filenames: optional set of instance filenames (relative to
             the designspace path) to be included. By default all instaces are
             processed.
@@ -346,9 +348,12 @@ def apply_instance_data(designspace_path, include_filenames=None, Font=defcon.Fo
     from fontTools.designspaceLib import DesignSpaceDocument
     from os.path import normcase, normpath
 
-    designspace = DesignSpaceDocument()
-    designspace.read(designspace_path)
-    basedir = os.path.dirname(designspace_path)
+    if hasattr(designspace, "__fspath__"):
+        designspace = designspace.__fspath__()
+    if isinstance(designspace, basestring):
+        designspace = DesignSpaceDocument.fromfile(designspace)
+
+    basedir = os.path.dirname(designspace.path)
     instance_ufos = []
     if include_filenames is not None:
         include_filenames = {normcase(normpath(p)) for p in include_filenames}
