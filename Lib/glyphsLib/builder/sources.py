@@ -151,6 +151,7 @@ def _to_designspace_source_layer(self):
             s.filename = master.filename
             s.font = master.font
             s.layerName = layer_name
+            s.name = "{} {}".format(master.name, layer_name)
             s.location = layer_coordinates_mapping
 
             # We collect all generated SourceDescriptors first, grouped by the masters

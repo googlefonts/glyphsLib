@@ -164,16 +164,16 @@ def test_designspace_generation_brace_layers(datadir):
         ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
     ]
 
-    source_order = [(s.filename, s.layerName) for s in designspace.sources]
+    source_order = [(s.filename, s.layerName, s.name) for s in designspace.sources]
     assert source_order == [
-        ("NewFont-Light.ufo", None),
-        ("NewFont-Light.ufo", "{75}"),
-        ("NewFont-Bold.ufo", None),
-        ("NewFont-Bold.ufo", "{75}"),
-        ("NewFont-Bold.ufo", "Test2 {90, 500}"),
-        ("NewFont-Bold.ufo", "Test1 {90, 600}"),
-        ("NewFont-CondensedLight.ufo", None),
-        ("NewFont-CondensedBold.ufo", None),
+        ("NewFont-Light.ufo", None, "New Font Light"),
+        ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
+        ("NewFont-Bold.ufo", None, "New Font Bold"),
+        ("NewFont-Bold.ufo", "{75}", "New Font Bold {75}"),
+        ("NewFont-Bold.ufo", "Test2 {90, 500}", "New Font Bold Test2 {90, 500}"),
+        ("NewFont-Bold.ufo", "Test1 {90, 600}", "New Font Bold Test1 {90, 600}"),
+        ("NewFont-CondensedLight.ufo", None, "New Font Condensed Light"),
+        ("NewFont-CondensedBold.ufo", None, "New Font Condensed Bold"),
     ]
 
     # Check that all sources have a font object attached and sources with the same
