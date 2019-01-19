@@ -33,6 +33,31 @@ def to_designspace_sources(self):
     for master in self.font.masters:
         _to_designspace_source(self, master, (master is regular_master))
     _to_designspace_source_layer(self)
+    _warn_duplicate_master_locations(self)
+
+
+def _warn_duplicate_master_locations(self):
+    designspace = self._designspace
+    master_locations = collections.defaultdict(list)
+    for source in designspace.sources:
+        master_locations[tuple(source.location.items())].append(source)
+    duplicates = {l: s for l, s in master_locations.items() if len(s) > 1}
+    if duplicates:
+        msg = [
+            "DesignSpace sources contain duplicate locations; "
+            "varLib expects each master to define a unique location."
+        ]
+        if any(s.layerName for s in designspace.sources):
+            msg.append(
+                " Make sure that you used consistent 'brace layer' names"
+                " in all the glyph layers that share the same location."
+            )
+        for loc, sources in sorted(duplicates.items()):
+            msg.append(
+                "\n  %r => %r"
+                % ([s.layerName if s.layerName else s.name for s in sources], dict(loc))
+            )
+        logger.warning("".join(msg))
 
 
 def _to_designspace_source(self, master, is_regular):
