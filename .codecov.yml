@@ -1,5 +1,5 @@
 comment: false
 coverage:
-    status:
-        project: off
-        patch: off
+  status:
+    project: off
+    patch: off
