@@ -147,6 +147,7 @@ class UFOBuilder(_LoggerMixin):
         #     on demand.
         self.to_ufo_font_attributes(self.family_name)
 
+        # Generate the main (master) layers first.
         for glyph in self.font.glyphs:
             for layer in glyph.layers.values():
                 if layer.associatedMasterId != layer.layerId:
@@ -160,6 +161,7 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)
 
+        # And sublayers (brace, bracket, ...) second.
         for glyph, layer in supplementary_layer_data:
             if (
                 layer.layerId not in master_layer_ids
@@ -210,6 +212,7 @@ class UFOBuilder(_LoggerMixin):
         """
         if self._designspace_is_complete:
             return self._designspace
+
         self._designspace_is_complete = True
         list(self.masters)  # Make sure that the UFOs are built
         self.to_designspace_axes()
