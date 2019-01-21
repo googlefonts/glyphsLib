@@ -131,6 +131,34 @@ def test_masters_have_user_locations():
     ]
 
 
+def test_masters_have_user_locations_string():
+    """Test that stringified Axis Locations are converted.
+
+    Some versions of Glyph store a string instead of an int.
+    """
+    font = to_glyphs([defcon.Font(), defcon.Font()])
+    font.customParameters["Axes"] = [{"Tag": "opsz", "Name": "Optical"}]
+    font.masters[0].weightValue = 0
+    font.masters[0].customParameters["Axis Location"] = [
+        {"Axis": "Optical", "Location": 13}
+    ]
+    font.masters[1].weightValue = 1000
+    font.masters[1].customParameters["Axis Location"] = [
+        {"Axis": "Optical", "Location": "100"}
+    ]
+
+    doc = to_designspace(font)
+    assert doc.axes[0].map == [(13, 0), (100, 1000)]
+
+    font = to_glyphs(doc)
+    assert font.masters[0].customParameters["Axis Location"] == [
+        {"Axis": "Optical", "Location": 13}
+    ]
+    assert font.masters[1].customParameters["Axis Location"] == [
+        {"Axis": "Optical", "Location": 100}
+    ]
+
+
 def test_master_user_location_goes_into_os2_classes():
     font = to_glyphs([defcon.Font(), defcon.Font()])
     font.customParameters["Axes"] = [
