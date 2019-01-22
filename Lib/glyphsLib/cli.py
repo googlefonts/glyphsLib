@@ -106,6 +106,14 @@ def main(args=None):
             "may create background layers automatically."
         ),
     )
+    group.add_argument(
+        "--no-store-editor-state",
+        action="store_true",
+        help=(
+            "Skip storing editor state in the UFO, like which glyphs are open "
+            "in which tab (DisplayStrings)."
+        ),
+    )
 
     parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
@@ -179,6 +187,7 @@ def glyphs2ufo(options):
         normalize_ufos=options.normalize_ufos,
         create_background_layers=options.create_background_layers,
         generate_GDEF=options.generate_GDEF,
+        store_editor_state=not options.no_store_editor_state,
     )
 
 

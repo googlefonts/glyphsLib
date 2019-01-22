@@ -57,6 +57,7 @@ class UFOBuilder(_LoggerMixin):
         use_designspace=False,
         minimize_glyphs_diffs=False,
         generate_GDEF=True,
+        store_editor_state=True,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -79,6 +80,8 @@ class UFOBuilder(_LoggerMixin):
                                  .glyphs files when going glyphs->ufo->glyphs.
         generate_GDEF -- set to False to skip writing a `table GDEF {...}` in
                          the UFO features.
+        store_editor_state -- If True, store editor state in the UFO like which
+                              glyphs are open in which tabs ("DisplayStrings").
         """
         self.font = font
         self.ufo_module = ufo_module
@@ -88,6 +91,7 @@ class UFOBuilder(_LoggerMixin):
         self.use_designspace = use_designspace
         self.minimize_glyphs_diffs = minimize_glyphs_diffs
         self.generate_GDEF = generate_GDEF
+        self.store_editor_state = store_editor_state
 
         # The set of (SourceDescriptor + UFO)s that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.

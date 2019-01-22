@@ -19,6 +19,7 @@ import unittest
 import os
 
 import glyphsLib
+import glyphsLib.builder.constants
 from glyphsLib import classes
 
 from .. import test_helpers
@@ -46,6 +47,26 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
         with open(filename) as f:
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
+
+    def test_BraceTestFont_no_editor_state(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "../data/BraceTestFont.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+
+        designspace = glyphsLib.to_designspace(font)
+        for source in designspace.sources:
+            assert source.font.lib[
+                glyphsLib.builder.constants.FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"
+            ] == ["a", "b"]
+
+        designspace = glyphsLib.to_designspace(font, store_editor_state=False)
+        for source in designspace.sources:
+            assert (
+                glyphsLib.builder.constants.FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"
+                not in source.font.lib
+            )
 
 
 if __name__ == "__main__":
