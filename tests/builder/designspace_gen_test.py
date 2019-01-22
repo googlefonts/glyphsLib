@@ -153,7 +153,8 @@ def test_designspace_generation_same_weight_name(tmpdir):
 
 
 def test_designspace_generation_brace_layers(datadir):
-    font = glyphsLib.loads(str(datadir.join("BraceTestFont.glyphs")))
+    with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
     designspace = to_designspace(font)
 
     axes_order = [
@@ -187,7 +188,8 @@ def test_designspace_generation_brace_layers(datadir):
 
 
 def test_designspace_generation_instances(datadir):
-    font = glyphsLib.loads(str(datadir.join("BraceTestFont.glyphs")))
+    with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
     designspace = to_designspace(font)
 
     instances_order = [
