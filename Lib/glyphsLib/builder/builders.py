@@ -25,7 +25,7 @@ import defcon
 from fontTools import designspaceLib
 
 from glyphsLib import classes
-from .constants import PUBLIC_PREFIX, FONT_CUSTOM_PARAM_PREFIX
+from .constants import PUBLIC_PREFIX, FONT_CUSTOM_PARAM_PREFIX, GLYPHLIB_PREFIX
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
@@ -289,7 +289,8 @@ class UFOBuilder(_LoggerMixin):
                 bracket_minimum = int(n[n.index("[") + 1 : n.index("]")])
             except ValueError:
                 raise ValueError(
-                    "Only bracket layers with one numerical location (meaning the first axis in the designspace file) are currently supported."
+                    "Only bracket layers with one numerical location (meaning the first"
+                    " axis in the designspace file) are currently supported."
                 )
             assert bracket_axis.minimum <= bracket_minimum <= bracket_axis.maximum, (
                 f"Bracket layer {layer.name} must be within the bounds of the "
@@ -304,7 +305,7 @@ class UFOBuilder(_LoggerMixin):
         # replacment rules below.
         crossovers = defaultdict(list)  # type: Dict[str, List[int]]
         for location, layers in bracket_layer_map.items():
-            glyph_name_set = set(l.parent.name for l in layers)
+            glyph_name_set = {l.parent.name for l in layers}
             for glyph_name in glyph_name_set:
                 crossovers[glyph_name].append(location)
 
@@ -317,6 +318,7 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_font.newGlyph(f"{layer.parent.name}.BRACKET.{location}")
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []
+                ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = layer.name
 
         def pairwise(iterable):
             "s -> (s0,s1), (s1,s2), (s2, s3), ..."
@@ -457,8 +459,8 @@ class GlyphsBuilder(_LoggerMixin):
             # First, move free-standing bracket glyphs back to layers to avoid dealing
             # with GSLayer transplantation.
             for bracket_glyph in [g for g in source.font if ".BRACKET." in g.name]:
-                base_glyph, crossover = bracket_glyph.name.split(".BRACKET.")
-                layer_name = "[" + str(crossover) + "]"
+                base_glyph = bracket_glyph.name.split(".BRACKET.")[0]
+                layer_name = bracket_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"]
                 if layer_name not in source.font.layers:
                     ufo_layer = source.font.newLayer(layer_name)
                 else:

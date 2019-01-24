@@ -191,7 +191,7 @@ width = 300;
 {
 associatedMasterId = "1034EC4A-9832-4D17-A75A-2B17BF7C4AA6";
 layerId = "C07DA35D-EBCD-432A-96B9-692C3DD89044";
-name = "[300]";
+name = "Something [300]";
 paths = (
 {
 closed = 1;
@@ -268,7 +268,7 @@ width = 600;
 {
 associatedMasterId = "ED9A0AB1-C69E-43FC-AC45-FCA9085EE0B1";
 layerId = "C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB";
-name = "[600]";
+name = "Other [600]";
 paths = (
 {
 closed = 1;

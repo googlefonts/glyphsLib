@@ -225,7 +225,9 @@ def test_designspace_generation_bracket_roundtrip(datadir):
 
     for source in designspace.sources:
         assert "[300]" not in source.font.layers
+        assert "Something [300]" not in source.font.layers
         assert "[600]" not in source.font.layers
+        assert "Other [600]" not in source.font.layers
         g1 = source.font["x.BRACKET.300"]
         assert not g1.unicodes
         g2 = source.font["x.BRACKET.600"]
@@ -234,13 +236,15 @@ def test_designspace_generation_bracket_roundtrip(datadir):
     font_rt = to_glyphs(designspace)
     assert "x" in font_rt.glyphs
     g = font_rt.glyphs["x"]
-    assert len(g.layers) == 12 and set(l.name for l in g.layers) == {
+    assert len(g.layers) == 12 and {l.name for l in g.layers} == {
         "[300]",
         "[600]",
         "Bold",
         "Condensed Bold",
         "Condensed Light",
         "Light",
+        "Other [600]",
+        "Something [300]",
     }
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs
