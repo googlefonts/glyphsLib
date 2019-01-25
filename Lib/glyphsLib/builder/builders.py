@@ -289,7 +289,7 @@ class UFOBuilder(_LoggerMixin):
         # First, organize all bracket layers by crossover value.
         bracket_layer_map = defaultdict(list)  # type: Dict[int, List[classes.GSLayer]]
         for layer in self.bracket_layers:
-            n = layer.name.replace(" ", "")
+            n = layer.name
             try:
                 bracket_crossover = int(n[n.index("[") + 1 : n.index("]")])
             except ValueError:
