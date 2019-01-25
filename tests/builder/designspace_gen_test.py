@@ -204,3 +204,64 @@ def test_designspace_generation_instances(datadir):
         ("New Font Condensed", "regular", {"Width": 50.0, "Weight": 500.0}),
         ("New Font Bold Condensed", "bold", {"Width": 50.0, "Weight": 1000.0}),
     ]
+
+
+def test_designspace_generation_bracket_roundtrip(datadir):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font)
+
+    assert designspace.rules[0].name == "x.BRACKET.300"
+    assert designspace.rules[0].conditionSets == [
+        [dict(name="Weight", minimum=300, maximum=600)]
+    ]
+    assert designspace.rules[0].subs == [("x", "x.BRACKET.300")]
+
+    assert designspace.rules[1].name == "x.BRACKET.600"
+    assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=600, maximum=1000)]
+    ]
+    assert designspace.rules[1].subs == [("x", "x.BRACKET.600")]
+
+    for source in designspace.sources:
+        assert "[300]" not in source.font.layers
+        assert "Something [300]" not in source.font.layers
+        assert "[600]" not in source.font.layers
+        assert "Other [600]" not in source.font.layers
+        g1 = source.font["x.BRACKET.300"]
+        assert not g1.unicodes
+        g2 = source.font["x.BRACKET.600"]
+        assert not g2.unicodes
+
+    font_rt = to_glyphs(designspace)
+    assert "x" in font_rt.glyphs
+    g = font_rt.glyphs["x"]
+    assert len(g.layers) == 12 and {l.name for l in g.layers} == {
+        "[300]",
+        "[600]",
+        "Bold",
+        "Condensed Bold",
+        "Condensed Light",
+        "Light",
+        "Other [600]",
+        "Something [300]",
+    }
+    assert "x.BRACKET.300" not in font_rt.glyphs
+    assert "x.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_roundtrip_unbalanced_brackets(datadir):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    # Delete the "Other [600]" layer to unbalance bracket layers.
+    del font.glyphs["x"].layers["C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB"]
+    with pytest.raises(ValueError) as excinfo:
+        to_designspace(font)
+    assert "bracket layer missing" in str(excinfo)
+
+    # Delete the other [600] layers to rebalance.
+    del font.glyphs["x"].layers["E729A72D-C6FF-4DDD-ADA1-BB5B6FD7E3DD"]
+    del font.glyphs["x"].layers["F5778F4C-2B04-4030-9D7D-09E3C951C089"]
+    del font.glyphs["x"].layers["24328DA8-2CE1-4D0A-9C91-214ED36F6393"]
+    assert to_designspace(font)

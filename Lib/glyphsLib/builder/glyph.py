@@ -31,12 +31,12 @@ BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
-    from glyphsLib import glyphdata  # Expensive import
-
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
+
     note = glyph.note
     if note is not None:
         ufo_glyph.note = note
+
     last_change = glyph.lastChange
     if last_change is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(last_change)
@@ -66,8 +66,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     export = glyph.export
     if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
+
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
     production_name = glyph.production or glyphinfo.production_name
     if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"

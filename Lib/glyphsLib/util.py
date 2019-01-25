@@ -15,6 +15,7 @@
 # TODO: (jany) merge with builder/common.py
 
 import logging
+import itertools
 import os
 import shutil
 from fontTools.misc.textTools import num2binary
@@ -102,3 +103,10 @@ def int_list_to_bin(value):
     for i in value:
         result += 1 << i
     return result
+
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = itertools.tee(iterable)
+    next(b, None)
+    return zip(a, b)
