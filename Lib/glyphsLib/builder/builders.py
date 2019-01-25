@@ -320,6 +320,13 @@ class UFOBuilder(_LoggerMixin):
         # roundtrip stability on Python 2.
         crossovers = defaultdict(list)  # type: Dict[str, List[int]]
         for location, layers in sorted(bracket_layer_map.items()):
+            if not len(layers) % len(list(self.masters)) == 0:
+                raise ValueError(
+                    "Currently, we only support bracket layers that are present on all "
+                    "masters, i.e. what the Glyphs.app tutorial calls 'Changing All "
+                    "Masters'. There is a [{location}] bracket layer missing for a "
+                    "glyph.".format(location=location)
+                )
             glyph_name_set = {l.parent.name for l in layers}
             for glyph_name in glyph_name_set:
                 crossovers[glyph_name].append(location)

@@ -248,3 +248,20 @@ def test_designspace_generation_bracket_roundtrip(datadir):
     }
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_roundtrip_unbalanced_brackets(datadir):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    # Delete the "Other [600]" layer to unbalance bracket layers.
+    del font.glyphs["x"].layers["C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB"]
+    with pytest.raises(ValueError) as excinfo:
+        to_designspace(font)
+    assert "bracket layer missing" in str(excinfo)
+
+    # Delete the other [600] layers to rebalance.
+    del font.glyphs["x"].layers["E729A72D-C6FF-4DDD-ADA1-BB5B6FD7E3DD"]
+    del font.glyphs["x"].layers["F5778F4C-2B04-4030-9D7D-09E3C951C089"]
+    del font.glyphs["x"].layers["24328DA8-2CE1-4D0A-9C91-214ED36F6393"]
+    assert to_designspace(font)
