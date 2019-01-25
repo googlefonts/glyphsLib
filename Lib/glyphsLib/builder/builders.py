@@ -275,16 +275,18 @@ class UFOBuilder(_LoggerMixin):
                 "Cannot apply bracket layers unless at least one axis is defined."
             )
         bracket_axis = self._designspace.axes[0]
-        # Determine the axis scale in design space (axis.default/minimum/maximum may
-        # be user space).
+
+        # Determine the axis scale in design space because crossovers/locations are
+        # in design space (axis.default/minimum/maximum may be user space).
         if bracket_axis.map:
-            axis_scale = [o for i, o in bracket_axis.map]
+            axis_scale = [design_location for _, design_location in bracket_axis.map]
             bracket_axis_min = min(axis_scale)
             bracket_axis_max = max(axis_scale)
-        else:
+        else:  # No mapping means user and design space are the same.
             bracket_axis_min = bracket_axis.minimum
             bracket_axis_max = bracket_axis.maximum
 
+        # First, organize all bracket layers by crossover value.
         bracket_layer_map = defaultdict(list)  # type: Dict[int, List[classes.GSLayer]]
         for layer in self.bracket_layers:
             n = layer.name.replace(" ", "")
@@ -292,13 +294,14 @@ class UFOBuilder(_LoggerMixin):
                 bracket_crossover = int(n[n.index("[") + 1 : n.index("]")])
             except ValueError:
                 raise ValueError(
-                    "Only bracket layers with one numerical location (meaning the first"
-                    " axis in the designspace file) are currently supported."
+                    "Only bracket layers with one numerical (design space) location "
+                    " (meaning the first axis in the designspace file) are currently "
+                    "supported."
                 )
             if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
                 raise ValueError(
                     "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
-                    "bounds of the {bracket_axis_name} axis: minimum "
+                    "design space bounds of the {bracket_axis_name} axis: minimum "
                     "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
                         glyph_name=layer.parent.name,
                         layer_name=layer.name,
@@ -313,8 +316,8 @@ class UFOBuilder(_LoggerMixin):
         # layers "[300]" and "[600]", crossovers will be
         # {"x": [300, 600], "y": [300, 600]}. This helps with defining overlaps in the
         # replacment rules below.
-        # Note: sort by location to ensure value list sortedness for roundtrip
-        # stability on Python 2.
+        # Note: sort by location to ensure value list appending sortedness for
+        # roundtrip stability on Python 2.
         crossovers = defaultdict(list)  # type: Dict[str, List[int]]
         for location, layers in sorted(bracket_layer_map.items()):
             glyph_name_set = {l.parent.name for l in layers}
@@ -327,12 +330,12 @@ class UFOBuilder(_LoggerMixin):
                 ufo_font = self._sources[
                     layer.associatedMasterId or layer.layerId
                 ].font.layers.defaultLayer
-                ufo_glyph_name = "{layer_parent_name}.BRACKET.{location}".format(
-                    layer_parent_name=layer.parent.name, location=location
+                ufo_glyph_name = "{glyph_name}.BRACKET.{location}".format(
+                    glyph_name=layer.parent.name, location=location
                 )
                 ufo_glyph = ufo_font.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
-                ufo_glyph.unicodes = []
+                ufo_glyph.unicodes = []  # Avoid cmap interference
                 ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = layer.name
 
         # Generate rules for the bracket layers.
