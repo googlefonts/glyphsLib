@@ -16,7 +16,6 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 from collections import OrderedDict, defaultdict
 import logging
-import itertools
 import os
 from textwrap import dedent
 
@@ -24,7 +23,7 @@ import defcon
 
 from fontTools import designspaceLib
 
-from glyphsLib import classes
+from glyphsLib import classes, util
 from .constants import PUBLIC_PREFIX, FONT_CUSTOM_PARAM_PREFIX, GLYPHLIB_PREFIX
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 
@@ -336,15 +335,9 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph.unicodes = []
                 ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = layer.name
 
-        def pairwise(iterable):
-            "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-            a, b = itertools.tee(iterable)
-            next(b, None)
-            return zip(a, b)
-
         # Generate rules for the bracket layers.
         for glyph_name, axis_crossovers in crossovers.items():
-            for crossover_min, crossover_max in pairwise(
+            for crossover_min, crossover_max in util.pairwise(
                 axis_crossovers + [bracket_axis_max]
             ):
                 rule = designspaceLib.RuleDescriptor()
