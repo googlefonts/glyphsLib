@@ -298,9 +298,14 @@ class UFOBuilder(_LoggerMixin):
                     " axis in the designspace file) are currently supported."
                 )
             assert bracket_axis.minimum <= bracket_minimum <= bracket_axis.maximum, (
-                f"Bracket layer {layer.name} must be within the bounds of the "
-                f"{bracket_axis.name} axis: minimum {bracket_axis.minimum}, maximum "
-                f"{bracket_axis.maximum}."
+                "Bracket layer {layer_name} must be within the bounds of the "
+                "{bracket_axis_name} axis: minimum {bracket_axis_minimum}, maximum "
+                "{bracket_axis_maximum}."
+            ).format(
+                layer_name=layer.name,
+                bracket_axis_name=bracket_axis.name,
+                bracket_axis_minimum=bracket_axis.minimum,
+                bracket_axis_maximum=bracket_axis.maximum,
             )
             bracket_layer_map[bracket_minimum].append(layer)
 
@@ -308,8 +313,10 @@ class UFOBuilder(_LoggerMixin):
         # layers "[300]" and "[600]", crossovers will be
         # {"x": [300, 600], "y": [300, 600]}. This helps with defining overlaps in the
         # replacment rules below.
+        # Note: sort by location to ensure value list sortedness for roundtrip
+        # stability on Python 2.
         crossovers = defaultdict(list)  # type: Dict[str, List[int]]
-        for location, layers in bracket_layer_map.items():
+        for location, layers in sorted(bracket_layer_map.items()):
             glyph_name_set = {l.parent.name for l in layers}
             for glyph_name in glyph_name_set:
                 crossovers[glyph_name].append(location)
@@ -320,7 +327,10 @@ class UFOBuilder(_LoggerMixin):
                 ufo_font = self._sources[
                     layer.associatedMasterId or layer.layerId
                 ].font.layers.defaultLayer
-                ufo_glyph = ufo_font.newGlyph(f"{layer.parent.name}.BRACKET.{location}")
+                ufo_glyph_name = "{layer_parent_name}.BRACKET.{location}".format(
+                    layer_parent_name=layer.parent.name, location=location
+                )
+                ufo_glyph = ufo_font.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []
                 ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = layer.name
@@ -337,7 +347,9 @@ class UFOBuilder(_LoggerMixin):
                 axis_crossovers + [bracket_axis_max]
             ):
                 rule = designspaceLib.RuleDescriptor()
-                rule.name = f"{glyph_name}.BRACKET.{crossover_min}"
+                rule.name = "{glyph_name}.BRACKET.{crossover_min}".format(
+                    glyph_name=glyph_name, crossover_min=crossover_min
+                )
                 rule.conditionSets.append(
                     [
                         {
