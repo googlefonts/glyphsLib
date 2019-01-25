@@ -295,7 +295,7 @@ class UFOBuilder(_LoggerMixin):
             except ValueError:
                 raise ValueError(
                     "Only bracket layers with one numerical (design space) location "
-                    " (meaning the first axis in the designspace file) are currently "
+                    "(meaning the first axis in the designspace file) are currently "
                     "supported."
                 )
             if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
@@ -343,10 +343,11 @@ class UFOBuilder(_LoggerMixin):
             for crossover_min, crossover_max in util.pairwise(
                 axis_crossovers + [bracket_axis_max]
             ):
-                rule = designspaceLib.RuleDescriptor()
-                rule.name = "{glyph_name}.BRACKET.{crossover_min}".format(
+                glyph_name_substitution = "{glyph_name}.BRACKET.{crossover_min}".format(
                     glyph_name=glyph_name, crossover_min=crossover_min
                 )
+                rule = designspaceLib.RuleDescriptor()
+                rule.name = glyph_name_substitution
                 rule.conditionSets.append(
                     [
                         {
@@ -356,7 +357,7 @@ class UFOBuilder(_LoggerMixin):
                         }
                     ]
                 )
-                rule.subs.append((glyph_name, rule.name))
+                rule.subs.append((glyph_name, glyph_name_substitution))
                 self._designspace.addRule(rule)
 
     # Implementation is split into one file per feature
