@@ -276,38 +276,39 @@ class UFOBuilder(_LoggerMixin):
                 "Cannot apply bracket layers unless at least one axis is defined."
             )
         bracket_axis = self._designspace.axes[0]
-        # Determine the top end of the axis in design space (axis.default may be user
-        # space).
-        bracket_axis_max = int(
-            max(
-                [
-                    source.location[bracket_axis.name]
-                    for source in self._designspace.sources
-                ]
-            )
-        )
+        # Determine the axis scale in design space (axis.default/minimum/maximum may
+        # be user space).
+        if bracket_axis.map:
+            axis_scale = [o for i, o in bracket_axis.map]
+            bracket_axis_min = min(axis_scale)
+            bracket_axis_max = max(axis_scale)
+        else:
+            bracket_axis_min = bracket_axis.minimum
+            bracket_axis_max = bracket_axis.maximum
 
         bracket_layer_map = defaultdict(list)  # type: Dict[int, List[classes.GSLayer]]
         for layer in self.bracket_layers:
             n = layer.name.replace(" ", "")
             try:
-                bracket_minimum = int(n[n.index("[") + 1 : n.index("]")])
+                bracket_crossover = int(n[n.index("[") + 1 : n.index("]")])
             except ValueError:
                 raise ValueError(
                     "Only bracket layers with one numerical location (meaning the first"
                     " axis in the designspace file) are currently supported."
                 )
-            assert bracket_axis.minimum <= bracket_minimum <= bracket_axis.maximum, (
-                "Bracket layer {layer_name} must be within the bounds of the "
-                "{bracket_axis_name} axis: minimum {bracket_axis_minimum}, maximum "
-                "{bracket_axis_maximum}."
-            ).format(
-                layer_name=layer.name,
-                bracket_axis_name=bracket_axis.name,
-                bracket_axis_minimum=bracket_axis.minimum,
-                bracket_axis_maximum=bracket_axis.maximum,
-            )
-            bracket_layer_map[bracket_minimum].append(layer)
+            if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
+                raise ValueError(
+                    "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
+                    "bounds of the {bracket_axis_name} axis: minimum "
+                    "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
+                        glyph_name=layer.parent.name,
+                        layer_name=layer.name,
+                        bracket_axis_name=bracket_axis.name,
+                        bracket_axis_minimum=bracket_axis_min,
+                        bracket_axis_maximum=bracket_axis_max,
+                    )
+                )
+            bracket_layer_map[bracket_crossover].append(layer)
 
         # Map crossovers to glyph names, i.e. if glyph "x" and "y" have the bracket
         # layers "[300]" and "[600]", crossovers will be
