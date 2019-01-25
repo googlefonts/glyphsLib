@@ -231,7 +231,8 @@ class UFOBuilder(_LoggerMixin):
         self.to_designspace_instances()
         self.to_designspace_family_user_data()
 
-        self._apply_bracket_layers()
+        if self.bracket_layers:
+            self._apply_bracket_layers()
 
         # append base style shared by all masters to designspace file name
         base_family = self.family_name or "Unnamed"
@@ -270,6 +271,10 @@ class UFOBuilder(_LoggerMixin):
         As of Glyphs.app 2.6, only single axis bracket layers are supported, we assume
         the axis to be the first axis in the Designspace.
         """
+        if not self._designspace.axes:
+            raise ValueError(
+                "Cannot apply bracket layers unless at least one axis is defined."
+            )
         bracket_axis = self._designspace.axes[0]
         # Determine the top end of the axis in design space (axis.default may be user
         # space).
