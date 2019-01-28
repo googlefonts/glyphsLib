@@ -14,7 +14,7 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, Counter
 import logging
 import os
 from textwrap import dedent
@@ -319,14 +319,25 @@ class UFOBuilder(_LoggerMixin):
         # Note: sort by location to ensure value list appending sortedness for
         # roundtrip stability on Python 2.
         crossovers = defaultdict(list)  # type: Dict[str, List[int]]
+        n_masters = len(list(self.masters))
         for location, layers in sorted(bracket_layer_map.items()):
-            if not len(layers) % len(list(self.masters)) == 0:
+            # Sanity checking.
+            counter = Counter([l.parent.name for l in layers])
+            unbalanced_glyphs = {
+                glyph_name
+                for glyph_name, count in counter.items()
+                if not count % n_masters == 0
+            }
+            if unbalanced_glyphs:
                 raise ValueError(
                     "Currently, we only support bracket layers that are present on all "
                     "masters, i.e. what the Glyphs.app tutorial calls 'Changing All "
-                    "Masters'. There is a [{location}] bracket layer missing for a "
-                    "glyph.".format(location=location)
+                    "Masters'. There is a/are '[{location}]' bracket layer(s) missing "
+                    "for glyph(s) {unbalanced_glyphs}.".format(
+                        location=location, unbalanced_glyphs=unbalanced_glyphs
+                    )
                 )
+            # Actual work.
             glyph_name_set = {l.parent.name for l in layers}
             for glyph_name in glyph_name_set:
                 crossovers[glyph_name].append(location)
