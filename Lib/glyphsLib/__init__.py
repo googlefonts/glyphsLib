@@ -128,10 +128,12 @@ def build_masters(
     )
 
     # Only write full masters to disk. This assumes that layer sources are always part
-    # of another full master source, which should always be the case in a .glyphs file.
-    ufos = []
-    for source in (s for s in designspace.sources if s.layerName is None):
-        ufos.append(source.font)
+    # of another full master source, which must always be the case in a .glyphs file.
+    ufos = {}
+    for source in designspace.sources:
+        if source.filename in ufos:
+            assert source.font is ufos[source.filename]
+            continue
 
         if create_background_layers:
             ufo_create_background_layer_for_all_glyphs(source.font)
@@ -144,6 +146,8 @@ def build_masters(
             import ufonormalizer
 
             ufonormalizer.normalizeUFO(ufo_path, writeModTimes=False)
+
+        ufos[source.filename] = source.font
 
     if not designspace_path:
         designspace_path = os.path.join(master_dir, designspace.filename)
