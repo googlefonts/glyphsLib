@@ -206,6 +206,23 @@ def test_designspace_generation_instances(datadir):
     ]
 
 
+def test_designspace_generation_on_disk(datadir, tmpdir):
+    glyphsLib.build_masters(str(datadir.join("BraceTestFont.glyphs")), str(tmpdir))
+
+    ufo_paths = list(tmpdir.visit(fil="*.ufo"))
+    assert len(ufo_paths) == 4  # Source layers should not be written to disk.
+    for ufo_path in ufo_paths:
+        ufo = defcon.Font(str(ufo_path))
+        # Check that all glyphs have contours (brace layers are in "b" only, writing
+        # the brace layer to disk would result in empty other glyphs).
+        for layer in ufo.layers:
+            for glyph in layer:
+                if glyph.name == "space":
+                    assert not glyph
+                else:
+                    assert glyph
+
+
 def test_designspace_generation_bracket_roundtrip(datadir):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)

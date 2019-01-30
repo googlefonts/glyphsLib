@@ -127,8 +127,10 @@ def build_masters(
         store_editor_state=store_editor_state,
     )
 
+    # Only write full masters to disk. This assumes that layer sources are always part
+    # of another full master source, which should always be the case in a .glyphs file.
     ufos = []
-    for source in designspace.sources:
+    for source in (s for s in designspace.sources if s.layerName is None):
         ufos.append(source.font)
 
         if create_background_layers:
