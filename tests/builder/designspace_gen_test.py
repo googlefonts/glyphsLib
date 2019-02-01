@@ -228,17 +228,23 @@ def test_designspace_generation_bracket_roundtrip(datadir):
         font = glyphsLib.load(f)
     designspace = to_designspace(font)
 
-    assert designspace.rules[0].name == "x.BRACKET.300"
+    assert designspace.rules[0].name == "BRACKET.300.600"
     assert designspace.rules[0].conditionSets == [
         [dict(name="Weight", minimum=300, maximum=600)]
     ]
     assert designspace.rules[0].subs == [("x", "x.BRACKET.300")]
 
-    assert designspace.rules[1].name == "x.BRACKET.600"
+    assert designspace.rules[1].name == "BRACKET.300.1000"
     assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=300, maximum=1000)]
+    ]
+    assert designspace.rules[1].subs == [("a", "a.BRACKET.300")]
+
+    assert designspace.rules[2].name == "BRACKET.600.1000"
+    assert designspace.rules[2].conditionSets == [
         [dict(name="Weight", minimum=600, maximum=1000)]
     ]
-    assert designspace.rules[1].subs == [("x", "x.BRACKET.600")]
+    assert designspace.rules[2].subs == [("x", "x.BRACKET.600")]
 
     for source in designspace.sources:
         assert "[300]" not in source.font.layers
@@ -252,8 +258,8 @@ def test_designspace_generation_bracket_roundtrip(datadir):
 
     font_rt = to_glyphs(designspace)
     assert "x" in font_rt.glyphs
-    g = font_rt.glyphs["x"]
-    assert len(g.layers) == 12 and {l.name for l in g.layers} == {
+    g1 = font_rt.glyphs["x"]
+    assert len(g1.layers) == 12 and {l.name for l in g1.layers} == {
         "[300]",
         "[600]",
         "Bold",
@@ -263,11 +269,20 @@ def test_designspace_generation_bracket_roundtrip(datadir):
         "Other [600]",
         "Something [300]",
     }
+    g2 = font_rt.glyphs["a"]
+    assert len(g2.layers) == 8 and {l.name for l in g2.layers} == {
+        "[300]",
+        "Bold",
+        "Condensed Bold",
+        "Condensed Light",
+        "Light",
+    }
+    assert "a.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_roundtrip_unbalanced_brackets(datadir):
+def test_designspace_generation_bracket_unbalanced_brackets(datadir):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
 

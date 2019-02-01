@@ -14,7 +14,7 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from collections import OrderedDict, defaultdict, Counter
+from collections import OrderedDict, defaultdict
 import logging
 import os
 from textwrap import dedent
@@ -267,8 +267,23 @@ class UFOBuilder(_LoggerMixin):
         """Extract bracket layers in a GSGlyph into free-standing UFO glyphs with
         Designspace substitution rules.
 
-        As of Glyphs.app 2.6, only single axis bracket layers are supported, we assume
-        the axis to be the first axis in the Designspace.
+        As of Glyphs.app 2.6, only single axis bracket layers are supported, we
+        assume the axis to be the first axis in the Designspace. Bracket layer
+        backgrounds are not round-tripped.
+
+        A glyph can have more than one bracket layer but Designspace
+        rule/OpenType variation condition sets apply all substitutions in a rule
+        in a range, so we have to potentially sort bracket layers into rule
+        buckets. Example: if a glyph "x" has two bracket layers [300] and [600]
+        and glyph "a" has bracket layer [300] and the bracket axis tops out at
+        1000, we need the following Designspace rules:
+
+        - BRACKET.300.600  # min 300, max 600 on the bracket axis.
+          - x -> x.BRACKET.300
+        - BRACKET.600.1000
+          - x -> x.BRACKET.600
+        - BRACKET.300.1000
+          - a -> a.BRACKET.300
         """
         if not self._designspace.axes:
             raise ValueError(
@@ -286,9 +301,22 @@ class UFOBuilder(_LoggerMixin):
             bracket_axis_min = bracket_axis.minimum
             bracket_axis_max = bracket_axis.maximum
 
-        # First, organize all bracket layers by crossover value.
+        # 1. bracket_layer_map: Organize all bracket layers by crossover value, so
+        #    we can go through the layers by location and copy them to free-standing
+        #    glyphs.
+        # 2. glyph_crossovers: Keep track of the crossover values of a single glyph, so
+        #    we can easily sort them into rule buckets.
+        # 3. glyph_sanity_counter: Count the number of master layers providing
+        #    bracket layers per glyph and crossover value. We currently only support
+        #    the situation where there is a bracket layer for _all_ masters, what the
+        #    Glyphs.app tutorial calls 'Changing All Masters'.
         bracket_layer_map = defaultdict(list)  # type: Dict[int, List[classes.GSLayer]]
+        glyph_crossovers = defaultdict(set)  # type: Dict[str, Set[int]]
+        glyph_sanity_counter = defaultdict(
+            list
+        )  # type: Dict[Tuple[str, int], List[str]]
         for layer in self.bracket_layers:
+            glyph_name = layer.parent.name
             n = layer.name
             try:
                 bracket_crossover = int(n[n.index("[") + 1 : n.index("]")])
@@ -303,46 +331,69 @@ class UFOBuilder(_LoggerMixin):
                     "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
                     "design space bounds of the {bracket_axis_name} axis: minimum "
                     "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
-                        glyph_name=layer.parent.name,
-                        layer_name=layer.name,
+                        glyph_name=glyph_name,
+                        layer_name=n,
                         bracket_axis_name=bracket_axis.name,
                         bracket_axis_minimum=bracket_axis_min,
                         bracket_axis_maximum=bracket_axis_max,
                     )
                 )
             bracket_layer_map[bracket_crossover].append(layer)
+            glyph_crossovers[glyph_name].add(bracket_crossover)
+            glyph_sanity_counter[(glyph_name, bracket_crossover)].append(
+                layer.associatedMasterId
+            )
 
-        # Map crossovers to glyph names, i.e. if glyph "x" and "y" have the bracket
-        # layers "[300]" and "[600]", crossovers will be
-        # {"x": [300, 600], "y": [300, 600]}. This helps with defining overlaps in the
-        # replacment rules below.
-        # Note: sort by location to ensure value list appending sortedness for
-        # roundtrip stability on Python 2.
-        crossovers = defaultdict(list)  # type: Dict[str, List[int]]
+        # Check that each bracket layer is present in all master layers.
+        unbalanced_bracket_layers = []
         n_masters = len(list(self.masters))
-        for location, layers in sorted(bracket_layer_map.items()):
-            # Sanity checking.
-            counter = Counter([l.parent.name for l in layers])
-            unbalanced_glyphs = {
-                glyph_name
-                for glyph_name, count in counter.items()
-                if not count % n_masters == 0
-            }
-            if unbalanced_glyphs:
-                raise ValueError(
-                    "Currently, we only support bracket layers that are present on all "
-                    "masters, i.e. what the Glyphs.app tutorial calls 'Changing All "
-                    "Masters'. There is a/are '[{location}]' bracket layer(s) missing "
-                    "for glyph(s) {unbalanced_glyphs}.".format(
-                        location=location, unbalanced_glyphs=unbalanced_glyphs
-                    )
+        for ((glyph_name, _), master_layer_ids) in glyph_sanity_counter.items():
+            if not len(master_layer_ids) == n_masters:
+                unbalanced_bracket_layers.append(glyph_name)
+        if unbalanced_bracket_layers:
+            raise ValueError(
+                "Currently, we only support bracket layers that are present on all "
+                "masters, i.e. what the Glyphs.app tutorial calls 'Changing All "
+                "Masters'. There is a/are bracket layer(s) missing "
+                "for glyph(s) {unbalanced_glyphs}.".format(
+                    unbalanced_glyphs=unbalanced_bracket_layers
                 )
-            # Actual work.
-            glyph_name_set = {l.parent.name for l in layers}
-            for glyph_name in glyph_name_set:
-                crossovers[glyph_name].append(location)
+            )
 
-        # Copy bracket layers to their own glyphs.
+        # Sort crossovers into buckets.
+        rule_bucket = defaultdict(list)  # type: Dict[Tuple[int, int], List[int]]
+        for glyph_name, crossovers in sorted(glyph_crossovers.items()):
+            for crossover_min, crossover_max in util.pairwise(
+                sorted(crossovers) + [bracket_axis_max]
+            ):
+                rule_bucket[(int(crossover_min), int(crossover_max))].append(glyph_name)
+
+        # Generate rules for the bracket layers.
+        for (axis_range_min, axis_range_max), glyph_names in sorted(
+            rule_bucket.items()
+        ):
+            rule_name = "BRACKET.{}.{}".format(axis_range_min, axis_range_max)
+            glyph_sub_suffix = ".BRACKET.{}".format(axis_range_min)
+            rule = designspaceLib.RuleDescriptor()
+            rule.name = rule_name
+            rule.conditionSets.append(
+                [
+                    {
+                        "name": bracket_axis.name,
+                        "minimum": axis_range_min,
+                        "maximum": axis_range_max,
+                    }
+                ]
+            )
+            rule.subs.extend(
+                [
+                    (glyph_name, glyph_name + glyph_sub_suffix)
+                    for glyph_name in glyph_names
+                ]
+            )
+            self._designspace.addRule(rule)
+
+        # Finally, copy bracket layers to their own glyphs.
         for location, layers in bracket_layer_map.items():
             for layer in layers:
                 ufo_font = self._sources[
@@ -355,28 +406,6 @@ class UFOBuilder(_LoggerMixin):
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []  # Avoid cmap interference
                 ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = layer.name
-
-        # Generate rules for the bracket layers.
-        for glyph_name, axis_crossovers in crossovers.items():
-            for crossover_min, crossover_max in util.pairwise(
-                axis_crossovers + [bracket_axis_max]
-            ):
-                glyph_name_substitution = "{glyph_name}.BRACKET.{crossover_min}".format(
-                    glyph_name=glyph_name, crossover_min=crossover_min
-                )
-                rule = designspaceLib.RuleDescriptor()
-                rule.name = glyph_name_substitution
-                rule.conditionSets.append(
-                    [
-                        {
-                            "name": bracket_axis.name,
-                            "minimum": crossover_min,
-                            "maximum": crossover_max,
-                        }
-                    ]
-                )
-                rule.subs.append((glyph_name, glyph_name_substitution))
-                self._designspace.addRule(rule)
 
     # Implementation is split into one file per feature
     from .anchors import to_ufo_propagate_font_anchors, to_ufo_glyph_anchors
@@ -484,6 +513,15 @@ class GlyphsBuilder(_LoggerMixin):
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
             master = self.glyphs_module.GSFontMaster()
+
+            # Filter bracket glyphs out of public.glyphOrder.
+            if GLYPH_ORDER_KEY in source.font.lib:
+                source.font.lib[GLYPH_ORDER_KEY] = [
+                    glyph_name
+                    for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
+                    if ".BRACKET." not in glyph_name
+                ]
+
             self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
             self.to_glyphs_master_attributes(source, master)
             self._font.masters.insert(len(self._font.masters), master)
@@ -500,7 +538,11 @@ class GlyphsBuilder(_LoggerMixin):
                     ufo_layer = source.font.layers[layer_name]
                 bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
                 bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
-                del source.font[bracket_glyph.name]
+
+                # Remove all freestanding bracket layer glyphs from all layers.
+                for layer in source.font.layers:
+                    if bracket_glyph.name in layer:
+                        del layer[bracket_glyph.name]
 
             for layer in _sorted_backgrounds_last(source.font.layers):
                 self.to_glyphs_layer_lib(layer)
