@@ -228,17 +228,17 @@ def test_designspace_generation_bracket_roundtrip(datadir):
         font = glyphsLib.load(f)
     designspace = to_designspace(font)
 
-    assert designspace.rules[0].name == "BRACKET.300.1000"
+    assert designspace.rules[0].name == "BRACKET.300.600"
     assert designspace.rules[0].conditionSets == [
-        [dict(name="Weight", minimum=300, maximum=1000)]
-    ]
-    assert designspace.rules[0].subs == [("a", "a.BRACKET.300")]
-
-    assert designspace.rules[1].name == "BRACKET.300.600"
-    assert designspace.rules[1].conditionSets == [
         [dict(name="Weight", minimum=300, maximum=600)]
     ]
-    assert designspace.rules[1].subs == [("x", "x.BRACKET.300")]
+    assert designspace.rules[0].subs == [("x", "x.BRACKET.300")]
+
+    assert designspace.rules[1].name == "BRACKET.300.1000"
+    assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=300, maximum=1000)]
+    ]
+    assert designspace.rules[1].subs == [("a", "a.BRACKET.300")]
 
     assert designspace.rules[2].name == "BRACKET.600.1000"
     assert designspace.rules[2].conditionSets == [

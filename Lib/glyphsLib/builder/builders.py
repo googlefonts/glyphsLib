@@ -369,7 +369,9 @@ class UFOBuilder(_LoggerMixin):
                 rule_bucket[(int(crossover_min), int(crossover_max))].append(glyph_name)
 
         # Generate rules for the bracket layers.
-        for (axis_range_min, axis_range_max), glyph_names in rule_bucket.items():
+        for (axis_range_min, axis_range_max), glyph_names in sorted(
+            rule_bucket.items()
+        ):
             rule_name = "BRACKET.{}.{}".format(axis_range_min, axis_range_max)
             glyph_sub_suffix = ".BRACKET.{}".format(axis_range_min)
             rule = designspaceLib.RuleDescriptor()
