@@ -124,6 +124,18 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
         self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("caroncomb_dotaccentcomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("dieresiscomb_caroncomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("dieresiscomb_macroncomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("dotaccentcomb_macroncomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("macroncomb_dieresiscomb"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("dotaccentcomb_o"), ("Mark", "Nonspacing"))
+        self.assertEqual(cat("macronlowmod_O"), ("Mark", "Modifier"))
+        self.assertEqual(cat("O_o"), ("Letter", "Ligature"))
+        self.assertEqual(cat("O_dotaccentcomb_o"), ("Letter", "Ligature"))
+        self.assertEqual(cat("O_dotaccentcomb"), ("Letter", "Uppercase"))
+        self.assertEqual(cat("O_period"), ("Letter", "Ligature"))
+        self.assertEqual(cat("O_nbspace"), ("Letter", "Uppercase"))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232

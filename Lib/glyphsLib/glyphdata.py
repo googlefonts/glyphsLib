@@ -113,33 +113,20 @@ def get_glyph(glyph_name, data=None):
     # Look up data by full glyph name first.
     attributes = _lookup_attributes(glyph_name, data)
 
-    production_name = attributes.get("production") or _construct_production_name(
-        glyph_name, data=data
-    )
+    production_name = attributes.get("production")
+    if production_name is None:
+        production_name = _construct_production_name(glyph_name, data=data)
+
     unicode_value = attributes.get("unicode")
+
     category = attributes.get("category")
     sub_category = attributes.get("subCategory")
+    if category is None:
+        category, sub_category = _construct_category(glyph_name, data)
+
+    # TODO: Determine script in ligatures.
     script = attributes.get("script")
     description = attributes.get("description")
-
-    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
-    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
-    # the same category as its base glyph.
-    if category is None:
-        base_name = glyph_name.split(".", 1)[0]
-        base_attribute = data.names.get(base_name) or {}
-        category = base_attribute.get("category")
-        sub_category = base_attribute.get("subCategory")
-
-    # Still nothing? Maybe we're looking at something like "uni1234.alt", try
-    # one more time using fontTools' AGL module to convert the base name to
-    # something meaningful.
-    if category is None:
-        character = fontTools.agl.toUnicode(base_name)
-        if character:
-            category, sub_category = _construct_category(
-                glyph_name, unicodedata.category(character[0])
-            )
 
     return Glyph(
         glyph_name,
@@ -184,7 +171,64 @@ def _is_unicode_u_value(name):
     )
 
 
-def _construct_category(glyph_name, unicode_category):
+def _construct_category(glyph_name, data):
+    """Derive (sub)category of a glyph name."""
+    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
+    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
+    # the same category as its base glyph.
+    base_name = glyph_name.split(".", 1)[0]
+    base_attribute = data.names.get(base_name) or {}
+    if base_attribute:
+        category = base_attribute.get("category")
+        sub_category = base_attribute.get("subCategory")
+        return category, sub_category
+
+    # Detect ligatures.
+    if "_" in base_name:
+        base_names = base_name.split("_")
+        base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
+        first_attribute = base_names_attributes[0]
+
+        # If the first part is a Mark, Glyphs 2.6 declares the entire glyph a Mark
+        if first_attribute.get("category") == "Mark":
+            category = first_attribute.get("category")
+            sub_category = first_attribute.get("subCategory")
+            return category, sub_category
+
+        # If the first part is a Letter...
+        if first_attribute.get("category") == "Letter":
+            # ... and the rest are only marks or separators or don't exist, the
+            # sub_category is that of the first part ...
+            if all(
+                a.get("category") in (None, "Mark", "Separator")
+                for a in base_names_attributes[1:]
+            ):
+                category = first_attribute.get("category")
+                sub_category = first_attribute.get("subCategory")
+                return category, sub_category
+            # ... otherwise, a ligature.
+            category = first_attribute.get("category")
+            sub_category = "Ligature"
+            return category, sub_category
+
+        # TODO: Cover more cases. E.g. "one_one" -> ("Number", "Ligature") but
+        # "one_onee" -> ("Number", "Composition").
+
+    # Still nothing? Maybe we're looking at something like "uni1234.alt", try
+    # using fontTools' AGL module to convert the base name to something meaningful.
+    # Corner case: when looking at ligatures, names that don't exist in the AGLFN
+    # are skipped, so len("acutecomb_o") == 2 but len("dotaccentcomb_o") == 1.
+    character = fontTools.agl.toUnicode(base_name)
+    if character:
+        category, sub_category = _translate_category(
+            glyph_name, unicodedata.category(character[0])
+        )
+        return category, sub_category
+
+    return None, None
+
+
+def _translate_category(glyph_name, unicode_category):
     """Return a translation from Unicode category letters to Glyphs
     categories."""
     DEFAULT_CATEGORIES = {
