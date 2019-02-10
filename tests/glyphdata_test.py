@@ -136,6 +136,8 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("O_dotaccentcomb"), ("Letter", "Uppercase"))
         self.assertEqual(cat("O_period"), ("Letter", "Ligature"))
         self.assertEqual(cat("O_nbspace"), ("Letter", "Uppercase"))
+        self.assertEqual(cat("_a"), (None, None))
+        self.assertEqual(cat("_aaa"), (None, None))
 
     def test_bug232(self):
         # https://github.com/googlei18n/glyphsLib/issues/232

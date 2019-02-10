@@ -173,6 +173,11 @@ def _is_unicode_u_value(name):
 
 def _construct_category(glyph_name, data):
     """Derive (sub)category of a glyph name."""
+    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
+    # construction helpers without a category.
+    if glyph_name.startswith("_"):
+        return None, None
+
     # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
     # ".alt" and try a second lookup with just the base name. A variant is hopefully in
     # the same category as its base glyph.
