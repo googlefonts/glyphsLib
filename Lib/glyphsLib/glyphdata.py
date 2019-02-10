@@ -110,14 +110,8 @@ def get_glyph(glyph_name, data=None):
             )
         data = GLYPHDATA
 
-    # Look up data by full glyph name first. Also try the full alternative name for
-    # legacy projects and production name (Issue #232).
-    attributes = (
-        data.names.get(glyph_name)
-        or data.alternative_names.get(glyph_name)
-        or data.production_names.get(glyph_name)
-        or {}
-    )
+    # Look up data by full glyph name first.
+    attributes = _lookup_attributes(glyph_name, data)
 
     production_name = attributes.get("production") or _construct_production_name(
         glyph_name, data=data
@@ -156,6 +150,22 @@ def get_glyph(glyph_name, data=None):
         script,
         description,
     )
+
+
+def _lookup_attributes(glyph_name, data):
+    """Look up glyph attributes in data by glyph name, alternative name or
+    production name in order or return empty dictionary.
+
+    Look up by alternative and production names for legacy projects and
+    because of issue #232.
+    """
+    attributes = (
+        data.names.get(glyph_name)
+        or data.alternative_names.get(glyph_name)
+        or data.production_names.get(glyph_name)
+        or {}
+    )
+    return attributes
 
 
 def _agl_compliant_name(glyph_name):
@@ -242,12 +252,7 @@ def _construct_production_name(glyph_name, data=None):
     # At this point, we have already checked the data for the full glyph name, so
     # directly go to the base name here (e.g. when looking at "fi.alt").
     base_name, dot, suffix = glyph_name.partition(".")
-    glyphinfo = (
-        data.names.get(base_name)
-        or data.alternative_names.get(base_name)
-        or data.production_names.get(base_name)
-        or {}
-    )
+    glyphinfo = _lookup_attributes(base_name, data)
     if glyphinfo and glyphinfo.get("production"):
         # Found the base glyph.
         return glyphinfo["production"] + dot + suffix
