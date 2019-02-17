@@ -624,8 +624,12 @@ class FilterParamHandler(AbstractParamHandler):
         if ufo_filters is None:
             return
         for ufo_filter in ufo_filters:
-            glyphs_filter, is_pre = write_glyphs_filter(ufo_filter)
-            glyphs.set_custom_values("PreFilter" if is_pre else "Filter", glyphs_filter)
+            glyphs_filter = write_glyphs_filter(ufo_filter)
+            if ufo_filter.get("pre"):
+                glyphs_filter_key = "PreFilter"
+            else:
+                glyphs_filter_key = "Filter"
+            glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
 
     def to_ufo(self, builder, glyphs, ufo):
         ufo_filters = []
