@@ -32,6 +32,7 @@ from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder.custom_params import _set_default_params
 from glyphsLib.builder.constants import (
+    UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
@@ -322,3 +323,20 @@ class SetCustomParamsTest(unittest.TestCase):
         self.font.customParameters["versionString"] = "Version 2.040"
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeNameVersion, "Version 2.040")
+
+    def test_ufo2ft_filter_roundtrip(self):
+        ufo_filters = [
+            {"name": "propagateAnchors", "pre": True, "include": ["a", "b", "c"]}
+        ]
+        glyphs_filter = "propagateAnchors;include:a,b,c"
+
+        self.master.customParameters["PreFilter"] = glyphs_filter
+        self.set_custom_params()
+        self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
+
+        font_rt = glyphsLib.to_glyphs([self.ufo])
+        self.assertEqual(
+            font_rt.masters[0].customParameters["PreFilter"], glyphs_filter
+        )
+        ufo_rt = glyphsLib.to_ufos(font_rt)[0]
+        self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
