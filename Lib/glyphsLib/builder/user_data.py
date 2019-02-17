@@ -22,6 +22,7 @@ from .constants import (
     GLYPHLIB_PREFIX,
     PUBLIC_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
+    UFO2FT_FILTERS_KEY,
     DEFAULT_FEATURE_WRITERS,
 )
 
@@ -174,4 +175,8 @@ def to_glyphs_node_user_data(self, ufo_glyph, node):
 
 
 def _user_data_has_no_special_meaning(key):
-    return not (key.startswith(GLYPHS_PREFIX) or key.startswith(PUBLIC_PREFIX))
+    return not (
+        key.startswith(GLYPHS_PREFIX)
+        or key.startswith(PUBLIC_PREFIX)
+        or key == UFO2FT_FILTERS_KEY
+    )
