@@ -88,4 +88,7 @@ def write_glyphs_filter(result):
         for key, arg in result["kwargs"].items():
             if key.lower() in ("include", "exclude"):
                 elements.append(key + ":" + reverse_cast_to_number_or_bool(arg))
+    for key, arg in result.items():
+        if key.lower() in ("include", "exclude"):
+            elements.append(key + ":" + ",".join(arg))
     return ";".join(elements)
