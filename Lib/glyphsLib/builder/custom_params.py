@@ -624,22 +624,27 @@ class FilterParamHandler(AbstractParamHandler):
         if ufo_filters is None:
             return
         for ufo_filter in ufo_filters:
-            glyphs_filter, is_pre = write_glyphs_filter(ufo_filter)
-            glyphs.set_custom_values("PreFilter" if is_pre else "Filter", glyphs_filter)
+            glyphs_filter = write_glyphs_filter(ufo_filter)
+            if ufo_filter.get("pre"):
+                glyphs_filter_key = "PreFilter"
+            else:
+                glyphs_filter_key = "Filter"
+            glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
 
     def to_ufo(self, builder, glyphs, ufo):
-        ufo_filters = []
-        for pre_filter in glyphs.get_custom_values("PreFilter"):
-            ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
-        for filter in glyphs.get_custom_values("Filter"):
-            ufo_filters.append(parse_glyphs_filter(filter, is_pre=False))
+        if not glyphs.is_font():  # Only write filters to the masters
+            ufo_filters = []
+            for pre_filter in glyphs.get_custom_values("PreFilter"):
+                ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
+            for filter in glyphs.get_custom_values("Filter"):
+                ufo_filters.append(parse_glyphs_filter(filter, is_pre=False))
 
-        if not ufo_filters:
-            return
-        if not ufo.has_lib_key(UFO2FT_FILTERS_KEY):
-            ufo.set_lib_value(UFO2FT_FILTERS_KEY, [])
-        existing = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
-        existing.extend(ufo_filters)
+            if not ufo_filters:
+                return
+            if not ufo.has_lib_key(UFO2FT_FILTERS_KEY):
+                ufo.set_lib_value(UFO2FT_FILTERS_KEY, [])
+            existing = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
+            existing.extend(ufo_filters)
 
 
 register(FilterParamHandler())
