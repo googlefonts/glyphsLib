@@ -17,10 +17,12 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import os
 from collections import OrderedDict
 import unittest
 import datetime
 
+import glyphsLib
 from glyphsLib.parser import Parser
 from glyphsLib.classes import GSGlyph
 
@@ -159,6 +161,26 @@ class ParserGlyphTest(unittest.TestCase):
         self.assertEqual(glyph.leftKerningGroup, "A")
         self.assertEqual(glyph.rightKerningGroup, "A")
         self.assertEqual(glyph.unicode, "0041")
+
+    def test_IntFloatCoordinates(self):
+        filename = os.path.join(os.path.dirname(__file__), "data/IntegerFloat.glyphs")
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+
+        int_points_expected = [
+            (True, True),
+            (False, True),
+            (False, False),
+            (True, True),
+            (True, True),
+            (True, True),
+        ]
+
+        assert isinstance(font.glyphs["a"].layers[0].width, int)
+        assert [
+            (isinstance(n.position.x, int), isinstance(n.position.y, int))
+            for n in font.glyphs["a"].layers[0].paths[0].nodes
+        ] == int_points_expected
 
 
 if __name__ == "__main__":

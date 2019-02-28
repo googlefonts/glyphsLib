@@ -1,0 +1,46 @@
+{
+.appVersion = "1192";
+DisplayStrings = (
+a
+);
+date = "2019-02-28 21:05:07 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = "38FD3B35-3B80-4B99-9E18-F1124E945074";
+xHeight = 500;
+}
+);
+glyphs = (
+{
+glyphname = a;
+lastChange = "2019-02-28 21:05:30 +0000";
+layers = (
+{
+layerId = "38FD3B35-3B80-4B99-9E18-F1124E945074";
+paths = (
+{
+closed = 1;
+nodes = (
+"146.0 178 LINE",
+"332.1 180 LINE",
+"329.123456789 253.987654321 OFFCURVE",
+"406 364 OFFCURVE",
+"324 398 CURVE",
+"140 356 LINE"
+);
+}
+);
+width = 600;
+}
+);
+unicode = 0061;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
