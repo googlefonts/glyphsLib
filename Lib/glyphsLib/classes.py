@@ -249,6 +249,13 @@ def parse_hint_target(line=None):
         return line
 
 
+def parse_float_or_int(value_string):
+    v = float(value_string)
+    if v.is_integer():
+        return int(v)
+    return v
+
+
 def isString(string):
     return isinstance(string, (str, unicode))
 
@@ -1573,7 +1580,7 @@ class GSNode(GSBase):
 
     def read(self, line):
         m = self._PLIST_VALUE_RE.match(line).groups()
-        self.position = Point(float(m[0]), float(m[1]))
+        self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
         self.type = m[2].lower()
         self.smooth = bool(m[3])
 
@@ -2695,7 +2702,7 @@ class GSLayer(GSBase):
         "vertWidth": float,
         "vertOrigin": float,
         "visible": bool,
-        "width": float,
+        "width": parse_float_or_int,
         "widthMetricsKey": unicode,
     }
     _defaultsForName = {
