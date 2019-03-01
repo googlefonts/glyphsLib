@@ -77,7 +77,9 @@ class Parser(object):
                 v = float(value)
 
                 def current_type(_):
-                    return v if not v.is_integer() else int(v)
+                    if v.is_integer():
+                        return int(v)
+                    return v
 
             except ValueError:
                 current_type = unicode
@@ -110,10 +112,10 @@ class Parser(object):
                 # `plistValue` which handles the escaping itself.
                 value = reader.read(m.group(1))
                 return value, i
-            else:
-                value = self._trim_value(m.group(1))
 
-            if self.current_type is None or self.current_type in (dict, OrderedDict):
+            value = self._trim_value(m.group(1))
+
+            if self.current_type in (None, dict, OrderedDict):
                 self.current_type = self._guess_current_type(parsed, value)
 
             if self.current_type == bool:
