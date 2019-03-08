@@ -33,6 +33,7 @@ from glyphsLib.types import (
     floatToString,
     readIntlist,
     UnicodesList,
+    parse_float_or_int,
 )
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer
@@ -247,13 +248,6 @@ def parse_hint_target(line=None):
         return Point(line)
     else:
         return line
-
-
-def parse_float_or_int(value_string):
-    v = float(value_string)
-    if v.is_integer():
-        return int(v)
-    return v
 
 
 def isString(string):

@@ -35,7 +35,15 @@ __all__ = [
     "readIntlist",
     "UnicodesList",
     "BinaryData",
+    "parse_float_or_int",
 ]
+
+
+def parse_float_or_int(value_string):
+    v = float(value_string)
+    if v.is_integer():
+        return int(v)
+    return v
 
 
 class ValueType(object):
