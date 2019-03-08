@@ -1280,8 +1280,8 @@ class GSAlignmentZone(GSBase):
     def read(self, src):
         if src is not None:
             p = Point(src)
-            self.position = float(p.value[0])
-            self.size = float(p.value[1])
+            self.position = parse_float_or_int(p.value[0])
+            self.size = parse_float_or_int(p.value[1])
         return self
 
     def __repr__(self):
@@ -1301,7 +1301,7 @@ class GSAlignmentZone(GSBase):
 class GSGuideLine(GSBase):
     _classesForName = {
         "alignment": str,
-        "angle": float,
+        "angle": parse_float_or_int,
         "locked": bool,
         "position": Point,
         "showMeasurement": bool,
@@ -1309,7 +1309,7 @@ class GSGuideLine(GSBase):
         "name": unicode,
     }
     _parent = None
-    _defaultsForName = {"position": Point(0, 0)}
+    _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
         super(GSGuideLine, self).__init__()
@@ -1331,29 +1331,29 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 class GSFontMaster(GSBase):
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
-        "ascender": float,
-        "capHeight": float,
+        "ascender": parse_float_or_int,
+        "capHeight": parse_float_or_int,
         "custom": unicode,
-        "customValue": float,
-        "customValue1": float,
-        "customValue2": float,
-        "customValue3": float,
+        "customValue": parse_float_or_int,
+        "customValue1": parse_float_or_int,
+        "customValue2": parse_float_or_int,
+        "customValue3": parse_float_or_int,
         "customParameters": GSCustomParameter,
-        "descender": float,
+        "descender": parse_float_or_int,
         "guideLines": GSGuideLine,
         "horizontalStems": int,
         "iconName": str,
         "id": str,
-        "italicAngle": float,
+        "italicAngle": parse_float_or_int,
         "name": unicode,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
         "weight": str,
-        "weightValue": float,
+        "weightValue": parse_float_or_int,
         "width": str,
-        "widthValue": float,
-        "xHeight": float,
+        "widthValue": parse_float_or_int,
+        "xHeight": parse_float_or_int,
     }
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
@@ -1361,16 +1361,17 @@ class GSFontMaster(GSBase):
         # still written to the saved files.
         "weight": "Regular",
         "width": "Regular",
-        "weightValue": 100.0,
-        "widthValue": 100.0,
-        "customValue": 0.0,
-        "customValue1": 0.0,
-        "customValue2": 0.0,
-        "customValue3": 0.0,
+        "weightValue": 100,
+        "widthValue": 100,
+        "customValue": 0,
+        "customValue1": 0,
+        "customValue2": 0,
+        "customValue3": 0,
         "xHeight": 500,
         "capHeight": 700,
         "ascender": 800,
         "descender": -200,
+        "italicAngle": 0,
     }
     _wrapperKeysTranslate = {
         "guideLines": "guides",
@@ -1410,11 +1411,11 @@ class GSFontMaster(GSBase):
         self.font = None
         self._name = None
         self._customParameters = []
-        self.italicAngle = 0.0
+        self.italicAngle = 0
         self._userData = None
         self.customName = ""
         for number in ("", "1", "2", "3"):
-            setattr(self, "customValue" + number, 0.0)
+            setattr(self, "customValue" + number, 0)
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -2112,10 +2113,11 @@ class GSSmartComponentAxis(GSBase):
     _classesForName = {
         "name": unicode,
         "bottomName": unicode,
-        "bottomValue": float,
+        "bottomValue": parse_float_or_int,
         "topName": unicode,
-        "topValue": float,
+        "topValue": parse_float_or_int,
     }
+    _defaultsForName = {"bottomValue": 0, "topValue": 0}
     _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
     def shouldWriteValueForKey(self, key):
@@ -2383,18 +2385,18 @@ class GSFeaturePrefix(GSFeature):
 
 class GSAnnotation(GSBase):
     _classesForName = {
-        "angle": float,
+        "angle": parse_float_or_int,
         "position": Point,
         "text": unicode,
         "type": str,
-        "width": float,  # the width of the text field or size of the cicle
+        "width": parse_float_or_int,  # the width of the text field or size of the cicle
     }
     _defaultsForName = {
-        "angle": 0.0,
+        "angle": 0,
         "position": Point(0, 0),
         "text": None,
         "type": 0,
-        "width": 100.0,
+        "width": 100,
     }
     _parent = None
 
@@ -2409,12 +2411,12 @@ class GSInstance(GSBase):
         "active": bool,
         "exports": bool,
         "instanceInterpolations": dict,
-        "interpolationCustom": float,
-        "interpolationCustom1": float,
-        "interpolationCustom2": float,
-        "interpolationCustom3": float,
-        "interpolationWeight": float,
-        "interpolationWidth": float,
+        "interpolationCustom": parse_float_or_int,
+        "interpolationCustom1": parse_float_or_int,
+        "interpolationCustom2": parse_float_or_int,
+        "interpolationCustom3": parse_float_or_int,
+        "interpolationWeight": parse_float_or_int,
+        "interpolationWidth": parse_float_or_int,
         "isBold": bool,
         "isItalic": bool,
         "linkStyle": unicode,
@@ -2426,12 +2428,12 @@ class GSInstance(GSBase):
     _defaultsForName = {
         "active": True,
         "exports": True,
-        "interpolationCustom": 0.0,
-        "interpolationCustom1": 0.0,
-        "interpolationCustom2": 0.0,
-        "interpolationCustom3": 0.0,
-        "interpolationWeight": 100.0,
-        "interpolationWidth": 100.0,
+        "interpolationCustom": 0,
+        "interpolationCustom1": 0,
+        "interpolationCustom2": 0,
+        "interpolationCustom3": 0,
+        "interpolationWeight": 100,
+        "interpolationWidth": 100,
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
@@ -2693,17 +2695,19 @@ class GSLayer(GSBase):
         "paths": GSPath,
         "rightMetricsKey": unicode,
         "userData": dict,
-        "vertWidth": float,
-        "vertOrigin": float,
+        "vertWidth": parse_float_or_int,
+        "vertOrigin": parse_float_or_int,
         "visible": bool,
         "width": parse_float_or_int,
         "widthMetricsKey": unicode,
     }
     _defaultsForName = {
-        "width": 600.0,
+        "width": 600,
         "leftMetricsKey": None,
         "rightMetricsKey": None,
         "widthMetricsKey": None,
+        "vertWidth": 0,
+        "vertOrigin": 0,
     }
     _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
     _keyOrder = (
@@ -2952,7 +2956,7 @@ class GSBackgroundLayer(GSLayer):
     # Reproduce this behaviour here so that the roundtrip does not rely on it.
     @property
     def width(self):
-        return 600.0
+        return 600
 
     @width.setter
     def width(self, whatever):
@@ -3146,7 +3150,7 @@ class GSFont(GSBase):
         "instances": GSInstance,
         "keepAlternatesTogether": bool,
         "kerning": OrderedDict,
-        "keyboardIncrement": float,
+        "keyboardIncrement": parse_float_or_int,
         "manufacturer": unicode,
         "manufacturerURL": unicode,
         "unitsPerEm": int,
@@ -3309,7 +3313,7 @@ class GSFont(GSBase):
         for master_map in kerning.values():
             for glyph_map in master_map.values():
                 for right_glyph, value in glyph_map.items():
-                    glyph_map[right_glyph] = float(value)
+                    glyph_map[right_glyph] = parse_float_or_int(value)
 
     @property
     def selection(self):

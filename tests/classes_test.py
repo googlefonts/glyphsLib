@@ -509,18 +509,18 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         # weightValue
         obj = master.weightValue
         old_obj = obj
-        self.assertIsInstance(obj, float)
+        self.assertIsInstance(obj, int)
         master.weightValue = 0.5
         self.assertEqual(master.weightValue, 0.5)
-        obj = old_obj
         self.assertIsInstance(master.weightValue, float)
-        self.assertIsInstance(master.widthValue, float)
-        self.assertIsInstance(master.customValue, float)
-        self.assertIsInstance(master.ascender, float)
-        self.assertIsInstance(master.capHeight, float)
-        self.assertIsInstance(master.xHeight, float)
-        self.assertIsInstance(master.descender, float)
-        self.assertIsInstance(master.italicAngle, float)
+        master.weightValue = old_obj
+        self.assertIsInstance(master.widthValue, int)
+        self.assertIsInstance(master.customValue, int)
+        self.assertIsInstance(master.ascender, int)
+        self.assertIsInstance(master.capHeight, int)
+        self.assertIsInstance(master.xHeight, int)
+        self.assertIsInstance(master.descender, int)
+        self.assertIsInstance(master.italicAngle, int)
         for attr in [
             "weightValue",
             "widthValue",
@@ -532,7 +532,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             "italicAngle",
         ]:
             value = getattr(master, attr)
-            self.assertIsInstance(value, float)
+            self.assertIsInstance(value, int)
             setattr(master, attr, 0.5)
             self.assertEqual(getattr(master, attr), 0.5)
             setattr(master, attr, value)
@@ -792,7 +792,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         # customValue
         for attr in ["weightValue", "widthValue", "customValue"]:
             value = getattr(instance, attr)
-            self.assertIsInstance(value, float)
+            self.assertIsInstance(value, int)
             setattr(instance, attr, 0.5)
             self.assertEqual(getattr(instance, attr), 0.5)
             setattr(instance, attr, value)
