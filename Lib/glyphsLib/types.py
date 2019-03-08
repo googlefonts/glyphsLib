@@ -35,7 +35,15 @@ __all__ = [
     "readIntlist",
     "UnicodesList",
     "BinaryData",
+    "parse_float_or_int",
 ]
+
+
+def parse_float_or_int(value_string):
+    v = float(value_string)
+    if v.is_integer():
+        return int(v)
+    return v
 
 
 class ValueType(object):
@@ -96,7 +104,7 @@ def Vector(dim):
                 assert len(src) == self.dimension
                 return src
             src = src.replace('"', "")
-            return [float(i) for i in self.regex.match(src).groups()]
+            return [parse_float_or_int(i) for i in self.regex.match(src).groups()]
 
         def plistValue(self):
             assert isinstance(self.value, list) and len(self.value) == self.dimension

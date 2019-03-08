@@ -29,15 +29,16 @@ logger = logging.getLogger(__name__)
 class Parser(object):
     """Parses Python dictionaries from Glyphs source files."""
 
-    value_re = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
+    # FIXME: Why was value_re overwritten? Renamed first one to value_re_shared.
+    value_re_shared = r'(".*?(?<!\\)"|[-_./$A-Za-z0-9]+)'
     start_dict_re = re.compile(r"\s*{")
     end_dict_re = re.compile(r"\s*}")
     dict_delim_re = re.compile(r"\s*;")
     start_list_re = re.compile(r"\s*\(")
     end_list_re = re.compile(r"\s*\)")
     list_delim_re = re.compile(r"\s*,")
-    attr_re = re.compile(r"\s*%s\s*=" % value_re, re.DOTALL)
-    value_re = re.compile(r"\s*%s" % value_re, re.DOTALL)
+    attr_re = re.compile(r"\s*%s\s*=" % value_re_shared, re.DOTALL)
+    value_re = re.compile(r"\s*%s" % value_re_shared, re.DOTALL)
     hex_re = re.compile(r"\s*<([A-Fa-f0-9]+)>", re.DOTALL)
     bytes_re = re.compile(r"\s*<([A-Za-z0-9+/=]+)>", re.DOTALL)
 
@@ -77,7 +78,9 @@ class Parser(object):
                 v = float(value)
 
                 def current_type(_):
-                    return v if not v.is_integer() else int(v)
+                    if v.is_integer():
+                        return int(v)
+                    return v
 
             except ValueError:
                 current_type = unicode
@@ -110,10 +113,10 @@ class Parser(object):
                 # `plistValue` which handles the escaping itself.
                 value = reader.read(m.group(1))
                 return value, i
-            else:
-                value = self._trim_value(m.group(1))
 
-            if self.current_type is None or self.current_type in (dict, OrderedDict):
+            value = self._trim_value(m.group(1))
+
+            if self.current_type in (None, dict, OrderedDict):
                 self.current_type = self._guess_current_type(parsed, value)
 
             if self.current_type == bool:
