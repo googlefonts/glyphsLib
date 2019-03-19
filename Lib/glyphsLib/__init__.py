@@ -42,7 +42,6 @@ __all__ = [
     tostr(s)
     for s in [
         "build_masters",
-        "build_instances",
         "load_to_ufos",
         "to_ufos",
         "to_designspace",
