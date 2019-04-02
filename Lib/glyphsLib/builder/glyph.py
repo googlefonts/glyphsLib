@@ -66,6 +66,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     export = glyph.export
     if not export:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
+        if "public.skipExportGlyphs" not in self._designspace.lib:
+            self._designspace.lib["public.skipExportGlyphs"] = []
+        self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
@@ -157,8 +160,20 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         glyph.lastChange = from_loose_ufo_time(last_change)
     if ufo_glyph.markColor:
         glyph.color = _to_glyphs_color(ufo_glyph.markColor)
+
+    # The export flag can be stored in the glyph's lib key, the UFO-level
+    # public.skipExportGlyphs lib key or the Deisgnspace-level public.skipExportGlyphs
+    # lib key.
     if GLYPHLIB_PREFIX + "Export" in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"]
+    if any(
+        ufo_glyph.name in source.lib.get("public.skipExportGlyphs", [])
+        for source in self._sources.values()
+    ):
+        glyph.export = False
+    if ufo_glyph.name in self.designspace.lib.get("public.skipExportGlyphs", []):
+        glyph.export = False
+
     ps_names_key = PUBLIC_PREFIX + "postscriptNames"
     if (
         ps_names_key in ufo_glyph.font.lib

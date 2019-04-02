@@ -841,11 +841,13 @@ class ToUfosTest(unittest.TestCase):
         ufo = to_ufos(font)[0]
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
+        self.assertNotIn("a", ufo.lib.get("public.skipExportGlyphs", []))
 
         glyph.export = False
         ufo = to_ufos(font)[0]
 
         self.assertEqual(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
+        self.assertIn("a", ufo.lib["public.skipExportGlyphs"])
 
     def test_glyph_lib_metricsKeys(self):
         font = generate_minimal_font()
