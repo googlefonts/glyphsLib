@@ -835,7 +835,6 @@ class ToUfosTest(unittest.TestCase):
     def test_glyph_lib_Export(self):
         font = generate_minimal_font()
         glyph = add_glyph(font, "a")
-
         self.assertEqual(glyph.export, True)
 
         ufo = to_ufos(font)[0]
@@ -880,11 +879,11 @@ class ToUfosTest(unittest.TestCase):
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["c"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
         self.assertNotIn("public.skipExportGlyphs", ufo2.lib)
-        self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "b", "c"])
+        self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "c"])
 
         font3 = to_glyphs(ds2)
         self.assertEqual(font3.glyphs["a"].export, False)
-        self.assertEqual(font3.glyphs["b"].export, False)
+        self.assertEqual(font3.glyphs["b"].export, True)
         self.assertEqual(font3.glyphs["c"].export, False)
         self.assertEqual(font3.glyphs["d"].export, True)
 
