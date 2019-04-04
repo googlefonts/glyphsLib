@@ -38,7 +38,7 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import Point
 
-from glyphsLib.builder import to_ufos, to_glyphs
+from glyphsLib.builder import to_ufos, to_glyphs, to_designspace
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.paths import to_ufo_paths
 from glyphsLib.builder.names import build_stylemap_names
@@ -839,15 +839,54 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(glyph.export, True)
 
         ufo = to_ufos(font)[0]
+        ds = to_designspace(font)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
         self.assertNotIn("a", ufo.lib.get("public.skipExportGlyphs", []))
+        self.assertNotIn("a", ds.lib.get("public.skipExportGlyphs", []))
 
-        glyph.export = False
-        ufo = to_ufos(font)[0]
+        font2 = to_glyphs(ds)
+        glyph2 = font2.glyphs[0]
+        self.assertEqual(glyph2.name, "a")
+        self.assertEqual(glyph2.export, True)
+
+        glyph2.export = False
+        ufo = to_ufos(font2)[0]
+        ds = to_designspace(font2)
 
         self.assertEqual(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
         self.assertIn("a", ufo.lib["public.skipExportGlyphs"])
+        self.assertIn("a", ds.lib["public.skipExportGlyphs"])
+
+    def test_glyph_lib_Export_mixed(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "b")
+        add_glyph(font, "c")
+        add_glyph(font, "d")
+        ds = to_designspace(font)
+        ufo = ds.sources[0].font
+
+        ufo["a"].lib[GLYPHLIB_PREFIX + "Export"] = False
+        ufo.lib["public.skipExportGlyphs"] = ["b"]
+        ds.lib["public.skipExportGlyphs"] = ["c"]
+
+        font2 = to_glyphs(ds)
+        ds2 = to_designspace(font2)
+        ufo2 = ds2.sources[0].font
+
+        self.assertEqual(ufo2["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
+        self.assertEqual(ufo2["b"].lib[GLYPHLIB_PREFIX + "Export"], False)
+        self.assertEqual(ufo2["c"].lib[GLYPHLIB_PREFIX + "Export"], False)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["d"].lib)
+        self.assertEqual(ufo2.lib["public.skipExportGlyphs"], ["a", "b", "c"])
+        self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "b", "c"])
+
+        font3 = to_glyphs(ds2)
+        self.assertEqual(font3.glyphs["a"].export, False)
+        self.assertEqual(font3.glyphs["b"].export, False)
+        self.assertEqual(font3.glyphs["c"].export, False)
+        self.assertEqual(font3.glyphs["d"].export, True)
 
     def test_glyph_lib_metricsKeys(self):
         font = generate_minimal_font()
