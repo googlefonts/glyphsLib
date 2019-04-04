@@ -842,8 +842,8 @@ class ToUfosTest(unittest.TestCase):
         ds = to_designspace(font)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
-        self.assertNotIn("a", ufo.lib.get("public.skipExportGlyphs", []))
-        self.assertNotIn("a", ds.lib.get("public.skipExportGlyphs", []))
+        self.assertNotIn("public.skipExportGlyphs", ufo.lib)
+        self.assertNotIn("public.skipExportGlyphs", ds.lib)
 
         font2 = to_glyphs(ds)
         glyph2 = font2.glyphs[0]
@@ -854,9 +854,9 @@ class ToUfosTest(unittest.TestCase):
         ufo = to_ufos(font2)[0]
         ds = to_designspace(font2)
 
-        self.assertEqual(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
-        self.assertIn("a", ufo.lib["public.skipExportGlyphs"])
-        self.assertIn("a", ds.lib["public.skipExportGlyphs"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
+        self.assertNotIn("public.skipExportGlyphs", ufo.lib)
+        self.assertEqual(ds.lib["public.skipExportGlyphs"], ["a"])
 
     def test_glyph_lib_Export_mixed(self):
         font = generate_minimal_font()
@@ -875,11 +875,11 @@ class ToUfosTest(unittest.TestCase):
         ds2 = to_designspace(font2)
         ufo2 = ds2.sources[0].font
 
-        self.assertEqual(ufo2["a"].lib[GLYPHLIB_PREFIX + "Export"], False)
-        self.assertEqual(ufo2["b"].lib[GLYPHLIB_PREFIX + "Export"], False)
-        self.assertEqual(ufo2["c"].lib[GLYPHLIB_PREFIX + "Export"], False)
-        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["d"].lib)
-        self.assertEqual(ufo2.lib["public.skipExportGlyphs"], ["a", "b", "c"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["a"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["b"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["c"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
+        self.assertNotIn("public.skipExportGlyphs", ufo2.lib)
         self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "b", "c"])
 
         font3 = to_glyphs(ds2)

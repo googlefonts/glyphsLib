@@ -201,13 +201,6 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
-        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-        if skip_export_glyphs is not None:
-            skip_export_glyphs = sorted(set(skip_export_glyphs))
-            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
-            for source in self._sources.values():
-                source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
-
         for source in self._sources.values():
             ufo = source.font
             if self.propagate_anchors:
@@ -247,6 +240,11 @@ class UFOBuilder(_LoggerMixin):
             base_style = "-" + base_style
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
+
+        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+        if skip_export_glyphs is not None:
+            skip_export_glyphs = sorted(set(skip_export_glyphs))
+            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
         return self._designspace
 
