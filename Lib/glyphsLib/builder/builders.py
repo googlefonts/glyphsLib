@@ -212,6 +212,10 @@ class UFOBuilder(_LoggerMixin):
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
+        # Sanitize skip list and write it to both Designspace- and UFO-level lib keys.
+        # The latter is unnecessary when using e.g. the `ufo2ft.compile*FromDS`
+        # functions, but the data may take a different path. Writing it everywhere can
+        # save on surprises/logic in other software.
         skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
         if skip_export_glyphs is not None:
             skip_export_glyphs = sorted(set(skip_export_glyphs))
@@ -668,6 +672,10 @@ class GlyphsBuilder(_LoggerMixin):
             source.location = ufo_to_location[ufo]
             designspace.addSource(source)
 
+        # UFO-level skip list lib keys are usually ignored, except when we don't have a
+        # Designspace file to start from. If they exist in the UFOs, promote them to a
+        # Designspace-level lib key. However, to avoid accidents, expect the list to
+        # exist in none or be the same in all UFOs.
         if any("public.skipExportGlyphs" in ufo.lib for ufo in ufos):
             skip_export_glyphs_lists = tuple(
                 tuple(ufo.lib.get("public.skipExportGlyphs", [])) for ufo in ufos

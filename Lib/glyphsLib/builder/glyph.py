@@ -158,9 +158,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     if ufo_glyph.markColor:
         glyph.color = _to_glyphs_color(ufo_glyph.markColor)
 
-    # The export flag can be stored in the glyph's lib key or the
-    # Designspace-level public.skipExportGlyphs lib key. The UFO level lib key is
-    # ignored.
+    # The export flag can be stored in the glyph's lib key (for upgrading legacy
+    # sources) or the Designspace-level public.skipExportGlyphs lib key (canonical
+    # place to store the information). The UFO level lib key is ignored.
     if GLYPHLIB_PREFIX + "Export" in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"]
     if ufo_glyph.name in self.designspace.lib.get("public.skipExportGlyphs", []):
