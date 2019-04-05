@@ -212,6 +212,13 @@ class UFOBuilder(_LoggerMixin):
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
+        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+        if skip_export_glyphs is not None:
+            skip_export_glyphs = sorted(set(skip_export_glyphs))
+            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
+            for source in self._sources.values():
+                source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
+
         for source in self._sources.values():
             yield source.font
 
@@ -240,11 +247,6 @@ class UFOBuilder(_LoggerMixin):
             base_style = "-" + base_style
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
-
-        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-        if skip_export_glyphs is not None:
-            skip_export_glyphs = sorted(set(skip_export_glyphs))
-            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
         return self._designspace
 
@@ -665,6 +667,21 @@ class GlyphsBuilder(_LoggerMixin):
             source.path = ufo.path
             source.location = ufo_to_location[ufo]
             designspace.addSource(source)
+
+        if any("public.skipExportGlyphs" in ufo.lib for ufo in ufos):
+            skip_export_glyphs_lists = tuple(
+                tuple(ufo.lib.get("public.skipExportGlyphs", [])) for ufo in ufos
+            )
+            if len(set(skip_export_glyphs_lists)) == 1:
+                designspace.lib["public.skipExportGlyphs"] = sorted(
+                    set(skip_export_glyphs_lists[0])
+                )
+            else:
+                raise ValueError(
+                    "The `public.skipExportGlyphs` list of all UFOs must either not "
+                    "exist or be the same in every UFO."
+                )
+
         return designspace
 
     # Implementation is split into one file per feature

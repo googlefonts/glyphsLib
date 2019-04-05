@@ -854,7 +854,7 @@ class ToUfosTest(unittest.TestCase):
         ds = to_designspace(font2)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
-        self.assertNotIn("public.skipExportGlyphs", ufo.lib)
+        self.assertEqual(ufo.lib["public.skipExportGlyphs"], ["a"])
         self.assertEqual(ds.lib["public.skipExportGlyphs"], ["a"])
 
     def test_glyph_lib_Export_mixed(self):
@@ -878,7 +878,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["b"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["c"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
-        self.assertNotIn("public.skipExportGlyphs", ufo2.lib)
+        self.assertEqual(ufo2.lib["public.skipExportGlyphs"], ["a", "c"])
         self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "c"])
 
         font3 = to_glyphs(ds2)
@@ -886,6 +886,35 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(font3.glyphs["b"].export, True)
         self.assertEqual(font3.glyphs["c"].export, False)
         self.assertEqual(font3.glyphs["d"].export, True)
+
+    def test_glyph_lib_Export_fake_designspace(self):
+        font = generate_minimal_font()
+        master = GSFontMaster()
+        master.ascender = 0
+        master.capHeight = 0
+        master.descender = 0
+        master.id = "id"
+        master.xHeight = 0
+        font.masters.append(master)
+        add_glyph(font, "a")
+        add_glyph(font, "b")
+        ds = to_designspace(font)
+
+        ufos = [source.font for source in ds.sources]
+
+        font2 = to_glyphs(ufos)
+        ds2 = to_designspace(font2)
+        self.assertNotIn("public.skipExportGlyphs", ds2.lib)
+
+        ufos[0].lib["public.skipExportGlyphs"] = ["a"]
+
+        with self.assertRaises(ValueError):
+            to_glyphs(ufos)
+
+        ufos[1].lib["public.skipExportGlyphs"] = ["a"]
+        font3 = to_glyphs(ufos)
+        self.assertEqual(font3.glyphs["a"].export, False)
+        self.assertEqual(font3.glyphs["b"].export, True)
 
     def test_glyph_lib_metricsKeys(self):
         font = generate_minimal_font()
