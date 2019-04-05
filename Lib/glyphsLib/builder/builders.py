@@ -677,9 +677,9 @@ class GlyphsBuilder(_LoggerMixin):
         # Designspace-level lib key. However, to avoid accidents, expect the list to
         # exist in none or be the same in all UFOs.
         if any("public.skipExportGlyphs" in ufo.lib for ufo in ufos):
-            skip_export_glyphs = set(
+            skip_export_glyphs = {
                 frozenset(ufo.lib.get("public.skipExportGlyphs", [])) for ufo in ufos
-            )
+            }
             if len(skip_export_glyphs) == 1:
                 designspace.lib["public.skipExportGlyphs"] = sorted(
                     next(iter(skip_export_glyphs))
