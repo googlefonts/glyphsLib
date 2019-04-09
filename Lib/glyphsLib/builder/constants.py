@@ -20,6 +20,7 @@ GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
 ROBOFONT_PREFIX = "com.typemytype.robofont."
 UFO2FT_FILTERS_KEY = "com.github.googlei18n.ufo2ft.filters"
 UFO2FT_USE_PROD_NAMES_KEY = "com.github.googlei18n.ufo2ft.useProductionNames"
+COMPONENT_INFO_KEY = GLYPHLIB_PREFIX + "ComponentInfo"
 
 MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
 FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."

@@ -1,0 +1,169 @@
+{
+.appVersion = "1192";
+DisplayStrings = (
+"/circumflexcomb",
+"/acutecomb",
+"/tildecomb",
+"/circumflexcomb_acutecomb/circumflexcomb_tildecomb"
+);
+date = "2019-04-08 16:13:55 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+xHeight = 500;
+}
+);
+glyphs = (
+{
+glyphname = acutecomb;
+lastChange = "2019-04-08 16:18:08 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{266, 295}";
+}
+);
+layerId = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+paths = (
+{
+closed = 1;
+nodes = (
+"388 697 LINE",
+"490 571 LINE",
+"270 363 LINE",
+"178 413 LINE"
+);
+}
+);
+width = 600;
+}
+);
+unicode = 0301;
+},
+{
+glyphname = circumflexcomb;
+lastChange = "2019-04-08 16:17:13 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{258, 177}";
+},
+{
+name = top;
+position = "{282, 583}";
+},
+{
+name = top_viet;
+position = "{428, 461}";
+}
+);
+layerId = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+paths = (
+{
+closed = 1;
+nodes = (
+"288 527 LINE",
+"442 291 LINE",
+"344 255 LINE",
+"280 397 LINE",
+"124 241 LINE",
+"110 315 LINE"
+);
+}
+);
+width = 600;
+}
+);
+unicode = 0302;
+},
+{
+glyphname = tildecomb;
+lastChange = "2019-04-08 16:18:14 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{322, 457}";
+}
+);
+layerId = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+paths = (
+{
+closed = 1;
+nodes = (
+"127 644 OFFCURVE",
+"136 537 OFFCURVE",
+"200 537 CURVE SMOOTH",
+"264 537 OFFCURVE",
+"284 651 OFFCURVE",
+"336 651 CURVE SMOOTH",
+"388 651 OFFCURVE",
+"422 533 OFFCURVE",
+"502 533 CURVE",
+"590 705 LINE",
+"490 729 LINE",
+"322 717 LINE",
+"204 631 LINE",
+"174 745 LINE",
+"90 697 LINE"
+);
+}
+);
+width = 600;
+}
+);
+unicode = 0303;
+},
+{
+glyphname = circumflexcomb_acutecomb;
+lastChange = "2019-04-08 16:18:20 +0000";
+layers = (
+{
+components = (
+{
+name = circumflexcomb;
+},
+{
+anchor = top_viet;
+name = acutecomb;
+transform = "{1, 0, 0, 1, 162, 166}";
+}
+);
+layerId = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+width = 600;
+}
+);
+},
+{
+glyphname = circumflexcomb_tildecomb;
+lastChange = "2019-04-08 16:18:16 +0000";
+layers = (
+{
+components = (
+{
+name = circumflexcomb;
+},
+{
+name = tildecomb;
+transform = "{1, 0, 0, 1, -40, 126}";
+}
+);
+layerId = "52A85F4D-3FDC-4E0E-8F5E-9F706623760E";
+width = 600;
+}
+);
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
