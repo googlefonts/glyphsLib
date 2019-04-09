@@ -14,17 +14,28 @@
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import logging
+
 from glyphsLib.types import Transform
 
-from .constants import GLYPHS_PREFIX
+from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY
+
+logger = logging.getLogger(__name__)
 
 
 def to_ufo_components(self, ufo_glyph, layer):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
     pen = ufo_glyph.getPointPen()
 
-    for component in layer.components:
+    for index, component in enumerate(layer.components):
         pen.addComponent(component.name, component.transform)
+
+        if component.anchor:
+            if COMPONENT_INFO_KEY not in ufo_glyph.lib:
+                ufo_glyph.lib[COMPONENT_INFO_KEY] = []
+            ufo_glyph.lib[COMPONENT_INFO_KEY].append(
+                {"name": component.name, "index": index, "anchor": component.anchor}
+            )
 
     # data related to components stored in lists of booleans
     # each list's elements correspond to the components in order
@@ -48,6 +59,25 @@ def to_glyphs_components(self, ufo_glyph, layer):
         for component, value in zip(layer.components, values):
             if value is not None:
                 setattr(component, key, value)
+
+    if COMPONENT_INFO_KEY in ufo_glyph.lib:
+        for component_info in ufo_glyph.lib[COMPONENT_INFO_KEY]:
+            component_index = component_info["index"]
+            component = layer.components[component_index]
+            if component.name == component_info["name"]:
+                component.anchor = component_info["anchor"]
+            else:
+                logger.warning(
+                    "Glyph {}, layer {}: The ComponentInfo says the component at index "
+                    "{} is named '{}', but it is actually named '{}'. Skipping, anchor "
+                    "placement might get lost.".format(
+                        ufo_glyph.name,
+                        layer.name,
+                        component_index,
+                        component_info["name"],
+                        component.name,
+                    )
+                )
 
 
 def _lib_key(key):
