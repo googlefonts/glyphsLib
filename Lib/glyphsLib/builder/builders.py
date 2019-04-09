@@ -208,10 +208,6 @@ class UFOBuilder(_LoggerMixin):
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
-        self.to_ufo_features()  # This depends on the glyphOrder key
-        self.to_ufo_groups()
-        self.to_ufo_kerning()
-
         # Sanitize skip list and write it to both Designspace- and UFO-level lib keys.
         # The latter is unnecessary when using e.g. the `ufo2ft.compile*FromDS`
         # functions, but the data may take a different path. Writing it everywhere can
@@ -222,6 +218,10 @@ class UFOBuilder(_LoggerMixin):
             self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
             for source in self._sources.values():
                 source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
+
+        self.to_ufo_features()  # This depends on the glyphOrder key
+        self.to_ufo_groups()
+        self.to_ufo_kerning()
 
         for source in self._sources.values():
             yield source.font

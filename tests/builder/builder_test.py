@@ -895,6 +895,23 @@ class ToUfosTest(unittest.TestCase):
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
         self.assertEqual(ufo3.lib["public.skipExportGlyphs"], ["a", "c"])
 
+    def test_glyph_lib_Export_GDEF(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "d")
+        add_anchor(font, "d", "top", 100, 100)
+
+        ds = to_designspace(font)
+        ufo = ds.sources[0].font
+        self.assertIn(
+            "GlyphClassDef[d]", ufo.features.text.replace("\n", "").replace(" ", "")
+        )
+
+        font.glyphs["d"].export = False
+        ds2 = to_designspace(font)
+        ufo2 = ds2.sources[0].font
+        self.assertEqual(ufo2.features.text, "")
+
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()
         master = GSFontMaster()
