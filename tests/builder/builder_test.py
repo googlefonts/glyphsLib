@@ -1160,12 +1160,10 @@ class GlyphPropertiesTest(unittest.TestCase):
         ufo["circumflexcomb_acutecomb"].lib[GLYPHLIB_PREFIX + "ComponentInfo"] = [
             {"anchor": "top_viet", "index": 1, "name": "asadad"}
         ]
-        with self.assertLogs(logger="glyphsLib.builder.components", level="WARN") as cm:
-            font3 = to_glyphs(ds)
+        font3 = to_glyphs(ds)
         self.assertFalse(
             font3.glyphs["circumflexcomb_acutecomb"].layers[0].components[1].anchor
         )
-        self.assertIn("anchor placement might get lost", cm.output[0])
 
 
 class SkipDanglingAndNamelessLayers(unittest.TestCase):
