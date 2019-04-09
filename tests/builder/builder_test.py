@@ -23,6 +23,7 @@ import tempfile
 import os
 import shutil
 
+import glyphsLib
 from defcon import Font
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
@@ -38,7 +39,7 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import Point
 
-from glyphsLib.builder import to_ufos, to_glyphs
+from glyphsLib.builder import to_ufos, to_glyphs, to_designspace
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.paths import to_ufo_paths
 from glyphsLib.builder.names import build_stylemap_names
@@ -1121,6 +1122,40 @@ class GlyphPropertiesTest(unittest.TestCase):
         self.assertEqual(ufo["b"].lib.get("public.markColor"), "0.97,1,0,1")
         self.assertEqual(ufo["c"].lib.get("public.markColor"), None)
         self.assertEqual(ufo["d"].lib.get("public.markColor"), None)
+
+    def test_anchor_assignment(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "..", "data", "AnchorAttachmentTest.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+
+        self.assertEqual(
+            font.glyphs["circumflexcomb_acutecomb"].layers[0].components[1].anchor,
+            "top_viet",
+        )
+        self.assertFalse(
+            font.glyphs["circumflexcomb_tildecomb"].layers[0].components[1].anchor
+        )
+
+        ds = to_designspace(font)
+        ufo = ds.sources[0].font
+        self.assertEqual(
+            ufo["circumflexcomb_acutecomb"].lib[GLYPHLIB_PREFIX + "ComponentInfo"],
+            {"anchor": "top_viet", "index": 1, "name": "acutecomb"},
+        )
+        self.assertIsNone(
+            ufo["circumflexcomb_tildecomb"].lib.get(GLYPHLIB_PREFIX + "ComponentInfo")
+        )
+
+        font2 = to_glyphs(ds)
+        self.assertEqual(
+            font2.glyphs["circumflexcomb_acutecomb"].layers[0].components[1].anchor,
+            "top_viet",
+        )
+        self.assertFalse(
+            font2.glyphs["circumflexcomb_tildecomb"].layers[0].components[1].anchor
+        )
 
 
 class SkipDanglingAndNamelessLayers(unittest.TestCase):
