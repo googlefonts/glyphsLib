@@ -282,6 +282,27 @@ def test_designspace_generation_bracket_roundtrip(datadir):
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
+def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    # Remove brace layers for clean slate.
+    master_ids = {m.id for m in font.masters}
+    for g in font.glyphs:
+        dl = [l for l in g.layers if l.layerId not in master_ids]
+        for l in dl:
+            g.layers.remove(l)
+
+    designspace = to_designspace(font)
+    for source in designspace.sources:
+        source.font.newGlyph("b.BRACKET.100")
+
+    font_rt = to_glyphs(designspace)
+    for layer in font_rt.glyphs["b"].layers:
+        if layer.layerId not in master_ids:
+            assert layer.name == "[100]"
+
+
 def test_designspace_generation_bracket_unbalanced_brackets(datadir):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
