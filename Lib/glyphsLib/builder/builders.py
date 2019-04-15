@@ -541,8 +541,17 @@ class GlyphsBuilder(_LoggerMixin):
             # First, move free-standing bracket glyphs back to layers to avoid dealing
             # with GSLayer transplantation.
             for bracket_glyph in [g for g in source.font if ".BRACKET." in g.name]:
-                base_glyph = bracket_glyph.name.split(".BRACKET.")[0]
-                layer_name = bracket_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"]
+                base_glyph, threshold = bracket_glyph.name.split(".BRACKET.")
+                try:
+                    int(threshold)
+                except ValueError:
+                    raise ValueError(
+                        "Glyph '{}' has malformed bracket layer name. Must be '<glyph "
+                        "name>.BRACKET.<crossover value>'.".format(bracket_glyph)
+                    )
+                layer_name = bracket_glyph.lib.get(
+                    GLYPHLIB_PREFIX + "_originalLayerName", "[{}]".format(threshold)
+                )
                 if layer_name not in source.font.layers:
                     ufo_layer = source.font.newLayer(layer_name)
                 else:
