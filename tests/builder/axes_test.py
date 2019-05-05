@@ -93,7 +93,7 @@ def _make_designspace_with_axes(axes):
 
 def test_masters_have_user_locations():
     """Test the new axis definition with custom parameters.
-    See https://github.com/googlei18n/glyphsLib/issues/280.
+    See https://github.com/googlefonts/glyphsLib/issues/280.
 
     For tests about the previous system with weight/width/custom,
     see `tests/builder/interpolation_test.py`.
@@ -191,8 +191,8 @@ def test_master_user_location_goes_into_os2_classes():
 
 
 def test_mapping_is_same_regardless_of_axes_custom_parameter():
-    # https://github.com/googlei18n/glyphsLib/issues/409
-    # https://github.com/googlei18n/glyphsLib/issues/411
+    # https://github.com/googlefonts/glyphsLib/issues/409
+    # https://github.com/googlefonts/glyphsLib/issues/411
 
     # First, try without the custom param
     font = to_glyphs([defcon.Font(), defcon.Font(), defcon.Font()])

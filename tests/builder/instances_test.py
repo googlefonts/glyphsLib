@@ -74,7 +74,7 @@ def test_apply_instance_data(tmpdir, instance_names):
 
 def test_reexport_apply_instance_data():
     # this is for compatibility with fontmake
-    # https://github.com/googlei18n/fontmake/issues/451
+    # https://github.com/googlefonts/fontmake/issues/451
     from glyphsLib.interpolation import apply_instance_data as reexported
 
     assert reexported is apply_instance_data

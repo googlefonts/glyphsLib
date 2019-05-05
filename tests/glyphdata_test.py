@@ -140,7 +140,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("_aaa"), (None, None))
 
     def test_bug232(self):
-        # https://github.com/googlei18n/glyphsLib/issues/232
+        # https://github.com/googlefonts/glyphsLib/issues/232
         u, g = get_glyph("uni07F0"), get_glyph("longlowtonecomb-nko")
         self.assertEqual((u.category, g.category), ("Mark", "Mark"))
         self.assertEqual((u.subCategory, g.subCategory), ("Nonspacing", "Nonspacing"))

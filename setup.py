@@ -35,7 +35,7 @@ setup(
     author_email="jamesgk@google.com",
     description="A bridge from Glyphs source files (.glyphs) to UFOs",
     long_description=long_description,
-    url="https://github.com/googlei18n/glyphsLib",
+    url="https://github.com/googlefonts/glyphsLib",
     license="Apache Software License 2.0",
     package_dir={"": "Lib"},
     packages=find_packages("Lib"),

@@ -35,7 +35,7 @@ def to_ufo_font_attributes(self, family_name):
     font = self.font
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
-    # https://github.com/googlei18n/glyphsLib/issues/134
+    # https://github.com/googlefonts/glyphsLib/issues/134
     date_created = getattr(font, "date", None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)

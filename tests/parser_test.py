@@ -97,7 +97,7 @@ class ParserTest(unittest.TestCase):
         self.run_test(b"{mystr = NaN;}", [("mystr", "NaN")])
 
     def test_dont_crash_on_string_that_looks_like_a_dict(self):
-        # https://github.com/googlei18n/glyphsLib/issues/238
+        # https://github.com/googlefonts/glyphsLib/issues/238
         self.run_test(b'{UUID0 = "{0.5, 0.5}";}', [("UUID0", "{0.5, 0.5}")])
 
     def test_parse_dict_in_dict(self):

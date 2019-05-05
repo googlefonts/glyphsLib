@@ -181,7 +181,7 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
-        # https://github.com/googlei18n/glyphsLib/issues/129
+        # https://github.com/googlefonts/glyphsLib/issues/129
         masters, instances = makeFamily()
         for inst in instances:
             if inst.name != "Semibold":
@@ -262,7 +262,7 @@ class DesignspaceTest(unittest.TestCase):
     def test_instanceOrder(self):
         # The generated *.designspace file should place instances
         # in the same order as they appear in the original source.
-        # https://github.com/googlei18n/glyphsLib/issues/113
+        # https://github.com/googlefonts/glyphsLib/issues/113
         masters, _ = makeFamily()
         instances = [
             makeInstance("Black", weight=("Black", 900, 190)),
@@ -366,7 +366,7 @@ class DesignspaceTest(unittest.TestCase):
         self.assertEqual(doc.filename, "FamilyName-Italic.designspace")
 
     def test_instance_filtering_by_family_name(self):
-        # See https://github.com/googlei18n/fontmake/issues/257
+        # See https://github.com/googlefonts/fontmake/issues/257
         path = os.path.join(
             os.path.dirname(__file__), "..", "data", "MontserratStrippedDown.glyphs"
         )

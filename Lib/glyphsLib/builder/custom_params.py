@@ -611,7 +611,7 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 register(GlyphOrderParamHandler())
 
 
-# See https://github.com/googlei18n/glyphsLib/issues/214
+# See https://github.com/googlefonts/glyphsLib/issues/214
 class FilterParamHandler(AbstractParamHandler):
     def glyphs_names(self):
         return "Filter", "PreFilter"

@@ -108,14 +108,14 @@ TESTABLES = [
         "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     {
-        # https://github.com/googlei18n/glyphsLib/issues/238
+        # https://github.com/googlefonts/glyphsLib/issues/238
         "name": "montserrat",
         "git_url": "https://github.com/JulietaUla/Montserrat",
         "git_ref": "master",
         "classes": (GlyphsRT, GlyphsToDesignspaceRT),
     },
     {
-        # https://github.com/googlei18n/glyphsLib/issues/282
+        # https://github.com/googlefonts/glyphsLib/issues/282
         "name": "cantarell_madig",
         "git_url": "https://github.com/madig/cantarell-fonts/",
         "git_ref": "f17124d041e6ee370a9fcddcc084aa6cbf3d5500",

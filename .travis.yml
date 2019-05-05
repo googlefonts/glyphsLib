@@ -31,7 +31,7 @@ script:
 after_success:
   - |
     if [[ $TOXENV != lint ]]; then
-        if [ -n "$TRAVIS_TAG" ] && [ "$TRAVIS_REPO_SLUG" == "googlei18n/glyphsLib" ] && [ "$TRAVIS_PYTHON_VERSION" == "3.6" ]; then
+        if [ -n "$TRAVIS_TAG" ] && [ "$TRAVIS_REPO_SLUG" == "googlefonts/glyphsLib" ] && [ "$TRAVIS_PYTHON_VERSION" == "3.6" ]; then
             pip install --upgrade twine pip setuptools wheel
             python setup.py sdist
             pip wheel --no-deps --wheel-dir dist .

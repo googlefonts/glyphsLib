@@ -145,12 +145,12 @@ In practice there are always a few diffs on things that don't really make a
 difference, like optional things being added/removed or whitespace changes or
 things getting reordered...
 
-.. |Travis Build Status| image:: https://travis-ci.org/googlei18n/glyphsLib.svg
-   :target: https://travis-ci.org/googlei18n/glyphsLib
+.. |Travis Build Status| image:: https://travis-ci.org/googlefonts/glyphsLib.svg
+   :target: https://travis-ci.org/googlefonts/glyphsLib
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/glyphsLib.svg
    :target: https://pypi.org/project/glyphsLib/
-.. |Codecov| image:: https://codecov.io/gh/googlei18n/glyphsLib/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/googlei18n/glyphsLib
+.. |Codecov| image:: https://codecov.io/gh/googlefonts/glyphsLib/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/googlefonts/glyphsLib
 .. |Gitter Chat| image:: https://badges.gitter.im/fonttools-dev/glyphsLib.svg
    :alt: Join the chat at https://gitter.im/fonttools-dev/glyphsLib
    :target: https://gitter.im/fonttools-dev/glyphsLib?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge

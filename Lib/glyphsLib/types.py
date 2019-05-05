@@ -312,7 +312,7 @@ def parse_color(src=None):
     Glyphs does not support an alpha channel as of 2.5.1 (confirmed by Georg
     Seifert), and always writes a 1 to it. This was brought up and is probably
     corrected in the next versions.
-    https://github.com/googlei18n/glyphsLib/pull/363#issuecomment-390418497
+    https://github.com/googlefonts/glyphsLib/pull/363#issuecomment-390418497
     """
     if src is None:
         return None

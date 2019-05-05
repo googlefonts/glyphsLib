@@ -107,7 +107,7 @@ class UFOBuilder(_LoggerMixin):
         self._designspace_is_complete = False
 
         # check that source was generated with at least stable version 2.3
-        # https://github.com/googlei18n/glyphsLib/pull/65#issuecomment-237158140
+        # https://github.com/googlefonts/glyphsLib/pull/65#issuecomment-237158140
         if int(font.appVersion) < 895:
             self.logger.warning(
                 "This Glyphs source was generated with an outdated version "

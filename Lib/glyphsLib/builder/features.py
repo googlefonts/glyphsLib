@@ -124,8 +124,8 @@ def _build_gdef(ufo, skipExportGlyphs=None):
 
     See:
 
-    * https://github.com/googlei18n/glyphsLib/issues/85
-    * https://github.com/googlei18n/glyphsLib/pull/100#issuecomment-275430289
+    * https://github.com/googlefonts/glyphsLib/issues/85
+    * https://github.com/googlefonts/glyphsLib/pull/100#issuecomment-275430289
     """
     from glyphsLib import glyphdata
 

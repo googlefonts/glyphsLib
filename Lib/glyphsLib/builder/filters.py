@@ -27,7 +27,7 @@ def parse_glyphs_filter(filter_str, is_pre=False):
        ufo2ft can consume.
 
         Reference:
-            ufo2ft: https://github.com/googlei18n/ufo2ft
+            ufo2ft: https://github.com/googlefonts/ufo2ft
             Glyphs 2.3 Handbook July 2016, p184
 
         Args:

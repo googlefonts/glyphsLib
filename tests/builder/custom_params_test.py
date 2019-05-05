@@ -229,7 +229,7 @@ class SetCustomParamsTest(unittest.TestCase):
             True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"]
         )
 
-    # https://github.com/googlei18n/glyphsLib/issues/268
+    # https://github.com/googlefonts/glyphsLib/issues/268
     def test_xHeight(self):
         self.ufo.info.xHeight = 300
         self.master.customParameters["xHeight"] = "500"

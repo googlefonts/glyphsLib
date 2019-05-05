@@ -147,7 +147,7 @@ def to_designspace_axes(self):
         axis.name = axis_def.name
         # TODO add support for localised axis.labelNames when Glyphs.app does
 
-        # See https://github.com/googlei18n/glyphsLib/issues/280
+        # See https://github.com/googlefonts/glyphsLib/issues/280
         if font_uses_new_axes(self.font):
             # Build the mapping from the "Axis Location" of the masters
             # TODO: (jany) use Virtual Masters as well?
@@ -220,8 +220,8 @@ def font_uses_new_axes(font):
     # It's possible for fonts to have the 'Axes' parameter but to NOT specify
     # the master locations using 'Axis Location', in which case we have to
     # resort to using instances or other old tricks to get the mapping.
-    # https://github.com/googlei18n/glyphsLib/issues/409
-    # https://github.com/googlei18n/glyphsLib/issues/411
+    # https://github.com/googlefonts/glyphsLib/issues/409
+    # https://github.com/googlefonts/glyphsLib/issues/411
     return font.customParameters["Axes"] and all(
         master.customParameters["Axis Location"] for master in font.masters
     )
@@ -486,7 +486,7 @@ CUSTOM_AXIS_DEF = defaults_factory.get("XXXX", "Custom")
 DEFAULT_AXES_DEFS = (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, CUSTOM_AXIS_DEF)
 
 
-# Adapted from PR https://github.com/googlei18n/glyphsLib/pull/306
+# Adapted from PR https://github.com/googlefonts/glyphsLib/pull/306
 def get_axis_definitions(font):
     axesParameter = font.customParameters["Axes"]
     if axesParameter is None:
@@ -559,7 +559,7 @@ def find_base_style(masters):
 def is_instance_active(instance):
     # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
     # to mark instances as inactive. Inactive instances should get ignored.
-    # https://github.com/googlei18n/glyphsLib/issues/129
+    # https://github.com/googlefonts/glyphsLib/issues/129
     return instance.exports and getattr(instance, "active", True)
 
 

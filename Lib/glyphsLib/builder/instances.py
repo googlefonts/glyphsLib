@@ -80,7 +80,7 @@ def _to_designspace_instance(self, instance):
     # TODO: (jany) investigate the possibility of storing a relative path in
     #   the `filename` custom parameter. If yes, drop the key below.
     #   Maybe do the same for masters?
-    #   https://github.com/googlei18n/glyphsLib/issues/319
+    #   https://github.com/googlefonts/glyphsLib/issues/319
     fname = instance.customParameters[FULL_FILENAME_KEY]
     if fname is not None:
         if self.instance_dir:

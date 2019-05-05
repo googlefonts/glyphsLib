@@ -640,7 +640,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual("Thin", thin.name)
 
         # Test that we don't get an extra "Regular" in the name of "Italic"
-        # https://github.com/googlei18n/glyphsLib/issues/380
+        # https://github.com/googlefonts/glyphsLib/issues/380
         master = GSFontMaster()
         master.weight = "Regular"
         master.width = "Regular"

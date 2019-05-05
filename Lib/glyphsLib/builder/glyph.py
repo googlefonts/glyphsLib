@@ -274,5 +274,5 @@ def _to_glyphs_color(color):
     # Otherwise, make a Glyphs-formatted RGBA color list: [u8, u8, u8, u8].
     # Glyphs up to version 2.5.1 always set the alpha channel to 1. It should
     # round-trip the actual value in later versions.
-    # https://github.com/googlei18n/glyphsLib/pull/363#issuecomment-390418497
+    # https://github.com/googlefonts/glyphsLib/pull/363#issuecomment-390418497
     return [round(component * 255) for component in tuple(color)]
