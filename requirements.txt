@@ -1,2 +1,2 @@
-fonttools[ufo,lxml]==3.39.0
+fonttools[ufo,lxml]==3.40.0
 defcon==0.6.0
