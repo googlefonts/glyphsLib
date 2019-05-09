@@ -311,14 +311,11 @@ class AxisDefinition(object):
         """Get the user location of a Glyphs master or instance.
         Masters in Glyphs can have a user location in the "Axis Location"
         custom parameter.
-
         The user location is what the user sees on the slider in his
         variable-font-enabled UI. For weight it is a value between 0 and 1000,
         400 being Regular and 700 Bold.
-
-        For width it's a percentage of extension with respect to the normal
-        width, 100 being normal, 200 Ultra-expanded = twice as wide.
-        It may or may not match the design location.
+        For width it's the same as the design location, a percentage of
+        extension with respect to the normal width.
         """
         user_loc = self.default_user_loc
 
@@ -326,30 +323,30 @@ class AxisDefinition(object):
             # The user location is by default the same as the design location.
             user_loc = self.get_design_loc(master_or_instance)
 
-        # Try to guess the user location by looking at the OS/2 weightClass
-        # and widthClass. If a weightClass is found, it translates directly
-        # to a user location in 0..1000. If a widthClass is found, it
-        # translate to a percentage of extension according to the spec, see
-        # the mapping named `WIDTH_CLASS_TO_VALUE` at the top.
-        if self.user_loc_key is not None and hasattr(
-            master_or_instance, self.user_loc_key
-        ):
-            # Instances have special ways to specify a user location.
-            # Only weight and with have a custom user location via a key.
-            # The `user_loc_key` gives a "location code" = Glyphs UI string
-            user_loc_str = getattr(master_or_instance, self.user_loc_key)
-            new_user_loc = user_loc_string_to_value(self.tag, user_loc_str)
-            if new_user_loc is not None:
-                user_loc = new_user_loc
+        # For the width, the user location should be the same as the design
+        # location (regardless of the OS/2 width class and prescribed mapping
+        # to a percentage), as enforced by DesignspaceTest::test_twoAxes
+        # in tests/builder/interpolation_test.py
+        if self.tag != "wdth":
+            if self.user_loc_key is not None and hasattr(
+                master_or_instance, self.user_loc_key
+            ):
+                # Instances have special ways to specify a user location.
+                # Only weight and with have a custom user location via a key.
+                # The `user_loc_key` gives a "location code" = Glyphs UI string
+                user_loc_str = getattr(master_or_instance, self.user_loc_key)
+                new_user_loc = user_loc_string_to_value(self.tag, user_loc_str)
+                if new_user_loc is not None:
+                    user_loc = new_user_loc
 
-        # The custom param takes over the key if it exists
-        # e.g. for weight:
-        #       key = "weight" -> "Bold" -> 700
-        # but param = "weightClass" -> 600       => 600 wins
-        if self.user_loc_param is not None:
-            class_ = master_or_instance.customParameters[self.user_loc_param]
-            if class_ is not None:
-                user_loc = class_to_value(self.tag, class_)
+            # The custom param takes over the key if it exists
+            # e.g. for weight:
+            #       key = "weight" -> "Bold" -> 700
+            # but param = "weightClass" -> 600       => 600 wins
+            if self.user_loc_param is not None:
+                class_ = master_or_instance.customParameters[self.user_loc_param]
+                if class_ is not None:
+                    user_loc = class_to_value(self.tag, class_)
 
         # Masters have a customParameter that specifies a user location
         # along custom axes. If this is present it takes precedence over
