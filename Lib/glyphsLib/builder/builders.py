@@ -208,17 +208,6 @@ class UFOBuilder(_LoggerMixin):
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
-        # Sanitize skip list and write it to both Designspace- and UFO-level lib keys.
-        # The latter is unnecessary when using e.g. the `ufo2ft.compile*FromDS`
-        # functions, but the data may take a different path. Writing it everywhere can
-        # save on surprises/logic in other software.
-        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-        if skip_export_glyphs is not None:
-            skip_export_glyphs = sorted(set(skip_export_glyphs))
-            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
-            for source in self._sources.values():
-                source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
-
         self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
@@ -680,25 +669,6 @@ class GlyphsBuilder(_LoggerMixin):
             source.path = ufo.path
             source.location = ufo_to_location[ufo]
             designspace.addSource(source)
-
-        # UFO-level skip list lib keys are usually ignored, except when we don't have a
-        # Designspace file to start from. If they exist in the UFOs, promote them to a
-        # Designspace-level lib key. However, to avoid accidents, expect the list to
-        # exist in none or be the same in all UFOs.
-        if any("public.skipExportGlyphs" in ufo.lib for ufo in ufos):
-            skip_export_glyphs = {
-                frozenset(ufo.lib.get("public.skipExportGlyphs", [])) for ufo in ufos
-            }
-            if len(skip_export_glyphs) == 1:
-                designspace.lib["public.skipExportGlyphs"] = sorted(
-                    next(iter(skip_export_glyphs))
-                )
-            else:
-                raise ValueError(
-                    "The `public.skipExportGlyphs` list of all UFOs must either not "
-                    "exist or be the same in every UFO."
-                )
-
         return designspace
 
     # Implementation is split into one file per feature

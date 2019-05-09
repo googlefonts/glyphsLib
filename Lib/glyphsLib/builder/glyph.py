@@ -65,9 +65,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
 
     export = glyph.export
     if not export:
-        if "public.skipExportGlyphs" not in self._designspace.lib:
-            self._designspace.lib["public.skipExportGlyphs"] = []
-        self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
@@ -149,7 +147,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
 
     if ufo_glyph.unicodes:
         glyph.unicodes = ["{:04X}".format(c) for c in ufo_glyph.unicodes]
-    glyph.note = ufo_glyph.note or ""
+    note = ufo_glyph.note
+    if note is not None:
+        glyph.note = note
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
         # We cannot be strict about the dateformat because it's not an official
@@ -157,15 +157,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         glyph.lastChange = from_loose_ufo_time(last_change)
     if ufo_glyph.markColor:
         glyph.color = _to_glyphs_color(ufo_glyph.markColor)
-
-    # The export flag can be stored in the glyph's lib key (for upgrading legacy
-    # sources) or the Designspace-level public.skipExportGlyphs lib key (canonical
-    # place to store the information). The UFO level lib key is ignored.
     if GLYPHLIB_PREFIX + "Export" in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"]
-    if ufo_glyph.name in self.designspace.lib.get("public.skipExportGlyphs", []):
-        glyph.export = False
-
     ps_names_key = PUBLIC_PREFIX + "postscriptNames"
     if (
         ps_names_key in ufo_glyph.font.lib

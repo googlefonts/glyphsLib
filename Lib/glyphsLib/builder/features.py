@@ -96,9 +96,7 @@ def _to_ufo_features(self, master, ufo):
                 "The features already contain a `table GDEF {...}` statement. "
                 "Either delete it or set generate_GDEF to False."
             )
-        gdef_str = _build_gdef(
-            ufo, self._designspace.lib.get("public.skipExportGlyphs")
-        )
+        gdef_str = _build_gdef(ufo)
 
     # make sure feature text is a unicode string, for defcon
     full_text = (
@@ -107,7 +105,7 @@ def _to_ufo_features(self, master, ufo):
     ufo.features.text = full_text if full_text.strip() else ""
 
 
-def _build_gdef(ufo, skipExportGlyphs=None):
+def _build_gdef(ufo):
     """Build a GDEF table statement (GlyphClassDef and LigatureCaretByPos).
 
     Building GlyphClassDef requires anchor propagation or user care to work as
@@ -134,12 +132,6 @@ def _build_gdef(ufo, skipExportGlyphs=None):
     subCategory_key = GLYPHLIB_PREFIX + "subCategory"
 
     for glyph in ufo:
-        # Do not generate any entries for non-export glyphs, as looking them up on
-        # compilation will fail.
-        if skipExportGlyphs is not None:
-            if glyph.name in skipExportGlyphs:
-                continue
-
         has_attaching_anchor = False
         for anchor in glyph.anchors:
             name = anchor.name
