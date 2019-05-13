@@ -164,7 +164,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     # place to store the information). The UFO level lib key is ignored.
     if GLYPHLIB_PREFIX + "Export" in ufo_glyph.lib:
         glyph.export = ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"]
-    if ufo_glyph.name in self.designspace.lib.get("public.skipExportGlyphs", []):
+    if ufo_glyph.name in self.skip_export_glyphs:
         glyph.export = False
 
     ps_names_key = PUBLIC_PREFIX + "postscriptNames"

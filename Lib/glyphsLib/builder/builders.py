@@ -505,6 +505,13 @@ class GlyphsBuilder(_LoggerMixin):
         else:
             raise RuntimeError("Please provide a designspace or at least one UFO.")
 
+        if "public.skipExportGlyphs" in self.designspace.lib:
+            self.skip_export_glyphs = set(
+                self.designspace.lib["public.skipExportGlyphs"]
+            )
+        else:
+            self.skip_export_glyphs = set()
+
         self._font = None
         """The GSFont that will be built."""
 
