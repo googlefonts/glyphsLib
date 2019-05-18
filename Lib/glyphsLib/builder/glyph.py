@@ -65,10 +65,12 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
 
     export = glyph.export
     if not export:
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
-        if "public.skipExportGlyphs" not in self._designspace.lib:
-            self._designspace.lib["public.skipExportGlyphs"] = []
-        self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
+        if self.write_public_skipexportglyphs:
+            if "public.skipExportGlyphs" not in self._designspace.lib:
+                self._designspace.lib["public.skipExportGlyphs"] = []
+            self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
+        else:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)

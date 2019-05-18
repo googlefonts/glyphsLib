@@ -114,6 +114,15 @@ def main(args=None):
             "in which tab (DisplayStrings)."
         ),
     )
+    group.add_argument(
+        "--write-public-skip-export-glyphs",
+        action="store_true",
+        help=(
+            "Store the glyph export flag in the `public.skipExportGlyphs` list "
+            "instead of the glyph-level 'com.schriftgestaltung.Glyphs.Export' lib "
+            "key."
+        ),
+    )
 
     parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
@@ -188,6 +197,7 @@ def glyphs2ufo(options):
         create_background_layers=options.create_background_layers,
         generate_GDEF=options.generate_GDEF,
         store_editor_state=not options.no_store_editor_state,
+        write_public_skipexportglyphs=options.write_public_skip_export_glyphs,
     )
 
 

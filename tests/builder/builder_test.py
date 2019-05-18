@@ -838,8 +838,8 @@ class ToUfosTest(unittest.TestCase):
         glyph = add_glyph(font, "a")
         self.assertEqual(glyph.export, True)
 
-        ufo = to_ufos(font)[0]
-        ds = to_designspace(font)
+        ufo = to_ufos(font, write_public_skipexportglyphs=True)[0]
+        ds = to_designspace(font, write_public_skipexportglyphs=True)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
         self.assertNotIn("public.skipExportGlyphs", ufo.lib)
@@ -851,12 +851,20 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(glyph2.export, True)
 
         glyph2.export = False
-        ufo = to_ufos(font2)[0]
-        ds = to_designspace(font2)
+        ufo = to_ufos(font2, write_public_skipexportglyphs=True)[0]
+        ds = to_designspace(font2, write_public_skipexportglyphs=True)
 
-        self.assertFalse(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
         self.assertEqual(ufo.lib["public.skipExportGlyphs"], ["a"])
         self.assertEqual(ds.lib["public.skipExportGlyphs"], ["a"])
+
+        # Test write_public_skipexportglyphs=False
+        ufo = to_ufos(font2, write_public_skipexportglyphs=False)[0]
+        ds = to_designspace(font2, write_public_skipexportglyphs=False)
+
+        self.assertFalse(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn("public.skipExportGlyphs", ufo.lib)
+        self.assertNotIn("public.skipExportGlyphs", ds.lib)
 
     def test_glyph_lib_Export_mixed(self):
         font = generate_minimal_font()
@@ -864,7 +872,7 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "b")
         add_glyph(font, "c")
         add_glyph(font, "d")
-        ds = to_designspace(font)
+        ds = to_designspace(font, write_public_skipexportglyphs=True)
         ufo = ds.sources[0].font
 
         ufo["a"].lib[GLYPHLIB_PREFIX + "Export"] = False
@@ -872,12 +880,12 @@ class ToUfosTest(unittest.TestCase):
         ds.lib["public.skipExportGlyphs"] = ["c"]
 
         font2 = to_glyphs(ds)
-        ds2 = to_designspace(font2)
+        ds2 = to_designspace(font2, write_public_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
 
-        self.assertFalse(ufo2["a"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["a"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["b"].lib)
-        self.assertFalse(ufo2["c"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["c"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
         self.assertEqual(ufo2.lib["public.skipExportGlyphs"], ["a", "c"])
         self.assertEqual(ds2.lib["public.skipExportGlyphs"], ["a", "c"])
@@ -888,13 +896,28 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(font3.glyphs["c"].export, False)
         self.assertEqual(font3.glyphs["d"].export, True)
 
-        ufos3 = to_ufos(font2)
+        ufos3 = to_ufos(font2, write_public_skipexportglyphs=True)
         ufo3 = ufos3[0]
-        self.assertFalse(ufo2["a"].lib[GLYPHLIB_PREFIX + "Export"])
-        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["b"].lib)
-        self.assertFalse(ufo2["c"].lib[GLYPHLIB_PREFIX + "Export"])
-        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["d"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["a"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["b"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["c"].lib)
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["d"].lib)
         self.assertEqual(ufo3.lib["public.skipExportGlyphs"], ["a", "c"])
+
+        # Test write_public_skipexportglyphs=False
+        ufos3 = to_ufos(font2, write_public_skipexportglyphs=False)
+        ufo3 = ufos3[0]
+        self.assertFalse(ufo3["a"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["b"].lib)
+        self.assertFalse(ufo3["c"].lib[GLYPHLIB_PREFIX + "Export"])
+        self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["d"].lib)
+        self.assertNotIn("public.skipExportGlyphs", ufo3.lib)
+
+        font4 = to_glyphs(ufos3)
+        self.assertEqual(font4.glyphs["a"].export, False)
+        self.assertEqual(font4.glyphs["b"].export, True)
+        self.assertEqual(font4.glyphs["c"].export, False)
+        self.assertEqual(font4.glyphs["d"].export, True)
 
     def test_glyph_lib_Export_GDEF(self):
         font = generate_minimal_font()
@@ -902,14 +925,14 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "d")
         add_anchor(font, "d", "top", 100, 100)
 
-        ds = to_designspace(font)
+        ds = to_designspace(font, write_public_skipexportglyphs=True)
         ufo = ds.sources[0].font
         self.assertIn(
             "GlyphClassDef[d]", ufo.features.text.replace("\n", "").replace(" ", "")
         )
 
         font.glyphs["d"].export = False
-        ds2 = to_designspace(font)
+        ds2 = to_designspace(font, write_public_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
         self.assertEqual(ufo2.features.text, "")
 
@@ -924,12 +947,12 @@ class ToUfosTest(unittest.TestCase):
         font.masters.append(master)
         add_glyph(font, "a")
         add_glyph(font, "b")
-        ds = to_designspace(font)
+        ds = to_designspace(font, write_public_skipexportglyphs=True)
 
         ufos = [source.font for source in ds.sources]
 
         font2 = to_glyphs(ufos)
-        ds2 = to_designspace(font2)
+        ds2 = to_designspace(font2, write_public_skipexportglyphs=True)
         self.assertNotIn("public.skipExportGlyphs", ds2.lib)
 
         ufos[0].lib["public.skipExportGlyphs"] = ["a"]
