@@ -58,7 +58,7 @@ class UFOBuilder(_LoggerMixin):
         minimize_glyphs_diffs=False,
         generate_GDEF=True,
         store_editor_state=True,
-        write_public_skipexportglyphs=False,
+        write_skipexportglyphs=False,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -83,7 +83,7 @@ class UFOBuilder(_LoggerMixin):
                          the UFO features.
         store_editor_state -- If True, store editor state in the UFO like which
                               glyphs are open in which tabs ("DisplayStrings").
-        write_public_skipexportglyphs -- If True, write the export status of a glyph
+        write_skipexportglyphs -- If True, write the export status of a glyph
                                          into the UFOs' and Designspace's lib instead
                                          of the glyph level lib key
                                          "com.schriftgestaltung.Glyphs.Export".
@@ -98,7 +98,7 @@ class UFOBuilder(_LoggerMixin):
         self.generate_GDEF = generate_GDEF
         self.store_editor_state = store_editor_state
         self.bracket_layers = []
-        self.write_public_skipexportglyphs = write_public_skipexportglyphs
+        self.write_skipexportglyphs = write_skipexportglyphs
 
         # The set of (SourceDescriptor + UFO)s that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.
@@ -214,7 +214,7 @@ class UFOBuilder(_LoggerMixin):
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
 
-        if self.write_public_skipexportglyphs:
+        if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
             # keys. The latter is unnecessary when using e.g. the ufo2ft.compile*FromDS`
             # functions, but the data may take a different path. Writing it everywhere

@@ -65,7 +65,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
 
     export = glyph.export
     if not export:
-        if self.write_public_skipexportglyphs:
+        if self.write_skipexportglyphs:
             if "public.skipExportGlyphs" not in self._designspace.lib:
                 self._designspace.lib["public.skipExportGlyphs"] = []
             self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
