@@ -84,7 +84,8 @@ class UFOBuilder(_LoggerMixin):
         store_editor_state -- If True, store editor state in the UFO like which
                               glyphs are open in which tabs ("DisplayStrings").
         write_public_skipexportglyphs -- If True, write the export status of a glyph
-                                         into the UFOs' and Designspace's lib instead of the glyph level lib key
+                                         into the UFOs' and Designspace's lib instead
+                                         of the glyph level lib key
                                          "com.schriftgestaltung.Glyphs.Export".
         """
         self.font = font
