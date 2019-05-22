@@ -620,6 +620,9 @@ class FilterParamHandler(AbstractParamHandler):
         return (UFO2FT_FILTERS_KEY,)
 
     def to_glyphs(self, glyphs, ufo):
+        if glyphs.is_font():
+            return  # Only write filters to the masters
+
         ufo_filters = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
         if ufo_filters is None:
             return
@@ -632,19 +635,21 @@ class FilterParamHandler(AbstractParamHandler):
             glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
 
     def to_ufo(self, builder, glyphs, ufo):
-        if not glyphs.is_font():  # Only write filters to the masters
-            ufo_filters = []
-            for pre_filter in glyphs.get_custom_values("PreFilter"):
-                ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
-            for filter in glyphs.get_custom_values("Filter"):
-                ufo_filters.append(parse_glyphs_filter(filter, is_pre=False))
+        if glyphs.is_font():
+            return  # Only write filters to the masters
 
-            if not ufo_filters:
-                return
-            if not ufo.has_lib_key(UFO2FT_FILTERS_KEY):
-                ufo.set_lib_value(UFO2FT_FILTERS_KEY, [])
-            existing = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
-            existing.extend(ufo_filters)
+        ufo_filters = []
+        for pre_filter in glyphs.get_custom_values("PreFilter"):
+            ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
+        for filter in glyphs.get_custom_values("Filter"):
+            ufo_filters.append(parse_glyphs_filter(filter, is_pre=False))
+
+        if not ufo_filters:
+            return
+        if not ufo.has_lib_key(UFO2FT_FILTERS_KEY):
+            ufo.set_lib_value(UFO2FT_FILTERS_KEY, [])
+        existing = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
+        existing.extend(ufo_filters)
 
 
 register(FilterParamHandler())
@@ -800,10 +805,11 @@ def _unset_default_params(glyphs):
             glyphs_name in glyphs.customParameters
             and glyphs.customParameters[glyphs_name] == default_value
         ):
-            del (glyphs.customParameters[glyphs_name])
+            del glyphs.customParameters[glyphs_name]
         # These parameters can be referred to with the two names in Glyphs
         if (
             glyphs_name in glyphs.customParameters
             and glyphs.customParameters[glyphs_name] == default_value
         ):
-            del (glyphs.customParameters[glyphs_name])
+            del glyphs.customParameters[glyphs_name]
+

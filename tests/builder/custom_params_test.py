@@ -333,6 +333,7 @@ class SetCustomParamsTest(unittest.TestCase):
         self.master.customParameters["PreFilter"] = glyphs_filter
         self.set_custom_params()
         self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
+        self.assertNotIn(FONT_CUSTOM_PARAM_PREFIX + "PreFilter", self.ufo.lib)
 
         font_rt = glyphsLib.to_glyphs([self.ufo])
         self.assertEqual(
@@ -340,3 +341,4 @@ class SetCustomParamsTest(unittest.TestCase):
         )
         ufo_rt = glyphsLib.to_ufos(font_rt)[0]
         self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
+        self.assertNotIn(FONT_CUSTOM_PARAM_PREFIX + "PreFilter", ufo_rt.lib)
