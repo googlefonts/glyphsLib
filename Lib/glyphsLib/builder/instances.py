@@ -374,11 +374,18 @@ def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
         # through normpath (but not normcase). We do the same.
         ufo = Font(normpath(os.path.join(basedir, fname)))
 
-        set_weight_class(ufo, designspace, designspace_instance)
-        set_width_class(ufo, designspace, designspace_instance)
+        apply_instance_data_to_ufo(ufo, designspace_instance, designspace)
 
-        glyphs_instance = InstanceDescriptorAsGSInstance(designspace_instance)
-        to_ufo_custom_params(None, ufo, glyphs_instance)
         ufo.save()
         instance_ufos.append(ufo)
     return instance_ufos
+
+
+def apply_instance_data_to_ufo(ufo, instance, designspace):
+    # type: (Any, fontTools.designspaceLib.InstanceDescriptor, fontTools.designspaceLib.DesignSpaceDocument) -> None
+    """Apply Glyphs instance data to UFO object."""
+    set_weight_class(ufo, designspace, instance)
+    set_width_class(ufo, designspace, instance)
+
+    glyphs_instance = InstanceDescriptorAsGSInstance(instance)
+    to_ufo_custom_params(None, ufo, glyphs_instance)
