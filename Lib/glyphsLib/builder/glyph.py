@@ -266,8 +266,6 @@ def to_ufo_glyph_background(self, glyph, layer):
 
 
 def _to_glyphs_color(color):
-    # type: (defcon.objects.color.Color) -> Union[int, List[int]]
-
     # If the color matches one of Glyphs's predefined colors, return that
     # index.
     for index, glyphs_color in enumerate(GLYPHS_COLORS):

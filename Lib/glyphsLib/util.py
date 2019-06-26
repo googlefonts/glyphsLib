@@ -51,7 +51,6 @@ def clean_ufo(path):
 
 
 def ufo_create_background_layer_for_all_glyphs(ufo_font):
-    # type: (defcon.Font) -> None
     """Create a background layer for all glyphs in ufo_font if not present to
     reduce roundtrip differences."""
 

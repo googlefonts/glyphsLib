@@ -609,7 +609,7 @@ class FontGlyphsProxy(Proxy):
 
     def __delitem__(self, key):
         if isinstance(key, int):
-            del (self._owner._glyphs[key])
+            del self._owner._glyphs[key]
         elif isString(key):
             glyph = self._get_glyph_by_string(key)
             if not glyph:
@@ -773,7 +773,7 @@ class GlyphLayerProxy(Proxy):
                 key = self.__len__() + key
             Layer = self.__getitem__(key)
             key = Layer.layerId
-        del (self._owner._layers[key])
+        del self._owner._layers[key]
 
     def __iter__(self):
         return LayersIterator(self._owner)
@@ -1596,7 +1596,7 @@ class GSNode(GSBase):
     def name(self, value):
         if value is None:
             if "name" in self.userData:
-                del (self.userData["name"])
+                del self.userData["name"]
         else:
             self.userData["name"] = value
 
@@ -3095,14 +3095,21 @@ class GSGlyph(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
-    glyphname = property(
-        lambda self: self.name, lambda self, value: setattr(self, "name", value)
-    )
+    @property
+    def glyphname(self):
+        return self.name
 
-    smartComponentAxes = property(
-        lambda self: self.partsSettings,
-        lambda self, value: setattr(self, "partsSettings", value),
-    )
+    @glyphname.setter
+    def glyphname(self, value):
+        self.name = value
+
+    @property
+    def smartComponentAxes(self):
+        return self.partsSettings
+
+    @smartComponentAxes.setter
+    def smartComponentAxes(self, value):
+        self.partsSettings = value
 
     @property
     def id(self):
@@ -3369,8 +3376,8 @@ class GSFont(GSBase):
             return
         if rightKey not in self._kerning[fontMasterId][leftKey]:
             return
-        del (self._kerning[fontMasterId][leftKey][rightKey])
+        del self._kerning[fontMasterId][leftKey][rightKey]
         if not self._kerning[fontMasterId][leftKey]:
-            del (self._kerning[fontMasterId][leftKey])
+            del self._kerning[fontMasterId][leftKey]
         if not self._kerning[fontMasterId]:
-            del (self._kerning[fontMasterId])
+            del self._kerning[fontMasterId]
