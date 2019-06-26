@@ -328,11 +328,9 @@ class UFOBuilder(_LoggerMixin):
         #    bracket layers per glyph and crossover value. We currently only support
         #    the situation where there is a bracket layer for _all_ masters, what the
         #    Glyphs.app tutorial calls 'Changing All Masters'.
-        bracket_layer_map = defaultdict(list)  # type: Dict[int, List[classes.GSLayer]]
-        glyph_crossovers = defaultdict(set)  # type: Dict[str, Set[int]]
-        glyph_sanity_counter = defaultdict(
-            list
-        )  # type: Dict[Tuple[str, int], List[str]]
+        bracket_layer_map = defaultdict(list)
+        glyph_crossovers = defaultdict(set)
+        glyph_sanity_counter = defaultdict(list)
         for layer in self.bracket_layers:
             glyph_name = layer.parent.name
             n = layer.name
@@ -379,7 +377,7 @@ class UFOBuilder(_LoggerMixin):
             )
 
         # Sort crossovers into buckets.
-        rule_bucket = defaultdict(list)  # type: Dict[Tuple[int, int], List[int]]
+        rule_bucket = defaultdict(list)
         for glyph_name, crossovers in sorted(glyph_crossovers.items()):
             for crossover_min, crossover_max in util.pairwise(
                 sorted(crossovers) + [bracket_axis_max]

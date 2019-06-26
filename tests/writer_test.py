@@ -991,7 +991,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         node = classes.GSNode(Point(10, 30), classes.GSNode.CURVE)
         # http://docu.glyphsapp.com/#gsnode
         # position: already set
-        # type: already set
+        # #type: already set
         # smooth
         node.smooth = True
         # connection: deprecated

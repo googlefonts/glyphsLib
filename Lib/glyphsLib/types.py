@@ -303,7 +303,6 @@ class Datetime(ValueType):
 
 
 def parse_color(src=None):
-    # type: (Optional[str]) -> Optional[Union[Tuple[int, ...], int]]
     """Parse a string representing a color value.
 
     Color is either a fixed color (when coloring something from the UI, see
