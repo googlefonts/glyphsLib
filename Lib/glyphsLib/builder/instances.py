@@ -382,8 +382,15 @@ def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
 
 
 def apply_instance_data_to_ufo(ufo, instance, designspace):
-    # type: (Any, fontTools.designspaceLib.InstanceDescriptor, fontTools.designspaceLib.DesignSpaceDocument) -> None
-    """Apply Glyphs instance data to UFO object."""
+    """Apply Glyphs instance data to UFO object.
+
+    Args:
+        ufo: a defcon-like font object.
+        instance: a fontTools.designspaceLib.InstanceDescriptor.
+        designspace: a fontTools.designspaceLib.DesignSpaceDocument.
+    Returns:
+        None.
+    """
     set_weight_class(ufo, designspace, instance)
     set_width_class(ufo, designspace, instance)
 
