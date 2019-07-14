@@ -55,6 +55,7 @@ def _to_ufo_features(self, master, ufo):
             strings.append("# Prefix: %s\n" % prefix.name)
         strings.append(autostr(prefix.automatic))
         strings.append(prefix.code)
+        strings.append("\n# End Prefix: %s\n" % prefix.name)
         prefixes.append("".join(strings))
 
     prefix_str = "\n\n".join(prefixes)
@@ -193,6 +194,18 @@ def replace_feature(tag, repl, features):
         repl += "\n"
     return re.sub(
         r"(?<=^feature {tag} {{\n)(.*?)(?=^}} {tag};$)".format(tag=tag),
+        repl,
+        features,
+        count=1,
+        flags=re.DOTALL | re.MULTILINE,
+    )
+
+
+def replace_prefix(tag, repl, features):
+    if not repl.endswith("\n"):
+        repl += "\n"
+    return re.sub(
+        r"(?<=^# Prefix: {tag}\n)(.*?\n)# End Prefix: {tag}".format(tag=tag),
         repl,
         features,
         count=1,
