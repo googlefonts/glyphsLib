@@ -292,6 +292,74 @@ class SetCustomParamsTest(unittest.TestCase):
 
         self.assertEqual(self.ufo.features.text, original)
 
+    def test_replace_prefix(self):
+        self.ufo.features.text = dedent(
+            """\
+            # Prefix: AAA
+            include(../aaa.fea);
+
+            # Prefix: FOO
+            # foo
+
+            # Prefix: ZZZ
+            include(../zzz.fea);
+
+            # Prefix: BAR
+            # bar
+
+            feature liga {
+            sub f i by f_i;
+            } liga;
+
+            table GDEF {
+            GlyphClassDef
+                [f i], # Base
+                [f_i], # Liga
+                , # Mark
+                ;
+            } GDEF;
+            """
+        )
+
+        self.master.customParameters.append(
+            GSCustomParameter("Replace Prefix", "FOO; include(../foo.fea);")
+        )
+        self.master.customParameters.append(
+            GSCustomParameter("Replace Prefix", "BAR; include(../bar.fea);")
+        )
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent(
+                """\
+                # Prefix: AAA
+                include(../aaa.fea);
+
+                # Prefix: FOO
+                include(../foo.fea);
+
+                # Prefix: ZZZ
+                include(../zzz.fea);
+
+                # Prefix: BAR
+                include(../bar.fea);
+
+                table GDEF {
+                GlyphClassDef
+                    [f i], # Base
+                    [f_i], # Liga
+                    , # Mark
+                    ;
+                } GDEF;
+
+                feature liga {
+                sub f i by f_i;
+                } liga;
+                """
+            ),
+        )
+
     def test_useProductionNames(self):
         for value in (True, False):
             self.master.customParameters["Don't use Production Names"] = value

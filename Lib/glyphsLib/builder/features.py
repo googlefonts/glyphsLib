@@ -36,20 +36,37 @@ def autostr(automatic):
 def to_ufo_features(self):
     for master_id, source in self._sources.items():
         master = self.font.masters[master_id]
-        _to_ufo_features(self, master, source.font)
+        ufo = source.font
+
+        # Recover the original feature code if it was stored in the user data
+        original = master.userData[ORIGINAL_FEATURE_CODE_KEY]
+        if original is not None:
+            ufo.features.text = original
+        else:
+            skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+            ufo.features.text = _to_ufo_features(
+                self.font,
+                ufo,
+                generate_GDEF=self.generate_GDEF,
+                skip_export_glyphs=skip_export_glyphs,
+            )
 
 
-def _to_ufo_features(self, master, ufo):
-    """Write an UFO's OpenType feature file."""
+def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=None):
+    """Convert GSFont features, including prefixes and classes, to UFO.
 
-    # Recover the original feature code if it was stored in the user data
-    original = master.userData[ORIGINAL_FEATURE_CODE_KEY]
-    if original is not None:
-        ufo.features.text = original
-        return
+    Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
 
+    Args:
+        font: GSFont
+        ufo: Optional[defcon.Font]
+        generate_GDEF: bool
+        skip_export_glyphs: Optional[List[str]]
+
+    Returns: str
+    """
     prefixes = []
-    for prefix in self.font.featurePrefixes:
+    for prefix in font.featurePrefixes:
         strings = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
             strings.append("# Prefix: %s\n" % prefix.name)
@@ -60,7 +77,7 @@ def _to_ufo_features(self, master, ufo):
     prefix_str = "\n\n".join(prefixes)
 
     class_defs = []
-    for class_ in self.font.classes:
+    for class_ in font.classes:
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
@@ -69,7 +86,7 @@ def _to_ufo_features(self, master, ufo):
     class_str = "\n\n".join(class_defs)
 
     feature_defs = []
-    for feature in self.font.features:
+    for feature in font.features:
         code = feature.code
         lines = ["feature %s {" % feature.name]
         if feature.notes:
@@ -90,21 +107,20 @@ def _to_ufo_features(self, master, ufo):
     # results, we would need anchor propagation or user intervention. Glyphs.app
     # only generates it on generating binaries.
     gdef_str = None
-    if self.generate_GDEF:
+    if generate_GDEF:
+        assert ufo is not None
         if re.search(r"^\s*table\s+GDEF\s+{", prefix_str, flags=re.MULTILINE):
             raise ValueError(
                 "The features already contain a `table GDEF {...}` statement. "
                 "Either delete it or set generate_GDEF to False."
             )
-        gdef_str = _build_gdef(
-            ufo, self._designspace.lib.get("public.skipExportGlyphs")
-        )
+        gdef_str = _build_gdef(ufo, skip_export_glyphs)
 
     # make sure feature text is a unicode string, for defcon
     full_text = (
         "\n\n".join(filter(None, [class_str, prefix_str, fea_str, gdef_str])) + "\n"
     )
-    ufo.features.text = full_text if full_text.strip() else ""
+    return full_text if full_text.strip() else ""
 
 
 def _build_gdef(ufo, skipExportGlyphs=None):
@@ -200,6 +216,32 @@ def replace_feature(tag, repl, features):
     )
 
 
+def replace_prefixes(repl_map, features_text, glyph_names=None):
+    """Replace all '# Prefix: NAME' sections in features.
+
+    Args:
+        repl_map: Dict[str, str]: dictionary keyed by prefix name containing
+            feature code snippets to be replaced.
+        features_text: str: feature text to be parsed.
+        glyph_names: Optional[Sequence[str]]: list of valid glyph names, used
+            by feaLib Parser to distinguish glyph name tokens containing '-' from
+            glyph ranges such as 'a-z'.
+
+    Returns:
+        str: new feature text with replaced prefix paragraphs.
+    """
+    from glyphsLib.classes import GSFont
+
+    temp_font = GSFont()
+    _to_glyphs_features(temp_font, features_text, glyph_names=glyph_names)
+
+    for prefix in temp_font.featurePrefixes:
+        if prefix.name in repl_map:
+            prefix.code = repl_map[prefix.name]
+
+    return _to_ufo_features(temp_font)
+
+
 def to_glyphs_features(self):
     if not self.designspace.sources:
         # Needs at least one UFO
@@ -228,9 +270,26 @@ def to_glyphs_features(self):
     ufo = self.designspace.sources[0].font
     if ufo.features.text is None:
         return
-    document = FeaDocument(ufo.features.text, ufo.keys())
-    processor = FeatureFileProcessor(document, self.glyphs_module)
-    processor.to_glyphs(self.font)
+    _to_glyphs_features(
+        self.font,
+        ufo.features.text,
+        glyph_names=ufo.keys(),
+        glyphs_module=self.glyphs_module,
+    )
+
+
+def _to_glyphs_features(font, features_text, glyph_names=None, glyphs_module=None):
+    """Import features text in GSFont, split into prefixes, features and classes.
+
+    Args:
+        font: GSFont
+        feature_text: str
+        glyph_names: Optional[Sequence[str]]
+        glyphs_module: Optional[Any]
+    """
+    document = FeaDocument(features_text, glyph_names)
+    processor = FeatureFileProcessor(document, glyphs_module)
+    processor.to_glyphs(font)
 
 
 def _features_are_different_across_ufos(self):
@@ -274,9 +333,12 @@ def _to_glyphs_features_basic(self):
 class FeaDocument(object):
     """Parse the string of a fea code into statements."""
 
-    def __init__(self, text, glyph_set):
+    def __init__(self, text, glyph_set=None):
         feature_file = StringIO(text)
-        parser_ = parser.Parser(feature_file, glyph_set, followIncludes=False)
+        glyph_names = glyph_set if glyph_set is not None else ()
+        parser_ = parser.Parser(
+            feature_file, glyphNames=glyph_names, followIncludes=False
+        )
         self._doc = parser_.parse()
         self.statements = self._doc.statements
         self._lines = text.splitlines(True)  # keepends=True
@@ -396,8 +458,10 @@ class PeekableIterator(object):
 class FeatureFileProcessor(object):
     """Put fea statements into the correct fields of a GSFont."""
 
-    def __init__(self, doc, glyphs_module):
+    def __init__(self, doc, glyphs_module=None):
         self.doc = doc
+        if glyphs_module is None:
+            from glyphsLib import classes as glyphs_module
         self.glyphs_module = glyphs_module
         self.statements = PeekableIterator(doc.statements)
         self._font = None
