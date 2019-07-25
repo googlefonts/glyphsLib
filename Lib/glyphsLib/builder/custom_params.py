@@ -27,7 +27,7 @@ from .constants import (
     REVERSE_CODEPAGE_RANGES,
     PUBLIC_PREFIX,
 )
-from .features import replace_feature
+from .features import replace_feature, replace_prefixes
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -669,6 +669,34 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
 
 
 register(ReplaceFeatureParamHandler())
+
+
+class ReplacePrefixParamHandler(AbstractParamHandler):
+    def to_ufo(self, builder, glyphs, ufo):
+        repl_map = {}
+        for value in glyphs.get_custom_values("Replace Prefix"):
+            prefix_name, prefix_code = re.split(r"\s*;\s*", value, 1)
+            # if multiple 'Replace Prefix' custom params replace the same
+            # prefix, the last wins
+            repl_map[prefix_name] = prefix_code
+
+        features_text = ufo._owner.features.text
+
+        if not (repl_map and features_text):
+            return
+
+        glyph_names = set(ufo._owner.keys())
+
+        ufo._owner.features.text = replace_prefixes(
+            repl_map, features_text, glyph_names=glyph_names
+        )
+
+    def to_glyphs(self, glyphs, ufo):
+        # do the same as ReplaceFeatureParamHandler.to_glyphs
+        pass
+
+
+register(ReplacePrefixParamHandler())
 
 
 class ReencodeGlyphsParamHandler(AbstractParamHandler):
