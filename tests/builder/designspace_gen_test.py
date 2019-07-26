@@ -309,11 +309,8 @@ def test_designspace_generation_bracket_unbalanced_brackets(datadir):
 
     # Delete the "Other [600]" layer to unbalance bracket layers.
     del font.glyphs["x"].layers["C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB"]
-    with pytest.raises(ValueError, match=r"bracket layer\(s\) missing"):
-        to_designspace(font)
 
-    # Delete the other [600] layers to rebalance.
-    del font.glyphs["x"].layers["E729A72D-C6FF-4DDD-ADA1-BB5B6FD7E3DD"]
-    del font.glyphs["x"].layers["F5778F4C-2B04-4030-9D7D-09E3C951C089"]
-    del font.glyphs["x"].layers["24328DA8-2CE1-4D0A-9C91-214ED36F6393"]
-    assert to_designspace(font)
+    designspace = to_designspace(font)
+
+    for source in designspace.sources:
+        assert "x.BRACKET.600" in source.font
