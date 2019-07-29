@@ -18,6 +18,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 from xmldiff import main, formatting
 
+import itertools
 import pytest
 import defcon
 
@@ -378,3 +379,31 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir):
     assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g2.layers)
 
     assert "D.REV_BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_no_export_glyph(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    font.glyphs["E"].export = False
+
+    designspace = to_designspace(font, write_skipexportglyphs=True)
+
+    assert "E" in designspace.lib.get("public.skipExportGlyphs")
+
+    for source in designspace.sources:
+        assert "E.REV_BRACKET.570" not in source.font
+        assert "E.BRACKET.630" not in source.font
+
+    for rule in designspace.rules:
+        assert "E" not in {g for g in itertools.chain(*rule.subs)}
+
+    font_rt = to_glyphs(designspace)
+
+    assert "E" in font_rt.glyphs
+    assert {l.name for l in font_rt.glyphs["E"].layers} == {
+        "Regular",
+        "Regular [630]",
+        "Bold",
+        "Bold ]570]",
+    }
