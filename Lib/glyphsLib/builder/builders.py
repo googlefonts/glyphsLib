@@ -418,7 +418,7 @@ class UFOBuilder(_LoggerMixin):
         font = self.font
         master_ids = {m.id for m in font.masters}
         # when a glyph master layer doesn't have an explicitly associated bracket layer
-        # for any crosspoint locations, we assume the master layer itself will to be
+        # for any crosspoint locations, we assume the master layer itself will be
         # used implicitly as bracket layer for that location. See "Switching Only One
         # Master" paragraph in "Alternating Glyph Shapes" tutorial at:
         # https://glyphsapp.com/tutorials/alternating-glyph-shapes
@@ -634,6 +634,7 @@ class GlyphsBuilder(_LoggerMixin):
                     bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
                     bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
 
+                    # strip '*.BRACKET.123' suffix from the components' glyph names
                     for comp in bracket_glyph_new.components:
                         m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
                         if m:
