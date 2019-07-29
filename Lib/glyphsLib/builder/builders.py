@@ -32,7 +32,7 @@ from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_val
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 
 BRACKET_LAYER_RE = re.compile(
-    r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+[\d\s,]*)[\]].*"
+    r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\].*"
 )
 BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
 REVERSE_BRACKET_LABEL = "REV_"
@@ -342,15 +342,8 @@ class UFOBuilder(_LoggerMixin):
             assert m
 
             reverse = m.group("first_bracket") == "]"
+            bracket_crossover = int(m.group("value"))
 
-            try:
-                bracket_crossover = int(m.group("value"))
-            except ValueError:
-                raise ValueError(
-                    "Only bracket layers with one numerical (design space) location "
-                    "(meaning the first axis in the designspace file) are currently "
-                    "supported."
-                )
             if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
                 raise ValueError(
                     "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
