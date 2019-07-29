@@ -31,9 +31,7 @@ from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_val
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 
-BRACKET_LAYER_RE = re.compile(
-    r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\].*"
-)
+BRACKET_LAYER_RE = re.compile(r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*")
 BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
 REVERSE_BRACKET_LABEL = "REV_"
 BRACKET_GLYPH_RE = re.compile(
