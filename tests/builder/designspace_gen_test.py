@@ -304,13 +304,77 @@ def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
 
 
 def test_designspace_generation_bracket_unbalanced_brackets(datadir):
-    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
-    # Delete the "Other [600]" layer to unbalance bracket layers.
-    del font.glyphs["x"].layers["C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB"]
+    layer_names = {l.name for l in font.glyphs["C"].layers}
+    assert layer_names == {"Regular", "Bold", "Bold [600]"}
 
     designspace = to_designspace(font)
 
     for source in designspace.sources:
-        assert "x.BRACKET.600" in source.font
+        assert "C.BRACKET.600" in source.font
+
+    font_rt = to_glyphs(designspace)
+
+    assert "C" in font_rt.glyphs
+
+    assert {l.name for l in font_rt.glyphs["C"].layers} == layer_names
+    assert "C.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_composite_glyph(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    g = font.glyphs["B"]
+    for layer in g.layers:
+        assert layer.components[0].name == "A"
+
+    designspace = to_designspace(font)
+
+    for source in designspace.sources:
+        ufo = source.font
+        assert "B.BRACKET.600" in ufo
+        assert ufo["B"].components[0].baseGlyph == "A"
+        assert ufo["B.BRACKET.600"].components[0].baseGlyph == "A.BRACKET.600"
+
+    font_rt = to_glyphs(designspace)
+
+    assert "B" in font_rt.glyphs
+
+    g2 = font_rt.glyphs["B"]
+    for layer in g2.layers:
+        assert layer.components[0].name == "A"
+
+    assert "B.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_reverse_bracket_roundtrip(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    g = font.glyphs["D"]
+
+    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g.layers)
+
+    designspace = to_designspace(font)
+
+    assert designspace.rules[1].name == "BRACKET.400.600"
+    assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=400, maximum=600)]
+    ]
+    assert designspace.rules[1].subs == [("D", "D.REV_BRACKET.600")]
+
+    for source in designspace.sources:
+        ufo = source.font
+        assert "D.REV_BRACKET.600" in ufo
+
+    font_rt = to_glyphs(designspace)
+
+    assert "D" in font_rt.glyphs
+
+    g2 = font_rt.glyphs["D"]
+    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g2.layers)
+
+    assert "D.REV_BRACKET.600" not in font_rt.glyphs
