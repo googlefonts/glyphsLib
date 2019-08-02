@@ -206,7 +206,9 @@ class UFOBuilder(_LoggerMixin):
                 continue
 
             # Save processing bracket layers for when designspace() is called, as we
-            # have to extract them to free-standing glyphs.
+            # have to extract them to free-standing glyphs -- unless the parent glyph is
+            # set to non-export (in which case makes no sense to have Designspace rules
+            # referencing non existent glyphs).
             if (
                 BRACKET_LAYER_RE.match(layer.name)
                 and glyph.export
