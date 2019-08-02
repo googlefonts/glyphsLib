@@ -18,6 +18,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 from xmldiff import main, formatting
 
+import itertools
 import pytest
 import defcon
 
@@ -304,16 +305,105 @@ def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
 
 
 def test_designspace_generation_bracket_unbalanced_brackets(datadir):
-    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
-    # Delete the "Other [600]" layer to unbalance bracket layers.
-    del font.glyphs["x"].layers["C5C3CA59-C2D0-46F6-B5D3-86541DE36ACB"]
-    with pytest.raises(ValueError, match=r"bracket layer\(s\) missing"):
-        to_designspace(font)
+    layer_names = {l.name for l in font.glyphs["C"].layers}
+    assert layer_names == {"Regular", "Bold", "Bold [600]"}
 
-    # Delete the other [600] layers to rebalance.
-    del font.glyphs["x"].layers["E729A72D-C6FF-4DDD-ADA1-BB5B6FD7E3DD"]
-    del font.glyphs["x"].layers["F5778F4C-2B04-4030-9D7D-09E3C951C089"]
-    del font.glyphs["x"].layers["24328DA8-2CE1-4D0A-9C91-214ED36F6393"]
-    assert to_designspace(font)
+    designspace = to_designspace(font)
+
+    for source in designspace.sources:
+        assert "C.BRACKET.600" in source.font
+
+    font_rt = to_glyphs(designspace)
+
+    assert "C" in font_rt.glyphs
+
+    assert {l.name for l in font_rt.glyphs["C"].layers} == layer_names
+    assert "C.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_composite_glyph(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    g = font.glyphs["B"]
+    for layer in g.layers:
+        assert layer.components[0].name == "A"
+
+    designspace = to_designspace(font)
+
+    for source in designspace.sources:
+        ufo = source.font
+        assert "B.BRACKET.600" in ufo
+        assert ufo["B"].components[0].baseGlyph == "A"
+        assert ufo["B.BRACKET.600"].components[0].baseGlyph == "A.BRACKET.600"
+
+    font_rt = to_glyphs(designspace)
+
+    assert "B" in font_rt.glyphs
+
+    g2 = font_rt.glyphs["B"]
+    for layer in g2.layers:
+        assert layer.components[0].name == "A"
+
+    assert "B.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_reverse_bracket_roundtrip(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    g = font.glyphs["D"]
+
+    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g.layers)
+
+    designspace = to_designspace(font)
+
+    assert designspace.rules[1].name == "BRACKET.400.600"
+    assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=400, maximum=600)]
+    ]
+    assert designspace.rules[1].subs == [("D", "D.REV_BRACKET.600")]
+
+    for source in designspace.sources:
+        ufo = source.font
+        assert "D.REV_BRACKET.600" in ufo
+
+    font_rt = to_glyphs(designspace)
+
+    assert "D" in font_rt.glyphs
+
+    g2 = font_rt.glyphs["D"]
+    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g2.layers)
+
+    assert "D.REV_BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_no_export_glyph(datadir):
+    with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    font.glyphs["E"].export = False
+
+    designspace = to_designspace(font, write_skipexportglyphs=True)
+
+    assert "E" in designspace.lib.get("public.skipExportGlyphs")
+
+    for source in designspace.sources:
+        assert "E.REV_BRACKET.570" not in source.font
+        assert "E.BRACKET.630" not in source.font
+
+    for rule in designspace.rules:
+        assert "E" not in {g for g in itertools.chain(*rule.subs)}
+
+    font_rt = to_glyphs(designspace)
+
+    assert "E" in font_rt.glyphs
+    assert {l.name for l in font_rt.glyphs["E"].layers} == {
+        "Regular",
+        "Regular [630]",
+        "Bold",
+        "Bold ]570]",
+    }
