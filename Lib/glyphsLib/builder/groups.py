@@ -173,8 +173,8 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
                 group,
                 _ufo_logging_ref(ufo),
             )
-            _warn("    reference = %s", " ".join(sorted(glyphs)))
-            _warn("    current   = %s", " ".join(sorted(reference_glyphs)))
+            _warn("    reference = %s", " ".join(sorted(reference_glyphs)))
+            _warn("    current   = %s", " ".join(sorted(glyphs)))
 
 
 def _ufo_logging_ref(ufo):
