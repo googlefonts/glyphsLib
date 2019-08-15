@@ -16,7 +16,6 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 import collections
 import logging
-import os
 
 import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
@@ -82,25 +81,28 @@ def _to_designspace_source(self, master, is_regular):
         # TODO: (jany) allow another naming convention?
         source.filename = build_ufo_path("", source.familyName, source.styleName)
 
-        # Make sure UFO filenames are unique, lest we overwrite masters that
-        # happen to have the same weight name.
-        n = "_"
-        while any(
-            s is not source and s.filename == source.filename
-            for s in self._sources.values()
-        ):
-            source.filename = os.path.basename(
-                build_ufo_path("", source.familyName, source.styleName + n)
-            )
-            n += "_"
-            logger.warning(
-                "The master with id {} has the same style name ({}) "
-                "as another one. All masters should have distinctive "
-                "(style) names. Use the 'Master name' custom parameter"
-                " on a master to give it a unique name. Proceeding "
-                "with an unchanged name, but appending '_' to the file"
-                " name on disk.".format(master.id, source.styleName)
-            )
+    # Make sure UFO filenames are unique, lest we overwrite masters that
+    # happen to have the same weight name. Careful, name clashes can also happen when
+    # the masters have a UFO_FILENAME_KEY: when the user duplicates a master in Glyphs
+    # but forgets to change the UFO filename key in the master's userData (ha!).
+    # Attention: The following is done regardless of where source.filename came from.
+    # Depending on the duplicate's order in the master list, this could lead to the
+    # legitimate master's filename getting an underscore appended!
+    n = "_"
+    while any(
+        s is not source and s.filename == source.filename
+        for s in self._sources.values()
+    ):
+        source.filename += n
+        n += "_"
+        logger.warning(
+            "The master with the style name '{}' (ID {}) has the same style name "
+            "as another one. All masters should have distinctive "
+            "(style) names. Use the 'Master name' custom parameter"
+            " on a master to give it a unique name. Proceeding "
+            "with an unchanged name, but appending '_' to the file"
+            " name on disk.".format(source.styleName, master.id)
+        )
 
     location = {}
     for axis_def in get_axis_definitions(self.font):
