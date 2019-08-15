@@ -650,27 +650,6 @@ class FilterParamHandler(AbstractParamHandler):
 register(FilterParamHandler())
 
 
-class ReplaceFeatureParamHandler(AbstractParamHandler):
-    def to_ufo(self, builder, glyphs, ufo):
-        for value in glyphs.get_custom_values("Replace Feature"):
-            tag, repl = re.split(r"\s*;\s*", value, 1)
-            ufo._owner.features.text = replace_feature(
-                tag, repl, ufo._owner.features.text or ""
-            )
-
-    def to_glyphs(self, glyphs, ufo):
-        # TODO: (jany) The "Replace Feature" custom parameter can be used to
-        # have one master/instance with different features than what is stored
-        # in the GSFont. When going from several UFOs to one GSFont, we could
-        # detect when UFOs have different features, put the common ones in
-        # GSFont and replace the different ones with this custom parameter.
-        # See the file `tests/builder/features_test.py`.
-        pass
-
-
-register(ReplaceFeatureParamHandler())
-
-
 class ReplacePrefixParamHandler(AbstractParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
@@ -697,6 +676,27 @@ class ReplacePrefixParamHandler(AbstractParamHandler):
 
 
 register(ReplacePrefixParamHandler())
+
+
+class ReplaceFeatureParamHandler(AbstractParamHandler):
+    def to_ufo(self, builder, glyphs, ufo):
+        for value in glyphs.get_custom_values("Replace Feature"):
+            tag, repl = re.split(r"\s*;\s*", value, 1)
+            ufo._owner.features.text = replace_feature(
+                tag, repl, ufo._owner.features.text or ""
+            )
+
+    def to_glyphs(self, glyphs, ufo):
+        # TODO: (jany) The "Replace Feature" custom parameter can be used to
+        # have one master/instance with different features than what is stored
+        # in the GSFont. When going from several UFOs to one GSFont, we could
+        # detect when UFOs have different features, put the common ones in
+        # GSFont and replace the different ones with this custom parameter.
+        # See the file `tests/builder/features_test.py`.
+        pass
+
+
+register(ReplaceFeatureParamHandler())
 
 
 class ReencodeGlyphsParamHandler(AbstractParamHandler):
