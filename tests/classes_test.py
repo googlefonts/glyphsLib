@@ -324,7 +324,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
         self.assertEqual(len(font.classes), 1)
         self.assertIn('<GSClass "uppercaseLetters">', str(font.classes))
         self.assertIn("A", font.classes["uppercaseLetters"].code)
-        del (font.classes["uppercaseLetters"])
+        del font.classes["uppercaseLetters"]
         newClass1 = GSClass("uppercaseLetters1", "A")
         newClass2 = GSClass("uppercaseLetters2", "A")
         font.classes.extend([newClass1, newClass2])
@@ -444,7 +444,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
         font.userData["TestData"] = 42
         self.assertEqual(font.userData["TestData"], 42)
         self.assertTrue("TestData" in font.userData)
-        del (font.userData["TestData"])
+        del font.userData["TestData"]
         self.assertIsNone(font.userData["TestData"])
 
     def test_disableNiceNames(self):
@@ -598,7 +598,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             "trademark"
         ] = "ThisFont is a trademark by MyFoundry.com"
         self.assertGreaterEqual(len(master.customParameters), 1)
-        del (master.customParameters["trademark"])
+        del master.customParameters["trademark"]
 
         # font
         self.assertEqual(self.font, self.master.font)
@@ -613,7 +613,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
 
         master.customParameters["Master Name"] = "My custom master name"
         self.assertEqual("My custom master name", master.name)
-        del (master.customParameters["Master Name"])
+        del master.customParameters["Master Name"]
         self.assertEqual("Light", master.name)
 
         master.italicAngle = 11
@@ -838,7 +838,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
             "trademark"
         ] = "ThisFont is a trademark by MyFoundry.com"
         self.assertGreaterEqual(len(instance.customParameters), 1)
-        del (instance.customParameters["trademark"])
+        del instance.customParameters["trademark"]
 
         # instanceInterpolations
         self.assertIsInstance(dict(instance.instanceInterpolations), dict)

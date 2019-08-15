@@ -122,7 +122,7 @@ def to_glyphs_layer_order(self, glyph):
     glyph.layers = sorted(glyph.layers, key=_layer_order)
     for layer in glyph.layers:
         if LAYER_ORDER_TEMP_USER_DATA_KEY in layer.userData:
-            del (layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY])
+            del layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY]
 
 
 def _layer_order(layer):

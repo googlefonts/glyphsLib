@@ -828,10 +828,10 @@ def _unset_default_params(glyphs):
             glyphs_name in glyphs.customParameters
             and glyphs.customParameters[glyphs_name] == default_value
         ):
-            del (glyphs.customParameters[glyphs_name])
+            del glyphs.customParameters[glyphs_name]
         # These parameters can be referred to with the two names in Glyphs
         if (
             glyphs_name in glyphs.customParameters
             and glyphs.customParameters[glyphs_name] == default_value
         ):
-            del (glyphs.customParameters[glyphs_name])
+            del glyphs.customParameters[glyphs_name]

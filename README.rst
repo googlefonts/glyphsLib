@@ -19,8 +19,8 @@ The following code will write UFOs and a Designspace file to disk.
 
     import glyphsLib
 
-    master_dir = 'master_ufos'
-    ufos, designspace_path = glyphsLib.build_masters('MyFont.glyphs', master_dir)
+    master_dir = "master_ufos"
+    ufos, designspace_path = glyphsLib.build_masters("MyFont.glyphs", master_dir)
 
 If you want to interpolate instances, please use fontmake instead. It uses this library under the hood when dealing with Glyphs files.
 
@@ -31,7 +31,7 @@ Load UFO objects without writing
 
     import glyphsLib
 
-    ufos = glyphsLib.load_to_ufos('MyFont.glyphs')
+    ufos = glyphsLib.load_to_ufos("MyFont.glyphs")
 
 Read and write Glyphs data as Python objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -80,11 +80,11 @@ Go back and forth between UFOs and Glyphs
         from defcon import Font
         from glyphsLib import to_glyphs
 
-        ufos = [Font(path) for path in glob.glob('*Italic.ufo')]
+        ufos = [Font(path) for path in glob.glob("*Italic.ufo")]
         # Sort the UFOs because glyphsLib will create masters in the same order
         ufos = sorted(ufos, key=lambda ufo: ufo.info.openTypeOS2WeightClass)
         font = to_glyphs(ufos)
-        font.save('InriaSansItalic.glyphs')
+        font.save("InriaSansItalic.glyphs")
 
     `Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/InriaSansItalic.glyphs>`__
 
@@ -98,9 +98,9 @@ Go back and forth between UFOs and Glyphs
         from glyphsLib import to_glyphs
 
         doc = DesignSpaceDocument()
-        doc.read('spectral-build-roman.designspace')
+        doc.read("spectral-build-roman.designspace")
         font = to_glyphs(doc)
-        font.save('SpectralRoman.glyphs')
+        font.save("SpectralRoman.glyphs")
 
     `Here is the resulting glyphs file <https://gist.githubusercontent.com/belluzj/cc3d43bf9b1cf22fde7fd4d2b97fdac4/raw/3222a2bfcf6554aa56a21b80f8fba82f1c5d7444/SpectralRoman.glyphs>`__
 
@@ -124,7 +124,7 @@ to store those layer UUIDs in the UFOs.
     from glyphsLib import to_glyphs, to_designspace, GSFont
 
     doc = DesignSpaceDocument()
-    doc.read('spectral-build-roman.designspace')
+    doc.read("spectral-build-roman.designspace")
     font = to_glyphs(doc, minimize_ufo_diffs=True)
     doc2 = to_designspace(font, propagate_anchors=False)
     # UFOs are in memory only, attached to the doc via `sources`
@@ -135,7 +135,7 @@ to store those layer UUIDs in the UFOs.
         # You will want to use ufoNormalizer after
         source.font.save(path)
 
-    font = GSFont('SpectralRoman.glyphs')
+    font = GSFont("SpectralRoman.glyphs")
     doc = to_designspace(font, minimize_glyphs_diffs=True, propagate_anchors=False)
     font2 = to_glyphs(doc)
     # Writing font2 over font should generate very few git diffs (ideally none):
