@@ -20,7 +20,7 @@ import logging
 from fontTools.misc.py23 import basestring
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
 from .names import build_stylemap_names
 from .axes import (
     get_axis_definitions,
@@ -77,11 +77,10 @@ def _to_designspace_instance(self, instance):
         ufo_instance.familyName = self.family_name
     ufo_instance.styleName = instance.name
 
-    # TODO: (jany) investigate the possibility of storing a relative path in
-    #   the `filename` custom parameter. If yes, drop the key below.
-    #   Maybe do the same for masters?
-    #   https://github.com/googlefonts/glyphsLib/issues/319
-    fname = instance.customParameters[FULL_FILENAME_KEY]
+    fname = (
+        instance.customParameters[UFO_FILENAME_CUSTOM_PARAM]
+        or instance.customParameters[FULL_FILENAME_KEY]
+    )
     if fname is not None:
         if self.instance_dir:
             fname = self.instance_dir + "/" + os.path.basename(fname)
@@ -139,6 +138,7 @@ def _to_designspace_instance(self, instance):
             "postscriptFontName",
             "fileName",
             FULL_FILENAME_KEY,
+            UFO_FILENAME_CUSTOM_PARAM,
         ):
             # These will be stored in the official descriptor attributes
             continue
@@ -262,8 +262,8 @@ def to_glyphs_instances(self):  # noqa: C901
             for name, value in ufo_instance.lib[CUSTOM_PARAMETERS_KEY]:
                 instance.customParameters.append(GSCustomParameter(name, value))
 
-        if self.minimize_ufo_diffs:
-            instance.customParameters[FULL_FILENAME_KEY] = ufo_instance.filename
+        if ufo_instance.filename and self.minimize_ufo_diffs:
+            instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
         # FIXME: (jany) cannot `.append()` because no proxy => no parent
         self.font.instances = self.font.instances + [instance]

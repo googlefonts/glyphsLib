@@ -18,6 +18,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 from textwrap import dedent
 import unittest
+import os
 
 # unittest.mock is only available for python 3.3+
 try:
@@ -36,8 +37,13 @@ from glyphsLib.builder.constants import (
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
+    UFO_FILENAME_CUSTOM_PARAM,
 )
+from glyphsLib.builder.masters import UFO_FILENAME_KEY
+from glyphsLib.builder.instances import FULL_FILENAME_KEY
 from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter
+
+DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
 class SetCustomParamsTest(unittest.TestCase):
@@ -408,3 +414,53 @@ class SetCustomParamsTest(unittest.TestCase):
         )
         ufo_rt = glyphsLib.to_ufos(font_rt)[0]
         self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
+
+
+def test_ufo_filename_custom_param():
+    """Test that new-style UFO_FILENAME_CUSTOM_PARAM is written instead of
+    (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
+    font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
+    ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+    assert ds.sources[0].filename == "MyFontMaster.ufo"
+    assert ds.instances[0].filename == "../build/instance_ufos/MyFont.ufo"
+    assert "com.schriftgestaltung.customParameters" not in ds.instances[0].lib
+
+    font_rt = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+    assert (
+        font_rt.masters[0].customParameters[UFO_FILENAME_CUSTOM_PARAM]
+        == "MyFontMaster.ufo"
+    )
+    assert UFO_FILENAME_KEY not in font_rt.masters[0].userData
+    assert (
+        font_rt.instances[0].customParameters[UFO_FILENAME_CUSTOM_PARAM]
+        == "../build/instance_ufos/MyFont.ufo"
+    )
+    assert FULL_FILENAME_KEY not in font_rt.instances[0].customParameters
+
+    ds_rt = glyphsLib.to_designspace(font_rt, minimize_glyphs_diffs=True)
+    assert ds_rt.sources[0].filename == "MyFontMaster.ufo"
+    assert ds_rt.instances[0].filename == "../build/instance_ufos/MyFont.ufo"
+
+
+def test_ufo_filename_custom_param_plus_legacy():
+    """Test that new-style UFO_FILENAME_CUSTOM_PARAM overrides legacy
+    (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
+    font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
+    font.masters[0].customParameters[UFO_FILENAME_CUSTOM_PARAM] = "aaa.ufo"
+    font.instances[0].customParameters[UFO_FILENAME_CUSTOM_PARAM] = "bbb.ufo"
+
+    ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+    assert ds.sources[0].filename == "aaa.ufo"
+    assert ds.instances[0].filename == "bbb.ufo"
+
+
+def test_ufo_filename_custom_param_instance_empty():
+    font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
+    font.masters[0].customParameters[UFO_FILENAME_CUSTOM_PARAM] = "aaa.ufo"
+    del font.instances[0].customParameters[UFO_FILENAME_CUSTOM_PARAM]
+    del font.instances[0].customParameters[FULL_FILENAME_KEY]
+
+    ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+    assert ds.sources[0].filename == "aaa.ufo"
+    # Instance filename should be whatever the default is.
+    assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"

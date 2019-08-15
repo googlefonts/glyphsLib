@@ -184,8 +184,8 @@ def glyphs2ufo(options):
         )
 
     # If options.instance_dir is None, instance UFO paths in the designspace
-    # file will either use the value in customParameter's FULL_FILENAME_KEY or be
-    # made relative to "instance_ufos/".
+    # file will either use the value in customParameter's UFO_FILENAME_CUSTOM_PARAM or
+    # be made relative to "instance_ufos/".
     glyphsLib.build_masters(
         options.glyphs_file,
         options.output_dir,
