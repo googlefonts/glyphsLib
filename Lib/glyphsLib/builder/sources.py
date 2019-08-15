@@ -23,6 +23,7 @@ from glyphsLib.util import build_ufo_path
 
 from .masters import UFO_FILENAME_KEY
 from .axes import get_axis_definitions, get_regular_master, font_uses_new_axes, interp
+from .constants import UFO_FILENAME_CUSTOM_PARAM
 
 
 logger = logging.getLogger(__name__)
@@ -76,16 +77,17 @@ def _to_designspace_source(self, master, is_regular):
     # UFO_SOURCE_NAME_KEY
     source.name = "{} {}".format(source.familyName, source.styleName)
 
-    if UFO_FILENAME_KEY in master.userData:
+    if UFO_FILENAME_CUSTOM_PARAM in master.customParameters:
+        source.filename = master.customParameters[UFO_FILENAME_CUSTOM_PARAM]
+    elif UFO_FILENAME_KEY in master.userData:
         source.filename = master.userData[UFO_FILENAME_KEY]
     else:
-        # TODO: (jany) allow another naming convention?
         source.filename = build_ufo_path("", source.familyName, source.styleName)
 
     # Make sure UFO filenames are unique, lest we overwrite masters that
     # happen to have the same weight name. Careful, name clashes can also happen when
-    # the masters have a UFO_FILENAME_KEY: when the user duplicates a master in Glyphs
-    # but forgets to change the UFO filename key in the master's userData (ha!).
+    # the masters have a UFO_FILENAME_CUSTOM_PARAM: when the user duplicates a master
+    # in Glyphs but forgets to change the custom parameter.
     # Attention: The following is done regardless of where source.filename came from.
     # Depending on the duplicate's order in the master list, this could lead to the
     # legitimate master's filename getting an underscore appended!
@@ -96,13 +98,18 @@ def _to_designspace_source(self, master, is_regular):
     ):
         filename_stem, filename_ext = os.path.splitext(source.filename)
         source.filename = "{}#{}{}".format(filename_stem, n, filename_ext)
-        if UFO_FILENAME_KEY in master.userData:
+        if (
+            UFO_FILENAME_CUSTOM_PARAM in master.customParameters
+            or UFO_FILENAME_KEY in master.userData
+        ):
             logger.warning(
                 "The master with the style name '{}' (ID {}) would be written to the "
                 "same destination as another master. Change the "
-                "master.userData['com.schriftgestaltung.Glyphs.ufoFilename'] "
-                "parameter to select a different destination. Proceeding, but appending"
-                " '#{}' to the filename on disk.".format(source.styleName, master.id, n)
+                "master's custom parameter '{}' "
+                "to select a different destination. Proceeding, but appending"
+                " '#{}' to the filename on disk.".format(
+                    source.styleName, master.id, UFO_FILENAME_CUSTOM_PARAM, n
+                )
             )
         else:
             logger.warning(

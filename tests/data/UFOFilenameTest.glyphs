@@ -1,0 +1,56 @@
+{
+.appVersion = "1230";
+date = "2019-08-15 11:39:54 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+userData = {
+com.schriftgestaltung.Glyphs.ufoFilename = MyFontMaster.ufo;
+};
+xHeight = 500;
+}
+);
+glyphs = (
+{
+glyphname = A;
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+}
+);
+unicode = 0041;
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+}
+);
+unicode = 0020;
+}
+);
+instances = (
+{
+customParameters = (
+{
+name = com.schriftgestaltung.Glyphs.fullFilename;
+value = ../build/instance_ufos/MyFont.ufo;
+}
+);
+instanceInterpolations = {
+"F8C94C2E-1D94-453C-B1DE-0473CD97C963" = 1;
+};
+name = Regular;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

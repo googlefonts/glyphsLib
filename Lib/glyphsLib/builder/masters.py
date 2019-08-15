@@ -17,7 +17,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import os
 
 from .axes import font_uses_new_axes, get_axis_definitions
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX
+from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
 
 MASTER_ID_LIB_KEY = GLYPHS_PREFIX + "fontMasterID"
 UFO_FILENAME_KEY = GLYPHLIB_PREFIX + "ufoFilename"
@@ -92,9 +92,11 @@ def to_glyphs_master_attributes(self, source, master):
         master.id = ufo_master_id_lib_key
 
     if source.filename is not None and self.minimize_ufo_diffs:
-        master.userData[UFO_FILENAME_KEY] = source.filename
+        master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = source.filename
     elif ufo.path and self.minimize_ufo_diffs:
-        master.userData[UFO_FILENAME_KEY] = os.path.basename(ufo.path)
+        # Don't be smart, we don't know where the UFOs come from so we can't make them
+        # relative to anything.
+        master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = os.path.basename(ufo.path)
 
     master.ascender = ufo.info.ascender
     master.capHeight = ufo.info.capHeight
