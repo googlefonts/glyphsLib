@@ -172,6 +172,26 @@ class SetCustomParamsTest(unittest.TestCase):
             mock_parse_glyphs_filter.call_args_list[2], mock.call(filter2, is_pre=False)
         )
 
+    def test_roundtrip_master_PreFilter(self):
+        self.ufo.lib[UFO2FT_FILTERS_KEY] = [
+            {"include": ["A", "b"], "name": "propagateAnchors", "pre": True}
+        ]
+
+        font = glyphsLib.to_glyphs([self.ufo])
+        assert (
+            font.masters[0].customParameters["PreFilter"]
+            == "propagateAnchors;include:A,b"
+        )
+
+        ds_rt = glyphsLib.to_designspace(font)
+        ufo_rt = ds_rt.sources[0].font
+        assert ufo_rt.lib[UFO2FT_FILTERS_KEY] == [
+            {"include": ["A", "b"], "name": "propagateAnchors", "pre": True}
+        ]
+        assert (
+            "com.schriftgestaltung.customParameter.GSFont.PreFilter" not in ufo_rt.lib
+        )
+
     def test_set_defaults(self):
         _set_default_params(self.ufo)
         self.assertEqual(self.ufo.info.openTypeOS2Type, [3])

@@ -611,6 +611,9 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 register(GlyphOrderParamHandler())
 
 
+# While Glyphs.app only supports (Pre)Filters in instances, we handle the same custom
+# parameter for masters as well, transforming them into
+# `com.github.googlei18n.ufo2ft.filters` UFO lib entries.
 # See https://github.com/googlefonts/glyphsLib/issues/214
 class FilterParamHandler(AbstractParamHandler):
     def glyphs_names(self):
@@ -620,19 +623,20 @@ class FilterParamHandler(AbstractParamHandler):
         return (UFO2FT_FILTERS_KEY,)
 
     def to_glyphs(self, glyphs, ufo):
-        ufo_filters = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
-        if ufo_filters is None:
-            return
-        for ufo_filter in ufo_filters:
-            glyphs_filter = write_glyphs_filter(ufo_filter)
-            if ufo_filter.get("pre"):
-                glyphs_filter_key = "PreFilter"
-            else:
-                glyphs_filter_key = "Filter"
-            glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
+        if not glyphs.is_font():  # Only read filters from masters.
+            ufo_filters = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
+            if ufo_filters is None:
+                return
+            for ufo_filter in ufo_filters:
+                glyphs_filter = write_glyphs_filter(ufo_filter)
+                if ufo_filter.get("pre"):
+                    glyphs_filter_key = "PreFilter"
+                else:
+                    glyphs_filter_key = "Filter"
+                glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
 
     def to_ufo(self, builder, glyphs, ufo):
-        if not glyphs.is_font():  # Only write filters to the masters
+        if not glyphs.is_font():  # Only write filters to masters.
             ufo_filters = []
             for pre_filter in glyphs.get_custom_values("PreFilter"):
                 ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
