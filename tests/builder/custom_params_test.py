@@ -404,14 +404,17 @@ class SetCustomParamsTest(unittest.TestCase):
         ]
         glyphs_filter = "propagateAnchors;include:a,b,c"
 
+        # Test the one-way conversion of (Pre)Filters into ufo2ft filters. See the
+        # docstring for FilterParamHandler.
         self.master.customParameters["PreFilter"] = glyphs_filter
         self.set_custom_params()
         self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
+        # Test the round-tripping of ufo2ft filters from UFO -> Glyphs master -> UFO.
+        # See the docstring for FilterParamHandler.
         font_rt = glyphsLib.to_glyphs([self.ufo])
-        self.assertEqual(
-            font_rt.masters[0].customParameters["PreFilter"], glyphs_filter
-        )
+        self.assertNotIn("PreFilter", font_rt.masters[0].customParameters)
+        self.assertEqual(font_rt.masters[0].userData[UFO2FT_FILTERS_KEY], ufo_filters)
         ufo_rt = glyphsLib.to_ufos(font_rt)[0]
         self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
