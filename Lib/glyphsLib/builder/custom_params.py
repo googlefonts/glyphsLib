@@ -18,7 +18,7 @@ from collections import defaultdict
 import re
 
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
-from .filters import parse_glyphs_filter, write_glyphs_filter
+from .filters import parse_glyphs_filter
 from .constants import (
     GLYPHS_PREFIX,
     UFO2FT_FILTERS_KEY,
@@ -26,6 +26,7 @@ from .constants import (
     CODEPAGE_RANGES,
     REVERSE_CODEPAGE_RANGES,
     PUBLIC_PREFIX,
+    UFO_FILENAME_CUSTOM_PARAM,
 )
 from .features import replace_feature, replace_prefixes
 
@@ -135,6 +136,13 @@ class GlyphsObjectProxy(object):
         for param in self._owner.customParameters:
             if param.name not in self._handled:
                 yield param
+
+    def mark_handled(self, key):
+        """Mark a key as handled so it is ignored by `unhandled_custom_parameters`.
+
+        Use e.g. when you handle a custom parameter outside this module.
+        """
+        self._handled.add(key)
 
     def is_font(self):
         """Returns whether we are looking at a top-level GSFont object as
@@ -611,28 +619,65 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 register(GlyphOrderParamHandler())
 
 
-# See https://github.com/googlefonts/glyphsLib/issues/214
 class FilterParamHandler(AbstractParamHandler):
-    def glyphs_names(self):
-        return "Filter", "PreFilter"
+    """Handler for (Pre)Filter custom paramters.
 
-    def ufo_names(self):
-        return (UFO2FT_FILTERS_KEY,)
+    This is complicated. ufo2ft grew filter modules to mimic some of Glyph's
+    automatic features, but due to the impendance mismatch between the flow of
+    data in Glyphs and in UFOs plus Designspaces, they need to be handled in
+    two ways: once for filters that should be applied to masters and once for
+    filters on instances, which should be applied only to interpolated UFOs:
+
+       +------+
+       |GSFont+-------------------+
+       +----+-+                   |
+            |                     |
+          +-+-----------+       +-+----------+
+          |GSFontMaster |       |GSIntance   |
+          +-------------+       +------------+
+           userData                    customParameters
+             com...ufo2ft.filters        Filter & PreFilter
+
+                ^  |                      |  ^
+     roundtrips |  |                      |  |
+                |  v                      |  |
+            lib                           |  | roundtrips
+              com...ufo2ft.filters        |  |
+          +-----------+                   v  |
+          |Master UFO |          lib
+          +---+-------+            com.schriftgestaltung.customParameter...
+              |
+          +---+-----+        +----------+                    +-----------------+
+          | Source  |        | Instance |    ------------>   |Interpolated UFO |
+          +---+-----+        +-----+----+                    +-----------------+
+              |                    |          goes 1 way        lib
+      +-------+-----+              |     apply_instance_data()    com...ufo2ft.filters
+      | Designspace +--------------+
+      +-------------+
+
+    The ufo2ft filters should roundtrip as-is between UFO source masters and
+    GSFontMaster, because that's how we use them in the UFO workflow with 1
+    master UFO = 1 final font with filters applied.
+
+    The Glyphs filters defined on GSInstance should keep doing what they were
+    doing already:
+
+    - first be copied as-is into the designspace instance's lib, which should
+      roundtrip back to Glyphs
+    - then be converted to ufo2ft equivalents and put in the final interpolated
+      UFOs before they are compiled into final fonts. Those should not
+      roundtrip because the interpolated UFO is discarded after compilation.
+
+    The handler below only handles the latter, one-way case. Since ufo2ft
+    filters are a UFO lib key, they are automatically stored in a master's
+    userData by another code path.
+    """
 
     def to_glyphs(self, glyphs, ufo):
-        ufo_filters = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
-        if ufo_filters is None:
-            return
-        for ufo_filter in ufo_filters:
-            glyphs_filter = write_glyphs_filter(ufo_filter)
-            if ufo_filter.get("pre"):
-                glyphs_filter_key = "PreFilter"
-            else:
-                glyphs_filter_key = "Filter"
-            glyphs.set_custom_value(glyphs_filter_key, glyphs_filter)
+        pass
 
     def to_ufo(self, builder, glyphs, ufo):
-        if not glyphs.is_font():  # Only write filters to the masters
+        if not glyphs.is_font():
             ufo_filters = []
             for pre_filter in glyphs.get_custom_values("PreFilter"):
                 ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
@@ -749,6 +794,8 @@ def to_ufo_custom_params(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
     glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
     ufo_proxy = UFOProxy(ufo)
+
+    glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
 
     for handler in KNOWN_PARAM_HANDLERS:
         handler.to_ufo(self, glyphs_proxy, ufo_proxy)
