@@ -1,4 +1,3 @@
-# coding=UTF-8
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -238,7 +237,7 @@ class GSObjectsTestCase(unittest.TestCase):
 
 class GSFontFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSFontFromFileTest, self).setUp()
+        super().setUp()
 
     def test_pathlike_path(self):
         from pathlib import Path
@@ -488,7 +487,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
 
 class GSFontMasterFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSFontMasterFromFileTest, self).setUp()
+        super().setUp()
         self.font = GSFont(TESTFILE_PATH)
         self.master = self.font.masters[0]
 
@@ -736,7 +735,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSAlignmentZoneFromFileTest, self).setUp()
+        super().setUp()
         self.master = self.font.masters[0]
 
     def test_attributes(self):
@@ -761,7 +760,7 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
 
 class GSInstanceFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSInstanceFromFileTest, self).setUp()
+        super().setUp()
         self.instance = self.font.instances[0]
 
     def test_attributes(self):
@@ -861,7 +860,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
 
 class GSGlyphFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSGlyphFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["a"]
 
     # TODO duplicate
@@ -1063,7 +1062,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
 
 class GSLayerFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSLayerFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["a"]
         self.layer = self.glyph.layers[0]
 
@@ -1360,7 +1359,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
 
 class GSComponentFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSComponentFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["adieresis"]
         self.layer = self.glyph.layers[0]
         self.component = self.layer.components[0]
@@ -1451,7 +1450,7 @@ class GSGuideLineTest(unittest.TestCase):
 
 class GSAnchorFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSAnchorFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["a"]
         self.layer = self.glyph.layers[0]
         self.anchor = self.layer.anchors[0]
@@ -1471,7 +1470,7 @@ class GSAnchorFromFileTest(GSObjectsTestCase):
 
 class GSPathFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSPathFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["a"]
         self.layer = self.glyph.layers[0]
         self.path = self.layer.paths[0]
@@ -1550,7 +1549,7 @@ class GSPathFromFileTest(GSObjectsTestCase):
 
 class GSNodeFromFileTest(GSObjectsTestCase):
     def setUp(self):
-        super(GSNodeFromFileTest, self).setUp()
+        super().setUp()
         self.glyph = self.font.glyphs["a"]
         self.layer = self.glyph.layers[0]
         self.path = self.layer.paths[0]

@@ -1,4 +1,3 @@
-# coding=UTF-8
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -799,8 +798,7 @@ class ToUfosTest(unittest.TestCase):
         """Test that guidelines are set correctly."""
 
         self._run_guideline_test(
-            [{"position": (1, 2), "angle": 90}],
-            [{str("x"): 1, str("y"): 2, str("angle"): 90}],
+            [{"position": (1, 2), "angle": 90}], [{"x": 1, "y": 2, "angle": 90}]
         )
 
     def test_set_guidelines_duplicates(self):
@@ -808,10 +806,7 @@ class ToUfosTest(unittest.TestCase):
 
         self._run_guideline_test(
             [{"position": (1, 2), "angle": 90}, {"position": (1, 2), "angle": 90}],
-            [
-                {str("x"): 1, str("y"): 2, str("angle"): 90},
-                {str("x"): 1, str("y"): 2, str("angle"): 90},
-            ],
+            [{"x": 1, "y": 2, "angle": 90}, {"x": 1, "y": 2, "angle": 90}],
         )
 
     # TODO test more than just name
@@ -1126,7 +1121,7 @@ class ToUfosTest(unittest.TestCase):
         assert len({m.id for m in font_rt.masters}) == 2
 
 
-class _PointDataPen(object):
+class _PointDataPen:
     def __init__(self):
         self.contours = []
 
@@ -1144,7 +1139,7 @@ class _PointDataPen(object):
         pass
 
 
-class _Glyph(object):
+class _Glyph:
     def __init__(self):
         self.pen = _PointDataPen()
 
@@ -1152,7 +1147,7 @@ class _Glyph(object):
         return self.pen
 
 
-class _UFOBuilder(object):
+class _UFOBuilder:
     def to_ufo_node_user_data(self, *args):
         pass
 

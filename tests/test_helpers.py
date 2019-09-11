@@ -1,4 +1,3 @@
-# coding=UTF-8
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -45,7 +44,7 @@ def write_to_lines(glyphs_object):
     return string.getvalue().splitlines()
 
 
-class AssertLinesEqual(object):
+class AssertLinesEqual:
     def assertLinesEqual(self, expected, actual, message):
         if actual != expected:
             if len(actual) < len(expected):
@@ -205,7 +204,7 @@ def normalize_ufo_lib(path):
     font.save()
 
 
-class AssertDesignspaceRoundtrip(object):
+class AssertDesignspaceRoundtrip:
     """Check UFOs + designspace -> .glyphs -> UFOs + designspace"""
 
     def assertDesignspacesEqual(self, expected, actual, message=""):

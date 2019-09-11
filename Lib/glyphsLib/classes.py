@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 #
 # Copyright 2016 Georg Seifert. All Rights Reserved.
 #
@@ -285,7 +284,7 @@ def transformStructToScaleAndRotation(transform):
     return _sX, _sY, _R
 
 
-class GSApplication(object):
+class GSApplication:
     def __init__(self):
         self.font = None
         self.fonts = []
@@ -303,7 +302,7 @@ class GSApplication(object):
 Glyphs = GSApplication()
 
 
-class GSBase(object):
+class GSBase:
     _classesForName = {}
     _defaultsForName = {}
     _wrapperKeysTranslate = {}
@@ -378,7 +377,7 @@ class GSBase(object):
         return True
 
 
-class Proxy(object):
+class Proxy:
     def __init__(self, owner):
         self._owner = owner
 
@@ -406,8 +405,7 @@ class Proxy(object):
     def __iter__(self):
         values = self.values()
         if values is not None:
-            for element in values:
-                yield element
+            yield from values
 
     def index(self, value):
         return self.values().index(value)
@@ -968,42 +966,42 @@ class LayerPathsProxy(IndexedObjectsProxy):
     _objects_name = "_paths"
 
     def __init__(self, owner):
-        super(LayerPathsProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class LayerHintsProxy(IndexedObjectsProxy):
     _objects_name = "_hints"
 
     def __init__(self, owner):
-        super(LayerHintsProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class LayerComponentsProxy(IndexedObjectsProxy):
     _objects_name = "_components"
 
     def __init__(self, owner):
-        super(LayerComponentsProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class LayerAnnotationProxy(IndexedObjectsProxy):
     _objects_name = "_annotations"
 
     def __init__(self, owner):
-        super(LayerAnnotationProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class LayerGuideLinesProxy(IndexedObjectsProxy):
     _objects_name = "_guides"
 
     def __init__(self, owner):
-        super(LayerGuideLinesProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class PathNodesProxy(IndexedObjectsProxy):
     _objects_name = "_nodes"
 
     def __init__(self, owner):
-        super(PathNodesProxy, self).__init__(owner)
+        super().__init__(owner)
 
 
 class CustomParametersProxy(Proxy):
@@ -1111,8 +1109,7 @@ class UserDataProxy(Proxy):
             return
         # This is not the normal `dict` behaviour, because this yields values
         # instead of keys. It matches Glyphs.app though. Urg.
-        for value in self._owner._userData.values():
-            yield value
+        yield from self._owner._userData.values()
 
     def values(self):
         if self._owner._userData is None:
@@ -1273,7 +1270,7 @@ class GSCustomParameter(GSBase):
 
 class GSAlignmentZone(GSBase):
     def __init__(self, pos=0, size=20):
-        super(GSAlignmentZone, self).__init__()
+        super().__init__()
         self.position = pos
         self.size = size
 
@@ -1312,7 +1309,7 @@ class GSGuideLine(GSBase):
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
-        super(GSGuideLine, self).__init__()
+        super().__init__()
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1406,7 +1403,7 @@ class GSFontMaster(GSBase):
     )
 
     def __init__(self):
-        super(GSFontMaster, self).__init__()
+        super().__init__()
         self.id = str(uuid.uuid4()).upper()
         self.font = None
         self._name = None
@@ -1431,7 +1428,7 @@ class GSFontMaster(GSBase):
         if key == "_name":
             # Only write out the name if we can't make it by joining the parts
             return self._name != self.name
-        return super(GSFontMaster, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -1534,7 +1531,7 @@ class GSNode(GSBase):
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
-        super(GSNode, self).__init__()
+        super().__init__()
         self.position = Point(position[0], position[1])
         self.type = nodetype
         self.smooth = smooth
@@ -1692,7 +1689,7 @@ class GSPath(GSBase):
     _parent = None
 
     def __init__(self):
-        super(GSPath, self).__init__()
+        super().__init__()
         self.nodes = []
 
     @property
@@ -1702,7 +1699,7 @@ class GSPath(GSBase):
     def shouldWriteValueForKey(self, key):
         if key == "closed":
             return True
-        return super(GSPath, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     nodes = property(
         lambda self: PathNodesProxy(self),
@@ -1972,7 +1969,7 @@ class GSComponent(GSBase):
 
     # TODO: glyph arg is required
     def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
-        super(GSComponent, self).__init__()
+        super().__init__()
 
         if transform is None:
             if scale != (1, 1) or offset != (0, 0):
@@ -1996,7 +1993,7 @@ class GSComponent(GSBase):
         if key == "piece":
             value = self.smartComponentValues
             return len(value) > 0
-        return super(GSComponent, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2123,7 +2120,7 @@ class GSSmartComponentAxis(GSBase):
     def shouldWriteValueForKey(self, key):
         if key in ("bottomValue", "topValue"):
             return True
-        return super(GSSmartComponentAxis, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
 
 class GSAnchor(GSBase):
@@ -2132,7 +2129,7 @@ class GSAnchor(GSBase):
     _defaultsForName = {"position": Point(0, 0)}
 
     def __init__(self, name=None, position=None):
-        super(GSAnchor, self).__init__()
+        super().__init__()
         if name is not None:
             self.name = name
         if position is not None:
@@ -2146,7 +2143,7 @@ class GSAnchor(GSBase):
     def shouldWriteValueForKey(self, key):
         if key == "position":
             return True
-        return super(GSAnchor, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2195,7 +2192,7 @@ class GSHint(GSBase):
     def shouldWriteValueForKey(self, key):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
             return None
-        return super(GSHint, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     def _origin_pos(self):
         if self.originNode:
@@ -2340,14 +2337,14 @@ class GSFeature(GSBase):
     }
 
     def __init__(self, name="xxxx", code=""):
-        super(GSFeature, self).__init__()
+        super().__init__()
         self.name = name
         self.code = code
 
     def shouldWriteValueForKey(self, key):
         if key == "code":
             return True
-        return super(GSFeature, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     def getCode(self):
         return self._code
@@ -2469,7 +2466,7 @@ class GSInstance(GSBase):
     }
 
     def __init__(self):
-        super(GSInstance, self).__init__()
+        super().__init__()
         # TODO: (jany) review this and move as much as possible into
         #       "_defaultsForKey"
         self.name = "Regular"
@@ -2593,7 +2590,7 @@ class GSBackgroundImage(GSBase):
     _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
-        super(GSBackgroundImage, self).__init__()
+        super().__init__()
         self.imagePath = path
         self._sX, self._sY, self._R = transformStructToScaleAndRotation(
             self.transform.value
@@ -2734,7 +2731,7 @@ class GSLayer(GSBase):
     )
 
     def __init__(self):
-        super(GSLayer, self).__init__()
+        super().__init__()
         self.parent = None
         self._anchors = []
         self._hints = []
@@ -2808,7 +2805,7 @@ class GSLayer(GSBase):
                 and len(self.name) > 0
                 and self.layerId != self.associatedMasterId
             )
-        return super(GSLayer, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -2940,7 +2937,7 @@ class GSBackgroundLayer(GSLayer):
     def shouldWriteValueForKey(self, key):
         if key == "width":
             return False
-        return super(GSBackgroundLayer, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     @property
     def background(self):
@@ -3042,7 +3039,7 @@ class GSGlyph(GSBase):
     )
 
     def __init__(self, name=None):
-        super(GSGlyph, self).__init__()
+        super().__init__()
         self._layers = OrderedDict()
         self.name = name
         self.parent = None
@@ -3057,7 +3054,7 @@ class GSGlyph(GSBase):
     def shouldWriteValueForKey(self, key):
         if key in ("script", "category", "subCategory"):
             return getattr(self, key) is not None
-        return super(GSGlyph, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     layers = property(
         lambda self: GlyphLayerProxy(self),
@@ -3185,7 +3182,7 @@ class GSFont(GSBase):
     }
 
     def __init__(self, path=None):
-        super(GSFont, self).__init__()
+        super().__init__()
 
         self.familyName = "Unnamed font"
         self._versionMinor = 0
@@ -3223,7 +3220,7 @@ class GSFont(GSBase):
     def shouldWriteValueForKey(self, key):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):
             return True
-        return super(GSFont, self).shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key)
 
     def save(self, path=None):
         if path is None:

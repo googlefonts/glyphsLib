@@ -327,7 +327,7 @@ def _to_glyphs_features_basic(self):
         master.userData[ORIGINAL_FEATURE_CODE_KEY] = source.font.features.text
 
 
-class FeaDocument(object):
+class FeaDocument:
     """Parse the string of a fea code into statements."""
 
     def __init__(self, text, glyph_set=None):
@@ -428,7 +428,7 @@ class FeaDocument(object):
         return None, line, char
 
 
-class PeekableIterator(object):
+class PeekableIterator:
     """Helper class to iterate and peek over a list."""
 
     def __init__(self, list):
@@ -452,7 +452,7 @@ class PeekableIterator(object):
         return self.list[self.index + n]
 
 
-class FeatureFileProcessor(object):
+class FeatureFileProcessor:
     """Put fea statements into the correct fields of a GSFont."""
 
     def __init__(self, doc, glyphs_module=None):

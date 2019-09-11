@@ -25,7 +25,7 @@ import glyphsLib
 logger = logging.getLogger(__name__)
 
 
-class Parser(object):
+class Parser:
     """Parses Python dictionaries from Glyphs source files."""
 
     # FIXME: Why was value_re overwritten? Renamed first one to value_re_shared.

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 #
 # Copyright 2016 Georg Seifert. All Rights Reserved.
@@ -36,7 +35,7 @@ from io import StringIO
 logger = logging.getLogger(__name__)
 
 
-class Writer(object):
+class Writer:
     def __init__(self, fp):
         # figure out whether file object expects bytes or unicodes
         try:

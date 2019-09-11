@@ -74,7 +74,7 @@ def identity(value):
     return value
 
 
-class GlyphsObjectProxy(object):
+class GlyphsObjectProxy:
     """Accelerate and record access to the glyphs object's custom parameters"""
 
     def __init__(self, glyphs_object, glyphs_module):
@@ -149,7 +149,7 @@ class GlyphsObjectProxy(object):
         return hasattr(self._owner, "glyphs")
 
 
-class UFOProxy(object):
+class UFOProxy:
     """Record access to the UFO's lib custom parameters"""
 
     def __init__(self, ufo):
@@ -183,7 +183,7 @@ class UFOProxy(object):
                 yield (key, value)
 
 
-class AbstractParamHandler(object):
+class AbstractParamHandler:
     # @abstractmethod
     def to_glyphs(self):
         pass
@@ -515,13 +515,13 @@ register(MiscParamHandler(glyphs_name="iconName"))
 
 class DisplayStringsParamHandler(MiscParamHandler):
     def __init__(self):
-        super(DisplayStringsParamHandler, self).__init__(glyphs_name="DisplayStrings")
+        super().__init__(glyphs_name="DisplayStrings")
 
     def to_ufo(self, builder, glyphs, ufo):
         # We test for builder here because apply_instance_data() passes None and
         # we don't want to copy-paste or subclass UFOBuilder.
         if builder is not None and builder.store_editor_state:
-            super(DisplayStringsParamHandler, self).to_ufo(builder, glyphs, ufo)
+            super().to_ufo(builder, glyphs, ufo)
 
 
 register(DisplayStringsParamHandler())

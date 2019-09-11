@@ -40,7 +40,7 @@ BRACKET_GLYPH_RE = re.compile(
 )
 
 
-class _LoggerMixin(object):
+class _LoggerMixin:
 
     _logger = None
 

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
@@ -45,7 +44,7 @@ def parse_float_or_int(value_string):
     return v
 
 
-class ValueType(object):
+class ValueType:
     """A base class for value types that are comparable in the Python sense
     and readable/writable using the glyphsLib parser/writer.
     """
@@ -208,7 +207,7 @@ class Rect(Vector(4)):
     def __init__(self, value=None, value2=None):
         if value is not None and value2 is not None:
             value = [value[0], value[1], value2[0], value2[1]]
-        super(Rect, self).__init__(value)
+        super().__init__(value)
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -250,7 +249,7 @@ class Transform(Vector(6)):
     ):
         if all(v is not None for v in (value, value2, value3, value4, value5, value6)):
             value = [value, value2, value3, value4, value5, value6]
-        super(Transform, self).__init__(value)
+        super().__init__(value)
 
     def __repr__(self):
         return "<affine transformation %s>" % (" ".join(map(str, self.value)))
@@ -403,7 +402,7 @@ class UnicodesList(list):
             unicodes = value.split(",")
         else:
             unicodes = [str(v) for v in value]
-        super(UnicodesList, self).__init__(unicodes)
+        super().__init__(unicodes)
 
     def plistValue(self):
         if not self:
