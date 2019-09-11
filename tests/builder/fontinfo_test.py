@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 
 """
 Goal: have a unit test for each parameter that is mentioned in the UFO spec.

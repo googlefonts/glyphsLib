@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 from io import open
 import collections
 import os

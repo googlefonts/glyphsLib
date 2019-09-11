@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 from .constants import GLYPHS_PREFIX
 from glyphsLib.types import Transform, Rect, Point, Size
