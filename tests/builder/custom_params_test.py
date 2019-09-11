@@ -20,13 +20,8 @@ from textwrap import dedent
 import unittest
 import os
 
-# unittest.mock is only available for python 3.3+
-try:
-    from unittest import mock
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-    import mock
+from unittest import mock
+from unittest.mock import patch
 
 import glyphsLib
 from defcon import Font

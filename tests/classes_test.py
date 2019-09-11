@@ -244,9 +244,6 @@ class GSFontFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super(GSFontFromFileTest, self).setUp()
 
-    @pytest.mark.skipif(
-        sys.version_info < (3, 4), reason="pathlib available in >= 3.4."
-    )
     def test_pathlike_path(self):
         from pathlib import Path
 
