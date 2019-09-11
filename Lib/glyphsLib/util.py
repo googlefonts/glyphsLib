@@ -109,3 +109,10 @@ def pairwise(iterable):
     a, b = itertools.tee(iterable)
     next(b, None)
     return zip(a, b)
+
+
+def tostr(s, encoding="ascii", errors="strict"):
+    if not isinstance(s, str):
+        return s.decode(encoding, errors)
+    else:
+        return s

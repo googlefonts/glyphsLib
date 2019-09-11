@@ -15,9 +15,7 @@
 
 import re
 from textwrap import dedent
-
-from fontTools.misc.py23 import round, unicode
-from fontTools.misc.py23 import StringIO
+from io import StringIO
 
 from fontTools.feaLib import ast, parser
 
@@ -196,7 +194,7 @@ def _build_gdef(ufo, skipExportGlyphs=None):
     for glyph, caretPos in sorted(carets.items()):
         lines.append(
             "  LigatureCaretByPos %s %s;"
-            % (glyph, " ".join(unicode(p) for p in sorted(caretPos)))
+            % (glyph, " ".join(str(p) for p in sorted(caretPos)))
         )
     lines.append("} GDEF;")
 

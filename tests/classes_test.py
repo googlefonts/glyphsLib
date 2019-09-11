@@ -20,7 +20,6 @@ import datetime
 import copy
 import unittest
 import pytest
-from fontTools.misc.py23 import unicode
 
 from glyphsLib.classes import (
     GSFont,
@@ -196,7 +195,7 @@ class GSObjectsTestCase(unittest.TestCase):
         self.assertEqual(value, old_value)
 
     def assertUnicode(self, value):
-        self.assertIsInstance(value, unicode)
+        self.assertIsInstance(value, str)
         old_value = value
         value = "ə"
         self.assertEqual(value, "ə")
@@ -530,7 +529,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             setattr(master, attr, 0.5)
             self.assertEqual(getattr(master, attr), 0.5)
             setattr(master, attr, value)
-        self.assertIsInstance(master.customName, unicode)
+        self.assertIsInstance(master.customName, str)
 
         # verticalStems
         oldStems = master.verticalStems
@@ -773,13 +772,13 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         # self.assertIsInstance(instance.active, bool)
 
         # name
-        self.assertIsInstance(instance.name, unicode)
+        self.assertIsInstance(instance.name, str)
 
         # weight
-        self.assertIsInstance(instance.weight, unicode)
+        self.assertIsInstance(instance.weight, str)
 
         # width
-        self.assertIsInstance(instance.width, unicode)
+        self.assertIsInstance(instance.width, str)
 
         # weightValue
         # widthValue
@@ -800,7 +799,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
             setattr(instance, attr, value)
 
         # linkStyle
-        self.assertIsInstance(instance.linkStyle, unicode)
+        self.assertIsInstance(instance.linkStyle, str)
 
         # familyName
         # preferredFamily
@@ -820,7 +819,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
             "fontName",
             "fullName",
         ]:
-            # self.assertIsInstance(getattr(instance, attr), unicode)
+            # self.assertIsInstance(getattr(instance, attr), str)
             if not hasattr(instance, attr):
                 print("instance does not have %s" % attr)
                 if hasattr(instance, "parent") and hasattr(instance.parent, attr):
@@ -946,7 +945,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
 
     def test_name(self):
         glyph = self.glyph
-        self.assertIsInstance(glyph.name, unicode)
+        self.assertIsInstance(glyph.name, str)
         value = glyph.name
         glyph.name = "Ə"
         self.assertEqual(glyph.name, "Ə")
@@ -954,7 +953,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
 
     def test_unicode(self):
         glyph = self.glyph
-        self.assertIsInstance(glyph.unicode, unicode)
+        self.assertIsInstance(glyph.unicode, str)
         value = glyph.unicode
         # TODO:
         # glyph.unicode = "004a"
@@ -985,7 +984,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
     def test_horiz_kerningGroup(self):
         for group in ["leftKerningGroup", "rightKerningGroup"]:
             glyph = self.glyph
-            self.assertIsInstance(getattr(glyph, group), unicode)
+            self.assertIsInstance(getattr(glyph, group), str)
             value = getattr(glyph, group)
             setattr(glyph, group, "ä")
             self.assertEqual(getattr(glyph, group), "ä")
@@ -995,7 +994,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         for group in ["leftMetricsKey", "rightMetricsKey"]:
             glyph = self.glyph
             if getattr(glyph, group) is not None:
-                self.assertIsInstance(getattr(glyph, group), unicode)
+                self.assertIsInstance(getattr(glyph, group), str)
             value = getattr(glyph, group)
             setattr(glyph, group, "ä")
             self.assertEqual(getattr(glyph, group), "ä")
@@ -1021,7 +1020,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
     def test_note(self):
         glyph = self.glyph
         if glyph.note is not None:
-            self.assertIsInstance(glyph.note, unicode)
+            self.assertIsInstance(glyph.note, str)
         value = glyph.note
         glyph.note = "ä"
         self.assertEqual(glyph.note, "ä")

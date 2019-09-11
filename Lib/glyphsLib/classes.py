@@ -37,7 +37,8 @@ from glyphsLib.types import (
 from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, basestring, UnicodeIO, unichr, open
+from io import StringIO
+from fontTools.misc.py23 import unicode
 from glyphsLib.affine import Affine
 
 
@@ -594,7 +595,7 @@ class FontGlyphsProxy(Proxy):
         if isinstance(key, int):
             return self._owner._glyphs[key]
 
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             return self._get_glyph_by_string(key)
 
         return None
@@ -624,7 +625,7 @@ class FontGlyphsProxy(Proxy):
 
     def _get_glyph_by_string(self, key):
         # FIXME: (jany) looks inefficient
-        if isinstance(key, basestring):
+        if isinstance(key, str):
             # by glyph name
             for glyph in self._owner._glyphs:
                 if glyph.name == key:
@@ -759,7 +760,7 @@ class GlyphLayerProxy(Proxy):
             layer.associatedMasterId = OldLayer.associatedMasterId
             self._owner._setupLayer(layer, OldLayer.layerId)
             self._owner._layers[key] = layer
-        elif isinstance(key, basestring) and self._owner.parent:
+        elif isinstance(key, str) and self._owner.parent:
             # FIXME: (jany) more work to do?
             layer.parent = self._owner
             self._owner._layers[key] = layer
@@ -1033,7 +1034,7 @@ class CustomParametersProxy(Proxy):
     def __delitem__(self, key):
         if isinstance(key, int):
             del self._owner._customParameters[key]
-        elif isinstance(key, basestring):
+        elif isinstance(key, str):
             for parameter in self._owner._customParameters:
                 if parameter.name == key:
                     self._owner._customParameters.remove(parameter)
@@ -1242,7 +1243,7 @@ class GSCustomParameter(GSBase):
         return "<{} {}: {}>".format(self.__class__.__name__, self.name, self._value)
 
     def plistValue(self):
-        string = UnicodeIO()
+        string = StringIO()
         writer = Writer(string)
         writer.writeDict({"name": self.name, "value": self.value})
         return string.getvalue()
@@ -1563,7 +1564,7 @@ class GSNode(GSBase):
         if self.smooth:
             content += " SMOOTH"
         if self._userData is not None and len(self._userData) > 0:
-            string = UnicodeIO()
+            string = StringIO()
             writer = Writer(string)
             writer.writeDict(self._userData)
             content += " "
@@ -3087,7 +3088,7 @@ class GSGlyph(GSBase):
     @property
     def string(self):
         if self.unicode:
-            return unichr(int(self.unicode, 16))
+            return chr(int(self.unicode, 16))
 
     userData = property(
         lambda self: UserDataProxy(self),

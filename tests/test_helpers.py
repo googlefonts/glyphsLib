@@ -22,6 +22,7 @@ import sys
 import tempfile
 import shutil
 from collections import OrderedDict
+from io import StringIO
 from textwrap import dedent
 
 import glyphsLib
@@ -29,17 +30,16 @@ from glyphsLib import classes
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder import to_glyphs, to_designspace
 from glyphsLib.writer import Writer
-from fontTools.misc.py23 import UnicodeIO
 from ufonormalizer import normalizeUFO
 import defcon
 
 
 def write_to_lines(glyphs_object):
     """
-    Use the Writer to write the given object to a UnicodeIO.
+    Use the Writer to write the given object to a StringIO.
     Return an array of lines ready for diffing.
     """
-    string = UnicodeIO()
+    string = StringIO()
     writer = Writer(string)
     writer.write(glyphs_object)
     return string.getvalue().splitlines()

@@ -16,7 +16,6 @@
 import os
 import logging
 
-from fontTools.misc.py23 import basestring
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
@@ -349,7 +348,7 @@ def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
 
     if hasattr(designspace, "__fspath__"):
         designspace = designspace.__fspath__()
-    if isinstance(designspace, basestring):
+    if isinstance(designspace, str):
         designspace = DesignSpaceDocument.fromfile(designspace)
 
     basedir = os.path.dirname(designspace.path)

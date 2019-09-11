@@ -22,7 +22,7 @@ from glyphsLib.types import floatToString
 import logging
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, UnicodeIO
+from io import StringIO
 
 """
     Usage
@@ -123,7 +123,7 @@ class Writer(object):
         elif forKey == "color" and hasattr(value, "__iter__"):
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
-            self.file.write(unicode(tuple(value)))
+            self.file.write(str(tuple(value)))
         elif isinstance(value, (list, glyphsLib.classes.Proxy)):
             if isinstance(value, glyphsLib.classes.UserDataProxy):
                 self.writeUserData(value)
@@ -134,7 +134,7 @@ class Writer(object):
         elif type(value) == float:
             self.file.write(floatToString(value, 5))
         elif type(value) == int:
-            self.file.write(unicode(value))
+            self.file.write(str(value))
         elif type(value) == bool:
             if value:
                 self.file.write("1")
@@ -143,7 +143,7 @@ class Writer(object):
         elif type(value) == datetime.datetime:
             self.file.write('"%s +0000"' % str(value))
         else:
-            value = unicode(value)
+            value = str(value)
             if forKey != "unicode":
                 value = escape_string(value)
             self.file.write(value)
@@ -166,7 +166,7 @@ def dumps(obj):
     """Serialize a GSFont object to a .glyphs file format.
     Return a (unicode) str object.
     """
-    fp = UnicodeIO()
+    fp = StringIO()
     dump(obj, fp)
     return fp.getvalue()
 

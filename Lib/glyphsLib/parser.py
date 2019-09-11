@@ -13,14 +13,13 @@
 # limitations under the License.
 
 
-from fontTools.misc.py23 import tounicode, unichr, unicode
-
 from collections import OrderedDict
 from io import open
 import re
 import logging
 import sys
 
+from glyphsLib.util import tostr
 import glyphsLib
 
 logger = logging.getLogger(__name__)
@@ -48,7 +47,7 @@ class Parser(object):
     def parse(self, text):
         """Do the parsing."""
 
-        text = tounicode(text, encoding="utf-8")
+        text = tostr(text, encoding="utf-8")
         result, i = self._parse(text, 0)
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
@@ -57,7 +56,7 @@ class Parser(object):
     def parse_into_object(self, res, text):
         """Parse data into an existing GSFont instance."""
 
-        text = tounicode(text, encoding="utf-8")
+        text = tostr(text, encoding="utf-8")
 
         m = self.start_dict_re.match(text, 0)
         if m:
@@ -72,7 +71,7 @@ class Parser(object):
         if value.lower() in ("infinity", "inf", "nan"):
             # Those values would be accepted by `float()`
             # But `infinity` is a glyph name
-            return unicode
+            return str
         if parsed[-1] != '"':
             try:
                 v = float(value)
@@ -83,9 +82,9 @@ class Parser(object):
                     return v
 
             except ValueError:
-                current_type = unicode
+                current_type = str
         else:
-            current_type = unicode
+            current_type = str
         return current_type
 
     def _parse(self, text, i):
@@ -215,8 +214,8 @@ class Parser(object):
     @staticmethod
     def _unescape_fn(m):
         if m.group(1):
-            return unichr(int(m.group(1), 8))
-        return unichr(int(m.group(2), 16))
+            return chr(int(m.group(1), 8))
+        return chr(int(m.group(2), 16))
 
     def _trim_value(self, value):
         """Trim double quotes off the ends of a value, un-escaping inner

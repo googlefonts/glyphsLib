@@ -18,14 +18,12 @@ import collections
 import os
 import logging
 
-from fontTools.misc.py23 import tostr
-
 from glyphsLib.classes import GSFont, __all__ as __all_classes__
 from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
 from glyphsLib.parser import load, loads  # noqa
 from glyphsLib.writer import dump, dumps  # noqa
-from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
+from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs, tostr
 
 try:
     from ._version import version as __version__

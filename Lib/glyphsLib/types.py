@@ -21,7 +21,6 @@ import datetime
 import math
 import copy
 import binascii
-from fontTools.misc.py23 import unicode
 
 __all__ = [
     "Transform",
@@ -136,7 +135,7 @@ class Point(Vector(2)):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         # Invoked like Point("{800, 10}").
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, str):
             self.value = self.fromString(value)
         # Invoked like Point([100, 200]).
         elif isinstance(value, (list, tuple)):
@@ -342,7 +341,7 @@ class Color(ValueType):
         return self.value.__repr__()
 
     def plistValue(self):
-        return unicode(self.value)
+        return str(self.value)
 
 
 # mutate list in place
@@ -400,10 +399,10 @@ class UnicodesList(list):
     def __init__(self, value=None):
         if value is None:
             unicodes = []
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, str):
             unicodes = value.split(",")
         else:
-            unicodes = [unicode(v) for v in value]
+            unicodes = [str(v) for v in value]
         super(UnicodesList, self).__init__(unicodes)
 
     def plistValue(self):
