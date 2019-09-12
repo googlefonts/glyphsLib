@@ -362,10 +362,7 @@ class GSBase:
         value = getattr(self, getKey)
         klass = self._classesForName[key]
         default = self._defaultsForName.get(key, None)
-        if (
-            isinstance(value, (list, glyphsLib.classes.Proxy, str))
-            and len(value) == 0
-        ):
+        if isinstance(value, (list, glyphsLib.classes.Proxy, str)) and len(value) == 0:
             return False
         if default is not None:
             return default != value
