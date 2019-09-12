@@ -150,7 +150,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         self.font.glyphs.append(glyph)
 
     if ufo_glyph.unicodes:
-        glyph.unicodes = ["{:04X}".format(c) for c in ufo_glyph.unicodes]
+        glyph.unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     glyph.note = ufo_glyph.note or ""
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]

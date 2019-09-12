@@ -77,7 +77,7 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 group = getattr(glyph, attr)
                 if group:
-                    group = "public.kern{}.{}".format(side, group)
+                    group = f"public.kern{side}.{group}"
                     groups[group].append(glyph.name)
 
     # Update all UFOs with the same info

@@ -103,9 +103,7 @@ class GlyphsObjectProxy:
         self._handled.add(key)
         values = self._lookup[key]
         if len(values) > 1:
-            raise RuntimeError(
-                "More than one value for this customParameter: {}".format(key)
-            )
+            raise RuntimeError(f"More than one value for this customParameter: {key}")
         if values:
             return values[0]
         return None

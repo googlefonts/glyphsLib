@@ -74,7 +74,7 @@ def _to_designspace_source(self, master, is_regular):
     source.styleName = ufo.info.styleName
     # TODO: recover original source name from userData
     # UFO_SOURCE_NAME_KEY
-    source.name = "{} {}".format(source.familyName, source.styleName)
+    source.name = f"{source.familyName} {source.styleName}"
 
     if UFO_FILENAME_CUSTOM_PARAM in master.customParameters:
         source.filename = master.customParameters[UFO_FILENAME_CUSTOM_PARAM]
@@ -96,7 +96,7 @@ def _to_designspace_source(self, master, is_regular):
         for s in self._sources.values()
     ):
         filename_stem, filename_ext = os.path.splitext(source.filename)
-        source.filename = "{}#{}{}".format(filename_stem, n, filename_ext)
+        source.filename = f"{filename_stem}#{n}{filename_ext}"
         if (
             UFO_FILENAME_CUSTOM_PARAM in master.customParameters
             or UFO_FILENAME_KEY in master.userData
@@ -195,7 +195,7 @@ def _to_designspace_source_layer(self):
             s.filename = master.filename
             s.font = master.font
             s.layerName = layer_name
-            s.name = "{} {}".format(master.name, layer_name)
+            s.name = f"{master.name} {layer_name}"
             s.location = layer_coordinates_mapping
 
             # We collect all generated SourceDescriptors first, grouped by the masters

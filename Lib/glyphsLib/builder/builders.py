@@ -506,7 +506,7 @@ def _bracket_glyph_name(glyph_name, reverse, location):
 
 
 def _make_designspace_rule(glyph_names, axis_name, range_min, range_max, reverse=False):
-    rule_name = "BRACKET.{}.{}".format(range_min, range_max)
+    rule_name = f"BRACKET.{range_min}.{range_max}"
     rule = designspaceLib.RuleDescriptor()
     rule.name = rule_name
     rule.conditionSets.append(

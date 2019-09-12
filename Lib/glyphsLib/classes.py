@@ -327,7 +327,7 @@ class GSBase:
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
-        return "<{} {}>".format(self.__class__.__name__, content)
+        return f"<{self.__class__.__name__} {content}>"
 
     def classForName(self, name):
         return self._classesForName.get(name, str)
@@ -1237,7 +1237,7 @@ class GSCustomParameter(GSBase):
         self.value = value
 
     def __repr__(self):
-        return "<{} {}: {}>".format(self.__class__.__name__, self.name, self._value)
+        return f"<{self.__class__.__name__} {self.name}: {self._value}>"
 
     def plistValue(self):
         string = StringIO()
@@ -2222,9 +2222,9 @@ class GSHint(GSBase):
                 direction, self._origin_pos(), self._width_pos()
             )
         elif self.type == "CORNER" or self.type == "CAP":
-            return "<GSHint {} {}>".format(self.type, self.name)
+            return f"<GSHint {self.type} {self.name}>"
         else:
-            return "<GSHint {} {}>".format(self.type, direction)
+            return f"<GSHint {self.type} {direction}>"
 
     @property
     def parent(self):
@@ -2365,7 +2365,7 @@ class GSFeature(GSBase):
     code = property(getCode, setCode)
 
     def __repr__(self):
-        return '<{} "{}">'.format(self.__class__.__name__, self.name)
+        return f'<{self.__class__.__name__} "{self.name}">'
 
     @property
     def parent(self):
@@ -2756,7 +2756,7 @@ class GSLayer(GSBase):
             parent = self.parent.name
         except (AttributeError, AssertionError):
             parent = "orphan"
-        return '<{} "{}" ({})>'.format(self.__class__.__name__, name, parent)
+        return f'<{self.__class__.__name__} "{name}" ({parent})>'
 
     def __lt__(self, other):
         if self.master and other.master and self.associatedMasterId == self.layerId:
@@ -3215,7 +3215,7 @@ class GSFont(GSBase):
                 master.font = self
 
     def __repr__(self):
-        return '<{} "{}">'.format(self.__class__.__name__, self.familyName)
+        return f'<{self.__class__.__name__} "{self.familyName}">'
 
     def shouldWriteValueForKey(self, key):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):
