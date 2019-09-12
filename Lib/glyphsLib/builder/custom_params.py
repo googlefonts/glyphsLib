@@ -321,6 +321,16 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("isFixedPitch", "postscriptIsFixedPitch"),
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
+    # Subscript parameters
+    ("subscriptXSize", "openTypeOS2SubscriptXSize"),
+    ("subscriptYSize", "openTypeOS2SubscriptYSize"),
+    ("subscriptXOffset", "openTypeOS2SubscriptXOffset"),
+    ("subscriptYOffset", "openTypeOS2SubscriptYOffset"),
+    # Superscript parameters
+    ("superscriptXSize", "openTypeOS2SuperscriptXSize"),
+    ("superscriptYSize", "openTypeOS2SuperscriptYSize"),
+    ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
+    ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
 )
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
@@ -343,14 +353,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     # Use Name Table Entry for the next param
     "openTypeNameRecords",
     "openTypeOS2FamilyClass",
-    "openTypeOS2SubscriptXSize",
-    "openTypeOS2SubscriptYSize",
-    "openTypeOS2SubscriptXOffset",
-    "openTypeOS2SubscriptYOffset",
-    "openTypeOS2SuperscriptXSize",
-    "openTypeOS2SuperscriptYSize",
-    "openTypeOS2SuperscriptXOffset",
-    "openTypeOS2SuperscriptYOffset",
     "openTypeOS2StrikeoutSize",
     "openTypeOS2StrikeoutPosition",
     "postscriptFontName",

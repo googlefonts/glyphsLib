@@ -146,6 +146,110 @@ class SetCustomParamsTest(unittest.TestCase):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
 
+    def test_subscriptXSize(self):
+        self.master.customParameters["subscriptXSize"] = 400
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptXSize, 400)
+
+        # self.master.customParameters['subscriptXSize'] = 0
+        for param in self.master.customParameters:
+            if param.name == "subscriptXSize":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptXSize, 0)
+
+    def test_subscriptYSize(self):
+        self.master.customParameters["subscriptYSize"] = 400
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptYSize, 400)
+
+        # self.master.customParameters['subscriptYSize'] = 0
+        for param in self.master.customParameters:
+            if param.name == "subscriptYSize":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptYSize, 0)
+
+    def test_subscriptXOffset(self):
+        self.master.customParameters["subscriptXOffset"] = 10
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptXOffset, 10)
+
+        # self.master.customParameters['subscriptXOffset'] = 0
+        for param in self.master.customParameters:
+            if param.name == "subscriptXOffset":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptXOffset, 0)
+
+    def test_subscriptYOffset(self):
+        self.master.customParameters["subscriptYOffset"] = 10
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptYOffset, 10)
+
+        # self.master.customParameters['subscriptYOffset'] = 0
+        for param in self.master.customParameters:
+            if param.name == "subscriptYOffset":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SubscriptYOffset, 0)
+
+    def test_superscriptXSize(self):
+        self.master.customParameters["superscriptXSize"] = 400
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptXSize, 400)
+
+        # self.master.customParameters['superscriptXSize'] = 0
+        for param in self.master.customParameters:
+            if param.name == "superscriptXSize":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptXSize, 0)
+
+    def test_superscriptYSize(self):
+        self.master.customParameters["superscriptYSize"] = 400
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptYSize, 400)
+
+        # self.master.customParameters['superscriptYSize'] = 0
+        for param in self.master.customParameters:
+            if param.name == "superscriptYSize":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptYSize, 0)
+
+    def test_superscriptXOffset(self):
+        self.master.customParameters["superscriptXOffset"] = 10
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptXOffset, 10)
+
+        # self.master.customParameters['superscriptXOffset'] = 0
+        for param in self.master.customParameters:
+            if param.name == "superscriptXOffset":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptXOffset, 0)
+
+    def test_superscriptYOffset(self):
+        self.master.customParameters["superscriptYOffset"] = 10
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptYOffset, 10)
+
+        # self.master.customParameters['superscriptYOffset'] = 0
+        for param in self.master.customParameters:
+            if param.name == "superscriptYOffset":
+                param.value = 0
+                break
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeOS2SuperscriptYOffset, 0)
+
     @patch("glyphsLib.builder.custom_params.parse_glyphs_filter")
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
         pre_filter = "AddExtremes"
