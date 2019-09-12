@@ -37,7 +37,6 @@ from glyphsLib.parser import Parser
 from glyphsLib.writer import Writer
 from collections import OrderedDict
 from io import StringIO
-from fontTools.misc.py23 import unicode
 from glyphsLib.affine import Affine
 
 
@@ -250,7 +249,7 @@ def parse_hint_target(line=None):
 
 
 def isString(string):
-    return isinstance(string, (str, unicode))
+    return isinstance(string, str)
 
 
 def transformStructToScaleAndRotation(transform):
@@ -347,7 +346,7 @@ class GSBase:
     def __setitem__(self, key, value):
         if isinstance(value, bytes) and key in self._classesForName:
             new_type = self._classesForName[key]
-            if new_type is unicode:
+            if new_type is str:
                 value = value.decode("utf-8")
             else:
                 try:
@@ -364,7 +363,7 @@ class GSBase:
         klass = self._classesForName[key]
         default = self._defaultsForName.get(key, None)
         if (
-            isinstance(value, (list, glyphsLib.classes.Proxy, str, unicode))
+            isinstance(value, (list, glyphsLib.classes.Proxy, str))
             and len(value) == 0
         ):
             return False
@@ -681,7 +680,7 @@ class FontClassesProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
-        if isinstance(key, (str, unicode)):
+        if isinstance(key, str):
             for index, klass in enumerate(self.values()):
                 if klass.name == key:
                     return self.values()[index]
@@ -691,7 +690,7 @@ class FontClassesProxy(Proxy):
         if isinstance(key, int):
             self.values()[key] = value
             value._parent = self._owner
-        elif isinstance(key, (str, unicode)):
+        elif isinstance(key, str):
             for index, klass in enumerate(self.values()):
                 if klass.name == key:
                     self.values()[index] = value
@@ -702,7 +701,7 @@ class FontClassesProxy(Proxy):
     def __delitem__(self, key):
         if isinstance(key, int):
             del self.values()[key]
-        elif isinstance(key, (str, unicode)):
+        elif isinstance(key, str):
             for index, klass in enumerate(self.values()):
                 if klass.name == key:
                     del self.values()[index]
@@ -846,7 +845,7 @@ class LayerAnchorsProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
-        elif isinstance(key, (str, unicode)):
+        elif isinstance(key, str):
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
                     return self._owner._anchors[i]
@@ -854,7 +853,7 @@ class LayerAnchorsProxy(Proxy):
             raise KeyError
 
     def __setitem__(self, key, anchor):
-        if isinstance(key, (str, unicode)):
+        if isinstance(key, str):
             anchor.name = key
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
@@ -868,7 +867,7 @@ class LayerAnchorsProxy(Proxy):
     def __delitem__(self, key):
         if isinstance(key, int):
             del self._owner._anchors[key]
-        elif isinstance(key, (str, unicode)):
+        elif isinstance(key, str):
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
                     self._owner._anchors[i]._parent = None
@@ -895,7 +894,7 @@ class LayerAnchorsProxy(Proxy):
         self._owner._anchors.extend(anchors)
 
     def remove(self, anchor):
-        if isinstance(anchor, (str, unicode)):
+        if isinstance(anchor, str):
             anchor = self.values()[anchor]
         return self._owner._anchors.remove(anchor)
 
@@ -1131,7 +1130,7 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
-    _classesForName = {"name": unicode, "value": None}
+    _classesForName = {"name": str, "value": None}
 
     _CUSTOM_INT_PARAMS = frozenset(
         (
@@ -1262,7 +1261,7 @@ class GSCustomParameter(GSBase):
             parser = Parser()
             value = parser.parse(value)
         elif self.name == "note":
-            value = unicode(value)
+            value = str(value)
         self._value = value
 
     value = property(getValue, setValue)
@@ -1303,7 +1302,7 @@ class GSGuideLine(GSBase):
         "position": Point,
         "showMeasurement": bool,
         "filter": str,
-        "name": unicode,
+        "name": str,
     }
     _parent = None
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
@@ -1330,7 +1329,7 @@ class GSFontMaster(GSBase):
         "alignmentZones": GSAlignmentZone,
         "ascender": parse_float_or_int,
         "capHeight": parse_float_or_int,
-        "custom": unicode,
+        "custom": str,
         "customValue": parse_float_or_int,
         "customValue1": parse_float_or_int,
         "customValue2": parse_float_or_int,
@@ -1342,7 +1341,7 @@ class GSFontMaster(GSBase):
         "iconName": str,
         "id": str,
         "italicAngle": parse_float_or_int,
-        "name": unicode,
+        "name": str,
         "userData": dict,
         "verticalStems": int,
         "visible": bool,
@@ -1959,7 +1958,7 @@ class GSComponent(GSBase):
         "alignment": int,
         "anchor": str,
         "locked": bool,
-        "name": unicode,
+        "name": str,
         "piece": dict,
         "transform": Transform,
     }
@@ -1979,7 +1978,7 @@ class GSComponent(GSBase):
         else:
             self.transform = transform
 
-        if isinstance(glyph, (str, unicode)):
+        if isinstance(glyph, str):
             self.name = glyph
         elif isinstance(glyph, GSGlyph):
             self.name = glyph.name
@@ -2108,10 +2107,10 @@ class GSComponent(GSBase):
 
 class GSSmartComponentAxis(GSBase):
     _classesForName = {
-        "name": unicode,
-        "bottomName": unicode,
+        "name": str,
+        "bottomName": str,
         "bottomValue": parse_float_or_int,
-        "topName": unicode,
+        "topName": str,
         "topValue": parse_float_or_int,
     }
     _defaultsForName = {"bottomValue": 0, "topValue": 0}
@@ -2124,7 +2123,7 @@ class GSSmartComponentAxis(GSBase):
 
 
 class GSAnchor(GSBase):
-    _classesForName = {"name": unicode, "position": Point}
+    _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
@@ -2162,7 +2161,7 @@ class GSHint(GSBase):
         "stem": int,  # index of stem
         "target": parse_hint_target,  # Index path to node or 'up'/'down'
         "type": str,
-        "name": unicode,
+        "name": str,
         "settings": dict,
     }
     _defaultsForName = {
@@ -2330,9 +2329,9 @@ class GSHint(GSBase):
 class GSFeature(GSBase):
     _classesForName = {
         "automatic": bool,
-        "code": unicode,
+        "code": str,
         "name": str,
-        "notes": unicode,
+        "notes": str,
         "disabled": bool,
     }
 
@@ -2384,7 +2383,7 @@ class GSAnnotation(GSBase):
     _classesForName = {
         "angle": parse_float_or_int,
         "position": Point,
-        "text": unicode,
+        "text": str,
         "type": str,
         "width": parse_float_or_int,  # the width of the text field or size of the cicle
     }
@@ -2416,11 +2415,11 @@ class GSInstance(GSBase):
         "interpolationWidth": parse_float_or_int,
         "isBold": bool,
         "isItalic": bool,
-        "linkStyle": unicode,
+        "linkStyle": str,
         "manualInterpolation": bool,
-        "name": unicode,
-        "weightClass": unicode,
-        "widthClass": unicode,
+        "name": str,
+        "weightClass": str,
+        "widthClass": str,
     }
     _defaultsForName = {
         "active": True,
@@ -2581,7 +2580,7 @@ class GSInstance(GSBase):
 class GSBackgroundImage(GSBase):
     _classesForName = {
         "crop": Rect,
-        "imagePath": unicode,
+        "imagePath": str,
         "locked": bool,
         "transform": Transform,
         "alpha": int,
@@ -2687,16 +2686,16 @@ class GSLayer(GSBase):
         "guideLines": GSGuideLine,
         "hints": GSHint,
         "layerId": str,
-        "leftMetricsKey": unicode,
-        "name": unicode,
+        "leftMetricsKey": str,
+        "name": str,
         "paths": GSPath,
-        "rightMetricsKey": unicode,
+        "rightMetricsKey": str,
         "userData": dict,
         "vertWidth": parse_float_or_int,
         "vertOrigin": parse_float_or_int,
         "visible": bool,
         "width": parse_float_or_int,
-        "widthMetricsKey": unicode,
+        "widthMetricsKey": str,
     }
     _defaultsForName = {
         "width": 600,
@@ -2970,18 +2969,18 @@ class GSGlyph(GSBase):
         "category": str,
         "color": parse_color,
         "export": bool,
-        "glyphname": unicode,
+        "glyphname": str,
         "lastChange": parse_datetime,
         "layers": GSLayer,
-        "leftKerningGroup": unicode,
-        "leftKerningKey": unicode,
-        "leftMetricsKey": unicode,
-        "note": unicode,
+        "leftKerningGroup": str,
+        "leftKerningKey": str,
+        "leftMetricsKey": str,
+        "note": str,
         "partsSettings": GSSmartComponentAxis,
         "production": str,
-        "rightKerningGroup": unicode,
-        "rightKerningKey": unicode,
-        "rightMetricsKey": unicode,
+        "rightKerningGroup": str,
+        "rightKerningKey": str,
+        "rightMetricsKey": str,
         "script": str,
         "subCategory": str,
         "topKerningGroup": str,
@@ -2989,7 +2988,7 @@ class GSGlyph(GSBase):
         "unicode": UnicodesList,
         "userData": dict,
         "vertWidthMetricsKey": str,
-        "widthMetricsKey": unicode,
+        "widthMetricsKey": str,
     }
     _wrapperKeysTranslate = {
         "unicode": "unicodes",
@@ -3062,7 +3061,7 @@ class GSGlyph(GSBase):
     )
 
     def _setupLayer(self, layer, key):
-        assert isinstance(key, (str, unicode))
+        assert isinstance(key, str)
         layer.parent = self
         layer.layerId = key
         # TODO use proxy `self.parent.masters[key]`
@@ -3135,16 +3134,16 @@ class GSGlyph(GSBase):
 class GSFont(GSBase):
     _classesForName = {
         ".appVersion": str,
-        "DisplayStrings": unicode,
+        "DisplayStrings": str,
         "classes": GSClass,
-        "copyright": unicode,
+        "copyright": str,
         "customParameters": GSCustomParameter,
         "date": parse_datetime,
-        "designer": unicode,
-        "designerURL": unicode,
+        "designer": str,
+        "designerURL": str,
         "disablesAutomaticAlignment": bool,
         "disablesNiceNames": bool,
-        "familyName": unicode,
+        "familyName": str,
         "featurePrefixes": GSFeaturePrefix,
         "features": GSFeature,
         "fontMaster": GSFontMaster,
@@ -3155,8 +3154,8 @@ class GSFont(GSBase):
         "keepAlternatesTogether": bool,
         "kerning": OrderedDict,
         "keyboardIncrement": parse_float_or_int,
-        "manufacturer": unicode,
-        "manufacturerURL": unicode,
+        "manufacturer": str,
+        "manufacturerURL": str,
         "unitsPerEm": int,
         "userData": dict,
         "versionMajor": int,
@@ -3202,7 +3201,7 @@ class GSFont(GSBase):
             if hasattr(path, "__fspath__"):
                 path = path.__fspath__()
 
-            assert isinstance(path, (str, unicode)), "Please supply a file path"
+            assert isinstance(path, str), "Please supply a file path"
             assert path.endswith(
                 ".glyphs"
             ), "Please supply a file path to a .glyphs file"
