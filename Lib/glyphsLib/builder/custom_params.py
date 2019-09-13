@@ -311,6 +311,16 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("vendorID", "openTypeOS2VendorID"),
     ("strikeoutSize", "openTypeOS2StrikeoutSize"),
     ("strikeoutPosition", "openTypeOS2StrikeoutPosition"),
+    # OS/2 Subscript parameters
+    ("subscriptXSize", "openTypeOS2SubscriptXSize"),
+    ("subscriptYSize", "openTypeOS2SubscriptYSize"),
+    ("subscriptXOffset", "openTypeOS2SubscriptXOffset"),
+    ("subscriptYOffset", "openTypeOS2SubscriptYOffset"),
+    # OS/2 Superscript parameters
+    ("superscriptXSize", "openTypeOS2SuperscriptXSize"),
+    ("superscriptYSize", "openTypeOS2SuperscriptYSize"),
+    ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
+    ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
     # ('weightClass', 'openTypeOS2WeightClass'),
     # ('widthClass', 'openTypeOS2WidthClass'),
     # ('winAscent', 'openTypeOS2WinAscent'),
@@ -324,16 +334,6 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("isFixedPitch", "postscriptIsFixedPitch"),
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
-    # OS/2 Subscript parameters
-    ("subscriptXSize", "openTypeOS2SubscriptXSize"),
-    ("subscriptYSize", "openTypeOS2SubscriptYSize"),
-    ("subscriptXOffset", "openTypeOS2SubscriptXOffset"),
-    ("subscriptYOffset", "openTypeOS2SubscriptYOffset"),
-    # OS/2 Superscript parameters
-    ("superscriptXSize", "openTypeOS2SuperscriptXSize"),
-    ("superscriptYSize", "openTypeOS2SuperscriptYSize"),
-    ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
-    ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
 )
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
