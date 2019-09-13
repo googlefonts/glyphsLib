@@ -301,6 +301,7 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("sampleText", "openTypeNameSampleText"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName"),
     ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName"),
+    # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
     ("fsType", "openTypeOS2Type"),
     ("typoAscender", "openTypeOS2TypoAscender"),
@@ -308,6 +309,8 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("typoLineGap", "openTypeOS2TypoLineGap"),
     ("unicodeRanges", "openTypeOS2UnicodeRanges"),
     ("vendorID", "openTypeOS2VendorID"),
+    ("strikeoutSize", "openTypeOS2StrikeoutSize"),
+    ("strikeoutPosition", "openTypeOS2StrikeoutPosition"),
     # ('weightClass', 'openTypeOS2WeightClass'),
     # ('widthClass', 'openTypeOS2WidthClass'),
     # ('winAscent', 'openTypeOS2WinAscent'),
@@ -321,12 +324,12 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("isFixedPitch", "postscriptIsFixedPitch"),
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
-    # Subscript parameters
+    # OS/2 Subscript parameters
     ("subscriptXSize", "openTypeOS2SubscriptXSize"),
     ("subscriptYSize", "openTypeOS2SubscriptYSize"),
     ("subscriptXOffset", "openTypeOS2SubscriptXOffset"),
     ("subscriptYOffset", "openTypeOS2SubscriptYOffset"),
-    # Superscript parameters
+    # OS/2 Superscript parameters
     ("superscriptXSize", "openTypeOS2SuperscriptXSize"),
     ("superscriptYSize", "openTypeOS2SuperscriptYSize"),
     ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
@@ -353,8 +356,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     # Use Name Table Entry for the next param
     "openTypeNameRecords",
     "openTypeOS2FamilyClass",
-    "openTypeOS2StrikeoutSize",
-    "openTypeOS2StrikeoutPosition",
     "postscriptFontName",
     "postscriptFullName",
     "postscriptSlantAngle",

@@ -1198,6 +1198,8 @@ class GSCustomParameter(GSBase):
             "typoLineGap",
             "underlinePosition",
             "underlineThickness",
+            "strikeoutSize",
+            "strikeoutPosition",
             "unitsPerEm",
             "vheaVertAscender",
             "vheaVertDescender",

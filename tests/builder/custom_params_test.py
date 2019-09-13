@@ -129,6 +129,8 @@ class SetCustomParamsTest(unittest.TestCase):
         integer_params = [
             "underlinePosition",
             "underlineThickness",
+            "strikeoutPosition",
+            "strikeoutSize",
             "subscriptXSize",
             "subscriptYSize",
             "subscriptXOffset",
