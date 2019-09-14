@@ -74,13 +74,6 @@ class ValueType:
             return self.value == other.value
         return NotImplemented
 
-    def __ne__(self, other):
-        """Overrides the default implementation (unnecessary in Python 3)"""
-        x = self == other
-        if x is not NotImplemented:
-            return not x
-        return NotImplemented
-
     def __hash__(self):
         """Overrides the default implementation"""
         return hash(self.value)
