@@ -23,32 +23,24 @@ from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
 from glyphsLib.parser import load, loads  # noqa
 from glyphsLib.writer import dump, dumps  # noqa
-from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs, tostr
+from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
 try:
     from ._version import version as __version__
 except ImportError:
     __version__ = "0.0.0+unknown"
 
-# Doing `import *` from a module that uses unicode_literals, produces
-# "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
-# Thus we need to encode the unicode literals as ascii bytes.
-# https://bugs.python.org/issue21720
 __all__ = [
-    tostr(s)
-    for s in [
-        "build_masters",
-        "load_to_ufos",
-        "to_ufos",
-        "to_designspace",
-        "to_glyphs",
-        "load",
-        "loads",
-        "dump",
-        "dumps",
-    ]
-    + __all_classes__
-]
+    "build_masters",
+    "load_to_ufos",
+    "to_ufos",
+    "to_designspace",
+    "to_glyphs",
+    "load",
+    "loads",
+    "dump",
+    "dumps",
+] + __all_classes__
 
 logger = logging.getLogger(__name__)
 
