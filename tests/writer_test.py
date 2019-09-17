@@ -1,4 +1,3 @@
-# coding=UTF-8
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -15,11 +14,10 @@
 # limitations under the License.
 
 import unittest
+from io import StringIO
 from textwrap import dedent
 from collections import OrderedDict
 import os
-
-from fontTools.misc.py23 import UnicodeIO
 
 from glyphsLib import classes
 from glyphsLib.types import parse_datetime, Point, Rect
@@ -1163,7 +1161,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
 class WriterDumpInterfaceTest(unittest.TestCase):
     def test_dump(self):
         obj = classes.GSFont()
-        fp = UnicodeIO()
+        fp = StringIO()
 
         dump(obj, fp)
 

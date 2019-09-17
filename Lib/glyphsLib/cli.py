@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 import argparse
 import os
@@ -26,7 +25,7 @@ def main(args=None):
         args = sys.argv[1:]
 
     python_executable = os.path.basename(sys.executable)
-    parser = argparse.ArgumentParser(prog="{} -m glyphsLib".format(python_executable))
+    parser = argparse.ArgumentParser(prog=f"{python_executable} -m glyphsLib")
     subparsers = parser.add_subparsers()
 
     parser_glyphs2ufo = subparsers.add_parser("glyphs2ufo", help=glyphs2ufo.__doc__)

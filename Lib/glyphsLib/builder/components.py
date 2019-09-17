@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 import logging
 
@@ -82,7 +81,7 @@ def to_glyphs_components(self, ufo_glyph, layer):
 
 def _lib_key(key):
     key = key[0].upper() + key[1:]
-    return "{}components{}".format(GLYPHS_PREFIX, key)
+    return f"{GLYPHS_PREFIX}components{key}"
 
 
 AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"

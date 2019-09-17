@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import defaultdict
 import os
@@ -78,7 +77,7 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 group = getattr(glyph, attr)
                 if group:
-                    group = "public.kern{}.{}".format(side, group)
+                    group = f"public.kern{side}.{group}"
                     groups[group].append(glyph.name)
 
     # Update all UFOs with the same info

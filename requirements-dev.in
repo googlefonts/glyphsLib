@@ -1,0 +1,4 @@
+coverage
+pytest>=2.8
+ufoNormalizer>=0.3.2
+xmldiff>=2.2

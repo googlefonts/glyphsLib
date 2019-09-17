@@ -1,4 +1,3 @@
-# coding=UTF-8
 #
 # Copyright 2017 Google Inc. All Rights Reserved.
 #
@@ -14,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
+
 import os
 from xmldiff import main, formatting
 

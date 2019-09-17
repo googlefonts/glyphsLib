@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 from .constants import GLYPHS_PREFIX
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"

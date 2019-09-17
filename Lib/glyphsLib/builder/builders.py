@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 from collections import OrderedDict, defaultdict
 from functools import partial
@@ -41,7 +40,7 @@ BRACKET_GLYPH_RE = re.compile(
 )
 
 
-class _LoggerMixin(object):
+class _LoggerMixin:
 
     _logger = None
 
@@ -507,7 +506,7 @@ def _bracket_glyph_name(glyph_name, reverse, location):
 
 
 def _make_designspace_rule(glyph_names, axis_name, range_min, range_max, reverse=False):
-    rule_name = "BRACKET.{}.{}".format(range_min, range_max)
+    rule_name = f"BRACKET.{range_min}.{range_max}"
     rule = designspaceLib.RuleDescriptor()
     rule.name = rule_name
     rule.conditionSets.append(

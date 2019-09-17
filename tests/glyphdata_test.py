@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -14,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import unittest

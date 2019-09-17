@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 from fontTools.misc.transform import Transform
 
 from glyphsLib.types import Point

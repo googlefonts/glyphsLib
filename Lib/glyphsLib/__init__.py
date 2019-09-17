@@ -13,14 +13,10 @@
 # limitations under the License.
 
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 from io import open
 import collections
 import os
 import logging
-
-from fontTools.misc.py23 import tostr
 
 from glyphsLib.classes import GSFont, __all__ as __all_classes__
 from glyphsLib.classes import *  # noqa
@@ -34,25 +30,17 @@ try:
 except ImportError:
     __version__ = "0.0.0+unknown"
 
-# Doing `import *` from a module that uses unicode_literals, produces
-# "TypeError: Item in ``from list'' must be str, not unicode" on Python 2.
-# Thus we need to encode the unicode literals as ascii bytes.
-# https://bugs.python.org/issue21720
 __all__ = [
-    tostr(s)
-    for s in [
-        "build_masters",
-        "load_to_ufos",
-        "to_ufos",
-        "to_designspace",
-        "to_glyphs",
-        "load",
-        "loads",
-        "dump",
-        "dumps",
-    ]
-    + __all_classes__
-]
+    "build_masters",
+    "load_to_ufos",
+    "to_ufos",
+    "to_designspace",
+    "to_glyphs",
+    "load",
+    "loads",
+    "dump",
+    "dumps",
+] + __all_classes__
 
 logger = logging.getLogger(__name__)
 

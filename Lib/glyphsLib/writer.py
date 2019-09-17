@@ -1,7 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-#
 # Copyright 2016 Georg Seifert. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 import glyphsLib.classes
 from glyphsLib.types import floatToString
 import logging
 import datetime
 from collections import OrderedDict
-from fontTools.misc.py23 import unicode, UnicodeIO
+from io import StringIO
 
 """
     Usage
@@ -36,7 +32,7 @@ from fontTools.misc.py23 import unicode, UnicodeIO
 logger = logging.getLogger(__name__)
 
 
-class Writer(object):
+class Writer:
     def __init__(self, fp):
         # figure out whether file object expects bytes or unicodes
         try:
@@ -123,7 +119,7 @@ class Writer(object):
         elif forKey == "color" and hasattr(value, "__iter__"):
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
-            self.file.write(unicode(tuple(value)))
+            self.file.write(str(tuple(value)))
         elif isinstance(value, (list, glyphsLib.classes.Proxy)):
             if isinstance(value, glyphsLib.classes.UserDataProxy):
                 self.writeUserData(value)
@@ -134,7 +130,7 @@ class Writer(object):
         elif type(value) == float:
             self.file.write(floatToString(value, 5))
         elif type(value) == int:
-            self.file.write(unicode(value))
+            self.file.write(str(value))
         elif type(value) == bool:
             if value:
                 self.file.write("1")
@@ -143,7 +139,7 @@ class Writer(object):
         elif type(value) == datetime.datetime:
             self.file.write('"%s +0000"' % str(value))
         else:
-            value = unicode(value)
+            value = str(value)
             if forKey != "unicode":
                 value = escape_string(value)
             self.file.write(value)
@@ -166,7 +162,7 @@ def dumps(obj):
     """Serialize a GSFont object to a .glyphs file format.
     Return a (unicode) str object.
     """
-    fp = UnicodeIO()
+    fp = StringIO()
     dump(obj, fp)
     return fp.getvalue()
 

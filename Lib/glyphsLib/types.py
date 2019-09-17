@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 # Copyright 2015 Google Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import unicode_literals
+
 import re
 import datetime
 import math
 import copy
 import binascii
-from fontTools.misc.py23 import unicode
 
 __all__ = [
     "Transform",
@@ -46,7 +42,7 @@ def parse_float_or_int(value_string):
     return v
 
 
-class ValueType(object):
+class ValueType:
     """A base class for value types that are comparable in the Python sense
     and readable/writable using the glyphsLib parser/writer.
     """
@@ -76,13 +72,6 @@ class ValueType(object):
         """Overrides the default implementation"""
         if isinstance(self, other.__class__):
             return self.value == other.value
-        return NotImplemented
-
-    def __ne__(self, other):
-        """Overrides the default implementation (unnecessary in Python 3)"""
-        x = self == other
-        if x is not NotImplemented:
-            return not x
         return NotImplemented
 
     def __hash__(self):
@@ -136,7 +125,7 @@ class Point(Vector(2)):
         if value is not None and value2 is not None:
             self.value = [value, value2]
         # Invoked like Point("{800, 10}").
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, str):
             self.value = self.fromString(value)
         # Invoked like Point([100, 200]).
         elif isinstance(value, (list, tuple)):
@@ -209,7 +198,7 @@ class Rect(Vector(4)):
     def __init__(self, value=None, value2=None):
         if value is not None and value2 is not None:
             value = [value[0], value[1], value2[0], value2[1]]
-        super(Rect, self).__init__(value)
+        super().__init__(value)
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -251,7 +240,7 @@ class Transform(Vector(6)):
     ):
         if all(v is not None for v in (value, value2, value3, value4, value5, value6)):
             value = [value, value2, value3, value4, value5, value6]
-        super(Transform, self).__init__(value)
+        super().__init__(value)
 
     def __repr__(self):
         return "<affine transformation %s>" % (" ".join(map(str, self.value)))
@@ -342,7 +331,7 @@ class Color(ValueType):
         return self.value.__repr__()
 
     def plistValue(self):
-        return unicode(self.value)
+        return str(self.value)
 
 
 # mutate list in place
@@ -400,11 +389,11 @@ class UnicodesList(list):
     def __init__(self, value=None):
         if value is None:
             unicodes = []
-        elif isinstance(value, (str, unicode)):
+        elif isinstance(value, str):
             unicodes = value.split(",")
         else:
-            unicodes = [unicode(v) for v in value]
-        super(UnicodesList, self).__init__(unicodes)
+            unicodes = [str(v) for v in value]
+        super().__init__(unicodes)
 
     def plistValue(self):
         if not self:

@@ -39,7 +39,6 @@ copyright statement below.
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #############################################################################
 
-from __future__ import division
 
 from collections import namedtuple
 import math

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 import logging
 
@@ -272,7 +271,7 @@ def to_glyphs_axes(self):
         pass
 
 
-class AxisDefinition(object):
+class AxisDefinition:
     """Centralize the code that deals with axis locations, user location versus
     design location, associated OS/2 table codes, etc.
     """
@@ -435,7 +434,7 @@ class AxisDefinition(object):
         setattr(ufo.info, ufo_key, class_)
 
 
-class AxisDefinitionFactory(object):
+class AxisDefinitionFactory:
     """Creates a set of axis definitions, making sure to recognize default axes
     (weight and width) and also keeping track of indices of custom axes.
 

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
 import posixpath
@@ -95,7 +94,7 @@ def to_ufo_node_user_data(self, ufo_glyph, node):
     user_data = node.userData
     if user_data:
         path_index, node_index = node._indices()
-        key = "{}.{}.{}".format(NODE_USER_DATA_KEY, path_index, node_index)
+        key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
         ufo_glyph.lib[key] = dict(user_data)
 
 
@@ -168,7 +167,7 @@ def to_glyphs_layer_user_data(self, ufo_glyph, layer):
 
 def to_glyphs_node_user_data(self, ufo_glyph, node):
     path_index, node_index = node._indices()
-    key = "{}.{}.{}".format(NODE_USER_DATA_KEY, path_index, node_index)
+    key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
     if key in ufo_glyph.lib:
         node.userData = ufo_glyph.lib[key]
 

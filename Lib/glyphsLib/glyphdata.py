@@ -1,4 +1,3 @@
-# -*- coding=utf-8 -*-
 #
 # Copyright 2016 Google Inc. All Rights Reserved.
 #
@@ -21,7 +20,6 @@ These properties assist in applying automatisms to glyphs when round-
 tripping.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import collections
 import os

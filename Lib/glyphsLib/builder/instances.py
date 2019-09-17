@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
 import logging
 
-from fontTools.misc.py23 import basestring
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
@@ -269,7 +267,7 @@ def to_glyphs_instances(self):  # noqa: C901
         self.font.instances = self.font.instances + [instance]
 
 
-class InstanceDescriptorAsGSInstance(object):
+class InstanceDescriptorAsGSInstance:
     """Wraps a designspace InstanceDescriptor and makes it behave like a
     GSInstance, just enough to use the descriptor as a source of custom
     parameters for `to_ufo_custom_parameters`
@@ -350,7 +348,7 @@ def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
 
     if hasattr(designspace, "__fspath__"):
         designspace = designspace.__fspath__()
-    if isinstance(designspace, basestring):
+    if isinstance(designspace, str):
         designspace = DesignSpaceDocument.fromfile(designspace)
 
     basedir = os.path.dirname(designspace.path)

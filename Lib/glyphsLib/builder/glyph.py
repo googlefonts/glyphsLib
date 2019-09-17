@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
+
 import logging
 
 from defcon import Color  # noqa
-from fontTools.misc.py23 import round
 
 import glyphsLib.glyphdata
 from .common import to_ufo_time, from_loose_ufo_time
@@ -151,7 +150,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
         self.font.glyphs.append(glyph)
 
     if ufo_glyph.unicodes:
-        glyph.unicodes = ["{:04X}".format(c) for c in ufo_glyph.unicodes]
+        glyph.unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     glyph.note = ufo_glyph.note or ""
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
