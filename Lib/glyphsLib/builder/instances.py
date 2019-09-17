@@ -389,8 +389,10 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     Returns:
         None.
     """
-    set_weight_class(ufo, designspace, instance)
-    set_width_class(ufo, designspace, instance)
+    if any(axis.tag == "wght" for axis in designspace.axes):
+        set_weight_class(ufo, designspace, instance)
+    if any(axis.tag == "wdth" for axis in designspace.axes):
+        set_width_class(ufo, designspace, instance)
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
     to_ufo_custom_params(None, ufo, glyphs_instance)

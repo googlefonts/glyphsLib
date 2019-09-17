@@ -67,8 +67,17 @@ def test_apply_instance_data(tmpdir, instance_names):
     assert len(ufos) == len(test_instances)
 
     for ufo in ufos:
-        assert ufo.info.openTypeOS2WeightClass is not None
-        assert ufo.info.openTypeOS2WidthClass is not None
+        assert ufo.info.openTypeOS2WeightClass in {
+            100,
+            200,
+            300,
+            400,
+            500,
+            700,
+            900,
+            357,
+        }
+        assert ufo.info.openTypeOS2WidthClass is None  # GlyphsUnitTestSans is wght only
 
 
 def test_reexport_apply_instance_data():
