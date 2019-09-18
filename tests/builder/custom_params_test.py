@@ -24,7 +24,10 @@ from unittest.mock import patch
 import glyphsLib
 from defcon import Font
 from glyphsLib.builder.builders import UFOBuilder
-from glyphsLib.builder.custom_params import _set_default_params
+from glyphsLib.builder.custom_params import (
+    _set_default_params,
+    GLYPHS_UFO_CUSTOM_PARAMS,
+)
 from glyphsLib.builder.constants import (
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
@@ -113,31 +116,37 @@ class SetCustomParamsTest(unittest.TestCase):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [7, 8])
 
-    def test_underlinePosition(self):
-        self.master.customParameters["underlinePosition"] = -2
-        self.set_custom_params()
-        self.assertEqual(self.ufo.info.postscriptUnderlinePosition, -2)
+    def test_integer_parameters(self):
+        """Test casting glyphsapp customParameters whose values are just
+        integers into ufo equivalents."""
+        integer_params = [
+            "underlinePosition",
+            "underlineThickness",
+            "strikeoutPosition",
+            "strikeoutSize",
+            "subscriptXSize",
+            "subscriptYSize",
+            "subscriptXOffset",
+            "subscriptYOffset",
+            "superscriptXSize",
+            "superscriptYSize",
+            "superscriptXOffset",
+            "superscriptYOffset",
+        ]
+        params_to_check = [
+            (k, v) for (k, v) in GLYPHS_UFO_CUSTOM_PARAMS if k in integer_params
+        ]
 
-        # self.master.customParameters['underlinePosition'] = 1
-        for param in self.master.customParameters:
-            if param.name == "underlinePosition":
-                param.value = 1
-                break
-        self.set_custom_params()
-        self.assertEqual(self.ufo.info.postscriptUnderlinePosition, 1)
-
-    def test_underlineThickness(self):
-        self.master.customParameters["underlineThickness"] = 100
-        self.set_custom_params()
-        self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 100)
-
-        # self.master.customParameters['underlineThickness'] = 0
-        for param in self.master.customParameters:
-            if param.name == "underlineThickness":
-                param.value = 0
-                break
-        self.set_custom_params()
-        self.assertEqual(self.ufo.info.postscriptUnderlineThickness, 0)
+        for glyphs_key, ufo_key in params_to_check:
+            self.master.customParameters[glyphs_key] = 10
+            self.set_custom_params()
+            self.assertEqual(getattr(self.ufo.info, ufo_key), 10)
+            for param in self.master.customParameters:
+                if param.name == glyphs_key:
+                    param.value = -2
+                    break
+            self.set_custom_params()
+            self.assertEqual(getattr(self.ufo.info, ufo_key), -2)
 
     @patch("glyphsLib.builder.custom_params.parse_glyphs_filter")
     def test_parse_glyphs_filter(self, mock_parse_glyphs_filter):
