@@ -23,7 +23,7 @@ tripping.
 
 import collections
 import re
-import unicodedata
+from fontTools import unicodedata
 import xml.etree.ElementTree
 
 import fontTools.agl
