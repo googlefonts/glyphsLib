@@ -22,14 +22,12 @@ tripping.
 
 
 import collections
-import os
 import re
-import unicodedata
+from fontTools import unicodedata
 import xml.etree.ElementTree
 
 import fontTools.agl
 
-import glyphsLib
 
 __all__ = ["get_glyph", "GlyphData"]
 
@@ -96,15 +94,15 @@ def get_glyph(glyph_name, data=None):
     if data is None:
         global GLYPHDATA
         if GLYPHDATA is None:
+            try:
+                from importlib.resources import open_binary
+            except ImportError:
+                # use backport for python < 3.7
+                from importlib_resources import open_binary
+
             GLYPHDATA = GlyphData.from_files(
-                os.path.join(
-                    os.path.dirname(glyphsLib.__file__), "data", "GlyphData.xml"
-                ),
-                os.path.join(
-                    os.path.dirname(glyphsLib.__file__),
-                    "data",
-                    "GlyphData_Ideographs.xml",
-                ),
+                open_binary("glyphsLib.data", "GlyphData.xml"),
+                open_binary("glyphsLib.data", "GlyphData_Ideographs.xml"),
             )
         data = GLYPHDATA
 
