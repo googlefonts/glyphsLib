@@ -15,7 +15,7 @@
 import logging
 
 from glyphsLib import classes
-import defcon
+import ufoLib2
 
 from .builders import UFOBuilder, GlyphsBuilder
 
@@ -27,7 +27,7 @@ def to_ufos(
     include_instances=False,
     family_name=None,
     propagate_anchors=True,
-    ufo_module=defcon,
+    ufo_module=ufoLib2,
     minimize_glyphs_diffs=False,
     generate_GDEF=True,
     store_editor_state=True,
@@ -69,7 +69,7 @@ def to_designspace(
     family_name=None,
     instance_dir=None,
     propagate_anchors=True,
-    ufo_module=defcon,
+    ufo_module=ufoLib2,
     minimize_glyphs_diffs=False,
     generate_GDEF=True,
     store_editor_state=True,

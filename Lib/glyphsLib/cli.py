@@ -210,7 +210,7 @@ def _glyphs2ufo_entry_point():
 def ufo2glyphs(options):
     """Convert one designspace file or one or more UFOs to a Glyphs.app source file."""
     import fontTools.designspaceLib
-    import defcon
+    import ufoLib2
 
     sources = options.designspace_file_or_UFOs
     designspace_file = None
@@ -224,7 +224,7 @@ def ufo2glyphs(options):
         designspace.read(designspace_file)
         object_to_read = designspace
     elif all(source.endswith(".ufo") and os.path.isdir(source) for source in sources):
-        ufos = [defcon.Font(source) for source in sources]
+        ufos = [ufoLib2.Font.open(source) for source in sources]
         ufos.sort(
             key=lambda ufo: [  # Order the masters by weight and width
                 ufo.info.openTypeOS2WeightClass or 400,

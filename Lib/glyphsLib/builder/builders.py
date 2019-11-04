@@ -20,7 +20,7 @@ import os
 import re
 from textwrap import dedent
 
-import defcon
+import ufoLib2
 
 from fontTools import designspaceLib
 
@@ -59,7 +59,7 @@ class UFOBuilder(_LoggerMixin):
     def __init__(
         self,
         font,
-        ufo_module=defcon,
+        ufo_module=ufoLib2,
         designspace_module=designspaceLib,
         family_name=None,
         instance_dir=None,
@@ -75,7 +75,7 @@ class UFOBuilder(_LoggerMixin):
         Keyword arguments:
         font -- The GSFont object to transform into UFOs
         ufo_module -- A Python module to use to build UFO objects (you can pass
-                      a custom module that has the same classes as the official
+                      a custom module that has the same classes as ufoLib2 or
                       defcon to get instances of your own classes)
         designspace_module -- A Python module to use to build a Designspace
                               Document. Default is fontTools.designspaceLib.
@@ -690,11 +690,11 @@ class GlyphsBuilder(_LoggerMixin):
             if not hasattr(source, "font") or source.font is None:
                 if source.path:
                     # FIXME: (jany) consider not changing the caller's objects
-                    source.font = defcon.Font(source.path)
+                    source.font = ufoLib2.Font.open(source.path)
                 else:
                     dirname = os.path.dirname(designspace.path)
                     ufo_path = os.path.join(dirname, source.filename)
-                    source.font = defcon.Font(ufo_path)
+                    source.font = ufoLib2.Font.open(ufo_path)
             if source.location is None:
                 source.location = {}
             for name in ("familyName", "styleName"):
@@ -741,7 +741,7 @@ class GlyphsBuilder(_LoggerMixin):
                 if user_loc is not None:
                     design_loc = class_to_value(axis_def.tag, user_loc)
                     mapping.append((user_loc, design_loc))
-                    ufo_to_location[ufo][axis_def.name] = design_loc
+                    ufo_to_location[id(ufo)][axis_def.name] = design_loc
 
             mapping = sorted(set(mapping))
             if len(mapping) > 1:
@@ -760,7 +760,7 @@ class GlyphsBuilder(_LoggerMixin):
             source.styleName = ufo.info.styleName
             # source.name = '%s %s' % (source.familyName, source.styleName)
             source.path = ufo.path
-            source.location = ufo_to_location[ufo]
+            source.location = ufo_to_location[id(ufo)]
             designspace.addSource(source)
 
         # UFO-level skip list lib keys are usually ignored, except when we don't have a

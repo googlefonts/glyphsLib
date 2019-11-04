@@ -37,7 +37,6 @@ def to_ufo_layer(self, glyph, layer):
 
 
 def to_ufo_background_layer(self, ufo_glyph):
-    font = self.font
     if ufo_glyph.layer.name != "public.default":
         layer_name = ufo_glyph.layer.name + ".background"
     else:
