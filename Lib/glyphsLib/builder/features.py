@@ -393,7 +393,7 @@ class FeaDocument:
                 previous_in_block = None
             previous = st
             if hasattr(st, "statements"):
-                previous_in_block = st.statements[-1]
+                previous_in_block = st.statements[-1] if st.statements else None
 
     WHITESPACE_RE = re.compile("\\s")
     WHITESPACE_OR_NAME_RE = re.compile("\\w|\\s")

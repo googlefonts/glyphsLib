@@ -462,3 +462,26 @@ def test_groups_remain_at_top(tmpdir):
 
     fea_rt = rtufo.features.text
     assert fea_rt.index("@FIG_DFLT") < fea_rt.index("lookup") < fea_rt.index("feature")
+
+
+def test_roundtrip_empty_feature():
+    # https://github.com/googlefonts/glyphsLib/issues/562
+    font = to_glyphs([defcon.Font()])
+    feature = classes.GSFeature(name="dlig")
+    feature.code = ""
+    font.features.append(feature)
+
+    ufo, = to_ufos(font)
+    assert ufo.features.text == dedent(
+        """\
+        feature dlig {
+
+        } dlig;
+    """
+    )
+
+    font_r = to_glyphs([ufo])
+    assert len(font_r.features) == 1
+    feature_r = font_r.features[0]
+    assert feature_r.name == "dlig"
+    assert feature_r.code == ""
