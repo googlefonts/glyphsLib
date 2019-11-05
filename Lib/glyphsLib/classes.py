@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import copy
 import re
 import math
 import inspect
@@ -314,7 +315,7 @@ class GSBase:
                     # instead of None when no image
                     value = []
                 elif key in self._defaultsForName:
-                    value = self._defaultsForName.get(key)
+                    value = copy.deepcopy(self._defaultsForName.get(key))
                 else:
                     value = klass()
                 key = self._wrapperKeysTranslate.get(key, key)
