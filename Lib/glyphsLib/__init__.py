@@ -18,6 +18,8 @@ import collections
 import os
 import logging
 
+import ufoLib2
+
 from glyphsLib.classes import GSFont, __all__ as __all_classes__
 from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
@@ -48,7 +50,11 @@ Masters = collections.namedtuple("Masters", ["ufos", "designspace_path"])
 
 
 def load_to_ufos(
-    file_or_path, include_instances=False, family_name=None, propagate_anchors=True
+    file_or_path,
+    include_instances=False,
+    family_name=None,
+    propagate_anchors=True,
+    ufo_module=ufoLib2,
 ):
     """Load an unpacked .glyphs object to UFO objects."""
 
@@ -63,6 +69,7 @@ def load_to_ufos(
         include_instances=include_instances,
         family_name=family_name,
         propagate_anchors=propagate_anchors,
+        ufo_module=ufo_module,
     )
 
 
@@ -79,6 +86,7 @@ def build_masters(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    ufo_module=ufoLib2,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
@@ -114,6 +122,7 @@ def build_masters(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        ufo_module=ufo_module,
     )
 
     # Only write full masters to disk. This assumes that layer sources are always part
