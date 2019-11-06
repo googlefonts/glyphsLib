@@ -19,40 +19,39 @@ from xmldiff import main, formatting
 
 import itertools
 import pytest
-import defcon
 
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs
 
 
-def test_designspace_generation_regular_same_family_name(tmpdir):
-    ufo_Lt = defcon.Font()
+def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
+    ufo_Lt = ufo_module.Font()
     ufo_Lt.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Lt.info.styleName = "Light"
     ufo_Lt.info.openTypeOS2WeightClass = 300
 
-    ufo_Rg = defcon.Font()
+    ufo_Rg = ufo_module.Font()
     ufo_Rg.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Rg.info.styleName = "Regular"
     ufo_Rg.info.openTypeOS2WeightClass = 400
 
-    ufo_Md = defcon.Font()
+    ufo_Md = ufo_module.Font()
     ufo_Md.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Md.info.styleName = "Medium"
     ufo_Md.info.openTypeOS2WeightClass = 500
 
-    ufo_Bd = defcon.Font()
+    ufo_Bd = ufo_module.Font()
     ufo_Bd.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Bd.info.styleName = "Bold"
     ufo_Bd.info.openTypeOS2WeightClass = 700
 
-    ufo_ExBd = defcon.Font()
+    ufo_ExBd = ufo_module.Font()
     ufo_ExBd.info.familyName = "CoolFoundry Examplary Serif"
     ufo_ExBd.info.styleName = "XBold"
     ufo_ExBd.info.openTypeOS2WeightClass = 800
 
     font = to_glyphs([ufo_Lt, ufo_Rg, ufo_Md, ufo_Bd, ufo_ExBd])
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     path = os.path.join(str(tmpdir), "actual.designspace")
     designspace.write(path)
@@ -67,39 +66,39 @@ def test_designspace_generation_regular_same_family_name(tmpdir):
     )
 
 
-def test_designspace_generation_italic_same_family_name(tmpdir):
-    ufo_Lt = defcon.Font()
+def test_designspace_generation_italic_same_family_name(tmpdir, ufo_module):
+    ufo_Lt = ufo_module.Font()
     ufo_Lt.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Lt.info.styleName = "Light Italic"
     ufo_Lt.info.openTypeOS2WeightClass = 300
     ufo_Lt.info.italicAngle = -11
 
-    ufo_Rg = defcon.Font()
+    ufo_Rg = ufo_module.Font()
     ufo_Rg.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Rg.info.styleName = "Regular Italic"
     ufo_Rg.info.openTypeOS2WeightClass = 400
     ufo_Rg.info.italicAngle = -11
 
-    ufo_Md = defcon.Font()
+    ufo_Md = ufo_module.Font()
     ufo_Md.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Md.info.styleName = "Medium Italic"
     ufo_Md.info.openTypeOS2WeightClass = 500
     ufo_Md.info.italicAngle = -11
 
-    ufo_Bd = defcon.Font()
+    ufo_Bd = ufo_module.Font()
     ufo_Bd.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Bd.info.styleName = "Bold Italic"
     ufo_Bd.info.openTypeOS2WeightClass = 700
     ufo_Bd.info.italicAngle = -11
 
-    ufo_ExBd = defcon.Font()
+    ufo_ExBd = ufo_module.Font()
     ufo_ExBd.info.familyName = "CoolFoundry Examplary Serif"
     ufo_ExBd.info.styleName = "XBold Italic"
     ufo_ExBd.info.openTypeOS2WeightClass = 800
     ufo_ExBd.info.italicAngle = -11
 
     font = to_glyphs([ufo_Lt, ufo_Rg, ufo_Md, ufo_Bd, ufo_ExBd])
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     path = os.path.join(str(tmpdir), "actual.designspace")
     designspace.write(path)
@@ -114,13 +113,13 @@ def test_designspace_generation_italic_same_family_name(tmpdir):
     )
 
 
-def test_designspace_generation_regular_different_family_names(tmpdir):
-    ufo_Lt = defcon.Font()
+def test_designspace_generation_regular_different_family_names(tmpdir, ufo_module):
+    ufo_Lt = ufo_module.Font()
     ufo_Lt.info.familyName = "CoolFoundry Examplary Serif Light"
     ufo_Lt.info.styleName = "Regular"
     ufo_Lt.info.openTypeOS2WeightClass = 300
 
-    ufo_Rg = defcon.Font()
+    ufo_Rg = ufo_module.Font()
     ufo_Rg.info.familyName = "CoolFoundry Examplary Serif"
     ufo_Rg.info.styleName = "Regular"
     ufo_Rg.info.openTypeOS2WeightClass = 400
@@ -131,31 +130,31 @@ def test_designspace_generation_regular_different_family_names(tmpdir):
         to_glyphs([ufo_Lt, ufo_Rg])
 
 
-def test_designspace_generation_same_weight_name(tmpdir):
-    ufo_Bd = defcon.Font()
+def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
+    ufo_Bd = ufo_module.Font()
     ufo_Bd.info.familyName = "Test"
     ufo_Bd.info.styleName = "Bold"
 
-    ufo_ExBd = defcon.Font()
+    ufo_ExBd = ufo_module.Font()
     ufo_ExBd.info.familyName = "Test"
     ufo_ExBd.info.styleName = "Bold"
 
-    ufo_XExBd = defcon.Font()
+    ufo_XExBd = ufo_module.Font()
     ufo_XExBd.info.familyName = "Test"
     ufo_XExBd.info.styleName = "Bold"
 
     font = to_glyphs([ufo_Bd, ufo_ExBd, ufo_XExBd])
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     assert designspace.sources[0].filename != designspace.sources[1].filename
     assert designspace.sources[1].filename != designspace.sources[2].filename
     assert designspace.sources[0].filename != designspace.sources[2].filename
 
 
-def test_designspace_generation_brace_layers(datadir):
+def test_designspace_generation_brace_layers(datadir, ufo_module):
     with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     axes_order = [
         (a.name, a.minimum, a.default, a.maximum, a.map) for a in designspace.axes
@@ -187,10 +186,10 @@ def test_designspace_generation_brace_layers(datadir):
         masters[source.filename] = source.font
 
 
-def test_designspace_generation_instances(datadir):
+def test_designspace_generation_instances(datadir, ufo_module):
     with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     instances_order = [
         (i.name, i.styleMapStyleName, i.location) for i in designspace.instances
@@ -206,13 +205,17 @@ def test_designspace_generation_instances(datadir):
     ]
 
 
-def test_designspace_generation_on_disk(datadir, tmpdir):
+def test_designspace_generation_on_disk(datadir, tmpdir, ufo_module):
     glyphsLib.build_masters(str(datadir.join("BraceTestFont.glyphs")), str(tmpdir))
 
     ufo_paths = list(tmpdir.visit(fil="*.ufo"))
     assert len(ufo_paths) == 4  # Source layers should not be written to disk.
     for ufo_path in ufo_paths:
-        ufo = defcon.Font(str(ufo_path))
+        try:
+            ufo = ufo_module.Font.open(ufo_path)
+        except AttributeError:
+            ufo = ufo_module.Font(str(ufo_path))
+
         # Check that all glyphs have contours (brace layers are in "b" only, writing
         # the brace layer to disk would result in empty other glyphs).
         for layer in ufo.layers:
@@ -223,10 +226,10 @@ def test_designspace_generation_on_disk(datadir, tmpdir):
                     assert glyph
 
 
-def test_designspace_generation_bracket_roundtrip(datadir):
+def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     assert designspace.rules[0].name == "BRACKET.300.600"
     assert designspace.rules[0].conditionSets == [
@@ -282,7 +285,7 @@ def test_designspace_generation_bracket_roundtrip(datadir):
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
+def test_designspace_generation_bracket_roundtrip_no_layername(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
 
@@ -293,7 +296,7 @@ def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
         for l in dl:
             g.layers.remove(l)
 
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
     for source in designspace.sources:
         source.font.newGlyph("b.BRACKET.100")
 
@@ -303,14 +306,14 @@ def test_designspace_generation_bracket_roundtrip_no_layername(datadir):
             assert layer.name == "[100]"
 
 
-def test_designspace_generation_bracket_unbalanced_brackets(datadir):
+def test_designspace_generation_bracket_unbalanced_brackets(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
     layer_names = {l.name for l in font.glyphs["C"].layers}
     assert layer_names == {"Regular", "Bold", "Bold [600]"}
 
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     for source in designspace.sources:
         assert "C.BRACKET.600" in source.font
@@ -323,7 +326,7 @@ def test_designspace_generation_bracket_unbalanced_brackets(datadir):
     assert "C.BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_composite_glyph(datadir):
+def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
@@ -331,7 +334,7 @@ def test_designspace_generation_bracket_composite_glyph(datadir):
     for layer in g.layers:
         assert layer.components[0].name == "A"
 
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     for source in designspace.sources:
         ufo = source.font
@@ -350,7 +353,7 @@ def test_designspace_generation_bracket_composite_glyph(datadir):
     assert "B.BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_reverse_bracket_roundtrip(datadir):
+def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
@@ -358,7 +361,7 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir):
 
     assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g.layers)
 
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
 
     assert designspace.rules[1].name == "BRACKET.400.600"
     assert designspace.rules[1].conditionSets == [
@@ -380,13 +383,15 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir):
     assert "D.REV_BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_no_export_glyph(datadir):
+def test_designspace_generation_bracket_no_export_glyph(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
     font.glyphs["E"].export = False
 
-    designspace = to_designspace(font, write_skipexportglyphs=True)
+    designspace = to_designspace(
+        font, write_skipexportglyphs=True, ufo_module=ufo_module
+    )
 
     assert "E" in designspace.lib.get("public.skipExportGlyphs")
 

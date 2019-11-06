@@ -16,7 +16,6 @@
 import os
 from collections import OrderedDict
 
-import defcon
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib import classes
 from glyphsLib.types import BinaryData
@@ -132,10 +131,10 @@ def test_font_user_data_to_ufo_lib():
     assert font.userData["fontUserDataKey"] == "fontUserDataValue"
 
 
-def test_ufo_lib_equivalent_to_font_master_user_data():
-    ufo1 = defcon.Font()
+def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
+    ufo1 = ufo_module.Font()
     ufo1.lib["ufoLibKey1"] = "ufoLibValue1"
-    ufo2 = defcon.Font()
+    ufo2 = ufo_module.Font()
     ufo2.lib["ufoLibKey2"] = "ufoLibValue2"
 
     font = to_glyphs([ufo1, ufo2])
@@ -151,10 +150,10 @@ def test_ufo_lib_equivalent_to_font_master_user_data():
     assert "ufoLibKey1" not in ufo2.lib
 
 
-def test_ufo_data_into_font_master_user_data(tmpdir):
+def test_ufo_data_into_font_master_user_data(tmpdir, ufo_module):
     filename = "org.customTool/ufoData.bin"
     data = b"\x00\x01\xFF"
-    ufo = defcon.Font()
+    ufo = ufo_module.Font()
     ufo.data[filename] = data
 
     font = to_glyphs([ufo])
@@ -174,8 +173,8 @@ def test_ufo_data_into_font_master_user_data(tmpdir):
     assert ufo.data[filename] == data
 
 
-def test_layer_lib_into_font_user_data():
-    ufo = defcon.Font()
+def test_layer_lib_into_font_user_data(ufo_module):
+    ufo = ufo_module.Font()
     ufo.layers["public.default"].lib["layerLibKey1"] = "layerLibValue1"
     layer = ufo.newLayer("sketches")
     layer.lib["layerLibKey2"] = "layerLibValue2"
@@ -220,8 +219,8 @@ def test_glyph_user_data_into_ufo_lib():
     assert font.glyphs["a"].userData["glyphUserDataKey"] == "glyphUserDataValue"
 
 
-def test_glif_lib_equivalent_to_layer_user_data():
-    ufo = defcon.Font()
+def test_glif_lib_equivalent_to_layer_user_data(ufo_module):
+    ufo = ufo_module.Font()
     # This glyph is in the `public.default` layer
     a = ufo.newGlyph("a")
     a.lib["glifLibKeyA"] = "glifLibValueA"
@@ -298,7 +297,7 @@ def test_node_user_data_into_glif_lib():
     assert path.nodes[4].userData["nodeUserDataKey2"] == "nodeUserDataValue2"
 
 
-def test_lib_data_types(tmpdir):
+def test_lib_data_types(tmpdir, ufo_module):
     # Test the roundtrip of a few basic types both at the top level and in a
     # nested object.
     data = OrderedDict(
@@ -311,7 +310,7 @@ def test_lib_data_types(tmpdir):
             "dict": {},
         }
     )
-    ufo = defcon.Font()
+    ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
     for key, value in data.items():
         a.lib[key] = value

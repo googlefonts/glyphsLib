@@ -24,7 +24,7 @@ from glyphsLib import classes
 from .. import test_helpers
 
 
-class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
+class UFORoundtripTest(test_helpers.AssertUFORoundtrip):
     def test_empty_font(self):
         empty_font = classes.GSFont()
         empty_font.masters.append(classes.GSFontMaster())

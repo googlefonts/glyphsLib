@@ -17,6 +17,9 @@ import os
 import unittest
 import pytest
 
+import defcon
+import ufoLib2
+
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument
 import test_helpers
@@ -45,7 +48,7 @@ class GlyphsRT(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
             setattr(cls, test_name, test_method)
 
 
-class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
+class GlyphsToDesignspaceRT(test_helpers.AssertUFORoundtrip):
     """Test the whole chain from .glyphs to designspace + UFOs and back"""
 
     @classmethod
@@ -69,7 +72,15 @@ class GlyphsToDesignspaceRT(unittest.TestCase, test_helpers.AssertUFORoundtrip):
             setattr(cls, test_name, test_method)
 
 
-class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRoundtrip):
+class GlyphsToDesignspaceRTUfoLib2(unittest.TestCase, GlyphsToDesignspaceRT):
+    ufo_module = ufoLib2
+
+
+class GlyphsToDesignspaceRTDefcon(unittest.TestCase, GlyphsToDesignspaceRT):
+    ufo_module = defcon
+
+
+class DesignspaceToGlyphsRT(test_helpers.AssertDesignspaceRoundtrip):
     """Test the whole chain from designspace + UFOs to .glyphs and back"""
 
     @classmethod
@@ -91,12 +102,12 @@ class DesignspaceToGlyphsRT(unittest.TestCase, test_helpers.AssertDesignspaceRou
             print("adding test", test_name)
 
 
-class UFOsToGlyphsRT(unittest.TestCase):
-    """The the whole chain from a collection of UFOs to .glyphs and back"""
+class DesignspaceToGlyphsRTUfoLib2(unittest.TestCase, DesignspaceToGlyphsRT):
+    ufo_module = ufoLib2
 
-    @classmethod
-    def add_tests(cls, testable):
-        pass
+
+class DesignspaceToGlyphsRTDefcon(unittest.TestCase, DesignspaceToGlyphsRT):
+    ufo_module = defcon
 
 
 TESTABLES = [
@@ -105,48 +116,66 @@ TESTABLES = [
         "name": "noto_moyogo",  # dirname inside `downloaded/`
         "git_url": "https://github.com/moyogo/noto-source.git",
         "git_ref": "normalized-1071",
-        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
+        "classes": (
+            GlyphsRT,
+            GlyphsToDesignspaceRTUfoLib2,
+            GlyphsToDesignspaceRTDefcon,
+        ),
     },
     {
         # https://github.com/googlefonts/glyphsLib/issues/238
         "name": "montserrat",
         "git_url": "https://github.com/JulietaUla/Montserrat",
         "git_ref": "master",
-        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
+        "classes": (
+            GlyphsRT,
+            GlyphsToDesignspaceRTUfoLib2,
+            GlyphsToDesignspaceRTDefcon,
+        ),
     },
     {
         # https://github.com/googlefonts/glyphsLib/issues/282
         "name": "cantarell_madig",
         "git_url": "https://github.com/madig/cantarell-fonts/",
         "git_ref": "f17124d041e6ee370a9fcddcc084aa6cbf3d5500",
-        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
+        "classes": (
+            GlyphsRT,
+            GlyphsToDesignspaceRTUfoLib2,
+            GlyphsToDesignspaceRTDefcon,
+        ),
     },
     # {
     #     # This one has truckloads of smart components
     #     'name': 'vt323',
     #     'git_url': 'https://github.com/phoikoi/VT323',
     #     'git_ref': 'master',
-    #     'classes': (GlyphsRT, GlyphsToDesignspaceRT),
+    #     'classes': (
+    #         GlyphsRT, GlyphsToDesignspaceRTUfoLib2, GlyphsToDesignspaceRTDefcon
+    #     ),
     # },
     {
         # This one has truckloads of smart components
         "name": "vt323_jany",
         "git_url": "https://github.com/belluzj/VT323",
         "git_ref": "glyphs-1089",
-        "classes": (GlyphsRT, GlyphsToDesignspaceRT),
+        "classes": (
+            GlyphsRT,
+            GlyphsToDesignspaceRTUfoLib2,
+            GlyphsToDesignspaceRTDefcon,
+        ),
     },
     # The following contain .designspace files
     {
         "name": "spectral",
         "git_url": "https://github.com/productiontype/Spectral",
         "git_ref": "master",
-        "classes": (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
+        "classes": (DesignspaceToGlyphsRTUfoLib2, DesignspaceToGlyphsRTDefcon),
     },
     {
         "name": "amstelvar",
         "git_url": "https://github.com/TypeNetwork/fb-Amstelvar",
         "git_ref": "master",
-        "classes": (DesignspaceToGlyphsRT, UFOsToGlyphsRT),
+        "classes": (DesignspaceToGlyphsRTUfoLib2, DesignspaceToGlyphsRTDefcon),
     },
 ]
 

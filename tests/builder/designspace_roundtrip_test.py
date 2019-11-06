@@ -14,26 +14,25 @@
 # limitations under the License.
 
 
-import defcon
 from fontTools import designspaceLib
 
 from glyphsLib import to_glyphs, to_designspace
 
 
-def test_default_master_roundtrips():
+def test_default_master_roundtrips(ufo_module):
     """This test comes from a common scenario while using glyphsLib to go
     back and forth several times with "minimize diffs" in both directions.
     In the end we get UFOs that have information as below, and there was
     a bug that turned "Regular" into "Normal" and changed the default axis
     value.
     """
-    thin = defcon.Font()
+    thin = ufo_module.Font()
     thin.info.familyName = "CustomFont"
     thin.info.styleName = "Thin"
     thin.lib["com.schriftgestaltung.customParameter.GSFont.Axes"] = [
         {"Name": "Weight", "Tag": "wght"}
     ]
-    regular = defcon.Font()
+    regular = ufo_module.Font()
     regular.info.familyName = "CustomFont"
     regular.info.styleName = "Regular"
     regular.lib["com.schriftgestaltung.customParameter.GSFont.Axes"] = [
@@ -68,7 +67,7 @@ def test_default_master_roundtrips():
     ds.addSource(regularSource)
 
     font = to_glyphs(ds, minimize_ufo_diffs=True)
-    doc = to_designspace(font, minimize_glyphs_diffs=True)
+    doc = to_designspace(font, minimize_glyphs_diffs=True, ufo_module=ufo_module)
 
     reg = doc.sources[1]
     assert reg.styleName == "Regular"

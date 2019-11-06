@@ -26,8 +26,6 @@ import os
 import pytest
 from collections import namedtuple
 
-import defcon
-
 from glyphsLib import to_glyphs, to_ufos, classes
 
 
@@ -92,31 +90,6 @@ ufo_info_spec = [
         "Generic Miscellaneous Information",
         # note	string	Arbitrary note about the font.
         Field("note", "Bla bla"),
-    ),
-    section(
-        "OpenType GASP Table Fields",
-        # openTypeGaspRangeRecords list A list of gasp Range Records. These
-        # must be sorted in ascending order based on the rangeMaxPPEM value of
-        # the record.
-        #
-        # The records are stored as dictionaries of the following format.
-        # key	value type	description
-        # rangeMaxPPEM non-negative integer The upper limit of the range, in
-        # PPEM. If any records are in the list, the final record should use
-        # 65535 (0xFFFF) as defined in the OpenType gasp specification.
-        # Corresponds to the rangeMaxPPEM field of the GASPRANGE record in the
-        # OpenType gasp table.
-        # rangeGaspBehavior list A list of bit numbers indicating the flags
-        # to be set. The bit numbers are defined below. Corresponds to the
-        # rangeGaspBehavior field of the GASPRANGE record in the OpenType gasp
-        # table.
-        Field(
-            "openTypeGaspRangeRecords",
-            [
-                {"rangeMaxPPEM": 16, "rangeGaspBehavior": [0]},
-                {"rangeMaxPPEM": 65535, "rangeGaspBehavior": [0, 1]},
-            ],
-        ),
     ),
     section(
         "OpenType head Table Fields",
@@ -203,34 +176,6 @@ ufo_info_spec = [
         # openTypeNameWWSSubfamilyName	string	WWS Subfamily name.
         # Corresponds to the OpenType name table name ID 22.
         Field("openTypeNameWWSSubfamilyName", "Bold Large"),
-        # openTypeNameRecords list A list of name records. This name record storage
-        # area is intended for records that require platform, encoding and or
-        # language localization.
-        # The records are stored as dictionaries of the following format.
-        # nameID	non-negative integer	The name ID.
-        # platformID	non-negative integer	The platform ID.
-        # encodingID	non-negative integer	The encoding ID.
-        # languageID	non-negative integer	The language ID.
-        # string	string	The string value for the record.
-        Field(
-            "openTypeNameRecords",
-            [
-                {
-                    "nameID": 19,
-                    "platformID": 1,
-                    "encodingID": 0,
-                    "languageID": 1,
-                    "string": "Les cornichons sont nos amis",
-                },
-                {
-                    "nameID": 1,
-                    "platformID": 3,
-                    "encodingID": 1,
-                    "languageID": 0x0410,
-                    "string": "Illustrativo Sans",
-                },
-            ],
-        ),
     ),
     section(
         "OpenType OS/2 Table Fields",
@@ -485,8 +430,8 @@ ufo_info_spec = [
 
 
 @pytest.mark.parametrize("fields", ufo_info_spec)
-def test_info(fields, tmpdir):
-    ufo = defcon.Font()
+def test_info(fields, tmpdir, ufo_module):
+    ufo = ufo_module.Font()
 
     for field in fields:
         setattr(ufo.info, field.name, field.test_value)
@@ -495,7 +440,57 @@ def test_info(fields, tmpdir):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    ufo, = to_ufos(font)
+    ufo, = to_ufos(font, ufo_module=ufo_module)
 
     for field in fields:
         assert getattr(ufo.info, field.name) == field.test_value
+
+
+def test_info_gasp_ranges(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+
+    gasp_ranges = [
+        {"rangeMaxPPEM": 16, "rangeGaspBehavior": [0]},
+        {"rangeMaxPPEM": 65535, "rangeGaspBehavior": [0, 1]},
+    ]
+    ufo.info.openTypeGaspRangeRecords = gasp_ranges
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    filename = os.path.join(str(tmpdir), "font.glyphs")
+    font.save(filename)
+    font = classes.GSFont(filename)
+    ufo, = to_ufos(font, ufo_module=ufo_module)
+
+    assert [dict(r) for r in ufo.info.openTypeGaspRangeRecords] == gasp_ranges
+
+
+def test_info_name_records(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+
+    name_records = [
+        {
+            "nameID": 19,
+            "platformID": 1,
+            "encodingID": 0,
+            "languageID": 1,
+            "string": "Les cornichons sont nos amis",
+        },
+        {
+            "nameID": 1,
+            "platformID": 3,
+            "encodingID": 1,
+            "languageID": 0x0410,
+            "string": "Illustrativo Sans",
+        },
+    ]
+
+    ufo.info.openTypeNameRecords = name_records
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+    filename = os.path.join(str(tmpdir), "font.glyphs")
+    font.save(filename)
+    font = classes.GSFont(filename)
+    ufo, = to_ufos(font, ufo_module=ufo_module)
+
+    print(ufo.info.openTypeNameRecords)
+    assert [dict(r) for r in ufo.info.openTypeNameRecords] == name_records

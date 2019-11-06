@@ -18,8 +18,6 @@ import pytest
 import datetime
 import os
 
-import defcon
-
 from glyphsLib.builder.constants import GLYPHS_COLORS, GLYPHLIB_PREFIX
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 from glyphsLib import classes
@@ -31,8 +29,8 @@ from fontTools.designspaceLib import DesignSpaceDocument, AxisDescriptor
 
 
 @pytest.mark.skip
-def test_anchors_with_same_name_correct_order_rtl():
-    ufo = defcon.Font()
+def test_anchors_with_same_name_correct_order_rtl(ufo_module):
+    ufo = ufo_module.Font()
     g = ufo.newGlyph("laam_alif")
     # Append the anchors in the correct order
     g.appendAnchor(dict(x=50, y=600, name="top"))
@@ -51,8 +49,8 @@ def test_anchors_with_same_name_correct_order_rtl():
 
 
 @pytest.mark.skip
-def test_anchors_with_same_name_wrong_order_rtl():
-    ufo = defcon.Font()
+def test_anchors_with_same_name_wrong_order_rtl(ufo_module):
+    ufo = ufo_module.Font()
     g = ufo.newGlyph("laam_alif")
     # Append the anchors in the wrong order
     g.appendAnchor(dict(x=250, y=600, name="top"))
@@ -72,8 +70,8 @@ def test_anchors_with_same_name_wrong_order_rtl():
 
 
 @pytest.mark.skip
-def test_anchors_with_same_name_correct_order_ltr():
-    ufo = defcon.Font()
+def test_anchors_with_same_name_correct_order_ltr(ufo_module):
+    ufo = ufo_module.Font()
     g = ufo.newGlyph("laam_alif")
     # Append the anchors in the correct order
     g.appendAnchor(dict(x=50, y=600, name="top"))
@@ -93,8 +91,8 @@ def test_anchors_with_same_name_correct_order_ltr():
 
 
 @pytest.mark.skip
-def test_anchors_with_same_name_wrong_order_ltr():
-    ufo = defcon.Font()
+def test_anchors_with_same_name_wrong_order_ltr(ufo_module):
+    ufo = ufo_module.Font()
     g = ufo.newGlyph("laam_alif")
     # Append the anchors in the wrong order
     g.appendAnchor(dict(x=250, y=600, name="top"))
@@ -113,8 +111,8 @@ def test_anchors_with_same_name_wrong_order_ltr():
     assert top2.y == 600
 
 
-def test_groups():
-    ufo = defcon.Font()
+def test_groups(ufo_module):
+    ufo = ufo_module.Font()
     ufo.newGlyph("T")
     ufo.newGlyph("e")
     ufo.newGlyph("o")
@@ -183,8 +181,8 @@ def test_groups():
     assert dict(ufo.groups) == groups_dict
 
 
-def test_guidelines():
-    ufo = defcon.Font()
+def test_guidelines(ufo_module):
+    ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
     for obj in [ufo, a]:
         # Complete guideline
@@ -194,14 +192,13 @@ def test_guidelines():
         # Don't crash if a guideline misses information
         obj.appendGuideline({"x": 10})
         obj.appendGuideline({"y": 20})
-        obj.appendGuideline({})
 
     font = to_glyphs([ufo])
 
     for gobj in [font.masters[0], font.glyphs["a"].layers[0]]:
-        assert len(gobj.guides) == 4
+        assert len(gobj.guides) == 3
 
-        angled, vertical, horizontal, empty = gobj.guides
+        angled, vertical, horizontal = gobj.guides
 
         assert angled.position.x == 10
         assert angled.position.y == 20
@@ -217,7 +214,7 @@ def test_guidelines():
     ufo, = to_ufos(font)
 
     for obj in [ufo, ufo["a"]]:
-        angled, vertical, horizontal, empty = obj.guidelines
+        angled, vertical, horizontal = obj.guidelines
 
         assert angled.x == 10
         assert angled.y == 20
@@ -235,8 +232,8 @@ def test_guidelines():
         assert horizontal.angle is None
 
 
-def test_glyph_color():
-    ufo = defcon.Font()
+def test_glyph_color(ufo_module):
+    ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
     a.markColor = GLYPHS_COLORS[3]
     b = ufo.newGlyph("b")
@@ -255,8 +252,8 @@ def test_glyph_color():
     assert ufo["b"].markColor == b.markColor
 
 
-def test_bad_ufo_date_format_in_glyph_lib():
-    ufo = defcon.Font()
+def test_bad_ufo_date_format_in_glyph_lib(ufo_module):
+    ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
     a.lib[GLYPHLIB_PREFIX + "lastChange"] = "2017-12-19 15:12:44 +0000"
 
@@ -266,23 +263,23 @@ def test_bad_ufo_date_format_in_glyph_lib():
     assert font.glyphs["a"].lastChange == datetime.datetime(2017, 12, 19, 15, 12, 44)
 
 
-def test_have_default_interpolation_values():
+def test_have_default_interpolation_values(ufo_module):
     """When no designspace is provided, make sure that the Glyphs file has some
     default "axis positions" for the masters.
     """
-    thin = defcon.Font()
+    thin = ufo_module.Font()
     thin.info.openTypeOS2WidthClass = 5
     thin.info.openTypeOS2WeightClass = 100
-    regular = defcon.Font()
+    regular = ufo_module.Font()
     regular.info.openTypeOS2WidthClass = 5
     regular.info.openTypeOS2WeightClass = 400
-    bold = defcon.Font()
+    bold = ufo_module.Font()
     bold.info.openTypeOS2WidthClass = 5
     bold.info.openTypeOS2WeightClass = 700
-    thin_expanded = defcon.Font()
+    thin_expanded = ufo_module.Font()
     thin_expanded.info.openTypeOS2WidthClass = 7
     thin_expanded.info.openTypeOS2WeightClass = 100
-    bold_ultra_cond = defcon.Font()
+    bold_ultra_cond = ufo_module.Font()
     bold_ultra_cond.info.openTypeOS2WidthClass = 1
     bold_ultra_cond.info.openTypeOS2WeightClass = 700
 
@@ -306,7 +303,7 @@ def test_have_default_interpolation_values():
     assert gbolducond.widthValue == 50
 
 
-def test_designspace_source_locations(tmpdir):
+def test_designspace_source_locations(tmpdir, ufo_module):
     """Check that opening UFOs from their source descriptor works with both
     the filename and the path attributes.
     """
@@ -332,11 +329,11 @@ def test_designspace_source_locations(tmpdir):
     designspace.addSource(bold_source)
     designspace.write(designspace_path)
 
-    light = defcon.Font()
+    light = ufo_module.Font()
     light.info.ascender = 30
     light.save(light_ufo_path)
 
-    bold = defcon.Font()
+    bold = ufo_module.Font()
     bold.info.ascender = 40
     bold.save(bold_ufo_path)
 
@@ -351,7 +348,7 @@ def test_designspace_source_locations(tmpdir):
 
 
 @pytest.mark.skip(reason="Should be better defined")
-def test_ufo_filename_is_kept_the_same(tmpdir):
+def test_ufo_filename_is_kept_the_same(tmpdir, ufo_module):
     """Check that the filenames of existing UFOs are correctly written to
     the designspace document when doing UFOs -> Glyphs -> designspace.
     This only works when the option "minimize_ufo_diffs" is given, because
@@ -360,11 +357,11 @@ def test_ufo_filename_is_kept_the_same(tmpdir):
     light_ufo_path = os.path.join(str(tmpdir), "light.ufo")
     bold_ufo_path = os.path.join(str(tmpdir), "subdir/bold.ufo")
 
-    light = defcon.Font()
+    light = ufo_module.Font()
     light.info.ascender = 30
     light.save(light_ufo_path)
 
-    bold = defcon.Font()
+    bold = ufo_module.Font()
     bold.info.ascender = 40
     bold.save(bold_ufo_path)
 
@@ -392,8 +389,8 @@ def test_ufo_filename_is_kept_the_same(tmpdir):
     assert designspace.sources[1].filename == "subdir/bold.ufo"
 
 
-def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir):
-    ufo = defcon.Font()
+def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
     bg = ufo.newLayer("public.background")
 
     fg_a = ufo.newGlyph("a")
@@ -431,8 +428,8 @@ def test_dont_zero_width_of_nonspacing_marks_if_it_was_not_zero():
     pass
 
 
-def test_double_unicodes(tmpdir):
-    ufo = defcon.Font()
+def test_double_unicodes(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
     z = ufo.newGlyph("z")
     z.unicodes = [0x005A, 0x007A]
 
@@ -450,8 +447,8 @@ def test_double_unicodes(tmpdir):
         assert ufo["z"].unicodes == [0x005A, 0x007A]
 
 
-def test_open_contour():
-    ufo = defcon.Font()
+def test_open_contour(ufo_module):
+    ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
     pen = a.getPen()
     pen.moveTo((10, 20))
@@ -472,8 +469,8 @@ def test_open_contour():
     ]
 
 
-def test_background_before_foreground():
-    ufo = defcon.Font()
+def test_background_before_foreground(ufo_module):
+    ufo = ufo_module.Font()
     ufo.newGlyph("a")
     background = ufo.newLayer("public.background")
     background.newGlyph("a")
@@ -484,8 +481,8 @@ def test_background_before_foreground():
     to_glyphs([ufo])
 
 
-def test_only_background():
-    ufo = defcon.Font()
+def test_only_background(ufo_module):
+    ufo = ufo_module.Font()
     background = ufo.newLayer("public.background")
     background.newGlyph("a")
 
@@ -493,8 +490,8 @@ def test_only_background():
     to_glyphs([ufo])
 
 
-def test_warn_diff_between_designspace_and_ufos(caplog):
-    ufo = defcon.Font()
+def test_warn_diff_between_designspace_and_ufos(caplog, ufo_module):
+    ufo = ufo_module.Font()
     ufo.info.familyName = "UFO Family Name"
     ufo.info.styleName = "UFO Style Name"
     # ufo.info.styleMapFamilyName = 'UFO Stylemap Family Name'
@@ -528,8 +525,8 @@ def test_warn_diff_between_designspace_and_ufos(caplog):
     assert source.font.info.styleName == "UFO Style Name"
 
 
-def test_custom_stylemap_style_name():
-    ufo = defcon.Font()
+def test_custom_stylemap_style_name(ufo_module):
+    ufo = ufo_module.Font()
     ufo.info.styleMapStyleName = "bold"  # Not "regular"
 
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
@@ -538,7 +535,7 @@ def test_custom_stylemap_style_name():
     assert ufo.info.styleMapStyleName == "bold"
 
 
-def test_weird_kerning_roundtrip():
+def test_weird_kerning_roundtrip(ufo_module):
     groups = {
         "public.kern1.i": [
             "i",
@@ -581,7 +578,7 @@ def test_weird_kerning_roundtrip():
     }
     glyphs = sorted({g for glyphs in groups.values() for g in glyphs})
 
-    ufo = defcon.Font()
+    ufo = ufo_module.Font()
     for glyph in glyphs:
         ufo.newGlyph(glyph)
     for k, v in groups.items():
