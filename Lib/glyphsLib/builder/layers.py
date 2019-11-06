@@ -36,18 +36,17 @@ def to_ufo_layer(self, glyph, layer):
     return ufo_layer
 
 
-def to_ufo_background_layer(self, ufo_glyph):
-    font = self.font
-    if ufo_glyph.layer.name != "public.default":
-        layer_name = ufo_glyph.layer.name + ".background"
-    else:
+def to_ufo_background_layer(self, layer):
+    ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+    if layer.associatedMasterId == layer.layerId:
         layer_name = "public.background"
-    font = ufo_glyph.font
-    if layer_name not in font.layers:
-        ufo_layer = font.newLayer(layer_name)
     else:
-        ufo_layer = font.layers[layer_name]
-    return ufo_layer
+        layer_name = layer.name + ".background"
+    if layer_name not in ufo_font.layers:
+        background_layer = ufo_font.newLayer(layer_name)
+    else:
+        background_layer = ufo_font.layers[layer_name]
+    return background_layer
 
 
 def _layer_order_in_glyph(self, layer):

@@ -18,7 +18,6 @@ import os
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder.instances import apply_instance_data
-import defcon
 
 import pytest
 import py.path
@@ -33,7 +32,7 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     [None, ["Extra Light"], ["Regular", "Bold"]],
     ids=["default", "include_1", "include_2"],
 )
-def test_apply_instance_data(tmpdir, instance_names):
+def test_apply_instance_data(tmpdir, instance_names, ufo_module):
     font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans.glyphs"))
     instance_dir = "instances"
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
@@ -57,7 +56,7 @@ def test_apply_instance_data(tmpdir, instance_names):
     # interpolate.
     tmpdir.mkdir(instance_dir)
     for instance in test_instances:
-        ufo = defcon.Font()
+        ufo = ufo_module.Font()
         ufo.save(str(tmpdir / instance))
 
     ufos = apply_instance_data(designspace.path, include_filenames=test_instances)

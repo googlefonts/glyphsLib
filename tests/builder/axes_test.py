@@ -16,7 +16,6 @@
 
 import pytest
 
-import defcon
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 
@@ -46,11 +45,11 @@ Goal: check how files with custom axes are roundtripped.
         ],
     ],
 )
-def test_weight_width_custom(axes):
+def test_weight_width_custom(axes, ufo_module):
     """Test that having axes in any order or quantity does not confuse
     glyphsLib, even when the weight or width are not in the default positions.
     """
-    doc = _make_designspace_with_axes(axes)
+    doc = _make_designspace_with_axes(axes, ufo_module)
 
     font = to_glyphs(doc)
 
@@ -58,7 +57,7 @@ def test_weight_width_custom(axes):
         {"Tag": tag, "Name": name} for tag, name in axes
     ]
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
 
     assert len(doc.axes) == len(axes)
     for doc_axis, (tag, name) in zip(doc.axes, axes):
@@ -66,12 +65,12 @@ def test_weight_width_custom(axes):
         assert doc_axis.name == name
 
 
-def _make_designspace_with_axes(axes):
+def _make_designspace_with_axes(axes, ufo_module):
     doc = designspaceLib.DesignSpaceDocument()
 
     # Add a "Regular" source
     regular = doc.newSourceDescriptor()
-    regular.font = defcon.Font()
+    regular.font = ufo_module.Font()
     regular.location = {name: 0 for _, name in axes}
     doc.addSource(regular)
 
@@ -82,14 +81,14 @@ def _make_designspace_with_axes(axes):
         doc.addAxis(axis)
 
         extreme = doc.newSourceDescriptor()
-        extreme.font = defcon.Font()
+        extreme.font = ufo_module.Font()
         extreme.location = {name_: 0 if name_ != name else 100 for _, name_ in axes}
         doc.addSource(extreme)
 
     return doc
 
 
-def test_masters_have_user_locations():
+def test_masters_have_user_locations(ufo_module):
     """Test the new axis definition with custom parameters.
     See https://github.com/googlefonts/glyphsLib/issues/280.
 
@@ -97,7 +96,7 @@ def test_masters_have_user_locations():
     see `tests/builder/interpolation_test.py`.
     """
     # Get a font with two masters
-    font = to_glyphs([defcon.Font(), defcon.Font()])
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
     font.customParameters["Axes"] = [{"Tag": "opsz", "Name": "Optical"}]
     # There is only one axis, so the design location is stored in the weight
     font.masters[0].weightValue = 0
@@ -110,7 +109,7 @@ def test_masters_have_user_locations():
         {"Axis": "Optical", "Location": 100}
     ]
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
     assert len(doc.axes) == 1
     assert doc.axes[0].map == [(13, 0), (100, 1000)]
     assert len(doc.sources) == 2
@@ -129,12 +128,12 @@ def test_masters_have_user_locations():
     ]
 
 
-def test_masters_have_user_locations_string():
+def test_masters_have_user_locations_string(ufo_module):
     """Test that stringified Axis Locations are converted.
 
     Some versions of Glyph store a string instead of an int.
     """
-    font = to_glyphs([defcon.Font(), defcon.Font()])
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
     font.customParameters["Axes"] = [{"Tag": "opsz", "Name": "Optical"}]
     font.masters[0].weightValue = 0
     font.masters[0].customParameters["Axis Location"] = [
@@ -145,7 +144,7 @@ def test_masters_have_user_locations_string():
         {"Axis": "Optical", "Location": "100"}
     ]
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
     assert doc.axes[0].map == [(13, 0), (100, 1000)]
 
     font = to_glyphs(doc)
@@ -157,8 +156,8 @@ def test_masters_have_user_locations_string():
     ]
 
 
-def test_master_user_location_goes_into_os2_classes():
-    font = to_glyphs([defcon.Font(), defcon.Font()])
+def test_master_user_location_goes_into_os2_classes(ufo_module):
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
     font.customParameters["Axes"] = [
         {"Tag": "wght", "Name": "Weight"},
         {"Tag": "wdth", "Name": "Width"},
@@ -188,12 +187,12 @@ def test_master_user_location_goes_into_os2_classes():
     assert black.info.openTypeOS2WidthClass == 1
 
 
-def test_mapping_is_same_regardless_of_axes_custom_parameter():
+def test_mapping_is_same_regardless_of_axes_custom_parameter(ufo_module):
     # https://github.com/googlefonts/glyphsLib/issues/409
     # https://github.com/googlefonts/glyphsLib/issues/411
 
     # First, try without the custom param
-    font = to_glyphs([defcon.Font(), defcon.Font(), defcon.Font()])
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font(), ufo_module.Font()])
     font.masters[0].name = "ExtraLight"
     font.masters[0].weightValue = 200
     font.masters[1].name = "Regular"
@@ -201,7 +200,7 @@ def test_mapping_is_same_regardless_of_axes_custom_parameter():
     font.masters[2].name = "Bold"
     font.masters[2].weightValue = 700
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
     assert doc.axes[0].minimum == 200
     assert doc.axes[0].maximum == 700
     assert doc.axes[0].map == []
@@ -209,7 +208,7 @@ def test_mapping_is_same_regardless_of_axes_custom_parameter():
     # Now with the custom parameter. Should produce the same results
     font.customParameters["Axes"] = [{"Name": "Weight", "Tag": "wght"}]
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
     assert doc.axes[0].minimum == 200
     assert doc.axes[0].maximum == 700
     assert doc.axes[0].map == []

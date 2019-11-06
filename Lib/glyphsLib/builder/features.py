@@ -113,7 +113,6 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=Non
             )
         gdef_str = _build_gdef(ufo, skip_export_glyphs)
 
-    # make sure feature text is a unicode string, for defcon
     full_text = (
         "\n\n".join(filter(None, [class_str, prefix_str, fea_str, gdef_str])) + "\n"
     )

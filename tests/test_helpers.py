@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import difflib
+import inspect
 import os.path
 import re
 import subprocess
@@ -25,12 +26,11 @@ from io import StringIO
 from textwrap import dedent
 
 import glyphsLib
-from glyphsLib import classes
+from glyphsLib import classes, util
 from fontTools.designspaceLib import DesignSpaceDocument
-from glyphsLib.builder import to_glyphs, to_designspace
+from glyphsLib.builder import to_glyphs, to_designspace, to_ufos
 from glyphsLib.writer import Writer
 from ufonormalizer import normalizeUFO
-import defcon
 
 
 def write_to_lines(glyphs_object):
@@ -92,7 +92,20 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
         )
 
 
-class AssertUFORoundtrip(AssertLinesEqual):
+class ParametrizedUfoModuleTestMixin(object):
+
+    ufo_module = None  # subclasses must override this
+
+    def to_ufos(self, *args, **kwargs):
+        kwargs["ufo_module"] = self.ufo_module
+        return to_ufos(*args, **kwargs)
+
+    def to_designspace(self, *args, **kwargs):
+        kwargs["ufo_module"] = self.ufo_module
+        return to_designspace(*args, **kwargs)
+
+
+class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
     """Check .glyphs -> UFOs + designspace -> .glyphs"""
 
     def _normalize(self, font):
@@ -122,7 +135,7 @@ class AssertUFORoundtrip(AssertLinesEqual):
         self._normalize(font)
         expected = write_to_lines(font)
         # Don't propagate anchors nor generate GDEF when intending to round-trip
-        designspace = to_designspace(
+        designspace = self.to_designspace(
             font,
             propagate_anchors=False,
             minimize_glyphs_diffs=True,
@@ -130,7 +143,7 @@ class AssertUFORoundtrip(AssertLinesEqual):
         )
 
         # Check that round-tripping in memory is the same as writing on disk
-        roundtrip_in_mem = to_glyphs(designspace)
+        roundtrip_in_mem = to_glyphs(designspace, ufo_module=self.ufo_module)
         self._normalize(roundtrip_in_mem)
         actual_in_mem = write_to_lines(roundtrip_in_mem)
 
@@ -139,7 +152,7 @@ class AssertUFORoundtrip(AssertLinesEqual):
         write_designspace_and_UFOs(designspace, path)
         designspace_roundtrip = DesignSpaceDocument()
         designspace_roundtrip.read(path)
-        roundtrip = to_glyphs(designspace_roundtrip)
+        roundtrip = to_glyphs(designspace_roundtrip, ufo_module=self.ufo_module)
         self._normalize(roundtrip)
         actual = write_to_lines(roundtrip)
 
@@ -159,13 +172,21 @@ class AssertUFORoundtrip(AssertLinesEqual):
         )
 
 
+def _save_overwrite_ufo(font, path):
+    if "overwrite" in inspect.getfullargspec(font.save).args:
+        font.save(path, formatVersion=3, overwrite=True)  # ufoLib2
+    else:
+        font.save(path, formatVersion=3)  # defcon
+
+
 def write_designspace_and_UFOs(designspace, path):
     for source in designspace.sources:
         basename = os.path.basename(source.filename)
         ufo_path = os.path.join(os.path.dirname(path), basename)
         source.filename = basename
         source.path = ufo_path
-        source.font.save(ufo_path, formatVersion=3)
+        _save_overwrite_ufo(source.font, ufo_path)
+
     designspace.write(path)
 
 
@@ -191,20 +212,20 @@ def deboolize(lib):
         lib[key] = deboolized(value)
 
 
-def normalize_ufo_lib(path):
+def normalize_ufo_lib(path, ufo_module):
     """Go through each `lib` element recursively and transform `bools` into
     `int` because that's what's going to happen on round-trip with Glyphs.
     """
-    font = defcon.Font(path)
+    font = util.open_ufo(path, ufo_module.Font)
     deboolize(font.lib)
     for layer in font.layers:
         deboolize(layer.lib)
         for glyph in layer:
             deboolize(glyph.lib)
-    font.save()
+    _save_overwrite_ufo(font, path)
 
 
-class AssertDesignspaceRoundtrip:
+class AssertDesignspaceRoundtrip(ParametrizedUfoModuleTestMixin):
     """Check UFOs + designspace -> .glyphs -> UFOs + designspace"""
 
     def assertDesignspacesEqual(self, expected, actual, message=""):
@@ -250,15 +271,17 @@ class AssertDesignspaceRoundtrip:
 
     def assertDesignspaceRoundtrip(self, designspace):
         directory = tempfile.mkdtemp()
-        font = to_glyphs(designspace, minimize_ufo_diffs=True)
+        font = to_glyphs(
+            designspace, minimize_ufo_diffs=True, ufo_module=self.ufo_module
+        )
 
         # Check that round-tripping in memory is the same as writing on disk
-        roundtrip_in_mem = to_designspace(font, propagate_anchors=False)
+        roundtrip_in_mem = self.to_designspace(font, propagate_anchors=False)
 
         tmpfont_path = os.path.join(directory, "font.glyphs")
         font.save(tmpfont_path)
         font_rt = classes.GSFont(tmpfont_path)
-        roundtrip = to_designspace(font_rt, propagate_anchors=False)
+        roundtrip = self.to_designspace(font_rt, propagate_anchors=False)
 
         font.save("intermediary.glyphs")
 

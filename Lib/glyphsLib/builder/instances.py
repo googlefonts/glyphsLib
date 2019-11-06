@@ -30,8 +30,6 @@ from .axes import (
 )
 from .custom_params import to_ufo_custom_params
 
-import defcon
-
 EXPORT_KEY = GLYPHS_PREFIX + "export"
 WIDTH_KEY = GLYPHS_PREFIX + "width"
 WEIGHT_KEY = GLYPHS_PREFIX + "weight"
@@ -329,7 +327,7 @@ def set_width_class(ufo, designspace, instance):
     _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
-def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
+def apply_instance_data(designspace, include_filenames=None, Font=None):
     """Open UFO instances referenced by designspace, apply Glyphs instance
     data if present, re-save UFOs and return updated UFO Font objects.
 
@@ -339,12 +337,18 @@ def apply_instance_data(designspace, include_filenames=None, Font=defcon.Font):
         include_filenames: optional set of instance filenames (relative to
             the designspace path) to be included. By default all instaces are
             processed.
-        Font: the class used to load the UFO (default: defcon.Font).
+        Font: a callable(path: str) -> Font, used to load a UFO, such as
+            defcon.Font class (default: ufoLib2.Font.open).
     Returns:
         List of opened and updated instance UFOs.
     """
     from fontTools.designspaceLib import DesignSpaceDocument
     from os.path import normcase, normpath
+
+    if Font is None:
+        import ufoLib2
+
+        Font = ufoLib2.Font.open
 
     if hasattr(designspace, "__fspath__"):
         designspace = designspace.__fspath__()

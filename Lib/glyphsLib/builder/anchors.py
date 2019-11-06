@@ -72,7 +72,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
     # we sort propagated anchors to append in a deterministic order
     for name, (x, y) in sorted(to_add.items()):
         anchor_dict = {"name": name, "x": x, "y": y}
-        parent.appendAnchor(glyph.anchorClass(anchorDict=anchor_dict))
+        parent.appendAnchor(anchor_dict)
 
 
 def _get_anchor_data(anchor_data, ufo, components, anchor_name):

@@ -20,8 +20,6 @@ import os
 import re
 from textwrap import dedent
 
-import defcon
-
 from fontTools import designspaceLib
 
 from glyphsLib import classes, util
@@ -59,7 +57,7 @@ class UFOBuilder(_LoggerMixin):
     def __init__(
         self,
         font,
-        ufo_module=defcon,
+        ufo_module=None,
         designspace_module=designspaceLib,
         family_name=None,
         instance_dir=None,
@@ -75,8 +73,8 @@ class UFOBuilder(_LoggerMixin):
         Keyword arguments:
         font -- The GSFont object to transform into UFOs
         ufo_module -- A Python module to use to build UFO objects (you can pass
-                      a custom module that has the same classes as the official
-                      defcon to get instances of your own classes)
+                      a custom module that has the same classes as ufoLib2 or
+                      defcon to get instances of your own classes). Default: ufoLib2
         designspace_module -- A Python module to use to build a Designspace
                               Document. Default is fontTools.designspaceLib.
         family_name -- if provided, the master UFOs will be given this name and
@@ -99,7 +97,12 @@ class UFOBuilder(_LoggerMixin):
                                          "com.schriftgestaltung.Glyphs.Export".
         """
         self.font = font
+
+        if ufo_module is None:
+            import ufoLib2 as ufo_module
+
         self.ufo_module = ufo_module
+
         self.designspace_module = designspace_module
         self.instance_dir = instance_dir
         self.propagate_anchors = propagate_anchors
@@ -443,11 +446,11 @@ class UFOBuilder(_LoggerMixin):
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             for (location, reverse), layers in glyph_bracket_layers.items():
                 for layer in layers:
-                    ufo_font = self._sources[
+                    ufo_layer = self._sources[
                         layer.associatedMasterId or layer.layerId
                     ].font.layers.defaultLayer
                     ufo_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
-                    ufo_glyph = ufo_font.newGlyph(ufo_glyph_name)
+                    ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                     self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                     ufo_glyph.unicodes = []  # Avoid cmap interference
                     # implicit bracket layers have no distinct name, they are simply
@@ -534,6 +537,7 @@ class GlyphsBuilder(_LoggerMixin):
         ufos=None,
         designspace=None,
         glyphs_module=classes,
+        ufo_module=None,
         minimize_ufo_diffs=False,
     ):
         """Create a builder that goes from UFOs + designspace to Glyphs.
@@ -557,6 +561,9 @@ class GlyphsBuilder(_LoggerMixin):
                          instances of your own classes, or pass the Glyphs.app
                          module that holds the official classes to import UFOs
                          into Glyphs.app)
+        ufo_module -- A Python module to use to load UFO objects from DS source paths.
+                      You can pass a custom module that has the same classes as ufoLib2
+                      or defcon to get instances of your own classes (default: ufoLib2)
         minimize_ufo_diffs -- set to True to store extra info in .glyphs files
                               in order to get smaller diffs between UFOs
                               when going UFOs->glyphs->UFOs
@@ -567,7 +574,10 @@ class GlyphsBuilder(_LoggerMixin):
         if designspace is not None:
             if ufos:
                 raise NotImplementedError
-            self.designspace = self._valid_designspace(designspace)
+            if ufo_module is None:
+                import ufoLib2 as ufo_module
+
+            self.designspace = self._valid_designspace(designspace, ufo_module)
         elif ufos:
             self.designspace = self._fake_designspace(ufos)
         else:
@@ -678,7 +688,7 @@ class GlyphsBuilder(_LoggerMixin):
 
         return self._font
 
-    def _valid_designspace(self, designspace):
+    def _valid_designspace(self, designspace, ufo_module):
         """Make sure that the user-provided designspace has loaded fonts and
         that names are the same as those from the UFOs.
         """
@@ -690,11 +700,11 @@ class GlyphsBuilder(_LoggerMixin):
             if not hasattr(source, "font") or source.font is None:
                 if source.path:
                     # FIXME: (jany) consider not changing the caller's objects
-                    source.font = defcon.Font(source.path)
+                    source.font = util.open_ufo(source.path, ufo_module.Font)
                 else:
                     dirname = os.path.dirname(designspace.path)
                     ufo_path = os.path.join(dirname, source.filename)
-                    source.font = defcon.Font(ufo_path)
+                    source.font = util.open_ufo(ufo_path, ufo_module.Font)
             if source.location is None:
                 source.location = {}
             for name in ("familyName", "styleName"):
@@ -741,7 +751,7 @@ class GlyphsBuilder(_LoggerMixin):
                 if user_loc is not None:
                     design_loc = class_to_value(axis_def.tag, user_loc)
                     mapping.append((user_loc, design_loc))
-                    ufo_to_location[ufo][axis_def.name] = design_loc
+                    ufo_to_location[id(ufo)][axis_def.name] = design_loc
 
             mapping = sorted(set(mapping))
             if len(mapping) > 1:
@@ -760,7 +770,7 @@ class GlyphsBuilder(_LoggerMixin):
             source.styleName = ufo.info.styleName
             # source.name = '%s %s' % (source.familyName, source.styleName)
             source.path = ufo.path
-            source.location = ufo_to_location[ufo]
+            source.location = ufo_to_location[id(ufo)]
             designspace.addSource(source)
 
         # UFO-level skip list lib keys are usually ignored, except when we don't have a

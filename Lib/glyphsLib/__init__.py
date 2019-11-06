@@ -48,7 +48,11 @@ Masters = collections.namedtuple("Masters", ["ufos", "designspace_path"])
 
 
 def load_to_ufos(
-    file_or_path, include_instances=False, family_name=None, propagate_anchors=True
+    file_or_path,
+    include_instances=False,
+    family_name=None,
+    propagate_anchors=True,
+    ufo_module=None,
 ):
     """Load an unpacked .glyphs object to UFO objects."""
 
@@ -63,6 +67,7 @@ def load_to_ufos(
         include_instances=include_instances,
         family_name=family_name,
         propagate_anchors=propagate_anchors,
+        ufo_module=ufo_module,
     )
 
 
@@ -79,6 +84,7 @@ def build_masters(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    ufo_module=None,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
@@ -114,6 +120,7 @@ def build_masters(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        ufo_module=ufo_module,
     )
 
     # Only write full masters to disk. This assumes that layer sources are always part

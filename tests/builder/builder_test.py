@@ -22,7 +22,8 @@ import os
 import shutil
 
 import glyphsLib
-from defcon import Font
+import defcon
+import ufoLib2
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import (
@@ -37,7 +38,7 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import Point
 
-from glyphsLib.builder import to_ufos, to_glyphs, to_designspace
+from glyphsLib.builder import to_glyphs
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
 from glyphsLib.builder.paths import to_ufo_paths
 from glyphsLib.builder.names import build_stylemap_names
@@ -55,6 +56,7 @@ from ..classes_test import (
     add_anchor,
     add_component,
 )
+from ..test_helpers import ParametrizedUfoModuleTestMixin
 
 
 class BuildStyleMapNamesTest(unittest.TestCase):
@@ -337,14 +339,14 @@ class ParseGlyphsFilterTest(unittest.TestCase):
         self.assertEqual(result, expected)
 
 
-class ToUfosTest(unittest.TestCase):
+class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
     def test_minimal_data(self):
         """Test the minimal data that must be provided to generate UFOs, and in
         some cases that additional redundant data is not set."""
 
         font = generate_minimal_font()
         family_name = font.familyName
-        ufos = to_ufos(font)
+        ufos = self.to_ufos(font)
         self.assertEqual(len(ufos), 1)
 
         ufo = ufos[0]
@@ -363,7 +365,7 @@ class ToUfosTest(unittest.TestCase):
         font = generate_minimal_font()
         font.appVersion = "0"
         with CapturingLogHandler(builder.logger, "WARNING") as captor:
-            to_ufos(font)
+            self.to_ufos(font)
         self.assertEqual(
             len([r for r in captor.records if "outdated version" in r.msg]), 1
         )
@@ -396,7 +398,7 @@ class ToUfosTest(unittest.TestCase):
             )
         }
 
-        ufos = to_ufos(font)
+        ufos = self.to_ufos(font)
         ufo = ufos[0]
 
         self.assertEqual(ufo.kerning["public.kern1.A", "public.kern2.V"], -250)
@@ -424,7 +426,7 @@ class ToUfosTest(unittest.TestCase):
             for n, x, y in component_data:
                 add_component(font, name, n, (1, 0, 0, 1, x, y))
 
-        ufos = to_ufos(font)
+        ufos = self.to_ufos(font)
         ufo = ufos[0]
 
         glyph = ufo["dadDotbelow"]
@@ -465,12 +467,12 @@ class ToUfosTest(unittest.TestCase):
                 add_component(font, name, n, (1, 0, 0, 1, x, y))
 
         # We just want the call to `to_ufos` to not crash
-        assert to_ufos(font)
+        assert self.to_ufos(font)
 
     def test_postscript_name_from_data(self):
         font = generate_minimal_font()
         add_glyph(font, "foo")["production"] = "f_o_o.alt1"
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         postscriptNames = ufo.lib.get("public.postscriptNames")
         self.assertEqual(postscriptNames, {"foo": "f_o_o.alt1"})
 
@@ -482,7 +484,7 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "foobar")
         # in GlyphData with a 'production' name
         add_glyph(font, "C-fraktur")
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         postscriptNames = ufo.lib.get("public.postscriptNames")
         self.assertEqual(postscriptNames, {"C-fraktur": "uni212D"})
 
@@ -490,7 +492,7 @@ class ToUfosTest(unittest.TestCase):
         font = generate_minimal_font()
         add_glyph(font, "foo")["category"] = "Mark"
         add_glyph(font, "bar")
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         category_key = GLYPHLIB_PREFIX + "category"
         self.assertEqual(ufo["foo"].lib.get(category_key), "Mark")
         self.assertFalse(category_key in ufo["bar"].lib)
@@ -499,7 +501,7 @@ class ToUfosTest(unittest.TestCase):
         font = generate_minimal_font()
         add_glyph(font, "foo")["subCategory"] = "Nonspacing"
         add_glyph(font, "bar")
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         subCategory_key = GLYPHLIB_PREFIX + "subCategory"
         self.assertEqual(ufo["foo"].lib.get(subCategory_key), "Nonspacing")
         self.assertFalse(subCategory_key in ufo["bar"].lib)
@@ -519,7 +521,7 @@ class ToUfosTest(unittest.TestCase):
         bar.subCategory = "Nonspacing"
         bar.layers[0].width = 0
 
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         originalWidth_key = GLYPHLIB_PREFIX + "originalWidth"
         self.assertEqual(ufo["dieresiscomb"].width, 0)
@@ -549,7 +551,7 @@ class ToUfosTest(unittest.TestCase):
         add_anchor(font, "t_e_s_t.alt", "caret_1", 200, 0)
         add_anchor(font, "t_e_s_t.alt", "caret_2", 400, 0)
         add_anchor(font, "t_e_s_t.alt", "caret_3", 600, 0)
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(
             ufo.features.text.splitlines(),
             [
@@ -570,30 +572,30 @@ class ToUfosTest(unittest.TestCase):
         font = generate_minimal_font()
         add_glyph(font, "A.alt")
         add_anchor(font, "A.alt", "top", 400, 1000)
-        self.assertIn("[A.alt], # Base", to_ufos(font)[0].features.text)
+        self.assertIn("[A.alt], # Base", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_base_with_nonattaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "A.alt")
         add_anchor(font, "A.alt", "_top", 400, 1000)
-        self.assertEqual("", to_ufos(font)[0].features.text)
+        self.assertEqual("", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_ligature_with_attaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "fi")
         add_anchor(font, "fi", "top", 400, 1000)
-        self.assertIn("[fi], # Liga", to_ufos(font)[0].features.text)
+        self.assertIn("[fi], # Liga", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_ligature_with_nonattaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "fi")
         add_anchor(font, "fi", "_top", 400, 1000)
-        self.assertEqual("", to_ufos(font)[0].features.text)
+        self.assertEqual("", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_mark(self):
         font = generate_minimal_font()
         add_glyph(font, "eeMatra-gurmukhi")
-        self.assertIn("[eeMatra-gurmukhi], # Mark", to_ufos(font)[0].features.text)
+        self.assertIn("[eeMatra-gurmukhi], # Mark", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_fractional_caret_position(self):
         # Some Glyphs sources happen to contain fractional caret positions.
@@ -602,7 +604,7 @@ class ToUfosTest(unittest.TestCase):
         font = generate_minimal_font()
         add_glyph(font, "fi")
         add_anchor(font, "fi", "caret_1", 499.9876, 0)
-        self.assertIn("LigatureCaretByPos fi 500;", to_ufos(font)[0].features.text)
+        self.assertIn("LigatureCaretByPos fi 500;", self.to_ufos(font)[0].features.text)
 
     def test_GDEF_custom_category_subCategory(self):
         font = generate_minimal_font()
@@ -612,7 +614,7 @@ class ToUfosTest(unittest.TestCase):
         bar["category"], bar["subCategory"] = "Mark", "Nonspacing"
         baz = add_glyph(font, "baz")
         baz["category"], baz["subCategory"] = "Mark", "Spacing Combining"
-        features = to_ufos(font)[0].features.text
+        features = self.to_ufos(font)[0].features.text
         self.assertIn("[foo], # Liga", features)
         self.assertIn("[bar baz], # Mark", features)
 
@@ -631,7 +633,7 @@ class ToUfosTest(unittest.TestCase):
 
         font = generate_minimal_font()
         font.masters[0].alignmentZones = data_in
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
@@ -639,7 +641,7 @@ class ToUfosTest(unittest.TestCase):
     def test_missing_date(self):
         font = generate_minimal_font()
         font.date = None
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertIsNone(ufo.info.openTypeHeadCreated)
 
     def test_variation_font_origin(self):
@@ -648,7 +650,7 @@ class ToUfosTest(unittest.TestCase):
         value = "Light"
         font.customParameters[name] = value
 
-        ufos, instances = to_ufos(font, include_instances=True)
+        ufos, instances = self.to_ufos(font, include_instances=True)
 
         key = FONT_CUSTOM_PARAM_PREFIX + name
         for ufo in ufos:
@@ -669,7 +671,7 @@ class ToUfosTest(unittest.TestCase):
         font.instances = [generate_instance_from_dict(i) for i in instances_list]
 
         # 'family_name' defaults to None
-        ufos, instance_data = to_ufos(font, include_instances=True)
+        ufos, instance_data = self.to_ufos(font, include_instances=True)
         instances = instance_data["data"]
 
         # all instances are included, both with/without 'familyName' parameter
@@ -696,7 +698,7 @@ class ToUfosTest(unittest.TestCase):
         font.instances = [generate_instance_from_dict(i) for i in instances_list]
         # 'MyFont' is the source family name, as returned from
         # 'generate_minimal_data'
-        ufos, instance_data = to_ufos(
+        ufos, instance_data = self.to_ufos(
             font, include_instances=True, family_name="MyFont"
         )
         instances = instance_data["data"]
@@ -721,7 +723,7 @@ class ToUfosTest(unittest.TestCase):
             },
         ]
         font.instances = [generate_instance_from_dict(i) for i in instances_list]
-        ufos, instance_data = to_ufos(
+        ufos, instance_data = self.to_ufos(
             font, include_instances=True, family_name="CustomFamily"
         )
         instances = instance_data["data"]
@@ -738,41 +740,41 @@ class ToUfosTest(unittest.TestCase):
 
     def test_lib_no_weight(self):
         font = generate_minimal_font()
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + "weight"], "Regular")
 
     def test_lib_weight(self):
         font = generate_minimal_font()
         font.masters[0].weight = "Bold"
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + "weight"], "Bold")
 
     def test_lib_no_width(self):
         font = generate_minimal_font()
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + "width"], "Regular")
 
     def test_lib_width(self):
         font = generate_minimal_font()
         font.masters[0].width = "Condensed"
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + "width"], "Condensed")
 
     def test_lib_no_custom(self):
         font = generate_minimal_font()
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertFalse(GLYPHS_PREFIX + "customName" in ufo.lib)
 
     def test_lib_custom(self):
         font = generate_minimal_font()
         font.masters[0].customName = "FooBar"
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo.lib[GLYPHS_PREFIX + "customName"], "FooBar")
 
     def test_coerce_to_bool(self):
         font = generate_minimal_font()
         font.customParameters["Disable Last Change"] = "Truthy"
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(True, ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"])
 
     def _run_guideline_test(self, data_in, expected):
@@ -791,8 +793,8 @@ class ToUfosTest(unittest.TestCase):
             guide.angle = guide_data["angle"]
             layer.guides.append(guide)
         glyph.layers.append(layer)
-        ufo = to_ufos(font)[0]
-        self.assertEqual(ufo["a"].guidelines, expected)
+        ufo = self.to_ufos(font)[0]
+        self.assertEqual([dict(g) for g in ufo["a"].guidelines], expected)
 
     def test_set_guidelines(self):
         """Test that guidelines are set correctly."""
@@ -824,7 +826,7 @@ class ToUfosTest(unittest.TestCase):
         sublayer.width = 0
         sublayer.name = "SubLayer"
         glyph.layers.append(sublayer)
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual([l.name for l in ufo.layers], ["public.default", "SubLayer"])
 
     def test_glyph_lib_Export(self):
@@ -832,8 +834,8 @@ class ToUfosTest(unittest.TestCase):
         glyph = add_glyph(font, "a")
         self.assertEqual(glyph.export, True)
 
-        ufo = to_ufos(font)[0]
-        ds = to_designspace(font)
+        ufo = self.to_ufos(font)[0]
+        ds = self.to_designspace(font)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
         self.assertNotIn("public.skipExportGlyphs", ufo.lib)
@@ -845,8 +847,8 @@ class ToUfosTest(unittest.TestCase):
         font2.glyphs["a"].export = False
 
         # Test write_skipexportglyphs=True
-        ufo = to_ufos(font2, write_skipexportglyphs=True)[0]
-        ds = to_designspace(font2, write_skipexportglyphs=True)
+        ufo = self.to_ufos(font2, write_skipexportglyphs=True)[0]
+        ds = self.to_designspace(font2, write_skipexportglyphs=True)
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo["a"].lib)
         self.assertEqual(ufo.lib["public.skipExportGlyphs"], ["a"])
@@ -856,8 +858,8 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(font3.glyphs["a"].export, False)
 
         # Test write_skipexportglyphs=False
-        ufo = to_ufos(font2, write_skipexportglyphs=False)[0]
-        ds = to_designspace(font2, write_skipexportglyphs=False)
+        ufo = self.to_ufos(font2, write_skipexportglyphs=False)[0]
+        ds = self.to_designspace(font2, write_skipexportglyphs=False)
 
         self.assertFalse(ufo["a"].lib[GLYPHLIB_PREFIX + "Export"])
         self.assertNotIn("public.skipExportGlyphs", ufo.lib)
@@ -872,7 +874,7 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "b")
         add_glyph(font, "c")
         add_glyph(font, "d")
-        ds = to_designspace(font, write_skipexportglyphs=True)
+        ds = self.to_designspace(font, write_skipexportglyphs=True)
         ufo = ds.sources[0].font
 
         ufo["a"].lib[GLYPHLIB_PREFIX + "Export"] = False
@@ -881,7 +883,7 @@ class ToUfosTest(unittest.TestCase):
 
         font2 = to_glyphs(ds)
 
-        ds2 = to_designspace(font2, write_skipexportglyphs=True)
+        ds2 = self.to_designspace(font2, write_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
 
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo2["a"].lib)
@@ -897,7 +899,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(font3.glyphs["c"].export, False)
         self.assertEqual(font3.glyphs["d"].export, True)
 
-        ufos3 = to_ufos(font3, write_skipexportglyphs=True)
+        ufos3 = self.to_ufos(font3, write_skipexportglyphs=True)
         ufo3 = ufos3[0]
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["a"].lib)
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["b"].lib)
@@ -911,7 +913,7 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "b")
         add_glyph(font, "c")
         add_glyph(font, "d")
-        ds = to_designspace(font, write_skipexportglyphs=False)
+        ds = self.to_designspace(font, write_skipexportglyphs=False)
         ufo = ds.sources[0].font
 
         ufo["a"].lib[GLYPHLIB_PREFIX + "Export"] = False
@@ -920,7 +922,7 @@ class ToUfosTest(unittest.TestCase):
 
         font2 = to_glyphs(ds)
 
-        ds2 = to_designspace(font2, write_skipexportglyphs=False)
+        ds2 = self.to_designspace(font2, write_skipexportglyphs=False)
         ufo2 = ds2.sources[0].font
 
         self.assertFalse(ufo2["a"].lib[GLYPHLIB_PREFIX + "Export"])
@@ -936,7 +938,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(font3.glyphs["c"].export, False)
         self.assertEqual(font3.glyphs["d"].export, True)
 
-        ufos3 = to_ufos(font3, write_skipexportglyphs=False)
+        ufos3 = self.to_ufos(font3, write_skipexportglyphs=False)
         ufo3 = ufos3[0]
         self.assertFalse(ufo3["a"].lib[GLYPHLIB_PREFIX + "Export"])
         self.assertNotIn(GLYPHLIB_PREFIX + "Export", ufo3["b"].lib)
@@ -956,14 +958,14 @@ class ToUfosTest(unittest.TestCase):
         add_glyph(font, "d")
         add_anchor(font, "d", "top", 100, 100)
 
-        ds = to_designspace(font, write_skipexportglyphs=True)
+        ds = self.to_designspace(font, write_skipexportglyphs=True)
         ufo = ds.sources[0].font
         self.assertIn(
             "GlyphClassDef[d]", ufo.features.text.replace("\n", "").replace(" ", "")
         )
 
         font.glyphs["d"].export = False
-        ds2 = to_designspace(font, write_skipexportglyphs=True)
+        ds2 = self.to_designspace(font, write_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
         self.assertEqual(ufo2.features.text, "")
 
@@ -978,12 +980,12 @@ class ToUfosTest(unittest.TestCase):
         font.masters.append(master)
         add_glyph(font, "a")
         add_glyph(font, "b")
-        ds = to_designspace(font, write_skipexportglyphs=True)
+        ds = self.to_designspace(font, write_skipexportglyphs=True)
 
         ufos = [source.font for source in ds.sources]
 
         font2 = to_glyphs(ufos)
-        ds2 = to_designspace(font2, write_skipexportglyphs=True)
+        ds2 = self.to_designspace(font2, write_skipexportglyphs=True)
         self.assertNotIn("public.skipExportGlyphs", ds2.lib)
 
         ufos[0].lib["public.skipExportGlyphs"] = ["a"]
@@ -1003,7 +1005,7 @@ class ToUfosTest(unittest.TestCase):
         glyph.rightMetricsKey = "z"
         assert glyph.widthMetricsKey is None
 
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.leftMetricsKey"], "y")
         self.assertEqual(ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.rightMetricsKey"], "z")
@@ -1023,7 +1025,7 @@ class ToUfosTest(unittest.TestCase):
         self.assertEqual(comp1.locked, False)
         self.assertEqual(comp1.smartComponentValues, {})
 
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         # all components have deault values, no lib key is written
         self.assertNotIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
@@ -1033,7 +1035,7 @@ class ToUfosTest(unittest.TestCase):
         comp2.alignment = -1
         comp1.locked = True
         comp1.smartComponentValues["height"] = 0
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         # if any component has a non-default alignment/locked values, write
         # list of values for all of them
@@ -1060,7 +1062,7 @@ class ToUfosTest(unittest.TestCase):
         assert master.name == "Thin"
         assert master.weight == "Light"
 
-        ufo, = to_ufos(font)
+        ufo, = self.to_ufos(font)
         font_rt = to_glyphs([ufo])
         master_rt = font_rt.masters[0]
 
@@ -1082,20 +1084,20 @@ class ToUfosTest(unittest.TestCase):
 
     def test_italic_angle(self):
         font = generate_minimal_font()
-        ufo, = to_ufos(font)
+        ufo, = self.to_ufos(font)
 
         ufo.info.italicAngle = 1
-        ufo_rt, = to_ufos(to_glyphs([ufo]))
+        ufo_rt, = self.to_ufos(to_glyphs([ufo]))
         assert ufo_rt.info.italicAngle == 1
 
         ufo.info.italicAngle = 1.5
-        ufo_rt, = to_ufos(to_glyphs([ufo]))
+        ufo_rt, = self.to_ufos(to_glyphs([ufo]))
         assert ufo_rt.info.italicAngle == 1.5
 
         ufo.info.italicAngle = 0
         font_rt = to_glyphs([ufo])
         assert font_rt.masters[0].italicAngle == 0
-        ufo_rt, = to_ufos(font_rt)
+        ufo_rt, = self.to_ufos(font_rt)
         assert ufo_rt.info.italicAngle == 0
 
     def test_unique_masterid(self):
@@ -1106,7 +1108,7 @@ class ToUfosTest(unittest.TestCase):
         master2.descender = 0
         master2.xHeight = 0
         font.masters.append(master2)
-        ufos = to_ufos(font, minimize_glyphs_diffs=True)
+        ufos = self.to_ufos(font, minimize_glyphs_diffs=True)
 
         try:
             to_glyphs(ufos)
@@ -1119,6 +1121,14 @@ class ToUfosTest(unittest.TestCase):
 
         font_rt = to_glyphs(ufos)
         assert len({m.id for m in font_rt.masters}) == 2
+
+
+class ToUfosTestUfoLib2(ToUfosTestBase, unittest.TestCase):
+    ufo_module = ufoLib2
+
+
+class ToUfosTestDefcon(ToUfosTestBase, unittest.TestCase):
+    ufo_module = defcon
 
 
 class _PointDataPen:
@@ -1238,7 +1248,7 @@ class DrawPathsTest(unittest.TestCase):
         self.assertEqual(first_segment_type, "qcurve")
 
 
-class GlyphPropertiesTest(unittest.TestCase):
+class GlyphPropertiesTestBase(ParametrizedUfoModuleTestMixin):
     def test_glyph_color(self):
         font = generate_minimal_font()
         glyph = GSGlyph(name="a")
@@ -1265,7 +1275,7 @@ class GlyphPropertiesTest(unittest.TestCase):
         glyph2.layers.append(layer2)
         glyph3.layers.append(layer3)
         glyph4.layers.append(layer4)
-        ufo = to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
         self.assertEqual(ufo["a"].lib.get("public.markColor"), "0.957,0,0.541,0.004")
         self.assertEqual(ufo["b"].lib.get("public.markColor"), "0.97,1,0,1")
         self.assertEqual(ufo["c"].lib.get("public.markColor"), None)
@@ -1286,7 +1296,7 @@ class GlyphPropertiesTest(unittest.TestCase):
             font.glyphs["circumflexcomb_tildecomb"].layers[0].components[1].anchor
         )
 
-        ds = to_designspace(font)
+        ds = self.to_designspace(font)
         ufo = ds.sources[0].font
         self.assertEqual(
             ufo["circumflexcomb_acutecomb"].lib[GLYPHLIB_PREFIX + "ComponentInfo"],
@@ -1314,7 +1324,15 @@ class GlyphPropertiesTest(unittest.TestCase):
         )
 
 
-class SkipDanglingAndNamelessLayers(unittest.TestCase):
+class GlyphPropertiesTestUfoLib2(GlyphPropertiesTestBase, unittest.TestCase):
+    ufo_module = ufoLib2
+
+
+class GlyphPropertiesTestDefcon(GlyphPropertiesTestBase, unittest.TestCase):
+    ufo_module = ufoLib2
+
+
+class SkipDanglingAndNamelessLayersTestBase(ParametrizedUfoModuleTestMixin):
     def setUp(self):
         self.font = generate_minimal_font()
         add_glyph(self.font, "a")
@@ -1322,7 +1340,7 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
 
     def test_normal_layer(self):
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font)
+            self.to_ufos(self.font)
 
         # no warnings are emitted
         self.assertRaises(
@@ -1334,13 +1352,13 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font, minimize_glyphs_diffs=True)
+            self.to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("layer without a name")
 
         # no warning if minimize_glyphs_diff=False
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font, minimize_glyphs_diffs=False)
+            self.to_ufos(self.font, minimize_glyphs_diffs=False)
 
         self.assertFalse(captor.records)
 
@@ -1349,12 +1367,24 @@ class SkipDanglingAndNamelessLayers(unittest.TestCase):
         self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
 
         with CapturingLogHandler(self.logger, level="WARNING") as captor:
-            to_ufos(self.font, minimize_glyphs_diffs=True)
+            self.to_ufos(self.font, minimize_glyphs_diffs=True)
 
         captor.assertRegex("is dangling and will be skipped")
 
 
-class GlyphOrderTest(unittest.TestCase):
+class SkipDanglingAndNamelessLayersTestUfoLib2(
+    SkipDanglingAndNamelessLayersTestBase, unittest.TestCase
+):
+    ufo_module = ufoLib2
+
+
+class SkipDanglingAndNamelessLayersTestDefcon(
+    SkipDanglingAndNamelessLayersTestBase, unittest.TestCase
+):
+    ufo_module = defcon
+
+
+class GlyphOrderTestBase(object):
     """Check that the glyphOrder data is persisted correctly in all directions.
 
     Problem: Glyphs.app (tested 2.4.1 and 2.5.2) does not import and export a
@@ -1414,19 +1444,21 @@ class GlyphOrderTest(unittest.TestCase):
     that the resulting GSFont glyph order is ["c", "a", "f"].
     """
 
+    ufo_module = None  # subclasses must override this
+
     def setUp(self):
         self.font = GSFont()
         self.font.masters.append(GSFontMaster())
         self.font.glyphs.append(GSGlyph("a"))
         self.font.glyphs.append(GSGlyph("c"))
         self.font.glyphs.append(GSGlyph("f"))
-        self.ufo = Font()
+        self.ufo = self.ufo_module.Font()
         self.ufo.newGlyph("a")
         self.ufo.newGlyph("c")
         self.ufo.newGlyph("f")
 
     def from_glyphs(self):
-        builder = UFOBuilder(self.font)
+        builder = UFOBuilder(self.font, ufo_module=self.ufo_module)
         return next(iter(builder.masters))
 
     def from_ufo(self):
@@ -1457,17 +1489,27 @@ class GlyphOrderTest(unittest.TestCase):
         self.assertEqual(["a", "c", "f"], [glyph.name for glyph in font.glyphs])
 
     def test_ufo_to_glyphs_only_pgO(self):
+        self.ufo.lib["public.glyphOrder"] = ["a", "c", "f"]
         font = self.from_ufo()
         self.assertEqual(["a", "c", "f"], font.customParameters["glyphOrder"])
         self.assertEqual(["a", "c", "f"], [glyph.name for glyph in font.glyphs])
 
     def test_ufo_to_glyphs_no_pgO(self):
-        del self.ufo.lib["public.glyphOrder"]
+        if "public.glyphOrder" in self.ufo.lib:
+            del self.ufo.lib["public.glyphOrder"]
         font = self.from_ufo()
         self.assertNotIn("glyphOrder", font.customParameters)
         self.assertEqual(
             [glyph.name for glyph in self.ufo], [glyph.name for glyph in font.glyphs]
         )
+
+
+class GlyphOrderTestUfoLib2(GlyphOrderTestBase, unittest.TestCase):
+    ufo_module = ufoLib2
+
+
+class GlyphOrderTestDefcon(GlyphOrderTestBase, unittest.TestCase):
+    ufo_module = defcon
 
 
 if __name__ == "__main__":

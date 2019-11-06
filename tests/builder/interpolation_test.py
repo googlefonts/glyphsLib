@@ -27,6 +27,7 @@ from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
 from glyphsLib import to_designspace, to_glyphs
+import ufoLib2
 
 
 # Current limitation of glyphsLib for designspace to designspace round-trip:
@@ -399,9 +400,12 @@ WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
 WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
 
-class SetWeightWidthClassesTest(unittest.TestCase):
+class SetWeightWidthClassesTestBase(object):
+
+    ufo_module = None  # subclasses must override this
+
     def test_no_weight_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         # name here says "Bold", however no explicit weightClass
         # is assigned
         doc, instance = makeInstanceDescriptor("Bold")
@@ -410,14 +414,14 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
     def test_weight_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         doc, data = makeInstanceDescriptor("Bold", weight=("Bold", None, 150))
 
         set_weight_class(ufo, doc, data)
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_explicit_default_weight(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         doc, data = makeInstanceDescriptor("Regular", weight=("Regular", None, 100))
 
         set_weight_class(ufo, doc, data)
@@ -425,7 +429,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
     def test_no_width_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         # no explicit widthClass set, instance name doesn't matter
         doc, data = makeInstanceDescriptor("Normal")
         set_width_class(ufo, doc, data)
@@ -433,14 +437,14 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
 
     def test_width_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         doc, data = makeInstanceDescriptor("Condensed", width=("Condensed", 3, 80))
 
         set_width_class(ufo, doc, data)
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
 
     def test_explicit_default_width(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         doc, data = makeInstanceDescriptor("Regular", width=("Medium (normal)", 5, 100))
 
         set_width_class(ufo, doc, data)
@@ -448,7 +452,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 5)
 
     def test_weight_and_width_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         doc, data = makeInstanceDescriptor(
             "SemiCondensed ExtraBold",
             weight=("ExtraBold", None, 160),
@@ -462,7 +466,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 4)
 
     def test_unknown_ui_string_but_defined_weight_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         # "DemiLight" is not among the predefined weight classes listed in
         # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
         # Resources/weights.plist
@@ -480,7 +484,7 @@ class SetWeightWidthClassesTest(unittest.TestCase):
         self.assertTrue(ufo.info.openTypeOS2WeightClass == 350)
 
     def test_unknown_weight_class(self):
-        ufo = defcon.Font()
+        ufo = self.ufo_module.Font()
         # "DemiLight" is not among the predefined weight classes listed in
         # Glyphs.app/Contents/Frameworks/GlyphsCore.framework/Versions/A/
         # Resources/weights.plist
@@ -495,6 +499,16 @@ class SetWeightWidthClassesTest(unittest.TestCase):
 
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
+
+
+class SetWeightWidthClassesTestUfoLib2(
+    SetWeightWidthClassesTestBase, unittest.TestCase
+):
+    ufo_module = ufoLib2
+
+
+class SetWeightWidthClassesTestDefcon(SetWeightWidthClassesTestBase, unittest.TestCase):
+    ufo_module = defcon
 
 
 if __name__ == "__main__":
