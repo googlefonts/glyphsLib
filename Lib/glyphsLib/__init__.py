@@ -18,8 +18,6 @@ import collections
 import os
 import logging
 
-import ufoLib2
-
 from glyphsLib.classes import GSFont, __all__ as __all_classes__
 from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
@@ -54,7 +52,7 @@ def load_to_ufos(
     include_instances=False,
     family_name=None,
     propagate_anchors=True,
-    ufo_module=ufoLib2,
+    ufo_module=None,
 ):
     """Load an unpacked .glyphs object to UFO objects."""
 
@@ -86,7 +84,7 @@ def build_masters(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
-    ufo_module=ufoLib2,
+    ufo_module=None,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.

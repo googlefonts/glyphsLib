@@ -150,6 +150,16 @@ def main(args=None):
     parser_ufo2glyphs.add_argument(
         "--output-path", help="The path to write the Glyphs file to."
     )
+    parser_ufo2glyphs.add_argument(
+        "--ufo-module",
+        metavar="UFO_MODULE",
+        choices=("ufoLib2", "defcon"),
+        default="ufoLib2",
+        help=(
+            "Select the default library for reading UFOs. Choose between: %(choices)s "
+            "(default: %(default)s)"
+        ),
+    )
     group = parser_ufo2glyphs.add_argument_group(
         "Roundtripping between UFOs and Glyphs"
     )
@@ -221,7 +231,9 @@ def _glyphs2ufo_entry_point():
 def ufo2glyphs(options):
     """Convert one designspace file or one or more UFOs to a Glyphs.app source file."""
     import fontTools.designspaceLib
-    import ufoLib2
+    from glyphsLib.util import open_ufo
+
+    ufo_module = __import__(options.ufo_module)
 
     sources = options.designspace_file_or_UFOs
     designspace_file = None
@@ -235,7 +247,7 @@ def ufo2glyphs(options):
         designspace.read(designspace_file)
         object_to_read = designspace
     elif all(source.endswith(".ufo") and os.path.isdir(source) for source in sources):
-        ufos = [ufoLib2.Font.open(source) for source in sources]
+        ufos = [open_ufo(source, ufo_module.Font) for source in sources]
         ufos.sort(
             key=lambda ufo: [  # Order the masters by weight and width
                 ufo.info.openTypeOS2WeightClass or 400,
@@ -252,7 +264,9 @@ def ufo2glyphs(options):
         return 1
 
     font = glyphsLib.to_glyphs(
-        object_to_read, minimize_ufo_diffs=options.no_preserve_glyphsapp_metadata
+        object_to_read,
+        ufo_module=ufo_module,
+        minimize_ufo_diffs=options.no_preserve_glyphsapp_metadata,
     )
 
     # Make the Glyphs file more suitable for roundtrip:

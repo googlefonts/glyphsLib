@@ -15,7 +15,6 @@
 import logging
 
 from glyphsLib import classes
-import ufoLib2
 
 from .builders import UFOBuilder, GlyphsBuilder
 
@@ -27,7 +26,7 @@ def to_ufos(
     include_instances=False,
     family_name=None,
     propagate_anchors=True,
-    ufo_module=ufoLib2,
+    ufo_module=None,
     minimize_glyphs_diffs=False,
     generate_GDEF=True,
     store_editor_state=True,
@@ -69,7 +68,7 @@ def to_designspace(
     family_name=None,
     instance_dir=None,
     propagate_anchors=True,
-    ufo_module=ufoLib2,
+    ufo_module=None,
     minimize_glyphs_diffs=False,
     generate_GDEF=True,
     store_editor_state=True,
@@ -112,7 +111,12 @@ def to_designspace(
     return builder.designspace
 
 
-def to_glyphs(ufos_or_designspace, glyphs_module=classes, minimize_ufo_diffs=False):
+def to_glyphs(
+    ufos_or_designspace,
+    glyphs_module=classes,
+    ufo_module=None,
+    minimize_ufo_diffs=False,
+):
     """
     Take a list of UFOs or a single DesignspaceDocument with attached UFOs
     and converts it into a GSFont object.
@@ -128,12 +132,14 @@ def to_glyphs(ufos_or_designspace, glyphs_module=classes, minimize_ufo_diffs=Fal
         builder = GlyphsBuilder(
             designspace=ufos_or_designspace,
             glyphs_module=glyphs_module,
+            ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
         )
     else:
         builder = GlyphsBuilder(
             ufos=ufos_or_designspace,
             glyphs_module=glyphs_module,
+            ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
         )
     return builder.font
