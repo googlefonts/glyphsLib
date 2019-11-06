@@ -443,11 +443,11 @@ class UFOBuilder(_LoggerMixin):
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             for (location, reverse), layers in glyph_bracket_layers.items():
                 for layer in layers:
-                    ufo_font = self._sources[
+                    ufo_layer = self._sources[
                         layer.associatedMasterId or layer.layerId
                     ].font.layers.defaultLayer
                     ufo_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
-                    ufo_glyph = ufo_font.newGlyph(ufo_glyph_name)
+                    ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                     self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                     ufo_glyph.unicodes = []  # Avoid cmap interference
                     # implicit bracket layers have no distinct name, they are simply

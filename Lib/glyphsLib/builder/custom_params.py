@@ -348,10 +348,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeHeadFlags",
     "openTypeNameVersion",
     "openTypeNameUniqueID",
-    # TODO: (jany) look at
-    # https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
-    # Use Name Table Entry for the next param
-    "openTypeNameRecords",
     "openTypeOS2FamilyClass",
     "postscriptFontName",
     "postscriptFullName",
@@ -483,6 +479,24 @@ register(
         ufo_name="openTypeGaspRangeRecords",
         value_to_ufo=to_ufo_gasp_table,
         value_to_glyphs=to_glyphs_gasp_table,
+    )
+)
+
+# TODO: (jany) look at
+# https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
+# Use Name Table Entry for the next param
+
+
+def to_glyphs_opentype_name_records(value):
+    # In ufoLib2, font.info.openTypeNameRecords is a list of NameRecord objects,
+    # while in defcon it is a list of dicts; reduce both to dicts.
+    return [dict(r) for r in value]
+
+
+register(
+    ParamHandler(
+        glyphs_name="openTypeNameRecords",
+        value_to_glyphs=to_glyphs_opentype_name_records,
     )
 )
 

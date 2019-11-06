@@ -28,6 +28,8 @@ BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
+    ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
     note = glyph.note
@@ -49,7 +51,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
             and all(0 <= v < 256 for v in color_index)
         ):
             ufo_glyph.markColor = ",".join(
-                "{:.3f}".format(v / 255) for v in color_index
+                "0" if v == 0 else "1" if v == 255 else "{:.3f}".format(v / 255)
+                for v in color_index
             )
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]
@@ -74,9 +77,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     production_name = glyph.production or glyphinfo.production_name
     if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
-        if postscriptNamesKey not in ufo_glyph.font.lib:
-            ufo_glyph.font.lib[postscriptNamesKey] = dict()
-        ufo_glyph.font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
+        if postscriptNamesKey not in ufo_font.lib:
+            ufo_font.lib[postscriptNamesKey] = dict()
+        ufo_font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
     for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
         value = getattr(layer, key, None)
@@ -120,7 +123,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_glyph_background(ufo_glyph, layer)
     self.to_ufo_annotations(ufo_glyph, layer)
     self.to_ufo_hints(ufo_glyph, layer)
-    self.to_ufo_glyph_user_data(ufo_glyph.font, glyph)
+    self.to_ufo_glyph_user_data(ufo_font, glyph)
     self.to_ufo_layer_user_data(ufo_glyph, layer)
     self.to_ufo_smart_component_axes(ufo_glyph, glyph)
 
@@ -166,12 +169,10 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     if ufo_glyph.name in self.skip_export_glyphs:
         glyph.export = False
 
+    ufo_font = self._sources[master.id].font
     ps_names_key = PUBLIC_PREFIX + "postscriptNames"
-    if (
-        ps_names_key in ufo_glyph.font.lib
-        and ufo_glyph.name in ufo_glyph.font.lib[ps_names_key]
-    ):
-        glyph.production = ufo_glyph.font.lib[ps_names_key][ufo_glyph.name]
+    if ps_names_key in ufo_font.lib and ufo_glyph.name in ufo_font.lib[ps_names_key]:
+        glyph.production = ufo_font.lib[ps_names_key][ufo_glyph.name]
         # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
         #        maybe don't write in glyph.production if glyphinfo already
         #        has something
@@ -232,7 +233,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     self.to_glyphs_guidelines(ufo_glyph, layer)
     self.to_glyphs_annotations(ufo_glyph, layer)
     self.to_glyphs_hints(ufo_glyph, layer)
-    self.to_glyphs_glyph_user_data(ufo_glyph.font, glyph)
+    self.to_glyphs_glyph_user_data(ufo_font, glyph)
     self.to_glyphs_layer_user_data(ufo_glyph, layer)
     self.to_glyphs_smart_component_axes(ufo_glyph, glyph)
 
@@ -248,7 +249,7 @@ def to_ufo_glyph_background(self, glyph, layer):
         return
 
     background = layer.background
-    ufo_layer = self.to_ufo_background_layer(glyph)
+    ufo_layer = self.to_ufo_background_layer(layer)
     new_glyph = ufo_layer.newGlyph(glyph.name)
 
     width = background.userData[BACKGROUND_WIDTH_KEY]
@@ -273,4 +274,4 @@ def _to_glyphs_color(color):
     # Glyphs up to version 2.5.1 always set the alpha channel to 1. It should
     # round-trip the actual value in later versions.
     # https://github.com/googlefonts/glyphsLib/pull/363#issuecomment-390418497
-    return [round(component * 255) for component in tuple(color)]
+    return [round(float(component) * 255) for component in color.split(",")]

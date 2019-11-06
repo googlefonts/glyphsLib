@@ -33,8 +33,8 @@ def to_glyphs_blue_values(self, ufo, master):
     """Sets the GSFontMaster alignmentZones from the postscript blue values."""
 
     zones = []
-    blue_values = _pairs(ufo.info.postscriptBlueValues)
-    other_blues = _pairs(ufo.info.postscriptOtherBlues)
+    blue_values = _pairs(ufo.info.postscriptBlueValues or [])
+    other_blues = _pairs(ufo.info.postscriptOtherBlues or [])
     for y1, y2 in blue_values:
         size = y2 - y1
         if y2 == 0:
