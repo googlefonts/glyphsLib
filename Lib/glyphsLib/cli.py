@@ -58,6 +58,16 @@ def main(args=None):
             "file."
         ),
     )
+    parser_glyphs2ufo.add_argument(
+        "--ufo-module",
+        metavar="UFO_MODULE",
+        choices=("ufoLib2", "defcon"),
+        default="ufoLib2",
+        help=(
+            "Select the default library for writing UFOs. Choose between: %(choices)s "
+            "(default: %(default)s)"
+        ),
+    )
     group = parser_glyphs2ufo.add_argument_group(
         "Roundtripping between Glyphs and UFOs"
     )
@@ -197,6 +207,7 @@ def glyphs2ufo(options):
         generate_GDEF=options.generate_GDEF,
         store_editor_state=not options.no_store_editor_state,
         write_skipexportglyphs=options.write_public_skip_export_glyphs,
+        ufo_module=__import__(options.ufo_module),
     )
 
 
