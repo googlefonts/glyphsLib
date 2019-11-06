@@ -26,7 +26,7 @@ from io import StringIO
 from textwrap import dedent
 
 import glyphsLib
-from glyphsLib import classes
+from glyphsLib import classes, util
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder import to_glyphs, to_designspace, to_ufos
 from glyphsLib.writer import Writer
@@ -143,7 +143,7 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
         )
 
         # Check that round-tripping in memory is the same as writing on disk
-        roundtrip_in_mem = to_glyphs(designspace)
+        roundtrip_in_mem = to_glyphs(designspace, ufo_module=self.ufo_module)
         self._normalize(roundtrip_in_mem)
         actual_in_mem = write_to_lines(roundtrip_in_mem)
 
@@ -152,7 +152,7 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
         write_designspace_and_UFOs(designspace, path)
         designspace_roundtrip = DesignSpaceDocument()
         designspace_roundtrip.read(path)
-        roundtrip = to_glyphs(designspace_roundtrip)
+        roundtrip = to_glyphs(designspace_roundtrip, ufo_module=self.ufo_module)
         self._normalize(roundtrip)
         actual = write_to_lines(roundtrip)
 
@@ -216,10 +216,7 @@ def normalize_ufo_lib(path, ufo_module):
     """Go through each `lib` element recursively and transform `bools` into
     `int` because that's what's going to happen on round-trip with Glyphs.
     """
-    try:
-        font = ufo_module.Font.open(path)
-    except AttributeError:
-        font = ufo_module.Font(path)
+    font = util.open_ufo(path, ufo_module.Font)
     deboolize(font.lib)
     for layer in font.layers:
         deboolize(layer.lib)
@@ -274,7 +271,9 @@ class AssertDesignspaceRoundtrip(ParametrizedUfoModuleTestMixin):
 
     def assertDesignspaceRoundtrip(self, designspace):
         directory = tempfile.mkdtemp()
-        font = to_glyphs(designspace, minimize_ufo_diffs=True)
+        font = to_glyphs(
+            designspace, minimize_ufo_diffs=True, ufo_module=self.ufo_module
+        )
 
         # Check that round-tripping in memory is the same as writing on disk
         roundtrip_in_mem = self.to_designspace(font, propagate_anchors=False)

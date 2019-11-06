@@ -22,6 +22,7 @@ import pytest
 
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs
+from glyphsLib.util import open_ufo
 
 
 def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
@@ -211,10 +212,7 @@ def test_designspace_generation_on_disk(datadir, tmpdir, ufo_module):
     ufo_paths = list(tmpdir.visit(fil="*.ufo"))
     assert len(ufo_paths) == 4  # Source layers should not be written to disk.
     for ufo_path in ufo_paths:
-        try:
-            ufo = ufo_module.Font.open(ufo_path)
-        except AttributeError:
-            ufo = ufo_module.Font(str(ufo_path))
+        ufo = open_ufo(ufo_path, ufo_module.Font)
 
         # Check that all glyphs have contours (brace layers are in "b" only, writing
         # the brace layer to disk would result in empty other glyphs).

@@ -340,7 +340,7 @@ def test_designspace_source_locations(tmpdir, ufo_module):
     designspace = DesignSpaceDocument()
     designspace.read(designspace_path)
 
-    font = to_glyphs(designspace)
+    font = to_glyphs(designspace, ufo_module=ufo_module)
 
     assert len(font.masters) == 2
     assert font.masters[0].ascender == 30
@@ -368,7 +368,7 @@ def test_ufo_filename_is_kept_the_same(tmpdir, ufo_module):
     # First check: when going from UFOs -> Glyphs -> designspace
     font = to_glyphs([light, bold], minimize_ufo_diffs=True)
 
-    designspace = to_designspace(font)
+    designspace = to_designspace(font, ufo_module=ufo_module)
     assert designspace.sources[0].path == light_ufo_path
     assert designspace.sources[1].path == bold_ufo_path
 
@@ -515,7 +515,7 @@ def test_warn_diff_between_designspace_and_ufos(caplog, ufo_module):
         in caplog.text
     )
 
-    doc = to_designspace(font)
+    doc = to_designspace(font, ufo_module=ufo_module)
     source = doc.sources[0]
 
     # The UFO info will prevail

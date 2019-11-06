@@ -1458,7 +1458,7 @@ class GlyphOrderTestBase(object):
         self.ufo.newGlyph("f")
 
     def from_glyphs(self):
-        builder = UFOBuilder(self.font)
+        builder = UFOBuilder(self.font, ufo_module=self.ufo_module)
         return next(iter(builder.masters))
 
     def from_ufo(self):
