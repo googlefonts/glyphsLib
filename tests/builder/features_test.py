@@ -18,6 +18,7 @@ import os
 from textwrap import dedent
 
 from glyphsLib import to_glyphs, to_ufos, classes
+from glyphsLib.builder.features import _build_gdef
 
 import pytest
 
@@ -477,3 +478,15 @@ def test_roundtrip_empty_feature(ufo_module):
     feature_r = font_r.features[0]
     assert feature_r.name == "dlig"
     assert feature_r.code == ""
+
+
+def test_build_GDEF_incomplete_glyphOrder():
+    import ufoLib2
+
+    font = ufoLib2.Font()
+    font.lib["public.glyphOrder"] = ["b", "c"]
+    for name in ("d", "c", "b", "a"):
+        glyph = font.newGlyph(name)
+        glyph.appendAnchor({"name": "top", "x": 0, "y": 0})
+
+    assert "[b c a d], # Base" in _build_gdef(font)
