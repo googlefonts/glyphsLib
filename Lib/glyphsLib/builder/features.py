@@ -178,8 +178,14 @@ def _build_gdef(ufo, skipExportGlyphs=None):
     if not any((bases, ligatures, marks, carets)):
         return None
 
-    def fmt(g):
-        return ("[%s]" % " ".join(sorted(g, key=ufo.glyphOrder.index))) if g else ""
+    def sortkey(glyph_name):
+        try:
+            return ufo.glyphOrder.index(glyph_name), glyph_name
+        except ValueError:
+            return len(ufo.glyphOrder), glyph_name
+
+    def fmt(glyphs):
+        return ("[%s]" % " ".join(sorted(glyphs, key=sortkey))) if glyphs else ""
 
     lines = [
         "table GDEF {",
