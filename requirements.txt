@@ -6,7 +6,6 @@
 #
 appdirs==1.4.3            # via fs
 attrs==19.3.0             # via ufolib2
-defcon==0.6.0
 fonttools[ufo,unicode]==4.0.2
 fs==2.4.11                # via fonttools
 pytz==2019.3              # via fs

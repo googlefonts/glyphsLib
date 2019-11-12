@@ -1,5 +1,7 @@
 coverage
 pytest>=2.8
 pytest-randomly
-ufoNormalizer>=0.3.2
 xmldiff>=2.2
+# extras
+ufoNormalizer>=0.3.2
+defcon>=0.6.0
