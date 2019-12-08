@@ -15,7 +15,6 @@
 
 import re
 import datetime
-import math
 import copy
 import binascii
 
@@ -97,7 +96,7 @@ def Vector(dim):
 
         def plistValue(self):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
-            return '"{%s}"' % (", ".join(floatToString(v, 3) for v in self.value))
+            return '"{%s}"' % (", ".join(floatToString(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -202,7 +201,7 @@ class Rect(Vector(4)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString(v, 3) for v in self.value)
+        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString(v) for v in self.value)
 
     def __repr__(self):
         return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
@@ -247,7 +246,7 @@ class Transform(Vector(6)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{%s}"' % (", ".join(floatToString(v, 5) for v in self.value))
+        return '"{%s}"' % (", ".join(floatToString(v) for v in self.value))
 
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
@@ -350,37 +349,8 @@ def writeIntlist(val):
     return _mutate_list(str, val)
 
 
-def actualPrecition(Float):
-    ActualPrecition = 5
-    Integer = round(Float * 100000.0)
-    while ActualPrecition >= 0:
-        if Integer != round(Integer / 10.0) * 10:
-            return ActualPrecition
-
-        Integer = round(Integer / 10.0)
-        ActualPrecition -= 1
-
-    if ActualPrecition < 0:
-        ActualPrecition = 0
-    return ActualPrecition
-
-
-def floatToString(Float, precision=3):
-    ActualPrecition = actualPrecition(Float)
-    precision = min(precision, ActualPrecition)
-    fractional = math.modf(math.fabs(Float))[0]
-    if precision >= 5 and 0.000005 <= fractional <= 0.999995:
-        return "%.5f" % Float
-    elif precision >= 4 and 0.00005 <= fractional <= 0.99995:
-        return "%.4f" % Float
-    elif precision >= 3 and 0.0005 <= fractional <= 0.9995:
-        return "%.3f" % Float
-    elif precision >= 2 and 0.005 <= fractional <= 0.995:
-        return "%.2f" % Float
-    elif precision >= 1 and 0.05 <= fractional <= 0.95:
-        return "%.1f" % Float
-    else:
-        return "%.0f" % Float
+def floatToString(f: float) -> str:
+    return f"{f:.5f}".rstrip("0").rstrip(".")
 
 
 class UnicodesList(list):

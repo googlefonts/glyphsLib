@@ -128,7 +128,7 @@ class Writer:
         elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
         elif type(value) == float:
-            self.file.write(floatToString(value, 5))
+            self.file.write(floatToString(value))
         elif type(value) == int:
             self.file.write(str(value))
         elif type(value) == bool:
