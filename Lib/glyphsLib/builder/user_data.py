@@ -165,8 +165,7 @@ def to_glyphs_layer_user_data(self, ufo_glyph, layer):
             user_data[key] = value
 
 
-def to_glyphs_node_user_data(self, ufo_glyph, node):
-    path_index, node_index = node._indices()
+def to_glyphs_node_user_data(self, ufo_glyph, node, path_index, node_index):
     key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
     if key in ufo_glyph.lib:
         node.userData = ufo_glyph.lib[key]
