@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from .constants import GLYPHS_PREFIX
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
@@ -26,6 +25,22 @@ def to_ufo_layer(self, glyph, layer):
         ufo_layer = ufo_font.layers.defaultLayer
     elif layer.name not in ufo_font.layers:
         ufo_layer = ufo_font.newLayer(layer.name)
+    elif layer.name in ufo_font.layers and glyph.name in ufo_font.layers[layer.name]:
+        self.logger.warning(
+            "%s %s: Glyph %s, layer %s: Duplicate glyph layer name"
+            % (
+                ufo_font.info.familyName,
+                ufo_font.info.styleName,
+                glyph.name,
+                layer.name,
+            )
+        )
+        n = 1
+        new_layer_name = layer.name
+        while new_layer_name in ufo_font.layers:
+            new_layer_name = layer.name + " #" + repr(n)
+            n += 1
+        ufo_layer = ufo_font.newLayer(new_layer_name)
     else:
         ufo_layer = ufo_font.layers[layer.name]
     if self.minimize_glyphs_diffs:
