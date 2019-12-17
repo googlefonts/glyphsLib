@@ -81,12 +81,12 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_family_user_data(ufo)
         self.to_ufo_custom_params(ufo, font)
 
-        self.to_ufo_master_attributes(source, master)
-
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
         self._designspace.addSource(source)
         self._sources[master.id] = source
+
+    self.to_ufo_features()
 
 
 def to_glyphs_font_attributes(self, source, master, is_initial):

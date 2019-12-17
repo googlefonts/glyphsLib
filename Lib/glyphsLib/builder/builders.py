@@ -222,12 +222,13 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
-        for source in self._sources.values():
+        for master_id, source in self._sources.items():
             ufo = source.font
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
+            self.to_ufo_master_attributes(source, self.font.masters[master_id])
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
@@ -241,7 +242,6 @@ class UFOBuilder(_LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
-        self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
