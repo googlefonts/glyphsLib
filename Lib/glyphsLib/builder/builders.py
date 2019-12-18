@@ -242,6 +242,7 @@ class UFOBuilder(_LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
+        self.to_ufo_features()
         self.to_ufo_groups()
         self.to_ufo_kerning()
 

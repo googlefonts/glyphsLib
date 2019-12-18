@@ -86,8 +86,6 @@ def to_ufo_font_attributes(self, family_name):
         self._designspace.addSource(source)
         self._sources[master.id] = source
 
-    self.to_ufo_features()
-
 
 def to_glyphs_font_attributes(self, source, master, is_initial):
     """
