@@ -222,6 +222,8 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
+        self.to_ufo_features()
+
         for master_id, source in self._sources.items():
             ufo = source.font
             if self.propagate_anchors:
@@ -242,7 +244,6 @@ class UFOBuilder(_LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
-        self.to_ufo_features()
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
