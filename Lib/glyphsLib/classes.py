@@ -27,7 +27,7 @@ from glyphsLib.types import (
     Rect,
     parse_datetime,
     parse_color,
-    floatToString,
+    floatToString5,
     readIntlist,
     UnicodesList,
     parse_float_or_int,
@@ -1296,7 +1296,7 @@ class GSAlignmentZone(GSBase):
 
     def plistValue(self):
         return '"{{{}, {}}}"'.format(
-            floatToString(self.position), floatToString(self.size)
+            floatToString5(self.position), floatToString5(self.size)
         )
 
 
@@ -1572,7 +1572,7 @@ class GSNode(GSBase):
             content += " "
             content += self._encode_dict_as_string(string.getvalue())
         return '"{} {} {}"'.format(
-            floatToString(self.position[0]), floatToString(self.position[1]), content
+            floatToString5(self.position[0]), floatToString5(self.position[1]), content
         )
 
     def read(self, line):

@@ -26,7 +26,8 @@ __all__ = [
     "ValueType",
     "parse_datetime",
     "parse_color",
-    "floatToString",
+    "floatToString3",
+    "floatToString5",
     "readIntlist",
     "UnicodesList",
     "BinaryData",
@@ -96,7 +97,7 @@ def Vector(dim):
 
         def plistValue(self):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
-            return '"{%s}"' % (", ".join(floatToString(v) for v in self.value))
+            return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -201,7 +202,7 @@ class Rect(Vector(4)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString(v) for v in self.value)
+        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString3(v) for v in self.value)
 
     def __repr__(self):
         return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
@@ -246,7 +247,7 @@ class Transform(Vector(6)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{%s}"' % (", ".join(floatToString(v) for v in self.value))
+        return '"{%s}"' % (", ".join(floatToString5(v) for v in self.value))
 
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
@@ -349,7 +350,21 @@ def writeIntlist(val):
     return _mutate_list(str, val)
 
 
-def floatToString(f: float) -> str:
+def floatToString3(f: float) -> str:
+    """Return float f as a string with three decimal places without trailing zeros
+    and dot.
+
+    Intended for places where three decimals are enough, e.g. node positions.
+    """
+    return f"{f:.3f}".rstrip("0").rstrip(".")
+
+
+def floatToString5(f: float) -> str:
+    """Return float f as a string with five decimal places without trailing zeros
+    and dot.
+
+    Intended for places where five decimals are needed, e.g. transformations.
+    """
     return f"{f:.5f}".rstrip("0").rstrip(".")
 
 
