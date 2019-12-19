@@ -14,30 +14,31 @@
 
 
 import copy
-import re
-import math
 import inspect
-import uuid
 import logging
-import glyphsLib
-from glyphsLib.types import (
-    ValueType,
-    Transform,
-    Point,
-    Rect,
-    parse_datetime,
-    parse_color,
-    floatToString5,
-    readIntlist,
-    UnicodesList,
-    parse_float_or_int,
-)
-from glyphsLib.parser import Parser
-from glyphsLib.writer import Writer
+import math
+import os
+import re
+import uuid
 from collections import OrderedDict
 from io import StringIO
-from glyphsLib.affine import Affine
 
+import glyphsLib
+from glyphsLib.affine import Affine
+from glyphsLib.parser import Parser
+from glyphsLib.types import (
+    Point,
+    Rect,
+    Transform,
+    UnicodesList,
+    ValueType,
+    floatToString5,
+    parse_color,
+    parse_datetime,
+    parse_float_or_int,
+    readIntlist,
+)
+from glyphsLib.writer import Writer
 
 logger = logging.getLogger(__name__)
 
@@ -301,25 +302,22 @@ Glyphs = GSApplication()
 
 
 class GSBase:
+    """Represent the base class for all GS classes.
+
+    Attributes:
+        _classesForName (dict): Pre-PEP 484 way of annotating instance variables with
+            their types. Used by the parser during deserialization to insert
+            instance variables into GS classes. Used during serialization to determine
+            if some values should be serialized.
+        _defaultsForName (dict): Used to determine which values to serialize and which
+            to imply by their absence.
+        _wrapperKeysTranslate (dict): Used to map field names to GS* instance variables
+            during (de)serialization.
+    """
+
     _classesForName = {}
     _defaultsForName = {}
     _wrapperKeysTranslate = {}
-
-    def __init__(self):
-        for key in self._classesForName.keys():
-            if not hasattr(self, key):
-                klass = self._classesForName[key]
-                if inspect.isclass(klass) and issubclass(klass, GSBase):
-                    # FIXME: (jany) Why?
-                    # For GSLayer::backgroundImage, I was getting []
-                    # instead of None when no image
-                    value = []
-                elif key in self._defaultsForName:
-                    value = copy.deepcopy(self._defaultsForName.get(key))
-                else:
-                    value = klass()
-                key = self._wrapperKeysTranslate.get(key, key)
-                setattr(self, key, value)
 
     def __repr__(self):
         content = ""
@@ -1275,7 +1273,6 @@ class GSCustomParameter(GSBase):
 
 class GSAlignmentZone(GSBase):
     def __init__(self, pos=0, size=20):
-        super().__init__()
         self.position = pos
         self.size = size
 
@@ -1314,7 +1311,13 @@ class GSGuideLine(GSBase):
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
-        super().__init__()
+        self.alignment = ""
+        self.angle = 0
+        self.filter = ""
+        self.locked = False
+        self.name = ""
+        self.position = Point(0, 0)
+        self.showMeasurement = False
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1408,16 +1411,31 @@ class GSFontMaster(GSBase):
     )
 
     def __init__(self):
-        super().__init__()
-        self.id = str(uuid.uuid4()).upper()
-        self.font = None
-        self._name = None
         self._customParameters = []
-        self.italicAngle = 0
+        self._name = None
         self._userData = None
+        self.alignmentZones = []
+        self.ascender = 800
+        self.capHeight = 700
         self.customName = ""
-        for number in ("", "1", "2", "3"):
-            setattr(self, "customValue" + number, 0)
+        self.customValue = 0
+        self.customValue1 = 0
+        self.customValue2 = 0
+        self.customValue3 = 0
+        self.descender = -200
+        self.font = None
+        self.guides = []
+        self.horizontalStems = 0
+        self.iconName = ""
+        self.id = str(uuid.uuid4()).upper()
+        self.italicAngle = 0
+        self.verticalStems = 0
+        self.visible = False
+        self.weight = "Regular"
+        self.weightValue = 100
+        self.width = "Regular"
+        self.widthValue = 100
+        self.xHeight = 500
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1536,13 +1554,14 @@ class GSNode(GSBase):
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
-        super().__init__()
-        self.position = Point(position[0], position[1])
-        self.type = nodetype
-        self.smooth = smooth
-        self._parent = None
         self._userData = None
-        self.name = name
+        self.position = Point(position[0], position[1])
+        self.smooth = smooth
+        self.type = nodetype
+        # Optimization: Points can number in the 10000s, don't access the userDataProxy
+        # through `name` unless needed.
+        if name is not None:
+            self.name = name
 
     def __repr__(self):
         content = self.type
@@ -1694,7 +1713,7 @@ class GSPath(GSBase):
     _parent = None
 
     def __init__(self):
-        super().__init__()
+        self.closed = True
         self.nodes = []
 
     @property
@@ -1974,20 +1993,26 @@ class GSComponent(GSBase):
 
     # TODO: glyph arg is required
     def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
-        super().__init__()
+        self.alignment = 0
+        self.anchor = ""
+        self.locked = False
+
+        if isinstance(glyph, str):
+            self.name = glyph
+        elif isinstance(glyph, GSGlyph):
+            self.name = glyph.name
+
+        self.smartComponentValues = {}
 
         if transform is None:
             if scale != (1, 1) or offset != (0, 0):
                 xx, yy = scale
                 dx, dy = offset
                 self.transform = Transform(xx, 0, 0, yy, dx, dy)
+            else:
+                self.transform = Transform(1, 0, 0, 1, 0, 0)
         else:
             self.transform = transform
-
-        if isinstance(glyph, str):
-            self.name = glyph
-        elif isinstance(glyph, GSGlyph):
-            self.name = glyph.name
 
     def __repr__(self):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
@@ -2122,6 +2147,13 @@ class GSSmartComponentAxis(GSBase):
     _defaultsForName = {"bottomValue": 0, "topValue": 0}
     _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
+    def __init__(self):
+        self.bottomName = ""
+        self.bottomValue = 0
+        self.name = ""
+        self.topName = ""
+        self.topValue = 0
+
     def shouldWriteValueForKey(self, key):
         if key in ("bottomValue", "topValue"):
             return True
@@ -2134,11 +2166,8 @@ class GSAnchor(GSBase):
     _defaultsForName = {"position": Point(0, 0)}
 
     def __init__(self, name=None, position=None):
-        super().__init__()
-        if name is not None:
-            self.name = name
-        if position is not None:
-            self.position = position
+        self.name = "" if name is None else name
+        self.position = Point(0, 0) if position is None else position
 
     def __repr__(self):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
@@ -2193,6 +2222,24 @@ class GSHint(GSBase):
         "options",
         "settings",
     )
+
+    def __init__(self):
+        self._origin = None
+        self._originNode = None
+        self._other1 = None
+        self._other2 = None
+        self._otherNode1 = None
+        self._otherNode2 = None
+        self._target = None
+        self._targetNode = None
+        self.horizontal = False
+        self.name = ""
+        self.options = 0
+        self.place = None
+        self.scale = None
+        self.settings = {}
+        self.stem = -2
+        self.type = ""
 
     def shouldWriteValueForKey(self, key):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
@@ -2342,9 +2389,11 @@ class GSFeature(GSBase):
     }
 
     def __init__(self, name="xxxx", code=""):
-        super().__init__()
-        self.name = name
+        self.automatic = False
         self.code = code
+        self.disabled = False
+        self.name = name
+        self.notes = ""
 
     def shouldWriteValueForKey(self, key):
         if key == "code":
@@ -2401,6 +2450,13 @@ class GSAnnotation(GSBase):
         "width": 100,
     }
     _parent = None
+
+    def __init__(self):
+        self.angle = 0
+        self.position = Point(0, 0)
+        self.text = None
+        self.type = 0
+        self.width = 100
 
     @property
     def parent(self):
@@ -2471,16 +2527,24 @@ class GSInstance(GSBase):
     }
 
     def __init__(self):
-        super().__init__()
-        # TODO: (jany) review this and move as much as possible into
-        #       "_defaultsForKey"
-        self.name = "Regular"
+        self._customParameters = []
+        self.active = True
         self.custom = None
-        self.linkStyle = ""
-        self.visible = True
+        self.customValue = 0
+        self.customValue1 = 0
+        self.customValue2 = 0
+        self.customValue3 = 0
+        self.instanceInterpolations = {}
         self.isBold = False
         self.isItalic = False
-        self._customParameters = []
+        self.linkStyle = ""
+        self.manualInterpolation = False
+        self.name = "Regular"
+        self.visible = True
+        self.weight = "Regular"
+        self.weightValue = 100
+        self.width = "Medium (normal)"
+        self.widthValue = 100
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2595,11 +2659,14 @@ class GSBackgroundImage(GSBase):
     _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
-        super().__init__()
+        self._R = 0.0
+        self._alpha = 50
+        self._sX = 1.0
+        self._sY = 1.0
+        self.crop = Rect()
         self.imagePath = path
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
+        self.locked = False
+        self.transform = Transform(1, 0, 0, 1, 0, 0)
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -2736,18 +2803,28 @@ class GSLayer(GSBase):
     )
 
     def __init__(self):
-        super().__init__()
-        self.parent = None
         self._anchors = []
-        self._hints = []
         self._annotations = []
+        self._background = None
         self._components = []
         self._guides = []
+        self._hints = []
+        self._layerId = ""
+        self._name = ""
         self._paths = []
         self._selection = []
         self._userData = None
-        self._background = None
+        self.associatedMasterId = ""
         self.backgroundImage = None
+        self.color = None
+        self.leftMetricsKey = None
+        self.parent = None
+        self.rightMetricsKey = None
+        self.vertOrigin = 0
+        self.vertWidth = 0
+        self.visible = False
+        self.width = 600
+        self.widthMetricsKey = None
 
     def __repr__(self):
         name = self.name
@@ -3044,14 +3121,33 @@ class GSGlyph(GSBase):
     )
 
     def __init__(self, name=None):
-        super().__init__()
         self._layers = OrderedDict()
-        self.name = name
-        self.parent = None
-        self.export = True
-        self.selected = False
-        self.smartComponentAxes = []
+        self._unicodes = []
         self._userData = None
+        self.bottomKerningGroup = ""
+        self.bottomMetricsKey = ""
+        self.category = None
+        self.color = None
+        self.export = True
+        self.lastChange = None
+        self.leftKerningGroup = None
+        self.leftKerningKey = ""
+        self.leftMetricsKey = None
+        self.name = name
+        self.note = None
+        self.parent = None
+        self.partsSettings = []
+        self.production = ""
+        self.rightKerningGroup = None
+        self.rightKerningKey = ""
+        self.rightMetricsKey = None
+        self.script = None
+        self.selected = False
+        self.subCategory = None
+        self.topKerningGroup = ""
+        self.topMetricsKey = ""
+        self.vertWidthMetricsKey = ""
+        self.widthMetricsKey = None
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
@@ -3187,33 +3283,44 @@ class GSFont(GSBase):
     }
 
     def __init__(self, path=None):
-        super().__init__()
-
-        self.familyName = "Unnamed font"
-        self._versionMinor = 0
-        self.versionMajor = 1
-        self.appVersion = "895"  # minimum required version
-        self._glyphs = []
-        self._masters = []
-        self._instances = []
-        self._customParameters = []
+        self.DisplayStrings = ""
         self._classes = []
-        self.filepath = None
+        self._customParameters = []
+        self._features = []
+        self._glyphs = []
+        self._instances = []
+        self._kerning = OrderedDict()
+        self._masters = []
         self._userData = None
+        self._versionMinor = 0
+        self.appVersion = "895"  # minimum required version
+        self.copyright = ""
+        self.date = None
+        self.designer = ""
+        self.designerURL = ""
+        self.disablesAutomaticAlignment = False
+        self.disablesNiceNames = False
+        self.familyName = "Unnamed font"
+        self.featurePrefixes = []
+        self.filepath = None
+        self.grid = 1
+        self.gridSubDivisions = 1
+        self.keepAlternatesTogether = False
+        self.keyboardIncrement = 1
+        self.manufacturer = ""
+        self.manufacturerURL = ""
+        self.upm = 1000
+        self.versionMajor = 1
 
         if path:
-            # Support os.PathLike objects.
-            # https://www.python.org/dev/peps/pep-0519/#backwards-compatibility
-            if hasattr(path, "__fspath__"):
-                path = path.__fspath__()
+            path = os.fsdecode(os.fspath(path))
+            assert os.path.splitext(path)[-1] == ".glyphs", (
+                "Please supply a file path to a .glyphs file",
+            )
 
-            assert isinstance(path, str), "Please supply a file path"
-            assert path.endswith(
-                ".glyphs"
-            ), "Please supply a file path to a .glyphs file"
             with open(path, "r", encoding="utf-8") as fp:
+                logger.info('Parsing "%s" file into <GSFont>', path)
                 p = Parser()
-                logger.info('Parsing "%s" file into <GSFont>' % path)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
             for master in self.masters:
