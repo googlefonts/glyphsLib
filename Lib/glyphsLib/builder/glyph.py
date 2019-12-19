@@ -143,10 +143,18 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     #        have a write the first time, compare the next times for glyph
     #        always write for the layer
 
-    if ufo_glyph.name in self.font.glyphs:
-        glyph = self.font.glyphs[ufo_glyph.name]
-    else:
-        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph.name)
+    # NOTE: This optimizes around the performance drain that is glyph name lookup
+    #       without replacing the actual data structure. Ideally, FontGlyphsProxy
+    #       provides O(1) lookup for all the ways you can use strings to look up
+    #       glyphs.
+    ufo_glyph_name = ufo_glyph.name  # Avoid method lookup in hot loop.
+    glyph = None
+    for glyph_object in self.font._glyphs:  # HOT LOOP. Avoid FontGlyphsProxy for speed!
+        if glyph_object.name == ufo_glyph_name:  # HOT HOT HOT
+            glyph = glyph_object
+            break
+    if glyph is None:
+        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph_name)
         # FIXME: (jany) ordering?
         self.font.glyphs.append(glyph)
 
