@@ -36,9 +36,15 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     if note is not None:
         ufo_glyph.note = note
 
-    last_change = glyph.lastChange
-    if last_change is not None:
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(last_change)
+    # Optimization: profiling glyphs2ufo of NotoSans-MM.glyphs (6000 glyphs) on a Mac
+    # mini late 2014, Python 3.6.8, revealed that a whopping 17% of the time was spent
+    # converting lastChange to UFO timestamps. I could not reproduce this on a Windows
+    # 10/Python 3.7 setup, so this might be a platform thing. If-guarding anyway
+    # because these timestamps are useless in a UFO scenario if you use Git.
+    if self.minimize_glyphs_diffs:
+        last_change = glyph.lastChange
+        if last_change is not None:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(last_change)
 
     color_index = glyph.color
     if color_index is not None:
