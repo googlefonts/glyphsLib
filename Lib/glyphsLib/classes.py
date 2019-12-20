@@ -1595,6 +1595,20 @@ class GSNode(GSBase):
         )
 
     def read(self, line):
+        """Parse a Glyphs node string into a GSNode.
+
+        The format of a Glyphs node string (`line`) is:
+
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE)"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) SMOOTH"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) SMOOTH {dictionary}"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) {dictionary}"
+
+        X and Y can be integers or floats, positive or negative.
+
+        WARNING: This method is HOT. It is called for every single node and can
+        account for a significant portion of the file parsing time.
+        """
         m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
         self.type = m[2].lower()
