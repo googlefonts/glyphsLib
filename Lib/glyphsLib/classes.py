@@ -286,6 +286,8 @@ def transformStructToScaleAndRotation(transform):
 
 
 class GSApplication:
+    __slots__ = "font", "fonts"
+
     def __init__(self):
         self.font = None
         self.fonts = []
@@ -373,6 +375,8 @@ class GSBase:
 
 
 class Proxy:
+    __slots__ = "_owner"
+
     def __init__(self, owner):
         self._owner = owner
 
@@ -428,6 +432,8 @@ class Proxy:
 
 
 class LayersIterator:
+    __slots__ = "curInd", "_owner", "_orderedLayers"
+
     def __init__(self, owner):
         self.curInd = 0
         self._owner = owner
@@ -1126,6 +1132,8 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
+    __slots__ = ("name", "_value")
+
     _classesForName = {"name": str, "value": None}
 
     _CUSTOM_INT_PARAMS = frozenset(
@@ -1274,6 +1282,8 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
+    __slots__ = ("position", "size")
+
     def __init__(self, pos=0, size=20):
         self.position = pos
         self.size = size
@@ -1300,6 +1310,16 @@ class GSAlignmentZone(GSBase):
 
 
 class GSGuideLine(GSBase):
+    __slots__ = (
+        "alignment",
+        "angle",
+        "filter",
+        "locked",
+        "name",
+        "position",
+        "showMeasurement",
+    )
+
     _classesForName = {
         "alignment": str,
         "angle": parse_float_or_int,
@@ -1336,6 +1356,34 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 
 class GSFontMaster(GSBase):
+    __slots__ = (
+        "_customParameters",
+        "_name",
+        "_userData",
+        "alignmentZones",
+        "ascender",
+        "capHeight",
+        "customName",
+        "customValue",
+        "customValue1",
+        "customValue2",
+        "customValue3",
+        "descender",
+        "font",
+        "guides",
+        "horizontalStems",
+        "iconName",
+        "id",
+        "italicAngle",
+        "verticalStems",
+        "visible",
+        "weight",
+        "weightValue",
+        "width",
+        "widthValue",
+        "xHeight",
+    )
+
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
         "ascender": parse_float_or_int,
@@ -1543,6 +1591,8 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
+    __slots__ = ("_userData", "position", "smooth", "type")
+
     _PLIST_VALUE_RE = re.compile(
         r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
         r'(?: (SMOOTH))?(?: ({.*}))?"',
@@ -1719,6 +1769,8 @@ class GSNode(GSBase):
 
 
 class GSPath(GSBase):
+    __slots__ = ("closed", "_nodes")
+
     _classesForName = {"nodes": GSNode, "closed": bool}
     _defaultsForName = {"closed": True}
     _parent = None
@@ -1875,6 +1927,8 @@ class GSPath(GSBase):
 
 
 class segment(list):
+    __slots__ = ("nodes", "parent", "index")
+
     def appendNode(self, node):
         if not hasattr(
             self, "nodes"
@@ -1990,6 +2044,15 @@ class segment(list):
 
 
 class GSComponent(GSBase):
+    __slots__ = (
+        "alignment",
+        "anchor",
+        "locked",
+        "name",
+        "smartComponentValues",
+        "transform",
+    )
+
     _classesForName = {
         "alignment": int,
         "anchor": str,
@@ -2148,6 +2211,14 @@ class GSComponent(GSBase):
 
 
 class GSSmartComponentAxis(GSBase):
+    __slots__ = (
+        "bottomName",
+        "bottomValue",
+        "name",
+        "topName",
+        "topValue",
+    )
+
     _classesForName = {
         "name": str,
         "bottomName": str,
@@ -2172,6 +2243,8 @@ class GSSmartComponentAxis(GSBase):
 
 
 class GSAnchor(GSBase):
+    __slots__ = ("position", "name")
+
     _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
@@ -2196,6 +2269,25 @@ class GSAnchor(GSBase):
 
 
 class GSHint(GSBase):
+    __slots__ = (
+        "_origin",
+        "_originNode",
+        "_other1",
+        "_other2",
+        "_otherNode1",
+        "_otherNode2",
+        "_target",
+        "_targetNode",
+        "horizontal",
+        "name",
+        "options",
+        "place",
+        "scale",
+        "settings",
+        "stem",
+        "type",
+    )
+
     _classesForName = {
         "horizontal": bool,
         "options": int,  # bitfield
@@ -2391,6 +2483,8 @@ class GSHint(GSBase):
 
 
 class GSFeature(GSBase):
+    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
+
     _classesForName = {
         "automatic": bool,
         "code": str,
@@ -2446,6 +2540,14 @@ class GSFeaturePrefix(GSFeature):
 
 
 class GSAnnotation(GSBase):
+    __slots__ = (
+        "angle",
+        "position",
+        "text",
+        "type",
+        "width",
+    )
+
     _classesForName = {
         "angle": parse_float_or_int,
         "position": Point,
@@ -2475,6 +2577,27 @@ class GSAnnotation(GSBase):
 
 
 class GSInstance(GSBase):
+    __slots__ = (
+        "_customParameters",
+        "active",
+        "custom",
+        "customValue",
+        "customValue1",
+        "customValue2",
+        "customValue3",
+        "instanceInterpolations",
+        "isBold",
+        "isItalic",
+        "linkStyle",
+        "manualInterpolation",
+        "name",
+        "visible",
+        "weight",
+        "weightValue",
+        "width",
+        "widthValue",
+    )
+
     _classesForName = {
         "customParameters": GSCustomParameter,
         "active": bool,
@@ -2659,6 +2782,17 @@ class GSInstance(GSBase):
 
 
 class GSBackgroundImage(GSBase):
+    __slots__ = (
+        "_R",
+        "_alpha",
+        "_sX",
+        "_sY",
+        "crop",
+        "imagePath",
+        "locked",
+        "transform",
+    )
+
     _classesForName = {
         "crop": Rect,
         "imagePath": str,
@@ -2758,6 +2892,31 @@ class GSBackgroundImage(GSBase):
 
 
 class GSLayer(GSBase):
+    __slots__ = (
+        "_anchors",
+        "_annotations",
+        "_background",
+        "_components",
+        "_guides",
+        "_hints",
+        "_layerId",
+        "_name",
+        "_paths",
+        "_selection",
+        "_userData",
+        "associatedMasterId",
+        "backgroundImage",
+        "color",
+        "leftMetricsKey",
+        "parent",
+        "rightMetricsKey",
+        "vertOrigin",
+        "vertWidth",
+        "visible",
+        "width",
+        "widthMetricsKey",
+    )
+
     _classesForName = {
         "anchors": GSAnchor,
         "annotations": GSAnnotation,
@@ -3057,6 +3216,36 @@ GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
+    __slots__ = (
+        "_layers",
+        "_unicodes",
+        "_userData",
+        "bottomKerningGroup",
+        "bottomMetricsKey",
+        "category",
+        "color",
+        "export",
+        "lastChange",
+        "leftKerningGroup",
+        "leftKerningKey",
+        "leftMetricsKey",
+        "name",
+        "note",
+        "parent",
+        "partsSettings",
+        "production",
+        "rightKerningGroup",
+        "rightKerningKey",
+        "rightMetricsKey",
+        "script",
+        "selected",
+        "subCategory",
+        "topKerningGroup",
+        "topMetricsKey",
+        "vertWidthMetricsKey",
+        "widthMetricsKey",
+    )
+
     _classesForName = {
         "bottomKerningGroup": str,
         "bottomMetricsKey": str,
@@ -3245,6 +3434,37 @@ class GSGlyph(GSBase):
 
 
 class GSFont(GSBase):
+    __slots__ = (
+        "DisplayStrings",
+        "_classes",
+        "_customParameters",
+        "_features",
+        "_glyphs",
+        "_instances",
+        "_kerning",
+        "_masters",
+        "_userData",
+        "_versionMinor",
+        "appVersion",
+        "copyright",
+        "date",
+        "designer",
+        "designerURL",
+        "disablesAutomaticAlignment",
+        "disablesNiceNames",
+        "familyName",
+        "featurePrefixes",
+        "filepath",
+        "grid",
+        "gridSubDivisions",
+        "keepAlternatesTogether",
+        "keyboardIncrement",
+        "manufacturer",
+        "manufacturerURL",
+        "upm",
+        "versionMajor",
+    )
+
     _classesForName = {
         ".appVersion": str,
         "DisplayStrings": str,
