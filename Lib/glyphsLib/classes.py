@@ -68,6 +68,7 @@ __all__ = [
     "MOVE",
     "LINE",
     "CURVE",
+    "QCURVE",
     "OFFCURVE",
     "GSMOVE",
     "GSLINE",
@@ -132,6 +133,7 @@ MOVE = "move"
 LINE = "line"
 CURVE = "curve"
 OFFCURVE = "offcurve"
+QCURVE = "qcurve"
 
 TAG = -2
 TOPGHOST = -1
@@ -1546,11 +1548,6 @@ class GSNode(GSBase):
         r'(?: (SMOOTH))?(?: ({.*}))?"',
         re.DOTALL,
     )
-    MOVE = "move"
-    LINE = "line"
-    CURVE = "curve"
-    OFFCURVE = "offcurve"
-    QCURVE = "qcurve"
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
