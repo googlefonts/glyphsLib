@@ -47,6 +47,9 @@ from glyphsLib.classes import (
     CIRCLE,
     PLUS,
     MINUS,
+    LINE,
+    CURVE,
+    OFFCURVE,
 )
 from glyphsLib.types import Point, Transform, Rect
 
@@ -1562,7 +1565,7 @@ class GSNodeFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(self.node.position, Point)
 
     def test_type(self):
-        self.assertTrue(self.node.type in [GSNode.LINE, GSNode.CURVE, GSNode.OFFCURVE])
+        self.assertTrue(self.node.type in [LINE, CURVE, OFFCURVE])
 
     def test_smooth(self):
         self.assertBool(self.node.smooth)

@@ -986,7 +986,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
 
     def test_write_node(self):
-        node = classes.GSNode(Point(10, 30), classes.GSNode.CURVE)
+        node = classes.GSNode(Point(10, 30), classes.CURVE)
         # http://docu.glyphsapp.com/#gsnode
         # position: already set
         # #type: already set
@@ -1006,7 +1006,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         )
 
         # Write floating point coordinates
-        node = classes.GSNode(Point(499.99, 512.01), classes.GSNode.OFFCURVE)
+        node = classes.GSNode(Point(499.99, 512.01), classes.OFFCURVE)
         self.assertWritesValue(node, '"499.99 512.01 OFFCURVE"')
 
         # Write userData with special characters
@@ -1015,7 +1015,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             ";": ";\n",
             "escapeception": "\\\"\\'\\n\\\\n",
         }
-        node = classes.GSNode(Point(130, 431), classes.GSNode.LINE)
+        node = classes.GSNode(Point(130, 431), classes.LINE)
         for key, value in test_user_data.items():
             node.userData[key] = value
         # This is the output of Glyphs 1089
