@@ -19,6 +19,7 @@ import logging
 import datetime
 from collections import OrderedDict
 from io import StringIO
+import binascii
 
 """
     Usage
@@ -138,6 +139,8 @@ class Writer:
                 self.file.write("0")
         elif type(value) == datetime.datetime:
             self.file.write('"%s +0000"' % str(value))
+        elif type(value) is bytes:
+            self.file.write(f"<{binascii.hexlify(value).decode()}>")
         else:
             value = str(value)
             if forKey != "unicode":

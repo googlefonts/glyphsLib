@@ -305,6 +305,9 @@ def parse_color(src=None):
     if src is None:
         return None
 
+    if isinstance(src, int):
+        return src
+
     # Tuple.
     if src[0] == "(":
         rgba = tuple(int(v) for v in src[1:-1].split(",") if v)
@@ -376,6 +379,9 @@ class UnicodesList(list):
             unicodes = []
         elif isinstance(value, str):
             unicodes = value.split(",")
+        elif isinstance(value, int): # Hex value misinterpreted as decimal int.
+            deci_int = int(f"{value:04}", 16)
+            unicodes = [f"{deci_int:04X}"]
         else:
             unicodes = [str(v) for v in value]
         super().__init__(unicodes)

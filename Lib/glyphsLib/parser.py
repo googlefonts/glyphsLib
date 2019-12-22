@@ -247,10 +247,53 @@ def loads(s):
     a UTF-8 encoded bytes object.
     Return a GSFont object.
     """
-    p = Parser(current_type=glyphsLib.classes.GSFont)
-    logger.info("Parsing .glyphs file")
-    data = p.parse(s)
-    return data
+    # p = Parser(current_type=glyphsLib.classes.GSFont)
+    # logger.info("Parsing .glyphs file")
+    # data = p.parse(s)
+    # return data
+    return loads_openstep_plist(s)
+
+
+def loads_openstep_plist(s):
+    import openstep_plist
+
+    g = openstep_plist.loads(s, use_numbers=True)
+    font = glyphsLib.classes.GSFont()
+    _parse_dict_into(font, g)
+
+    return font
+
+
+def _parse_dict_into(into_object, value):
+    assert hasattr(into_object, "_classesForName"), (type(into_object), into_object)
+    assert isinstance(value, dict), (
+        (type(into_object), into_object),
+        (type(value), value),
+    )
+
+    for k, v in value.items():
+        cfn = into_object._classesForName[k]
+
+        if cfn is None or type(v) is cfn or (type(v) is dict and cfn is OrderedDict):
+            into_object[k] = v
+        elif isinstance(v, list):
+            l = []
+            for value in v:
+                i = cfn()
+                if hasattr(i, "read"):
+                    i.read(f'"{value}"')
+                elif hasattr(i, "_classesForName"):
+                    _parse_dict_into(i, value)
+                else:
+                    i = value
+                l.append(i)
+            into_object[k] = l
+        elif isinstance(v, dict):
+            i = cfn()
+            into_object[k] = i
+            _parse_dict_into(i, v)
+        else:
+            into_object[k] = cfn(v)
 
 
 def main(args=None):
