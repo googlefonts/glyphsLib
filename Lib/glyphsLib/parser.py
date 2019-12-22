@@ -254,11 +254,14 @@ def loads(s):
     return loads_openstep_plist(s)
 
 
-def loads_openstep_plist(s):
+def loads_openstep_plist(s, into_object=None):
     import openstep_plist
 
     g = openstep_plist.loads(s, use_numbers=True)
-    font = glyphsLib.classes.GSFont()
+    if into_object is not None:
+        font = into_object
+    else:
+        font = glyphsLib.classes.GSFont()
     _parse_dict_into(font, g)
 
     return font

@@ -3551,8 +3551,9 @@ class GSFont(GSBase):
 
             with open(path, "r", encoding="utf-8") as fp:
                 logger.info('Parsing "%s" file into <GSFont>', path)
-                p = Parser()
-                p.parse_into_object(self, fp.read())
+                # p = Parser()
+                # p.parse_into_object(self, fp.read())
+                glyphsLib.parser.loads_openstep_plist(fp.read(), self)
             self.filepath = path
             for master in self.masters:
                 master.font = self
