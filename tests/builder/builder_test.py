@@ -829,6 +829,30 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo = self.to_ufos(font)[0]
         self.assertEqual([l.name for l in ufo.layers], ["public.default", "SubLayer"])
 
+    def test_duplicate_supplementary_layers(self):
+        """Test glyph layers with same name."""
+        font = generate_minimal_font()
+        glyph = GSGlyph(name="a")
+        font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = font.masters[0].id
+        layer.width = 0
+        glyph.layers.append(layer)
+        sublayer = GSLayer()
+        sublayer.associatedMasterId = font.masters[0].id
+        sublayer.width = 0
+        sublayer.name = "SubLayer"
+        glyph.layers.append(sublayer)
+        sublayer = GSLayer()
+        sublayer.associatedMasterId = font.masters[0].id
+        sublayer.width = 0
+        sublayer.name = "SubLayer"
+        glyph.layers.append(sublayer)
+        ufo = self.to_ufos(font)[0]
+        self.assertEqual(
+            [l.name for l in ufo.layers], ["public.default", "SubLayer", "SubLayer #1"]
+        )
+
     def test_glyph_lib_Export(self):
         font = generate_minimal_font()
         glyph = add_glyph(font, "a")
