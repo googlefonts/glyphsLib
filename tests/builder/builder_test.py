@@ -848,10 +848,13 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         sublayer.width = 0
         sublayer.name = "SubLayer"
         glyph.layers.append(sublayer)
-        ufo = self.to_ufos(font)[0]
+        with CapturingLogHandler(builder.logger, level="WARNING") as captor:
+            ufo = self.to_ufos(font)[0]
+
         self.assertEqual(
             [l.name for l in ufo.layers], ["public.default", "SubLayer", "SubLayer #1"]
         )
+        captor.assertRegex("Duplicate glyph layer name")
 
     def test_glyph_lib_Export(self):
         font = generate_minimal_font()
