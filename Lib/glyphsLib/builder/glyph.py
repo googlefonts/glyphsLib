@@ -136,7 +136,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
 
 
-def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
+def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
     If the matching GSGlyph does not exist, then it is created,
     else it is updated with the new data.

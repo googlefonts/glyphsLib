@@ -161,7 +161,7 @@ def test_groups(ufo_module):
     # somehow, but we don't care how, that fact will be better tested by the
     # roundtrip test a few lines below
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     # Check that nothing has changed
     assert dict(ufo.groups) == groups_dict
@@ -176,7 +176,7 @@ def test_groups(ufo_module):
     groups_dict["public.kern1.halfInFont"].remove("o")
     groups_dict["public.kern1.onItsOwnO"] = ["o"]
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert dict(ufo.groups) == groups_dict
 
@@ -211,7 +211,7 @@ def test_guidelines(ufo_module):
         assert horizontal.position.y == 20
         assert horizontal.angle == 0
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     for obj in [ufo, ufo["a"]]:
         angled, vertical, horizontal = obj.guidelines
@@ -246,7 +246,7 @@ def test_glyph_color(ufo_module):
     rt_b_color = font.glyphs["b"].color
     assert rt_b_color == [4, 128, 0, 255] and all(type(x) is int for x in rt_b_color)
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo["a"].markColor == GLYPHS_COLORS[3]
     assert ufo["b"].markColor == b.markColor
@@ -413,7 +413,7 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_mod
     saved_font = classes.GSFont(path)
 
     for font in [font, saved_font]:
-        ufo, = to_ufos(font)
+        (ufo,) = to_ufos(font)
 
         assert ufo["a"].width == 100
         assert ufo.layers["public.background"]["a"].width == 0
@@ -442,7 +442,7 @@ def test_double_unicodes(tmpdir, ufo_module):
         assert font.glyphs["z"].unicode == "005A"
         assert font.glyphs["z"].unicodes == ["005A", "007A"]
 
-        ufo, = to_ufos(font)
+        (ufo,) = to_ufos(font)
 
         assert ufo["z"].unicodes == [0x005A, 0x007A]
 
@@ -462,7 +462,7 @@ def test_open_contour(ufo_module):
     assert len(path.nodes) == 2
     assert path.nodes[0].type == classes.LINE
 
-    ufo_rt, = to_ufos(font)
+    (ufo_rt,) = to_ufos(font)
 
     assert [(p.segmentType, p.x, p.y) for p in a[0]] == [
         (p.segmentType, p.x, p.y) for p in ufo_rt["a"][0]
@@ -530,7 +530,7 @@ def test_custom_stylemap_style_name(ufo_module):
     ufo.info.styleMapStyleName = "bold"  # Not "regular"
 
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo.info.styleMapStyleName == "bold"
 
@@ -587,7 +587,7 @@ def test_weird_kerning_roundtrip(ufo_module):
         ufo.kerning[k] = v
 
     font = to_glyphs([ufo])
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     # The kerning and groups should round-trip untouched
     for name, glyphs in groups.items():

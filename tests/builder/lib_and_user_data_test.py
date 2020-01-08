@@ -168,7 +168,7 @@ def test_ufo_data_into_font_master_user_data(tmpdir, ufo_module):
         "org.customTool/ufoData.bin": BinaryData(data)
     }
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo.data[filename] == data
 
@@ -190,7 +190,7 @@ def test_layer_lib_into_font_user_data(ufo_module):
         "layerLibKey2": "layerLibValue2"
     }
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo.layers["public.default"].lib["layerLibKey1"] == "layerLibValue1"
     assert "layerLibKey1" not in ufo.layers["sketches"].lib
@@ -208,7 +208,7 @@ def test_glyph_user_data_into_ufo_lib():
     layer.layerId = font.masters[0].id
     glyph.layers.append(layer)
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo.lib[GLYPHLIB_PREFIX + "glyphUserData.a"] == {
         "glyphUserDataKey": "glyphUserDataValue"
@@ -251,7 +251,7 @@ def test_glif_lib_equivalent_to_layer_user_data(ufo_module):
     assert "glifLibKeyB" not in default_layer.userData.keys()
     assert middleground.userData["glifLibKeyB"] == "glifLibValueB"
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     assert ufo["a"].lib["glifLibKeyA"] == "glifLibValueA"
     assert "glifLibKeyA" not in ufo.layers["middleground"]["a"]
@@ -281,7 +281,7 @@ def test_node_user_data_into_glif_lib():
     path.nodes.append(classes.GSNode())
     path.nodes.append(node2)
 
-    ufo, = to_ufos(font, minimize_glyphs_diffs=True)
+    (ufo,) = to_ufos(font, minimize_glyphs_diffs=True)
 
     assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.1"] == {
         "nodeUserDataKey1": "nodeUserDataValue1"
@@ -327,7 +327,7 @@ def test_lib_data_types(tmpdir, ufo_module):
     # font.save(filename)
     # font = classes.GSFont(filename)
 
-    ufo, = to_ufos(font)
+    (ufo,) = to_ufos(font)
 
     for index, (key, value) in enumerate(data.items()):
         assert value == ufo["a"].lib[key]
