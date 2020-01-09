@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import copy
 import logging
 import math
 import os
@@ -1332,11 +1333,11 @@ class GSGuideLine(GSBase):
 
     def __init__(self):
         self.alignment = ""
-        self.angle = 0
+        self.angle = self._defaultsForName["angle"]
         self.filter = ""
         self.locked = False
         self.name = ""
-        self.position = Point(0, 0)
+        self.position = copy.deepcopy(self._defaultsForName["position"])
         self.showMeasurement = False
 
     def __repr__(self):
@@ -1463,27 +1464,27 @@ class GSFontMaster(GSBase):
         self._name = None
         self._userData = None
         self.alignmentZones = []
-        self.ascender = 800
-        self.capHeight = 700
+        self.ascender = self._defaultsForName["ascender"]
+        self.capHeight = self._defaultsForName["capHeight"]
         self.customName = ""
-        self.customValue = 0
-        self.customValue1 = 0
-        self.customValue2 = 0
-        self.customValue3 = 0
-        self.descender = -200
+        self.customValue = self._defaultsForName["customValue"]
+        self.customValue1 = self._defaultsForName["customValue1"]
+        self.customValue2 = self._defaultsForName["customValue2"]
+        self.customValue3 = self._defaultsForName["customValue3"]
+        self.descender = self._defaultsForName["descender"]
         self.font = None
         self.guides = []
         self.horizontalStems = 0
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
-        self.italicAngle = 0
+        self.italicAngle = self._defaultsForName["italicAngle"]
         self.verticalStems = 0
         self.visible = False
-        self.weight = "Regular"
-        self.weightValue = 100
-        self.width = "Regular"
-        self.widthValue = 100
-        self.xHeight = 500
+        self.weight = self._defaultsForName["weight"]
+        self.weightValue = self._defaultsForName["weightValue"]
+        self.width = self._defaultsForName["width"]
+        self.widthValue = self._defaultsForName["widthValue"]
+        self.xHeight = self._defaultsForName["xHeight"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1774,7 +1775,7 @@ class GSPath(GSBase):
     _parent = None
 
     def __init__(self):
-        self.closed = True
+        self.closed = self._defaultsForName["closed"]
         self.nodes = []
 
     @property
@@ -2082,7 +2083,7 @@ class GSComponent(GSBase):
                 dx, dy = offset
                 self.transform = Transform(xx, 0, 0, yy, dx, dy)
             else:
-                self.transform = Transform(1, 0, 0, 1, 0, 0)
+                self.transform = copy.deepcopy(self._defaultsForName["transform"])
         else:
             self.transform = transform
 
@@ -2229,10 +2230,10 @@ class GSSmartComponentAxis(GSBase):
 
     def __init__(self):
         self.bottomName = ""
-        self.bottomValue = 0
+        self.bottomValue = self._defaultsForName["bottomValue"]
         self.name = ""
         self.topName = ""
-        self.topValue = 0
+        self.topValue = self._defaultsForName["topValue"]
 
     def shouldWriteValueForKey(self, key):
         if key in ("bottomValue", "topValue"):
@@ -2249,7 +2250,10 @@ class GSAnchor(GSBase):
 
     def __init__(self, name=None, position=None):
         self.name = "" if name is None else name
-        self.position = Point(0, 0) if position is None else position
+        if position is None:
+            self.position = copy.deepcopy(self._defaultsForName["position"])
+        else:
+            self.position = position
 
     def __repr__(self):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
@@ -2325,21 +2329,16 @@ class GSHint(GSBase):
     )
 
     def __init__(self):
-        self._origin = None
-        self._originNode = None
-        self._other1 = None
-        self._other2 = None
-        self._otherNode1 = None
-        self._otherNode2 = None
-        self._target = None
-        self._targetNode = None
         self.horizontal = False
         self.name = ""
         self.options = 0
-        self.place = None
-        self.scale = None
+        self.origin = self._defaultsForName["origin"]
+        self.other1 = self._defaultsForName["other1"]
+        self.other2 = self._defaultsForName["other2"]
+        self.place = self._defaultsForName["place"]
+        self.scale = self._defaultsForName["scale"]
         self.settings = {}
-        self.stem = -2
+        self.stem = self._defaultsForName["stem"]
         self.type = ""
 
     def shouldWriteValueForKey(self, key):
@@ -2563,11 +2562,11 @@ class GSAnnotation(GSBase):
     _parent = None
 
     def __init__(self):
-        self.angle = 0
-        self.position = Point(0, 0)
-        self.text = None
-        self.type = 0
-        self.width = 100
+        self.angle = self._defaultsForName["angle"]
+        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.text = self._defaultsForName["text"]
+        self.type = self._defaultsForName["type"]
+        self.width = self._defaultsForName["width"]
 
     @property
     def parent(self):
@@ -2660,23 +2659,25 @@ class GSInstance(GSBase):
 
     def __init__(self):
         self._customParameters = []
-        self.active = True
+        self.active = self._defaultsForName["active"]
         self.custom = None
-        self.customValue = 0
-        self.customValue1 = 0
-        self.customValue2 = 0
-        self.customValue3 = 0
-        self.instanceInterpolations = {}
+        self.customValue = self._defaultsForName["interpolationCustom"]
+        self.customValue1 = self._defaultsForName["interpolationCustom1"]
+        self.customValue2 = self._defaultsForName["interpolationCustom2"]
+        self.customValue3 = self._defaultsForName["interpolationCustom3"]
+        self.instanceInterpolations = copy.deepcopy(
+            self._defaultsForName["instanceInterpolations"]
+        )
         self.isBold = False
         self.isItalic = False
         self.linkStyle = ""
         self.manualInterpolation = False
         self.name = "Regular"
         self.visible = True
-        self.weight = "Regular"
-        self.weightValue = 100
-        self.width = "Medium (normal)"
-        self.widthValue = 100
+        self.weight = self._defaultsForName["weightClass"]
+        self.weightValue = self._defaultsForName["interpolationWeight"]
+        self.width = self._defaultsForName["widthClass"]
+        self.widthValue = self._defaultsForName["interpolationWidth"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2803,13 +2804,13 @@ class GSBackgroundImage(GSBase):
 
     def __init__(self, path=None):
         self._R = 0.0
-        self._alpha = 50
         self._sX = 1.0
         self._sY = 1.0
+        self.alpha = self._defaultsForName["alpha"]
         self.crop = Rect()
         self.imagePath = path
         self.locked = False
-        self.transform = Transform(1, 0, 0, 1, 0, 0)
+        self.transform = copy.deepcopy(self._defaultsForName["transform"])
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -2985,14 +2986,14 @@ class GSLayer(GSBase):
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
-        self.leftMetricsKey = None
+        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
         self.parent = None
-        self.rightMetricsKey = None
-        self.vertOrigin = 0
-        self.vertWidth = 0
+        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.vertOrigin = self._defaultsForName["vertOrigin"]
+        self.vertWidth = self._defaultsForName["vertWidth"]
         self.visible = False
-        self.width = 600
-        self.widthMetricsKey = None
+        self.width = self._defaultsForName["width"]
+        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
     def __repr__(self):
         name = self.name
@@ -3321,31 +3322,31 @@ class GSGlyph(GSBase):
     def __init__(self, name=None):
         self._layers = OrderedDict()
         self._unicodes = []
-        self._userData = None
         self.bottomKerningGroup = ""
         self.bottomMetricsKey = ""
-        self.category = None
-        self.color = None
-        self.export = True
-        self.lastChange = None
-        self.leftKerningGroup = None
+        self.category = self._defaultsForName["category"]
+        self.color = self._defaultsForName["color"]
+        self.export = self._defaultsForName["export"]
+        self.lastChange = self._defaultsForName["lastChange"]
+        self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
         self.leftKerningKey = ""
-        self.leftMetricsKey = None
+        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
         self.name = name
-        self.note = None
+        self.note = self._defaultsForName["note"]
         self.parent = None
         self.partsSettings = []
         self.production = ""
-        self.rightKerningGroup = None
+        self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
         self.rightKerningKey = ""
-        self.rightMetricsKey = None
-        self.script = None
+        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.script = self._defaultsForName["script"]
         self.selected = False
-        self.subCategory = None
+        self.subCategory = self._defaultsForName["subCategory"]
         self.topKerningGroup = ""
         self.topMetricsKey = ""
+        self.userData = self._defaultsForName["userData"]
         self.vertWidthMetricsKey = ""
-        self.widthMetricsKey = None
+        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
@@ -3513,32 +3514,34 @@ class GSFont(GSBase):
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
-        self._classes = []
-        self._customParameters = []
         self._features = []
         self._glyphs = []
         self._instances = []
-        self._kerning = OrderedDict()
         self._masters = []
         self._userData = None
         self._versionMinor = 0
         self.appVersion = "895"  # minimum required version
+        self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.copyright = ""
+        self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
         self.date = None
         self.designer = ""
         self.designerURL = ""
-        self.disablesAutomaticAlignment = False
-        self.disablesNiceNames = False
+        self.disablesAutomaticAlignment = self._defaultsForName[
+            "disablesAutomaticAlignment"
+        ]
+        self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
         self.familyName = "Unnamed font"
         self.featurePrefixes = []
         self.filepath = None
-        self.grid = 1
-        self.gridSubDivisions = 1
+        self.grid = self._defaultsForName["gridLength"]
+        self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
         self.keepAlternatesTogether = False
-        self.keyboardIncrement = 1
+        self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
+        self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.manufacturer = ""
         self.manufacturerURL = ""
-        self.upm = 1000
+        self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
 
         if path:
