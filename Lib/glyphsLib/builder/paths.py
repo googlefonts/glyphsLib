@@ -49,7 +49,9 @@ def to_ufo_paths(self, ufo_glyph, layer):
 
 
 def to_glyphs_paths(self, ufo_glyph, layer):
-    for contour in ufo_glyph:
+    # Keep track of path and node numbers, otherwise to_glyphs_node_user_data must
+    # call _indices on every single GSNode, which is a huge performance drain.
+    for contour_index, contour in enumerate(ufo_glyph):
         path = self.glyphs_module.GSPath()
         for point in contour:
             node = self.glyphs_module.GSNode()
@@ -63,8 +65,8 @@ def to_glyphs_paths(self, ufo_glyph, layer):
             path.nodes.append(path.nodes.pop(0))
         layer.paths.append(path)
 
-        for node in path.nodes:
-            self.to_glyphs_node_user_data(ufo_glyph, node)
+        for node_index, node in enumerate(path.nodes):
+            self.to_glyphs_node_user_data(ufo_glyph, node, contour_index, node_index)
 
 
 def _to_ufo_node_type(node_type):

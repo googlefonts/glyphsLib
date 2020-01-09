@@ -14,7 +14,7 @@
 
 
 import glyphsLib.classes
-from glyphsLib.types import floatToString
+from glyphsLib.types import floatToString5
 import logging
 import datetime
 from collections import OrderedDict
@@ -128,7 +128,7 @@ class Writer:
         elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
         elif type(value) == float:
-            self.file.write(floatToString(value, 5))
+            self.file.write(floatToString5(value))
         elif type(value) == int:
             self.file.write(str(value))
         elif type(value) == bool:

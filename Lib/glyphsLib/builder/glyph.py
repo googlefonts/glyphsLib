@@ -36,9 +36,13 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     if note is not None:
         ufo_glyph.note = note
 
-    last_change = glyph.lastChange
-    if last_change is not None:
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(last_change)
+    # Optimization: profiling glyphs2ufo of NotoSans-MM.glyphs (6000 glyphs) on a Mac
+    # mini late 2014, Python 3.6.8, revealed that a whopping 17% of the time was spent
+    # converting lastChange to UFO timestamps. I could not reproduce this on a Windows
+    # 10/Python 3.7 setup, so this might be a platform thing. If-guarding anyway
+    # because these timestamps are useless in a UFO scenario if you use Git.
+    if self.minimize_glyphs_diffs and glyph.lastChange is not None:
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
 
     color_index = glyph.color
     if color_index is not None:
@@ -132,7 +136,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
 
 
-def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
+def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
     If the matching GSGlyph does not exist, then it is created,
     else it is updated with the new data.
@@ -143,10 +147,18 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):
     #        have a write the first time, compare the next times for glyph
     #        always write for the layer
 
-    if ufo_glyph.name in self.font.glyphs:
-        glyph = self.font.glyphs[ufo_glyph.name]
-    else:
-        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph.name)
+    # NOTE: This optimizes around the performance drain that is glyph name lookup
+    #       without replacing the actual data structure. Ideally, FontGlyphsProxy
+    #       provides O(1) lookup for all the ways you can use strings to look up
+    #       glyphs.
+    ufo_glyph_name = ufo_glyph.name  # Avoid method lookup in hot loop.
+    glyph = None
+    for glyph_object in self.font._glyphs:  # HOT LOOP. Avoid FontGlyphsProxy for speed!
+        if glyph_object.name == ufo_glyph_name:  # HOT HOT HOT
+            glyph = glyph_object
+            break
+    if glyph is None:
+        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph_name)
         # FIXME: (jany) ordering?
         self.font.glyphs.append(glyph)
 

@@ -440,7 +440,7 @@ def test_info(fields, tmpdir, ufo_module):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
 
     for field in fields:
         assert getattr(ufo.info, field.name) == field.test_value
@@ -459,7 +459,7 @@ def test_info_gasp_ranges(tmpdir, ufo_module):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
 
     assert [dict(r) for r in ufo.info.openTypeGaspRangeRecords] == gasp_ranges
 
@@ -490,7 +490,7 @@ def test_info_name_records(tmpdir, ufo_module):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
 
     print(ufo.info.openTypeNameRecords)
     assert [dict(r) for r in ufo.info.openTypeNameRecords] == name_records

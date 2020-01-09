@@ -1089,7 +1089,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         assert master.name == "Thin"
         assert master.weight == "Light"
 
-        ufo, = self.to_ufos(font)
+        (ufo,) = self.to_ufos(font)
         font_rt = to_glyphs([ufo])
         master_rt = font_rt.masters[0]
 
@@ -1111,20 +1111,20 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
 
     def test_italic_angle(self):
         font = generate_minimal_font()
-        ufo, = self.to_ufos(font)
+        (ufo,) = self.to_ufos(font)
 
         ufo.info.italicAngle = 1
-        ufo_rt, = self.to_ufos(to_glyphs([ufo]))
+        (ufo_rt,) = self.to_ufos(to_glyphs([ufo]))
         assert ufo_rt.info.italicAngle == 1
 
         ufo.info.italicAngle = 1.5
-        ufo_rt, = self.to_ufos(to_glyphs([ufo]))
+        (ufo_rt,) = self.to_ufos(to_glyphs([ufo]))
         assert ufo_rt.info.italicAngle == 1.5
 
         ufo.info.italicAngle = 0
         font_rt = to_glyphs([ufo])
         assert font_rt.masters[0].italicAngle == 0
-        ufo_rt, = self.to_ufos(font_rt)
+        (ufo_rt,) = self.to_ufos(font_rt)
         assert ufo_rt.info.italicAngle == 0
 
     def test_unique_masterid(self):

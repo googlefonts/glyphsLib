@@ -28,7 +28,7 @@ def roundtrip(ufo, tmpdir, ufo_module):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
     return font, ufo
 
 
@@ -308,7 +308,7 @@ def test_roundtrip_disabled_feature(ufo_module):
     feature.disabled = True
     font.features.append(feature)
 
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
     assert ufo.features.text == dedent(
         """\
         feature ccmp {
@@ -342,7 +342,7 @@ def test_roundtrip_automatic_feature(ufo_module):
     feature.automatic = True
     font.features.append(feature)
 
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
     assert ufo.features.text == dedent(
         """\
         feature ccmp {
@@ -367,7 +367,7 @@ def test_roundtrip_feature_prefix_with_only_a_comment(ufo_module):
     prefix.code = "#include(../family.fea)"
     font.featurePrefixes.append(prefix)
 
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
 
     assert ufo.features.text == dedent(
         """\
@@ -411,7 +411,7 @@ def test_roundtrip_existing_GDEF(tmpdir, ufo_with_GDEF):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    rtufo, = to_ufos(font, generate_GDEF=False, ufo_module=ufo_module)
+    (rtufo,) = to_ufos(font, generate_GDEF=False, ufo_module=ufo_module)
 
     assert rtufo.features.text == gdef
 
@@ -451,7 +451,7 @@ def test_groups_remain_at_top(tmpdir, ufo_module):
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
-    rtufo, = to_ufos(font, ufo_module=ufo_module)
+    (rtufo,) = to_ufos(font, ufo_module=ufo_module)
 
     fea_rt = rtufo.features.text
     assert fea_rt.index("@FIG_DFLT") < fea_rt.index("lookup") < fea_rt.index("feature")
@@ -464,7 +464,7 @@ def test_roundtrip_empty_feature(ufo_module):
     feature.code = ""
     font.features.append(feature)
 
-    ufo, = to_ufos(font, ufo_module=ufo_module)
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
     assert ufo.features.text == dedent(
         """\
         feature dlig {

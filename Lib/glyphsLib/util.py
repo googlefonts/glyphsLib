@@ -35,7 +35,7 @@ def build_ufo_path(out_dir, family_name, style_name):
 
 def open_ufo(path, font_class, **kwargs):
     try:
-        return font_class.open(path, **kwargs)  # ufoLib2
+        return font_class.open(path, lazy=False, **kwargs)  # ufoLib2
     except AttributeError:
         return font_class(path, **kwargs)  # defcon, fontParts, etc.
 

@@ -14,30 +14,30 @@
 
 
 import copy
-import re
-import math
-import inspect
-import uuid
 import logging
-import glyphsLib
-from glyphsLib.types import (
-    ValueType,
-    Transform,
-    Point,
-    Rect,
-    parse_datetime,
-    parse_color,
-    floatToString,
-    readIntlist,
-    UnicodesList,
-    parse_float_or_int,
-)
-from glyphsLib.parser import Parser
-from glyphsLib.writer import Writer
+import math
+import os
+import re
+import uuid
 from collections import OrderedDict
 from io import StringIO
-from glyphsLib.affine import Affine
 
+import glyphsLib
+from glyphsLib.affine import Affine
+from glyphsLib.parser import Parser
+from glyphsLib.types import (
+    Point,
+    Rect,
+    Transform,
+    UnicodesList,
+    ValueType,
+    floatToString5,
+    parse_color,
+    parse_datetime,
+    parse_float_or_int,
+    readIntlist,
+)
+from glyphsLib.writer import Writer
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ __all__ = [
     "MOVE",
     "LINE",
     "CURVE",
+    "QCURVE",
     "OFFCURVE",
     "GSMOVE",
     "GSLINE",
@@ -131,6 +132,7 @@ MOVE = "move"
 LINE = "line"
 CURVE = "curve"
 OFFCURVE = "offcurve"
+QCURVE = "qcurve"
 
 TAG = -2
 TOPGHOST = -1
@@ -283,6 +285,8 @@ def transformStructToScaleAndRotation(transform):
 
 
 class GSApplication:
+    __slots__ = "font", "fonts"
+
     def __init__(self):
         self.font = None
         self.fonts = []
@@ -301,25 +305,22 @@ Glyphs = GSApplication()
 
 
 class GSBase:
+    """Represent the base class for all GS classes.
+
+    Attributes:
+        _classesForName (dict): Pre-PEP 484 way of annotating instance variables with
+            their types. Used by the parser during deserialization to insert
+            instance variables into GS classes. Used during serialization to determine
+            if some values should be serialized.
+        _defaultsForName (dict): Used to determine which values to serialize and which
+            to imply by their absence.
+        _wrapperKeysTranslate (dict): Used to map field names to GS* instance variables
+            during (de)serialization.
+    """
+
     _classesForName = {}
     _defaultsForName = {}
     _wrapperKeysTranslate = {}
-
-    def __init__(self):
-        for key in self._classesForName.keys():
-            if not hasattr(self, key):
-                klass = self._classesForName[key]
-                if inspect.isclass(klass) and issubclass(klass, GSBase):
-                    # FIXME: (jany) Why?
-                    # For GSLayer::backgroundImage, I was getting []
-                    # instead of None when no image
-                    value = []
-                elif key in self._defaultsForName:
-                    value = copy.deepcopy(self._defaultsForName.get(key))
-                else:
-                    value = klass()
-                key = self._wrapperKeysTranslate.get(key, key)
-                setattr(self, key, value)
 
     def __repr__(self):
         content = ""
@@ -373,6 +374,8 @@ class GSBase:
 
 
 class Proxy:
+    __slots__ = "_owner"
+
     def __init__(self, owner):
         self._owner = owner
 
@@ -428,6 +431,8 @@ class Proxy:
 
 
 class LayersIterator:
+    __slots__ = "curInd", "_owner", "_orderedLayers"
+
     def __init__(self, owner):
         self.curInd = 0
         self._owner = owner
@@ -1126,6 +1131,8 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
+    __slots__ = ("name", "_value")
+
     _classesForName = {"name": str, "value": None}
 
     _CUSTOM_INT_PARAMS = frozenset(
@@ -1274,8 +1281,9 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
+    __slots__ = ("position", "size")
+
     def __init__(self, pos=0, size=20):
-        super().__init__()
         self.position = pos
         self.size = size
 
@@ -1296,11 +1304,21 @@ class GSAlignmentZone(GSBase):
 
     def plistValue(self):
         return '"{{{}, {}}}"'.format(
-            floatToString(self.position), floatToString(self.size)
+            floatToString5(self.position), floatToString5(self.size)
         )
 
 
 class GSGuideLine(GSBase):
+    __slots__ = (
+        "alignment",
+        "angle",
+        "filter",
+        "locked",
+        "name",
+        "position",
+        "showMeasurement",
+    )
+
     _classesForName = {
         "alignment": str,
         "angle": parse_float_or_int,
@@ -1314,7 +1332,13 @@ class GSGuideLine(GSBase):
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
-        super().__init__()
+        self.alignment = ""
+        self.angle = self._defaultsForName["angle"]
+        self.filter = ""
+        self.locked = False
+        self.name = ""
+        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.showMeasurement = False
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1331,6 +1355,34 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 
 class GSFontMaster(GSBase):
+    __slots__ = (
+        "_customParameters",
+        "_name",
+        "_userData",
+        "alignmentZones",
+        "ascender",
+        "capHeight",
+        "customName",
+        "customValue",
+        "customValue1",
+        "customValue2",
+        "customValue3",
+        "descender",
+        "font",
+        "guides",
+        "horizontalStems",
+        "iconName",
+        "id",
+        "italicAngle",
+        "verticalStems",
+        "visible",
+        "weight",
+        "weightValue",
+        "width",
+        "widthValue",
+        "xHeight",
+    )
+
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
         "ascender": parse_float_or_int,
@@ -1408,16 +1460,31 @@ class GSFontMaster(GSBase):
     )
 
     def __init__(self):
-        super().__init__()
-        self.id = str(uuid.uuid4()).upper()
-        self.font = None
-        self._name = None
         self._customParameters = []
-        self.italicAngle = 0
+        self._name = None
         self._userData = None
+        self.alignmentZones = []
+        self.ascender = self._defaultsForName["ascender"]
+        self.capHeight = self._defaultsForName["capHeight"]
         self.customName = ""
-        for number in ("", "1", "2", "3"):
-            setattr(self, "customValue" + number, 0)
+        self.customValue = self._defaultsForName["customValue"]
+        self.customValue1 = self._defaultsForName["customValue1"]
+        self.customValue2 = self._defaultsForName["customValue2"]
+        self.customValue3 = self._defaultsForName["customValue3"]
+        self.descender = self._defaultsForName["descender"]
+        self.font = None
+        self.guides = []
+        self.horizontalStems = 0
+        self.iconName = ""
+        self.id = str(uuid.uuid4()).upper()
+        self.italicAngle = self._defaultsForName["italicAngle"]
+        self.verticalStems = 0
+        self.visible = False
+        self.weight = self._defaultsForName["weight"]
+        self.weightValue = self._defaultsForName["weightValue"]
+        self.width = self._defaultsForName["width"]
+        self.widthValue = self._defaultsForName["widthValue"]
+        self.xHeight = self._defaultsForName["xHeight"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1523,26 +1590,24 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
+    __slots__ = ("_userData", "position", "smooth", "type")
+
     _PLIST_VALUE_RE = re.compile(
         r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
         r'(?: (SMOOTH))?(?: ({.*}))?"',
         re.DOTALL,
     )
-    MOVE = "move"
-    LINE = "line"
-    CURVE = "curve"
-    OFFCURVE = "offcurve"
-    QCURVE = "qcurve"
     _parent = None
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
-        super().__init__()
-        self.position = Point(position[0], position[1])
-        self.type = nodetype
-        self.smooth = smooth
-        self._parent = None
         self._userData = None
-        self.name = name
+        self.position = Point(position[0], position[1])
+        self.smooth = smooth
+        self.type = nodetype
+        # Optimization: Points can number in the 10000s, don't access the userDataProxy
+        # through `name` unless needed.
+        if name is not None:
+            self.name = name
 
     def __repr__(self):
         content = self.type
@@ -1572,10 +1637,24 @@ class GSNode(GSBase):
             content += " "
             content += self._encode_dict_as_string(string.getvalue())
         return '"{} {} {}"'.format(
-            floatToString(self.position[0]), floatToString(self.position[1]), content
+            floatToString5(self.position[0]), floatToString5(self.position[1]), content
         )
 
     def read(self, line):
+        """Parse a Glyphs node string into a GSNode.
+
+        The format of a Glyphs node string (`line`) is:
+
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE)"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) SMOOTH"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) SMOOTH {dictionary}"
+            "X Y (LINE|CURVE|QCURVE|OFFCURVE) {dictionary}"
+
+        X and Y can be integers or floats, positive or negative.
+
+        WARNING: This method is HOT. It is called for every single node and can
+        account for a significant portion of the file parsing time.
+        """
         m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
         self.type = m[2].lower()
@@ -1689,12 +1768,14 @@ class GSNode(GSBase):
 
 
 class GSPath(GSBase):
+    __slots__ = ("closed", "_nodes")
+
     _classesForName = {"nodes": GSNode, "closed": bool}
     _defaultsForName = {"closed": True}
     _parent = None
 
     def __init__(self):
-        super().__init__()
+        self.closed = self._defaultsForName["closed"]
         self.nodes = []
 
     @property
@@ -1845,6 +1926,8 @@ class GSPath(GSBase):
 
 
 class segment(list):
+    __slots__ = ("nodes", "parent", "index")
+
     def appendNode(self, node):
         if not hasattr(
             self, "nodes"
@@ -1960,6 +2043,15 @@ class segment(list):
 
 
 class GSComponent(GSBase):
+    __slots__ = (
+        "alignment",
+        "anchor",
+        "locked",
+        "name",
+        "smartComponentValues",
+        "transform",
+    )
+
     _classesForName = {
         "alignment": int,
         "anchor": str,
@@ -1974,20 +2066,26 @@ class GSComponent(GSBase):
 
     # TODO: glyph arg is required
     def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
-        super().__init__()
+        self.alignment = 0
+        self.anchor = ""
+        self.locked = False
+
+        if isinstance(glyph, str):
+            self.name = glyph
+        elif isinstance(glyph, GSGlyph):
+            self.name = glyph.name
+
+        self.smartComponentValues = {}
 
         if transform is None:
             if scale != (1, 1) or offset != (0, 0):
                 xx, yy = scale
                 dx, dy = offset
                 self.transform = Transform(xx, 0, 0, yy, dx, dy)
+            else:
+                self.transform = copy.deepcopy(self._defaultsForName["transform"])
         else:
             self.transform = transform
-
-        if isinstance(glyph, str):
-            self.name = glyph
-        elif isinstance(glyph, GSGlyph):
-            self.name = glyph.name
 
     def __repr__(self):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
@@ -2112,6 +2210,14 @@ class GSComponent(GSBase):
 
 
 class GSSmartComponentAxis(GSBase):
+    __slots__ = (
+        "bottomName",
+        "bottomValue",
+        "name",
+        "topName",
+        "topValue",
+    )
+
     _classesForName = {
         "name": str,
         "bottomName": str,
@@ -2122,6 +2228,13 @@ class GSSmartComponentAxis(GSBase):
     _defaultsForName = {"bottomValue": 0, "topValue": 0}
     _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
+    def __init__(self):
+        self.bottomName = ""
+        self.bottomValue = self._defaultsForName["bottomValue"]
+        self.name = ""
+        self.topName = ""
+        self.topValue = self._defaultsForName["topValue"]
+
     def shouldWriteValueForKey(self, key):
         if key in ("bottomValue", "topValue"):
             return True
@@ -2129,15 +2242,17 @@ class GSSmartComponentAxis(GSBase):
 
 
 class GSAnchor(GSBase):
+    __slots__ = ("position", "name")
+
     _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
     def __init__(self, name=None, position=None):
-        super().__init__()
-        if name is not None:
-            self.name = name
-        if position is not None:
+        self.name = "" if name is None else name
+        if position is None:
+            self.position = copy.deepcopy(self._defaultsForName["position"])
+        else:
             self.position = position
 
     def __repr__(self):
@@ -2156,6 +2271,25 @@ class GSAnchor(GSBase):
 
 
 class GSHint(GSBase):
+    __slots__ = (
+        "_origin",
+        "_originNode",
+        "_other1",
+        "_other2",
+        "_otherNode1",
+        "_otherNode2",
+        "_target",
+        "_targetNode",
+        "horizontal",
+        "name",
+        "options",
+        "place",
+        "scale",
+        "settings",
+        "stem",
+        "type",
+    )
+
     _classesForName = {
         "horizontal": bool,
         "options": int,  # bitfield
@@ -2193,6 +2327,19 @@ class GSHint(GSBase):
         "options",
         "settings",
     )
+
+    def __init__(self):
+        self.horizontal = False
+        self.name = ""
+        self.options = 0
+        self.origin = self._defaultsForName["origin"]
+        self.other1 = self._defaultsForName["other1"]
+        self.other2 = self._defaultsForName["other2"]
+        self.place = self._defaultsForName["place"]
+        self.scale = self._defaultsForName["scale"]
+        self.settings = {}
+        self.stem = self._defaultsForName["stem"]
+        self.type = ""
 
     def shouldWriteValueForKey(self, key):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
@@ -2333,6 +2480,8 @@ class GSHint(GSBase):
 
 
 class GSFeature(GSBase):
+    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
+
     _classesForName = {
         "automatic": bool,
         "code": str,
@@ -2342,9 +2491,11 @@ class GSFeature(GSBase):
     }
 
     def __init__(self, name="xxxx", code=""):
-        super().__init__()
-        self.name = name
+        self.automatic = False
         self.code = code
+        self.disabled = False
+        self.name = name
+        self.notes = ""
 
     def shouldWriteValueForKey(self, key):
         if key == "code":
@@ -2386,6 +2537,14 @@ class GSFeaturePrefix(GSFeature):
 
 
 class GSAnnotation(GSBase):
+    __slots__ = (
+        "angle",
+        "position",
+        "text",
+        "type",
+        "width",
+    )
+
     _classesForName = {
         "angle": parse_float_or_int,
         "position": Point,
@@ -2402,12 +2561,40 @@ class GSAnnotation(GSBase):
     }
     _parent = None
 
+    def __init__(self):
+        self.angle = self._defaultsForName["angle"]
+        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.text = self._defaultsForName["text"]
+        self.type = self._defaultsForName["type"]
+        self.width = self._defaultsForName["width"]
+
     @property
     def parent(self):
         return self._parent
 
 
 class GSInstance(GSBase):
+    __slots__ = (
+        "_customParameters",
+        "active",
+        "custom",
+        "customValue",
+        "customValue1",
+        "customValue2",
+        "customValue3",
+        "instanceInterpolations",
+        "isBold",
+        "isItalic",
+        "linkStyle",
+        "manualInterpolation",
+        "name",
+        "visible",
+        "weight",
+        "weightValue",
+        "width",
+        "widthValue",
+    )
+
     _classesForName = {
         "customParameters": GSCustomParameter,
         "active": bool,
@@ -2471,16 +2658,26 @@ class GSInstance(GSBase):
     }
 
     def __init__(self):
-        super().__init__()
-        # TODO: (jany) review this and move as much as possible into
-        #       "_defaultsForKey"
-        self.name = "Regular"
+        self._customParameters = []
+        self.active = self._defaultsForName["active"]
         self.custom = None
-        self.linkStyle = ""
-        self.visible = True
+        self.customValue = self._defaultsForName["interpolationCustom"]
+        self.customValue1 = self._defaultsForName["interpolationCustom1"]
+        self.customValue2 = self._defaultsForName["interpolationCustom2"]
+        self.customValue3 = self._defaultsForName["interpolationCustom3"]
+        self.instanceInterpolations = copy.deepcopy(
+            self._defaultsForName["instanceInterpolations"]
+        )
         self.isBold = False
         self.isItalic = False
-        self._customParameters = []
+        self.linkStyle = ""
+        self.manualInterpolation = False
+        self.name = "Regular"
+        self.visible = True
+        self.weight = self._defaultsForName["weightClass"]
+        self.weightValue = self._defaultsForName["interpolationWeight"]
+        self.width = self._defaultsForName["widthClass"]
+        self.widthValue = self._defaultsForName["interpolationWidth"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -2584,6 +2781,17 @@ class GSInstance(GSBase):
 
 
 class GSBackgroundImage(GSBase):
+    __slots__ = (
+        "_R",
+        "_alpha",
+        "_sX",
+        "_sY",
+        "crop",
+        "imagePath",
+        "locked",
+        "transform",
+    )
+
     _classesForName = {
         "crop": Rect,
         "imagePath": str,
@@ -2595,11 +2803,14 @@ class GSBackgroundImage(GSBase):
     _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
-        super().__init__()
+        self._R = 0.0
+        self._sX = 1.0
+        self._sY = 1.0
+        self.alpha = self._defaultsForName["alpha"]
+        self.crop = Rect()
         self.imagePath = path
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
+        self.locked = False
+        self.transform = copy.deepcopy(self._defaultsForName["transform"])
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -2680,6 +2891,31 @@ class GSBackgroundImage(GSBase):
 
 
 class GSLayer(GSBase):
+    __slots__ = (
+        "_anchors",
+        "_annotations",
+        "_background",
+        "_components",
+        "_guides",
+        "_hints",
+        "_layerId",
+        "_name",
+        "_paths",
+        "_selection",
+        "_userData",
+        "associatedMasterId",
+        "backgroundImage",
+        "color",
+        "leftMetricsKey",
+        "parent",
+        "rightMetricsKey",
+        "vertOrigin",
+        "vertWidth",
+        "visible",
+        "width",
+        "widthMetricsKey",
+    )
+
     _classesForName = {
         "anchors": GSAnchor,
         "annotations": GSAnnotation,
@@ -2736,18 +2972,28 @@ class GSLayer(GSBase):
     )
 
     def __init__(self):
-        super().__init__()
-        self.parent = None
         self._anchors = []
-        self._hints = []
         self._annotations = []
+        self._background = None
         self._components = []
         self._guides = []
+        self._hints = []
+        self._layerId = ""
+        self._name = ""
         self._paths = []
         self._selection = []
         self._userData = None
-        self._background = None
+        self.associatedMasterId = ""
         self.backgroundImage = None
+        self.color = None
+        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.parent = None
+        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.vertOrigin = self._defaultsForName["vertOrigin"]
+        self.vertWidth = self._defaultsForName["vertWidth"]
+        self.visible = False
+        self.width = self._defaultsForName["width"]
+        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
     def __repr__(self):
         name = self.name
@@ -2969,6 +3215,36 @@ GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
+    __slots__ = (
+        "_layers",
+        "_unicodes",
+        "_userData",
+        "bottomKerningGroup",
+        "bottomMetricsKey",
+        "category",
+        "color",
+        "export",
+        "lastChange",
+        "leftKerningGroup",
+        "leftKerningKey",
+        "leftMetricsKey",
+        "name",
+        "note",
+        "parent",
+        "partsSettings",
+        "production",
+        "rightKerningGroup",
+        "rightKerningKey",
+        "rightMetricsKey",
+        "script",
+        "selected",
+        "subCategory",
+        "topKerningGroup",
+        "topMetricsKey",
+        "vertWidthMetricsKey",
+        "widthMetricsKey",
+    )
+
     _classesForName = {
         "bottomKerningGroup": str,
         "bottomMetricsKey": str,
@@ -3044,14 +3320,33 @@ class GSGlyph(GSBase):
     )
 
     def __init__(self, name=None):
-        super().__init__()
         self._layers = OrderedDict()
+        self._unicodes = []
+        self.bottomKerningGroup = ""
+        self.bottomMetricsKey = ""
+        self.category = self._defaultsForName["category"]
+        self.color = self._defaultsForName["color"]
+        self.export = self._defaultsForName["export"]
+        self.lastChange = self._defaultsForName["lastChange"]
+        self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
+        self.leftKerningKey = ""
+        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
         self.name = name
+        self.note = self._defaultsForName["note"]
         self.parent = None
-        self.export = True
+        self.partsSettings = []
+        self.production = ""
+        self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
+        self.rightKerningKey = ""
+        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.script = self._defaultsForName["script"]
         self.selected = False
-        self.smartComponentAxes = []
-        self._userData = None
+        self.subCategory = self._defaultsForName["subCategory"]
+        self.topKerningGroup = ""
+        self.topMetricsKey = ""
+        self.userData = self._defaultsForName["userData"]
+        self.vertWidthMetricsKey = ""
+        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
@@ -3138,6 +3433,37 @@ class GSGlyph(GSBase):
 
 
 class GSFont(GSBase):
+    __slots__ = (
+        "DisplayStrings",
+        "_classes",
+        "_customParameters",
+        "_features",
+        "_glyphs",
+        "_instances",
+        "_kerning",
+        "_masters",
+        "_userData",
+        "_versionMinor",
+        "appVersion",
+        "copyright",
+        "date",
+        "designer",
+        "designerURL",
+        "disablesAutomaticAlignment",
+        "disablesNiceNames",
+        "familyName",
+        "featurePrefixes",
+        "filepath",
+        "grid",
+        "gridSubDivisions",
+        "keepAlternatesTogether",
+        "keyboardIncrement",
+        "manufacturer",
+        "manufacturerURL",
+        "upm",
+        "versionMajor",
+    )
+
     _classesForName = {
         ".appVersion": str,
         "DisplayStrings": str,
@@ -3187,33 +3513,46 @@ class GSFont(GSBase):
     }
 
     def __init__(self, path=None):
-        super().__init__()
-
-        self.familyName = "Unnamed font"
-        self._versionMinor = 0
-        self.versionMajor = 1
-        self.appVersion = "895"  # minimum required version
+        self.DisplayStrings = ""
+        self._features = []
         self._glyphs = []
-        self._masters = []
         self._instances = []
-        self._customParameters = []
-        self._classes = []
-        self.filepath = None
+        self._masters = []
         self._userData = None
+        self._versionMinor = 0
+        self.appVersion = "895"  # minimum required version
+        self.classes = copy.deepcopy(self._defaultsForName["classes"])
+        self.copyright = ""
+        self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
+        self.date = None
+        self.designer = ""
+        self.designerURL = ""
+        self.disablesAutomaticAlignment = self._defaultsForName[
+            "disablesAutomaticAlignment"
+        ]
+        self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
+        self.familyName = "Unnamed font"
+        self.featurePrefixes = []
+        self.filepath = None
+        self.grid = self._defaultsForName["gridLength"]
+        self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
+        self.keepAlternatesTogether = False
+        self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
+        self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
+        self.manufacturer = ""
+        self.manufacturerURL = ""
+        self.upm = self._defaultsForName["unitsPerEm"]
+        self.versionMajor = 1
 
         if path:
-            # Support os.PathLike objects.
-            # https://www.python.org/dev/peps/pep-0519/#backwards-compatibility
-            if hasattr(path, "__fspath__"):
-                path = path.__fspath__()
+            path = os.fsdecode(os.fspath(path))
+            assert os.path.splitext(path)[-1] == ".glyphs", (
+                "Please supply a file path to a .glyphs file",
+            )
 
-            assert isinstance(path, str), "Please supply a file path"
-            assert path.endswith(
-                ".glyphs"
-            ), "Please supply a file path to a .glyphs file"
             with open(path, "r", encoding="utf-8") as fp:
+                logger.info('Parsing "%s" file into <GSFont>', path)
                 p = Parser()
-                logger.info('Parsing "%s" file into <GSFont>' % path)
                 p.parse_into_object(self, fp.read())
             self.filepath = path
             for master in self.masters:
