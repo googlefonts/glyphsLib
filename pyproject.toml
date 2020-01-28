@@ -1,5 +1,9 @@
 [tool.black]
 target-version = ["py36"]
 
+[tool.setuptools_scm]
+write_to = "Lib/glyphsLib/_version.py"
+
 [build-system]
-requires = ["setuptools>=30.3.0", "wheel", "setuptools_scm"]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+build-backend = "setuptools.build_meta"
