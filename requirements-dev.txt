@@ -7,27 +7,21 @@
 appdirs==1.4.3            # via fs
 atomicwrites==1.3.0       # via pytest
 attrs==19.3.0             # via pytest
+colorama==0.4.3           # via pytest
 coverage==5.0.3
 defcon==0.6.0
-entrypoints==0.3          # via pytest-randomly
-fonttools[ufo,unicode]==4.0.2  # via defcon
+fonttools[ufo,unicode]==4.2.4  # via defcon
 fs==2.4.11                # via fonttools
-importlib-metadata==0.23  # via pluggy, pytest
-lxml==4.4.1               # via xmldiff
-more-itertools==7.2.0     # via pytest, zipp
-packaging==19.2           # via pytest
-pluggy==0.13.0            # via pytest
-py==1.8.0                 # via pytest
-pyparsing==2.4.4          # via packaging
-pytest-randomly==3.1.0
-pytest==5.2.2
+lxml==4.4.3               # via xmldiff
+more-itertools==8.1.0     # via pytest
+packaging==20.1           # via pytest
+pluggy==0.13.1            # via pytest
+py==1.8.1                 # via pytest
+pyparsing==2.4.6          # via packaging
+pytest-randomly==3.2.1
+pytest==5.3.4
 pytz==2019.3              # via fs
-six==1.13.0               # via fs, packaging, xmldiff
+six==1.14.0               # via fs, packaging, xmldiff
 ufonormalizer==0.3.6
-unicodedata2==12.1.0      # via fonttools
-wcwidth==0.1.7            # via pytest
+wcwidth==0.1.8            # via pytest
 xmldiff==2.4
-zipp==0.6.0               # via importlib-metadata
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools==41.6.0        # via fs, xmldiff
