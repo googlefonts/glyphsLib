@@ -1,5 +1,0 @@
-# Synchronize with setup.cfg until https://github.com/jazzband/pip-tools/issues/1047
-# is implemented.
-ufoLib2 >= 0.5.0
-fonttools[ufo,unicode] >= 3.24.0
-importlib_resources; python_version < '3.7'
