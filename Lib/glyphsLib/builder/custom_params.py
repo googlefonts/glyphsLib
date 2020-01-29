@@ -617,21 +617,15 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 
     def to_glyphs(self, glyphs, ufo):
         if glyphs.is_font():
-            glyphs_glyphOrder = ufo.get_lib_value(GLYPHS_PREFIX + "glyphOrder")
-            if isinstance(glyphs_glyphOrder, list):
-                glyphs.set_custom_value("glyphOrder", glyphs_glyphOrder)
-            elif glyphs_glyphOrder is None:
-                ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
-                if ufo_glyphOrder:
-                    glyphs.set_custom_value("glyphOrder", ufo_glyphOrder)
+            ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+            if ufo_glyphOrder:
+                glyphs.set_custom_value("glyphOrder", ufo_glyphOrder)
 
     def to_ufo(self, builder, glyphs, ufo):
         if glyphs.is_font():
             glyphs_glyphOrder = glyphs.get_custom_value("glyphOrder")
             if glyphs_glyphOrder:
                 ufo.set_lib_value(PUBLIC_PREFIX + "glyphOrder", glyphs_glyphOrder)
-            else:
-                ufo.set_lib_value(GLYPHS_PREFIX + "glyphOrder", False)
 
 
 register(GlyphOrderParamHandler())
