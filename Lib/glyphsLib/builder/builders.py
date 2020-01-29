@@ -418,6 +418,11 @@ class UFOBuilder(_LoggerMixin):
         # Finally, copy bracket layers to their own glyphs.
         self._copy_bracket_layers_to_ufo_glyphs(bracket_layer_map)
 
+        # re-generate the GDEF table since we have added new BRACKET glyphs, which may
+        # also need to be included: https://github.com/googlefonts/glyphsLib/issues/578
+        if self.generate_GDEF:
+            self.to_ufo_features()
+
     def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         font = self.font
         master_ids = {m.id for m in font.masters}

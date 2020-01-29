@@ -14,11 +14,15 @@
 # limitations under the License.
 
 
+import io
 import os
 from xmldiff import main, formatting
 
 import itertools
 import pytest
+
+import fontTools.feaLib.parser
+import fontTools.feaLib.ast
 
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs
@@ -409,3 +413,51 @@ def test_designspace_generation_bracket_no_export_glyph(datadir, ufo_module):
         "Bold",
         "Bold ]570]",
     }
+
+
+def test_designspace_generation_bracket_GDEF(datadir, ufo_module):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    # add some attaching anchors to the "x" glyph and its (bracket) layers to
+    # trigger the generation of GDEF table
+    for layer in font.glyphs["x"].layers:
+        anchor = glyphsLib.classes.GSAnchor()
+        anchor.name = "top"
+        anchor.position = (0, 0)
+        layer.anchors.append(anchor)
+
+    designspace = to_designspace(font, ufo_module=ufo_module, generate_GDEF=True)
+
+    for source in designspace.sources:
+        ufo = source.font
+        features = fontTools.feaLib.parser.Parser(
+            io.StringIO(ufo.features.text), glyphNames=ufo.keys()
+        ).parse()
+        for stmt in features.statements:
+            if (
+                isinstance(stmt, fontTools.feaLib.ast.TableBlock)
+                and stmt.name == "GDEF"
+            ):
+                gdef = stmt
+                for stmt in gdef.statements:
+                    if isinstance(stmt, fontTools.feaLib.ast.GlyphClassDefStatement):
+                        glyph_class_defs = stmt
+                        break
+                else:
+                    pytest.fail(
+                        f"No GDEF.GlyphClassDef statement found in {ufo!r} features:\n"
+                        f"{ufo.features.text}"
+                    )
+                break
+        else:
+            pytest.fail(
+                f"No GDEF table definition found in {ufo!r} features:\n"
+                f"{ufo.features.text}"
+            )
+
+        assert set(glyph_class_defs.baseGlyphs.glyphSet()) == {
+            "x",
+            "x.BRACKET.300",
+            "x.BRACKET.600",
+        }
