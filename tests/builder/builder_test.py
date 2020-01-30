@@ -638,6 +638,18 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         self.assertEqual(ufo.info.postscriptBlueValues, expected_blue_values)
         self.assertEqual(ufo.info.postscriptOtherBlues, expected_other_blues)
 
+    def test_set_blue_values_empty(self):
+        font = generate_minimal_font()
+        font.masters[0].alignmentZones = []
+        ufo = self.to_ufos(font)[0]
+
+        if self.ufo_module is ufoLib2:
+            self.assertIsNone(ufo.info.postscriptBlueValues)
+            self.assertIsNone(ufo.info.postscriptOtherBlues)
+        else:
+            self.assertEqual(ufo.info.postscriptBlueValues, [])
+            self.assertEqual(ufo.info.postscriptOtherBlues, [])
+
     def test_missing_date(self):
         font = generate_minimal_font()
         font.date = None

@@ -25,8 +25,10 @@ def to_ufo_blue_values(self, ufo, master):
         val_list = blue_values if pos == 0 or size >= 0 else other_blues
         val_list.extend(sorted((pos, pos + size)))
 
-    ufo.info.postscriptBlueValues = blue_values
-    ufo.info.postscriptOtherBlues = other_blues
+    if blue_values:
+        ufo.info.postscriptBlueValues = blue_values
+    if other_blues:
+        ufo.info.postscriptOtherBlues = other_blues
 
 
 def to_glyphs_blue_values(self, ufo, master):
