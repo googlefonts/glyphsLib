@@ -21,6 +21,7 @@ from glyphsLib import classes
 from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import (
     GLYPHLIB_PREFIX,
+    FONT_CUSTOM_PARAM_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,
 )
@@ -129,6 +130,30 @@ def test_font_user_data_to_ufo_lib():
     font = to_glyphs([ufo1, ufo2])
 
     assert font.userData["fontUserDataKey"] == "fontUserDataValue"
+
+
+def test_DisplayStrings_ufo_lib():
+    font = classes.GSFont()
+    font.masters.append(classes.GSFontMaster())
+    font.masters.append(classes.GSFontMaster())
+    font.DisplayStrings = ""
+
+    ufo1, ufo2 = to_ufos(font)
+    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo1.lib
+    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo2.lib
+
+    font = to_glyphs([ufo1, ufo2])
+    assert font.DisplayStrings == ""
+
+    # ---
+    font.DisplayStrings = "a"
+
+    ufo1, ufo2 = to_ufos(font)
+    assert ufo1.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
+    assert ufo2.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
+
+    font = to_glyphs([ufo1, ufo2])
+    assert font.DisplayStrings == "a"
 
 
 def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):

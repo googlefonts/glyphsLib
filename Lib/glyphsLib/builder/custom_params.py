@@ -535,7 +535,11 @@ class DisplayStringsParamHandler(MiscParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         # We test for builder here because apply_instance_data() passes None and
         # we don't want to copy-paste or subclass UFOBuilder.
-        if builder is not None and builder.store_editor_state:
+        if (
+            builder is not None
+            and builder.store_editor_state
+            and builder.font.DisplayStrings
+        ):
             super().to_ufo(builder, glyphs, ufo)
 
 
