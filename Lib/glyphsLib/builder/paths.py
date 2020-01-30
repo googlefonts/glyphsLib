@@ -25,13 +25,13 @@ def to_ufo_paths(self, ufo_glyph, layer):
         # the list is changed below, otherwise you can't draw more than once
         # per session.
         nodes = list(path.nodes)
-        for node in nodes:
-            self.to_ufo_node_user_data(ufo_glyph, node)
 
         pen.beginPath()
+
         if not nodes:
             pen.endPath()
             continue
+
         if not path.closed:
             node = nodes.pop(0)
             assert node.type == "line", "Open path starts with off-curve points"
@@ -40,11 +40,21 @@ def to_ufo_paths(self, ufo_glyph, layer):
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
             nodes.insert(0, nodes.pop())
+
         for node in nodes:
             node_type = _to_ufo_node_type(node.type)
             pen.addPoint(
-                tuple(node.position), segmentType=node_type, smooth=node.smooth
+                tuple(node.position),
+                segmentType=node_type,
+                smooth=node.smooth,
+                name=node.userData.get("name"),
             )
+            # NOTE: Can't do path_index, node_index through enumeration here because we
+            # might have changed node order.
+            # A node's name will be stored as a UFO point's name attribute, so filter
+            # it from the Glyph node user data to avoid storing duplicate information.
+            node_user_data = {k: v for k, v in node.userData.items() if k != "name"}
+            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
         pen.endPath()
 
 

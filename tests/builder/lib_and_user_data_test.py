@@ -298,8 +298,10 @@ def test_node_user_data_into_glif_lib():
     layer.paths.append(path)
     node1 = classes.GSNode()
     node1.userData["nodeUserDataKey1"] = "nodeUserDataValue1"
+    node1.name = "node1"
     node2 = classes.GSNode()
     node2.userData["nodeUserDataKey2"] = "nodeUserDataValue2"
+    node2.name = "node2"
     path.nodes.append(classes.GSNode())
     path.nodes.append(node1)
     path.nodes.append(classes.GSNode())
@@ -311,15 +313,19 @@ def test_node_user_data_into_glif_lib():
     assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.1"] == {
         "nodeUserDataKey1": "nodeUserDataValue1"
     }
+    assert ufo["a"][0][2].name == "node1"
     assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.4"] == {
         "nodeUserDataKey2": "nodeUserDataValue2"
     }
+    assert ufo["a"][0][0].name == "node2"
 
     font = to_glyphs([ufo])
 
     path = font.glyphs["a"].layers["M1"].paths[0]
     assert path.nodes[1].userData["nodeUserDataKey1"] == "nodeUserDataValue1"
+    assert path.nodes[1].name == "node1"
     assert path.nodes[4].userData["nodeUserDataKey2"] == "nodeUserDataValue2"
+    assert path.nodes[4].name == "node2"
 
 
 def test_lib_data_types(tmpdir, ufo_module):

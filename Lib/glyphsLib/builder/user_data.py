@@ -90,12 +90,11 @@ def to_ufo_layer_user_data(self, ufo_glyph, layer):
             ufo_glyph.lib[key] = user_data[key]
 
 
-def to_ufo_node_user_data(self, ufo_glyph, node):
-    user_data = node.userData
+def to_ufo_node_user_data(self, ufo_glyph, node, user_data: dict):
     if user_data:
         path_index, node_index = node._indices()
         key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
-        ufo_glyph.lib[key] = dict(user_data)
+        ufo_glyph.lib[key] = user_data
 
 
 def to_glyphs_family_user_data_from_designspace(self):
@@ -168,7 +167,10 @@ def to_glyphs_layer_user_data(self, ufo_glyph, layer):
 def to_glyphs_node_user_data(self, ufo_glyph, node, path_index, node_index):
     key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
     if key in ufo_glyph.lib:
-        node.userData = ufo_glyph.lib[key]
+        for k, v in ufo_glyph.lib[key].items():
+            if k == "name":
+                continue  # We take the node name from a UFO point's name attribute.
+            node.userData[k] = v
 
 
 def _user_data_has_no_special_meaning(key):
