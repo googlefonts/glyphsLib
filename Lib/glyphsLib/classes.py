@@ -1121,6 +1121,11 @@ class UserDataProxy(Proxy):
             return []
         return self._owner._userData.keys()
 
+    def items(self):
+        if self._owner._userData is None:
+            return []
+        return self._owner._userData.items()
+
     def get(self, key):
         if self._owner._userData is None:
             return None

@@ -21,6 +21,7 @@ from glyphsLib import classes
 from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import (
     GLYPHLIB_PREFIX,
+    FONT_CUSTOM_PARAM_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,
 )
@@ -129,6 +130,30 @@ def test_font_user_data_to_ufo_lib():
     font = to_glyphs([ufo1, ufo2])
 
     assert font.userData["fontUserDataKey"] == "fontUserDataValue"
+
+
+def test_DisplayStrings_ufo_lib():
+    font = classes.GSFont()
+    font.masters.append(classes.GSFontMaster())
+    font.masters.append(classes.GSFontMaster())
+    font.DisplayStrings = ""
+
+    ufo1, ufo2 = to_ufos(font)
+    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo1.lib
+    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo2.lib
+
+    font = to_glyphs([ufo1, ufo2])
+    assert font.DisplayStrings == ""
+
+    # ---
+    font.DisplayStrings = "a"
+
+    ufo1, ufo2 = to_ufos(font)
+    assert ufo1.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
+    assert ufo2.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
+
+    font = to_glyphs([ufo1, ufo2])
+    assert font.DisplayStrings == "a"
 
 
 def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
@@ -273,8 +298,10 @@ def test_node_user_data_into_glif_lib():
     layer.paths.append(path)
     node1 = classes.GSNode()
     node1.userData["nodeUserDataKey1"] = "nodeUserDataValue1"
+    node1.name = "node1"
     node2 = classes.GSNode()
     node2.userData["nodeUserDataKey2"] = "nodeUserDataValue2"
+    node2.name = "node2"
     path.nodes.append(classes.GSNode())
     path.nodes.append(node1)
     path.nodes.append(classes.GSNode())
@@ -286,15 +313,19 @@ def test_node_user_data_into_glif_lib():
     assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.1"] == {
         "nodeUserDataKey1": "nodeUserDataValue1"
     }
+    assert ufo["a"][0][2].name == "node1"
     assert ufo["a"].lib[GLYPHLIB_PREFIX + "nodeUserData.0.4"] == {
         "nodeUserDataKey2": "nodeUserDataValue2"
     }
+    assert ufo["a"][0][0].name == "node2"
 
     font = to_glyphs([ufo])
 
     path = font.glyphs["a"].layers["M1"].paths[0]
     assert path.nodes[1].userData["nodeUserDataKey1"] == "nodeUserDataValue1"
+    assert path.nodes[1].name == "node1"
     assert path.nodes[4].userData["nodeUserDataKey2"] == "nodeUserDataValue2"
+    assert path.nodes[4].name == "node2"
 
 
 def test_lib_data_types(tmpdir, ufo_module):
