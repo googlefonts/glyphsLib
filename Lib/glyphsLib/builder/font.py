@@ -75,6 +75,9 @@ def to_ufo_font_attributes(self, family_name):
         if manufacturer_url:
             ufo.info.openTypeNameManufacturerURL = manufacturer_url
 
+        # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
+        # order of glyphs in the glyphs file, which can optionally be overwritten
+        # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
         ufo.glyphOrder = glyph_order
 
         self.to_ufo_names(ufo, master, family_name)
