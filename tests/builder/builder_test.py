@@ -1430,8 +1430,9 @@ class GlyphOrderTestBase(object):
 
     1. ... no com.schriftgestaltung.glyphOrder key, it will copy
        public.glyphOrder verbatim to the font's custom parameter glyphOrder,
-       including non-existant glyphs. It will sort the glyphs ("Predefined
-       Sorting") as specified by the font's custom parameter glyphOrder.
+       including non-existant glyphs. It will sort the glyphs in the font
+       overview ("Predefined Sorting") as specified by the font's custom
+       parameter glyphOrder.
     2. ... a com.schriftgestaltung.glyphOrder key set to a list of glyph names,
        it will copy com.schriftgestaltung.glyphOrder verbatim to the font's custom
        parameter glyphOrder, including non-existant glyphs. It will not reorder
@@ -1440,24 +1441,37 @@ class GlyphOrderTestBase(object):
        (e.g. Separator: .notdef, Punctuation: period, Separator: nbspace).
     3. ... a com.schriftgestaltung.glyphOrder key set to False, it will not
        copy public.glyphOrder at all and there is no font custom parameter
-       glyphOrder. It will also not sort the glyphs and instead display them as
-       specified in public.glyphOrder. Round-tripping back will therefore
-       overwrite public.glyphOrder with the order of the .glyphs file.
+       glyphOrder. It will also not sort the glyphs in the font overview and
+       instead display them as specified in public.glyphOrder. Round-tripping
+       back will therefore overwrite public.glyphOrder with the order of the
+       .glyphs file.
 
     When Glyphs 2.6.1 opens a UFO _without_ a public.glyphOrder key and...
 
     1. ... no com.schriftgestaltung.glyphOrder key, it will sort the glyphs in
-       the typical Glyphs way and not create a font custom parameter glyphOrder.
+       the font overview in the typical Glyphs way and not create a font custom
+       parameter glyphOrder.
     2. ... a com.schriftgestaltung.glyphOrder key set to a list of glyph names,
        it will copy com.schriftgestaltung.glyphOrder verbatim to the font's custom
        parameter glyphOrder, including non-existant glyphs and will sort the
-       glyphs ("Predefined Sorting") as specified by the font's custom parameter
-       glyphOrder.
+       glyphs in the font overview ("Predefined Sorting") as specified by the font's
+       custom parameter glyphOrder.
     3. ... a com.schriftgestaltung.glyphOrder key set to False, it will sort
        the glyphs in the typical Glyphs way and not create a font custom parameter
        glyphOrder.
 
-    For simplicity, we always write the glyphOrder both ways if it exists.
+    Our Strategy:
+
+    1. If a UFO's public.glyphOrder key...
+        1. exists: write it to the Glyph font-level glyphOrder custom parameter.
+        2. does not exist: Do not write a Glyph font-level glyphOrder custom parameter,
+           the order of glyphs is then undefined.
+    2. If the Glyph font-level glyphOrder custom parameter...
+        1. exists: write it to a UFO's public.glyphOrder key.
+        2. does not exist: write the order of Glyphs glyphs into a UFO's
+           public.glyphOrder key.
+        (This means that glyphs2ufo will *always* write a public.glyphOrder)
+    3. Ignore the com.schriftgestaltung.glyphOrder key.
     """
 
     ufo_module = None  # subclasses must override this
@@ -1468,12 +1482,13 @@ class GlyphOrderTestBase(object):
         self.font.glyphs.append(GSGlyph("c"))
         self.font.glyphs.append(GSGlyph("a"))
         self.font.glyphs.append(GSGlyph("f"))
+
         self.ufo = self.ufo_module.Font()
         self.ufo.newGlyph("c")
         self.ufo.newGlyph("a")
         self.ufo.newGlyph("f")
-        # NOTE: defcon always creates a public.glyphOrder, do it here for ufoLib2.
-        self.ufo.lib["public.glyphOrder"] = ["c", "a", "f"]
+        if "public.glyphOrder" in self.ufo.lib:
+            del self.ufo.lib["public.glyphOrder"]  # defcon automatism
 
     def from_glyphs(self):
         builder = UFOBuilder(self.font, ufo_module=self.ufo_module)
@@ -1483,44 +1498,34 @@ class GlyphOrderTestBase(object):
         builder = GlyphsBuilder([self.ufo])
         return builder.font
 
-    def test_glyphs_to_ufo_no_glyphOrder(self):
-        ufo = self.from_glyphs()
-        self.assertEqual(["c", "a", "f"], ufo.glyphOrder)
-        self.assertIsNone(ufo.lib.get(GLYPHS_PREFIX + "glyphOrder"))
-
-    def test_glyphs_to_ufo_with_glyphOrder(self):
-        self.font.customParameters["glyphOrder"] = ["a", "b", "c", "d"]
-        ufo = self.from_glyphs()
-        self.assertEqual(["a", "b", "c", "d"], ufo.glyphOrder)
-        self.assertIsNone(ufo.lib.get(GLYPHS_PREFIX + "glyphOrder"))
-
-    def test_ufo_to_glyphs_with_csgO_list(self):
+    def test_ufo_to_glyphs_with_glyphOrder(self):
+        self.ufo.lib["public.glyphOrder"] = ["c", "xxx1", "f", "xxx2"]
         self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"] = ["a", "b", "c", "d"]
         font = self.from_ufo()
-        self.assertEqual(["c", "a", "f"], font.customParameters["glyphOrder"])
-        self.assertEqual(["c", "a", "f"], [glyph.name for glyph in font.glyphs])
-
-    def test_ufo_to_glyphs_with_csgO_false(self):
-        self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"] = False
-        font = self.from_ufo()
-        self.assertEqual(["c", "a", "f"], font.customParameters["glyphOrder"])
-        self.assertEqual(["c", "a", "f"], [glyph.name for glyph in font.glyphs])
-
-    def test_ufo_to_glyphs_only_pgO(self):
-        self.ufo.lib["public.glyphOrder"] = ["c", "x", "f"]
-        font = self.from_ufo()
-        self.assertEqual(["c", "x", "f"], font.customParameters["glyphOrder"])
+        self.assertEqual(
+            ["c", "xxx1", "f", "xxx2"], font.customParameters["glyphOrder"]
+        )
+        # NOTE: Glyphs not present in public.glyphOrder are appended. Appending order
+        # is undefined.
         self.assertEqual(["c", "f", "a"], [glyph.name for glyph in font.glyphs])
 
-    def test_ufo_to_glyphs_no_pgO(self):
-        if "public.glyphOrder" in self.ufo.lib:
-            del self.ufo.lib["public.glyphOrder"]
+    def test_ufo_to_glyphs_without_glyphOrder(self):
+        self.ufo.lib[GLYPHS_PREFIX + "glyphOrder"] = ["a", "b", "c", "d"]
         font = self.from_ufo()
-        assert "public.glyphOrder" not in self.ufo.lib
         self.assertNotIn("glyphOrder", font.customParameters)
-        self.assertEqual(
-            [glyph.name for glyph in self.ufo], [glyph.name for glyph in font.glyphs]
-        )
+        # NOTE: order of glyphs in font.glyphs undefined because order in the UFO
+        # undefined.
+
+    def test_glyphs_to_ufo_without_glyphOrder(self):
+        ufo = self.from_glyphs()
+        self.assertEqual(["c", "a", "f"], ufo.lib["public.glyphOrder"])
+        self.assertNotIn(GLYPHS_PREFIX + "glyphOrder", ufo.lib)
+
+    def test_glyphs_to_ufo_with_glyphOrder(self):
+        self.font.customParameters["glyphOrder"] = ["c", "xxx1", "a", "f", "xxx2"]
+        ufo = self.from_glyphs()
+        self.assertEqual(["c", "xxx1", "a", "f", "xxx2"], ufo.lib["public.glyphOrder"])
+        self.assertNotIn(GLYPHS_PREFIX + "glyphOrder", ufo.lib)
 
 
 class GlyphOrderTestUfoLib2(GlyphOrderTestBase, unittest.TestCase):
