@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os.path
 
 import pytest
 
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
+from glyphsLib.classes import GSFont
+from glyphsLib.builder.axes import get_regular_master
 
 """
 Goal: check how files with custom axes are roundtripped.
@@ -212,3 +215,52 @@ def test_mapping_is_same_regardless_of_axes_custom_parameter(ufo_module):
     assert doc.axes[0].minimum == 200
     assert doc.axes[0].maximum == 700
     assert doc.axes[0].map == []
+
+
+def test_custom_parameter_vfo_current():
+    """Tests get_regular_master when 'Variable Font Origin' custom parameter name
+    is used with master set to 'Regular Text'.  This is the current default
+    custom parameter name in the Glyphs editor / glyphs source file specification."""
+    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
+    font = GSFont(source_path)
+    assert font.customParameters["Variation Font Origin"] is None
+    test_id = font.customParameters["Variable Font Origin"]
+    assert test_id == "ACC63F3E-1323-486A-94AF-B18797A154CE"
+    matched = False
+    for master in font.masters:
+        if master.id == test_id:
+            assert master.name == "Regular Text"
+            matched = True
+    assert matched is True
+    default_master = get_regular_master(font)
+    assert default_master.name == "Regular Text"
+
+
+def test_custom_parameter_vfo_old_name():
+    """Tests get_regular_master when 'Variation Font Origin' custom parameter name
+    is used with master set to 'Regular Text'.  This custom parameter name is not
+    used in current releases of the Glyphs editor / glyphs source file specification."""
+    source_path = os.path.join("tests", "data", "CustomParameterVFO-oldname.glyphs")
+    font = GSFont(source_path)
+    assert font.customParameters["Variable Font Origin"] is None
+    test_id = font.customParameters["Variation Font Origin"]
+    assert test_id == "ACC63F3E-1323-486A-94AF-B18797A154CE"
+    matched = False
+    for master in font.masters:
+        if master.id == test_id:
+            assert master.name == "Regular Text"
+            matched = True
+    assert matched is True
+    default_master = get_regular_master(font)
+    assert default_master.name == "Regular Text"
+
+
+def test_custom_parameter_vfo_not_set():
+    """Tests default behavior of get_regular_master when Variable Font Origin custom
+    parameter is not set"""
+    source_path = os.path.join("tests", "data", "CustomParameterVFO-noVFO.glyphs")
+    font = GSFont(source_path)
+    assert font.customParameters["Variable Font Origin"] is None
+    assert font.customParameters["Variation Font Origin"] is None
+    default_master = get_regular_master(font)
+    assert default_master.name == "Regular Text"
