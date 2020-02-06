@@ -15,8 +15,6 @@
 
 import os.path
 
-import pytest
-
 from glyphsLib.builder.axes import get_regular_master
 
 from glyphsLib.classes import GSFont
