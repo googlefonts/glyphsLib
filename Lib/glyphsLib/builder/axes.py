@@ -525,6 +525,7 @@ def get_regular_master(font):
     # named "Variation Font Origin" in the past.
     # We support the current name with a fallback to the previous name
     # if not found in the GSFont.customParameters dict
+    regular_id = None
     if "Variable Font Origin" in font.customParameters:
         regular_id = font.customParameters["Variable Font Origin"]
     elif "Variation Font Origin" in font.customParameters:
