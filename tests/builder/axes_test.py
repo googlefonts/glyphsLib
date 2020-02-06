@@ -244,7 +244,7 @@ def test_custom_parameter_vfo_old_name():
     font = GSFont(source_path)
     assert font.customParameters["Variable Font Origin"] is None
     test_id = font.customParameters["Variation Font Origin"]
-    assert test_id == "ACC63F3E-1323-486A-94AF-B18797A154CE"
+    assert test_id == "Regular Text"
     matched = False
     for master in font.masters:
         if master.id == test_id:
