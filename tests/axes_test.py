@@ -23,8 +23,8 @@ from glyphsLib.classes import GSFont
 
 
 def test_custom_parameter_vfo_current():
-    """Tests get_regular_master when 'Variable Font Origin' custom parameter name 
-    is used with master set to 'Regular Text'.  This is the current default 
+    """Tests get_regular_master when 'Variable Font Origin' custom parameter name
+    is used with master set to 'Regular Text'.  This is the current default
     custom parameter name in the Glyphs editor / glyphs source file specification."""
     source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
     font = GSFont(source_path)
@@ -42,7 +42,7 @@ def test_custom_parameter_vfo_current():
 
 
 def test_custom_parameter_vfo_old_name():
-    """Tests get_regular_master when 'Variation Font Origin' custom parameter name 
+    """Tests get_regular_master when 'Variation Font Origin' custom parameter name
     is used with master set to 'Regular Text'.  This custom parameter name is not
     used in current releases of the Glyphs editor / glyphs source file specification."""
     source_path = os.path.join("tests", "data", "CustomParameterVFO-oldname.glyphs")
