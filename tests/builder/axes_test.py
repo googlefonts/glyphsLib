@@ -243,12 +243,11 @@ def test_custom_parameter_vfo_old_name():
     source_path = os.path.join("tests", "data", "CustomParameterVFO-oldname.glyphs")
     font = GSFont(source_path)
     assert font.customParameters["Variable Font Origin"] is None
-    test_id = font.customParameters["Variation Font Origin"]
-    assert test_id == "Regular Text"
+    test_name = font.customParameters["Variation Font Origin"]
+    assert test_name == "Regular Text"
     matched = False
     for master in font.masters:
-        if master.id == test_id:
-            assert master.name == "Regular Text"
+        if master.name == test_name:
             matched = True
     assert matched is True
     default_master = get_regular_master(font)
