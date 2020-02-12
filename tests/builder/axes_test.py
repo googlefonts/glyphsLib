@@ -240,11 +240,15 @@ def test_custom_parameter_vfo_old_name():
     """Tests get_regular_master when 'Variation Font Origin' custom parameter name
     is used with master set to 'Regular Text'.  This custom parameter name is not
     used in current releases of the Glyphs editor / glyphs source file specification."""
-    source_path = os.path.join("tests", "data", "CustomParameterVFO-oldname.glyphs")
+    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
     font = GSFont(source_path)
+
+    # mock up source for this test with a source file from another test
+    del font.customParameters["Variable Font Origin"]
+    font.customParameters["Variation Font Origin"] = "Regular Text"
     assert font.customParameters["Variable Font Origin"] is None
+    # start tests
     test_name = font.customParameters["Variation Font Origin"]
-    assert test_name == "Regular Text"
     matched = False
     for master in font.masters:
         if master.name == test_name:
@@ -257,8 +261,12 @@ def test_custom_parameter_vfo_old_name():
 def test_custom_parameter_vfo_not_set():
     """Tests default behavior of get_regular_master when Variable Font Origin custom
     parameter is not set"""
-    source_path = os.path.join("tests", "data", "CustomParameterVFO-noVFO.glyphs")
+    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
     font = GSFont(source_path)
+
+    # mock up source for this test with a source file from another test
+    del font.customParameters["Variable Font Origin"]
+    del font.customParameters["Variation Font Origin"]
     assert font.customParameters["Variable Font Origin"] is None
     assert font.customParameters["Variation Font Origin"] is None
     default_master = get_regular_master(font)
