@@ -527,14 +527,16 @@ def get_regular_master(font):
     # if not found in the GSFont.customParameters dict
     if "Variable Font Origin" in font.customParameters:
         regular_id = font.customParameters["Variable Font Origin"]
-        for master in font.masters:
-            if master.id == regular_id:
-                return master
+        if regular_id:
+            for master in font.masters:
+                if master.id == regular_id:
+                    return master
     elif "Variation Font Origin" in font.customParameters:
         regular_name = font.customParameters["Variation Font Origin"]
-        for master in font.masters:
-            if master.name == regular_name:
-                return master
+        if regular_name:
+            for master in font.masters:
+                if master.name == regular_name:
+                    return master
     base_style = find_base_style(font.masters)
     if not base_style:
         base_style = "Regular"
