@@ -133,6 +133,18 @@ class UFOBuilder(_LoggerMixin):
                 "of Glyphs. The resulting UFOs may be incorrect."
             )
 
+        # check that source does not include the old custom
+        # parameter name "Variation Font Origin".  As of sometime prior to
+        # Glyphs v2.6.4 (1286) build, the custom parameter name was
+        # changed to "Variable Font Origin" from "Variation Font Origin"
+        if "Variation Font Origin" in font.customParameters:
+            self.logger.warning(
+                "This Glyphs source was generated with an outdated version "
+                "of Glyphs. Please update the 'Variation Font Origin' "
+                "custom parameter to 'Variable Font Origin'. The resulting "
+                "UFOs may be incorrect."
+            )
+
         if family_name is None:
             # use the source family name, and include all the instances
             self.family_name = self.font.familyName
