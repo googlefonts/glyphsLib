@@ -29,16 +29,23 @@ def to_ufo_components(self, ufo_glyph, layer):
     for index, component in enumerate(layer.components):
         pen.addComponent(component.name, component.transform)
 
-        if component.anchor:
-            if COMPONENT_INFO_KEY not in ufo_glyph.lib:
-                ufo_glyph.lib[COMPONENT_INFO_KEY] = []
-            ufo_glyph.lib[COMPONENT_INFO_KEY].append(
-                {"name": component.name, "index": index, "anchor": component.anchor}
-            )
+        if not (component.anchor or component.alignment):
+            continue
 
-    # data related to components stored in lists of booleans
-    # each list's elements correspond to the components in order
-    for key in ["alignment", "locked", "smartComponentValues"]:
+        component_info = {"name": component.name, "index": index}
+        if component.anchor:
+            component_info["anchor"] = component.anchor
+        if component.alignment:
+            component_info["alignment"] = component.alignment
+
+        if COMPONENT_INFO_KEY not in ufo_glyph.lib:
+            ufo_glyph.lib[COMPONENT_INFO_KEY] = []
+        ufo_glyph.lib[COMPONENT_INFO_KEY].append(component_info)
+
+    # data related to components that is not stored in ComponentInfo is
+    # stored in lists of booleans. each list's elements correspond to the
+    # components in order.
+    for key in ["locked", "smartComponentValues"]:
         values = [getattr(c, key) for c in layer.components]
         if any(values):
             ufo_glyph.lib[_lib_key(key)] = values
@@ -54,28 +61,55 @@ def to_glyphs_components(self, ufo_glyph, layer):
         if _lib_key(key) not in ufo_glyph.lib:
             continue
         # FIXME: (jany) move to using component identifiers for robustness
+        # "alignment" is read, but not written for source backwards compatibility.
         values = ufo_glyph.lib[_lib_key(key)]
         for component, value in zip(layer.components, values):
             if value is not None:
                 setattr(component, key, value)
 
     if COMPONENT_INFO_KEY in ufo_glyph.lib:
-        for component_info in ufo_glyph.lib[COMPONENT_INFO_KEY]:
+        for index, component_info in enumerate(ufo_glyph.lib[COMPONENT_INFO_KEY]):
+            if "index" not in component_info or "name" not in component_info:
+                logger.warning(
+                    "Glyph %s, layer %s: The ComponentInfo at index %s is missing "
+                    "index and/or name keys. Skipping, component properties will be "
+                    "lost.",
+                    ufo_glyph.name,
+                    layer.name,
+                    index,
+                )
+                continue
+
             component_index = component_info["index"]
-            component = layer.components[component_index]
+            try:
+                component = layer.components[component_index]
+            except IndexError:
+                logger.warning(
+                    "Glyph %s, layer %s: The ComponentInfo at index %s is referencing "
+                    "a component that does not exist. Skipping, component properties "
+                    "will be lost.",
+                    ufo_glyph.name,
+                    layer.name,
+                    index,
+                )
+                continue
+
             if component.name == component_info["name"]:
-                component.anchor = component_info["anchor"]
+                if "anchor" in component_info:
+                    component.anchor = component_info["anchor"]
+                if "alignment" in component_info:
+                    component.alignment = component_info["alignment"]
             else:
                 logger.warning(
-                    "Glyph {}, layer {}: The ComponentInfo says the component at index "
-                    "{} is named '{}', but it is actually named '{}'. Skipping, anchor "
-                    "placement might get lost.".format(
-                        ufo_glyph.name,
-                        layer.name,
-                        component_index,
-                        component_info["name"],
-                        component.name,
-                    )
+                    "Glyph %s, layer %s: The ComponentInfo at index %s says the "
+                    "component at index %s is named '%s', but it is actually named "
+                    "'%s'. Skipping, component properties will be lost.",
+                    ufo_glyph.name,
+                    layer.name,
+                    index,
+                    component_index,
+                    component_info["name"],
+                    component.name,
                 )
 
 

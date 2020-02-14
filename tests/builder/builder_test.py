@@ -44,6 +44,7 @@ from glyphsLib.builder.paths import to_ufo_paths
 from glyphsLib.builder.names import build_stylemap_names
 from glyphsLib.builder.filters import parse_glyphs_filter
 from glyphsLib.builder.constants import (
+    COMPONENT_INFO_KEY,
     GLYPHS_PREFIX,
     GLYPHLIB_PREFIX,
     FONT_CUSTOM_PARAM_PREFIX,
@@ -1070,6 +1071,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         self.assertNotIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
         self.assertNotIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
         self.assertNotIn(GLYPHS_PREFIX + "componentsSmartComponentValues", ufo["c"].lib)
+        self.assertNotIn(COMPONENT_INFO_KEY, ufo["c"].lib)
 
         comp2.alignment = -1
         comp1.locked = True
@@ -1078,8 +1080,11 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
 
         # if any component has a non-default alignment/locked values, write
         # list of values for all of them
-        self.assertIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
-        self.assertEqual(ufo["c"].lib[GLYPHS_PREFIX + "componentsAlignment"], [0, -1])
+        self.assertNotIn(GLYPHS_PREFIX + "componentsAlignment", ufo["c"].lib)
+        self.assertEqual(
+            ufo["c"].lib[COMPONENT_INFO_KEY],
+            [{"index": 1, "name": "b", "alignment": -1}],
+        )
         self.assertIn(GLYPHS_PREFIX + "componentsLocked", ufo["c"].lib)
         self.assertEqual(
             ufo["c"].lib[GLYPHS_PREFIX + "componentsLocked"], [True, False]
