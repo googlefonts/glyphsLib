@@ -21,7 +21,7 @@ import re
 import uuid
 from collections import OrderedDict
 from io import StringIO
-from typing import Dict, List
+from typing import Dict, List, Union, Tuple
 
 import glyphsLib
 from glyphsLib.affine import Affine
@@ -1507,6 +1507,21 @@ class GSFontMaster(GSBase):
             # Only write out the name if we can't make it by joining the parts
             return self._name != self.name
         return super().shouldWriteValueForKey(key)
+
+    @property
+    def axes(self) -> Tuple[Union[int, float], ...]:
+        axis_num = len(self.font.axes)
+        return tuple(
+            getattr(self, attr)
+            for attr in (
+                "weightValue",
+                "widthValue",
+                "customValue",
+                "customValue1",
+                "customValue2",
+                "customValue3",
+            )[:axis_num]
+        )
 
     @property
     def name(self):

@@ -194,12 +194,15 @@ class GSFontTest(unittest.TestCase):
         master2 = GSFontMaster()
         font.masters.append(master2)
         self.assertEqual(font.axes, [{"Name": "Weight", "Tag": "wght"}])
+        self.assertEqual(master.axes, (100,))
+        self.assertEqual(master2.axes, (100,))
 
         master2.widthValue = 1
         self.assertEqual(
             font.axes,
             [{"Name": "Weight", "Tag": "wght"}, {"Name": "Width", "Tag": "wdth"}],
         )
+        self.assertEqual(master2.axes, (100, 1))
 
         master.customValue3 = 1
         self.assertEqual(
@@ -213,6 +216,8 @@ class GSFontTest(unittest.TestCase):
                 {"Name": "Custom4", "Tag": "CUS4"},
             ],
         )
+        self.assertEqual(master.axes, (100, 100, 0, 0, 0, 1))
+        self.assertEqual(master2.axes, (100, 1, 0, 0, 0, 0))
 
         font.customParameters["Axes"] = []
         self.assertEqual(
@@ -226,6 +231,8 @@ class GSFontTest(unittest.TestCase):
                 {"Name": "Custom4", "Tag": "CUS4"},
             ],
         )
+        self.assertEqual(master.axes, (100, 100, 0, 0, 0, 1))
+        self.assertEqual(master2.axes, (100, 1, 0, 0, 0, 0))
 
     def test_axes_parameter(self):
         font = GSFont()
