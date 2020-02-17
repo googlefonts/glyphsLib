@@ -183,6 +183,76 @@ class GSFontTest(unittest.TestCase):
         font.masters.append(master)
         self.assertEqual(master.font, font)
 
+    def test_axes_default(self):
+        font = GSFont()
+        self.assertEqual(font.axes, [{"Name": "Weight", "Tag": "wght"}])
+
+    def test_axes_more_axes(self):
+        font = GSFont()
+        master = GSFontMaster()
+        font.masters.append(master)
+        master2 = GSFontMaster()
+        font.masters.append(master2)
+        self.assertEqual(font.axes, [{"Name": "Weight", "Tag": "wght"}])
+
+        master2.widthValue = 1
+        self.assertEqual(
+            font.axes,
+            [{"Name": "Weight", "Tag": "wght"}, {"Name": "Width", "Tag": "wdth"}],
+        )
+
+        master.customValue3 = 1
+        self.assertEqual(
+            font.axes,
+            [
+                {"Name": "Weight", "Tag": "wght"},
+                {"Name": "Width", "Tag": "wdth"},
+                {"Name": "Custom", "Tag": "CUS1"},
+                {"Name": "Custom2", "Tag": "CUS2"},
+                {"Name": "Custom3", "Tag": "CUS3"},
+                {"Name": "Custom4", "Tag": "CUS4"},
+            ],
+        )
+
+        font.customParameters["Axes"] = []
+        self.assertEqual(
+            font.axes,
+            [
+                {"Name": "Weight", "Tag": "wght"},
+                {"Name": "Width", "Tag": "wdth"},
+                {"Name": "Custom", "Tag": "CUS1"},
+                {"Name": "Custom2", "Tag": "CUS2"},
+                {"Name": "Custom3", "Tag": "CUS3"},
+                {"Name": "Custom4", "Tag": "CUS4"},
+            ],
+        )
+
+    def test_axes_parameter(self):
+        font = GSFont()
+        # The following entries are the default strings if you repeatedly add
+        # axes in Glyphs' "Axes" dialog but don't change them.
+        font.customParameters["Axes"] = [
+            {"Name": "Weight", "Tag": "wght"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+            {"Name": "Empty Name", "Tag": "EMPT"},
+        ]
+        self.assertEqual(
+            font.axes,
+            [
+                {"Name": "Weight", "Tag": "wght"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+                {"Name": "Empty Name", "Tag": "EMPT"},
+            ],
+        )
+
 
 class GSObjectsTestCase(unittest.TestCase):
     def setUp(self):

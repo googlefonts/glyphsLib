@@ -21,6 +21,7 @@ import re
 import uuid
 from collections import OrderedDict
 from io import StringIO
+from typing import Dict, List
 
 import glyphsLib
 from glyphsLib.affine import Affine
@@ -3591,6 +3592,51 @@ class GSFont(GSBase):
         self._versionMinor = value
 
     versionMinor = property(getVersionMinor, setVersionMinor)
+
+    @property
+    def axes(self) -> List[Dict[str, str]]:
+        """Return axis names and their tags in the format
+        {"Name": "<name>", "Tag": "<tag>"}.
+
+        Glyphs 2.6.4 seems to use the following heuristic:
+        1. If a Font-level "Axes" parameter exists and is non-empty, return it.
+        2. Otherwise, check every location `*Value` on every master for a non-default
+           value. The order of the non-default `*Value` determines the number of axes,
+           i.e. a single master with just `customValue3` being non-default results in 6
+           axes. All values being default results in a single weight axis. Return
+           default names and tags.
+        """
+        axes = self.customParameters["Axes"]
+        # Check for non-emptiness instead of `not None`, Glyphs 2.6.4 only uses the
+        # parameter when it is non-empty.
+        if axes:
+            return axes
+
+        n = 0
+        for attr, num_axes in (
+            ("weightValue", 1),
+            ("widthValue", 2),
+            ("customValue", 3),
+            ("customValue1", 4),
+            ("customValue2", 5),
+            ("customValue3", 6),
+        ):
+            if any(getattr(m, attr) != m._defaultsForName[attr] for m in self.masters):
+                n = num_axes
+
+        if n == 0:
+            n = 1  # Default: just a weight axis.
+
+        default_names = (
+            (("Name", "Weight"), ("Tag", "wght")),
+            (("Name", "Width"), ("Tag", "wdth")),
+            (("Name", "Custom"), ("Tag", "CUS1")),
+            (("Name", "Custom2"), ("Tag", "CUS2")),
+            (("Name", "Custom3"), ("Tag", "CUS3")),
+            (("Name", "Custom4"), ("Tag", "CUS4")),
+        )
+
+        return [dict(e) for e in default_names[:n]]
 
     glyphs = property(
         lambda self: FontGlyphsProxy(self),
