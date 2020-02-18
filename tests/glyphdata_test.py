@@ -136,6 +136,8 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("O_nbspace"), ("Letter", "Uppercase"))
         self.assertEqual(cat("_a"), (None, None))
         self.assertEqual(cat("_aaa"), (None, None))
+        self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
+        self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
