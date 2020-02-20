@@ -146,6 +146,17 @@ def to_designspace_axes(self):
         axis.name = axis_def.name
         # TODO add support for localised axis.labelNames when Glyphs.app does
 
+        # Make sure here that if there is an Axes parameter, we actually really
+        # keep axes that are defined in it, even if they do nothing. This
+        # prevents an edge case where you have a single master at the default
+        # location that ends in with a Designspace with no axes, as they were
+        # all filtered out by the `if` statement at the bottom.
+        axis_wanted = False
+        if any(
+            a.get("Tag") == axis.tag for a in self.font.customParameters["Axes"] or []
+        ):
+            axis_wanted = True
+
         # See https://github.com/googlefonts/glyphsLib/issues/280
         if font_uses_new_axes(self.font):
             # Build the mapping from the "Axis Location" of the masters
@@ -206,6 +217,7 @@ def to_designspace_axes(self):
             minimum < maximum
             or minimum != axis_def.default_user_loc
             or not is_identity_map
+            or axis_wanted
         ):
             if not is_identity_map:
                 axis.map = sorted(mapping.items())

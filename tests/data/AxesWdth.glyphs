@@ -1,0 +1,30 @@
+{
+.appVersion = "1286";
+customParameters = (
+{
+name = Axes;
+value = (
+{
+Name = Width;
+Tag = wdth;
+}
+);
+}
+);
+date = "2020-02-14 13:24:41 +0000";
+familyName = "Neue Schrift";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = "35BEE313-1FD1-491B-9B8D-FF684D71037F";
+xHeight = 500;
+}
+);
+glyphs = (
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

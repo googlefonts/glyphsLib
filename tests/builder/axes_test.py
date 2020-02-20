@@ -271,3 +271,15 @@ def test_custom_parameter_vfo_not_set():
     assert font.customParameters["Variation Font Origin"] is None
     default_master = get_regular_master(font)
     assert default_master.name == "Regular Text"
+
+
+def test_wheres_ma_axis(datadir):
+    font1 = GSFont(datadir.join("AxesWdth.glyphs"))
+    doc1 = to_designspace(font1)
+    assert [a.tag for a in doc1.axes] == ["wdth"]
+
+
+def test_wheres_ma_axis2(datadir):
+    font2 = GSFont(datadir.join("AxesWdthWght.glyphs"))
+    doc2 = to_designspace(font2)
+    assert [a.tag for a in doc2.axes] == ["wdth", "wght"]
