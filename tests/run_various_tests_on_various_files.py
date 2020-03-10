@@ -22,7 +22,7 @@ import ufoLib2
 
 import glyphsLib
 from fontTools.designspaceLib import DesignSpaceDocument
-import test_helpers
+from . import test_helpers
 
 
 # Kinds of tests that can be run
