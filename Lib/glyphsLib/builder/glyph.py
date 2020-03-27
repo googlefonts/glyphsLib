@@ -41,7 +41,11 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     # converting lastChange to UFO timestamps. I could not reproduce this on a Windows
     # 10/Python 3.7 setup, so this might be a platform thing. If-guarding anyway
     # because these timestamps are useless in a UFO scenario if you use Git.
-    if self.minimize_glyphs_diffs and glyph.lastChange is not None:
+    if (
+        self.minimize_glyphs_diffs
+        and self.font.customParameters["Disable Last Change"] is not True
+        and glyph.lastChange is not None
+    ):
         ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
 
     color_index = glyph.color
