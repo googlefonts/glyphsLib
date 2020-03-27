@@ -25,6 +25,7 @@ import glyphsLib
 import defcon
 import ufoLib2
 from glyphsLib.builder.builders import UFOBuilder
+from glyphsLib.builder import to_ufos
 from glyphsLib.builder.custom_params import (
     _set_default_params,
     GLYPHS_UFO_CUSTOM_PARAMS,
@@ -35,10 +36,12 @@ from glyphsLib.builder.constants import (
     FONT_CUSTOM_PARAM_PREFIX,
     MASTER_CUSTOM_PARAM_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
+    GLYPHLIB_PREFIX,
 )
 from glyphsLib.builder.masters import UFO_FILENAME_KEY
 from glyphsLib.builder.instances import FULL_FILENAME_KEY
-from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter
+from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter, GSGlyph, GSLayer
+from glyphsLib.types import parse_datetime
 
 DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
@@ -235,11 +238,21 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "useNiceNames"])
 
     def test_set_disable_last_change(self):
+        glyph = GSGlyph()
+        glyph.name = "a"
+        self.font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = self.font.masters[0].id
+        layer.associatedMasterId = self.font.masters[0].id
+        layer.width = 100
+        glyph.layers.append(layer)
+        glyph.lastChange = parse_datetime("2017-10-03 07:35:46 +0000")
         self.font.customParameters["Disable Last Change"] = True
-        self.set_custom_params()
+        self.ufo = to_ufos(self.font)[0]
         self.assertEqual(
             True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"]
         )
+        self.assertNotIn(GLYPHLIB_PREFIX + "lastChange", self.ufo["a"].lib)
 
     # https://github.com/googlefonts/glyphsLib/issues/268
     def test_xHeight(self):
