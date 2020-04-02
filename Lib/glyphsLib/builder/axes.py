@@ -218,6 +218,8 @@ def to_designspace_axes(self):
             or minimum != axis_def.default_user_loc
             or not is_identity_map
             or axis_wanted
+            # last resort when no other 'interesting' axis
+            or axis_def is WEIGHT_AXIS_DEF
         ):
             if not is_identity_map:
                 axis.map = sorted(mapping.items())
