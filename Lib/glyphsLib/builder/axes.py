@@ -218,8 +218,6 @@ def to_designspace_axes(self):
             or minimum != axis_def.default_user_loc
             or not is_identity_map
             or axis_wanted
-            # last resort when no other 'interesting' axis
-            or axis_def is WEIGHT_AXIS_DEF
         ):
             if not is_identity_map:
                 axis.map = sorted(mapping.items())
@@ -227,6 +225,21 @@ def to_designspace_axes(self):
             axis.maximum = maximum
             axis.default = default
             self.designspace.addAxis(axis)
+
+    # If there are no interesting axes, but only a single master at default location
+    # along all 3 predefined axes, all with identity user:design mapping, we end up
+    # with an empty list of axes, which is invalid. Thus as last resort we emit a
+    # do-nothing Weight axis (the default axis when no "Axes" custom parameter is
+    # defined) where default==min==max==400.
+    # https://github.com/googlefonts/fontmake/issues/644
+    if not self.designspace.axes:
+        self.designspace.addAxisDescriptor(
+            name=WEIGHT_AXIS_DEF.name,
+            tag=WEIGHT_AXIS_DEF.tag,
+            minimum=WEIGHT_AXIS_DEF.default_user_loc,
+            default=WEIGHT_AXIS_DEF.default_user_loc,
+            maximum=WEIGHT_AXIS_DEF.default_user_loc,
+        )
 
 
 def font_uses_new_axes(font):
