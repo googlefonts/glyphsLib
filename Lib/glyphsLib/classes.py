@@ -1938,7 +1938,7 @@ class GSPath(GSBase):
             node.position.y = y
 
     def draw(self, pen: AbstractPen) -> None:
-        """Draws contour into given pen."""
+        """Draws contour with the given pen."""
         pointPen = PointToSegmentPen(pen)
         self.drawPoints(pointPen)
 
