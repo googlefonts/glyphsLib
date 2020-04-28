@@ -1943,7 +1943,7 @@ class GSPath(GSBase):
         self.drawPoints(pointPen)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
-        """Draws points of contour into given point pen."""
+        """Draws points of contour with the given point pen."""
         nodes = list(self.nodes)
 
         pointPen.beginPath()
