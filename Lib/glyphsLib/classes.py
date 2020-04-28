@@ -3826,13 +3826,14 @@ class LayerPointPen(AbstractPointPen):
 
     def beginPath(self, **kwargs: Any) -> None:
         self._path = GSPath()
+        self._path.closed = True  # Until proven otherwise.
 
     def endPath(self) -> None:
         if self._path is None:
             raise ValueError("Call beginPath first.")
 
-        self._path.closed = True
-        self._path.nodes.append(self._path.nodes.pop(0))
+        if self._path.closed:
+            self._path.nodes.append(self._path.nodes.pop(0))
         self._layer.paths.append(self._path)
         self._path = None
 
@@ -3846,6 +3847,11 @@ class LayerPointPen(AbstractPointPen):
     ) -> None:
         if self._path is None:
             raise ValueError("Call beginPath first.")
+
+        if segmentType == "move":
+            if self._path.nodes:
+                raise ValueError("For an open contour, 'move' must come first.")
+            self._path.closed = False
 
         node = GSNode(
             Point(*pt),

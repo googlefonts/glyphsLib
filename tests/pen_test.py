@@ -19,6 +19,7 @@ def test_pen_roundtrip(datadir, ufo_module):
             assert len(layer.paths) == len(layer_temp.paths)
             for path_orig, path_temp in zip(layer.paths, layer_temp.paths):
                 assert len(path_orig.nodes) == len(path_temp.nodes)
+                assert path_orig.closed == path_temp.closed
                 for node_orig, node_temp in zip(path_orig.nodes, path_temp.nodes):
                     assert node_orig.position.x == node_temp.position.x
                     assert node_orig.position.y == node_temp.position.y
