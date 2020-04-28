@@ -3262,7 +3262,7 @@ class GSLayer(GSBase):
         self.drawPoints(pointPen)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
-        """Draws points of glyph into given point pen."""
+        """Draws points of glyph with the given point pen."""
         for path in self.paths:
             path.drawPoints(pointPen)
         for component in self.components:
