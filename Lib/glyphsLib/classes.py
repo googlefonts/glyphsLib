@@ -3825,6 +3825,9 @@ class LayerPointPen(AbstractPointPen):
         self._path: Optional[GSPath] = None
 
     def beginPath(self, **kwargs: Any) -> None:
+        if self._path is not None:
+            raise ValueError("Call endPath first.")
+
         self._path = GSPath()
         self._path.closed = True  # Until proven otherwise.
 
