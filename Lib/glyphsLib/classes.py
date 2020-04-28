@@ -3813,7 +3813,7 @@ Number = Union[int, float]
 
 
 class LayerPointPen(AbstractPointPen):
-    """A point pen.
+    """A point pen to draw onto GSLayer object.
 
     See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an
     introduction to pens.
