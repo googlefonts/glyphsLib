@@ -21,7 +21,7 @@ import re
 import uuid
 from collections import OrderedDict
 from io import StringIO
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -3843,6 +3843,7 @@ class LayerPointPen(AbstractPointPen):
         segmentType: Optional[str] = None,
         smooth: bool = False,
         name: Optional[str] = None,
+        userData: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> None:
         if self._path is None:
@@ -3859,6 +3860,8 @@ class LayerPointPen(AbstractPointPen):
             smooth=smooth,
             name=name,
         )
+        if userData:
+            node.userData = userData
         self._path.nodes.append(node)
 
     def addComponent(
