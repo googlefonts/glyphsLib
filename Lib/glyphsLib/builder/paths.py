@@ -14,7 +14,6 @@
 
 
 from glyphsLib import types
-from glyphsLib import classes
 from glyphsLib.classes import _to_glyphs_node_type
 
 
