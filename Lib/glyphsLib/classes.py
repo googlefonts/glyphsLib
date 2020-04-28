@@ -21,6 +21,14 @@ import re
 import uuid
 from collections import OrderedDict
 from io import StringIO
+from typing import Any, Optional, Tuple, Union
+
+from fontTools.pens.basePen import AbstractPen
+from fontTools.pens.pointPen import (
+    AbstractPointPen,
+    PointToSegmentPen,
+    SegmentToPointPen,
+)
 
 import glyphsLib
 from glyphsLib.affine import Affine
@@ -1929,6 +1937,47 @@ class GSPath(GSBase):
             node.position.x = x
             node.position.y = y
 
+    def draw(self, pen: AbstractPen) -> None:
+        """Draws contour into given pen."""
+        pointPen = PointToSegmentPen(pen)
+        self.drawPoints(pointPen)
+
+    def drawPoints(self, pointPen: AbstractPointPen) -> None:
+        """Draws points of contour into given point pen."""
+        nodes = list(self.nodes)
+
+        pointPen.beginPath()
+
+        if not nodes:
+            pointPen.endPath()
+            return
+
+        if not self.closed:
+            node = nodes.pop(0)
+            assert node.type == "line", "Open path starts with off-curve points"
+            pointPen.addPoint(tuple(node.position), segmentType="move")
+        else:
+            # In Glyphs.app, the starting node of a closed contour is always
+            # stored at the end of the nodes list.
+            nodes.insert(0, nodes.pop())
+
+        for node in nodes:
+            node_type = node.type if node.type in _UFO_NODE_TYPES else None
+            node_data = dict(node.userData)
+            node_name = node_data.pop("name", None)
+            pointPen.addPoint(
+                tuple(node.position),
+                segmentType=node_type,
+                smooth=node.smooth,
+                name=node_name,
+                userData=node_data,
+            )
+        pointPen.endPath()
+
+
+# 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
+_UFO_NODE_TYPES = {"line", "curve", "qcurve"}
+
 
 class segment(list):
     __slots__ = ("nodes", "parent", "index")
@@ -2212,6 +2261,15 @@ class GSComponent(GSBase):
     # smartComponentValues = property(
     #     lambda self: self.piece,
     #     lambda self, value: setattr(self, "piece", value))
+
+    def draw(self, pen: AbstractPen) -> None:
+        """Draws component with given pen."""
+        pointPen = PointToSegmentPen(pen)
+        self.drawPoints(pointPen)
+
+    def drawPoints(self, pointPen: AbstractPointPen) -> None:
+        """Draws points of component with given point pen."""
+        pointPen.addComponent(self.name, self.transform)
 
 
 class GSSmartComponentAxis(GSBase):
@@ -3188,6 +3246,28 @@ class GSLayer(GSBase):
         """Forbidden, and also forbidden to set it."""
         raise AttributeError
 
+    def getPen(self) -> AbstractPen:
+        """Returns a pen for others to draw into self."""
+        pen = SegmentToPointPen(self.getPointPen())
+        return pen
+
+    def getPointPen(self) -> AbstractPointPen:
+        """Returns a point pen for others to draw points into self."""
+        pointPen = LayerPointPen(self)
+        return pointPen
+
+    def draw(self, pen: AbstractPen) -> None:
+        """Draws glyph into given pen."""
+        pointPen = PointToSegmentPen(pen)
+        self.drawPoints(pointPen)
+
+    def drawPoints(self, pointPen: AbstractPointPen) -> None:
+        """Draws points of glyph into given point pen."""
+        for path in self.paths:
+            path.drawPoints(pointPen)
+        for component in self.components:
+            component.drawPoints(pointPen)
+
 
 class GSBackgroundLayer(GSLayer):
     def shouldWriteValueForKey(self, key):
@@ -3727,3 +3807,65 @@ class GSFont(GSBase):
             del self._kerning[fontMasterId][leftKey]
         if not self._kerning[fontMasterId]:
             del self._kerning[fontMasterId]
+
+
+Number = Union[int, float]
+
+
+class LayerPointPen(AbstractPointPen):
+    """A point pen.
+
+    See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an
+    introduction to pens.
+    """
+
+    __slots__ = ("_layer", "_path")
+
+    def __init__(self, layer: GSLayer) -> None:
+        self._layer: GSLayer = layer
+        self._path: Optional[GSPath] = None
+
+    def beginPath(self, **kwargs: Any) -> None:
+        self._path = GSPath()
+
+    def endPath(self) -> None:
+        if self._path is None:
+            raise ValueError("Call beginPath first.")
+
+        self._path.closed = True
+        self._path.nodes.append(self._path.nodes.pop(0))
+        self._layer.paths.append(self._path)
+        self._path = None
+
+    def addPoint(
+        self,
+        pt: Tuple[Number, Number],
+        segmentType: Optional[str] = None,
+        smooth: bool = False,
+        name: Optional[str] = None,
+        **kwargs: Any,
+    ) -> None:
+        if self._path is None:
+            raise ValueError("Call beginPath first.")
+
+        node = GSNode(
+            Point(*pt),
+            nodetype=_to_glyphs_node_type(segmentType),
+            smooth=smooth,
+            name=name,
+        )
+        self._path.nodes.append(node)
+
+    def addComponent(
+        self, baseGlyph: str, transformation: Transform, **kwargs: Any,
+    ) -> None:
+        component = GSComponent(baseGlyph, transform=transformation)
+        self._layer.components.append(component)
+
+
+def _to_glyphs_node_type(node_type):
+    if node_type is None:
+        return OFFCURVE
+    if node_type == "move":
+        return LINE
+    return node_type

@@ -15,6 +15,7 @@
 
 from glyphsLib import types
 from glyphsLib import classes
+from glyphsLib.classes import _to_glyphs_node_type
 
 
 def to_ufo_paths(self, ufo_glyph, layer):
@@ -82,12 +83,4 @@ def to_glyphs_paths(self, ufo_glyph, layer):
 def _to_ufo_node_type(node_type):
     if node_type not in ["line", "curve", "qcurve"]:
         return None
-    return node_type
-
-
-def _to_glyphs_node_type(node_type):
-    if node_type is None:
-        return classes.OFFCURVE
-    if node_type == "move":
-        return classes.LINE
     return node_type
