@@ -2264,8 +2264,7 @@ class GSComponent(GSBase):
 
     def draw(self, pen: AbstractPen) -> None:
         """Draws component with given pen."""
-        pointPen = PointToSegmentPen(pen)
-        self.drawPoints(pointPen)
+        pen.addComponent(self.name, self.transform)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
         """Draws points of component with given point pen."""
