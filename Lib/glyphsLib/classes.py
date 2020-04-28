@@ -3257,7 +3257,7 @@ class GSLayer(GSBase):
         return pointPen
 
     def draw(self, pen: AbstractPen) -> None:
-        """Draws glyph into given pen."""
+        """Draws glyph with the given pen."""
         pointPen = PointToSegmentPen(pen)
         self.drawPoints(pointPen)
 
