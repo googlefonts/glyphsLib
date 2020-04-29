@@ -3868,8 +3868,15 @@ class LayerPointPen(AbstractPointPen):
         self._path.nodes.append(node)
 
     def addComponent(
-        self, baseGlyph: str, transformation: Transform, **kwargs: Any,
+        self,
+        baseGlyph: str,
+        transformation: Union[
+            Transform, Tuple[float, float, float, float, float, float]
+        ],
+        **kwargs: Any,
     ) -> None:
+        if not isinstance(transformation, Transform):
+            transformation = Transform(*transformation)
         component = GSComponent(baseGlyph, transform=transformation)
         self._layer.components.append(component)
 
