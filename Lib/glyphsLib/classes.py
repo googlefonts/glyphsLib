@@ -2958,6 +2958,7 @@ class GSLayer(GSBase):
         "_annotations",
         "_background",
         "_components",
+        "_foreground",
         "_guides",
         "_hints",
         "_layerId",
@@ -3037,6 +3038,7 @@ class GSLayer(GSBase):
         self._anchors = []
         self._annotations = []
         self._background = None
+        self._foreground = None
         self._components = []
         self._guides = []
         self._hints = []
@@ -3056,6 +3058,13 @@ class GSLayer(GSBase):
         self.visible = False
         self.width = self._defaultsForName["width"]
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+
+    def __setitem__(self, key, value):
+        # On parsing, a background layer is attached to self via GSBase.__setitem__. We
+        # must additionally set a backreference in it.
+        super().__setitem__(key, value)
+        if key == "background":
+            self._background._foreground = self
 
     def __repr__(self):
         name = self.name
