@@ -23,7 +23,7 @@ from collections import OrderedDict
 from io import StringIO
 from typing import Any, Dict, Mapping, Optional, Tuple, Union
 
-from fontTools.pens.basePen import AbstractPen, LoggingPen
+from fontTools.pens.basePen import AbstractPen, DecomposingPen
 from fontTools.pens.pointPen import (
     AbstractPointPen,
     PointToSegmentPen,
@@ -3901,37 +3901,3 @@ def _to_glyphs_node_type(node_type):
     if node_type == "move":
         return LINE
     return node_type
-
-
-class LayerDecomposingPen(LoggingPen):
-    """A write-through pen that decomposes components (i.e. draws them into the out pen
-    as simple contours)."""
-
-    # By default a warning message is logged when a base glyph is missing;
-    # set this to False if you want to raise a 'KeyError' exception
-    skipMissingComponents = True
-
-    def __init__(self, pen: AbstractPen, glyphSet: Mapping[str, GSLayer]) -> None:
-        """Takes an out pen and 'glyphSet' argument, in which the glyphs (layers)
-        that are referenced as components are looked up by their glyph name."""
-        self.pen = pen
-        self.glyphSet = glyphSet
-
-    def addComponent(
-        self,
-        glyphName: str,
-        transformation: Union[
-            Transform, Tuple[float, float, float, float, float, float]
-        ],
-    ) -> None:
-        """Transform the points of the base glyph and draw it with the out pen."""
-
-        try:
-            glyph = self.glyphSet[glyphName]
-        except KeyError:
-            if not self.skipMissingComponents:
-                raise
-            self.log.warning("glyph '%s' is missing from glyphSet; skipped", glyphName)
-        else:
-            tPen = TransformPen(self.pen, transformation)
-            glyph.draw(tPen)

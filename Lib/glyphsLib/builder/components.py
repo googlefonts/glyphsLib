@@ -15,7 +15,8 @@
 
 import logging
 
-from glyphsLib.classes import GSBackgroundLayer, LayerDecomposingPen
+from fontTools.pens.recordingPen import DecomposingRecordingPen
+from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
 
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY
@@ -40,7 +41,7 @@ def to_ufo_components(self, ufo_glyph, layer):
             f"Glyph '{ufo_glyph.name}': All components of the background layer of "
             f"'{layer.foreground.name}' will be decomposed."
         )
-        to_ufo_components_decompose(self, ufo_glyph, layer)
+        to_ufo_components_background_decompose(self, ufo_glyph, layer)
         return
 
     pen = ufo_glyph.getPointPen()
@@ -69,9 +70,9 @@ def to_ufo_components(self, ufo_glyph, layer):
             ufo_glyph.lib[_lib_key(key)] = values
 
 
-def to_ufo_components_decompose(self, ufo_glyph, layer):
-    """Draw decomposed .glyphs components with a pen, adding them to the parent
-    glyph."""
+def to_ufo_components_background_decompose(self, ufo_glyph, layer):
+    """Draw decomposed .glyphs background components with a pen, adding them to
+    the parent glyph."""
 
     layer_id = layer.foreground.layerId
     layer_master_id = layer.foreground.associatedMasterId
@@ -108,9 +109,10 @@ def to_ufo_components_decompose(self, ufo_glyph, layer):
                 **layers_nonmaster,
             }
 
-    pen = ufo_glyph.getPen()
-    dpen = LayerDecomposingPen(pen, layers)
-    layer.draw(dpen)
+    rpen = DecomposingRecordingPen(glyphSet=layers)
+    for component in layer.components:
+        component.draw(rpen)
+    rpen.replay(ufo_glyph.getPen())
 
 
 def to_glyphs_components(self, ufo_glyph, layer):

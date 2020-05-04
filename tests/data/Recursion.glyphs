@@ -126,7 +126,7 @@ unicode = 0041;
 },
 {
 glyphname = B;
-lastChange = "2020-05-04 13:50:42 +0000";
+lastChange = "2020-05-04 16:29:26 +0000";
 layers = (
 {
 background = {
@@ -194,6 +194,25 @@ background = {
 components = (
 {
 name = A;
+}
+);
+paths = (
+{
+closed = 1;
+nodes = (
+"752 843 OFFCURVE",
+"1010 852 OFFCURVE",
+"1010 864 CURVE SMOOTH",
+"1010 876 OFFCURVE",
+"752 885 OFFCURVE",
+"434 885 CURVE SMOOTH",
+"116 885 OFFCURVE",
+"-142 876 OFFCURVE",
+"-142 864 CURVE SMOOTH",
+"-142 852 OFFCURVE",
+"116 843 OFFCURVE",
+"434 843 CURVE SMOOTH"
+);
 }
 );
 };

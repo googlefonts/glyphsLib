@@ -20,10 +20,7 @@ def test_background_component_decompose(datadir):
         == ufo_rg["B"].contours
     )
     assert ufo_rg.layers["public.background"]["B"].contours == ufo_rg["A"].contours
-    assert (
-        ufo_rg.layers["Apr 27 20, 17:59.background"]["B"].contours
-        == ufo_rg["A"].contours
-    )
+    assert len(ufo_rg.layers["Apr 27 20, 17:59.background"]["B"].contours) == 2
 
     assert ufo_rg.layers["Apr 27 20, 17:59"]["B"].components
 
