@@ -96,8 +96,6 @@ def to_ufo_components_background_decompose(self, ufo_glyph, layer):
                 for l in g.layers
                 if l.name == layer.name
             }
-            # FIXME: Have to use layer ID instead of name because glyphsLib collates
-            # layers with the same name.
             layers_master = {
                 g.name: l
                 for g in layer.parent.parent.glyphs
