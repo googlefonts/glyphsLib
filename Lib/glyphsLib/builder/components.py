@@ -15,6 +15,7 @@
 
 import logging
 
+from glyphsLib.classes import GSBackgroundLayer, LayerDecomposingPen
 from glyphsLib.types import Transform
 
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY
@@ -24,8 +25,25 @@ logger = logging.getLogger(__name__)
 
 def to_ufo_components(self, ufo_glyph, layer):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
-    pen = ufo_glyph.getPointPen()
 
+    # NOTE: The UFO v3 and Glyphs data model have incompatible component reference
+    # semantics. UFO components always point to a glyph in the same layer, Glyphs
+    # components in a ...:
+    #  - master layer: point to glyphs in the same master layer.
+    #  - non-master layer: point to glyphs in the layer with the same name and fall
+    #    back to glyphs in the associated master layer
+    # There are some valid use-cases for components in non-master layers, and doing it
+    # thoroughly correctly is time-consuming, so we're decomposing just the background
+    # layer components as a band-aid.
+    if layer.components and isinstance(layer, GSBackgroundLayer):
+        logger.warning(
+            f"Glyph '{ufo_glyph.name}': All components of the background layer of "
+            f"'{layer.foreground.name}' will be decomposed."
+        )
+        to_ufo_components_decompose(self, ufo_glyph, layer)
+        return
+
+    pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
         pen.addComponent(component.name, component.transform)
 
@@ -49,6 +67,50 @@ def to_ufo_components(self, ufo_glyph, layer):
         values = [getattr(c, key) for c in layer.components]
         if any(values):
             ufo_glyph.lib[_lib_key(key)] = values
+
+
+def to_ufo_components_decompose(self, ufo_glyph, layer):
+    """Draw decomposed .glyphs components with a pen, adding them to the parent
+    glyph."""
+
+    layer_id = layer.foreground.layerId
+    layer_master_id = layer.foreground.associatedMasterId
+
+    if layer_id in self._glyph_sets:
+        layers = self._glyph_sets[layer_id]
+    else:
+        if layer_id == layer_master_id:
+            # Is a master layer.
+            layers = self._glyph_sets[layer_id] = {
+                g.name: l
+                for g in layer.parent.parent.glyphs
+                for l in g.layers
+                if l.layerId == layer_id
+            }
+        else:
+            # Is a non-master layer.
+            layers_nonmaster = {
+                g.name: l
+                for g in layer.parent.parent.glyphs
+                for l in g.layers
+                if l.name == layer.name
+            }
+            # FIXME: Have to use layer ID instead of name because glyphsLib collates
+            # layers with the same name.
+            layers_master = {
+                g.name: l
+                for g in layer.parent.parent.glyphs
+                for l in g.layers
+                if l.layerId == layer_master_id
+            }
+            layers = self._glyph_sets[layer_id] = {
+                **layers_master,
+                **layers_nonmaster,
+            }
+
+    pen = ufo_glyph.getPen()
+    dpen = LayerDecomposingPen(pen, layers)
+    layer.draw(dpen)
 
 
 def to_glyphs_components(self, ufo_glyph, layer):
