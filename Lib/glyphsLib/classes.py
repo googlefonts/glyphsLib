@@ -21,15 +21,14 @@ import re
 import uuid
 from collections import OrderedDict
 from io import StringIO
-from typing import Any, Dict, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
-from fontTools.pens.basePen import AbstractPen, DecomposingPen
+from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
     AbstractPointPen,
     PointToSegmentPen,
     SegmentToPointPen,
 )
-from fontTools.pens.transformPen import TransformPen
 
 import glyphsLib
 from glyphsLib.affine import Affine
