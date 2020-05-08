@@ -19,6 +19,7 @@ import logging
 import os
 import re
 from textwrap import dedent
+from typing import Dict
 
 from fontTools import designspaceLib
 
@@ -116,6 +117,10 @@ class UFOBuilder(_LoggerMixin):
         # The set of (SourceDescriptor + UFO)s that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.
         self._sources = OrderedDict()
+
+        # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
+        # for passing into pens as glyph sets.
+        self._glyph_sets: Dict[str, Dict[str, classes.GSLayer]] = {}
 
         # The designSpaceDocument object that will be built.
         # The sources will be built in any case, at the same time that we build
