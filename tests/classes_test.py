@@ -302,7 +302,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
     def test_glyphs(self):
         font = self.font
         self.assertGreaterEqual(len(list(font.glyphs)), 1)
-        by_index = font.glyphs[3]
+        by_index = font.glyphs[4]
         by_name = font.glyphs["adieresis"]
         by_unicode_char = font.glyphs["ä"]
         by_unicode_value = font.glyphs["00E4"]
