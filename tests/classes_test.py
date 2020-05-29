@@ -1151,7 +1151,8 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         self.assertIsNotNone(layer.__repr__())
 
     def test_parent(self):
-        self.assertEqual(self.layer.parent, self.glyph)
+        self.assertIs(self.layer.parent, self.glyph)
+        self.assertIs(self.layer._background.parent, self.glyph)
 
     def test_name(self):
         layer = self.layer
@@ -1355,6 +1356,8 @@ class GSLayerFromFileTest(GSObjectsTestCase):
 
     def test_background(self):
         self.assertIn("GSBackgroundLayer", self.layer.background.__repr__())
+        self.assertIs(self.layer, self.layer.background.foreground)
+        self.assertIs(self.layer.parent, self.layer.background.parent)
 
     def test_backgroundImage(self):
         # The selected layer (0 of glyph 'a') doesn't have one

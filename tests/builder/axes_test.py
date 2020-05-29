@@ -19,7 +19,7 @@ import pytest
 
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
-from glyphsLib.classes import GSFont
+from glyphsLib.classes import GSFont, GSFontMaster
 from glyphsLib.builder.axes import get_regular_master
 
 """
@@ -271,3 +271,37 @@ def test_custom_parameter_vfo_not_set():
     assert font.customParameters["Variation Font Origin"] is None
     default_master = get_regular_master(font)
     assert default_master.name == "Regular Text"
+
+
+def test_wheres_ma_axis(datadir):
+    font1 = GSFont(datadir.join("AxesWdth.glyphs"))
+    doc1 = to_designspace(font1)
+    assert [a.tag for a in doc1.axes] == ["wdth"]
+
+
+def test_wheres_ma_axis2(datadir):
+    font2 = GSFont(datadir.join("AxesWdthWght.glyphs"))
+    doc2 = to_designspace(font2)
+    assert [a.tag for a in doc2.axes] == ["wdth", "wght"]
+
+
+def test_single_master_default_weight_400(ufo_module):
+    font = GSFont()
+    master = GSFontMaster()
+    master.weightValue = 400
+    font.masters.append(master)
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    assert len(doc.axes) == 1
+    assert doc.axes[0].name == "Weight"
+    assert doc.axes[0].minimum == 400
+    assert doc.axes[0].default == 400
+    assert doc.axes[0].maximum == 400
+    assert len(doc.sources) == 1
+    assert doc.sources[0].location["Weight"] == 400
+
+    font2 = to_glyphs(doc)
+
+    assert len(font2.masters) == 1
+    assert font2.masters[0].weightValue == 400
