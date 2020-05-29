@@ -515,6 +515,82 @@ width = 753;
 unicode = 00C4;
 },
 {
+glyphname = I;
+lastChange = "2020-05-29 10:39:58 +0000";
+layers = (
+{
+hints = (
+{
+horizontal = 1;
+origin = "{0, 0}";
+target = up;
+type = BottomGhost;
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+paths = (
+{
+closed = 1;
+nodes = (
+"117 700 LINE",
+"100 700 LINE",
+"100 0 LINE",
+"117 0 LINE"
+);
+}
+);
+width = 217;
+},
+{
+hints = (
+{
+horizontal = 1;
+origin = "{0, 0}";
+target = up;
+type = BottomGhost;
+}
+);
+layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
+paths = (
+{
+closed = 1;
+nodes = (
+"167 700 LINE",
+"77 700 LINE",
+"77 0 LINE",
+"167 0 LINE"
+);
+}
+);
+width = 244;
+},
+{
+hints = (
+{
+horizontal = 1;
+origin = "{0, 0}";
+target = up;
+type = BottomGhost;
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+paths = (
+{
+closed = 1;
+nodes = (
+"250 700 LINE",
+"30 700 LINE",
+"30 0 LINE",
+"250 0 LINE"
+);
+}
+);
+width = 280;
+}
+);
+unicode = "0049,0069";
+},
+{
 glyphname = a;
 lastChange = "2017-07-17 13:49:10 +0000";
 layers = (
