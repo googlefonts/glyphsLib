@@ -97,6 +97,11 @@ def _to_ufo_features(
         if feature.notes:
             lines.append("# notes:")
             lines.extend("# " + line for line in feature.notes.splitlines())
+            feature_name = re.search("^Name: (.+)", feature.notes, flags=re.MULTILINE)
+            if feature_name and len(feature_name.groups()) == 1:
+                lines.extend(
+                    ["featureNames {", '  name "%s";' % feature_name.groups()[0], "};"]
+                )
         if feature.automatic:
             lines.append("# automatic")
         if feature.disabled:

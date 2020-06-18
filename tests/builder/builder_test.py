@@ -28,6 +28,7 @@ from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import (
     GSComponent,
+    GSFeature,
     GSFont,
     GSFontMaster,
     GSGlyph,
@@ -1088,6 +1089,23 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ds2 = self.to_designspace(font, write_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
         self.assertEqual(ufo2.features.text, "")
+
+    def test_glyph_lib_Export_feature_names_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+        for note in (
+            "Name: Single-storey a",
+            "A Comment\nName: Single-storey a\nFoo",
+            "A Comment\nName: Single-storey a",
+            "Name: Single-storey a\nFoo",
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn('name "Single-storey a";', ufo.features.text)
 
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()
