@@ -1107,6 +1107,63 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             ufo = ufos[0]
             self.assertIn(r'name "Single\005cstorey \0022ä\0022";', ufo.features.text)
 
+    def test_glyph_lib_Export_feature_names_long_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+        for note in (
+            (
+                'featureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                '  name 3 1 0x409 "Alternate {};";\n};\n'
+            ),
+            (
+                'Name: "bla"\nfeatureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                '  name 3 1 0x409 "Alternate {};";\n};\nHello\n'
+            ),
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn(
+                (
+                    'featureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                    '  name 3 1 0x409 "Alternate {};";\n};'
+                ),
+                ufo.features.text,
+            )
+
+    def test_glyph_lib_Export_feature_names_long_escaped_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+        for note in (
+            (
+                'featureNames {\n  name "Round dots";\n  name 3 1 0x0C01 '
+                '"\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\n'
+            ),
+            (
+                'Name: "bla"\nfeatureNames {\n  name "Round dots";\n  name 3 1 '
+                '0x0C01 "\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\nHello\n'
+            ),
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn(
+                (
+                    'featureNames {\n  name "Round dots";\n  name 3 1 0x0C01 '
+                    '"\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                    '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\n'
+                ),
+                ufo.features.text,
+            )
+
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()
         master = GSFontMaster()
