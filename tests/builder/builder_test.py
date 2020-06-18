@@ -1097,15 +1097,15 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
         font.features.append(ss01)
         for note in (
-            "Name: Single-storey a",
-            "A Comment\nName: Single-storey a\nFoo",
-            "A Comment\nName: Single-storey a",
-            "Name: Single-storey a\nFoo",
+            'Name: Single\\storey "ä"',
+            'A Comment\nName: Single\\storey "ä"\nFoo',
+            'A Comment\nName: Single\\storey "ä"',
+            'Name: Single\\storey "ä"\nFoo',
         ):
             font.features[0].notes = note
             ufos = self.to_ufos(font)
             ufo = ufos[0]
-            self.assertIn('name "Single-storey a";', ufo.features.text)
+            self.assertIn(r'name "Single\005cstorey \0022ä\0022";', ufo.features.text)
 
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()
