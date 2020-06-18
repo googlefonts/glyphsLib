@@ -98,8 +98,8 @@ def _to_ufo_features(
             lines.append("# notes:")
             lines.extend("# " + line for line in feature.notes.splitlines())
             feature_name = re.search("^Name: (.+)", feature.notes, flags=re.MULTILINE)
-            if feature_name and len(feature_name.groups()) == 1:
-                name = feature_name.groups()[0]
+            if feature_name:
+                name = feature_name.groups()[-1]
                 # Replace special chars backslash and doublequote for AFDKO syntax
                 name = name.replace("\\", r"\005c")
                 name = name.replace('"', r"\0022")
