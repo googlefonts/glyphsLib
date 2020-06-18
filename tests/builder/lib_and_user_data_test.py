@@ -368,6 +368,6 @@ def test_lib_data_types(tmpdir, ufo_module):
         assert type(value) is type(ufo["a"].lib[key])  # noqa: E721
         assert type(value) is type(ufo["a"].lib["nestedDict"][key])  # noqa: E721
         assert type(value) is type(ufo["a"].lib["nestedArray"][index])  # noqa: E721
-        assert type(value) is type(
+        assert type(value) is type(  # noqa: E721
             ufo["a"].lib["crazyNesting"][0]["a"][0]["b"][0][key]
-        )  # noqa: E721
+        )
