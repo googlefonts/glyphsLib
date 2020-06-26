@@ -169,9 +169,8 @@ def _to_designspace_source_layer(self):
             ]
         except ValueError as e:
             raise ValueError(
-                "{}: brace layers must be defined with an integer value, received {}".format(
-                    e, layer_name
-                )
+                "{}: brace layers must be defined with an "
+                "integer value, received {}".format(e, layer_name)
             )
 
         for master_id in master_ids:
