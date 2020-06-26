@@ -160,12 +160,19 @@ def _to_designspace_source_layer(self):
     layers_to_insert = collections.defaultdict(list)
     for layer_name, master_ids in layer_name_to_master_ids.items():
         # Construct coordinates first...
-        brace_coordinates = [
-            int(c)
-            for c in layer_name[
-                layer_name.index("{") + 1 : layer_name.index("}")
-            ].split(",")
-        ]
+        try:
+            brace_coordinates = [
+                int(c)
+                for c in layer_name[
+                    layer_name.index("{") + 1 : layer_name.index("}")
+                ].split(",")
+            ]
+        except ValueError as e:
+            raise ValueError(
+                "{}: brace layers must be defined with an integer value, received {}".format(
+                    e, layer_name
+                )
+            )
 
         for master_id in master_ids:
             # ... as they may need to be filled up with the values of the associated
