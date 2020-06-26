@@ -1541,5 +1541,36 @@ class GlyphOrderTestDefcon(GlyphOrderTestBase, unittest.TestCase):
     ufo_module = defcon
 
 
+class BraceLayerValidityTest(unittest.TestCase):
+    def test_brace_layers_integer(self):
+        font = generate_minimal_font()
+        glyph = GSGlyph(name="a")
+        font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = "test"
+        layer2 = GSLayer()
+        layer2.layerId = "test2"
+        layer2.name = "{14}"
+        glyph.layers.append(layer)
+        glyph.layers.append(layer2)
+        # should not raise ValueError with an int brace layer name
+        builder.to_designspace(font)
+
+    def test_brace_layers_float(self):
+        font = generate_minimal_font()
+        glyph = GSGlyph(name="a")
+        font.glyphs.append(glyph)
+        layer = GSLayer()
+        layer.layerId = "test"
+        layer2 = GSLayer()
+        layer2.layerId = "test2"
+        layer2.name = "{14.1}"
+        glyph.layers.append(layer)
+        glyph.layers.append(layer2)
+        # should raise a ValueError with a float brace layer name
+        with self.assertRaises(ValueError):
+            builder.to_designspace(font)
+
+
 if __name__ == "__main__":
     unittest.main()
