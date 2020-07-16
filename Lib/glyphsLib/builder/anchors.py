@@ -14,6 +14,7 @@
 
 
 from fontTools.misc.transform import Transform
+from .constants import COMPONENT_INFO_KEY
 
 from glyphsLib.types import Point
 
@@ -67,7 +68,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
             _get_anchor_data(to_add, ufo, base_components, anchor_name)
 
     for component in mark_components:
-        _adjust_anchors(to_add, ufo, component)
+        _adjust_anchors(to_add, ufo, parent, component)
 
     # we sort propagated anchors to append in a deterministic order
     for name, (x, y) in sorted(to_add.items()):
@@ -95,15 +96,25 @@ def _get_anchor_data(anchor_data, ufo, components, anchor_name):
         anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
-def _adjust_anchors(anchor_data, ufo, component):
-    """Adjust anchors to which a mark component may have been attached."""
+def _anchor(_glyph, _component):
+    """Pull component’s named anchor from Glyph.lib"""
+    if COMPONENT_INFO_KEY in _glyph.lib:
+        for _anchorLib in _glyph.lib[COMPONENT_INFO_KEY]:
+            if 'anchor' in _anchorLib and 'name' in _anchorLib and _anchorLib['name'] == _component.baseGlyph:
+                return _anchorLib['anchor']
 
+def _adjust_anchors(anchor_data, ufo, parent, component):
+    """Adjust anchors to which a mark component may have been attached."""
     glyph = ufo[component.baseGlyph]
     t = Transform(*component.transformation)
     for anchor in glyph.anchors:
+        # component is attached to a specific named anchor (e.g. top_2 for a ligature glyph) rather than to the standard anchors (top/bottom)
+        _namedAnchor = _anchor(parent, component)
+        if _namedAnchor in anchor_data:
+            anchor_data[_namedAnchor] = t.transformPoint((anchor.x, anchor.y))
         # only adjust if this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top")
-        if anchor.name in anchor_data and any(
+        elif anchor.name in anchor_data and any(
             a.name == "_" + anchor.name for a in glyph.anchors
         ):
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
