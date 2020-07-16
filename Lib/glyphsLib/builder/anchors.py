@@ -15,6 +15,7 @@
 
 from fontTools.misc.transform import Transform
 from .constants import COMPONENT_INFO_KEY
+import fontTools.pens.boundsPen
 
 from glyphsLib.types import Point
 
@@ -60,6 +61,22 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
             else:
                 base_components.append(component)
                 anchor_names |= {a.name for a in glyph.anchors}
+
+    if mark_components and not base_components and _is_ligature_mark(parent):
+        # The composite is a mark that is composed of other marks (E.g.
+        # "circumflexcomb_tildecomb"). Promote the mark that is positioned closest
+        # to the origin to a base.
+        try:
+            component = _component_closest_to_origin(mark_components, ufo)
+        except Exception as e:
+            raise Exception(
+                "Error while determining which component of composite "
+                "'{}' is the lowest: {}".format(parent.name, str(e))
+            )
+        mark_components.remove(component)
+        base_components.append(component)
+        glyph = ufo[component.baseGlyph]
+        anchor_names |= {a.name for a in glyph.anchors}
 
     for anchor_name in anchor_names:
         # don't add if parent already contains this anchor OR any associated
@@ -136,3 +153,35 @@ def to_glyphs_glyph_anchors(self, ufo_glyph, layer):
         anchor.name = ufo_anchor.name
         anchor.position = Point(ufo_anchor.x, ufo_anchor.y)
         layer.anchors.append(anchor)
+
+def _component_closest_to_origin(components, glyph_set):
+    """Return the component whose (xmin, ymin) bounds are closest to origin.
+
+    This ensures that a component that is moved below another is
+    actually recognized as such. Looking only at the transformation
+    offset can be misleading.
+    """
+    return min(components, key=lambda comp: _distance((0, 0), _bounds(comp, glyph_set)))
+
+def _distance(pos1, pos2):
+    x1, y1 = pos1
+    x2, y2 = pos2
+    return (x1 - x2) ** 2 + (y1 - y2) ** 2
+
+
+def _is_ligature_mark(glyph):
+    return not glyph.name.startswith("_") and "_" in glyph.name
+
+
+def _bounds(component, glyph_set):
+    """Return the (xmin, ymin) of the bounds of `component`."""
+    if hasattr(component, "bounds"):  # e.g. defcon
+        return component.bounds[:2]
+    elif hasattr(component, "draw"):  # e.g. ufoLib2
+        pen = fontTools.pens.boundsPen.BoundsPen(glyphSet=glyph_set)
+        component.draw(pen)
+        return pen.bounds[:2]
+    else:
+        raise ValueError(
+            "Don't know to to compute the bounds of component '{}' ".format(component)
+        )
