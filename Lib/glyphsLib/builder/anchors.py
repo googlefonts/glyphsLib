@@ -117,9 +117,13 @@ def _anchor(_glyph, _component):
     """Pull component’s named anchor from Glyph.lib"""
     if COMPONENT_INFO_KEY in _glyph.lib:
         for _anchorLib in _glyph.lib[COMPONENT_INFO_KEY]:
-            if 'anchor' in _anchorLib and 'name' in _anchorLib and \
-            _anchorLib['name'] == _component.baseGlyph:
-                return _anchorLib['anchor']
+            if (
+                "anchor" in _anchorLib
+                and "name" in _anchorLib
+                and _anchorLib["name"] == _component.baseGlyph
+            ):
+                return _anchorLib["anchor"]
+
 
 def _adjust_anchors(anchor_data, ufo, parent, component):
     """Adjust anchors to which a mark component may have been attached."""
@@ -134,7 +138,8 @@ def _adjust_anchors(anchor_data, ufo, parent, component):
         ):
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
         # component is attached to a specific named anchor (e.g. top_2 for a ligature
-        # glyph) rather than to the standard anchors (top/bottom)
+        # glyph)
+        # rather than to the standard anchors (top/bottom)
         elif _namedAnchor in anchor_data:
             anchor_data[_namedAnchor] = t.transformPoint((anchor.x, anchor.y))
 
@@ -156,6 +161,7 @@ def to_glyphs_glyph_anchors(self, ufo_glyph, layer):
         anchor.position = Point(ufo_anchor.x, ufo_anchor.y)
         layer.anchors.append(anchor)
 
+
 def _component_closest_to_origin(components, glyph_set):
     """Return the component whose (xmin, ymin) bounds are closest to origin.
 
@@ -164,6 +170,7 @@ def _component_closest_to_origin(components, glyph_set):
     offset can be misleading.
     """
     return min(components, key=lambda comp: _distance((0, 0), _bounds(comp, glyph_set)))
+
 
 def _distance(pos1, pos2):
     x1, y1 = pos1
