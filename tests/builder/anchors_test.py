@@ -30,7 +30,7 @@ def test_ufo_with_propagated_anchors(datadir):
             assert anchor.x == 129
             assert anchor.y == 950
 
-    # lam_alefHamzaabove-ar
+    # shadda_fatha-ar
     assert 'top' in [x.name for x in ufo['shadda_fatha-ar'].anchors]
     for anchor in ufo['shadda_fatha-ar'].anchors:
         if anchor.name == 'top':
