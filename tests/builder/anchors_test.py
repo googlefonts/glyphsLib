@@ -20,8 +20,8 @@ def test_ufo_with_propagated_anchors(datadir):
     # Additionally, we’ll check the anchor positions and compare them with Glyphs.app’s 
     # own results (hard coded) from `layer.anchorsTraversingComponents()`
 
-    # In case of `lam_alefHamzaabove-ar` it’s crucial that the `top_2` anchor moved upwards
-    # following the `hamza-ar` mark as part of the ligature base glyph
+    # In case of `lam_alefHamzaabove-ar` it’s crucial that the `top_2` anchor moved
+    # upwards following the `hamza-ar` mark as part of the ligature base glyph
 
     # lam_alefHamzaabove-ar
     assert 'top_2' in [x.name for x in ufo['lam_alefHamzaabove-ar'].anchors]
