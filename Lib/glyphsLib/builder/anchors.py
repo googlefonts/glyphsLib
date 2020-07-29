@@ -132,17 +132,17 @@ def _adjust_anchors(anchor_data, ufo, parent, component):
     t = Transform(*component.transformation)
     _componentAnchor = _componentAnchorFromLib(parent, component)
     for anchor in glyph.anchors:
-        # adjust either if this anchor has data and the component also contains
+        # adjust either if component is attached to a specific named anchor
+        # (e.g. top_2 for a ligature glyph)
+        # rather than to the standard anchors (top/bottom)
+        if _componentAnchor in anchor_data:
+            anchor_data[_componentAnchor] = t.transformPoint((anchor.x, anchor.y))
+        # ... or this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top") ...
-        if anchor.name in anchor_data and any(
+        elif anchor.name in anchor_data and any(
             a.name == "_" + anchor.name for a in glyph.anchors
         ):
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
-        # ... or component is attached to a specific named anchor
-        # (e.g. top_2 for a ligature glyph)
-        # rather than to the standard anchors (top/bottom)
-        elif _componentAnchor in anchor_data:
-            anchor_data[_componentAnchor] = t.transformPoint((anchor.x, anchor.y))
 
 
 def to_ufo_glyph_anchors(self, glyph, anchors):
