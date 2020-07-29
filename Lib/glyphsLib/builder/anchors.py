@@ -113,7 +113,7 @@ def _get_anchor_data(anchor_data, ufo, components, anchor_name):
         anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
-def _anchor(_glyph, _component):
+def _componentAnchorFromLib(_glyph, _targetComponent):
     """Pull component’s named anchor from Glyph.lib"""
     if COMPONENT_INFO_KEY in _glyph.lib:
         for _anchorLib in _glyph.lib[COMPONENT_INFO_KEY]:
