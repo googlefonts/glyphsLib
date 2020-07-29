@@ -131,8 +131,8 @@ def _adjust_anchors(anchor_data, ufo, parent, component):
     t = Transform(*component.transformation)
     for anchor in glyph.anchors:
         _namedAnchor = _anchor(parent, component)
-        # only adjust if this anchor has data and the component also contains
-        # the associated mark anchor (e.g. "_top" for "top")
+        # adjust either if this anchor has data and the component also contains
+        # the associated mark anchor (e.g. "_top" for "top") ...
         if anchor.name in anchor_data and any(
             a.name == "_" + anchor.name for a in glyph.anchors
         ):
