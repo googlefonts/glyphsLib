@@ -129,8 +129,8 @@ def _adjust_anchors(anchor_data, ufo, parent, component):
     """Adjust anchors to which a mark component may have been attached."""
     glyph = ufo[component.baseGlyph]
     t = Transform(*component.transformation)
+    _componentAnchor = _componentAnchorFromLib(parent, component)
     for anchor in glyph.anchors:
-        _namedAnchor = _anchor(parent, component)
         # adjust either if this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top") ...
         if anchor.name in anchor_data and any(
