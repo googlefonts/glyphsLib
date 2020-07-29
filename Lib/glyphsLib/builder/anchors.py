@@ -120,7 +120,8 @@ def _componentAnchorFromLib(_glyph, _targetComponent):
             if (
                 "anchor" in _anchorLib
                 and "name" in _anchorLib
-                and _anchorLib["name"] == _component.baseGlyph
+                and _anchorLib["name"] == _targetComponent.baseGlyph
+                and _anchorLib["index"] == _glyph.components.index(_targetComponent)
             ):
                 return _anchorLib["anchor"]
 
