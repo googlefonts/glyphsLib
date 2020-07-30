@@ -1,0 +1,1726 @@
+{
+.appVersion = "1342";
+DisplayStrings = (
+"/lamHamzaabove_alefHamzaabove-ar"
+);
+copyright = "Copyright 2019 The Kufam Project Authors (https://github.com/originaltype/kufam)";
+customParameters = (
+{
+name = glyphOrder;
+value = (
+.notdef,
+space,
+nbspace,
+A,
+B,
+C,
+D,
+E,
+F,
+G,
+H,
+I,
+J,
+K,
+L,
+M,
+N,
+O,
+P,
+Q,
+R,
+S,
+T,
+U,
+V,
+W,
+X,
+Y,
+Z,
+a,
+b,
+c,
+d,
+e,
+f,
+g,
+h,
+i,
+j,
+k,
+l,
+m,
+n,
+o,
+p,
+q,
+r,
+s,
+t,
+u,
+v,
+w,
+x,
+y,
+z,
+Aacute,
+Abreve,
+Acircumflex,
+Adieresis,
+Adotbelow,
+Agrave,
+Amacron,
+Aogonek,
+Aring,
+Aringacute,
+Atilde,
+AE,
+AEacute,
+Cacute,
+Ccaron,
+Ccedilla,
+Ccircumflex,
+Cdotaccent,
+Dcaron,
+Dcroat,
+Eth,
+Eacute,
+Ebreve,
+Ecaron,
+Ecircumflex,
+Edieresis,
+Edotaccent,
+Edotbelow,
+Egrave,
+Emacron,
+Eogonek,
+Etilde,
+Gbreve,
+Gcaron,
+Gcircumflex,
+Gcommaaccent,
+Gdotaccent,
+Hbar,
+Hcircumflex,
+Iacute,
+Ibreve,
+Icircumflex,
+Idieresis,
+Idotaccent,
+Idotbelow,
+Igrave,
+Imacron,
+Iogonek,
+Itilde,
+Jcircumflex,
+Kcommaaccent,
+Lacute,
+Lcaron,
+Lcommaaccent,
+Ldot,
+Lslash,
+Nacute,
+Ncaron,
+Ncommaaccent,
+Ntilde,
+Eng,
+Oacute,
+Obreve,
+Ocircumflex,
+Odieresis,
+Odotbelow,
+Ograve,
+Ohungarumlaut,
+Omacron,
+Oogonek,
+Oslash,
+Oslashacute,
+Otilde,
+OE,
+Racute,
+Rcaron,
+Rcommaaccent,
+Sacute,
+Scaron,
+Scedilla,
+Scircumflex,
+Scommaaccent,
+Tbar,
+Tcaron,
+Tcedilla,
+Tcommaaccent,
+Thorn,
+Uacute,
+Ubreve,
+Ucircumflex,
+Udieresis,
+Udotbelow,
+Ugrave,
+Uhungarumlaut,
+Umacron,
+Uogonek,
+Uring,
+Utilde,
+Wacute,
+Wcircumflex,
+Wdieresis,
+Wgrave,
+Yacute,
+Ycircumflex,
+Ydieresis,
+Ygrave,
+Ymacron,
+Ytilde,
+Zacute,
+Zcaron,
+Zdotaccent,
+Germandbls,
+aacute,
+abreve,
+acircumflex,
+adieresis,
+adotbelow,
+agrave,
+amacron,
+aogonek,
+aring,
+aringacute,
+atilde,
+ae,
+aeacute,
+cacute,
+ccaron,
+ccedilla,
+ccircumflex,
+cdotaccent,
+dcaron,
+dcroat,
+eacute,
+ebreve,
+ecaron,
+ecircumflex,
+edieresis,
+edotaccent,
+edotbelow,
+egrave,
+emacron,
+eogonek,
+eth,
+etilde,
+gbreve,
+gcaron,
+gcircumflex,
+gcommaaccent,
+gdotaccent,
+hbar,
+hcircumflex,
+iacute,
+ibreve,
+icircumflex,
+idieresis,
+idotaccent,
+idotbelow,
+idotless,
+igrave,
+imacron,
+iogonek,
+itilde,
+jcircumflex,
+jdotless,
+kcommaaccent,
+kgreenlandic,
+lacute,
+lcaron,
+lcommaaccent,
+ldot,
+lslash,
+nacute,
+ncaron,
+ncommaaccent,
+ntilde,
+eng,
+oacute,
+obreve,
+ocircumflex,
+odieresis,
+odotbelow,
+ograve,
+ohungarumlaut,
+omacron,
+oogonek,
+oslash,
+oslashacute,
+otilde,
+oe,
+racute,
+rcaron,
+rcommaaccent,
+sacute,
+scaron,
+scedilla,
+scircumflex,
+scommaaccent,
+tbar,
+tcaron,
+tcedilla,
+tcommaaccent,
+thorn,
+uacute,
+ubreve,
+ucircumflex,
+udieresis,
+udotbelow,
+ugrave,
+uhungarumlaut,
+umacron,
+uogonek,
+uring,
+utilde,
+wacute,
+wcircumflex,
+wdieresis,
+wgrave,
+yacute,
+ycircumflex,
+ydieresis,
+ygrave,
+ymacron,
+ytilde,
+zacute,
+zcaron,
+zdotaccent,
+germandbls,
+a.sc,
+b.sc,
+c.sc,
+d.sc,
+e.sc,
+f.sc,
+g.sc,
+h.sc,
+i.sc,
+j.sc,
+k.sc,
+l.sc,
+m.sc,
+n.sc,
+o.sc,
+p.sc,
+q.sc,
+r.sc,
+s.sc,
+t.sc,
+u.sc,
+v.sc,
+w.sc,
+x.sc,
+y.sc,
+z.sc,
+aacute.sc,
+abreve.sc,
+acircumflex.sc,
+adieresis.sc,
+adotbelow.sc,
+agrave.sc,
+amacron.sc,
+aogonek.sc,
+aring.sc,
+aringacute.sc,
+atilde.sc,
+ae.sc,
+aeacute.sc,
+cacute.sc,
+ccaron.sc,
+ccedilla.sc,
+ccircumflex.sc,
+cdotaccent.sc,
+eth.sc,
+dcaron.sc,
+dcroat.sc,
+eacute.sc,
+ebreve.sc,
+ecaron.sc,
+ecircumflex.sc,
+edieresis.sc,
+edotaccent.sc,
+edotbelow.sc,
+egrave.sc,
+emacron.sc,
+eogonek.sc,
+etilde.sc,
+gbreve.sc,
+gcaron.sc,
+gcircumflex.sc,
+gcommaaccent.sc,
+gdotaccent.sc,
+hbar.sc,
+hcircumflex.sc,
+idotless.sc,
+iacute.sc,
+ibreve.sc,
+icircumflex.sc,
+idieresis.sc,
+idotbelow.sc,
+igrave.sc,
+imacron.sc,
+iogonek.sc,
+itilde.sc,
+jcircumflex.sc,
+kcommaaccent.sc,
+kgreenlandic.sc,
+lacute.sc,
+lcaron.sc,
+lcommaaccent.sc,
+ldot.sc,
+lslash.sc,
+nacute.sc,
+ncaron.sc,
+ncommaaccent.sc,
+eng.sc,
+ntilde.sc,
+oacute.sc,
+obreve.sc,
+ocircumflex.sc,
+odieresis.sc,
+odotbelow.sc,
+ograve.sc,
+ohungarumlaut.sc,
+omacron.sc,
+oogonek.sc,
+oslash.sc,
+oslashacute.sc,
+otilde.sc,
+oe.sc,
+thorn.sc,
+racute.sc,
+rcaron.sc,
+rcommaaccent.sc,
+sacute.sc,
+scaron.sc,
+scedilla.sc,
+scircumflex.sc,
+scommaaccent.sc,
+tbar.sc,
+tcaron.sc,
+tcedilla.sc,
+tcommaaccent.sc,
+uacute.sc,
+ubreve.sc,
+ucircumflex.sc,
+udieresis.sc,
+udotbelow.sc,
+ugrave.sc,
+uhungarumlaut.sc,
+umacron.sc,
+dzcaron.sc,
+lj.sc,
+nj.sc,
+adblgrave.sc,
+ainvertedbreve.sc,
+edblgrave.sc,
+einvertedbreve.sc,
+idblgrave.sc,
+iinvertedbreve.sc,
+odblgrave.sc,
+oinvertedbreve.sc,
+rdblgrave.sc,
+rinvertedbreve.sc,
+udblgrave.sc,
+uinvertedbreve.sc,
+odieresismacron.sc,
+otildemacron.sc,
+odotaccentmacron.sc,
+ccedillaacute.sc,
+ddotbelow.sc,
+dlinebelow.sc,
+emacrongrave.sc,
+emacronacute.sc,
+ecedillabreve.sc,
+gmacron.sc,
+hdotbelow.sc,
+hbrevebelow.sc,
+idieresisacute.sc,
+ldotbelow.sc,
+llinebelow.sc,
+mdotbelow.sc,
+ndotaccent.sc,
+ndotbelow.sc,
+nlinebelow.sc,
+otildeacute.sc,
+otildedieresis.sc,
+omacrongrave.sc,
+omacronacute.sc,
+rdotbelow.sc,
+rlinebelow.sc,
+sdotaccent.sc,
+sdotbelow.sc,
+sacutedotaccent.sc,
+scarondotaccent.sc,
+sdotbelowdotaccent.sc,
+tdotbelow.sc,
+tlinebelow.sc,
+utildeacute.sc,
+umacrondieresis.sc,
+ydotaccent.sc,
+zdotbelow.sc,
+tdieresis.sc,
+uogonek.sc,
+uring.sc,
+utilde.sc,
+wacute.sc,
+wcircumflex.sc,
+wdieresis.sc,
+wgrave.sc,
+yacute.sc,
+ycircumflex.sc,
+ydieresis.sc,
+ygrave.sc,
+ymacron.sc,
+ytilde.sc,
+zacute.sc,
+zcaron.sc,
+zdotaccent.sc,
+germandbls.sc,
+schwa.sc,
+Schwa,
+schwa,
+DZcaron,
+Dzcaron,
+dzcaron,
+LJ,
+Lj,
+lj,
+NJ,
+Nj,
+nj,
+Adblgrave,
+adblgrave,
+Ainvertedbreve,
+ainvertedbreve,
+Edblgrave,
+edblgrave,
+Einvertedbreve,
+einvertedbreve,
+Idblgrave,
+idblgrave,
+Iinvertedbreve,
+iinvertedbreve,
+Odblgrave,
+odblgrave,
+Oinvertedbreve,
+oinvertedbreve,
+Rdblgrave,
+rdblgrave,
+Rinvertedbreve,
+rinvertedbreve,
+Udblgrave,
+udblgrave,
+Uinvertedbreve,
+uinvertedbreve,
+Odieresismacron,
+odieresismacron,
+Otildemacron,
+otildemacron,
+Odotaccentmacron,
+odotaccentmacron,
+f_f,
+fi,
+fl,
+f_f_i,
+f_f_l,
+ampersand,
+at,
+asterisk,
+copyright,
+registered,
+trademark,
+asciicircum,
+asciitilde,
+grave,
+acute,
+circumflex,
+caron,
+caroncomb.alt,
+tilde,
+dieresis,
+macron,
+apostrophemod,
+firsttonechinese,
+breve,
+ring,
+hungarumlaut,
+dotaccent,
+cedilla,
+ogonek,
+gravecomb,
+acutecomb,
+circumflexcomb,
+tildecomb,
+macroncomb,
+brevecomb,
+dotaccentcomb,
+dieresiscomb,
+hookabovecomb,
+ringcomb,
+hungarumlautcomb,
+caroncomb,
+breveinvertedcomb,
+dblgravecomb,
+horncomb,
+dotbelowcomb,
+dieresisbelowcomb,
+commaaccentcomb,
+commaturnedabovecomb,
+cedillacomb,
+ogonekcomb,
+brevebelowcomb,
+macronbelowcomb,
+softhyphen,
+hyphen,
+endash,
+emdash,
+underscore,
+period,
+comma,
+colon,
+semicolon,
+exclam,
+exclamdown,
+question,
+questiondown,
+ellipsis,
+periodcentered,
+periodcentered.loclCAT,
+bulletoperator,
+bullet,
+slash,
+backslash,
+bar,
+brokenbar,
+parenleft,
+parenright,
+bracketleft,
+bracketright,
+braceleft,
+braceright,
+quotesingle,
+quotedbl,
+quoteleft,
+quoteright,
+quotedblleft,
+quotedblright,
+quotesinglbase,
+quotedblbase,
+guilsinglleft,
+guilsinglright,
+guillemetleft,
+guillemetright,
+paragraph,
+numbersign,
+zero,
+one,
+two,
+three,
+four,
+five,
+six,
+seven,
+eight,
+nine,
+fraction,
+divisionslash,
+onequarter,
+onehalf,
+threequarters,
+degree,
+percent,
+perthousand,
+plus,
+minus,
+plusminus,
+equal,
+notequal,
+approxequal,
+multiply,
+less,
+greater,
+lessequal,
+greaterequal,
+divide,
+logicalnot,
+dagger,
+daggerdbl,
+section,
+euro,
+currency,
+dollar,
+cent,
+florin,
+sterling,
+yen,
+onesuperior,
+twosuperior,
+threesuperior,
+foursuperior,
+ordfeminine,
+ordmasculine,
+numero,
+micro,
+zero.lf,
+one.lf,
+two.lf,
+three.lf,
+four.lf,
+five.lf,
+six.lf,
+seven.lf,
+eight.lf,
+nine.lf,
+Abreveacute,
+Abrevedotbelow,
+Abrevegrave,
+Abrevehookabove,
+Abrevetilde,
+Acircumflexacute,
+Acircumflexdotbelow,
+Acircumflexgrave,
+Acircumflexhookabove,
+Acircumflextilde,
+Ahookabove,
+Ecircumflexacute,
+Ecircumflexdotbelow,
+Ecircumflexgrave,
+Ecircumflexhookabove,
+Ecircumflextilde,
+Ehookabove,
+Ocircumflexacute,
+Ocircumflexdotbelow,
+Ocircumflexgrave,
+Ocircumflexhookabove,
+Ocircumflextilde,
+Ohookabove,
+Ohorn,
+Ohornacute,
+Ohorndotbelow,
+Ohorngrave,
+Ohornhookabove,
+Ohorntilde,
+Uhookabove,
+Uhorn,
+Uhornacute,
+Uhorndotbelow,
+Uhorngrave,
+Uhornhookabove,
+Uhorntilde,
+Ydotbelow,
+Yhookabove,
+abreveacute,
+abrevedotbelow,
+abrevegrave,
+abrevehookabove,
+abrevetilde,
+acircumflexacute,
+acircumflexdotbelow,
+acircumflexgrave,
+acircumflexhookabove,
+acircumflextilde,
+ahookabove,
+ecircumflexacute,
+ecircumflexdotbelow,
+ecircumflexgrave,
+ecircumflexhookabove,
+ecircumflextilde,
+ehookabove,
+Ihookabove,
+ihookabove,
+ocircumflexacute,
+ocircumflexdotbelow,
+ocircumflexgrave,
+ocircumflexhookabove,
+ocircumflextilde,
+ohookabove,
+ohorn,
+ohornacute,
+ohorndotbelow,
+ohorngrave,
+ohornhookabove,
+ohorntilde,
+uhookabove,
+uhorn,
+uhornacute,
+uhorndotbelow,
+uhorngrave,
+uhornhookabove,
+uhorntilde,
+ydotbelow,
+abreveacute.sc,
+abrevedotbelow.sc,
+abrevegrave.sc,
+abrevehookabove.sc,
+abrevetilde.sc,
+acircumflexacute.sc,
+acircumflexdotbelow.sc,
+acircumflexgrave.sc,
+acircumflexhookabove.sc,
+acircumflextilde.sc,
+ahookabove.sc,
+ecircumflexacute.sc,
+ecircumflexdotbelow.sc,
+ecircumflexgrave.sc,
+ecircumflexhookabove.sc,
+ecircumflextilde.sc,
+ehookabove.sc,
+ocircumflexacute.sc,
+ocircumflexdotbelow.sc,
+ocircumflexgrave.sc,
+ocircumflexhookabove.sc,
+ocircumflextilde.sc,
+ohookabove.sc,
+ohorn.sc,
+ohornacute.sc,
+ohorndotbelow.sc,
+ohorngrave.sc,
+ohornhookabove.sc,
+ohorntilde.sc,
+uhorn.sc,
+uhornacute.sc,
+uhorndotbelow.sc,
+uhorngrave.sc,
+uhornhookabove.sc,
+uhorntilde.sc,
+ihookabove.sc,
+ydotbelow.sc,
+yhookabove.sc,
+yhookabove,
+colonsign,
+franc,
+lira,
+naira,
+peseta,
+won,
+dong,
+kip,
+peso,
+guarani,
+cedi,
+rupeeIndian,
+liraTurkish,
+manat,
+ruble,
+gravecomb.case,
+acutecomb.case,
+circumflexcomb.case,
+tildecomb.case,
+macroncomb.case,
+brevecomb.case,
+dotaccentcomb.case,
+dieresiscomb.case,
+hookabovecomb.case,
+ringcomb.case,
+hungarumlautcomb.case,
+caroncomb.case,
+breveinvertedcomb.case,
+dblgravecomb.case,
+horncomb.case,
+dotbelowcomb.case,
+dieresisbelowcomb.case,
+commaaccentcomb.case,
+commaturnedabovecomb.case,
+cedillacomb.case,
+ogonekcomb.case,
+brevebelowcomb.case,
+macronbelowcomb.case,
+periodcentered.loclCAT.case,
+zero.zero,
+zero.dnom,
+one.dnom,
+two.dnom,
+three.dnom,
+four.dnom,
+five.dnom,
+six.dnom,
+seven.dnom,
+eight.dnom,
+nine.dnom,
+zero.numr,
+one.numr,
+two.numr,
+three.numr,
+four.numr,
+five.numr,
+six.numr,
+seven.numr,
+eight.numr,
+nine.numr,
+pi,
+literSign,
+Ohm,
+estimated,
+partialdiff,
+increment,
+product,
+summation,
+radical,
+infinity,
+integral,
+lozenge,
+emptyset,
+commaturnedmod,
+ringhalfright,
+ringhalfleft,
+verticallinemod,
+secondtonechinese,
+fourthtonechinese,
+verticallinelowmod,
+Ccedillaacute,
+ccedillaacute,
+Ddotbelow,
+ddotbelow,
+Dlinebelow,
+dlinebelow,
+Emacrongrave,
+emacrongrave,
+Emacronacute,
+emacronacute,
+Ecedillabreve,
+ecedillabreve,
+Gmacron,
+gmacron,
+Hdotbelow,
+hdotbelow,
+Hbrevebelow,
+hbrevebelow,
+Idieresisacute,
+idieresisacute,
+Ldotbelow,
+ldotbelow,
+Llinebelow,
+llinebelow,
+Mdotbelow,
+mdotbelow,
+Ndotaccent,
+ndotaccent,
+Ndotbelow,
+ndotbelow,
+Nlinebelow,
+nlinebelow,
+Otildeacute,
+otildeacute,
+Otildedieresis,
+otildedieresis,
+Omacrongrave,
+omacrongrave,
+Omacronacute,
+omacronacute,
+Rdotbelow,
+rdotbelow,
+Rlinebelow,
+rlinebelow,
+Sdotaccent,
+sdotaccent,
+Sdotbelow,
+sdotbelow,
+Sacutedotaccent,
+sacutedotaccent,
+Scarondotaccent,
+scarondotaccent,
+Sdotbelowdotaccent,
+sdotbelowdotaccent,
+Tdotbelow,
+tdotbelow,
+Tlinebelow,
+tlinebelow,
+Utildeacute,
+utildeacute,
+Umacrondieresis,
+umacrondieresis,
+Ydotaccent,
+ydotaccent,
+Zdotbelow,
+zdotbelow,
+tdieresis,
+figurespace,
+punctuationspace,
+thinspace,
+hairspace,
+zerowidthspace,
+hyphentwo,
+figuredash,
+horizontalbar,
+primemod,
+second,
+zerosuperior,
+fivesuperior,
+sixsuperior,
+sevensuperior,
+eightsuperior,
+ninesuperior,
+zeroinferior,
+oneinferior,
+twoinferior,
+threeinferior,
+fourinferior,
+fiveinferior,
+sixinferior,
+seveninferior,
+eightinferior,
+nineinferior,
+zero.subs,
+one.subs,
+two.subs,
+three.subs,
+four.subs,
+five.subs,
+six.subs,
+seven.subs,
+eight.subs,
+nine.subs,
+at.case,
+hyphen.case,
+endash.case,
+emdash.case,
+periodcentered.case,
+bullet.case,
+slash.case,
+backslash.case,
+parenright.case,
+bracketleft.case,
+bracketright.case,
+braceleft.case,
+braceright.case,
+guilsinglleft.case,
+guilsinglright.case,
+guillemetleft.case,
+guillemetright.case,
+zero.sups,
+one.sups,
+two.sups,
+three.sups,
+four.sups,
+five.sups,
+six.sups,
+seven.sups,
+eight.sups,
+nine.sups,
+zero.sinf,
+one.sinf,
+two.sinf,
+three.sinf,
+four.sinf,
+five.sinf,
+six.sinf,
+seven.sinf,
+eight.sinf,
+nine.sinf,
+onethird,
+twothirds,
+oneeighth,
+threeeighths,
+fiveeighths,
+seveneighths,
+leftArrow,
+upArrow,
+rightArrow,
+downArrow,
+blackSquare,
+whiteSquare,
+upBlackTriangle,
+upWhiteTriangle,
+rightBlackTriangle,
+rightWhiteTriangle,
+downBlackTriangle,
+downWhiteTriangle,
+leftBlackTriangle,
+leftWhiteTriangle,
+blackDiamond,
+whiteDiamond,
+germandbls.alt.sc,
+periodcentered.sc,
+periodcentered.loclCAT.sc,
+exclam.sc,
+exclamdown.sc,
+question.sc,
+questiondown.sc,
+quotedbl.sc,
+quotedblleft.sc,
+quotedblright.sc,
+quoteleft.sc,
+quoteright.sc,
+quotesingle.sc,
+ampersand.sc
+);
+},
+{
+name = blueShift;
+value = 5;
+},
+{
+name = fsType;
+value = (
+);
+},
+{
+name = blueScale;
+value = 0.05796;
+},
+{
+name = "Family Alignment Zones";
+value = (
+"{760, 10}",
+"{720, 12}",
+"{572, 12}",
+"{544, 12}",
+"{0, -12}",
+"{-232, -8}",
+"{-256, -4}"
+);
+},
+{
+name = unicodeRanges;
+value = (
+0,
+1,
+2,
+3,
+6,
+13,
+31,
+32,
+33,
+35,
+36,
+37,
+38,
+66
+);
+},
+{
+name = codePageRanges;
+value = (
+1252,
+1250,
+1256,
+864,
+850
+);
+},
+{
+name = vendorID;
+value = ORTY;
+},
+{
+name = license;
+value = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL";
+},
+{
+name = licenseURL;
+value = "https://scripts.sil.org/OFL";
+},
+{
+name = trademark;
+value = "Copyright 2019 The Kufam Project Authors (https://github.com/originaltype/kufam)";
+},
+{
+name = "Enforce Compatibility Check";
+value = 1;
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = Axes;
+value = (
+{
+Name = Weight;
+Tag = wght;
+}
+);
+}
+);
+date = "2020-07-10 11:54:10 +0000";
+designer = "Wael Morcos, Artur Schmal";
+designerURL = "https://originaltype.com/";
+familyName = Kufam;
+fontMaster = (
+{
+alignmentZones = (
+"{760, 10}",
+"{720, 12}",
+"{572, 12}",
+"{544, 12}",
+"{0, -12}",
+"{-232, -8}",
+"{-256, -4}"
+);
+ascender = 760;
+capHeight = 720;
+customParameters = (
+{
+name = typoAscender;
+value = 900;
+},
+{
+name = typoDescender;
+value = -400;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = hheaAscender;
+value = 900;
+},
+{
+name = hheaDescender;
+value = -400;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1252;
+},
+{
+name = winDescent;
+value = 1050;
+},
+{
+name = smallCapHeight;
+value = 572;
+},
+{
+name = strikeoutPosition;
+value = 326;
+},
+{
+name = strikeoutSize;
+value = 50;
+}
+);
+descender = -240;
+guideLines = (
+{
+locked = 1;
+name = Baseline;
+position = "{1200, 85}";
+},
+{
+position = "{201, 782}";
+},
+{
+position = "{449, 681}";
+},
+{
+position = "{479, 861}";
+},
+{
+position = "{267, 776}";
+},
+{
+locked = 1;
+name = "Nabira 1";
+position = "{1202, 504}";
+},
+{
+locked = 1;
+name = "hah top";
+position = "{1202, 556}";
+},
+{
+locked = 1;
+name = "waw height";
+position = "{1204, 476}";
+},
+{
+locked = 1;
+name = "loop height";
+position = "{1204, 516}";
+},
+{
+locked = 1;
+name = "horizontal bar";
+position = "{1201, 394}";
+},
+{
+locked = 1;
+name = "nabirah 2";
+position = "{1209, 440}";
+}
+);
+horizontalStems = (
+64,
+72,
+80
+);
+iconName = SemiLight;
+id = "3E005A84-7828-4122-B6E8-61930BD9836F";
+userData = {
+GSOffsetHorizontal = 15;
+GSOffsetVertical = 10;
+};
+verticalStems = (
+84,
+92
+);
+weightValue = 92;
+widthValue = 5;
+xHeight = 544;
+}
+);
+glyphs = (
+{
+color = 4;
+glyphname = "lam_alef-ar.short";
+lastChange = "2020-07-21 10:55:54 +0000";
+layers = (
+{
+anchors = (
+{
+name = bottom_1;
+position = "{456, 0}";
+},
+{
+name = bottom_2;
+position = "{124, 0}";
+},
+{
+name = top_1;
+position = "{498, 760}";
+},
+{
+name = top_2;
+position = "{130, 628}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+paths = (
+{
+closed = 1;
+nodes = (
+"456 0 LINE SMOOTH",
+"486 0 OFFCURVE",
+"510 4 OFFCURVE",
+"524 16 CURVE",
+"524 24 LINE",
+"348 320 LINE",
+"340 320 LINE",
+"296 248 LINE",
+"412 46 LINE",
+"430 85 LINE",
+"106 85 LINE",
+"133 72 LINE",
+"148 80 OFFCURVE",
+"170 104 OFFCURVE",
+"196 148 CURVE SMOOTH",
+"544 752 LINE",
+"544 760 LINE",
+"452 760 LINE",
+"254 425 LINE",
+"285 437 LINE",
+"180 628 LINE",
+"84 628 LINE",
+"84 620 LINE",
+"244 343 LINE",
+"244 409 LINE",
+"116 192 LINE SMOOTH",
+"66 108 OFFCURVE",
+"60 103 OFFCURVE",
+"36 80 CURVE",
+"36 29 OFFCURVE",
+"74 0 OFFCURVE",
+"124 0 CURVE SMOOTH"
+);
+}
+);
+width = 556;
+}
+);
+note = uni06440627.short;
+},
+{
+color = 4;
+glyphname = "lam_alefHamzaabove-ar";
+lastChange = "2020-07-21 10:55:54 +0000";
+layers = (
+{
+components = (
+{
+name = "lam_alef-ar.short";
+},
+{
+anchor = top_2;
+name = "hamzaabove-ar";
+transform = "{1, 0, 0, 1, 0, 698}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+width = 556;
+}
+);
+note = uni06440623;
+},
+{
+color = 4;
+glyphname = "hamzaabove-ar";
+lastChange = "2020-07-21 10:56:06 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{130, -70}";
+},
+{
+name = top;
+position = "{129, 252}";
+}
+);
+components = (
+{
+name = "_hamza-ar";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+width = 224;
+}
+);
+note = uni0654;
+unicode = 0654;
+script = arabic;
+category = Mark;
+subCategory = Nonspacing;
+},
+{
+color = 4;
+glyphname = "fatha-ar";
+lastChange = "2020-07-21 10:56:25 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{174, 512}";
+},
+{
+name = top;
+position = "{164, 700}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+paths = (
+{
+closed = 1;
+nodes = (
+"50 615 LINE",
+"308 699 LINE",
+"308 755 LINE",
+"300 755 LINE",
+"42 671 LINE",
+"42 615 LINE"
+);
+}
+);
+width = 350;
+}
+);
+note = uni064E;
+unicode = 064E;
+script = arabic;
+category = Mark;
+subCategory = Nonspacing;
+},
+{
+color = 4;
+glyphname = "shadda-ar";
+lastChange = "2020-07-21 10:56:25 +0000";
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{170, 521}";
+},
+{
+name = top;
+position = "{170, 783}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+paths = (
+{
+closed = 1;
+nodes = (
+"139 608 OFFCURVE",
+"168 618 OFFCURVE",
+"185 662 CURVE",
+"166 660 LINE",
+"174 649 OFFCURVE",
+"198 630 OFFCURVE",
+"229 630 CURVE SMOOTH",
+"278 630 OFFCURVE",
+"330 661 OFFCURVE",
+"330 816 CURVE SMOOTH",
+"330 828 LINE",
+"323 828 LINE",
+"272 820 LINE",
+"272 800 LINE SMOOTH",
+"272 729 OFFCURVE",
+"257 686 OFFCURVE",
+"251 672 CURVE",
+"282 683 LINE",
+"236 681 OFFCURVE",
+"201 677 OFFCURVE",
+"178 729 CURVE",
+"191 683 LINE",
+"196 704 OFFCURVE",
+"200 732 OFFCURVE",
+"200 769 CURVE SMOOTH",
+"200 781 LINE",
+"193 781 LINE",
+"142 773 LINE",
+"142 753 LINE SMOOTH",
+"142 698 OFFCURVE",
+"136 656 OFFCURVE",
+"120 639 CURVE",
+"145 653 LINE",
+"111 648 OFFCURVE",
+"78 656 OFFCURVE",
+"78 751 CURVE SMOOTH",
+"78 788 LINE",
+"71 788 LINE",
+"20 780 LINE",
+"20 738 LINE SMOOTH",
+"20 640 OFFCURVE",
+"68 608 OFFCURVE",
+"109 608 CURVE SMOOTH"
+);
+}
+);
+width = 350;
+}
+);
+note = uni0651;
+unicode = 0651;
+script = arabic;
+category = Mark;
+subCategory = Nonspacing;
+},
+{
+color = 4;
+glyphname = "shadda_fatha-ar";
+lastChange = "2020-07-21 10:56:11 +0000";
+layers = (
+{
+background = {
+paths = (
+{
+closed = 1;
+nodes = (
+"135 608 OFFCURVE",
+"161 616 OFFCURVE",
+"178 648 CURVE",
+"190 639 OFFCURVE",
+"208 630 OFFCURVE",
+"229 630 CURVE SMOOTH",
+"278 630 OFFCURVE",
+"330 661 OFFCURVE",
+"330 816 CURVE SMOOTH",
+"330 828 LINE",
+"323 828 LINE",
+"272 820 LINE",
+"272 800 LINE SMOOTH",
+"272 741 OFFCURVE",
+"262 702 OFFCURVE",
+"255 682 CURVE",
+"231 682 OFFCURVE",
+"211 685 OFFCURVE",
+"195 702 CURVE",
+"198 720 OFFCURVE",
+"200 742 OFFCURVE",
+"200 769 CURVE SMOOTH",
+"200 781 LINE",
+"193 781 LINE",
+"142 773 LINE",
+"142 753 LINE SMOOTH",
+"142 709 OFFCURVE",
+"138 673 OFFCURVE",
+"128 652 CURVE",
+"101 653 OFFCURVE",
+"78 672 OFFCURVE",
+"78 751 CURVE SMOOTH",
+"78 788 LINE",
+"71 788 LINE",
+"20 780 LINE",
+"20 738 LINE SMOOTH",
+"20 640 OFFCURVE",
+"68 608 OFFCURVE",
+"109 608 CURVE SMOOTH"
+);
+},
+{
+closed = 1;
+nodes = (
+"36 829 LINE",
+"297 911 LINE",
+"313 967 LINE",
+"308 971 LINE",
+"46 883 LINE",
+"31 836 LINE"
+);
+}
+);
+};
+components = (
+{
+alignment = 1;
+name = "shadda-ar";
+},
+{
+name = "fatha-ar";
+transform = "{1, 0, 0, 1, -4, 271}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+width = 350;
+}
+);
+note = uni0651064E;
+script = arabic;
+category = Mark;
+subCategory = Nonspacing;
+},
+{
+color = 4;
+glyphname = "lamHamzaabove_alefHamzaabove-ar";
+lastChange = "2020-07-24 13:23:18 +0000";
+layers = (
+{
+components = (
+{
+name = "lam_alef-ar.short";
+},
+{
+anchor = top_2;
+name = "hamzaabove-ar";
+transform = "{1, 0, 0, 1, 0, 698}";
+},
+{
+anchor = top_1;
+name = "hamzaabove-ar";
+transform = "{1, 0, 0, 1, 368, 830}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+width = 556;
+}
+);
+note = uni06440623;
+},
+{
+export = 0;
+glyphname = "_hamza-ar";
+lastChange = "2020-07-21 10:59:00 +0000";
+layers = (
+{
+anchors = (
+{
+name = _center;
+position = "{163, 75}";
+}
+);
+layerId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+paths = (
+{
+closed = 1;
+nodes = (
+"20 53 OFFCURVE",
+"61 0 OFFCURVE",
+"142 0 CURVE SMOOTH",
+"196 0 LINE",
+"207 63 LINE",
+"207 70 LINE",
+"158 70 LINE SMOOTH",
+"124 70 OFFCURVE",
+"90 73 OFFCURVE",
+"70 109 CURVE",
+"75 90 LINE",
+"80 129 OFFCURVE",
+"109 152 OFFCURVE",
+"158 152 CURVE SMOOTH",
+"196 152 LINE",
+"209 214 LINE",
+"209 222 LINE",
+"169 222 LINE SMOOTH",
+"76 222 OFFCURVE",
+"20 167 OFFCURVE",
+"20 103 CURVE SMOOTH"
+);
+}
+);
+width = 224;
+},
+{
+anchors = (
+{
+name = _center;
+position = "{169, 168}";
+}
+);
+associatedMasterId = "3E005A84-7828-4122-B6E8-61930BD9836F";
+layerId = "F2028F70-0529-41D4-9F63-024EA79743CD";
+name = Black;
+paths = (
+{
+closed = 1;
+nodes = (
+"20 55 OFFCURVE",
+"78 0 OFFCURVE",
+"153 0 CURVE SMOOTH",
+"227 0 LINE",
+"266 102 LINE",
+"266 112 LINE",
+"185 112 LINE SMOOTH",
+"153 112 OFFCURVE",
+"132 123 OFFCURVE",
+"121 155 CURVE",
+"123 116 LINE",
+"138 164 OFFCURVE",
+"165 168 OFFCURVE",
+"202 168 CURVE SMOOTH",
+"226 168 LINE",
+"264 272 LINE",
+"264 282 LINE",
+"196 282 LINE SMOOTH",
+"87 282 OFFCURVE",
+"20 212 OFFCURVE",
+"20 129 CURVE SMOOTH"
+);
+}
+);
+width = 286;
+}
+);
+}
+);
+gridLength = 4;
+gridSubDivision = 4;
+instances = (
+{
+interpolationWeight = 92;
+interpolationWidth = 5;
+instanceInterpolations = {
+"3E005A84-7828-4122-B6E8-61930BD9836F" = 1;
+};
+name = Regular;
+}
+);
+manufacturer = "Original Type";
+manufacturerURL = "https://originaltype.com/";
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 300;
+}

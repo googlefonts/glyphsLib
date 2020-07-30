@@ -135,3 +135,6 @@ expected*
 
 # Editors
 .vscode
+
+# Mac
+.DS_Store
