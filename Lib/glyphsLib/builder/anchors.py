@@ -72,7 +72,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
             raise Exception(
                 "Error while determining which component of composite "
                 "'{}' is the lowest: {}".format(parent.name, str(e))
-            )
+            ) from e
         mark_components.remove(component)
         base_components.append(component)
         glyph = ufo[component.baseGlyph]
