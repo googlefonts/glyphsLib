@@ -140,6 +140,8 @@ def to_designspace_axes(self):
     regular_master = get_regular_master(self.font)
     assert isinstance(regular_master, classes.GSFontMaster)
 
+    custom_mapping = self.font.customParameters["Axis Mappings"]
+
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
@@ -157,8 +159,16 @@ def to_designspace_axes(self):
         ):
             axis_wanted = True
 
+        # See https://github.com/googlefonts/glyphsLib/issues/568
+        if custom_mapping and axis.tag in custom_mapping:
+            mapping = {int(k): v for k, v in custom_mapping[axis.tag].items()}
+            regularDesignLoc = axis_def.get_design_loc(regular_master)
+            # Glyphs masters don't have a user location, so we compute it by
+            # looking at the axis mapping in reverse.
+            reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
+            regularUserLoc = interp(reverse_mapping, regularDesignLoc)
         # See https://github.com/googlefonts/glyphsLib/issues/280
-        if font_uses_new_axes(self.font):
+        elif font_uses_new_axes(self.font):
             # Build the mapping from the "Axis Location" of the masters
             # TODO: (jany) use Virtual Masters as well?
             mapping = {}
