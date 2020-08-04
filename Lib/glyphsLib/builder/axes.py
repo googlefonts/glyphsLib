@@ -160,13 +160,21 @@ def to_designspace_axes(self):
             axis_wanted = True
 
         # See https://github.com/googlefonts/glyphsLib/issues/568
-        if custom_mapping and axis.tag in custom_mapping:
-            mapping = {int(k): v for k, v in custom_mapping[axis.tag].items()}
-            regularDesignLoc = axis_def.get_design_loc(regular_master)
-            # Glyphs masters don't have a user location, so we compute it by
-            # looking at the axis mapping in reverse.
-            reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
-            regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+        if custom_mapping:
+            if axis.tag in custom_mapping:
+                mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                regularDesignLoc = axis_def.get_design_loc(regular_master)
+                reverse_mapping = {v: k for k, v in mapping.items()}
+                if regularDesignLoc in reverse_mapping:
+                    regularUserLoc = reverse_mapping[regularDesignLoc]
+                else:
+                    regularUserLoc = min(mapping)
+            else:
+                logger.warning(
+                    f"Skipping {axis.tag} since it hasn't been defined "
+                    "in the Axis Mapping"
+                )
+                continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
         elif font_uses_new_axes(self.font):
             # Build the mapping from the "Axis Location" of the masters
@@ -292,20 +300,10 @@ def to_glyphs_axes(self):
         self.font.customParameters["Axes"] = axes_parameter
 
     if self.minimize_ufo_diffs:
-        # TODO: (jany) later, when Glyphs can manage general designspace axes
-        # self.font.userData[AXES_KEY] = [
-        #     dict(
-        #         tag=axis.tag,
-        #         name=axis.name,
-        #         minimum=axis.minimum,
-        #         maximum=axis.maximum,
-        #         default=axis.default,
-        #         hidden=axis.hidden,
-        #         labelNames=axis.labelNames,
-        #     )
-        #     for axis in self.designspace.axes
-        # ]
-        pass
+        mapping = {
+            axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
+        }
+        self.font.customParameters["Axis Mappings"] = mapping
 
 
 class AxisDefinition:

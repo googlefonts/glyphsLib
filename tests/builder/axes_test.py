@@ -334,11 +334,13 @@ def test_axis_mapping(ufo_module):
 
     assert doc.axes[0].name == "Weight"
     assert doc.axes[0].minimum == 100
+    assert doc.axes[0].default == 100
     assert doc.axes[0].maximum == 900
     assert doc.axes[0].map == wght_mapping
 
     assert doc.axes[1].name == "Width"
     assert doc.axes[1].minimum == 75
+    assert doc.axes[0].default == 100
     assert doc.axes[1].maximum == 100
     # No axis map needed for Width because user and design coords are identical
     assert doc.axes[1].map != wdth_mapping
