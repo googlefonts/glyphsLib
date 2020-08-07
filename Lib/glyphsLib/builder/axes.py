@@ -170,7 +170,7 @@ def to_designspace_axes(self):
                 else:
                     regularUserLoc = min(mapping)
             else:
-                logger.warning(
+                logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
                     "in the Axis Mapping"
                 )
