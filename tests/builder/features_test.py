@@ -163,57 +163,20 @@ def test_feature_name_automatic(tmpdir, ufo_module):
     # Check code in Glyphs font
     gs_feature = font.features[0]
     assert gs_feature.automatic
-    assert gs_feature.code == "sub g by g.ss01;"
-    assert gs_feature.notes == "Name: Alternate g\n"
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == "Name: Alternate g\nfoo"
 
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         # notes:
-        # Name: Alternate g
+        # foo
         featureNames {
           name "Alternate g";
         };
         # automatic
         sub g by g.ss01;
-        } ss01;
-    """
-    )
 
-
-def test_feature_name_manual(tmpdir, ufo_module):
-    ufo = ufo_module.Font()
-    ufo.features.text = dedent(
-        """\
-        feature ss01 {
-        featureNames {
-          name "Alternate g";
-        };
-        sub g by g.ss01;
-        } ss01;
-    """
-    )
-
-    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
-
-    gs_feature = font.features[0]
-    assert not gs_feature.automatic
-    assert gs_feature.code == dedent(
-        """\
-        featureNames {
-          name "Alternate g";
-        };
-        sub g by g.ss01;"""
-    )
-    assert gs_feature.notes == ""
-
-    assert rtufo.features.text == dedent(
-        """\
-        feature ss01 {
-        featureNames {
-          name "Alternate g";
-        };
-        sub g by g.ss01;
         } ss01;
     """
     )
