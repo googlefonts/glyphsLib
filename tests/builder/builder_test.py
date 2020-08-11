@@ -1096,16 +1096,26 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         add_glyph(font, "a.ss01")
         ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
         font.features.append(ss01)
+        # Name should be exported when in first line
         for note in (
             'Name: Single\\storey "ä"',
-            'A Comment\nName: Single\\storey "ä"\nFoo',
-            'A Comment\nName: Single\\storey "ä"',
             'Name: Single\\storey "ä"\nFoo',
         ):
             font.features[0].notes = note
             ufos = self.to_ufos(font)
             ufo = ufos[0]
             self.assertIn(r'name "Single\005cstorey \0022ä\0022";', ufo.features.text)
+        # Name should not be exported when not in first line
+        for note in (
+            'A Comment\nName: Single\\storey "ä"\nFoo',
+            'A Comment\nName: Single\\storey "ä"',
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertNotIn(
+                r'name "Single\005cstorey \0022ä\0022";', ufo.features.text
+            )
 
     def test_glyph_lib_Export_feature_names_long_from_notes(self):
         font = generate_minimal_font()
