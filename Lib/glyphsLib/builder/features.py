@@ -683,7 +683,7 @@ class FeatureFileProcessor:
         # See if there is a feature name in the code that should be
         # written to the notes
         feature_name = re.search(
-            r"(featureNames\s*{\s*name \"(.+)\";\s*};)",
+            r"(featureNames\s*{\s*name\s+\"(.+)\";\s*};)",
             feature.code,
             flags=re.MULTILINE | re.DOTALL,
         )
@@ -691,12 +691,12 @@ class FeatureFileProcessor:
             statement, name = feature_name.groups()
 
             # Don't add if the name is already there
-            if not re.search("^Name: (.+)", feature.notes, flags=re.DOTALL):
-                feature.notes = "\n".join([f"Name: {name}", feature.notes.lstrip()])
+            if not re.search(r"^Name: (.+)", feature.notes, flags=re.DOTALL):
+                feature.notes = "\n".join([f"Name: {name}", notes_text])
 
             # Remove the name statement from the feature code
             feature.code = re.sub(
-                r"featureNames\s*{\s*name \".+\";\s*};\n*",
+                r"featureNames\s*{\s*name\s+\".+\";\s*};\s*",
                 "",
                 feature.code,
                 flags=re.MULTILINE | re.DOTALL,

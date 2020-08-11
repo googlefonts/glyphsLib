@@ -144,7 +144,7 @@ def test_class_synonym(tmpdir, ufo_module):
     )
 
 
-def test_feature_name_automatic(tmpdir, ufo_module):
+def test_feature_names(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
@@ -154,6 +154,46 @@ def test_feature_name_automatic(tmpdir, ufo_module):
         };
         # automatic
         sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == "Name: Alternate g"
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+
+def test_feature_names_notes(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        # notes:
+        # foo
+        featureNames {
+          name "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
         } ss01;
     """
     )
