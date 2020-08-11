@@ -1096,6 +1096,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         add_glyph(font, "a.ss01")
         ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
         font.features.append(ss01)
+
         # Name should be exported when in first line
         for note in (
             'Name: Single\\storey "ä"',
@@ -1105,6 +1106,8 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             ufos = self.to_ufos(font)
             ufo = ufos[0]
             self.assertIn(r'name "Single\005cstorey \0022ä\0022";', ufo.features.text)
+            self.assertNotIn(note, ufo.features.text)
+
         # Name should not be exported when not in first line
         for note in (
             'A Comment\nName: Single\\storey "ä"\nFoo',
