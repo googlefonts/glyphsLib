@@ -164,11 +164,10 @@ def to_designspace_axes(self):
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
-                reverse_mapping = {v: k for k, v in mapping.items()}
-                if regularDesignLoc in reverse_mapping:
-                    regularUserLoc = reverse_mapping[regularDesignLoc]
-                else:
-                    regularUserLoc = min(mapping)
+                # Glyphs masters don't have a user location, so we compute it by
+                # looking at the axis mapping in reverse.
+                reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
+                regularUserLoc = interp(reverse_mapping, regularDesignLoc)
             else:
                 logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
