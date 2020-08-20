@@ -141,7 +141,13 @@ def to_designspace_axes(self):
     assert isinstance(regular_master, classes.GSFontMaster)
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
-
+    if not custom_mapping:
+        logger.warning(
+            "Recommended 'Axis Mappings' customParameter not set. This parameter "
+            "allows developers define an explicit mapping, otherwise the mapping "
+            "is calculated by using the 'Axis Locations' customParameters or by "
+            "using values from the instances and masters."
+        )
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
@@ -171,7 +177,7 @@ def to_designspace_axes(self):
             else:
                 logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
-                    "in the Axis Mapping"
+                    "in the Axis Mapping."
                 )
                 continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
@@ -191,7 +197,7 @@ def to_designspace_axes(self):
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
-            # Build the mapping from the isntances because they have both
+            # Build the mapping from the instances because they have both
             # a user location and a design location.
             instance_mapping = {}
             for instance in self.font.instances:
