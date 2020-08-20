@@ -296,7 +296,7 @@ def to_glyphs_axes(self):
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.customParameters["Axes"] = axes_parameter
 
-    if self.minimize_ufo_diffs:
+    if any(a.map for a in self.designspace.axes):
         mapping = {
             axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
         }

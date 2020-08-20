@@ -325,11 +325,13 @@ def test_axis_mapping(ufo_module):
     wdth_mapping = [(75, 75), (100, 100)]
 
     axis_mappings = {
-        "wght": {k: v for k, v in wght_mapping},
-        "wdth": {k: v for k, v in wdth_mapping},
+        "wght": {str(float(k)): v for k, v in wght_mapping},
+        "wdth": {str(float(k)): v for k, v in wdth_mapping},
     }
 
     font.customParameters["Axis Mappings"] = axis_mappings
+    # When we convert to a designspace, the wdth mapping is removed because
+    # it isn't needed.
     doc = to_designspace(font, ufo_module=ufo_module)
 
     assert doc.axes[0].name == "Weight"
@@ -342,9 +344,11 @@ def test_axis_mapping(ufo_module):
     assert doc.axes[1].minimum == 75
     assert doc.axes[0].default == 100
     assert doc.axes[1].maximum == 100
-    # No axis map needed for Width because user and design coords are identical
     assert doc.axes[1].map != wdth_mapping
     assert doc.axes[1].map == []
 
+    # When we convert back to glyphs, the wdth mapping isn't present because
+    # it was removed during the designspace conversion.
     font = to_glyphs(doc)
+    axis_mappings["wdth"] = {}
     assert font.customParameters["Axis Mappings"] == axis_mappings
