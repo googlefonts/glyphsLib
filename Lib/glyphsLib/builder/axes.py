@@ -141,13 +141,7 @@ def to_designspace_axes(self):
     assert isinstance(regular_master, classes.GSFontMaster)
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
-    if not custom_mapping:
-        logger.warning(
-            "Recommended 'Axis Mappings' customParameter not set. This parameter "
-            "allows developers define an explicit mapping, otherwise the mapping "
-            "is calculated by using the 'Axis Locations' customParameters or by "
-            "using values from the instances and masters."
-        )
+
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
