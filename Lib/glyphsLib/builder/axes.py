@@ -175,7 +175,7 @@ def to_designspace_axes(self):
                 )
                 continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
-        elif font_uses_new_axes(self.font):
+        elif font_uses_axis_locations(self.font):
             # Build the mapping from the "Axis Location" of the masters
             # TODO: (jany) use Virtual Masters as well?
             mapping = {}
@@ -259,7 +259,7 @@ def to_designspace_axes(self):
         )
 
 
-def font_uses_new_axes(font):
+def font_uses_axis_locations(font):
     # It's possible for fonts to have the 'Axes' parameter but to NOT specify
     # the master locations using 'Axis Location', in which case we have to
     # resort to using instances or other old tricks to get the mapping.
