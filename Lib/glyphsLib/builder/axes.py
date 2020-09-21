@@ -140,6 +140,8 @@ def to_designspace_axes(self):
     regular_master = get_regular_master(self.font)
     assert isinstance(regular_master, classes.GSFontMaster)
 
+    custom_mapping = self.font.customParameters["Axis Mappings"]
+
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
@@ -157,8 +159,21 @@ def to_designspace_axes(self):
         ):
             axis_wanted = True
 
+        # See https://github.com/googlefonts/glyphsLib/issues/568
+        if custom_mapping:
+            if axis.tag in custom_mapping:
+                mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                regularDesignLoc = axis_def.get_design_loc(regular_master)
+                reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
+                regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+            else:
+                logger.debug(
+                    f"Skipping {axis.tag} since it hasn't been defined "
+                    "in the Axis Mapping."
+                )
+                continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
-        if font_uses_new_axes(self.font):
+        elif font_uses_axis_locations(self.font):
             # Build the mapping from the "Axis Location" of the masters
             # TODO: (jany) use Virtual Masters as well?
             mapping = {}
@@ -174,7 +189,7 @@ def to_designspace_axes(self):
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
-            # Build the mapping from the isntances because they have both
+            # Build the mapping from the instances because they have both
             # a user location and a design location.
             instance_mapping = {}
             for instance in self.font.instances:
@@ -242,7 +257,7 @@ def to_designspace_axes(self):
         )
 
 
-def font_uses_new_axes(font):
+def font_uses_axis_locations(font):
     # It's possible for fonts to have the 'Axes' parameter but to NOT specify
     # the master locations using 'Axis Location', in which case we have to
     # resort to using instances or other old tricks to get the mapping.
@@ -281,21 +296,11 @@ def to_glyphs_axes(self):
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.customParameters["Axes"] = axes_parameter
 
-    if self.minimize_ufo_diffs:
-        # TODO: (jany) later, when Glyphs can manage general designspace axes
-        # self.font.userData[AXES_KEY] = [
-        #     dict(
-        #         tag=axis.tag,
-        #         name=axis.name,
-        #         minimum=axis.minimum,
-        #         maximum=axis.maximum,
-        #         default=axis.default,
-        #         hidden=axis.hidden,
-        #         labelNames=axis.labelNames,
-        #     )
-        #     for axis in self.designspace.axes
-        # ]
-        pass
+    if any(a.map for a in self.designspace.axes):
+        mapping = {
+            axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
+        }
+        self.font.customParameters["Axis Mappings"] = mapping
 
 
 class AxisDefinition:
