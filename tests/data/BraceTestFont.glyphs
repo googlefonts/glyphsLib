@@ -398,7 +398,7 @@ width = 450;
 {
 associatedMasterId = "ED9A0AB1-C69E-43FC-AC45-FCA9085EE0B1";
 layerId = "632E4528-00C8-4F10-BDDD-AF6AFE04F5C5";
-name = "Test1 {90, 600}";
+name = "Test1 {90.5, 600}";
 paths = (
 {
 closed = 1;
@@ -415,7 +415,7 @@ width = 585;
 {
 associatedMasterId = "ED9A0AB1-C69E-43FC-AC45-FCA9085EE0B1";
 layerId = "B9BEDC92-E24C-4B32-B67C-5E0D08DFC991";
-name = "Test2 {90, 500}";
+name = "Test2 {90.5, 500}";
 paths = (
 {
 closed = 1;

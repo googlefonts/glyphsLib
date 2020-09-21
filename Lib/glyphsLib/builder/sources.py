@@ -166,7 +166,7 @@ def _to_designspace_source_layer(self):
     for layer_name, master_ids in layer_name_to_master_ids.items():
         # Construct coordinates first...
         brace_coordinates = [
-            int(c)
+            float(c)
             for c in layer_name[
                 layer_name.index("{") + 1 : layer_name.index("}")
             ].split(",")
