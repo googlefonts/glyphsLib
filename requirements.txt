@@ -4,13 +4,14 @@
 #
 #    pip-compile setup.py
 #
-appdirs==1.4.3            # via fs
-attrs==19.3.0             # via ufolib2
-fonttools[ufo,unicode]==4.6.0  # via glyphsLib (setup.py), ufolib2
+appdirs==1.4.4            # via fs
+attrs==20.2.0             # via ufolib2
+fonttools[ufo,unicode]==4.14.0  # via glyphsLib (setup.py), ufolib2
 fs==2.4.11                # via fonttools
-pytz==2019.3              # via fs
-six==1.14.0               # via fs
-ufolib2==0.6.2            # via glyphsLib (setup.py)
+pytz==2020.1              # via fs
+six==1.15.0               # via fs
+typing-extensions==3.7.4.3  # via ufolib2
+ufolib2==0.8.0            # via glyphsLib (setup.py)
 unicodedata2==13.0.0.post2  # via fonttools
 
 # The following packages are considered to be unsafe in a requirements file:
