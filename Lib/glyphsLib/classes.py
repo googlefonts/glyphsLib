@@ -1812,23 +1812,34 @@ class GSPath(GSBase):
 
         nodeCount = 0
         segmentCount = 0
-        while nodeCount < len(self.nodes):
+        nodes = list(self.nodes)
+        # Cycle node list until curve or line at end
+        cycled = False
+        for i,n in enumerate(nodes):
+            if n.type == "offcurve" or n.type == "line":
+                nodes = nodes[i:] + nodes[:i]
+                cycled = True
+                break
+        if not cycled:
+            return []
+
+        while nodeCount < len(nodes):
             newSegment = segment()
             newSegment.parent = self
             newSegment.index = segmentCount
 
             if nodeCount == 0:
-                newSegment.appendNode(self.nodes[-1])
+                newSegment.appendNode(nodes[-1])
             else:
-                newSegment.appendNode(self.nodes[nodeCount - 1])
+                newSegment.appendNode(nodes[nodeCount - 1])
 
-            if self.nodes[nodeCount].type == "offcurve":
-                newSegment.appendNode(self.nodes[nodeCount])
-                newSegment.appendNode(self.nodes[nodeCount + 1])
-                newSegment.appendNode(self.nodes[nodeCount + 2])
+            if nodes[nodeCount].type == "offcurve":
+                newSegment.appendNode(nodes[nodeCount])
+                newSegment.appendNode(nodes[nodeCount + 1])
+                newSegment.appendNode(nodes[nodeCount + 2])
                 nodeCount += 3
-            elif self.nodes[nodeCount].type == "line":
-                newSegment.appendNode(self.nodes[nodeCount])
+            elif nodes[nodeCount].type == "line":
+                newSegment.appendNode(nodes[nodeCount])
                 nodeCount += 1
 
             self._segments.append(newSegment)
