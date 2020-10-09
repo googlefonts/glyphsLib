@@ -1919,20 +1919,11 @@ class GSPath(GSBase):
 
     # TODO
     def applyTransform(self, transformationMatrix):
-        raise NotImplementedError
-
-        # Using both skew values (>0.0) produces different results than Glyphs.
-        # Skewing just on of the two works.
-        # Needs more attention.
         assert len(transformationMatrix) == 6
         for node in self.nodes:
-            transformation = (
-                Affine.translation(transformationMatrix[4], transformationMatrix[5])
-                * Affine.scale(transformationMatrix[0], transformationMatrix[3])
-                * Affine.shear(
-                    transformationMatrix[2] * 45.0, transformationMatrix[1] * 45.0
-                )
-            )
+            transformation = Affine(
+                    transformationMatrix[0], transformationMatrix[1], transformationMatrix[4],
+                    transformationMatrix[2], transformationMatrix[3], transformationMatrix[5])
             x, y = (node.position.x, node.position.y) * transformation
             node.position.x = x
             node.position.y = y
