@@ -15,7 +15,7 @@
 
 import os
 
-from .axes import font_uses_new_axes, get_axis_definitions
+from .axes import font_uses_axis_locations, get_axis_definitions
 from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
 
 MASTER_ID_LIB_KEY = GLYPHS_PREFIX + "fontMasterID"
@@ -63,7 +63,7 @@ def to_ufo_master_attributes(self, source, master):
         if custom_value:
             ufo.lib[GLYPHS_PREFIX + "customValue" + number] = custom_value
 
-    if font_uses_new_axes(self.font):
+    if font_uses_axis_locations(self.font):
         # Set the OS/2 weightClass and widthClas according the this master's
         # user location ("Axis Location" parameter)
         for axis in get_axis_definitions(self.font):

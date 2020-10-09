@@ -175,8 +175,8 @@ def test_designspace_generation_brace_layers(datadir, ufo_module):
         ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
         ("NewFont-Bold.ufo", None, "New Font Bold"),
         ("NewFont-Bold.ufo", "{75}", "New Font Bold {75}"),
-        ("NewFont-Bold.ufo", "Test2 {90, 500}", "New Font Bold Test2 {90, 500}"),
-        ("NewFont-Bold.ufo", "Test1 {90, 600}", "New Font Bold Test1 {90, 600}"),
+        ("NewFont-Bold.ufo", "Test2 {90.5, 500}", "New Font Bold Test2 {90.5, 500}"),
+        ("NewFont-Bold.ufo", "Test1 {90.5, 600}", "New Font Bold Test1 {90.5, 600}"),
         ("NewFont-CondensedLight.ufo", None, "New Font Condensed Light"),
         ("NewFont-CondensedBold.ufo", None, "New Font Condensed Bold"),
     ]

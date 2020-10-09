@@ -21,7 +21,12 @@ import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
 
 from .masters import UFO_FILENAME_KEY
-from .axes import get_axis_definitions, get_regular_master, font_uses_new_axes, interp
+from .axes import (
+    get_axis_definitions,
+    get_regular_master,
+    font_uses_axis_locations,
+    interp,
+)
 from .constants import UFO_FILENAME_CUSTOM_PARAM
 
 
@@ -161,7 +166,7 @@ def _to_designspace_source_layer(self):
     for layer_name, master_ids in layer_name_to_master_ids.items():
         # Construct coordinates first...
         brace_coordinates = [
-            int(c)
+            float(c)
             for c in layer_name[
                 layer_name.index("{") + 1 : layer_name.index("}")
             ].split(",")
@@ -227,7 +232,7 @@ def _to_glyphs_source(self, master):
             continue
 
         axis_def.set_design_loc(master, design_location)
-        if font_uses_new_axes(self.font):
+        if font_uses_axis_locations(self.font):
             # The user location can be found by reading the mapping backwards
             mapping = []
             for axis in self.designspace.axes:
