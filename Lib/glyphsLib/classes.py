@@ -1922,8 +1922,13 @@ class GSPath(GSBase):
         assert len(transformationMatrix) == 6
         for node in self.nodes:
             transformation = Affine(
-                    transformationMatrix[0], transformationMatrix[1], transformationMatrix[4],
-                    transformationMatrix[2], transformationMatrix[3], transformationMatrix[5])
+                transformationMatrix[0],
+                transformationMatrix[1],
+                transformationMatrix[4],
+                transformationMatrix[2],
+                transformationMatrix[3],
+                transformationMatrix[5],
+            )
             x, y = (node.position.x, node.position.y) * transformation
             node.position.x = x
             node.position.y = y

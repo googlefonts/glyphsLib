@@ -1536,33 +1536,27 @@ class GSPathFromFileTest(GSObjectsTestCase):
     # applyTransform()
     def test_applyTransform_translate(self):
         pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((
-            1, 0, 0, 1, 50, 25
-        ))
-        expected = ((402,172), (402,93), (364,32), (262,32))
+        pathCopy.applyTransform((1, 0, 0, 1, 50, 25))
+        expected = ((402, 172), (402, 93), (364, 32), (262, 32))
         for i, pt in enumerate(expected):
-             self.assertEqual(pathCopy.nodes[i].position.x, pt[0])
-             self.assertEqual(pathCopy.nodes[i].position.y, pt[1])
+            self.assertEqual(pathCopy.nodes[i].position.x, pt[0])
+            self.assertEqual(pathCopy.nodes[i].position.y, pt[1])
 
     def test_applyTransform_translate_scale(self):
         pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((
-            0.9, 0, 0, 1.2, 50, 25
-        ))
-        expected = ((367,201), (367,107), (333,33), (241,33))
+        pathCopy.applyTransform((0.9, 0, 0, 1.2, 50, 25))
+        expected = ((367, 201), (367, 107), (333, 33), (241, 33))
         for i, pt in enumerate(expected):
-             self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0],0)
-             self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1],0)
+            self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0], 0)
+            self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1], 0)
 
     def test_applyTransform_skew(self):
         pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((
-            1, 0.1, 0.2, 1, 0, 0
-        ))
-        expected = ((381,182), (366,103), (315,38), (213,28))
+        pathCopy.applyTransform((1, 0.1, 0.2, 1, 0, 0))
+        expected = ((381, 182), (366, 103), (315, 38), (213, 28))
         for i, pt in enumerate(expected):
-             self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0],0)
-             self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1],0)
+            self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0], 0)
+            self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1], 0)
 
     def test_direction(self):
         self.assertEqual(self.path.direction, -1)
