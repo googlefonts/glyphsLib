@@ -39,6 +39,7 @@ from glyphsLib.classes import (
     GSNode,
     GSSmartComponentAxis,
     GSBackgroundImage,
+    segment,
     LayerComponentsProxy,
     LayerGuideLinesProxy,
     STEM,
@@ -1714,6 +1715,18 @@ class GSBackgroundLayerTest(unittest.TestCase):
         """
         with pytest.raises(AttributeError):
             self.bg.foreground = GSLayer()
+
+
+class segmentTest(unittest.TestCase):
+    def test_bbox_bug(self):
+        seg = segment(
+            [Point(529, 223), Point(447, 456), Point(285, 177), Point(521, 367)]
+        )
+        bbox = seg.bbox()
+        self.assertAlmostEqual(bbox[0], 398.1222655016518)
+        self.assertAlmostEqual(bbox[1], 223)
+        self.assertAlmostEqual(bbox[2], 529)
+        self.assertAlmostEqual(bbox[3], 367)
 
 
 class FontGlyphsProxyTest(unittest.TestCase):

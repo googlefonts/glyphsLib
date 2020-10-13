@@ -2069,7 +2069,7 @@ class segment(list):
                 + (3 * mt * t * t * x2)
                 + (t * t * t * x3)
             )
-            if len(xvalues) > 0:
+            if len(xvalues) > j:
                 xvalues[j] = newxValue
             else:
                 xvalues.append(newxValue)
@@ -2079,7 +2079,7 @@ class segment(list):
                 + (3 * mt * t * t * y2)
                 + (t * t * t * y3)
             )
-            if len(yvalues) > 0:
+            if len(yvalues) > j:
                 yvalues[j] = newyValue
             else:
                 yvalues.append(newyValue)
