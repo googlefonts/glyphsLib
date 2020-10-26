@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from copy import deepcopy
 import os.path
 
 import pytest
@@ -81,6 +82,9 @@ def _make_designspace_with_axes(axes, ufo_module):
         axis = doc.newAxisDescriptor()
         axis.tag = tag
         axis.name = name
+        axis.minimum = 0
+        axis.default = 0
+        axis.maximum = 100
         doc.addAxis(axis)
 
         extreme = doc.newSourceDescriptor()
@@ -347,8 +351,60 @@ def test_axis_mapping(ufo_module):
     assert doc.axes[1].map != wdth_mapping
     assert doc.axes[1].map == []
 
-    # When we convert back to glyphs, the wdth mapping isn't present because
-    # it was removed during the designspace conversion.
     font = to_glyphs(doc)
-    axis_mappings["wdth"] = {}
     assert font.customParameters["Axis Mappings"] == axis_mappings
+
+
+def test_axis_with_no_mapping_does_not_error_in_roundtrip(ufo_module):
+    """Tests that a custom axis without a mapping and without sources on its
+    extremes does not generate an error during roundtrip. Also tests that
+    during a to_glyphs, to_designspace roundtrip the min and max axis
+    information is not lost.
+    """
+    doc = designspaceLib.DesignSpaceDocument()
+
+    # Add a "Regular" source
+    regular = doc.newSourceDescriptor()
+    regular.font = ufo_module.Font()
+    regular.location = {"Style": 0}
+    doc.addSource(regular)
+
+    axis = doc.newAxisDescriptor()
+    axis.tag = "styl"
+    axis.name = "Style"
+    doc.addAxis(axis)
+
+    # This axis spans a range of 0 to 1 but only has a source at {"Style": 0}
+    # and no explicit mapping. The point of this test is to see if the min and
+    # max are still the same after round tripping.
+    doc.axes[0].minimum = 0
+    doc.axes[0].maximum = 1
+    doc.axes[0].default = 0
+    doc.axes[0].map = []
+
+    doc2 = deepcopy(doc)
+    font = to_glyphs(doc2)
+    doc_rt = to_designspace(font)
+
+    assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
+
+
+def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module):
+    """Tests that a designspace with 2 axis, one with a mapping and one
+    without a mapping, roundtrips correctly without error. The axis without a
+    mapping should generate an identity mapping on the fly so that the
+    Glyphs.app customParameter field does not lose min/max infromation about
+    the axis.
+    """
+    doc = _make_designspace_with_axes(
+        [("wght", "Weight with mapping"), ("wdth", "Width without mapping")], ufo_module
+    )
+    # Add mapping to weight axis
+    doc.axes[0].map = [(0, 0), (50, 350), (100, 1000)]
+
+    doc2 = deepcopy(doc)
+    font = to_glyphs(doc2)
+    doc_rt = to_designspace(font)
+
+    assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
+    assert doc_rt.axes[1].serialize() == doc.axes[1].serialize()

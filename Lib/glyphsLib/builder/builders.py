@@ -749,6 +749,19 @@ class GlyphsBuilder(_LoggerMixin):
                         )
                     )
                     setattr(source, name, getattr(source.font.info, name))
+        # An axis without a mapping will see its range information (min and max
+        # values) lost when converted to a Glyps.app file. To combat this we
+        # add an explicit identity mapping.
+        for axis in copy.axes:
+            if axis.map:
+                continue
+            if axis.minimum == axis.maximum:
+                axis.map = [(axis.minimum, axis.minimum)]
+            else:
+                axis.map = [
+                    (axis.minimum, axis.minimum),
+                    (axis.maximum, axis.maximum),
+                ]
         return copy
 
     def _fake_designspace(self, ufos):
