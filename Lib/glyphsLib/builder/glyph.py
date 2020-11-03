@@ -126,6 +126,26 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     else:
         ufo_glyph.width = width
 
+    if self.is_vertical:
+        if "typoAscender" in layer.master.customParameters:
+            ascender = layer.master.customParameters["typoAscender"]
+        else:
+            ascender = layer.master.ascender
+        if "typoDescender" in layer.master.customParameters:
+            descender = layer.master.customParameters["typoDescender"]
+        else:
+            descender = layer.master.descender
+
+        if layer.vertWidth:
+            ufo_glyph.height = layer.vertWidth
+        else:
+            ufo_glyph.height = ascender - descender
+
+        if layer.vertOrigin:
+            ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
+        else:
+            ufo_glyph.verticalOrigin = ascender
+
     self.to_ufo_background_image(ufo_glyph, layer)
     self.to_ufo_guidelines(ufo_glyph, layer)
     self.to_ufo_glyph_background(ufo_glyph, layer)
@@ -244,6 +264,17 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
             layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
             # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
+
+    if ufo_glyph.height:
+        layer.vertWidth = ufo_glyph.height
+
+    if "typoAscender" in master.customParameters:
+        ascender = master.customParameters["typoAscender"]
+    else:
+        ascender = master.ascender
+
+    if ufo_glyph.verticalOrigin:
+        layer.vertOrigin = ascender - ufo_glyph.verticalOrigin
 
     self.to_glyphs_background_image(ufo_glyph, layer)
     self.to_glyphs_guidelines(ufo_glyph, layer)

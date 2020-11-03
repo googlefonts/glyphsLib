@@ -3003,8 +3003,8 @@ class GSLayer(GSBase):
         "leftMetricsKey": None,
         "rightMetricsKey": None,
         "widthMetricsKey": None,
-        "vertWidth": 0,
-        "vertOrigin": 0,
+        "vertWidth": None,
+        "vertOrigin": None,
     }
     _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
     _keyOrder = (

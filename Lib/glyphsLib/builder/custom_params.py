@@ -322,9 +322,9 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     # ('widthClass', 'openTypeOS2WidthClass'),
     # ('winAscent', 'openTypeOS2WinAscent'),
     # ('winDescent', 'openTypeOS2WinDescent'),
-    ("vheaVertTypoAscender", "openTypeVheaVertTypoAscender"),
-    ("vheaVertTypoDescender", "openTypeVheaVertTypoDescender"),
-    ("vheaVertTypoLineGap", "openTypeVheaVertTypoLineGap"),
+    ("vheaVertAscender", "openTypeVheaVertTypoAscender"),
+    ("vheaVertDescender", "openTypeVheaVertTypoDescender"),
+    ("vheaVertLineGap", "openTypeVheaVertTypoLineGap"),
     # Postscript parameters
     ("blueScale", "postscriptBlueScale"),
     ("blueShift", "postscriptBlueShift"),
