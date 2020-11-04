@@ -73,7 +73,8 @@ def to_ufo_master_attributes(self, source, master):
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
-    # vertical
+    # vertical. Glyphsapp uses the font upm, not the typo metrics
+    # for these.
     if self.is_vertical:
         font_upm = self.font.upm
         if "vheaVertAscender" not in master.customParameters:
