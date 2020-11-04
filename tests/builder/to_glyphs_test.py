@@ -252,7 +252,7 @@ def test_glyph_color(ufo_module):
     assert ufo["b"].markColor == b.markColor
 
 
-def test_glyph_vertical_typesetting(ufo_module):
+def test_glyph_height_and_vertical_origin(ufo_module):
     ufo = ufo_module.Font()
     ufo.info.ascender = 1000
     ufo.info.descender = -200

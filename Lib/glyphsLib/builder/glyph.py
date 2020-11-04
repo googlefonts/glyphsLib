@@ -126,26 +126,6 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     else:
         ufo_glyph.width = width
 
-    if self.is_vertical:
-        if "typoAscender" in layer.master.customParameters:
-            ascender = layer.master.customParameters["typoAscender"]
-        else:
-            ascender = layer.master.ascender
-        if "typoDescender" in layer.master.customParameters:
-            descender = layer.master.customParameters["typoDescender"]
-        else:
-            descender = layer.master.descender
-
-        if layer.vertWidth:
-            ufo_glyph.height = layer.vertWidth
-        else:
-            ufo_glyph.height = ascender - descender
-
-        if layer.vertOrigin:
-            ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
-        else:
-            ufo_glyph.verticalOrigin = ascender
-
     self.to_ufo_background_image(ufo_glyph, layer)
     self.to_ufo_guidelines(ufo_glyph, layer)
     self.to_ufo_glyph_background(ufo_glyph, layer)
@@ -158,6 +138,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_paths(ufo_glyph, layer)
     self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
+    self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
@@ -265,17 +246,6 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
             layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
             # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
 
-    if ufo_glyph.height:
-        layer.vertWidth = ufo_glyph.height
-
-    if "typoAscender" in master.customParameters:
-        ascender = master.customParameters["typoAscender"]
-    else:
-        ascender = master.ascender
-
-    if ufo_glyph.verticalOrigin:
-        layer.vertOrigin = ascender - ufo_glyph.verticalOrigin
-
     self.to_glyphs_background_image(ufo_glyph, layer)
     self.to_glyphs_guidelines(ufo_glyph, layer)
     self.to_glyphs_annotations(ufo_glyph, layer)
@@ -287,6 +257,36 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
+    self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
+
+
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+    if not self.is_vertical:
+        return
+
+    ascender, descender = _vert_typesetting_metrics(layer.master)
+
+    if layer.vertWidth:
+        ufo_glyph.height = layer.vertWidth
+    else:
+        ufo_glyph.height = ascender - descender
+
+    if layer.vertOrigin:
+        ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
+    else:
+        ufo_glyph.verticalOrigin = ascender
+
+
+def _vert_typesetting_metrics(master):
+    if "typoAscender" in master.customParameters:
+        ascender = master.customParameters["typoAscender"]
+    else:
+        ascender = master.ascender
+    if "typoDescender" in master.customParameters:
+        descender = master.customParameters["typoDescender"]
+    else:
+        descender = master.descender
+    return ascender, descender
 
 
 def to_ufo_glyph_background(self, glyph, layer):
@@ -322,3 +322,12 @@ def _to_glyphs_color(color):
     # round-trip the actual value in later versions.
     # https://github.com/googlefonts/glyphsLib/pull/363#issuecomment-390418497
     return [round(float(component) * 255) for component in color.split(",")]
+
+
+def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
+    if ufo_glyph.height:
+        layer.vertWidth = ufo_glyph.height
+
+    if ufo_glyph.verticalOrigin:
+        ascender, _ = _vert_typesetting_metrics(master)
+        layer.vertOrigin = ascender - ufo_glyph.verticalOrigin

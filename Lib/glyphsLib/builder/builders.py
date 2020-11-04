@@ -513,7 +513,6 @@ class UFOBuilder(_LoggerMixin):
     from .custom_params import to_ufo_custom_params
     from .features import to_ufo_features
     from .font import to_ufo_font_attributes
-    from .glyph import to_ufo_glyph, to_ufo_glyph_background
     from .groups import to_ufo_groups
     from .guidelines import to_ufo_guidelines
     from .hints import to_ufo_hints
@@ -524,6 +523,11 @@ class UFOBuilder(_LoggerMixin):
     from .names import to_ufo_names
     from .paths import to_ufo_paths
     from .sources import to_designspace_sources
+    from .glyph import (
+        to_ufo_glyph,
+        to_ufo_glyph_background,
+        to_ufo_glyph_height_and_vertical_origin,
+    )
     from .user_data import (
         to_designspace_family_user_data,
         to_ufo_family_user_data,
@@ -838,7 +842,7 @@ class GlyphsBuilder(_LoggerMixin):
     from .custom_params import to_glyphs_custom_params
     from .features import to_glyphs_features
     from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters
-    from .glyph import to_glyphs_glyph
+    from .glyph import to_glyphs_glyph, to_glyphs_glyph_height_and_vertical_origin
     from .groups import to_glyphs_groups
     from .guidelines import to_glyphs_guidelines
     from .hints import to_glyphs_hints
