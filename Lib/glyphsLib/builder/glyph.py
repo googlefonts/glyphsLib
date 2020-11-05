@@ -278,6 +278,9 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
 
 
 def _vert_typesetting_metrics(master):
+    # Glyphsapp will use the typo metrics to set the verOrigin and
+    # vertWidth. If typo metrics are not present, the master
+    # ascender and descender are used instead.
     if "typoAscender" in master.customParameters:
         ascender = master.customParameters["typoAscender"]
     else:
