@@ -168,7 +168,7 @@ class UFOBuilder(_LoggerMixin):
             self._do_filter_instances_by_family = True
 
     def _is_vertical(self):
-        master_ids = set(m.id for m in self.font.masters)
+        master_ids = {m.id for m in self.font.masters}
         for glyph in self.font.glyphs:
             for layer in glyph.layers:
                 if layer.layerId not in master_ids:
