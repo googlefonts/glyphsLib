@@ -261,6 +261,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
 
 def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+    # implentation based on:
+    # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
     if not self.is_vertical:
         return
 
