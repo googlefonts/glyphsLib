@@ -130,10 +130,11 @@ class UFOBuilder(_LoggerMixin):
         self._designspace = self.designspace_module.DesignSpaceDocument()
         self._designspace_is_complete = False
 
-        # If any glyph layer has the properties "vertWidth" or "vertOrigin"
-        # set, Glyphsapp will assume the font is going to be used for
-        # vertical typesetting. When Glyphsapp generates these fonts, it
-        # will include the vhea and vmtx tables.
+        # If any glyph layer which is associated with a GSFontMaster has the
+        # properties "vertWidth" or "vertOrigin" set, Glyphsapp will assume
+        # the font is going to be used for vertical typesetting. When
+        # Glyphsapp generates these fonts, it will include the vhea, vmtx,
+        # VORG tables. VORG will only be included if the font is an otf.
         self.is_vertical = self._is_vertical()
 
         # check that source was generated with at least stable version 2.3
@@ -167,8 +168,11 @@ class UFOBuilder(_LoggerMixin):
             self._do_filter_instances_by_family = True
 
     def _is_vertical(self):
+        master_ids = set(m.id for m in self.font.masters)
         for glyph in self.font.glyphs:
             for layer in glyph.layers:
+                if layer.layerId not in master_ids:
+                    continue
                 if layer.vertWidth is not None or layer.vertOrigin is not None:
                     return True
         return False
