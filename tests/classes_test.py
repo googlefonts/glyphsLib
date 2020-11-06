@@ -1749,5 +1749,23 @@ class FontGlyphsProxyTest(unittest.TestCase):
             del self.font.glyphs[self.font]
 
 
+class FontClassesProxyTest(unittest.TestCase):
+    def setUp(self):
+        self.font = GSFont(TESTFILE_PATH)
+
+    def test_indxing_by_name(self):
+        assert "Languagesystems" in self.font.featurePrefixes
+        assert "c2sc_source" in self.font.classes
+        assert "aalt" in self.font.features
+
+        assert "XXXX" not in self.font.featurePrefixes
+        assert "XXXX" not in self.font.classes
+        assert "XXXX" not in self.font.features
+
+        assert self.font.featurePrefixes["Languagesystems"] in self.font.featurePrefixes
+        assert self.font.classes["c2sc_source"] in self.font.classes
+        assert self.font.features["aalt"] in self.font.features
+
+
 if __name__ == "__main__":
     unittest.main()
