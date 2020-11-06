@@ -76,12 +76,19 @@ def to_ufo_master_attributes(self, source, master):
     # vertical. Glyphsapp uses the font upm, not the typo metrics
     # for these.
     if self.is_vertical:
+        custom_params = master.customParameters
         font_upm = self.font.upm
-        if "vheaVertAscender" not in master.customParameters:
+        if not any(
+            k in custom_params for k in ("vheaVertAscender", "vheaVertTypoAscender")
+        ):
             ufo.info.openTypeVheaVertTypoAscender = int(font_upm / 2)
-        if "vheaVertDescender" not in master.customParameters:
+        if not any(
+            k in custom_params for k in ("vheaVertDescender", "vheaVertTypoDescender")
+        ):
             ufo.info.openTypeVheaVertTypoDescender = -int(font_upm / 2)
-        if "vheaVertLineGap" not in master.customParameters:
+        if not any(
+            k in custom_params for k in ("vheaVertLineGap", "vheaVertTypoLineGap")
+        ):
             ufo.info.openTypeVheaVertTypoLineGap = font_upm
 
     self.to_ufo_blue_values(ufo, master)

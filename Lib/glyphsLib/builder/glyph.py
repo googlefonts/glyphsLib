@@ -138,7 +138,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_paths(ufo_glyph, layer)
     self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
-    self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
+    if self.is_vertical:
+        self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
@@ -263,10 +264,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
     # implentation based on:
     # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
-    if not self.is_vertical:
-        return
+    assert self.is_vertical
 
-    ascender, descender = _vert_typesetting_metrics(layer.master)
+    ascender, descender = _get_typo_ascender_descender(layer.master)
 
     if layer.vertWidth:
         ufo_glyph.height = layer.vertWidth
@@ -279,7 +279,7 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
         ufo_glyph.verticalOrigin = ascender
 
 
-def _vert_typesetting_metrics(master):
+def _get_typo_ascender_descender(master):
     # Glyphsapp will use the typo metrics to set the verOrigin and
     # vertWidth. If typo metrics are not present, the master
     # ascender and descender are used instead.
@@ -334,5 +334,5 @@ def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
         layer.vertWidth = ufo_glyph.height
 
     if ufo_glyph.verticalOrigin:
-        ascender, _ = _vert_typesetting_metrics(master)
+        ascender, _ = _get_typo_ascender_descender(master)
         layer.vertOrigin = ascender - ufo_glyph.verticalOrigin

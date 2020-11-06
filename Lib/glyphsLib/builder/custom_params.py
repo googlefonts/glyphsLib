@@ -325,6 +325,9 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("vheaVertAscender", "openTypeVheaVertTypoAscender"),
     ("vheaVertDescender", "openTypeVheaVertTypoDescender"),
     ("vheaVertLineGap", "openTypeVheaVertTypoLineGap"),
+    ("vheaVertTypoAscender", "openTypeVheaVertTypoAscender"),
+    ("vheaVertTypoDescender", "openTypeVheaVertTypoDescender"),
+    ("vheaVertTypoLineGap", "openTypeVheaVertTypoLineGap"),
     # Postscript parameters
     ("blueScale", "postscriptBlueScale"),
     ("blueShift", "postscriptBlueShift"),
