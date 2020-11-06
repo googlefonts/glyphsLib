@@ -717,7 +717,13 @@ class FontClassesProxy(Proxy):
                 if klass.name == key:
                     del self.values()[index]
 
-    # FIXME: (jany) def __contains__
+    def __contains__(self, item):
+        if isinstance(item, str):
+            for klass in self.values():
+                if klass.name == item:
+                    return True
+            return False
+        return item in self.values()
 
     def append(self, item):
         self.values().append(item)
