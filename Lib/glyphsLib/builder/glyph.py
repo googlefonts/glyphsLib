@@ -26,7 +26,7 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph):
+def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
