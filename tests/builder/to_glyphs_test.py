@@ -289,9 +289,11 @@ def test_glyph_height_and_vertical_origin_trigger_vhea_metrics(ufo_module):
     a.verticalOrigin = 100
 
     font = to_glyphs([ufo])
-    # By default, each master contains a single customParameter called
-    # "Master Name", hence why we check there's only 1 customParameter
-    assert len(font.masters[0].customParameters) == 1
+
+    assert all(
+        "vhea" not in custom_param.name
+        for custom_param in font.masters[0].customParameters
+    )
 
     (ufo,) = to_ufos(font)
 
