@@ -278,6 +278,28 @@ def test_glyph_height_and_vertical_origin(ufo_module):
     assert ufo["b"].verticalOrigin == 1000
 
 
+def test_glyph_height_and_vertical_origin_trigger_vhea_metrics(ufo_module):
+    ufo = ufo_module.Font()
+    ufo.info.ascender = 1000
+    ufo.info.descender = -200
+    ufo.info.unitsPerEm = 1000
+
+    a = ufo.newGlyph("a")
+    a.height = 1024
+    a.verticalOrigin = 100
+
+    font = to_glyphs([ufo])
+    # By default, each master contains a single customParameter called
+    # "Master Name", hence why we check there's only 1 customParameter
+    assert len(font.masters[0].customParameters) == 1
+
+    (ufo,) = to_ufos(font)
+
+    assert ufo.info.openTypeVheaVertTypoAscender == 500
+    assert ufo.info.openTypeVheaVertTypoDescender == -500
+    assert ufo.info.openTypeVheaVertTypoLineGap == 1000
+
+
 def test_bad_ufo_date_format_in_glyph_lib(ufo_module):
     ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
