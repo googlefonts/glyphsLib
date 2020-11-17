@@ -71,6 +71,26 @@ def to_ufo_master_attributes(self, source, master):
                 user_loc = axis.get_user_loc(master)
                 axis.set_ufo_user_loc(ufo, user_loc)
 
+    # Set vhea values to glyphsapp defaults if they haven't been declared.
+    # ufo2ft needs these set in order for a ufo to be recognised as
+    # vertical. Glyphsapp uses the font upm, not the typo metrics
+    # for these.
+    if self.is_vertical:
+        custom_params = master.customParameters
+        font_upm = self.font.upm
+        if not any(
+            k in custom_params for k in ("vheaVertAscender", "vheaVertTypoAscender")
+        ):
+            ufo.info.openTypeVheaVertTypoAscender = int(font_upm / 2)
+        if not any(
+            k in custom_params for k in ("vheaVertDescender", "vheaVertTypoDescender")
+        ):
+            ufo.info.openTypeVheaVertTypoDescender = -int(font_upm / 2)
+        if not any(
+            k in custom_params for k in ("vheaVertLineGap", "vheaVertTypoLineGap")
+        ):
+            ufo.info.openTypeVheaVertTypoLineGap = font_upm
+
     self.to_ufo_blue_values(ufo, master)
     self.to_ufo_guidelines(ufo, master)
     self.to_ufo_master_user_data(ufo, master)

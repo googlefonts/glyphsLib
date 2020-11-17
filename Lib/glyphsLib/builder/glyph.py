@@ -26,7 +26,7 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph):
+def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
@@ -138,6 +138,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):
     self.to_ufo_paths(ufo_glyph, layer)
     self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
+    if self.is_vertical:
+        self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
@@ -256,6 +258,40 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
+    self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
+
+
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+    # implentation based on:
+    # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
+    assert self.is_vertical
+
+    ascender, descender = _get_typo_ascender_descender(layer.master)
+
+    if layer.vertWidth:
+        ufo_glyph.height = layer.vertWidth
+    else:
+        ufo_glyph.height = ascender - descender
+
+    if layer.vertOrigin:
+        ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
+    else:
+        ufo_glyph.verticalOrigin = ascender
+
+
+def _get_typo_ascender_descender(master):
+    # Glyphsapp will use the typo metrics to set the verOrigin and
+    # vertWidth. If typo metrics are not present, the master
+    # ascender and descender are used instead.
+    if "typoAscender" in master.customParameters:
+        ascender = master.customParameters["typoAscender"]
+    else:
+        ascender = master.ascender
+    if "typoDescender" in master.customParameters:
+        descender = master.customParameters["typoDescender"]
+    else:
+        descender = master.descender
+    return ascender, descender
 
 
 def to_ufo_glyph_background(self, glyph, layer):
@@ -291,3 +327,12 @@ def _to_glyphs_color(color):
     # round-trip the actual value in later versions.
     # https://github.com/googlefonts/glyphsLib/pull/363#issuecomment-390418497
     return [round(float(component) * 255) for component in color.split(",")]
+
+
+def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
+    if ufo_glyph.height:
+        layer.vertWidth = ufo_glyph.height
+
+    if ufo_glyph.verticalOrigin:
+        ascender, _ = _get_typo_ascender_descender(master)
+        layer.vertOrigin = ascender - ufo_glyph.verticalOrigin

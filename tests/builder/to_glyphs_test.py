@@ -252,6 +252,56 @@ def test_glyph_color(ufo_module):
     assert ufo["b"].markColor == b.markColor
 
 
+def test_glyph_height_and_vertical_origin(ufo_module):
+    ufo = ufo_module.Font()
+    ufo.info.ascender = 1000
+    ufo.info.descender = -200
+    ufo.info.unitsPerEm = 1000
+
+    a = ufo.newGlyph("a")
+    a.height = 1024
+    a.verticalOrigin = 100
+    ufo.newGlyph("b")
+
+    font = to_glyphs([ufo])
+
+    assert font.glyphs["a"].layers[0].vertWidth == ufo["a"].height
+    assert font.glyphs["a"].layers[0].vertOrigin == 900
+    assert font.glyphs["b"].layers[0].vertWidth is None
+    assert font.glyphs["b"].layers[0].vertOrigin is None
+
+    (ufo,) = to_ufos(font)
+
+    assert ufo["a"].height == font.glyphs["a"].layers[0].vertWidth
+    assert ufo["a"].verticalOrigin == 100
+    assert ufo["b"].height == (ufo.info.ascender - ufo.info.descender)
+    assert ufo["b"].verticalOrigin == 1000
+
+
+def test_glyph_height_and_vertical_origin_trigger_vhea_metrics(ufo_module):
+    ufo = ufo_module.Font()
+    ufo.info.ascender = 1000
+    ufo.info.descender = -200
+    ufo.info.unitsPerEm = 1000
+
+    a = ufo.newGlyph("a")
+    a.height = 1024
+    a.verticalOrigin = 100
+
+    font = to_glyphs([ufo])
+
+    assert all(
+        "vhea" not in custom_param.name
+        for custom_param in font.masters[0].customParameters
+    )
+
+    (ufo,) = to_ufos(font)
+
+    assert ufo.info.openTypeVheaVertTypoAscender == 500
+    assert ufo.info.openTypeVheaVertTypoDescender == -500
+    assert ufo.info.openTypeVheaVertTypoLineGap == 1000
+
+
 def test_bad_ufo_date_format_in_glyph_lib(ufo_module):
     ufo = ufo_module.Font()
     a = ufo.newGlyph("a")

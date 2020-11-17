@@ -130,6 +130,13 @@ class UFOBuilder(_LoggerMixin):
         self._designspace = self.designspace_module.DesignSpaceDocument()
         self._designspace_is_complete = False
 
+        # If any glyph layer which is associated with a GSFontMaster has the
+        # properties "vertWidth" or "vertOrigin" set, Glyphsapp will assume
+        # the font is going to be used for vertical typesetting. When
+        # Glyphsapp generates these fonts, it will include the vhea, vmtx,
+        # VORG tables. VORG will only be included if the font is an otf.
+        self.is_vertical = self._is_vertical()
+
         # check that source was generated with at least stable version 2.3
         # https://github.com/googlefonts/glyphsLib/pull/65#issuecomment-237158140
         if int(font.appVersion) < 895:
@@ -159,6 +166,16 @@ class UFOBuilder(_LoggerMixin):
             # use a custom 'family_name' to name master UFOs, and only build
             # instances with matching 'familyName' custom parameter
             self._do_filter_instances_by_family = True
+
+    def _is_vertical(self):
+        master_ids = {m.id for m in self.font.masters}
+        for glyph in self.font.glyphs:
+            for layer in glyph.layers:
+                if layer.layerId not in master_ids:
+                    continue
+                if layer.vertWidth is not None or layer.vertOrigin is not None:
+                    return True
+        return False
 
     @property
     def masters(self):
@@ -500,7 +517,6 @@ class UFOBuilder(_LoggerMixin):
     from .custom_params import to_ufo_custom_params
     from .features import to_ufo_features
     from .font import to_ufo_font_attributes
-    from .glyph import to_ufo_glyph, to_ufo_glyph_background
     from .groups import to_ufo_groups
     from .guidelines import to_ufo_guidelines
     from .hints import to_ufo_hints
@@ -511,6 +527,11 @@ class UFOBuilder(_LoggerMixin):
     from .names import to_ufo_names
     from .paths import to_ufo_paths
     from .sources import to_designspace_sources
+    from .glyph import (
+        to_ufo_glyph,
+        to_ufo_glyph_background,
+        to_ufo_glyph_height_and_vertical_origin,
+    )
     from .user_data import (
         to_designspace_family_user_data,
         to_ufo_family_user_data,
@@ -838,7 +859,7 @@ class GlyphsBuilder(_LoggerMixin):
     from .custom_params import to_glyphs_custom_params
     from .features import to_glyphs_features
     from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters
-    from .glyph import to_glyphs_glyph
+    from .glyph import to_glyphs_glyph, to_glyphs_glyph_height_and_vertical_origin
     from .groups import to_glyphs_groups
     from .guidelines import to_glyphs_guidelines
     from .hints import to_glyphs_hints
