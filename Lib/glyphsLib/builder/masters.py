@@ -94,7 +94,8 @@ def to_ufo_master_attributes(self, source, master):
     self.to_ufo_blue_values(ufo, master)
     self.to_ufo_guidelines(ufo, master)
     self.to_ufo_master_user_data(ufo, master)
-    self.to_ufo_custom_params(ufo, master)
+    # Note: master's custom parameters will be applied later on, after glyphs and
+    # features have been generated (see UFOBuilder::masters method).
 
     master_id = master.id
     if self.minimize_glyphs_diffs:

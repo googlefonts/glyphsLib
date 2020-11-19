@@ -30,23 +30,19 @@ def autostr(automatic):
     return "# automatic\n" if automatic else ""
 
 
-def to_ufo_features(self):
-    for master_id, source in self._sources.items():
-        master = self.font.masters[master_id]
-        ufo = source.font
-
-        # Recover the original feature code if it was stored in the user data
-        original = master.userData[ORIGINAL_FEATURE_CODE_KEY]
-        if original is not None:
-            ufo.features.text = original
-        else:
-            skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-            ufo.features.text = _to_ufo_features(
-                self.font,
-                ufo,
-                generate_GDEF=self.generate_GDEF,
-                skip_export_glyphs=skip_export_glyphs,
-            )
+def to_ufo_master_features(self, ufo, master):
+    # Recover the original feature code if it was stored in the user data
+    original = master.userData[ORIGINAL_FEATURE_CODE_KEY]
+    if original is not None:
+        ufo.features.text = original
+    else:
+        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+        ufo.features.text = _to_ufo_features(
+            self.font,
+            ufo,
+            generate_GDEF=self.generate_GDEF,
+            skip_export_glyphs=skip_export_glyphs,
+        )
 
 
 def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=None):
@@ -206,16 +202,43 @@ def _build_gdef(ufo, skipExportGlyphs=None):
     return "\n".join(lines)
 
 
-def replace_feature(tag, repl, features):
+def regenerate_gdef(self):
+    skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+    for master_id, source in self._sources.items():
+        master = self.font.masters[master_id]
+        ufo = source.font
+
+        if (
+            master.userData[ORIGINAL_FEATURE_CODE_KEY]
+            or "GDEF" not in ufo.features.text
+        ):
+            continue
+
+        new_gdef = _build_gdef(ufo, skip_export_glyphs)
+        if new_gdef:
+            # string enclosing 'table GDEF {...} GDEF;' before replacing content
+            new_gdef = "\n".join(new_gdef.splitlines()[1:-1])
+            ufo.features.text = replace_table("GDEF", new_gdef, ufo.features.text)
+
+
+def _replace_block(kind, tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
     return re.sub(
-        r"(?<=^feature {tag} {{\n)(.*?)(?=^}} {tag};$)".format(tag=tag),
+        fr"(?<=^{kind} {tag} {{\n)(.*?)(?=^}} {tag};$)",
         repl,
         features,
         count=1,
         flags=re.DOTALL | re.MULTILINE,
     )
+
+
+def replace_feature(tag, repl, features):
+    return _replace_block("feature", tag, repl, features)
+
+
+def replace_table(tag, repl, features):
+    return _replace_block("table", tag, repl, features)
 
 
 def replace_prefixes(repl_map, features_text, glyph_names=None):

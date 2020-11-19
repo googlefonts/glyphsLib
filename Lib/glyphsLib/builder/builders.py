@@ -256,12 +256,20 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
-        for source in self._sources.values():
+        for master_id, source in self._sources.items():
             ufo = source.font
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
             for layer in ufo.layers:
                 self.to_ufo_layer_lib(layer)
+
+            master = self.font.masters[master_id]
+            # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
+            # parameters so it requires UFOs have their features set first; at the
+            # same time, to generate a GDEF table we first need to have defined the
+            # glyphOrder, exported the glyphs and propagated anchors from components.
+            self.to_ufo_master_features(ufo, master)
+            self.to_ufo_custom_params(ufo, master)
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
@@ -275,7 +283,6 @@ class UFOBuilder(_LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
-        self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
@@ -455,7 +462,7 @@ class UFOBuilder(_LoggerMixin):
         # re-generate the GDEF table since we have added new BRACKET glyphs, which may
         # also need to be included: https://github.com/googlefonts/glyphsLib/issues/578
         if self.generate_GDEF:
-            self.to_ufo_features()
+            self.regenerate_gdef()
 
     def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         font = self.font
@@ -515,7 +522,7 @@ class UFOBuilder(_LoggerMixin):
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
     from .custom_params import to_ufo_custom_params
-    from .features import to_ufo_features
+    from .features import regenerate_gdef, to_ufo_master_features
     from .font import to_ufo_font_attributes
     from .groups import to_ufo_groups
     from .guidelines import to_ufo_guidelines
