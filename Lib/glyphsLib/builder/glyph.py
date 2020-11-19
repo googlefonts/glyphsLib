@@ -139,7 +139,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
     if self.is_vertical:
-        self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
+        self.to_ufo_glyph_height_and_vertical_origin(ufo_font, ufo_glyph, layer)
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
@@ -261,7 +261,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
 
 
-def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_font, ufo_glyph, layer):
     # implentation based on:
     # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
     assert self.is_vertical
