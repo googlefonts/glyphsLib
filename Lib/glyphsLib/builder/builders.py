@@ -168,6 +168,9 @@ class UFOBuilder(_LoggerMixin):
             self._do_filter_instances_by_family = True
 
     def _is_vertical(self):
+        for feature in self.font.features:
+            if feature.name in ["vert", "vrt2", "vkna"]:
+                return True
         master_ids = {m.id for m in self.font.masters}
         for glyph in self.font.glyphs:
             for layer in glyph.layers:

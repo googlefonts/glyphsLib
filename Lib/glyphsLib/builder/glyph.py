@@ -270,6 +270,8 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
 
     if layer.vertWidth:
         ufo_glyph.height = layer.vertWidth
+    elif "rotat" in ufo_glyph.name:
+        ufo_glyph.height = ufo_font[ufo_glyph.name.replace(".rotat", "")].width
     else:
         ufo_glyph.height = ascender - descender
 
