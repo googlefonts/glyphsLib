@@ -87,7 +87,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         font.features.append(f1)
         # featurePrefixes
         fp1 = classes.GSFeaturePrefix()
-        fp1 = "FP1"
+        fp1.name = "FP1"
         font.featurePrefixes.append(fp1)
         # copyright
         font.copyright = "Copyright Bob"
@@ -173,7 +173,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             disablesNiceNames = 1;
             familyName = "Sans Rien";
             featurePrefixes = (
-            FP1
+            {
+            code = "";
+            name = FP1;
+            }
             );
             features = (
             {

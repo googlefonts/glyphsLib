@@ -686,6 +686,8 @@ class FontGlyphsProxy(Proxy):
 
 
 class FontClassesProxy(Proxy):
+    VALUES_ATTR = "_classes"
+
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
@@ -715,7 +717,13 @@ class FontClassesProxy(Proxy):
                 if klass.name == key:
                     del self.values()[index]
 
-    # FIXME: (jany) def __contains__
+    def __contains__(self, item):
+        if isinstance(item, str):
+            for klass in self.values():
+                if klass.name == item:
+                    return True
+            return False
+        return item in self.values()
 
     def append(self, item):
         self.values().append(item)
@@ -734,14 +742,22 @@ class FontClassesProxy(Proxy):
         self.values().remove(item)
 
     def values(self):
-        return self._owner._classes
+        return getattr(self._owner, self.VALUES_ATTR)
 
     def setter(self, values):
         if isinstance(values, Proxy):
             values = list(values)
-        self._owner._classes = values
+        setattr(self._owner, self.VALUES_ATTR, values)
         for value in values:
             value._parent = self._owner
+
+
+class FontFeaturesProxy(FontClassesProxy):
+    VALUES_ATTR = "_features"
+
+
+class FontFeaturePrefixesProxy(FontClassesProxy):
+    VALUES_ATTR = "_featurePrefixes"
 
 
 class GlyphLayerProxy(Proxy):
@@ -3546,7 +3562,9 @@ class GSFont(GSBase):
         "DisplayStrings",
         "_classes",
         "_customParameters",
+        "_featurePrefixes",
         "_features",
+        "_customParameters",
         "_glyphs",
         "_instances",
         "_kerning",
@@ -3561,7 +3579,6 @@ class GSFont(GSBase):
         "disablesAutomaticAlignment",
         "disablesNiceNames",
         "familyName",
-        "featurePrefixes",
         "filepath",
         "grid",
         "gridSubDivisions",
@@ -3611,6 +3628,8 @@ class GSFont(GSBase):
     }
     _defaultsForName = {
         "classes": [],
+        "features": [],
+        "featurePrefixes": [],
         "customParameters": [],
         "disablesAutomaticAlignment": False,
         "disablesNiceNames": False,
@@ -3623,7 +3642,6 @@ class GSFont(GSBase):
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
-        self._features = []
         self._glyphs = []
         self._instances = []
         self._masters = []
@@ -3631,6 +3649,8 @@ class GSFont(GSBase):
         self._versionMinor = 0
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
+        self.features = copy.deepcopy(self._defaultsForName["features"])
+        self.featurePrefixes = copy.deepcopy(self._defaultsForName["featurePrefixes"])
         self.copyright = ""
         self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
         self.date = None
@@ -3641,7 +3661,6 @@ class GSFont(GSBase):
         ]
         self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
         self.familyName = "Unnamed font"
-        self.featurePrefixes = []
         self.filepath = None
         self.grid = self._defaultsForName["gridLength"]
         self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
@@ -3711,18 +3730,6 @@ class GSFont(GSBase):
             ):
                 glyph._setupLayer(layer, layer.layerId)
 
-    @property
-    def features(self):
-        return self._features
-
-    @features.setter
-    def features(self, value):
-        # FIXME: (jany) why not use Proxy like every other attribute?
-        # FIXME: (jany) do the same for featurePrefixes?
-        self._features = value
-        for g in self._features:
-            g._parent = self
-
     masters = property(
         lambda self: FontFontMasterProxy(self),
         lambda self, value: FontFontMasterProxy(self).setter(value),
@@ -3748,6 +3755,16 @@ class GSFont(GSBase):
     classes = property(
         lambda self: FontClassesProxy(self),
         lambda self, value: FontClassesProxy(self).setter(value),
+    )
+
+    features = property(
+        lambda self: FontFeaturesProxy(self),
+        lambda self, value: FontFeaturesProxy(self).setter(value),
+    )
+
+    featurePrefixes = property(
+        lambda self: FontFeaturePrefixesProxy(self),
+        lambda self, value: FontFeaturePrefixesProxy(self).setter(value),
     )
 
     customParameters = property(
