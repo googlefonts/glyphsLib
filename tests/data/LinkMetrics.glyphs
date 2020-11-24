@@ -12,6 +12,10 @@ Name = Weight;
 Tag = wght;
 }
 );
+},
+{
+name = "Disable Last Change";
+value = 1;
 }
 );
 date = "2020-11-24 11:11:44 +0000";
@@ -132,7 +136,6 @@ xHeight = 500;
 glyphs = (
 {
 glyphname = A;
-lastChange = "2020-11-24 11:30:08 +0000";
 layers = (
 {
 layerId = "CB0DE9B7-93D2-484C-9B6D-70BB1AE3AAF9";
@@ -202,7 +205,7 @@ nodes = (
 );
 }
 );
-width = 600;
+width = 300;
 }
 );
 leftKerningGroup = A;
@@ -211,7 +214,6 @@ unicode = 0041;
 },
 {
 glyphname = T;
-lastChange = "2020-11-24 11:30:08 +0000";
 layers = (
 {
 components = (
@@ -265,7 +267,6 @@ unicode = 0054;
 },
 {
 glyphname = V;
-lastChange = "2020-11-24 11:30:08 +0000";
 layers = (
 {
 layerId = "CB0DE9B7-93D2-484C-9B6D-70BB1AE3AAF9";
@@ -344,7 +345,6 @@ unicode = 0056;
 },
 {
 glyphname = h;
-lastChange = "2020-11-24 11:30:08 +0000";
 layers = (
 {
 components = (
