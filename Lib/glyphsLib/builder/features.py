@@ -104,7 +104,7 @@ def _to_ufo_features(
                 lines.extend("# " + line for line in feature.notes.splitlines())
                 lines.extend(name.splitlines())
             else:
-                feature_name = re.search("^(Name: (.+))", feature.notes)
+                feature_name = re.search(r"^(Name: (.+))", feature.notes)
                 if feature_name:
                     line, name = feature_name.groups()
                     # Remove the name from the note
