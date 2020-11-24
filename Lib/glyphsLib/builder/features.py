@@ -680,27 +680,25 @@ class FeatureFileProcessor:
             #    the block is only made of comments
         else:
             feature.code = self._rstrip_newlines(self.doc.text(contents))
-        # See if there is a feature name in the code that should be
-        # written to the notes
-        feature_name = re.search(
-            r"(featureNames\s*{\s*name\s+\"(.+)\";\s*};)",
-            feature.code,
-            flags=re.MULTILINE | re.DOTALL,
-        )
-        if feature_name:
-            statement, name = feature_name.groups()
-
-            # Don't add if the name is already there
-            if not re.search(r"^Name: (.+)", feature.notes, flags=re.DOTALL):
-                feature.notes = "\n".join([f"Name: {name}", notes_text])
-
-            # Remove the name statement from the feature code
-            feature.code = re.sub(
-                r"featureNames\s*{\s*name\s+\".+\";\s*};\s*",
-                "",
+        if feature.automatic:
+            # See if there is a feature name in the code that should be
+            # written to the notes
+            feature_name = re.search(
+                r"(featureNames\s*{\s*name\s+\"(.+)\";\s*};)",
                 feature.code,
                 flags=re.MULTILINE | re.DOTALL,
             )
+            if feature_name:
+                _statement, name = feature_name.groups()
+
+                # Don't add if the name is already there
+                if not re.search("Name: .+", feature.notes, flags=re.DOTALL):
+                    feature.notes = f"Name: {name}\n" + feature.notes
+
+                # Remove the name statement from the feature code
+                feature.code = feature.code.replace(
+                    feature_name.groups()[0], ""
+                ).lstrip()
         self._font.features.append(feature)
         return True
 
