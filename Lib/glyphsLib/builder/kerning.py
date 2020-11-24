@@ -27,13 +27,9 @@ def to_ufo_kerning(self):
     for master in self.font.masters:
         master_id = master.id
         master = self.font.masters[master_id]
-        source_master_id = master.customParameters[
-            "Link Metrics With Master"
-        ]
+        source_master_id = master.customParameters["Link Metrics With Master"]
         if source_master_id is None:
-            source_master_id = master.customParameters[
-                "Link Metrics With First Master"
-            ]
+            source_master_id = master.customParameters["Link Metrics With First Master"]
             if source_master_id == 1:
                 kerning_source_masters[master_id] = self.font.masters[0].id
         else:

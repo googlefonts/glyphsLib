@@ -1573,18 +1573,18 @@ class GSPathFromFileTest(GSObjectsTestCase):
     def test_segments_2(self):
         p = GSPath()
         p.nodes = [
-            GSNode((204,354),"curve"),
-            GSNode((198,353),"offcurve"),
-            GSNode((193,352),"offcurve"),
-            GSNode((183,352),"curve"),
-            GSNode((154,352),"offcurve"),
-            GSNode((123,364),"offcurve"),
-            GSNode((123,384),"curve"),
-            GSNode((123,403),"offcurve"),
-            GSNode((148,419),"offcurve"),
-            GSNode((167,419),"curve"),
-            GSNode((190,419),"offcurve"),
-            GSNode((204,397),"offcurve"),
+            GSNode((204, 354), "curve"),
+            GSNode((198, 353), "offcurve"),
+            GSNode((193, 352), "offcurve"),
+            GSNode((183, 352), "curve"),
+            GSNode((154, 352), "offcurve"),
+            GSNode((123, 364), "offcurve"),
+            GSNode((123, 384), "curve"),
+            GSNode((123, 403), "offcurve"),
+            GSNode((148, 419), "offcurve"),
+            GSNode((167, 419), "curve"),
+            GSNode((190, 419), "offcurve"),
+            GSNode((204, 397), "offcurve"),
         ]
         self.assertEqual(len(p.segments), 4)
 

@@ -118,13 +118,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     # The width may be taken from another master via the customParameters
     # 'Link Metrics With Master' or 'Link Metrics With First Master'.
     master = self.font.masters[layer.associatedMasterId or layer.layerId]
-    source_master_id = master.customParameters[
-        "Link Metrics With Master"
-    ]
+    source_master_id = master.customParameters["Link Metrics With Master"]
     if source_master_id is None:
-        user_first_master = master.customParameters[
-            "Link Metrics With First Master"
-        ]
+        user_first_master = master.customParameters["Link Metrics With First Master"]
         if user_first_master == 1:
             width = self.font.glyphs[glyph.name].layers[0].width
             if layer.width != width:
