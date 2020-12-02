@@ -1603,7 +1603,7 @@ class GSFontMaster(GSBase):
 
 
 class GSNode(GSBase):
-    __slots__ = ("_userData", "position", "smooth", "type")
+    __slots__ = ("_userData", "_position", "smooth", "type")
 
     _PLIST_VALUE_RE = re.compile(
         r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
@@ -1614,7 +1614,7 @@ class GSNode(GSBase):
 
     def __init__(self, position=(0, 0), nodetype=LINE, smooth=False, name=None):
         self._userData = None
-        self.position = Point(position[0], position[1])
+        self._position = Point(position[0], position[1])
         self.smooth = smooth
         self.type = nodetype
         # Optimization: Points can number in the 10000s, don't access the userDataProxy
@@ -1634,6 +1634,16 @@ class GSNode(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value),
     )
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        if not isinstance(value, Point):
+            value = Point(value[0], value[1])
+        self._position = value
 
     @property
     def parent(self):
