@@ -1527,6 +1527,13 @@ class GSPathFromFileTest(GSObjectsTestCase):
         del path.nodes[-1]
         self.assertEqual(amount, len(path.nodes))
 
+    def test_node_position(self):
+        n = GSNode()
+        n.position = Point("{10, 10}")
+        self.assertEqual(n.position.x, 10)
+        n.position = (20,20)
+        self.assertEqual(n.position.x, 20)
+
     # TODO: GSPath.closed
 
     # bezierPath?
