@@ -1,4 +1,4 @@
-|Travis Build Status| |PyPI Version| |Codecov| |Gitter Chat|
+|CI Build Status| |PyPI Version| |Codecov| |Gitter Chat|
 
 glyphsLib
 =========
@@ -145,8 +145,8 @@ In practice there are always a few diffs on things that don't really make a
 difference, like optional things being added/removed or whitespace changes or
 things getting reordered...
 
-.. |Travis Build Status| image:: https://travis-ci.org/googlefonts/glyphsLib.svg
-   :target: https://travis-ci.org/googlefonts/glyphsLib
+.. |CI Build Status| image:: https://github.com/googlefonts/picosvg/workflows/Continuous%20Test%20+%20Deploy/badge.svg
+   :target: https://github.com/googlefonts/glyphsLib/actions
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/glyphsLib.svg
    :target: https://pypi.org/project/glyphsLib/
 .. |Codecov| image:: https://codecov.io/gh/googlefonts/glyphsLib/branch/master/graph/badge.svg
