@@ -72,27 +72,10 @@ class TransformNotInvertibleError(Exception):
     """The transform could not be inverted"""
 
 
-# Define assert_unorderable() depending on the language
-# implicit ordering rules. This keeps things consistent
-# across major Python versions
-try:
-    3 > ""
-except TypeError:  # pragma: no cover
-    # No implicit ordering (newer Python)
-    def assert_unorderable(a, b):
-        """Assert that a and b are unorderable"""
-        return NotImplemented
-
-
-else:  # pragma: no cover
-    # Implicit ordering by default (older Python)
-    # We must raise an exception ourselves
-    # To prevent nonsensical ordering
-    def assert_unorderable(a, b):
-        """Assert that a and b are unorderable"""
-        raise TypeError(
-            "unorderable types: {} and {}".format(type(a).__name__, type(b).__name__)
-        )
+# No implicit ordering (newer Python)
+def assert_unorderable(a, b):
+    """Assert that a and b are unorderable"""
+    return NotImplemented
 
 
 def cached_property(func):
