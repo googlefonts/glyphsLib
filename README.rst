@@ -145,7 +145,7 @@ In practice there are always a few diffs on things that don't really make a
 difference, like optional things being added/removed or whitespace changes or
 things getting reordered...
 
-.. |CI Build Status| image:: https://github.com/googlefonts/picosvg/workflows/Continuous%20Test%20+%20Deploy/badge.svg
+.. |CI Build Status| image:: https://github.com/googlefonts/glyphsLib/workflows/Test%20+%20Deploy/badge.svg
    :target: https://github.com/googlefonts/glyphsLib/actions
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/glyphsLib.svg
    :target: https://pypi.org/project/glyphsLib/
