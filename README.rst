@@ -145,6 +145,29 @@ In practice there are always a few diffs on things that don't really make a
 difference, like optional things being added/removed or whitespace changes or
 things getting reordered...
 
+Make a release
+^^^^^^^^^^^^^^
+
+Use ``git tag -a`` to make a new annotated tag, or ``git tag -s`` for a GPG-signed
+annotated tag, if you prefer.
+
+Name the new tag with with a leading ‘v’ followed by three ``MAJOR.MINOR.PATCH``
+digits, like in semantic versioning. Look at the existing tags for examples.
+
+In the tag message write some short release notes describing the changes since the
+previous tag.
+
+Finally, push the tag to the remote repository (e.g. assuming your upstream is
+called ``origin``):
+
+.. code::
+
+    $ git push origin v0.4.3
+
+This will trigger the CI to build the distribution packages and upload them to
+the Python Package Index automatically, if all the tests pass successfully.
+
+
 .. |CI Build Status| image:: https://github.com/googlefonts/glyphsLib/workflows/Test%20+%20Deploy/badge.svg
    :target: https://github.com/googlefonts/glyphsLib/actions
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/glyphsLib.svg
