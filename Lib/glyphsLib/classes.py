@@ -1628,12 +1628,14 @@ class GSNode(GSBase):
     )
     _parent = None
 
-    def __init__(self, position=(0, 0), type=LINE, smooth=False, name=None, nodetype=None):
+    def __init__(
+        self, position=(0, 0), type=LINE, smooth=False, name=None, nodetype=None
+    ):
         self._userData = None
         self._position = Point(position[0], position[1])
         self.smooth = smooth
         self.type = type
-        if nodetype is not None: # for backward compatibility
+        if nodetype is not None:  # for backward compatibility
             self.type = nodetype
         # Optimization: Points can number in the 10000s, don't access the userDataProxy
         # through `name` unless needed.
