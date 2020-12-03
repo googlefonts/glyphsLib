@@ -7,6 +7,18 @@ on:
     branches: [master]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install tox
+      run: pip install tox
+    - name: Run style and typing checks
+      run: tox -e lint
   build:
     runs-on: ${{ matrix.platform }}
     strategy:
