@@ -8,6 +8,18 @@ on:
     branches: [master]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.x"
+    - name: Install dependencies
+      run: pip install tox
+    - name: Run style and typing checks
+      run: tox -e lint
   test:
     runs-on: ${{ matrix.platform }}
     strategy:
@@ -21,11 +33,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
+      run: pip install tox
     - name: Test with tox
-      run: tox
+      run: tox -e py
   deploy:
     # only run if the commit is tagged...
     if: startsWith(github.ref, 'refs/tags/v')
