@@ -24,6 +24,7 @@ from .constants import GLYPHLIB_PREFIX
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
 ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + "originalFeatureCode"
+GLYPHSAPP_INSERT_CODE = ("# Automatic Code Start", "# Automatic Code End")
 
 
 def autostr(automatic):
@@ -95,6 +96,11 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=Non
             lines.append("# disabled")
             lines.extend("#" + line for line in code.splitlines())
         else:
+            insert_code = GLYPHSAPP_INSERT_CODE
+            for ic in insert_code:
+                if ic in code.split("\n"):
+                    lines = ["### INSERT %s" % feature.name, ""] + lines
+                    break
             lines.append(code)
         lines.append("} %s;" % feature.name)
         feature_defs.append("\n".join(lines))
