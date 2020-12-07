@@ -47,6 +47,7 @@ Goal: check how files with custom axes are roundtripped.
             ("IJKL", "Third custom"),
             ("MNOP", "Fourth custom"),
         ],
+        [("opsz", "First custom"), ("wght", "Second custom")],
     ],
 )
 def test_weight_width_custom(axes, ufo_module):

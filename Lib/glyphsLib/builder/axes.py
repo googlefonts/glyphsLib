@@ -269,29 +269,14 @@ def font_uses_axis_locations(font):
 
 
 def to_glyphs_axes(self):
-    weight = None
-    width = None
-    customs = []
+    axes_parameter = []
     for axis in self.designspace.axes:
         if axis.tag == "wght":
-            weight = axis
+            axes_parameter.append({"Name": axis.name or "Weight", "Tag": "wght"})
         elif axis.tag == "wdth":
-            width = axis
+            axes_parameter.append({"Name": axis.name or "Width", "Tag": "wdth"})
         else:
-            customs.append(axis)
-
-    axes_parameter = []
-    if weight is not None:
-        axes_parameter.append({"Name": weight.name or "Weight", "Tag": "wght"})
-        # TODO: (jany) store other data about this axis?
-
-    if width is not None:
-        axes_parameter.append({"Name": width.name or "Width", "Tag": "wdth"})
-        # TODO: (jany) store other data about this axis?
-
-    for custom in customs:
-        axes_parameter.append({"Name": custom.name, "Tag": custom.tag})
-        # TODO: (jany) store other data about this axis?
+            axes_parameter.append({"Name": axis.name, "Tag": axis.tag})
 
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.customParameters["Axes"] = axes_parameter
