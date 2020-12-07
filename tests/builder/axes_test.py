@@ -21,7 +21,7 @@ import pytest
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster
-from glyphsLib.builder.axes import get_regular_master
+from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
 
 """
 Goal: check how files with custom axes are roundtripped.
@@ -48,6 +48,9 @@ Goal: check how files with custom axes are roundtripped.
             ("MNOP", "Fourth custom"),
         ],
         [("opsz", "First custom"), ("wght", "Second custom")],
+        # Test that standard axis definitions don't generate an Axes custom parameter.
+        [("wght", "Weight"), ("wdth", "Width")],
+        [("wdth", "Width"), ("wght", "Weight")],
     ],
 )
 def test_weight_width_custom(axes, ufo_module):
@@ -58,9 +61,12 @@ def test_weight_width_custom(axes, ufo_module):
 
     font = to_glyphs(doc)
 
-    assert font.customParameters["Axes"] == [
-        {"Tag": tag, "Name": name} for tag, name in axes
-    ]
+    if _is_subset_of_default_axes([{"Name": n, "Tag": t} for t, n in axes]):
+        assert font.customParameters["Axes"] is None
+    else:
+        assert font.customParameters["Axes"] == [
+            {"Tag": tag, "Name": name} for tag, name in axes
+        ]
 
     doc = to_designspace(font, ufo_module=ufo_module)
 
