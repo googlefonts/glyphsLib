@@ -1347,8 +1347,9 @@ class GSGuideLine(GSBase):
         "angle",
         "filter",
         "locked",
+        "lockAngle",
         "name",
-        "position",
+        "pos",
         "showMeasurement",
     )
 
@@ -1356,26 +1357,38 @@ class GSGuideLine(GSBase):
         "alignment": str,
         "angle": parse_float_or_int,
         "locked": bool,
-        "position": Point,
+        "lockAngle": bool,
+        "pos": Point,
         "showMeasurement": bool,
         "filter": str,
         "name": str,
     }
     _parent = None
-    _defaultsForName = {"position": Point(0, 0), "angle": 0}
+    _defaultsForName = {"pos": Point(0, 0), "angle": 0}
 
+    _keyOrder = (
+        "alignment",
+        "angle",
+        "filter",
+        "locked",
+        "lockAngle",
+        "name",
+        "pos",
+        "showMeasurement",
+    )
     def __init__(self):
         self.alignment = ""
         self.angle = self._defaultsForName["angle"]
         self.filter = ""
         self.locked = False
+        self.lockAngle = False
         self.name = ""
-        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.pos = copy.deepcopy(self._defaultsForName["pos"])
         self.showMeasurement = False
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
-            self.__class__.__name__, self.position.x, self.position.y, self.angle
+            self.__class__.__name__, self.pos.x, self.pos.y, self.angle
         )
 
     @property
@@ -1414,7 +1427,7 @@ class GSFontMaster(GSBase):
         "axesValues": parse_float_or_int,
         "custom": str,
         "customParameters": GSCustomParameter,
-        "guideLines": GSGuideLine,
+        "guides": GSGuideLine,
         "iconName": str,
         "id": str,
         "italicAngle": parse_float_or_int,
@@ -1440,7 +1453,6 @@ class GSFontMaster(GSBase):
         "italicAngle": 0,
     }
     _wrapperKeysTranslate = {
-        "guideLines": "guides",
         "custom": "customName",
         "name": "_name",
     }
@@ -1449,7 +1461,7 @@ class GSFontMaster(GSBase):
         "alignmentZones",
         "custom",
         "customParameters",
-        "guideLines",
+        "guides",
         "iconName",
         "id",
         "metricValues",
@@ -3006,7 +3018,7 @@ class GSLayer(GSBase):
         "backgroundImage": GSBackgroundImage,
         "color": parse_color,
         "components": GSComponent,
-        "guideLines": GSGuideLine,
+        "guides": GSGuideLine,
         "hints": GSHint,
         "layerId": str,
         "metricLeft": str,
@@ -3037,7 +3049,7 @@ class GSLayer(GSBase):
         "backgroundImage",
         "color",
         "components",
-        "guideLines",
+        "guides",
         "hints",
         "layerId",
         "metricLeft",
