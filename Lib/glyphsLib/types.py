@@ -94,14 +94,14 @@ def Vector(dim):
                 assert len(src) == self.dimension
                 return src
             src = src.replace('"', "")
-            return [self.member_parser(i) for i in self.regex.match(src).groups()]
+            return [str(i) for i in self.regex.match(src).groups()]
 
         def plistValue(self, formatVersion=3):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
             if formatVersion == 2:
                 return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
 
-            return "(%s)" % (",".join(floatToString3(v) for v in self.value))
+            return "(%s)" % (",".join(str(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -206,7 +206,7 @@ class Rect(Vector(4)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString3(v) for v in self.value)
+        return '"{{%s, %s}, {%s, %s}}"' % tuple(str(v) for v in self.value)
 
     def __repr__(self):
         return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
@@ -251,7 +251,7 @@ class Transform(Vector(6)):
 
     def plistValue(self):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{%s}"' % (", ".join(floatToString5(v) for v in self.value))
+        return '"{%s}"' % (", ".join(str(v) for v in self.value))
 
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
