@@ -2667,6 +2667,28 @@ class GSAnnotation(GSBase):
         return self._parent
 
 
+class GSAxis(GSBase):
+    __slots__ = (
+        "hidden",
+        "name",
+        "tag"
+    )
+
+    _classesForName = {
+        "name": str,
+        "tag": str,
+        "hidden": bool
+    }
+    _defaultsForName = {}
+    _wrapperKeysTranslate = {}
+    _keyOrder = ("hidden", "name", "tag")
+
+    def __init__(self):
+        self.hidden = ""
+        self.name = ""
+        self.tag = ""
+
+
 class GSInstance(GSBase):
     __slots__ = (
         "_customParameters",
