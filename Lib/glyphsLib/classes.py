@@ -1393,54 +1393,41 @@ class GSFontMaster(GSBase):
         "_name",
         "_userData",
         "alignmentZones",
-        "ascender",
-        "capHeight",
+        "axesValues",
         "customName",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "descender",
         "font",
         "guides",
-        "horizontalStems",
         "iconName",
         "id",
         "italicAngle",
-        "verticalStems",
+        "numberValues",
+        "stemValues",
         "visible",
         "weight",
         "weightValue",
         "width",
         "widthValue",
-        "xHeight",
     )
 
     _classesForName = {
         "alignmentZones": GSAlignmentZone,
-        "ascender": parse_float_or_int,
-        "capHeight": parse_float_or_int,
+        "axesValues": parse_float_or_int,
         "custom": str,
-        "customValue": parse_float_or_int,
-        "customValue1": parse_float_or_int,
-        "customValue2": parse_float_or_int,
-        "customValue3": parse_float_or_int,
         "customParameters": GSCustomParameter,
-        "descender": parse_float_or_int,
         "guideLines": GSGuideLine,
-        "horizontalStems": int,
         "iconName": str,
         "id": str,
         "italicAngle": parse_float_or_int,
+        "metricValues": dict,
+        "numberValues": parse_float_or_int,
         "name": str,
+        "stemValues": parse_float_or_int,
         "userData": dict,
-        "verticalStems": int,
         "visible": bool,
         "weight": str,
         "weightValue": parse_float_or_int,
         "width": str,
         "widthValue": parse_float_or_int,
-        "xHeight": parse_float_or_int,
     }
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
@@ -1450,14 +1437,6 @@ class GSFontMaster(GSBase):
         "width": "Regular",
         "weightValue": 100,
         "widthValue": 100,
-        "customValue": 0,
-        "customValue1": 0,
-        "customValue2": 0,
-        "customValue3": 0,
-        "xHeight": 500,
-        "capHeight": 700,
-        "ascender": 800,
-        "descender": -200,
         "italicAngle": 0,
     }
     _wrapperKeysTranslate = {
@@ -1466,30 +1445,24 @@ class GSFontMaster(GSBase):
         "name": "_name",
     }
     _keyOrder = (
+        "axesValues",
         "alignmentZones",
-        "ascender",
-        "capHeight",
         "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
         "customParameters",
-        "descender",
         "guideLines",
-        "horizontalStems",
         "iconName",
         "id",
+        "metricValues",
         "italicAngle",
         "name",
+        "numberValues",
+        "stemValues",
         "userData",
-        "verticalStems",
         "visible",
         "weight",
         "weightValue",
         "width",
         "widthValue",
-        "xHeight",
     )
 
     def __init__(self):
@@ -1497,27 +1470,21 @@ class GSFontMaster(GSBase):
         self._name = None
         self._userData = None
         self.alignmentZones = []
-        self.ascender = self._defaultsForName["ascender"]
-        self.capHeight = self._defaultsForName["capHeight"]
+        self.axesValues = []
         self.customName = ""
-        self.customValue = self._defaultsForName["customValue"]
-        self.customValue1 = self._defaultsForName["customValue1"]
-        self.customValue2 = self._defaultsForName["customValue2"]
-        self.customValue3 = self._defaultsForName["customValue3"]
-        self.descender = self._defaultsForName["descender"]
         self.font = None
         self.guides = []
         self.horizontalStems = 0
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
         self.italicAngle = self._defaultsForName["italicAngle"]
+        self.metricValues = []
         self.verticalStems = 0
         self.visible = False
         self.weight = self._defaultsForName["weight"]
         self.weightValue = self._defaultsForName["weightValue"]
         self.width = self._defaultsForName["width"]
         self.widthValue = self._defaultsForName["widthValue"]
-        self.xHeight = self._defaultsForName["xHeight"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1527,9 +1494,6 @@ class GSFontMaster(GSBase):
     def shouldWriteValueForKey(self, key):
         if key in ("weight", "width"):
             return getattr(self, key) != "Regular"
-        if key in ("xHeight", "capHeight", "ascender", "descender"):
-            # Always write those values
-            return True
         if key == "_name":
             # Only write out the name if we can't make it by joining the parts
             return self._name != self.name
