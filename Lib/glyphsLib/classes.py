@@ -2987,9 +2987,9 @@ class GSLayer(GSBase):
         "associatedMasterId",
         "backgroundImage",
         "color",
-        "leftMetricsKey",
+        "metricLeft",
         "parent",
-        "rightMetricsKey",
+        "metricRight",
         "vertOrigin",
         "vertWidth",
         "visible",
@@ -3009,10 +3009,10 @@ class GSLayer(GSBase):
         "guideLines": GSGuideLine,
         "hints": GSHint,
         "layerId": str,
-        "leftMetricsKey": str,
+        "metricLeft": str,
         "name": str,
         "paths": GSPath,
-        "rightMetricsKey": str,
+        "metricRight": str,
         "userData": dict,
         "vertWidth": parse_float_or_int,
         "vertOrigin": parse_float_or_int,
@@ -3022,8 +3022,8 @@ class GSLayer(GSBase):
     }
     _defaultsForName = {
         "width": 600,
-        "leftMetricsKey": None,
-        "rightMetricsKey": None,
+        "metricLeft": None,
+        "metricRight": None,
         "widthMetricsKey": None,
         "vertWidth": None,
         "vertOrigin": None,
@@ -3040,9 +3040,9 @@ class GSLayer(GSBase):
         "guideLines",
         "hints",
         "layerId",
-        "leftMetricsKey",
+        "metricLeft",
         "widthMetricsKey",
-        "rightMetricsKey",
+        "metricRight",
         "name",
         "paths",
         "userData",
@@ -3068,9 +3068,9 @@ class GSLayer(GSBase):
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.metricLeft = self._defaultsForName["metricLeft"]
         self.parent = None
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.metricRight = self._defaultsForName["metricRight"]
         self.vertOrigin = self._defaultsForName["vertOrigin"]
         self.vertWidth = self._defaultsForName["vertWidth"]
         self.visible = False
