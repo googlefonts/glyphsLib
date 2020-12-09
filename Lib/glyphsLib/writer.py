@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
-    def __init__(self, fp):
+    def __init__(self, fp, version = 3):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b"")
@@ -46,6 +46,7 @@ class Writer:
             import codecs
 
             self.file = codecs.getwriter("utf-8")(fp)
+        self.version = version
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -141,7 +142,7 @@ class Writer:
         else:
             value = str(value)
             if forKey != "unicode":
-                value = escape_string(value)
+                value = escape_string(value, self.version)
             self.file.write(value)
 
     def writeKey(self, key):
@@ -333,10 +334,11 @@ def _needs_quotes(string):
         return True
 
 
-def escape_string(string):
+def escape_string(string, version=2):
     if _needs_quotes(string):
         string = string.replace("\\", "\\\\")
         string = string.replace('"', '\\"')
-        string = string.replace("\n", "\\012")
+        if version == 2:
+            string = string.replace("\n", "\\012")
         string = '"%s"' % string
     return string
