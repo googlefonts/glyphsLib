@@ -369,15 +369,17 @@ def floatToString5(f: float) -> str:
 
 
 class UnicodesList(list):
-    """Represent a PLIST-able list of unicode codepoints as strings."""
+    """Represent a PLIST-able tuple of unicode codepoints as strings."""
 
     def __init__(self, value=None):
         if value is None:
             unicodes = []
         elif isinstance(value, str):
             unicodes = value.split(",")
+        elif len(value) == 1:
+            unicodes = value
         else:
-            unicodes = [str(v) for v in value]
+            unicodes = [x[0] for x in value]
         super().__init__(unicodes)
 
     def plistValue(self):
@@ -385,7 +387,7 @@ class UnicodesList(list):
             return None
         if len(self) == 1:
             return self[0]
-        return '"%s"' % ",".join(self)
+        return '(' + ",".join(self) + ')'
 
 
 class BinaryData(bytes):
