@@ -3334,13 +3334,14 @@ class GSGlyph(GSBase):
         "_userData",
         "bottomKerningGroup",
         "bottomMetricsKey",
+        "case",
         "category",
         "color",
         "export",
         "lastChange",
         "leftKerningGroup",
         "leftKerningKey",
-        "leftMetricsKey",
+        "metricLeft",
         "name",
         "note",
         "parent",
@@ -3348,7 +3349,7 @@ class GSGlyph(GSBase):
         "production",
         "rightKerningGroup",
         "rightKerningKey",
-        "rightMetricsKey",
+        "metricRight",
         "script",
         "selected",
         "subCategory",
@@ -3361,6 +3362,7 @@ class GSGlyph(GSBase):
     _classesForName = {
         "bottomKerningGroup": str,
         "bottomMetricsKey": str,
+        "case": str,
         "category": str,
         "color": parse_color,
         "export": bool,
@@ -3369,13 +3371,13 @@ class GSGlyph(GSBase):
         "layers": GSLayer,
         "leftKerningGroup": str,
         "leftKerningKey": str,
-        "leftMetricsKey": str,
+        "metricLeft": str,
         "note": str,
         "partsSettings": GSSmartComponentAxis,
         "production": str,
         "rightKerningGroup": str,
         "rightKerningKey": str,
-        "rightMetricsKey": str,
+        "metricRight": str,
         "script": str,
         "subCategory": str,
         "topKerningGroup": str,
@@ -3391,16 +3393,17 @@ class GSGlyph(GSBase):
         "partsSettings": "smartComponentAxes",
     }
     _defaultsForName = {
+        "case": None,
         "category": None,
         "color": None,
         "export": True,
         "lastChange": None,
         "leftKerningGroup": None,
-        "leftMetricsKey": None,
+        "metricLeft": None,
         "name": None,
         "note": None,
         "rightKerningGroup": None,
-        "rightMetricsKey": None,
+        "metricRight": None,
         "script": None,
         "subCategory": None,
         "userData": None,
@@ -3409,17 +3412,18 @@ class GSGlyph(GSBase):
     _keyOrder = (
         "color",
         "export",
+        "case",
         "glyphname",
         "production",
         "lastChange",
         "layers",
         "leftKerningGroup",
-        "leftMetricsKey",
+        "metricLeft",
         "widthMetricsKey",
         "vertWidthMetricsKey",
         "note",
         "rightKerningGroup",
-        "rightMetricsKey",
+        "metricRight",
         "topKerningGroup",
         "topMetricsKey",
         "bottomKerningGroup",
@@ -3439,11 +3443,12 @@ class GSGlyph(GSBase):
         self.bottomMetricsKey = ""
         self.category = self._defaultsForName["category"]
         self.color = self._defaultsForName["color"]
+        self.case = self._defaultsForName["case"]
         self.export = self._defaultsForName["export"]
         self.lastChange = self._defaultsForName["lastChange"]
         self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
         self.leftKerningKey = ""
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.metricLeft = self._defaultsForName["metricLeft"]
         self.name = name
         self.note = self._defaultsForName["note"]
         self.parent = None
@@ -3451,7 +3456,7 @@ class GSGlyph(GSBase):
         self.production = ""
         self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
         self.rightKerningKey = ""
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.metricRight = self._defaultsForName["metricRight"]
         self.script = self._defaultsForName["script"]
         self.selected = False
         self.subCategory = self._defaultsForName["subCategory"]
