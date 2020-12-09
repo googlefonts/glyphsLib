@@ -3002,6 +3002,7 @@ class GSLayer(GSBase):
         "metricLeft",
         "parent",
         "metricRight",
+        "tags",
         "vertOrigin",
         "vertWidth",
         "visible",
@@ -3365,6 +3366,7 @@ class GSGlyph(GSBase):
         "script",
         "selected",
         "subCategory",
+        "tags",
         "topKerningGroup",
         "topMetricsKey",
         "vertWidthMetricsKey",
@@ -3392,6 +3394,7 @@ class GSGlyph(GSBase):
         "metricRight": str,
         "script": str,
         "subCategory": str,
+        "tags": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
         "unicode": UnicodesList,
@@ -3431,6 +3434,7 @@ class GSGlyph(GSBase):
         "layers",
         "leftKerningGroup",
         "metricLeft",
+        "tags",
         "widthMetricsKey",
         "vertWidthMetricsKey",
         "note",
@@ -3472,6 +3476,7 @@ class GSGlyph(GSBase):
         self.script = self._defaultsForName["script"]
         self.selected = False
         self.subCategory = self._defaultsForName["subCategory"]
+        self.tags = []
         self.topKerningGroup = ""
         self.topMetricsKey = ""
         self.userData = self._defaultsForName["userData"]
