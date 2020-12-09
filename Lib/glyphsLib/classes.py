@@ -2552,22 +2552,29 @@ class GSHint(GSBase):
 
 
 class GSFeature(GSBase):
-    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
+    __slots__ = ("automatic", "_code", "disabled", "tag", "notes", "labels")
 
     _classesForName = {
         "automatic": bool,
         "code": str,
-        "name": str,
+        "tag": str,
         "notes": str,
         "disabled": bool,
+        "labels": dict
     }
 
-    def __init__(self, name="xxxx", code=""):
+    _wrapperKeysTranslate = {"name": "tag"}
+
+    def __init__(self, tag="xxxx", code=""):
         self.automatic = False
         self.code = code
         self.disabled = False
-        self.name = name
+        self.tag = tag
         self.notes = ""
+
+    @property
+    def name(self):
+        return self.tag
 
     def shouldWriteValueForKey(self, key):
         if key == "code":
@@ -2601,10 +2608,25 @@ class GSFeature(GSBase):
 
 
 class GSClass(GSFeature):
-    pass
+    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
+
+    _classesForName = {
+        "automatic": bool,
+        "code": str,
+        "name": str,
+        "notes": str,
+        "disabled": bool,
+    }
+
+    def __init__(self, name="xxxx", code=""):
+        self.automatic = False
+        self.code = code
+        self.disabled = False
+        self.name = name
+        self.notes = ""
 
 
-class GSFeaturePrefix(GSFeature):
+class GSFeaturePrefix(GSClass):
     pass
 
 
