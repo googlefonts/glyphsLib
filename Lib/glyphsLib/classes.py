@@ -2691,13 +2691,9 @@ class GSAxis(GSBase):
 
 class GSInstance(GSBase):
     __slots__ = (
+        "axesValues",
         "_customParameters",
         "active",
-        "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
         "instanceInterpolations",
         "isBold",
         "isItalic",
@@ -2705,23 +2701,14 @@ class GSInstance(GSBase):
         "manualInterpolation",
         "name",
         "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
     )
 
     _classesForName = {
+        "axesValues": parse_float_or_int,
         "customParameters": GSCustomParameter,
         "active": bool,
         "exports": bool,
         "instanceInterpolations": dict,
-        "interpolationCustom": parse_float_or_int,
-        "interpolationCustom1": parse_float_or_int,
-        "interpolationCustom2": parse_float_or_int,
-        "interpolationCustom3": parse_float_or_int,
-        "interpolationWeight": parse_float_or_int,
-        "interpolationWidth": parse_float_or_int,
         "isBold": bool,
         "isItalic": bool,
         "linkStyle": str,
@@ -2733,54 +2720,33 @@ class GSInstance(GSBase):
     _defaultsForName = {
         "active": True,
         "exports": True,
-        "interpolationCustom": 0,
-        "interpolationCustom1": 0,
-        "interpolationCustom2": 0,
-        "interpolationCustom3": 0,
-        "interpolationWeight": 100,
-        "interpolationWidth": 100,
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
+        "axesValues": [],
     }
     _keyOrder = (
+        "axesValues",
         "active",
         "exports",
         "customParameters",
-        "interpolationCustom",
-        "interpolationCustom1",
-        "interpolationCustom2",
-        "interpolationCustom3",
-        "interpolationWeight",
-        "interpolationWidth",
         "instanceInterpolations",
         "isBold",
         "isItalic",
         "linkStyle",
         "manualInterpolation",
         "name",
-        "weightClass",
-        "widthClass",
     )
     _wrapperKeysTranslate = {
         "weightClass": "weight",
         "widthClass": "width",
         "interpolationWeight": "weightValue",
         "interpolationWidth": "widthValue",
-        "interpolationCustom": "customValue",
-        "interpolationCustom1": "customValue1",
-        "interpolationCustom2": "customValue2",
-        "interpolationCustom3": "customValue3",
     }
 
     def __init__(self):
         self._customParameters = []
         self.active = self._defaultsForName["active"]
-        self.custom = None
-        self.customValue = self._defaultsForName["interpolationCustom"]
-        self.customValue1 = self._defaultsForName["interpolationCustom1"]
-        self.customValue2 = self._defaultsForName["interpolationCustom2"]
-        self.customValue3 = self._defaultsForName["interpolationCustom3"]
         self.instanceInterpolations = copy.deepcopy(
             self._defaultsForName["instanceInterpolations"]
         )
@@ -2791,9 +2757,7 @@ class GSInstance(GSBase):
         self.name = "Regular"
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
-        self.weightValue = self._defaultsForName["interpolationWeight"]
         self.width = self._defaultsForName["widthClass"]
-        self.widthValue = self._defaultsForName["interpolationWidth"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
