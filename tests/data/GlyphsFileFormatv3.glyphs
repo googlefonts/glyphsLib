@@ -69,6 +69,14 @@ name = "Default Layer Width";
 value = "600";
 }
 );
+guides = (
+{
+angle = 24.582;
+lockAngle = 1;
+pos = (192,216);
+showMeasurement = 1;
+}
+);
 id = m01;
 metricValues = (
 {
@@ -112,6 +120,23 @@ glyphname = A;
 lastChange = "2020-10-28 20:16:36 +0000";
 layers = (
 {
+guides = (
+{
+angle = 8.1446;
+locked = 1;
+lockAngle = 1;
+pos = (151,402);
+showMeasurement = 1;
+}
+);
+hints = (
+{
+horizontal = 1;
+origin = (0,0);
+target = (0,7);
+type = Stem;
+}
+);
 layerId = m01;
 metricRight = "=20";
 shapes = (

@@ -87,17 +87,21 @@ def Vector(dim):
         dimension = dim
         default = [0.0] * dimension
         regex = re.compile("{%s}" % ", ".join(["([-.e\\d]+)"] * dimension))
+        member_parser = parse_float_or_int
 
         def fromString(self, src):
             if isinstance(src, list):
                 assert len(src) == self.dimension
                 return src
             src = src.replace('"', "")
-            return [parse_float_or_int(i) for i in self.regex.match(src).groups()]
+            return [self.member_parser(i) for i in self.regex.match(src).groups()]
 
-        def plistValue(self):
+        def plistValue(self, formatVersion=3):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
-            return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+            if formatVersion == 2:
+                return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+
+            return "(%s)" % (",".join(floatToString3(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension

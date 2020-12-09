@@ -100,7 +100,14 @@ class Parser:
         if m:
             parsed = m.group(0)
             i += len(parsed)
-            return self._parse_list(text, i)
+            if self.current_type and hasattr(self.current_type, "member_parser"): # Actually a vector
+                vector_type = self.current_type
+                self.current_type = vector_type.member_parser
+                value, i = self._parse_list(text, i)
+                self.current_type = vector_type
+                return vector_type(value), i
+            l = self._parse_list(text, i)
+            return l
 
         m = self.value_re.match(text, i)
         if m:
