@@ -62,7 +62,7 @@ def test_parser_main(capsys):
     with open(filename) as f:
         expected = f.read()
 
-    glyphsLib.parser.main([filename])
+    glyphsLib.parser.main([filename], version=2)
     out, _err = capsys.readouterr()
     assert expected == out, "The roundtrip should output the .glyphs file unmodified."
 

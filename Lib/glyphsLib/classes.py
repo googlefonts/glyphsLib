@@ -329,6 +329,7 @@ class GSBase:
     _classesForName = {}
     _defaultsForName = {}
     _wrapperKeysTranslate = {}
+    _2to3 = {}
 
     def __repr__(self):
         content = ""
@@ -337,6 +338,8 @@ class GSBase:
         return f"<{self.__class__.__name__} {content}>"
 
     def classForName(self, name):
+        if name in self._2to3:
+            name = self._2to3[name]
         return self._classesForName.get(name, str)
 
     def default_attr_value(self, attr_name):
@@ -380,6 +383,9 @@ class GSBase:
             return False
         return True
 
+    @property
+    def _3to2(self):
+        return {v: k for k, v in self._2to3.items()}
 
 class Proxy:
     __slots__ = "_owner"
@@ -1451,6 +1457,9 @@ class GSFontMaster(GSBase):
         "weightValue": 100,
         "widthValue": 100,
         "italicAngle": 0,
+    }
+    _2to3 = {
+        "guideLines": "guides"
     }
     _wrapperKeysTranslate = {
         "custom": "customName",
@@ -2576,6 +2585,7 @@ class GSFeature(GSBase):
     }
 
     _wrapperKeysTranslate = {"name": "tag"}
+    _2to3 = {"name": "tag"}
 
     def __init__(self, tag="xxxx", code=""):
         self.automatic = False
@@ -3042,6 +3052,9 @@ class GSLayer(GSBase):
         "vertOrigin": None,
     }
     _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
+    _2to3 = {
+        "guideLines": "guides"
+    }
     _keyOrder = (
         "anchors",
         "annotations",

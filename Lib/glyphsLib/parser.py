@@ -168,6 +168,8 @@ class Parser:
             parsed, name = m.group(0), self._trim_value(m.group(1))
             if hasattr(res, "classForName"):
                 self.current_type = res.classForName(name)
+                if hasattr(self.current_type, "_2to3"):
+                    name = self.current_type._2to3.get(name, name)
             i += len(parsed)
 
             result = self._parse(text, i)
@@ -260,10 +262,10 @@ def loads(s):
     return data
 
 
-def main(args=None):
+def main(args=None, version=3):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
-        glyphsLib.dump(load(open(arg, "r", encoding="utf-8")), sys.stdout)
+        glyphsLib.dump(load(open(arg, "r", encoding="utf-8")), sys.stdout, version=version)
 
 
 if __name__ == "__main__":

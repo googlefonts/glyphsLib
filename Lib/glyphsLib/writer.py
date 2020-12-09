@@ -82,7 +82,12 @@ class Writer:
                 dictValue, "shouldWriteValueForKey"
             ) and not dictValue.shouldWriteValueForKey(key):
                 continue
-            self.writeKey(key)
+            if hasattr(dictValue, "_3to2") and self.version == 2:
+                writeKey = dictValue._3to2.get(key, key)
+            else:
+                writeKey = key
+
+            self.writeKey(writeKey)
             self.writeValue(value, key, forType=forType)
             self.file.write(";\n")
         self.file.write("}")
@@ -150,21 +155,21 @@ class Writer:
         self.file.write("%s = " % key)
 
 
-def dump(obj, fp):
+def dump(obj, fp, version=3):
     """Write a GSFont object to a .glyphs file.
     'fp' should be a (writable) file object.
     """
-    writer = Writer(fp)
+    writer = Writer(fp, version=version)
     logger.info("Writing .glyphs file")
     writer.write(obj)
 
 
-def dumps(obj):
+def dumps(obj, version=3):
     """Serialize a GSFont object to a .glyphs file format.
     Return a (unicode) str object.
     """
     fp = StringIO()
-    dump(obj, fp)
+    dump(obj, fp, version=version)
     return fp.getvalue()
 
 
