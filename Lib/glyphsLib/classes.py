@@ -3555,6 +3555,7 @@ class GSGlyph(GSBase):
 class GSFont(GSBase):
     __slots__ = (
         "DisplayStrings",
+        "_axes",
         "_classes",
         "_customParameters",
         "_featurePrefixes",
@@ -3562,10 +3563,14 @@ class GSFont(GSBase):
         "_customParameters",
         "_glyphs",
         "_instances",
-        "_kerning",
+        "_kerningLTR",
         "_masters",
         "_userData",
         "_versionMinor",
+        "_metrics",
+        "_numbers",
+        "_stems",
+        "_settings",
         "appVersion",
         "copyright",
         "date",
@@ -3574,6 +3579,7 @@ class GSFont(GSBase):
         "disablesAutomaticAlignment",
         "disablesNiceNames",
         "familyName",
+        "formatVersion",
         "filepath",
         "grid",
         "gridSubDivisions",
@@ -3581,13 +3587,16 @@ class GSFont(GSBase):
         "keyboardIncrement",
         "manufacturer",
         "manufacturerURL",
+        "properties",
         "upm",
         "versionMajor",
     )
 
     _classesForName = {
         ".appVersion": str,
+        ".formatVersion": int,
         "DisplayStrings": str,
+        "axes": GSAxis,
         "classes": GSClass,
         "copyright": str,
         "customParameters": GSCustomParameter,
@@ -3605,10 +3614,16 @@ class GSFont(GSBase):
         "gridSubDivision": int,
         "instances": GSInstance,
         "keepAlternatesTogether": bool,
-        "kerning": OrderedDict,
+        "kerningLTR": OrderedDict,
+        "kerningVertical": OrderedDict,
         "keyboardIncrement": parse_float_or_int,
         "manufacturer": str,
         "manufacturerURL": str,
+        "metrics": dict,
+        "numbers": dict,
+        "properties": dict,
+        "settings": dict,
+        "stems": dict,
         "unitsPerEm": int,
         "userData": dict,
         "versionMajor": int,
@@ -3616,22 +3631,29 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
+        ".formatVersion": "version",
         "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridLength": "grid",
         "gridSubDivision": "gridSubDivisions",
+        "kerning": "kerningLTR"
     }
     _defaultsForName = {
+        "axes": [],
         "classes": [],
         "features": [],
         "featurePrefixes": [],
         "customParameters": [],
+        "settings": {},
+        "stems": [],
+        "metrics": [],
         "disablesAutomaticAlignment": False,
         "disablesNiceNames": False,
         "gridLength": 1,
         "gridSubDivision": 1,
         "unitsPerEm": 1000,
-        "kerning": OrderedDict(),
+        "kerningLTR": OrderedDict(),
+        "kerningVertical": OrderedDict(),
         "keyboardIncrement": 1,
     }
 
@@ -3660,10 +3682,12 @@ class GSFont(GSBase):
         self.grid = self._defaultsForName["gridLength"]
         self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
         self.keepAlternatesTogether = False
-        self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
+        self.kerningLTR = copy.deepcopy(self._defaultsForName["kerningLTR"])
+        self.kerningVertical = copy.deepcopy(self._defaultsForName["kerningVertical"])
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.manufacturer = ""
         self.manufacturerURL = ""
+        self.metrics = copy.deepcopy(self._defaultsForName["metrics"])
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
 
