@@ -2996,6 +2996,7 @@ class GSLayer(GSBase):
     __slots__ = (
         "_anchors",
         "_annotations",
+        "_attr",
         "_background",
         "_components",
         "_foreground",
@@ -3003,8 +3004,10 @@ class GSLayer(GSBase):
         "_hints",
         "_layerId",
         "_name",
+        "_partSelection",
         "_paths",
         "_selection",
+        "_shapes",
         "_userData",
         "associatedMasterId",
         "backgroundImage",
@@ -3024,6 +3027,7 @@ class GSLayer(GSBase):
         "anchors": GSAnchor,
         "annotations": GSAnnotation,
         "associatedMasterId": str,
+        "attr": dict,
         # The next line is added after we define GSBackgroundLayer
         # "background": GSBackgroundLayer,
         "backgroundImage": GSBackgroundImage,
@@ -3034,8 +3038,10 @@ class GSLayer(GSBase):
         "layerId": str,
         "metricLeft": str,
         "name": str,
+        "partSelection": dict,
         "paths": GSPath,
         "metricRight": str,
+        "shapes": dict,
         "userData": dict,
         "vertWidth": parse_float_or_int,
         "vertOrigin": parse_float_or_int,
@@ -3059,6 +3065,7 @@ class GSLayer(GSBase):
         "anchors",
         "annotations",
         "associatedMasterId",
+        "attr",
         "background",
         "backgroundImage",
         "color",
@@ -3070,7 +3077,9 @@ class GSLayer(GSBase):
         "widthMetricsKey",
         "metricRight",
         "name",
+        "partSelection",
         "paths",
+        "shapes",
         "userData",
         "visible",
         "vertOrigin",
@@ -3081,6 +3090,7 @@ class GSLayer(GSBase):
     def __init__(self):
         self._anchors = []
         self._annotations = []
+        self._attr = {}
         self._background = None
         self._foreground = None
         self._components = []
@@ -3089,6 +3099,7 @@ class GSLayer(GSBase):
         self._layerId = ""
         self._name = ""
         self._paths = []
+        self._partSelection = {}
         self._selection = []
         self._userData = None
         self.associatedMasterId = ""
