@@ -2432,8 +2432,13 @@ class GSHint(GSBase):
         self.place = self._defaultsForName["place"]
         self.scale = self._defaultsForName["scale"]
         self.settings = {}
+        self.target = None
         self.stem = self._defaultsForName["stem"]
         self.type = ""
+
+    def _postParseFixup(self):
+        if self.target and isinstance(self.target, list):
+            self.target = Point(int(self.target[0]), int(self.target[1]))
 
     def shouldWriteValueForKey(self, key):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
