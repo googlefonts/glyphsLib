@@ -383,6 +383,43 @@ def test_roundtrip_feature_prefix_with_only_a_comment(ufo_module):
     assert prefix_r.code == "#include(../family.fea)"
 
 
+def test_roundtrip_automatic_code_insert_feature(ufo_module):
+    font = to_glyphs([ufo_module.Font()])
+    feature = classes.GSFeature(name="kern")
+    feature.code = dedent(
+        """
+        # Automatic Code Start
+        pos L apostrophe' -20 a;
+    """
+    )
+    font.features.append(feature)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
+    assert ufo.features.text == dedent(
+        """\
+        ### INSERT kern
+
+        feature kern {
+
+        # Automatic Code Start
+        pos L apostrophe' -20 a;
+
+        } kern;
+    """
+    )
+
+    font_r = to_glyphs([ufo])
+    assert len(font_r.features) == 1
+    feature_r = font_r.features[0]
+    assert feature_r.name == "kern"
+    assert feature.code == dedent(
+        """
+        # Automatic Code Start
+        pos L apostrophe' -20 a;
+    """
+    )
+
+
 @pytest.fixture
 def ufo_with_GDEF(ufo_module):
     ufo = ufo_module.Font()
