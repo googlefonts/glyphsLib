@@ -119,7 +119,7 @@ class Writer:
 
     def writeValue(self, value, forKey=None, forType=None):
         if hasattr(value, "plistValue"):
-            value = value.plistValue()
+            value = value.plistValue(formatVersion=self.version)
             if value is not None:
                 self.file.write(value)
         elif forKey == "color" and hasattr(value, "__iter__"):
