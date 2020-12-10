@@ -55,6 +55,8 @@ class Writer:
     def writeDict(self, dictValue):
         self.file.write("{\n")
         forType = None
+        if hasattr(dictValue, "_keyOrder2") and self.version == 2:
+            keys = dictValue._keyOrder
         if hasattr(dictValue, "_keyOrder"):
             keys = dictValue._keyOrder
         elif hasattr(dictValue, "_classesForName"):

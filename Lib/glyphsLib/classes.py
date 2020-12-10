@@ -2320,6 +2320,7 @@ class GSSmartComponentAxis(GSBase):
     }
     _defaultsForName = {"bottomValue": 0, "topValue": 0}
     _keyOrder = ("bottomValue", "name", "bottomName", "topName", "topValue")
+    _keyOrder2 = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
     def __init__(self):
         self.bottomName = ""
