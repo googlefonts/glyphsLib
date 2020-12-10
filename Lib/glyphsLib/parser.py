@@ -188,6 +188,8 @@ class Parser:
 
             end_match = self.end_dict_re.match(text, i)
             self.current_type = old_current_type
+        if hasattr(res, "_postParseFixup"):
+            res._postParseFixup()
         parsed = end_match.group(0)
         i += len(parsed)
         return i
