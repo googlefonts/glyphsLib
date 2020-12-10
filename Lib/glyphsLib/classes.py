@@ -3698,6 +3698,9 @@ class GSFont(GSBase):
         "kerningVertical": OrderedDict(),
         "keyboardIncrement": 1,
     }
+    _2to3 = {
+        "kerning": "kerningLTR"
+    }
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
