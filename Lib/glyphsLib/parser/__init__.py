@@ -41,8 +41,9 @@ class Parser:
     hex_re = re.compile(r"\s*<([A-Fa-f0-9]+)>", re.DOTALL)
     bytes_re = re.compile(r"\s*<([A-Za-z0-9+/=]+)>", re.DOTALL)
 
-    def __init__(self, current_type=OrderedDict):
+    def __init__(self, current_type=OrderedDict, formatVersion=2):
         self.current_type = current_type
+        self.formatVersion = formatVersion
 
     def parse(self, text):
         """Do the parsing."""
@@ -153,6 +154,7 @@ class Parser:
 
     def _parse_dict_into_object(self, res, text, i):
         end_match = self.end_dict_re.match(text, i)
+        python_dict = {}
         while not end_match:
             old_current_type = self.current_type
             m = self.attr_re.match(text, i)
@@ -165,11 +167,7 @@ class Parser:
 
             result = self._parse(text, i)
 
-            try:
-                res[name], i = result
-            except (TypeError, KeyError):  # hmmm...
-                res = {}  # ugly, this fixes nested dicts in customparameters
-                res[name], i = result
+            python_dict[name], i = result
 
             m = self.dict_delim_re.match(text, i)
             if not m:
@@ -179,6 +177,7 @@ class Parser:
 
             end_match = self.end_dict_re.match(text, i)
             self.current_type = old_current_type
+        res.__class__.from_dict(python_dict, formatVersion=self.formatVersion, target=res)
         parsed = end_match.group(0)
         i += len(parsed)
         return i
