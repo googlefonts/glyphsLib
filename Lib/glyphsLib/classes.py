@@ -329,6 +329,12 @@ class GSBase:
     _classesForName = {}
     _defaultsForName = {}
     _wrapperKeysTranslate = {}
+    _plistToClass2 = {}
+    _plistToClass3 = {}
+
+    # These are filled on demand and memoized for the whole class
+    _classToPlist2 = None
+    _classToPlist3 = None
 
     def __repr__(self):
         content = ""
@@ -379,6 +385,26 @@ class GSBase:
         if isinstance(value, ValueType) and value.value is None:
             return False
         return True
+
+    def _plistToClass(self, key, formatVersion=3):
+        if formatVersion == 3:
+            return self._plistToClass3.get(key, key)
+        else:
+            return self._plistToClass2.get(key, key)
+
+    def _classToPlist(self, key, formatVersion=3):
+        if formatVersion == 3:
+            if self.__class__._classToPlist3 is None:
+                self.__class__._classToPlist3 = {
+                    v: k for k, v in self._plistToClass3.items()
+                }
+            return self._classToPlist3.get(key, key)
+        else:
+            if self.__class__._classToPlist2 is None:
+                self.__class__._classToPlist2 = {
+                    v: k for k, v in self._plistToClass2.items()
+                }
+            return self._classToPlist2.get(key, key)
 
 
 class Proxy:
