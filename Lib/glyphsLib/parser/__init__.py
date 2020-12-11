@@ -177,7 +177,9 @@ class Parser:
 
             end_match = self.end_dict_re.match(text, i)
             self.current_type = old_current_type
-        res.__class__.from_dict(python_dict, formatVersion=self.formatVersion, target=res)
+        res.__class__.from_dict(
+            python_dict, formatVersion=self.formatVersion, target=res
+        )
         parsed = end_match.group(0)
         i += len(parsed)
         return i

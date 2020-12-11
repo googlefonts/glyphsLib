@@ -415,7 +415,7 @@ class GSBase:
             key_in_plist = target._classToPlist(
                 key_in_class, formatVersion=formatVersion
             )
-            if not key_in_plist in d:
+            if key_in_plist not in d:
                 continue
             classForKey = target.classForName(key_in_class)
             value = d[key_in_plist]

@@ -141,7 +141,7 @@ class Point(Vector(2)):
         return "<point x={} y={}>".format(self.value[0], self.value[1])
 
     @classmethod
-    def from_value(self, value, formatVersion=2):
+    def from_value(cls, value, formatVersion=2):
         if formatVersion == 2:
             # XXX
             pass
@@ -150,7 +150,7 @@ class Point(Vector(2)):
 
     def to_value(self, formatVersion=2):
         if formatVersion == 2:
-            return '{%s}' % (", ".join(floatToString3(v) for v in self.value))
+            return "{%s}" % (", ".join(floatToString3(v) for v in self.value))
         else:
             return tuple(self.value)
 

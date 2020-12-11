@@ -1,4 +1,3 @@
-import unittest
 from io import StringIO
 import glyphsLib
 from glyphsLib.parser import Parser
@@ -28,8 +27,13 @@ gsguide.lockAngle = True
 gsguide.showMeasurement = True
 gsguide.locked = False
 
-string_to_dict = lambda s: plist_to_dict(StringIO(s))
-normalize_plist = lambda x: dict_to_plist(string_to_dict(x))
+
+def string_to_dict(s):
+    return plist_to_dict(StringIO(s))
+
+
+def normalize_plist(s):
+    return dict_to_plist(string_to_dict(s))
 
 
 def test_plist_to_dict():
