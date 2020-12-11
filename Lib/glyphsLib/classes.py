@@ -3271,7 +3271,7 @@ class GSLayer(GSBase):
             return Rect(Point(left, bottom), Point(right - left, top - bottom))
 
     def _find_node_by_indices(self, point):
-        """"Find the GSNode that is refered to by the given indices.
+        """ "Find the GSNode that is refered to by the given indices.
 
         See GSNode::_indices()
         """
