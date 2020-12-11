@@ -140,6 +140,20 @@ class Point(Vector(2)):
     def __repr__(self):
         return "<point x={} y={}>".format(self.value[0], self.value[1])
 
+    @classmethod
+    def from_value(self, value, formatVersion=2):
+        if formatVersion == 2:
+            # XXX
+            pass
+        else:
+            return Point([int(x) for x in value])
+
+    def to_value(self, formatVersion=2):
+        if formatVersion == 2:
+            return '{%s}' % (", ".join(floatToString3(v) for v in self.value))
+        else:
+            return tuple(self.value)
+
     @property
     def x(self):
         return self.value[0]
