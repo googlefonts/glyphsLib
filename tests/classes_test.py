@@ -560,7 +560,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(master.guides, list)
         master.guides = []
         self.assertEqual(len(master.guides), 0)
-        newGuide = GSGuideLine()
+        newGuide = GSGuide()
         newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         master.guides.append(newGuide)
@@ -573,7 +573,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(master.guides, list)
         master.guides = []
         self.assertEqual(len(master.guides), 0)
-        newGuide = GSGuideLine()
+        newGuide = GSGuide()
         newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         master.guides.append(newGuide)
@@ -1129,7 +1129,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
             self.assertEqual(guide.parent, layer)
         layer.guides = []
         self.assertEqual(len(layer.guides), 0)
-        newGuide = GSGuideLine()
+        newGuide = GSGuide()
         newGuide.position = Point("{100, 100}")
         newGuide.angle = -10.0
         amount = len(layer.guides)
@@ -1450,10 +1450,10 @@ class GSComponentFromFileTest(GSObjectsTestCase):
     # componentLayer()
 
 
-class GSGuideLineTest(unittest.TestCase):
+class GSGuideTest(unittest.TestCase):
     def test_repr(self):
-        guide = GSGuideLine()
-        self.assertEqual(repr(guide), "<GSGuideLine x=0.0 y=0.0 angle=0.0>")
+        guide = GSGuide()
+        self.assertEqual(repr(guide), "<GSGuide x=0.0 y=0.0 angle=0.0>")
 
 
 class GSAnchorFromFileTest(GSObjectsTestCase):
