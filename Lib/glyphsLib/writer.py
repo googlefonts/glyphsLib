@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
-    def __init__(self, fp):
+    def __init__(self, fp, formatVersion=2):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b"")
@@ -46,6 +46,7 @@ class Writer:
             import codecs
 
             self.file = codecs.getwriter("utf-8")(fp)
+        self.formatVersion = formatVersion  # Should use new writer for 3...
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -79,7 +80,7 @@ class Writer:
                 continue
             if hasattr(
                 dictValue, "shouldWriteValueForKey"
-            ) and not dictValue.shouldWriteValueForKey(key):
+            ) and not dictValue.shouldWriteValueForKey(key, self.formatVersion):
                 continue
             self.writeKey(key)
             self.writeValue(value, key, forType=forType)

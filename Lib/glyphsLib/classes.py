@@ -372,7 +372,7 @@ class GSBase:
         key = self._wrapperKeysTranslate.get(key, key)
         setattr(self, key, value)
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         getKey = self._wrapperKeysTranslate.get(key, key)
         value = getattr(self, getKey)
         klass = self._classesForName[key]
@@ -435,7 +435,9 @@ class GSBase:
     def to_dict(self, formatVersion=3):
         d = {}
         for key_in_class in self.__slots__:
-            if not self.shouldWriteValueForKey(key_in_class):
+            if not self.shouldWriteValueForKey(
+                key_in_class, formatVersion=formatVersion
+            ):
                 continue
             value = getattr(self, key_in_class)
             if hasattr(value, "to_dict"):
@@ -1589,7 +1591,7 @@ class GSFontMaster(GSBase):
             self.name, self.widthValue, self.weightValue
         )
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key in ("weight", "width"):
             return getattr(self, key) != "Regular"
         if key in ("xHeight", "capHeight", "ascender", "descender"):
@@ -1598,7 +1600,7 @@ class GSFontMaster(GSBase):
         if key == "_name":
             # Only write out the name if we can't make it by joining the parts
             return self._name != self.name
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     @property
     def name(self):
@@ -1894,10 +1896,10 @@ class GSPath(GSBase):
     def parent(self):
         return self._parent
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "closed":
             return True
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     nodes = property(
         lambda self: PathNodesProxy(self),
@@ -2257,11 +2259,11 @@ class GSComponent(GSBase):
             self.name, self.transform[4], self.transform[5]
         )
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "piece":
             value = self.smartComponentValues
             return len(value) > 0
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     @property
     def parent(self):
@@ -2408,10 +2410,10 @@ class GSSmartComponentAxis(GSBase):
         self.topName = ""
         self.topValue = self._defaultsForName["topValue"]
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key in ("bottomValue", "topValue"):
             return True
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
 
 class GSAnchor(GSBase):
@@ -2433,10 +2435,10 @@ class GSAnchor(GSBase):
             self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "position":
             return True
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     @property
     def parent(self):
@@ -2514,10 +2516,10 @@ class GSHint(GSBase):
         self.stem = self._defaultsForName["stem"]
         self.type = ""
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
             return None
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     def _origin_pos(self):
         if self.originNode:
@@ -2670,10 +2672,10 @@ class GSFeature(GSBase):
         self.name = name
         self.notes = ""
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "code":
             return True
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     def getCode(self):
         return self._code
@@ -3228,7 +3230,7 @@ class GSLayer(GSBase):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "width":
             return True
         if key == "associatedMasterId":
@@ -3239,7 +3241,7 @@ class GSLayer(GSBase):
                 and len(self.name) > 0
                 and self.layerId != self.associatedMasterId
             )
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     @property
     def name(self):
@@ -3391,10 +3393,10 @@ class GSLayer(GSBase):
 
 
 class GSBackgroundLayer(GSLayer):
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "width":
             return False
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     @property
     def background(self):
@@ -3557,10 +3559,10 @@ class GSGlyph(GSBase):
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key in ("script", "category", "subCategory"):
             return getattr(self, key) is not None
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     layers = property(
         lambda self: GlyphLayerProxy(self),
@@ -3772,10 +3774,10 @@ class GSFont(GSBase):
     def __repr__(self):
         return f'<{self.__class__.__name__} "{self.familyName}">'
 
-    def shouldWriteValueForKey(self, key):
+    def shouldWriteValueForKey(self, key, formatVersion=3):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):
             return True
-        return super().shouldWriteValueForKey(key)
+        return super().shouldWriteValueForKey(key, formatVersion)
 
     def save(self, path=None):
         if path is None:
