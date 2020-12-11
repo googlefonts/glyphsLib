@@ -1386,6 +1386,7 @@ class GSGuide(GSBase):
         "name": str,
     }
     _parent = None
+    _plistToClass3 = {"pos": "position"}
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
