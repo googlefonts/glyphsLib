@@ -22,6 +22,7 @@ import uuid
 from collections import OrderedDict
 from io import StringIO
 from typing import Any, Dict, Optional, Tuple, Union
+from inspect import isclass
 
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -405,6 +406,45 @@ class GSBase:
                     v: k for k, v in self._plistToClass2.items()
                 }
             return self._classToPlist2.get(key, key)
+
+    @classmethod
+    def from_dict(cls, d, formatVersion=3, target=None):
+        if not target:
+            target = cls()
+        for key_in_class in target.__slots__:
+            key_in_plist = target._classToPlist(
+                key_in_class, formatVersion=formatVersion
+            )
+            if not key_in_plist in d:
+                continue
+            classForKey = target.classForName(key_in_class)
+            value = d[key_in_plist]
+            if classForKey:
+                if isclass(classForKey) and isinstance(value, classForKey):
+                    pass
+                elif hasattr(classForKey, "from_dict"):
+                    value = classForKey.from_dict(value, formatVersion=formatVersion)
+                elif hasattr(classForKey, "from_value"):
+                    value = classForKey.from_value(value, formatVersion=formatVersion)
+                else:
+                    value = classForKey(value)
+            print(key_in_class, value)
+            target[key_in_class] = value
+        return target
+
+    def to_dict(self, formatVersion=3):
+        d = {}
+        for key_in_class in self.__slots__:
+            if not self.shouldWriteValueForKey(key_in_class):
+                continue
+            value = getattr(self, key_in_class)
+            if hasattr(value, "to_dict"):
+                value = value.to_dict(formatVersion=formatVersion)
+            elif hasattr(value, "to_value"):
+                value = value.to_value(formatVersion=formatVersion)
+            key_in_plist = self._classToPlist(key_in_class, formatVersion=formatVersion)
+            d[key_in_plist] = value
+        return d
 
 
 class Proxy:
