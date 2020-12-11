@@ -1228,9 +1228,9 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
-    __slots__ = ("name", "_value")
+    __slots__ = ("disabled", "name", "_value")
 
-    _classesForName = {"name": str, "value": None}
+    _classesForName = {"name": str, "value": None, "disabled": bool}
 
     _CUSTOM_INT_PARAMS = frozenset(
         (
@@ -1341,18 +1341,13 @@ class GSCustomParameter(GSBase):
     )
     _CUSTOM_DICT_PARAMS = frozenset("GASP Table")
 
-    def __init__(self, name="New Value", value="New Parameter"):
+    def __init__(self, name="New Value", value="New Parameter", disabled=False):
         self.name = name
         self.value = value
+        self.disabled = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
-
-    def plistValue(self):
-        string = StringIO()
-        writer = Writer(string)
-        writer.writeDict({"name": self.name, "value": self.value})
-        return string.getvalue()
 
     def getValue(self):
         return self._value
