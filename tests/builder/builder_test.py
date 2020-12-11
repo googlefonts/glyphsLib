@@ -34,7 +34,7 @@ from glyphsLib.classes import (
     GSPath,
     GSNode,
     GSAlignmentZone,
-    GSGuideLine,
+    GSGuide,
 )
 from glyphsLib.types import Point
 

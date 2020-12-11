@@ -34,7 +34,7 @@ from glyphsLib.classes import (
     GSFeature,
     GSAnnotation,
     GSFeaturePrefix,
-    GSGuideLine,
+    GSGuide,
     GSHint,
     GSNode,
     GSPath,

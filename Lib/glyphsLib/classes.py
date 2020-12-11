@@ -66,7 +66,7 @@ __all__ = [
     "GSSmartComponentAxis",
     "GSPath",
     "GSNode",
-    "GSGuideLine",
+    "GSGuide",
     "GSAnnotation",
     "GSHint",
     "GSBackgroundImage",
@@ -1337,7 +1337,7 @@ class GSAlignmentZone(GSBase):
         )
 
 
-class GSGuideLine(GSBase):
+class GSGuide(GSBase):
     __slots__ = (
         "alignment",
         "angle",
@@ -1423,7 +1423,7 @@ class GSFontMaster(GSBase):
         "customValue3": parse_float_or_int,
         "customParameters": GSCustomParameter,
         "descender": parse_float_or_int,
-        "guideLines": GSGuideLine,
+        "guideLines": GSGuide,
         "horizontalStems": int,
         "iconName": str,
         "id": str,
@@ -3030,7 +3030,7 @@ class GSLayer(GSBase):
         "backgroundImage": GSBackgroundImage,
         "color": parse_color,
         "components": GSComponent,
-        "guideLines": GSGuideLine,
+        "guideLines": GSGuide,
         "hints": GSHint,
         "layerId": str,
         "leftMetricsKey": str,
