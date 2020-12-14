@@ -3735,7 +3735,7 @@ class GSFont(GSBase):
         "familyName": str,
         "featurePrefixes": GSFeaturePrefix,
         "features": GSFeature,
-        "fontMaster": GSFontMaster,
+        "masters": GSFontMaster,
         "glyphs": GSGlyph,
         "gridLength": int,
         "gridSubDivision": int,
@@ -3752,11 +3752,13 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
-        "fontMaster": "masters",
+        "fontMaster": "_masters",
         "unitsPerEm": "upm",
         "gridLength": "grid",
         "gridSubDivision": "gridSubDivisions",
     }
+    _plistToClass3 = _wrapperKeysTranslate
+    _plistToClass2 = _wrapperKeysTranslate
     _defaultsForName = {
         "classes": [],
         "features": [],
