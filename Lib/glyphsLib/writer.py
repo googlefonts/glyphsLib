@@ -58,31 +58,27 @@ class Writer:
         if hasattr(dictValue, "_keyOrder"):
             keys = dictValue._keyOrder
         elif hasattr(dictValue, "_classesForName"):
-            keys = sorted(dictValue._classesForName.keys())
+            keys = sorted(dictValue._classesForName.keys(), key= lambda s:s.replace("_","",1))
         else:
             keys = dictValue.keys()
             if not isinstance(dictValue, OrderedDict):
                 keys = sorted(keys)
+        if hasattr(dictValue, "to_dict"):
+            valueToWrite = dictValue.to_dict(formatVersion=self.formatVersion)
+        else:
+            valueToWrite = dictValue
         for key in keys:
-            if hasattr(dictValue, "_classesForName"):
-                forType = dictValue._classesForName[key]
-            try:
-                if isinstance(dictValue, (dict, OrderedDict)):
-                    value = dictValue[key]
-                else:
-                    getKey = key
-                    if hasattr(dictValue, "_wrapperKeysTranslate"):
-                        getKey = dictValue._wrapperKeysTranslate.get(key, key)
-                    value = getattr(dictValue, getKey)
-            except AttributeError:
+            keyInPlist = key
+            if hasattr(dictValue, "_classToPlist"):
+                keyInPlist = dictValue._classToPlist(key, formatVersion=self.formatVersion)
+            if keyInPlist not in valueToWrite:
                 continue
-            if value is None:
-                continue
+            value = valueToWrite[keyInPlist]
             if hasattr(
                 dictValue, "shouldWriteValueForKey"
             ) and not dictValue.shouldWriteValueForKey(key, self.formatVersion):
                 continue
-            self.writeKey(key)
+            self.writeKey(keyInPlist)
             self.writeValue(value, key, forType=forType)
             self.file.write(";\n")
         self.file.write("}")
