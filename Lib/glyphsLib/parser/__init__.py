@@ -53,9 +53,7 @@ class Parser:
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
         if self.current_type:
-            return self.current_type.from_dict(
-                    result, formatVersion=self.formatVersion
-            )
+            return self.current_type.from_dict(result, formatVersion=self.formatVersion)
         return result
 
     def parse_into_object(self, res, text, formatVersion=2):
@@ -63,9 +61,7 @@ class Parser:
 
         text = tostr(text, encoding="utf-8")
         result, i = self._parse(text, 0)
-        res.__class__.from_dict(
-                result, formatVersion=self.formatVersion, target = res
-        )
+        res.__class__.from_dict(result, formatVersion=self.formatVersion, target=res)
         return i
 
     def _parse(self, text, i):

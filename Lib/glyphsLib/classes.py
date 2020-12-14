@@ -425,7 +425,7 @@ class GSBase:
             value = classForKey(value)
         if hasattr(value, "_parent"):
             value._parent = self
-        elif hasattr(value, "parent"): # Because sometimes it's different
+        elif hasattr(value, "parent"):  # Because sometimes it's different
             value.parent = self
         return value
 
@@ -1411,9 +1411,11 @@ class GSAlignmentZone(GSBase):
     def from_dict(cls, src, formatVersion=3, target=None):
         if not target:
             target = cls()
-        if formatVersion==3:
-            warnings.warn("GSAlignmentZones aren't used in Glyphs 3 files"
-            " but I was asked to parse one. Should this use formatVersion=2?")
+        if formatVersion == 3:
+            warnings.warn(
+                "GSAlignmentZones aren't used in Glyphs 3 files"
+                " but I was asked to parse one. Should this use formatVersion=2?"
+            )
             target.pos = parse_float_or_int(src["pos"])
             target.size = parse_float_or_int(src["size"])
         else:
@@ -1726,8 +1728,8 @@ class GSNode(GSBase):
     __slots__ = ("_userData", "_position", "smooth", "type")
 
     _PLIST_VALUE_RE = re.compile(
-        r'([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        r'(?: (SMOOTH))?(?: ({.*}))?',
+        r"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)"
+        r"(?: (SMOOTH))?(?: ({.*}))?",
         re.DOTALL,
     )
     _parent = None
@@ -1803,7 +1805,7 @@ class GSNode(GSBase):
         WARNING: This method is HOT. It is called for every single node and can
         account for a significant portion of the file parsing time.
         """
-        self=cls()
+        self = cls()
         m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
         self.type = m[2].lower()
@@ -3563,8 +3565,8 @@ class GSGlyph(GSBase):
         "userData",
         "partsSettings",
     )
-    _plistToClass3 = { "unicode": "_unicodes", "glyphname": "name" }
-    _plistToClass2 = { "unicode": "_unicodes", "glyphname": "name" }
+    _plistToClass3 = {"unicode": "_unicodes", "glyphname": "name"}
+    _plistToClass2 = {"unicode": "_unicodes", "glyphname": "name"}
 
     def __init__(self, name=None):
         self._layers = OrderedDict()

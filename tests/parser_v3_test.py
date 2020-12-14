@@ -173,6 +173,7 @@ def test_gsguide_roundtrip_v3():
         gsguide_plist_v3
     )
 
+
 def test_gscustomparameter_roundtrip_v2():
     gsc = """{
 name = trademark;
@@ -183,6 +184,7 @@ value = "Default Trademark";
     foo = StringIO()
     glyphsLib.dump(g, foo)
     assert foo.getvalue().strip() == gsc.strip()
+
 
 def test_parse_gsglyph_space_v3():
     gsglyph = """{
@@ -198,17 +200,17 @@ unicode = 0020;
     gsglyph_dict = string_to_dict(gsglyph)
     assert gsglyph_dict == {
         "glyphname": "space",
-        "layers":  [{'layerId': 'm01', 'width': '200'}],
-        "unicode": "0020"
+        "layers": [{"layerId": "m01", "width": "200"}],
+        "unicode": "0020",
     }
     l = GSGlyph.from_dict(gsglyph_dict, formatVersion=3)
     assert len(l.layers) == 1
     assert l.unicodes[0] == "0020"
     assert l.name == "space"
 
+
 def test_parse_gsglyph_a_v2():
     p = Parser(current_type=GSGlyph, formatVersion=2)
     g = p.parse(gsglyph_plist_v2)
     print(g.layers[0].paths[0].nodes)
-    assert(False)
-
+    assert False
