@@ -1656,27 +1656,27 @@ class GSNodeFromFileTest(GSObjectsTestCase):
 
 
 class GSCustomParameterTest(unittest.TestCase):
-    def test_plistValue_string(self):
+    def test_to_value_string(self):
         test_string = "Some Value"
         param = GSCustomParameter("New Parameter", test_string)
         self.assertEqual(
-            param.plistValue(), '{\nname = "New Parameter";\nvalue = "Some Value";\n}'
+            param.to_value(), '{\nname = "New Parameter";\nvalue = "Some Value";\n}'
         )
 
-    def test_plistValue_list(self):
+    def test_to_value_list(self):
         test_list = [1, 2.5, {"key1": "value1"}]
         param = GSCustomParameter("New Parameter", test_list)
         self.assertEqual(
-            param.plistValue(),
+            param.to_value(),
             '{\nname = "New Parameter";\nvalue = (\n1,\n2.5,'
             "\n{\nkey1 = value1;\n}\n);\n}",
         )
 
-    def test_plistValue_dict(self):
+    def test_to_value_dict(self):
         test_dict = {"key1": "value1", "key2": "value2"}
         param = GSCustomParameter("New Parameter", test_dict)
         self.assertEqual(
-            param.plistValue(),
+            param.to_value(),
             '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'
             "\nkey2 = value2;\n};\n}",
         )
