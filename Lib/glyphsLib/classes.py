@@ -1444,24 +1444,24 @@ class GSAlignmentZone(GSBase):
                 "GSAlignmentZones aren't used in Glyphs 3 files"
                 " but I was asked to parse one. Should this use formatVersion=2?"
             )
-            target.pos = parse_float_or_int(src["pos"])
+            target.position = parse_float_or_int(src["pos"])
             target.size = parse_float_or_int(src["size"])
         else:
             point = Point.from_value(src)
-            target.pos, target.size = point
+            target.position, target.size = point
         return target
 
     # def __repr__(self):
     #     return "<{} pos:{:g} size:{:g}>".format(
-    #         self.__class__.__name__, self.pos, self.size
+    #         self.__class__.__name__, self.position, self.size
     #     )
 
     def __lt__(self, other):
-        return (self.pos, self.size) < (other.pos, other.size)
+        return (self.position, self.size) < (other.position, other.size)
 
-    def plistValue(self):
+    def to_value(self):
         return '"{{{}, {}}}"'.format(
-            floatToString5(self.pos), floatToString5(self.size)
+            floatToString5(self.position), floatToString5(self.size)
         )
 
 
