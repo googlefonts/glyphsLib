@@ -399,13 +399,17 @@ class GSBase:
                 self.__class__._classToPlist3 = {
                     v: k for k, v in self._plistToClass3.items()
                 }
-            return self._classToPlist3.get(key, key)
+            key_in_plist = self._classToPlist3.get(key, key)
         else:
             if self.__class__._classToPlist2 is None:
                 self.__class__._classToPlist2 = {
                     v: k for k, v in self._plistToClass2.items()
                 }
-            return self._classToPlist2.get(key, key)
+            key_in_plist = self._classToPlist2.get(key, key)
+        if key_in_plist[0] == "_":
+            return key_in_plist[1:]
+        else:
+            return key_in_plist
 
     @classmethod
     def from_dict(cls, d, formatVersion=3, target=None):
