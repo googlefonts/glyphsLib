@@ -20,6 +20,57 @@ showMeasurement = 1;
 }
 """
 
+gsglyph_plist_v2 = """{
+glyphname = A;
+lastChange = "2020-10-28 19:17:01 +0000";
+layers = (
+{
+guideLines = (
+{
+angle = 12.9339;
+locked = 1;
+position = "{348, 402}";
+showMeasurement = 1;
+}
+);
+hints = (
+{
+horizontal = 1;
+origin = "{0, 0}";
+target = "{0, 3}";
+type = Stem;
+}
+);
+layerId = m01;
+rightMetricsKey = "=20";
+paths = (
+{
+closed = 1;
+nodes = (
+"10 66 LINE",
+"439 66 LINE",
+"439 608 LINE",
+"10 608 LINE {name = \\"Hallo\\011Welt\\";\\ntest = \\"Hallo\\012Welt\\";}"
+);
+}
+);
+width = 459;
+},
+{
+associatedMasterId = m01;
+layerId = "B53B276E-7ED6-4F56-94FF-4162BC3B585A";
+name = Color;
+width = 600;
+}
+);
+leftKerningGroup = A;
+leftMetricsKey = "=10";
+rightKerningGroup = A;
+topKerningGroup = A;
+bottomKerningGroup = A;
+unicode = "0041,0061";
+}"""
+
 gsguide = GSGuide()
 gsguide.position = Point(192, 216)
 gsguide.angle = 24.582
@@ -133,7 +184,7 @@ value = "Default Trademark";
     glyphsLib.dump(g, foo)
     assert foo.getvalue().strip() == gsc.strip()
 
-def test_gsglyph_space_roundtrip_v3():
+def test_parse_gsglyph_space_v3():
     gsglyph = """{
 glyphname = space;
 layers = (
@@ -154,3 +205,10 @@ unicode = 0020;
     assert len(l.layers) == 1
     assert l.unicodes[0] == "0020"
     assert l.name == "space"
+
+def test_parse_gsglyph_a_v2():
+    p = Parser(current_type=GSGlyph, formatVersion=2)
+    g = p.parse(gsglyph_plist_v2)
+    print(g.layers[0].paths[0].nodes)
+    assert(False)
+
