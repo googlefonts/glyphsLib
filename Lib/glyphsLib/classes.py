@@ -3238,7 +3238,6 @@ class GSLayer(GSBase):
         # The "hasattr" is here because this setter is called by the GSBase
         # __init__() method before the parent property is set.
         if hasattr(self, "parent") and self.parent:
-            print("Updating layer map")
             parent_layers = OrderedDict()
             updated = False
             for id, layer in self.parent._layers.items():
@@ -3502,7 +3501,7 @@ class GSGlyph(GSBase):
         "subCategory": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
-        "_unicodes": UnicodesList,
+        "unicodes": UnicodesList,
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": str,
