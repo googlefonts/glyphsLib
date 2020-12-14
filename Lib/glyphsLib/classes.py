@@ -423,17 +423,19 @@ class GSBase:
                 continue
             classForKey = target.classForName(key_in_class)
             value = d[key_in_plist]
-            if classForKey:
-                if isclass(classForKey) and isinstance(value, classForKey):
-                    pass
-                elif hasattr(classForKey, "from_dict"):
-                    value = classForKey.from_dict(value, formatVersion=formatVersion)
-                elif hasattr(classForKey, "from_value"):
-                    value = classForKey.from_value(value, formatVersion=formatVersion)
-                else:
-                    value = classForKey(value)
-            print(key_in_class, value)
-            target[key_in_class] = value
+            if hasattr(target, "%s_reader" % key_in_class):
+                getattr(target, "%s_reader" % key_in_class)(value)
+            else:
+                if classForKey:
+                    if isclass(classForKey) and isinstance(value, classForKey):
+                        pass
+                    elif hasattr(classForKey, "from_dict"):
+                        value = classForKey.from_dict(value, formatVersion=formatVersion)
+                    elif hasattr(classForKey, "from_value"):
+                        value = classForKey.from_value(value, formatVersion=formatVersion)
+                    else:
+                        value = classForKey(value)
+                target[key_in_class] = value
         return target
 
     def to_dict(self, formatVersion=3):
@@ -1377,30 +1379,36 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
-    __slots__ = ("position", "size")
+    __slots__ = ("pos", "size")
 
     def __init__(self, pos=0, size=20):
-        self.position = pos
+        self.pos = pos
         self.size = size
 
-    def read(self, src):
-        if src is not None:
-            p = Point(src)
-            self.position = parse_float_or_int(p.value[0])
-            self.size = parse_float_or_int(p.value[1])
-        return self
+    @classmethod
+    def from_dict(cls, src, formatVersion=3, target=None):
+        if not target:
+            target = cls()
+        if formatVersion==3:
+            warnings.warn("GSAlignmentZones aren't used in Glyphs 3 files"
+            " but I was asked to parse one. Should this use formatVersion=2?")
+            target.pos = parse_float_or_int(src["pos"])
+            target.size = parse_float_or_int(src["size"])
+        else:
+            print(src)
+        return target
 
-    def __repr__(self):
-        return "<{} pos:{:g} size:{:g}>".format(
-            self.__class__.__name__, self.position, self.size
-        )
+    # def __repr__(self):
+    #     return "<{} pos:{:g} size:{:g}>".format(
+    #         self.__class__.__name__, self.pos, self.size
+    #     )
 
     def __lt__(self, other):
-        return (self.position, self.size) < (other.position, other.size)
+        return (self.pos, self.size) < (other.pos, other.size)
 
     def plistValue(self):
         return '"{{{}, {}}}"'.format(
-            floatToString5(self.position), floatToString5(self.size)
+            floatToString5(self.pos), floatToString5(self.size)
         )
 
 
@@ -3211,6 +3219,7 @@ class GSLayer(GSBase):
         # The "hasattr" is here because this setter is called by the GSBase
         # __init__() method before the parent property is set.
         if hasattr(self, "parent") and self.parent:
+            print("Updating layer map")
             parent_layers = OrderedDict()
             updated = False
             for id, layer in self.parent._layers.items():
@@ -3474,7 +3483,7 @@ class GSGlyph(GSBase):
         "subCategory": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
-        "unicode": UnicodesList,
+        "_unicodes": UnicodesList,
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": str,
@@ -3525,6 +3534,8 @@ class GSGlyph(GSBase):
         "userData",
         "partsSettings",
     )
+    _plistToClass3 = { "unicode": "_unicodes", "glyphname": "name" }
+    _plistToClass2 = { "unicode": "_unicodes", "glyphname": "name" }
 
     def __init__(self, name=None):
         self._layers = OrderedDict()
@@ -3554,6 +3565,14 @@ class GSGlyph(GSBase):
         self.userData = self._defaultsForName["userData"]
         self.vertWidthMetricsKey = ""
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+
+    def _layers_reader(self, value):
+        for layer in value:
+            g = GSLayer()
+            g.parent = self
+            GSLayer.from_dict(layer, target=g)
+            self._layers[g._layerId] = g
+
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
