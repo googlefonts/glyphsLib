@@ -3584,11 +3584,11 @@ class GSGlyph(GSBase):
         self.vertWidthMetricsKey = ""
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
-    def _layers_reader(self, value):
+    def _layers_reader(self, value, formatVersion):
         for layer in value:
             g = GSLayer()
             g.parent = self
-            GSLayer.from_dict(layer, target=g)
+            GSLayer.from_dict(layer, target=g, formatVersion=formatVersion)
             self._layers[g._layerId] = g
 
 
