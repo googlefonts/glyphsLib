@@ -1451,6 +1451,10 @@ class GSGuide(GSBase):
     _plistToClass3 = {"pos": "position"}
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
+    def position_reader(self, value, formatVersion):
+        # This is needed because v3 Points look like lists in the plist
+        self["position"] = Point.from_value(value, formatVersion)
+
     def __init__(self):
         self.alignment = ""
         self.angle = self._defaultsForName["angle"]
