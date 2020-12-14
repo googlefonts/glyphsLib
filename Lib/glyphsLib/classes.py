@@ -414,6 +414,19 @@ class GSBase:
         else:
             return key_in_plist
 
+    def _marshal_to_object(self, classForKey, value, formatVersion):
+        if isclass(classForKey) and isinstance(value, classForKey):
+            pass
+        elif hasattr(classForKey, "from_value"):
+            value = classForKey.from_value(value, formatVersion=formatVersion)
+        elif hasattr(classForKey, "from_dict"):
+            value = classForKey.from_dict(value, formatVersion=formatVersion)
+        else:
+            value = classForKey(value)
+        if hasattr(value, "_parent"):
+            value._parent = self
+        return value
+
     @classmethod
     def from_dict(cls, d, formatVersion=3, target=None):
         if not target:
@@ -427,17 +440,14 @@ class GSBase:
             classForKey = target.classForName(key_in_class)
             value = d[key_in_plist]
             if hasattr(target, "%s_reader" % key_in_class):
-                getattr(target, "%s_reader" % key_in_class)(value)
+                getattr(target, "%s_reader" % key_in_class)(value, formatVersion)
             else:
                 if classForKey:
-                    if isclass(classForKey) and isinstance(value, classForKey):
-                        pass
-                    elif hasattr(classForKey, "from_dict"):
-                        value = classForKey.from_dict(value, formatVersion=formatVersion)
-                    elif hasattr(classForKey, "from_value"):
-                        value = classForKey.from_value(value, formatVersion=formatVersion)
+                    if isinstance(value, list):
+                        value = [target._marshal_to_object(classForKey, x, formatVersion) for x in value]
                     else:
-                        value = classForKey(value)
+                        value = target._marshal_to_object(classForKey, value, formatVersion)
+
                 target[key_in_class] = value
         return target
 
