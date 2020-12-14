@@ -3863,6 +3863,8 @@ class GSFont(GSBase):
     def shouldWriteValueForKey(self, key, formatVersion=3):
         if key in ("unitsPerEm", "versionMajor", "versionMinor"):
             return True
+        if key == "filepath":
+            return False
         return super().shouldWriteValueForKey(key, formatVersion)
 
     def save(self, path=None):
