@@ -1419,7 +1419,8 @@ class GSAlignmentZone(GSBase):
             target.pos = parse_float_or_int(src["pos"])
             target.size = parse_float_or_int(src["size"])
         else:
-            print(src)
+            point = Point.from_value(src)
+            target.pos, target.size = point
         return target
 
     # def __repr__(self):
