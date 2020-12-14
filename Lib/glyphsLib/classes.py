@@ -446,11 +446,18 @@ class GSBase:
             else:
                 if classForKey:
                     if isinstance(value, list):
-                        value = [target._marshal_to_object(classForKey, x, formatVersion) for x in value]
+                        value = [
+                            target._marshal_to_object(classForKey, x, formatVersion)
+                            for x in value
+                        ]
                     else:
-                        value = target._marshal_to_object(classForKey, value, formatVersion)
+                        value = target._marshal_to_object(
+                            classForKey, value, formatVersion
+                        )
 
                 target[key_in_class] = value
+        if hasattr(target, "_postParseSetup"):
+            target._postParseSetup()
         return target
 
     def to_dict(self, formatVersion=3):
@@ -3844,6 +3851,10 @@ class GSFont(GSBase):
         lambda self: FontGlyphsProxy(self),
         lambda self, value: FontGlyphsProxy(self).setter(value),
     )
+
+    def _postParseSetup(self):
+        for glyph in self.glyphs:
+            self._setupGlyph(glyph)
 
     def _setupGlyph(self, glyph):
         glyph.parent = self
