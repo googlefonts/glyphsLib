@@ -143,8 +143,9 @@ class Point(Vector(2)):
     @classmethod
     def from_value(cls, value, formatVersion=2):
         if formatVersion == 2:
-            # XXX
-            pass
+            v = cls(0,0)
+            v.value = v.fromString(value)
+            return v
         else:
             return Point([int(x) for x in value])
 
