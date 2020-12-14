@@ -344,7 +344,10 @@ class GSBase:
         return f"<{self.__class__.__name__} {content}>"
 
     def classForName(self, name):
-        return self._classesForName.get(name, str)
+        if name[0] == "_":
+            return self._classesForName.get(name[1:], str)
+        else:
+            return self._classesForName.get(name, str)
 
     def default_attr_value(self, attr_name):
         """Return the default value of the given attribute, if any."""
