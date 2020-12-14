@@ -2,7 +2,7 @@ from io import StringIO
 import glyphsLib
 from glyphsLib.parser import Parser
 from glyphsLib.parser.v3 import plist_to_dict, dict_to_plist
-from glyphsLib.classes import GSGuide
+from glyphsLib.classes import GSGuide, GSCustomParameter, GSGlyph
 from glyphsLib.types import Point
 
 gsguide_plist_v3 = """{
@@ -121,3 +121,36 @@ def test_gsguide_roundtrip_v3():
     assert normalize_plist(dict_to_plist(g.to_dict())) == normalize_plist(
         gsguide_plist_v3
     )
+
+def test_gscustomparameter_roundtrip_v2():
+    gsc = """{
+name = trademark;
+value = "Default Trademark";
+}"""
+    p = Parser(current_type=GSCustomParameter, formatVersion=2)
+    g = p.parse(gsc)
+    foo = StringIO()
+    glyphsLib.dump(g, foo)
+    assert foo.getvalue().strip() == gsc.strip()
+
+def test_gsglyph_space_roundtrip_v3():
+    gsglyph = """{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 0020;
+}"""
+    gsglyph_dict = string_to_dict(gsglyph)
+    assert gsglyph_dict == {
+        "glyphname": "space",
+        "layers":  [{'layerId': 'm01', 'width': '200'}],
+        "unicode": "0020"
+    }
+    l = GSGlyph.from_dict(gsglyph_dict, formatVersion=3)
+    assert len(l.layers) == 1
+    assert l.unicodes[0] == "0020"
+    assert l.name == "space"
