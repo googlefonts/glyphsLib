@@ -439,7 +439,7 @@ class GSBase:
             )
             if key_in_plist not in d:
                 continue
-            classForKey = target.classForName(key_in_class)
+            classForKey = target.classForName(key_in_plist)
             value = d[key_in_plist]
             if hasattr(target, "%s_reader" % key_in_class):
                 getattr(target, "%s_reader" % key_in_class)(value, formatVersion)
@@ -3514,7 +3514,7 @@ class GSGlyph(GSBase):
         "subCategory": str,
         "topKerningGroup": str,
         "topMetricsKey": str,
-        "unicodes": UnicodesList,
+        "unicode": UnicodesList,
         "userData": dict,
         "vertWidthMetricsKey": str,
         "widthMetricsKey": str,
@@ -3737,7 +3737,7 @@ class GSFont(GSBase):
         "familyName": str,
         "featurePrefixes": GSFeaturePrefix,
         "features": GSFeature,
-        "masters": GSFontMaster,
+        "fontMaster": GSFontMaster,
         "glyphs": GSGlyph,
         "gridLength": int,
         "gridSubDivision": int,
