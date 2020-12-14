@@ -52,7 +52,9 @@ class Parser:
         result, i = self._parse(text, 0)
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
-        return result
+        return self.current_type.from_dict(
+                result, formatVersion=self.formatVersion
+            )
 
     def parse_into_object(self, res, text):
         """Parse data into an existing GSFont instance."""
@@ -67,26 +69,6 @@ class Parser:
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
         return i
-
-    def _guess_current_type(self, parsed, value):
-        if value.lower() in ("infinity", "inf", "nan"):
-            # Those values would be accepted by `float()`
-            # But `infinity` is a glyph name
-            return str
-        if parsed[-1] != '"':
-            try:
-                v = float(value)
-
-                def current_type(_):
-                    if v.is_integer():
-                        return int(v)
-                    return v
-
-            except ValueError:
-                current_type = str
-        else:
-            current_type = str
-        return current_type
 
     def _parse(self, text, i):
         """Recursive function to parse a single dictionary, list, or value."""
@@ -107,23 +89,7 @@ class Parser:
         if m:
             parsed = m.group(0)
             i += len(parsed)
-            if hasattr(self.current_type, "read"):
-                reader = self.current_type()
-                # Give the escaped value to `read` to be symetrical with
-                # `plistValue` which handles the escaping itself.
-                value = reader.read(m.group(1))
-                return value, i
-
-            value = self._trim_value(m.group(1))
-
-            if self.current_type in (None, dict, OrderedDict):
-                self.current_type = self._guess_current_type(parsed, value)
-
-            if self.current_type == bool:
-                value = bool(int(value))  # bool(u'0') returns True
-                return value, i
-
-            value = self.current_type(value)
+            value = str(self._trim_value(m.group(1)))
 
             return value, i
 
@@ -140,29 +106,13 @@ class Parser:
 
     def _parse_dict(self, text, i):
         """Parse a dictionary from source text starting at i."""
-        old_current_type = self.current_type
-        new_type = self.current_type
-        if new_type is None:
-            # customparameter.value needs to be set from the found value
-            new_type = dict
-        elif type(new_type) == list:
-            new_type = new_type[0]
-        res = new_type()
-        i = self._parse_dict_into_object(res, text, i)
-        self.current_type = old_current_type
-        return res, i
-
-    def _parse_dict_into_object(self, res, text, i):
         end_match = self.end_dict_re.match(text, i)
         python_dict = {}
         while not end_match:
-            old_current_type = self.current_type
             m = self.attr_re.match(text, i)
             if not m:
                 self._fail("Unexpected dictionary content", text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
-            if hasattr(res, "classForName"):
-                self.current_type = res.classForName(name)
             i += len(parsed)
 
             result = self._parse(text, i)
@@ -176,20 +126,15 @@ class Parser:
             i += len(parsed)
 
             end_match = self.end_dict_re.match(text, i)
-            self.current_type = old_current_type
-        res.__class__.from_dict(
-            python_dict, formatVersion=self.formatVersion, target=res
-        )
         parsed = end_match.group(0)
         i += len(parsed)
-        return i
+        return python_dict, i
 
     def _parse_list(self, text, i):
         """Parse a list from source text starting at i."""
 
         res = []
         end_match = self.end_list_re.match(text, i)
-        old_current_type = self.current_type
         while not end_match:
             list_item, i = self._parse(text, i)
             res.append(list_item)
@@ -202,7 +147,6 @@ class Parser:
                     self._fail("Missing delimiter in list before content", text, i)
                 parsed = m.group(0)
                 i += len(parsed)
-            self.current_type = old_current_type
 
         parsed = end_match.group(0)
         i += len(parsed)
