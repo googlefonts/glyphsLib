@@ -3211,13 +3211,10 @@ class GSLayer(GSBase):
         self.width = self._defaultsForName["width"]
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
-    def __setitem__(self, key, value):
-        # On parsing, a background layer is attached to self via GSBase.__setitem__. We
-        # must additionally set a backreference in it.
-        super().__setitem__(key, value)
-        if key == "background":
-            self._background._foreground = self
-            self._background.parent = self.parent
+    def read_background(self, value, formatVersion):
+        self._background = value
+        self._background._foreground = self
+        self._background.parent = self.parent
 
     def __repr__(self):
         name = self.name
