@@ -41,7 +41,7 @@ class Parser:
     hex_re = re.compile(r"\s*<([A-Fa-f0-9]+)>", re.DOTALL)
     bytes_re = re.compile(r"\s*<([A-Za-z0-9+/=]+)>", re.DOTALL)
 
-    def __init__(self, current_type=OrderedDict, formatVersion=2):
+    def __init__(self, current_type=None, formatVersion=2):
         self.current_type = current_type
         self.formatVersion = formatVersion
 
@@ -52,22 +52,20 @@ class Parser:
         result, i = self._parse(text, 0)
         if text[i:].strip():
             self._fail("Unexpected trailing content", text, i)
-        return self.current_type.from_dict(
-                result, formatVersion=self.formatVersion
+        if self.current_type:
+            return self.current_type.from_dict(
+                    result, formatVersion=self.formatVersion
             )
+        return result
 
-    def parse_into_object(self, res, text):
+    def parse_into_object(self, res, text, formatVersion=2):
         """Parse data into an existing GSFont instance."""
 
         text = tostr(text, encoding="utf-8")
-
-        m = self.start_dict_re.match(text, 0)
-        if m:
-            i = self._parse_dict_into_object(res, text, 1)
-        else:
-            self._fail("not correct file format", text, 0)
-        if text[i:].strip():
-            self._fail("Unexpected trailing content", text, i)
+        result, i = self._parse(text, 0)
+        res.__class__.from_dict(
+                result, formatVersion=self.formatVersion, target = res
+        )
         return i
 
     def _parse(self, text, i):
