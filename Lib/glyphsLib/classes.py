@@ -1717,8 +1717,8 @@ class GSNode(GSBase):
     __slots__ = ("_userData", "_position", "smooth", "type")
 
     _PLIST_VALUE_RE = re.compile(
-        r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        r'(?: (SMOOTH))?(?: ({.*}))?"',
+        r'([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
+        r'(?: (SMOOTH))?(?: ({.*}))?',
         re.DOTALL,
     )
     _parent = None
@@ -1764,7 +1764,7 @@ class GSNode(GSBase):
     def parent(self):
         return self._parent
 
-    def plistValue(self):
+    def to_value(self):
         content = self.type.upper()
         if self.smooth:
             content += " SMOOTH"
@@ -1778,7 +1778,8 @@ class GSNode(GSBase):
             floatToString5(self.position[0]), floatToString5(self.position[1]), content
         )
 
-    def read(self, line):
+    @classmethod
+    def from_value(cls, line, formatVersion):
         """Parse a Glyphs node string into a GSNode.
 
         The format of a Glyphs node string (`line`) is:
@@ -1793,6 +1794,7 @@ class GSNode(GSBase):
         WARNING: This method is HOT. It is called for every single node and can
         account for a significant portion of the file parsing time.
         """
+        self=cls()
         m = self._PLIST_VALUE_RE.match(line).groups()
         self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
         self.type = m[2].lower()
