@@ -3212,8 +3212,10 @@ class GSLayer(GSBase):
         self.width = self._defaultsForName["width"]
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
-    def read_background(self, value, formatVersion):
-        self._background = value
+    def _background_reader(self, value, formatVersion):
+        self._background = GSBackgroundLayer.from_dict(
+            value, formatVersion=formatVersion
+        )
         self._background._foreground = self
         self._background.parent = self.parent
 
@@ -3601,7 +3603,6 @@ class GSGlyph(GSBase):
             g.parent = self
             GSLayer.from_dict(layer, target=g, formatVersion=formatVersion)
             self._layers[g._layerId] = g
-
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
