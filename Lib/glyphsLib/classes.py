@@ -1422,12 +1422,17 @@ class GSCustomParameter(GSBase):
 
     value = property(getValue, setValue)
 
+    def to_value(self, formatVersion=2):
+        from glyphsLib.parser.v3 import dict_to_plist
+
+        return dict_to_plist(self.to_dict())
+
 
 class GSAlignmentZone(GSBase):
-    __slots__ = ("pos", "size")
+    __slots__ = ("position", "size")
 
     def __init__(self, pos=0, size=20):
-        self.pos = pos
+        self.position = pos
         self.size = size
 
     @classmethod
