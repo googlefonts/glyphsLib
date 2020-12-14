@@ -425,6 +425,8 @@ class GSBase:
             value = classForKey(value)
         if hasattr(value, "_parent"):
             value._parent = self
+        elif hasattr(value, "parent"): # Because sometimes it's different
+            value.parent = self
         return value
 
     @classmethod
@@ -2541,6 +2543,8 @@ class GSHint(GSBase):
         self.settings = {}
         self.stem = self._defaultsForName["stem"]
         self.type = ""
+        self._parent = None
+        self._targetNode = None
 
     def shouldWriteValueForKey(self, key, formatVersion=3):
         if key == "settings" and (self.settings is None or len(self.settings) == 0):
