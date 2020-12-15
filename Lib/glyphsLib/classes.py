@@ -3550,7 +3550,12 @@ class GSGlyph(GSBase):
 
     def _parse_unicode(self, parser, text, i):
         parser.current_type = None
-        uni, i = parser._parse_value(text, i, str)
+        if parser.format_version == 3:
+            uni, i = parser._parse(text, i, int)
+            if not isinstance(uni, list):
+                uni = [uni]
+        else:
+            uni, i = parser._parse_value(text, i, str)
         self["_unicodes"] = UnicodesList(uni)
         return i
 
