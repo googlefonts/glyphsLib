@@ -1176,9 +1176,11 @@ class UserDataProxy(Proxy):
 
 
 class GSCustomParameter(GSBase):
-    __slots__ = ("name", "_value")
-
-    _classesForName = {"name": str, "value": None}
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeKeyValue("name", self.name)
+        writer.writeKeyValue("value", self.value)
+        writer.file.write("}")
 
     def _parse_value(self, parser, text, i):
         old_type = parser.current_type
