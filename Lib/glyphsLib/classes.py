@@ -66,7 +66,7 @@ __all__ = [
     "GSSmartComponentAxis",
     "GSPath",
     "GSNode",
-    "GSGuideLine",
+    "GSGuide",
     "GSAnnotation",
     "GSHint",
     "GSBackgroundImage",
@@ -1361,7 +1361,7 @@ class GSAlignmentZone(GSBase):
         )
 
 
-class GSGuideLine(GSBase):
+class GSGuide(GSBase):
     __slots__ = (
         "alignment",
         "angle",
@@ -1402,7 +1402,7 @@ class GSGuideLine(GSBase):
     def parent(self):
         return self._parent
 
-GSGuideLine._add_parser("position", "position", str, transform = Point)
+GSGuide._add_parser("position", "position", str, transform = Point)
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
@@ -1449,7 +1449,7 @@ class GSFontMaster(GSBase):
         "customValue3": parse_float_or_int,
         "customParameters": GSCustomParameter,
         "descender": parse_float_or_int,
-        "guideLines": GSGuideLine,
+        "guideLines": GSGuide,
         "horizontalStems": int,
         "iconName": str,
         "id": str,
@@ -1649,7 +1649,7 @@ class GSFontMaster(GSBase):
     )
 
 GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
-GSFontMaster._add_parser("guideLines", "guides", GSGuideLine)
+GSFontMaster._add_parser("guideLines", "guides", GSGuide)
 GSFontMaster._add_parser("userData", "userData", dict)
 
 
@@ -3100,7 +3100,7 @@ class GSLayer(GSBase):
         "backgroundImage": GSBackgroundImage,
         "color": parse_color,
         "components": GSComponent,
-        "guideLines": GSGuideLine,
+        "guideLines": GSGuide,
         "hints": GSHint,
         "layerId": str,
         "leftMetricsKey": str,
@@ -3392,7 +3392,7 @@ GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
 GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
 GSLayer._add_parser("paths", "paths", GSPath)
 GSLayer._add_parser("anchors", "anchors", GSAnchor)
-GSLayer._add_parser("guideLines", "guides", GSGuideLine)
+GSLayer._add_parser("guideLines", "guides", GSGuide)
 GSLayer._add_parser("components", "components", GSComponent)
 GSLayer._add_parser("hints", "hints", GSHint)
 GSLayer._add_parser("userData", "_userData", dict)
