@@ -3726,6 +3726,11 @@ class GSFont(GSBase):
         self["date"] = parse_datetime(date)
         return i
 
+    def _parse___formatVersion(self, parser, text, i):
+        val, i = parser._parse_value(text, i, int)
+        parser.format_version = val
+        return i
+
     _classesForName = {
         ".appVersion": str,
         "DisplayStrings": str,
@@ -3987,7 +3992,7 @@ class GSFont(GSBase):
 
 
 GSFont._add_parser("unitsPerEm", "upm", int)
-GSFont._add_parser(".appVersion", "appVersion", str)
+GSFont._add_parser("__appVersion", "appVersion", str)
 GSFont._add_parser("classes", "classes", GSClass)
 GSFont._add_parser("instances", "instances", GSInstance)
 GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)

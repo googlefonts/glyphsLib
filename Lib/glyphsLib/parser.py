@@ -41,8 +41,9 @@ class Parser:
     hex_re = re.compile(r"\s*<([A-Fa-f0-9]+)>", re.DOTALL)
     bytes_re = re.compile(r"\s*<([A-Za-z0-9+/=]+)>", re.DOTALL)
 
-    def __init__(self, current_type=OrderedDict):
+    def __init__(self, current_type=OrderedDict, format_version=2):
         self.current_type = current_type
+        self.format_version = format_version
 
     def parse(self, text):
         """Do the parsing."""
@@ -141,9 +142,10 @@ class Parser:
                 self._fail("Unexpected dictionary content", text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
-
-            if hasattr(res, f"_parse_{name}"):
-                i = getattr(res, f"_parse_{name}")(self, text, i)
+            sane_name = name.replace(".","__")
+            if hasattr(res, f"_parse_{sane_name}"):
+                print(sane_name)
+                i = getattr(res, f"_parse_{sane_name}")(self, text, i)
             elif isinstance(res, (dict, OrderedDict)):
                 result = self._parse(text, i)
 
