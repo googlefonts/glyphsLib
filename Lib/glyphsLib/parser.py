@@ -144,7 +144,6 @@ class Parser:
             i += len(parsed)
             sane_name = name.replace(".","__")
             if hasattr(res, f"_parse_{sane_name}"):
-                print(sane_name)
                 i = getattr(res, f"_parse_{sane_name}")(self, text, i)
             elif isinstance(res, (dict, OrderedDict)):
                 result = self._parse(text, i)
