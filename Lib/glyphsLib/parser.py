@@ -87,9 +87,9 @@ class Parser:
             current_type = str
         return current_type
 
-    def _parse(self, text, i):
+    def _parse(self, text, i, new_type=None):
         """Recursive function to parse a single dictionary, list, or value."""
-
+        self.current_type = new_type or self.current_type
         m = self.start_dict_re.match(text, i)
         if m:
             parsed = m.group(0)
@@ -102,29 +102,10 @@ class Parser:
             i += len(parsed)
             return self._parse_list(text, i)
 
-        m = self.value_re.match(text, i)
-        if m:
-            parsed = m.group(0)
-            i += len(parsed)
-            if hasattr(self.current_type, "read"):
-                reader = self.current_type()
-                # Give the escaped value to `read` to be symetrical with
-                # `plistValue` which handles the escaping itself.
-                value = reader.read(m.group(1))
-                return value, i
 
-            value = self._trim_value(m.group(1))
-
-            if self.current_type in (None, dict, OrderedDict):
-                self.current_type = self._guess_current_type(parsed, value)
-
-            if self.current_type == bool:
-                value = bool(int(value))  # bool(u'0') returns True
-                return value, i
-
-            value = self.current_type(value)
-
-            return value, i
+        val, end_i = self._parse_value(text, i)
+        if end_i:
+            return val, end_i
 
         m = self.hex_re.match(text, i)
         if m:
@@ -137,10 +118,10 @@ class Parser:
         else:
             self._fail("Unexpected content", text, i)
 
-    def _parse_dict(self, text, i):
+    def _parse_dict(self, text, i, new_type=None):
         """Parse a dictionary from source text starting at i."""
         old_current_type = self.current_type
-        new_type = self.current_type
+        new_type = new_type or self.current_type
         if new_type is None:
             # customparameter.value needs to be set from the found value
             new_type = dict
@@ -159,17 +140,20 @@ class Parser:
             if not m:
                 self._fail("Unexpected dictionary content", text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
-            if hasattr(res, "classForName"):
-                self.current_type = res.classForName(name)
             i += len(parsed)
 
-            result = self._parse(text, i)
+            if hasattr(res, f"_parse_{name}"):
+                i = getattr(res, f"_parse_{name}")(self, text, i)
+            elif isinstance(res, (dict, OrderedDict)):
+                result = self._parse(text, i)
 
-            try:
-                res[name], i = result
-            except (TypeError, KeyError):  # hmmm...
-                res = {}  # ugly, this fixes nested dicts in customparameters
-                res[name], i = result
+                try:
+                    res[name], i = result
+                except (TypeError, KeyError):  # hmmm...
+                    res = {}  # ugly, this fixes nested dicts in customparameters
+                    res[name], i = result
+            else:
+                i = res._parse_key(self, name, text, i)
 
             m = self.dict_delim_re.match(text, i)
             if not m:
@@ -183,12 +167,13 @@ class Parser:
         i += len(parsed)
         return i
 
-    def _parse_list(self, text, i):
+    def _parse_list(self, text, i, new_type=None):
         """Parse a list from source text starting at i."""
 
         res = []
         end_match = self.end_list_re.match(text, i)
         old_current_type = self.current_type
+        self.current_type = new_type or self.current_type
         while not end_match:
             list_item, i = self._parse(text, i)
             res.append(list_item)
@@ -206,6 +191,34 @@ class Parser:
         parsed = end_match.group(0)
         i += len(parsed)
         return res, i
+
+    def _parse_value(self, text, i, new_type=None):
+        m = self.value_re.match(text, i)
+        if not m:
+            return None, None
+        parsed = m.group(0)
+        i += len(parsed)
+
+        if new_type and hasattr(new_type, "read"):
+            reader = new_type()
+            # Give the escaped value to `read` to be symetrical with
+            # `plistValue` which handles the escaping itself.
+            value = reader.read(m.group(1))
+            return value
+
+        value = self._trim_value(m.group(1))
+
+        if new_type in (None, dict, OrderedDict):
+            new_type = self._guess_current_type(parsed, value)
+
+        if new_type == bool:
+            value = bool(int(value))  # bool(u'0') returns True
+            return value
+
+        value = new_type(value)
+
+        return value, i
+
 
     # glyphs only supports octal escapes between \000 and \077 and hexadecimal
     # escapes between \U0000 and \UFFFF
@@ -249,8 +262,9 @@ def loads(s):
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)
     logger.info("Parsing .glyphs file")
-    data = p.parse(s)
-    return data
+    res = glyphsLib.classes.GSFont()
+    p.parse_into_object(res, s)
+    return res
 
 
 def main(args=None):

@@ -381,6 +381,22 @@ class GSBase:
         return True
 
 
+    def _parse_key(self, parser, name, text, i):
+        result, i = parser._parse(text, i)
+        self[name] = result
+        return i
+
+    @classmethod
+    def _add_parser(self, keyname, target, classname, transform = None):
+        def _generic_parser(self, parser, text, i):
+            value, i = parser._parse(text, i, classname)
+            if transform:
+                self[target] = transform(value)
+            else:
+                self[target] = value
+            return i
+        setattr(self, "_parse_"+keyname, _generic_parser)
+
 class Proxy:
     __slots__ = "_owner"
 
@@ -1164,6 +1180,14 @@ class GSCustomParameter(GSBase):
 
     _classesForName = {"name": str, "value": None}
 
+    def _parse_value(self, parser, text, i):
+        old_type = parser.current_type
+        parser.current_type = None
+        _value, i = parser._parse(text, i)
+        self.setValue(_value)
+        parser.current_type = old_type
+        return i
+
     _CUSTOM_INT_PARAMS = frozenset(
         (
             "ascender",
@@ -1378,6 +1402,8 @@ class GSGuideLine(GSBase):
     def parent(self):
         return self._parent
 
+GSGuideLine._add_parser("position", "position", str, transform = Point)
+
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
 MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
@@ -1487,6 +1513,11 @@ class GSFontMaster(GSBase):
         "widthValue",
         "xHeight",
     )
+
+    def _parse_alignmentZones(self, parser, text, i):
+        _zones, i = parser._parse(text, i, str)
+        self.alignmentZones = [ GSAlignmentZone().read(x) for x in _zones ]
+        return i
 
     def __init__(self):
         self._customParameters = []
@@ -1617,13 +1648,17 @@ class GSFontMaster(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
+GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
+GSFontMaster._add_parser("guideLines", "guides", GSGuideLine)
+GSFontMaster._add_parser("userData", "userData", dict)
+
 
 class GSNode(GSBase):
     __slots__ = ("_userData", "_position", "smooth", "type")
 
     _PLIST_VALUE_RE = re.compile(
-        r'"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        r'(?: (SMOOTH))?(?: ({.*}))?"',
+        r'([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
+        r'(?: (SMOOTH))?(?: ({.*}))?',
         re.DOTALL,
     )
     _parent = None
@@ -1814,6 +1849,12 @@ class GSPath(GSBase):
     __slots__ = ("closed", "_nodes")
 
     _classesForName = {"nodes": GSNode, "closed": bool}
+    def _parse_nodes(self, parser, text, i):
+        _nodes, i = parser._parse(text, i, str)
+        for x in _nodes:
+            self.nodes.append(GSNode().read(x))
+        return i
+
     _defaultsForName = {"closed": True}
     _parent = None
 
@@ -2312,6 +2353,9 @@ class GSComponent(GSBase):
         """Draws points of component with given point pen."""
         pointPen.addComponent(self.name, self.transform)
 
+GSComponent._add_parser("transform", "transform", str, Transform)
+GSComponent._add_parser("piece", "smartComponentValues", dict)
+
 
 class GSSmartComponentAxis(GSBase):
     __slots__ = (
@@ -2351,6 +2395,11 @@ class GSAnchor(GSBase):
     _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
+
+    def _parse_position(self, parser, text, i):
+        pt, i = parser._parse(text, i, str)
+        self["position"] = Point(pt)
+        return i
 
     def __init__(self, name=None, position=None):
         self.name = "" if name is None else name
@@ -2431,6 +2480,11 @@ class GSHint(GSBase):
         "options",
         "settings",
     )
+
+    def _parse_target(self, parser, text, i):
+        line,i = parser._parse(text, i)
+        self.target = parse_hint_target(line)
+        return i
 
     def __init__(self):
         self.horizontal = False
@@ -2582,9 +2636,20 @@ class GSHint(GSBase):
         self._other2 = other2
         self._otherNode2 = None
 
+GSHint._add_parser("origin", "_origin", str, Point)
+GSHint._add_parser("other1", "_other1", str, Point)
+GSHint._add_parser("other2", "_other2", str, Point)
+GSHint._add_parser("place", "place", str, Point)
+GSHint._add_parser("scale", "scale", str, Point)
+
+
 
 class GSFeature(GSBase):
     __slots__ = ("automatic", "_code", "disabled", "name", "notes")
+
+    def _parse_code(self, parser, text, i):
+        self["_code"], i = parser._parse(text, i, str)
+        return i
 
     _classesForName = {
         "automatic": bool,
@@ -2675,6 +2740,8 @@ class GSAnnotation(GSBase):
     @property
     def parent(self):
         return self._parent
+
+GSAnnotation._add_parser("position", "position", str, Point)
 
 
 class GSInstance(GSBase):
@@ -2788,6 +2855,11 @@ class GSInstance(GSBase):
         lambda self, value: CustomParametersProxy(self).setter(value),
     )
 
+    def _parse_manualInterpolation(self, parser, text, i):
+        val, i = parser._parse(text, i, bool)
+        self.manualInterpolation = bool(val)
+        return i
+
     @property
     def exports(self):
         """Deprecated alias for `active`, which is in the documentation."""
@@ -2883,6 +2955,9 @@ class GSInstance(GSBase):
     def fullName(self, value):
         self.customParameters["postscriptFullName"] = value
 
+GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
+GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
+
 
 class GSBackgroundImage(GSBase):
     __slots__ = (
@@ -2905,6 +2980,11 @@ class GSBackgroundImage(GSBase):
     }
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
     _wrapperKeysTranslate = {"alpha": "_alpha"}
+
+    def _parse_crop(self, parser, text, i):
+        crop, i = parser._parse(text, i, str)
+        self["crop"] = Rect(crop)
+        return i
 
     def __init__(self, path=None):
         self._R = 0.0
@@ -2992,6 +3072,8 @@ class GSBackgroundImage(GSBase):
         self.transform = Transform(
             affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
         )
+
+GSInstance._add_parser("transform", "transform", str, Transform)
 
 
 class GSLayer(GSBase):
@@ -3101,13 +3183,11 @@ class GSLayer(GSBase):
         self.width = self._defaultsForName["width"]
         self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
 
-    def __setitem__(self, key, value):
-        # On parsing, a background layer is attached to self via GSBase.__setitem__. We
-        # must additionally set a backreference in it.
-        super().__setitem__(key, value)
-        if key == "background":
-            self._background._foreground = self
-            self._background.parent = self.parent
+    def _parse_background(self, parser, text, i):
+        self._background, i = parser._parse(text, i, GSBackgroundLayer)
+        self._background._foreground = self
+        self._background.parent = self.parent
+        return i
 
     def __repr__(self):
         name = self.name
@@ -3320,6 +3400,15 @@ class GSLayer(GSBase):
         for component in self.components:
             component.drawPoints(pointPen)
 
+GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
+GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
+GSLayer._add_parser("paths", "paths", GSPath)
+GSLayer._add_parser("anchors", "anchors", GSAnchor)
+GSLayer._add_parser("guideLines", "guides", GSGuideLine)
+GSLayer._add_parser("components", "components", GSComponent)
+GSLayer._add_parser("hints", "hints", GSHint)
+GSLayer._add_parser("userData", "_userData", dict)
+
 
 class GSBackgroundLayer(GSLayer):
     def shouldWriteValueForKey(self, key):
@@ -3383,9 +3472,12 @@ class GSGlyph(GSBase):
     )
 
     _classesForName = {
+        ".appVersion": str,
+        "DisplayStrings": str,
         "bottomKerningGroup": str,
         "bottomMetricsKey": str,
         "category": str,
+        "classes": GSClass,
         "color": parse_color,
         "export": bool,
         "glyphname": str,
@@ -3455,6 +3547,23 @@ class GSGlyph(GSBase):
         "userData",
         "partsSettings",
     )
+
+    def _parse_unicode(self, parser, text, i):
+        parser.current_type = None
+        uni, i = parser._parse_value(text, i, str)
+        self["_unicodes"] = UnicodesList(uni)
+        return i
+
+    def _parse_layers(self, parser, text, i):
+        layers, i = parser._parse(text, i, GSLayer)
+        for l in layers:
+            self.layers.append(l)
+        return i
+
+    def _parse_lastChange(self, parser, text, i):
+        lastChange, i = parser._parse(text, i, str)
+        self["lastChange"] = parse_datetime(lastChange)
+        return i
 
     def __init__(self, name=None):
         self._layers = OrderedDict()
@@ -3570,6 +3679,9 @@ class GSGlyph(GSBase):
     def unicodes(self, unicodes):
         self._unicodes = UnicodesList(unicodes)
 
+GSGlyph._add_parser("glyphname", "name", str)
+GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
+
 
 class GSFont(GSBase):
     __slots__ = (
@@ -3603,6 +3715,16 @@ class GSFont(GSBase):
         "upm",
         "versionMajor",
     )
+
+    def _parse_glyphs(self, parser, text, i):
+        _glyphs, i = parser._parse(text, i, GSGlyph)
+        self.glyphs.setter(_glyphs)
+        return i
+
+    def _parse_date(self, parser, text, i):
+        date, i = parser._parse(text, i, str)
+        self["date"] = parse_datetime(date)
+        return i
 
     _classesForName = {
         ".appVersion": str,
@@ -3862,6 +3984,19 @@ class GSFont(GSBase):
             del self._kerning[fontMasterId][leftKey]
         if not self._kerning[fontMasterId]:
             del self._kerning[fontMasterId]
+
+
+GSFont._add_parser("unitsPerEm", "upm", int)
+GSFont._add_parser(".appVersion", "appVersion", str)
+GSFont._add_parser("classes", "classes", GSClass)
+GSFont._add_parser("instances", "instances", GSInstance)
+GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)
+GSFont._add_parser("featurePrefixes", "featurePrefixes", GSFeaturePrefix)
+GSFont._add_parser("features", "features", GSFeature)
+GSFont._add_parser("fontMaster", "masters", GSFontMaster)
+GSFont._add_parser("kerning", "_kerning", OrderedDict)
+GSFont._add_parser("userData", "userData", dict)
+
 
 
 Number = Union[int, float]
