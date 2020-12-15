@@ -62,7 +62,7 @@ class ValueType:
         """Return a typed value representing the structured glyphs strings."""
         raise NotImplementedError("%s read" % type(self).__name__)
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         """Return structured glyphs strings representing the typed value."""
         raise NotImplementedError("%s write" % type(self).__name__)
 
@@ -95,7 +95,7 @@ def Vector(dim):
             src = src.replace('"', "")
             return [parse_float_or_int(i) for i in self.regex.match(src).groups()]
 
-        def plistValue(self):
+        def plistValue(self, format_version=2):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
             return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
 
@@ -200,7 +200,7 @@ class Rect(Vector(4)):
             value = [value[0], value[1], value2[0], value2[1]]
         super().__init__(value)
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
         return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString3(v) for v in self.value)
 
@@ -245,7 +245,7 @@ class Transform(Vector(6)):
     def __repr__(self):
         return "<affine transformation %s>" % (" ".join(map(str, self.value)))
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
         return '"{%s}"' % (", ".join(floatToString5(v) for v in self.value))
 
@@ -284,7 +284,7 @@ class Datetime(ValueType):
     def fromString(self, src):
         return parse_datetime(src)
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         return '"%s +0000"' % self.value
 
     def strftime(self, val):
@@ -330,7 +330,7 @@ class Color(ValueType):
     def __repr__(self):
         return self.value.__repr__()
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         return str(self.value)
 
 
@@ -380,7 +380,7 @@ class UnicodesList(list):
             unicodes = [str(v) for v in value]
         super().__init__(unicodes)
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         if not self:
             return None
         if len(self) == 1:
@@ -393,7 +393,7 @@ class BinaryData(bytes):
     def fromHex(cls, data):
         return cls(binascii.unhexlify(data))
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         # TODO write hex bytes in chunks and split over multiple lines
         # for better readability, like the fonttools xmlWriter does
         return "<%s>" % binascii.hexlify(self).decode()

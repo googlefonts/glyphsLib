@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
-    def __init__(self, fp):
+    def __init__(self, fp, format_version=2):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b"")
@@ -46,6 +46,7 @@ class Writer:
             import codecs
 
             self.file = codecs.getwriter("utf-8")(fp)
+        self.format_version = format_version
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -130,7 +131,7 @@ class Writer:
 
     def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
-            value = value.plistValue()
+            value = value.plistValue(format_version=self.format_version)
             if value is not None:
                 self.file.write(value)
         elif forKey == "color" and hasattr(value, "__iter__"):
