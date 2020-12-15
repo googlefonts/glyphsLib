@@ -2421,80 +2421,34 @@ GSAnchor._add_parser("position", "position", str, Point)
 
 
 class GSHint(GSBase):
-    __slots__ = (
-        "_origin",
-        "_originNode",
-        "_other1",
-        "_other2",
-        "_otherNode1",
-        "_otherNode2",
-        "_target",
-        "_targetNode",
-        "horizontal",
-        "name",
-        "options",
-        "place",
-        "scale",
-        "settings",
-        "stem",
-        "type",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "horizontal", "if_true")
 
-    _classesForName = {
-        "horizontal": bool,
-        "options": int,  # bitfield
-        "origin": Point,  # Index path to node
-        "other1": Point,  # Index path to node for third node
-        "other2": Point,  # Index path to node for fourth node
-        "place": Point,  # (position, width)
-        "scale": Point,  # for corners
-        "stem": int,  # index of stem
-        "target": parse_hint_target,  # Index path to node or 'up'/'down'
-        "type": str,
-        "name": str,
-        "settings": dict,
-    }
-    _defaultsForName = {
-        # TODO: (jany) check defaults in glyphs
-        "origin": None,
-        "other1": None,
-        "other2": None,
-        "place": None,
-        "scale": None,
-        "stem": -2,
-    }
-    _keyOrder = (
-        "horizontal",
-        "origin",
-        "place",
-        "target",
-        "other1",
-        "other2",
-        "scale",
-        "type",
-        "stem",
-        "name",
-        "options",
-        "settings",
-    )
+        for field in ["origin", "place", "target", "other1", "other2", "scale"]:
+            writer.writeObjectKeyValue(self, field)
+
+        writer.writeObjectKeyValue(self, "stem", self.stem != -2)
+
+        for field in ["type","name", "options", "settings"]:
+            writer.writeObjectKeyValue(self, field, condition="if_true")
+
+        writer.file.write("}")
 
     def __init__(self):
         self.horizontal = False
         self.name = ""
         self.options = 0
-        self.origin = self._defaultsForName["origin"]
-        self.other1 = self._defaultsForName["other1"]
-        self.other2 = self._defaultsForName["other2"]
-        self.place = self._defaultsForName["place"]
-        self.scale = self._defaultsForName["scale"]
+        self.origin = None
+        self.other1 = None
+        self.other2 = None
+        self.place = None
+        self.scale = None
+        self._target = None
+        self._targetNode = None
         self.settings = {}
-        self.stem = self._defaultsForName["stem"]
+        self.stem = -2
         self.type = ""
-
-    def shouldWriteValueForKey(self, key):
-        if key == "settings" and (self.settings is None or len(self.settings) == 0):
-            return None
-        return super().shouldWriteValueForKey(key)
 
     def _origin_pos(self):
         if self.originNode:

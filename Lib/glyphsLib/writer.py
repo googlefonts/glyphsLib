@@ -52,6 +52,9 @@ class Writer:
         self.file.write("\n")
 
     def writeDict(self, dictValue):
+        if hasattr(dictValue, "_serialize_to_plist"):
+            getattr(dictValue, "_serialize_to_plist")(self)
+            return
         self.file.write("{\n")
         if hasattr(dictValue, "_keyOrder"):
             keys = dictValue._keyOrder
@@ -62,6 +65,9 @@ class Writer:
             if not isinstance(dictValue, OrderedDict):
                 keys = sorted(keys)
         for key in keys:
+            if hasattr(dictValue, f"_write_{key}"):
+                getattr(dictValue, f"_write_{key}")(self)
+                continue
             try:
                 if isinstance(dictValue, (dict, OrderedDict)):
                     value = dictValue[key]
@@ -110,6 +116,17 @@ class Writer:
         self.writeKey(key)
         self.writeValue(value, key)
         self.file.write(";\n")
+
+    def writeObjectKeyValue(self, d, key, condition=None):
+        value = getattr(d,key)
+        if condition == "if_true":
+            condition = bool(value)
+        if condition is None:
+            condition = value is not None
+        if condition:
+            self.writeKey(key)
+            self.writeValue(value, key)
+            self.file.write(";\n")
 
     def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
