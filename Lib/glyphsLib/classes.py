@@ -381,7 +381,7 @@ class GSBase:
         return True
 
 
-    def _parse_key(self, parser, name, text, i):
+    def _default_key_value_parser(self, parser, name, text, i):
         result, i = parser._parse(text, i)
         self[name] = result
         return i

@@ -155,7 +155,7 @@ class Parser:
                     res = {}  # ugly, this fixes nested dicts in customparameters
                     res[name], i = result
             else:
-                i = res._parse_key(self, name, text, i)
+                i = res._default_key_value_parser(self, name, text, i)
 
             m = self.dict_delim_re.match(text, i)
             if not m:
