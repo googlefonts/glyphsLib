@@ -2396,11 +2396,6 @@ class GSAnchor(GSBase):
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
-    def _parse_position(self, parser, text, i):
-        pt, i = parser._parse(text, i, str)
-        self["position"] = Point(pt)
-        return i
-
     def __init__(self, name=None, position=None):
         self.name = "" if name is None else name
         if position is None:
@@ -2421,6 +2416,8 @@ class GSAnchor(GSBase):
     @property
     def parent(self):
         return self._parent
+
+GSAnchor._add_parser("position", "position", str, Point)
 
 
 class GSHint(GSBase):
@@ -2480,11 +2477,6 @@ class GSHint(GSBase):
         "options",
         "settings",
     )
-
-    def _parse_target(self, parser, text, i):
-        line,i = parser._parse(text, i)
-        self.target = parse_hint_target(line)
-        return i
 
     def __init__(self):
         self.horizontal = False
@@ -2641,7 +2633,7 @@ GSHint._add_parser("other1", "_other1", str, Point)
 GSHint._add_parser("other2", "_other2", str, Point)
 GSHint._add_parser("place", "place", str, Point)
 GSHint._add_parser("scale", "scale", str, Point)
-
+GSHint._add_parser("target", "target", str, parse_hint_target)
 
 
 class GSFeature(GSBase):
@@ -2981,11 +2973,6 @@ class GSBackgroundImage(GSBase):
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
     _wrapperKeysTranslate = {"alpha": "_alpha"}
 
-    def _parse_crop(self, parser, text, i):
-        crop, i = parser._parse(text, i, str)
-        self["crop"] = Rect(crop)
-        return i
-
     def __init__(self, path=None):
         self._R = 0.0
         self._sX = 1.0
@@ -3073,7 +3060,8 @@ class GSBackgroundImage(GSBase):
             affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
         )
 
-GSInstance._add_parser("transform", "transform", str, Transform)
+GSBackgroundImage._add_parser("transform", "transform", str, Transform)
+GSBackgroundImage._add_parser("crop", "crop", str, Rect)
 
 
 class GSLayer(GSBase):
@@ -3565,11 +3553,6 @@ class GSGlyph(GSBase):
             self.layers.append(l)
         return i
 
-    def _parse_lastChange(self, parser, text, i):
-        lastChange, i = parser._parse(text, i, str)
-        self["lastChange"] = parse_datetime(lastChange)
-        return i
-
     def __init__(self, name=None):
         self._layers = OrderedDict()
         self._unicodes = []
@@ -3686,6 +3669,7 @@ class GSGlyph(GSBase):
 
 GSGlyph._add_parser("glyphname", "name", str)
 GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
+GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
 
 
 class GSFont(GSBase):
@@ -3724,11 +3708,6 @@ class GSFont(GSBase):
     def _parse_glyphs(self, parser, text, i):
         _glyphs, i = parser._parse(text, i, GSGlyph)
         self.glyphs.setter(_glyphs)
-        return i
-
-    def _parse_date(self, parser, text, i):
-        date, i = parser._parse(text, i, str)
-        self["date"] = parse_datetime(date)
         return i
 
     def _parse___formatVersion(self, parser, text, i):
@@ -4006,6 +3985,7 @@ GSFont._add_parser("features", "features", GSFeature)
 GSFont._add_parser("fontMaster", "masters", GSFontMaster)
 GSFont._add_parser("kerning", "_kerning", OrderedDict)
 GSFont._add_parser("userData", "userData", dict)
+GSFont._add_parser("date", "date", str, parse_datetime)
 
 
 
