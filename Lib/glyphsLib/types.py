@@ -86,7 +86,7 @@ def Vector(dim):
 
         dimension = dim
         default = [0.0] * dimension
-        regex = re.compile("{%s}" % ", ".join(["([-.e\\d]+)"] * dimension))
+        regex = re.compile("[({]%s[})]" % ", ".join(["([-.e\\d]+)"] * dimension))
 
         def fromString(self, src):
             if isinstance(src, list):
@@ -97,7 +97,10 @@ def Vector(dim):
 
         def plistValue(self, format_version=2):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
-            return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+            if format_version == 2:
+                return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+            else:
+                return "(%s)" % (", ".join(floatToString3(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
