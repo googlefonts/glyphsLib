@@ -78,9 +78,7 @@ class Writer:
                 dictValue, "shouldWriteValueForKey"
             ) and not dictValue.shouldWriteValueForKey(key):
                 continue
-            self.writeKey(key)
-            self.writeValue(value, key)
-            self.file.write(";\n")
+            self.writeKeyValue(key, value)
         self.file.write("}")
 
     def writeArray(self, arrayValue):
@@ -107,6 +105,11 @@ class Writer:
             self.writeValue(value, key)
             self.file.write(";\n")
         self.file.write("}")
+
+    def writeKeyValue(self, key, value):
+        self.writeKey(key)
+        self.writeValue(value, key)
+        self.file.write(";\n")
 
     def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
