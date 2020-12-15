@@ -53,7 +53,6 @@ class Writer:
 
     def writeDict(self, dictValue):
         self.file.write("{\n")
-        forType = None
         if hasattr(dictValue, "_keyOrder"):
             keys = dictValue._keyOrder
         elif hasattr(dictValue, "_classesForName"):
@@ -63,8 +62,6 @@ class Writer:
             if not isinstance(dictValue, OrderedDict):
                 keys = sorted(keys)
         for key in keys:
-            if hasattr(dictValue, "_classesForName"):
-                forType = dictValue._classesForName[key]
             try:
                 if isinstance(dictValue, (dict, OrderedDict)):
                     value = dictValue[key]
@@ -82,7 +79,7 @@ class Writer:
             ) and not dictValue.shouldWriteValueForKey(key):
                 continue
             self.writeKey(key)
-            self.writeValue(value, key, forType=forType)
+            self.writeValue(value, key)
             self.file.write(";\n")
         self.file.write("}")
 
@@ -111,7 +108,7 @@ class Writer:
             self.file.write(";\n")
         self.file.write("}")
 
-    def writeValue(self, value, forKey=None, forType=None):
+    def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
             value = value.plistValue()
             if value is not None:
