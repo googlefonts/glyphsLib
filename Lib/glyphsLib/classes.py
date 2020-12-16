@@ -1002,22 +1002,57 @@ class IndexedObjectsProxy(Proxy):
             value._parent = self._owner
 
 
-class LayerPathsProxy(IndexedObjectsProxy):
-    _objects_name = "_paths"
+class LayerShapesProxy(IndexedObjectsProxy):
+    _objects_name = "_shapes"
+    _filter = None
 
     def __init__(self, owner):
         super().__init__(owner)
+
+    def append(self, value):
+        self._owner._shapes.append(value)
+        value._parent = self._owner
+
+    def extend(self, values):
+        self._owner._shapes.extend(values)
+        for value in values:
+            value._parent = self._owner
+
+    def remove(self, value):
+        self._owner._shapes.remove(value)
+
+    def insert(self, index, value):
+        self._owner._shapes.insert(index, value)
+        value._parent = self._owner
+
+    def __setitem__(self, key, value):
+        if isinstance(key, int):
+            index = self._owner._shapes.index(self.values()[key])
+            self._owner._shapes[index] = value
+            value._parent = self._owner
+        else:
+            raise KeyError
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            index = self._owner._shapes.index(self.values()[key])
+            del self._owner._shapes[index]
+        else:
+            raise KeyError
+
+    def setter(self, values):
+        newvalues = list(filter(lambda s: not isinstance(s, self._filter), self._owner._shapes))
+        newvalues.extend(list(values))
+        self._owner._shapes = newvalues
+        for value in newvalues:
+            value._parent = self._owner
+
+    def values(self):
+        return list(filter(lambda s: isinstance(s, self._filter), self._owner._shapes))
 
 
 class LayerHintsProxy(IndexedObjectsProxy):
     _objects_name = "_hints"
-
-    def __init__(self, owner):
-        super().__init__(owner)
-
-
-class LayerComponentsProxy(IndexedObjectsProxy):
-    _objects_name = "_components"
 
     def __init__(self, owner):
         super().__init__(owner)
@@ -3020,19 +3055,25 @@ GSBackgroundImage._add_parser("transform", "transform", str, Transform)
 GSBackgroundImage._add_parser("crop", "crop", str, Rect)
 
 
+class LayerPathsProxy(LayerShapesProxy):
+    _filter = GSPath
+
+class LayerComponentsProxy(LayerShapesProxy):
+    _filter = GSComponent
+
+
 class GSLayer(GSBase):
     __slots__ = (
         "_anchors",
         "_annotations",
         "_background",
-        "_components",
         "_foreground",
         "_guides",
         "_hints",
         "_layerId",
         "_name",
-        "_paths",
         "_selection",
+        "_shapes",
         "_userData",
         "associatedMasterId",
         "backgroundImage",
@@ -3107,13 +3148,12 @@ class GSLayer(GSBase):
         self._annotations = []
         self._background = None
         self._foreground = None
-        self._components = []
         self._guides = []
         self._hints = []
         self._layerId = ""
         self._name = ""
-        self._paths = []
         self._selection = []
+        self._shapes = []
         self._userData = None
         self.associatedMasterId = ""
         self.backgroundImage = None
