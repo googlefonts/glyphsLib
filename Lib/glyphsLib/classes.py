@@ -2488,6 +2488,7 @@ class GSComponent(GSBase):
 
 GSComponent._add_parser("transform", "transform", str, Transform)
 GSComponent._add_parser("piece", "smartComponentValues", dict)
+GSComponent._add_parser("ref", "name", str)
 
 
 class GSSmartComponentAxis(GSBase):
