@@ -1549,6 +1549,9 @@ class GSFontMaster(GSBase):
         writer.writeObjectKeyValue(self, "iconName", "if_true")
         writer.writeObjectKeyValue(self, "id")
         writer.writeObjectKeyValue(self, "italicAngle", "if_true")
+        if writer.format_version == 3:
+            writer.writeKeyValue("metricValues", self.metrics)
+
         if self._name and self._name != self.name:
             writer.writeKeyValue("name", self._name)
         writer.writeObjectKeyValue(self, "userData", "if_true")
@@ -1591,6 +1594,7 @@ class GSFontMaster(GSBase):
         self._name = None
         self._userData = None
         self.alignmentZones = []
+        self._metrics = []
         self.ascender = self._defaultsForName["ascender"]
         self.axes = []
         self.capHeight = self._defaultsForName["capHeight"]
@@ -1712,6 +1716,7 @@ GSFontMaster._add_parser("guides", "guides", GSGuide)  # v3
 GSFontMaster._add_parser("userData", "userData", dict)
 GSFontMaster._add_parser("custom", "customName", str)
 GSFontMaster._add_parser("axesValues", "axes", int)  # v3
+GSFontMaster._add_parser("metricValues", "metrics", GSMetricValue)  # v3
 
 
 class GSNode(GSBase):
