@@ -1790,18 +1790,40 @@ class GSNode(GSBase):
         return self._parent
 
     def plistValue(self, format_version=2):
-        content = self.type.upper()
-        if self.smooth:
-            content += " SMOOTH"
+        string = ""
         if self._userData is not None and len(self._userData) > 0:
             string = StringIO()
             writer = Writer(string)
             writer.writeDict(self._userData)
-            content += " "
-            content += self._encode_dict_as_string(string.getvalue())
-        return '"{} {} {}"'.format(
-            floatToString5(self.position[0]), floatToString5(self.position[1]), content
-        )
+
+        if format_version == 2:
+            content = self.type.upper()
+            if self.smooth:
+                content += " SMOOTH"
+            if string:
+                content += " "
+                content += self._encode_dict_as_string(string.getvalue())
+            return '"{} {} {}"'.format(
+                floatToString5(self.position[0]),
+                floatToString5(self.position[1]),
+                content,
+            )
+        else:
+            if self.type == CURVE:
+                content = "c"
+            elif self.type == OFFCURVE:
+                content = "o"
+            elif self.type == LINE:
+                content = "l"
+            if self.smooth:
+                content += "s"
+            if string:
+                content += "," + self._encode_dict_as_string(string.getvalue())
+            return "({},{},{})".format(
+                floatToString5(self.position[0]),
+                floatToString5(self.position[1]),
+                content,
+            )
 
     def read(self, line):
         """Parse a Glyphs node string into a GSNode.
@@ -1842,8 +1864,8 @@ class GSNode(GSBase):
         elif lst[2][0] == "q":
             self.type = QCURVE
 
-        if len(lst) > 4:
-            self._userData = lst[4]
+        if len(lst) > 3:
+            self._userData = lst[3]
         return self
 
     @property
