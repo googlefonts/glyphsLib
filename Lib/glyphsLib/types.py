@@ -388,7 +388,10 @@ class UnicodesList(list):
             return None
         if len(self) == 1:
             return self[0]
-        return '"%s"' % ",".join(self)
+        if format_version == 2:
+            return '"%s"' % ",".join(self)
+        else:
+            return '(%s)' % ",".join(self)
 
 
 class BinaryData(bytes):
