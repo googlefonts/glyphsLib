@@ -1399,6 +1399,46 @@ class GSCustomParameter(GSBase):
     value = property(getValue, setValue)
 
 
+class GSMetric(GSBase):
+    def __init__(self):
+        self.name = ""
+        self.id = ""
+        self.filter = ""
+        self.horizontal = False
+
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        if self.horizontal:
+            writer.writeKeyValue("horizontal", self.horizontal)
+        writer.writeKeyValue("name", self.name)
+        if self.filter:
+            writer.writeKeyValue("filter", self.filter)
+        writer.file.write("}")
+
+
+GSMetric._add_parser("name", "name", str)
+GSMetric._add_parser("filter", "filter", str)
+GSMetric._add_parser("horizontal", "horizontal", bool)
+
+
+class GSMetricValue(GSBase):
+    def __init__(self):
+        self.position = 0
+        self.overshoot = 0
+        self.name = ""
+        self.filter = ""
+        self.metric = ""
+
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeKeyValue("over", self.overshoot)
+        if self.position:
+            writer.writeKeyValue("pos", self.position)
+        writer.file.write("}")
+
+
+GSMetricValue._add_parser("over", "overshoot", int)
+GSMetricValue._add_parser("pos", "position", int)
 
 
 class GSAlignmentZone(GSBase):
@@ -2951,6 +2991,48 @@ class GSInstance(GSBase):
 
 GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
+
+
+class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
+    def __init__(self, key="", value=""):
+        self.key = key
+        self.value = value
+        self.localized_values = None
+
+    def _parse_values(self, parser, text, i):
+        values, i = parser._parse(text, i, dict)
+        self.localized_values = {}
+        for v in values:
+            if not "language" in v or not "value" in v:
+                continue
+            self.localized_values[v["language"]] = v["value"]
+        return i
+
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "key", "if_true")
+        if self.localized_values:
+            writer.writeKeyValue(
+                "values",
+                [{"language": l, "value": v} for l, v in self.localized_values.items()],
+            )
+        else:
+            writer.writeObjectKeyValue(self, "value")
+        writer.file.write("}")
+
+    @property
+    def defaultValue(self):
+        if not self.localized_values:
+            return self.value
+        if "dflt" in self.localized_values:
+            return self.localized_values["dflt"]
+        if "ENG" in self.localized_values:
+            return self.localized_values["ENG"]
+        return self.localized_values.values()[0]
+
+
+GSFontInfoValue._add_parser("key", "key", str)
+GSFontInfoValue._add_parser("value", "value", str)
 
 
 class GSBackgroundImage(GSBase):
