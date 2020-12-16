@@ -1399,35 +1399,23 @@ class GSAlignmentZone(GSBase):
 
 
 class GSGuide(GSBase):
-    __slots__ = (
-        "alignment",
-        "angle",
-        "filter",
-        "locked",
-        "name",
-        "position",
-        "showMeasurement",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        for field in ["alignment", "angle", "filter", "locked", "name"]:
+            writer.writeObjectKeyValue(self, field, "if_true")
+        writer.writeObjectKeyValue(self, "position", self.position != Point(0,0))
+        writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
+        writer.file.write("}")
 
-    _classesForName = {
-        "alignment": str,
-        "angle": parse_float_or_int,
-        "locked": bool,
-        "position": Point,
-        "showMeasurement": bool,
-        "filter": str,
-        "name": str,
-    }
     _parent = None
-    _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
     def __init__(self):
         self.alignment = ""
-        self.angle = self._defaultsForName["angle"]
+        self.angle = 0
         self.filter = ""
         self.locked = False
         self.name = ""
-        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.position = Point(0,0)
         self.showMeasurement = False
 
     def __repr__(self):
