@@ -66,6 +66,7 @@ def test_parser_main(capsys):
     out, _err = capsys.readouterr()
     assert expected == out, "The roundtrip should output the .glyphs file unmodified."
 
+
 def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.

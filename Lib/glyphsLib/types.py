@@ -391,7 +391,7 @@ class UnicodesList(list):
         if format_version == 2:
             return '"%s"' % ",".join(self)
         else:
-            return '(%s)' % ",".join(self)
+            return "(%s)" % ",".join(self)
 
 
 class BinaryData(bytes):

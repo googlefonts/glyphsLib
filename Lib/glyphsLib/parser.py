@@ -103,7 +103,6 @@ class Parser:
             i += len(parsed)
             return self._parse_list(text, i)
 
-
         val, end_i = self._parse_value(text, i)
         if end_i:
             return val, end_i
@@ -142,7 +141,7 @@ class Parser:
                 self._fail("Unexpected dictionary content", text, i)
             parsed, name = m.group(0), self._trim_value(m.group(1))
             i += len(parsed)
-            sane_name = name.replace(".","__")
+            sane_name = name.replace(".", "__")
             if hasattr(res, f"_parse_{sane_name}"):
                 i = getattr(res, f"_parse_{sane_name}")(self, text, i)
             elif isinstance(res, (dict, OrderedDict)):
@@ -219,7 +218,6 @@ class Parser:
         value = new_type(value)
 
         return value, i
-
 
     # glyphs only supports octal escapes between \000 and \077 and hexadecimal
     # escapes between \U0000 and \UFFFF

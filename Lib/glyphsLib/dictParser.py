@@ -26,7 +26,7 @@ class DictParser(Parser):
         for name in d.keys():
             sane_name = name.replace(".", "__")
             if hasattr(res, f"_parse_{sane_name}_dict"):
-                i = getattr(res, f"_parse_{sane_name}_dict")(self, d[name])
+                getattr(res, f"_parse_{sane_name}_dict")(self, d[name])
             elif isinstance(res, (dict, OrderedDict)):
                 result = self._parse(d[name], 0)
                 print(name, result)

@@ -380,14 +380,13 @@ class GSBase:
             return False
         return True
 
-
     def _default_key_value_parser(self, parser, name, text, i):
         result, i = parser._parse(text, i)
         self[name] = result
         return i
 
     @classmethod
-    def _add_parser(self, keyname, target, classname, transform = None):
+    def _add_parser(self, keyname, target, classname, transform=None):
         def _generic_parser(self, parser, text, i):
             value, i = parser._parse(text, i, classname)
             if transform:
@@ -395,7 +394,9 @@ class GSBase:
             else:
                 self[target] = value
             return i
-        setattr(self, "_parse_"+keyname, _generic_parser)
+
+        setattr(self, "_parse_" + keyname, _generic_parser)
+
 
 class Proxy:
     __slots__ = "_owner"
@@ -1041,7 +1042,9 @@ class LayerShapesProxy(IndexedObjectsProxy):
             raise KeyError
 
     def setter(self, values):
-        newvalues = list(filter(lambda s: not isinstance(s, self._filter), self._owner._shapes))
+        newvalues = list(
+            filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
+        )
         newvalues.extend(list(values))
         self._owner._shapes = newvalues
         for value in newvalues:
@@ -1210,7 +1213,6 @@ class UserDataProxy(Proxy):
         self._owner._userData = values
 
 
-
 class GSAxis(GSBase):
     def _serialize_to_plist(self, writer):
         writer.file.write("{\n")
@@ -1222,8 +1224,10 @@ class GSAxis(GSBase):
     def __init__(self):
         self.name = ""
         self.axisTag = ""
-        self.axisId = None # ???
+        self.axisId = None  # ???
         self.hidden = False
+
+
 GSAxis._add_parser("tag", "axisTag", str)
 
 
@@ -1420,7 +1424,7 @@ class GSGuide(GSBase):
         writer.file.write("{\n")
         for field in ["alignment", "angle", "filter", "locked", "name"]:
             writer.writeObjectKeyValue(self, field, "if_true")
-        writer.writeObjectKeyValue(self, "position", self.position != Point(0,0))
+        writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
         writer.file.write("}")
 
@@ -1432,7 +1436,7 @@ class GSGuide(GSBase):
         self.filter = ""
         self.locked = False
         self.name = ""
-        self.position = Point(0,0)
+        self.position = Point(0, 0)
         self.showMeasurement = False
 
     def __repr__(self):
@@ -1444,7 +1448,8 @@ class GSGuide(GSBase):
     def parent(self):
         return self._parent
 
-GSGuide._add_parser("position", "position", str, transform = Point)
+
+GSGuide._add_parser("position", "position", str, transform=Point)
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
@@ -1516,7 +1521,7 @@ class GSFontMaster(GSBase):
 
     def _parse_alignmentZones(self, parser, text, i):
         _zones, i = parser._parse(text, i, str)
-        self.alignmentZones = [ GSAlignmentZone().read(x) for x in _zones ]
+        self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
         return i
 
     def __init__(self):
@@ -1637,9 +1642,10 @@ class GSFontMaster(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
+
 GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
-GSFontMaster._add_parser("guideLines", "guides", GSGuide) # v2
-GSFontMaster._add_parser("guides", "guides", GSGuide) # v3
+GSFontMaster._add_parser("guideLines", "guides", GSGuide)  # v2
+GSFontMaster._add_parser("guides", "guides", GSGuide)  # v3
 GSFontMaster._add_parser("userData", "userData", dict)
 GSFontMaster._add_parser("custom", "customName", str)
 
@@ -1648,8 +1654,8 @@ class GSNode(GSBase):
     __slots__ = ("_userData", "_position", "smooth", "type")
 
     _PLIST_VALUE_RE = re.compile(
-        r'([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)'
-        r'(?: (SMOOTH))?(?: ({.*}))?',
+        r"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)"
+        r"(?: (SMOOTH))?(?: ({.*}))?",
         re.DOTALL,
     )
     _parent = None
@@ -1737,7 +1743,7 @@ class GSNode(GSBase):
         return self
 
     def read_v3(self, lst):
-        self.position = Point(lst[0],lst[1])
+        self.position = Point(lst[0], lst[1])
         self.smooth = lst[2].endswith("s")
         if lst[2][0] == "c":
             self.type = CURVE
@@ -1856,6 +1862,7 @@ class GSPath(GSBase):
     __slots__ = ("closed", "_nodes")
 
     _classesForName = {"nodes": GSNode, "closed": bool}
+
     def _parse_nodes(self, parser, text, i):
         _nodes, i = parser._parse(text, i, str)
         for x in _nodes:
@@ -2367,6 +2374,7 @@ class GSComponent(GSBase):
         """Draws points of component with given point pen."""
         pointPen.addComponent(self.name, self.transform)
 
+
 GSComponent._add_parser("transform", "transform", str, Transform)
 GSComponent._add_parser("piece", "smartComponentValues", dict)
 
@@ -2431,6 +2439,7 @@ class GSAnchor(GSBase):
     def parent(self):
         return self._parent
 
+
 GSAnchor._add_parser("position", "position", str, Point)
 
 
@@ -2444,7 +2453,7 @@ class GSHint(GSBase):
 
         writer.writeObjectKeyValue(self, "stem", self.stem != -2)
 
-        for field in ["type","name", "options", "settings"]:
+        for field in ["type", "name", "options", "settings"]:
             writer.writeObjectKeyValue(self, field, condition="if_true")
 
         writer.file.write("}")
@@ -2596,6 +2605,7 @@ class GSHint(GSBase):
         self._other2 = other2
         self._otherNode2 = None
 
+
 GSHint._add_parser("origin", "_origin", str, Point)
 GSHint._add_parser("other1", "_other1", str, Point)
 GSHint._add_parser("other2", "_other2", str, Point)
@@ -2700,6 +2710,7 @@ class GSAnnotation(GSBase):
     @property
     def parent(self):
         return self._parent
+
 
 GSAnnotation._add_parser("position", "position", str, Point)
 
@@ -2915,6 +2926,7 @@ class GSInstance(GSBase):
     def fullName(self, value):
         self.customParameters["postscriptFullName"] = value
 
+
 GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
 
@@ -3028,12 +3040,14 @@ class GSBackgroundImage(GSBase):
             affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
         )
 
+
 GSBackgroundImage._add_parser("transform", "transform", str, Transform)
 GSBackgroundImage._add_parser("crop", "crop", str, Rect)
 
 
 class LayerPathsProxy(LayerShapesProxy):
     _filter = GSPath
+
 
 class LayerComponentsProxy(LayerShapesProxy):
     _filter = GSComponent
@@ -3068,12 +3082,13 @@ class GSLayer(GSBase):
     def _parse_shapes(self, parser, text, i):
         shapes, i = parser._parse(text, i, dict)
         from glyphsLib.dictParser import DictParser
+
         p = DictParser(format_version=3)
         for shape_dict in shapes:
             if "ref" in shape_dict:
-                shape = p._parse_dict(shape_dict,0, GSComponent)
+                shape = p._parse_dict(shape_dict, 0, GSComponent)
             else:
-                shape = p._parse_dict(shape_dict,0, GSPath)
+                shape = p._parse_dict(shape_dict, 0, GSPath)
             self._shapes.append(shape)
         return i
 
@@ -3322,7 +3337,7 @@ class GSLayer(GSBase):
             return Rect(Point(left, bottom), Point(right - left, top - bottom))
 
     def _find_node_by_indices(self, point):
-        """"Find the GSNode that is refered to by the given indices.
+        """ "Find the GSNode that is refered to by the given indices.
 
         See GSNode::_indices()
         """
@@ -3372,6 +3387,7 @@ class GSLayer(GSBase):
             path.drawPoints(pointPen)
         for component in self.components:
             component.drawPoints(pointPen)
+
 
 GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
 GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
@@ -3652,6 +3668,7 @@ class GSGlyph(GSBase):
     def unicodes(self, unicodes):
         self._unicodes = UnicodesList(unicodes)
 
+
 GSGlyph._add_parser("glyphname", "name", str)
 GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
 GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
@@ -3752,7 +3769,7 @@ class GSFont(GSBase):
         "unitsPerEm": 1000,
         "kerning": OrderedDict(),
         "keyboardIncrement": 1,
-        ".formatVersion": 2
+        ".formatVersion": 2,
     }
 
     def __init__(self, path=None):
@@ -3979,7 +3996,6 @@ GSFont._add_parser("kerning", "_kerning", OrderedDict)
 GSFont._add_parser("userData", "userData", dict)
 GSFont._add_parser("date", "date", str, parse_datetime)
 GSFont._add_parser("axes", "axes", GSAxis)
-
 
 
 Number = Union[int, float]

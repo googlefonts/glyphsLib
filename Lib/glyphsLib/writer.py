@@ -119,7 +119,7 @@ class Writer:
         self.file.write(";\n")
 
     def writeObjectKeyValue(self, d, key, condition=None):
-        value = getattr(d,key)
+        value = getattr(d, key)
         if condition == "if_true":
             condition = bool(value)
         if condition is None:

@@ -52,7 +52,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             .splitlines()
         )
         # We wrap the value in a dict to use the same test helper
-        actual = test_helpers.write_to_lines({"writtenValue": glyphs_value}, format_version)
+        actual = test_helpers.write_to_lines(
+            {"writtenValue": glyphs_value}, format_version
+        )
         self.assertLinesEqual(
             expected, actual, "The writer has not produced the expected output"
         )
@@ -1178,7 +1180,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             }
         """,
             ),
-            format_version=3
+            format_version=3,
         )
 
         # FIXME: (jany) What about the undocumented scale & stem?
