@@ -2401,35 +2401,26 @@ GSComponent._add_parser("piece", "smartComponentValues", dict)
 
 
 class GSSmartComponentAxis(GSBase):
-    __slots__ = (
-        "bottomName",
-        "bottomValue",
-        "name",
-        "topName",
-        "topValue",
-    )
-
-    _classesForName = {
-        "name": str,
-        "bottomName": str,
-        "bottomValue": parse_float_or_int,
-        "topName": str,
-        "topValue": parse_float_or_int,
-    }
-    _defaultsForName = {"bottomValue": 0, "topValue": 0}
-    _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "bottomName", "if_true")
+            writer.writeObjectKeyValue(self, "bottomValue")
+            writer.writeObjectKeyValue(self, "name")
+        else:
+            writer.writeObjectKeyValue(self, "name")
+            writer.writeObjectKeyValue(self, "bottomName", "if_true")
+            writer.writeObjectKeyValue(self, "bottomValue", True)
+        writer.writeObjectKeyValue(self, "topName", "if_true")
+        writer.writeObjectKeyValue(self, "topValue", True)
+        writer.file.write("}")
 
     def __init__(self):
         self.bottomName = ""
-        self.bottomValue = self._defaultsForName["bottomValue"]
+        self.bottomValue = 0
         self.name = ""
         self.topName = ""
-        self.topValue = self._defaultsForName["topValue"]
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("bottomValue", "topValue"):
-            return True
-        return super().shouldWriteValueForKey(key)
+        self.topValue = 0
 
 
 class GSAnchor(GSBase):
