@@ -1169,10 +1169,10 @@ rememberToDownloadARealRemindersApp = 1;}"',
                 """\
             {
             horizontal = 1;
-            origin = (0, 0);
-            target = (0, 1);
-            other1 = (0, 2);
-            other2 = (1, 0);
+            origin = (0,0);
+            target = (0,1);
+            other1 = (0,2);
+            other2 = (1,0);
             type = 16;
             name = "My favourite hint";
             options = 128;
