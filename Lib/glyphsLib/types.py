@@ -100,7 +100,7 @@ def Vector(dim):
             if format_version == 2:
                 return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
             else:
-                return "(%s)" % (", ".join(floatToString3(v) for v in self.value))
+                return "(%s)" % (",".join(floatToString3(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
