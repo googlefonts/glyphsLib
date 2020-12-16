@@ -1770,6 +1770,22 @@ class GSNode(GSBase):
 
         return self
 
+    def read_v3(self, lst):
+        self.position = Point(lst[0],lst[1])
+        self.smooth = lst[2].endswith("s")
+        if lst[2][0] == "c":
+            self.type = CURVE
+        elif lst[2][0] == "o":
+            self.type = OFFCURVE
+        elif lst[2][0] == "l":
+            self.type = LINE
+        elif lst[2][0] == "q":
+            self.type = QCURVE
+
+        if len(lst) > 4:
+            self._userData = lst[4]
+        return self
+
     @property
     def name(self):
         if "name" in self.userData:
@@ -1879,6 +1895,13 @@ class GSPath(GSBase):
         for x in _nodes:
             self.nodes.append(GSNode().read(x))
         return i
+
+    def _parse_nodes_dict(self, parser, d):
+        for x in d:
+            if parser.format_version == 3:
+                self.nodes.append(GSNode().read_v3(x))
+            else:
+                self.nodes.append(GSNode().read(x))
 
     _defaultsForName = {"closed": True}
     _parent = None
@@ -3075,6 +3098,18 @@ class GSLayer(GSBase):
         "width",
         "widthMetricsKey",
     )
+
+    def _parse_shapes(self, parser, text, i):
+        shapes, i = parser._parse(text, i, dict)
+        from glyphsLib.dictParser import DictParser
+        p = DictParser(format_version=3)
+        for shape_dict in shapes:
+            if "ref" in shape_dict:
+                shape = p._parse_dict(shape_dict,0, GSComponent)
+            else:
+                shape = p._parse_dict(shape_dict,0, GSPath)
+            self._shapes.append(shape)
+        return i
 
     _classesForName = {
         "anchors": GSAnchor,
