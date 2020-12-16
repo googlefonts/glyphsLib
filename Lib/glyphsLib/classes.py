@@ -1452,60 +1452,49 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 
 class GSFontMaster(GSBase):
-    __slots__ = (
-        "_customParameters",
-        "_name",
-        "_userData",
-        "alignmentZones",
-        "ascender",
-        "capHeight",
-        "customName",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "descender",
-        "font",
-        "guides",
-        "horizontalStems",
-        "iconName",
-        "id",
-        "italicAngle",
-        "verticalStems",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-        "xHeight",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
+            writer.writeObjectKeyValue(self, "ascender")
+            writer.writeObjectKeyValue(self, "capHeight")
+            if self.customName:
+                writer.writeKeyValue("custom", self.customName)
+            writer.writeObjectKeyValue(self, "customValue", "if_true")
+            writer.writeObjectKeyValue(self, "customValue1", "if_true")
+            writer.writeObjectKeyValue(self, "customValue2", "if_true")
+            writer.writeObjectKeyValue(self, "customValue3", "if_true")
 
-    _classesForName = {
-        "alignmentZones": GSAlignmentZone,
-        "ascender": parse_float_or_int,
-        "capHeight": parse_float_or_int,
-        "custom": str,
-        "customValue": parse_float_or_int,
-        "customValue1": parse_float_or_int,
-        "customValue2": parse_float_or_int,
-        "customValue3": parse_float_or_int,
-        "customParameters": GSCustomParameter,
-        "descender": parse_float_or_int,
-        "guideLines": GSGuide,
-        "horizontalStems": int,
-        "iconName": str,
-        "id": str,
-        "italicAngle": parse_float_or_int,
-        "name": str,
-        "userData": dict,
-        "verticalStems": int,
-        "visible": bool,
-        "weight": str,
-        "weightValue": parse_float_or_int,
-        "width": str,
-        "widthValue": parse_float_or_int,
-        "xHeight": parse_float_or_int,
-    }
+        writer.writeObjectKeyValue(self, "customParameters", "if_true")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "descender")
+
+        if self.guides:
+            if writer.format_version == 3:
+                writer.writeKeyValue("guides", self.guides)
+            else:
+                writer.writeKeyValue("guideLines", self.guides)
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "horizontalStems", "if_true")
+
+        writer.writeObjectKeyValue(self, "iconName", "if_true")
+        writer.writeObjectKeyValue(self, "id")
+        writer.writeObjectKeyValue(self, "italicAngle", "if_true")
+        if self._name and self._name != self.name:
+            writer.writeKeyValue("name", self._name)
+        writer.writeObjectKeyValue(self, "userData", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "verticalStems", "if_true")
+            writer.writeObjectKeyValue(self, "weight", self.weight != "Regular")
+            writer.writeObjectKeyValue(self, "weightValue", self.weightValue != 100)
+            writer.writeObjectKeyValue(self, "width", self.width != "Regular")
+            writer.writeObjectKeyValue(self, "widthValue", self.widthValue != 100)
+            writer.writeObjectKeyValue(self, "xHeight")
+
+        writer.file.write("}")
+
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
         # and weight anymore as attributes, even though those properties are
@@ -1524,37 +1513,6 @@ class GSFontMaster(GSBase):
         "descender": -200,
         "italicAngle": 0,
     }
-    _wrapperKeysTranslate = {
-        "guideLines": "guides",
-        "custom": "customName",
-        "name": "_name",
-    }
-    _keyOrder = (
-        "alignmentZones",
-        "ascender",
-        "capHeight",
-        "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "customParameters",
-        "descender",
-        "guideLines",
-        "horizontalStems",
-        "iconName",
-        "id",
-        "italicAngle",
-        "name",
-        "userData",
-        "verticalStems",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-        "xHeight",
-    )
 
     def _parse_alignmentZones(self, parser, text, i):
         _zones, i = parser._parse(text, i, str)
@@ -1592,17 +1550,6 @@ class GSFontMaster(GSBase):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
             self.name, self.widthValue, self.weightValue
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("weight", "width"):
-            return getattr(self, key) != "Regular"
-        if key in ("xHeight", "capHeight", "ascender", "descender"):
-            # Always write those values
-            return True
-        if key == "_name":
-            # Only write out the name if we can't make it by joining the parts
-            return self._name != self.name
-        return super().shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -1691,8 +1638,10 @@ class GSFontMaster(GSBase):
     )
 
 GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
-GSFontMaster._add_parser("guideLines", "guides", GSGuide)
+GSFontMaster._add_parser("guideLines", "guides", GSGuide) # v2
+GSFontMaster._add_parser("guides", "guides", GSGuide) # v3
 GSFontMaster._add_parser("userData", "userData", dict)
+GSFontMaster._add_parser("custom", "customName", str)
 
 
 class GSNode(GSBase):
