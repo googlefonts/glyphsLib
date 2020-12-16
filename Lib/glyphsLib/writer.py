@@ -158,8 +158,12 @@ class Writer:
             self.file.write('"%s +0000"' % str(value))
         else:
             value = str(value)
-            if forKey != "unicode":
-                value = escape_string(value)
+            if self.format_version < 3:
+                if forKey != "unicode":
+                    value = escape_string(value)
+            else:
+                if _needs_quotes(value) or " " in value:
+                    value = '"%s"' % value
             self.file.write(value)
 
     def writeKey(self, key):
