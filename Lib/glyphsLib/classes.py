@@ -2551,7 +2551,18 @@ class GSHint(GSBase):
         writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "horizontal", "if_true")
 
-        for field in ["origin", "place", "target", "other1", "other2", "scale"]:
+        for field in ["origin", "place"]:
+            writer.writeObjectKeyValue(self, field)
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "target")
+        elif self.target:
+            writer.writeKey("target")
+            if isinstance(self.target, list):
+                writer.file.write("(%i,%i)" % (self.target[0], self.target[1]))
+            else:
+                writer.writeValue(self.target)
+            writer.file.write(";\n")
+        for field in ["other1", "other2", "scale"]:
             writer.writeObjectKeyValue(self, field)
 
         writer.writeObjectKeyValue(self, "stem", self.stem != -2)
