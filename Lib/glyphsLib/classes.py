@@ -3264,9 +3264,9 @@ class GSLayer(GSBase):
         p = DictParser(format_version=3)
         for shape_dict in shapes:
             if "ref" in shape_dict:
-                shape = p._parse_dict(shape_dict, 0, GSComponent)
+                shape, _ = p._parse_dict(shape_dict, 0, GSComponent)
             else:
-                shape = p._parse_dict(shape_dict, 0, GSPath)
+                shape, _ = p._parse_dict(shape_dict, 0, GSPath)
             self._shapes.append(shape)
         return i
 
