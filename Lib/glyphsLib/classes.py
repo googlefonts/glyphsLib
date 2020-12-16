@@ -1552,11 +1552,21 @@ class GSFontMaster(GSBase):
         if writer.format_version == 3:
             writer.writeKeyValue("metricValues", self.metrics)
 
-        if self._name and self._name != self.name:
-            writer.writeKeyValue("name", self._name)
+        if (
+            self._name and self._name != self.name
+        ) or writer.format_version == 3:  # Check this
+            writer.writeKeyValue("name", self._name or "Regular")
+
+        if writer.format_version == 3:
+            writer.writeKeyValue("numberValues", self.numbers)
+            writer.writeKeyValue("stemValues", self.stems)
+
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "verticalStems", "if_true")
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "visible", "if_true")
+        if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "weight", self.weight != "Regular")
             writer.writeObjectKeyValue(self, "weightValue", self.weightValue != 100)
             writer.writeObjectKeyValue(self, "width", self.width != "Regular")
@@ -1589,6 +1599,11 @@ class GSFontMaster(GSBase):
         self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
         return i
 
+    def _parse_visible(self, parser, text, i):
+        visible, i = parser._parse(text, i, bool)
+        self.visible = bool(visible)
+        return i
+
     def __init__(self):
         self._customParameters = []
         self._name = None
@@ -1610,6 +1625,8 @@ class GSFontMaster(GSBase):
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
         self.italicAngle = self._defaultsForName["italicAngle"]
+        self.numbers = []
+        self.stems = []
         self.verticalStems = 0
         self.visible = False
         self.weight = self._defaultsForName["weight"]
@@ -1716,6 +1733,8 @@ GSFontMaster._add_parser("guides", "guides", GSGuide)  # v3
 GSFontMaster._add_parser("userData", "userData", dict)
 GSFontMaster._add_parser("custom", "customName", str)
 GSFontMaster._add_parser("axesValues", "axes", int)  # v3
+GSFontMaster._add_parser("numberValues", "numbers", int)  # v3
+GSFontMaster._add_parser("stemValues", "stems", int)  # v3
 GSFontMaster._add_parser("metricValues", "metrics", GSMetricValue)  # v3
 
 
