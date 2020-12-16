@@ -3731,11 +3731,12 @@ class GSFont(GSBase):
 
     def _parse___formatVersion(self, parser, text, i):
         val, i = parser._parse_value(text, i, int)
-        parser.format_version = val
+        self.format_version = parser.format_version = val
         return i
 
     _classesForName = {
         ".appVersion": str,
+        ".formatVersion": int,
         "DisplayStrings": str,
         "classes": GSClass,
         "copyright": str,
@@ -3765,6 +3766,7 @@ class GSFont(GSBase):
     }
     _wrapperKeysTranslate = {
         ".appVersion": "appVersion",
+        ".formatVersion": "format_version",
         "fontMaster": "masters",
         "unitsPerEm": "upm",
         "gridLength": "grid",
@@ -3782,6 +3784,7 @@ class GSFont(GSBase):
         "unitsPerEm": 1000,
         "kerning": OrderedDict(),
         "keyboardIncrement": 1,
+        "formatVersion": 1
     }
 
     def __init__(self, path=None):
@@ -3791,6 +3794,7 @@ class GSFont(GSBase):
         self._masters = []
         self._userData = None
         self._versionMinor = 0
+        self.format_version = 1
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])

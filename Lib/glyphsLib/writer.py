@@ -173,6 +173,8 @@ def dump(obj, fp):
     """
     writer = Writer(fp)
     logger.info("Writing .glyphs file")
+    if hasattr(obj, "format_version"):
+        writer.format_version = obj.format_version
     writer.write(obj)
 
 
