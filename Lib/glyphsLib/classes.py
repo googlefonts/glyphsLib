@@ -1859,9 +1859,13 @@ class GSNode(GSBase):
 
 
 class GSPath(GSBase):
-    __slots__ = ("closed", "_nodes")
-
-    _classesForName = {"nodes": GSNode, "closed": bool}
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        if writer.format_version == 3 and self.attr:
+            writer.writeObjectKeyValue(self, "attr")
+        writer.writeObjectKeyValue(self, "closed")
+        writer.writeObjectKeyValue(self, "nodes", "if_true")
+        writer.file.write("}")
 
     def _parse_nodes(self, parser, text, i):
         _nodes, i = parser._parse(text, i, str)
@@ -1876,21 +1880,15 @@ class GSPath(GSBase):
             else:
                 self.nodes.append(GSNode().read(x))
 
-    _defaultsForName = {"closed": True}
-    _parent = None
-
     def __init__(self):
-        self.closed = self._defaultsForName["closed"]
+        self.closed = True
         self.nodes = []
+        self.attr = {}
+        self._parent = None
 
     @property
     def parent(self):
         return self._parent
-
-    def shouldWriteValueForKey(self, key):
-        if key == "closed":
-            return True
-        return super().shouldWriteValueForKey(key)
 
     nodes = property(
         lambda self: PathNodesProxy(self),
@@ -2077,6 +2075,9 @@ class GSPath(GSBase):
                 userData=node_data,
             )
         pointPen.endPath()
+
+
+GSPath._add_parser("attr", "attr", dict)
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
