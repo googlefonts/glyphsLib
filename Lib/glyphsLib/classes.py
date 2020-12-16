@@ -1210,6 +1210,23 @@ class UserDataProxy(Proxy):
         self._owner._userData = values
 
 
+
+class GSAxis(GSBase):
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "hidden", "if_true")
+        writer.writeObjectKeyValue(self, "name", True)
+        writer.writeKeyValue("tag", self.axisTag)
+        writer.file.write("}")
+
+    def __init__(self):
+        self.name = ""
+        self.axisTag = ""
+        self.axisId = None # ???
+        self.hidden = False
+GSAxis._add_parser("tag", "axisTag", str)
+
+
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
         writer.file.write("{\n")
@@ -3706,6 +3723,7 @@ class GSFont(GSBase):
         "_userData",
         "_versionMinor",
         "appVersion",
+        "axes",
         "copyright",
         "date",
         "designer",
@@ -3738,6 +3756,7 @@ class GSFont(GSBase):
         ".appVersion": str,
         ".formatVersion": int,
         "DisplayStrings": str,
+        "axes": GSAxis,
         "classes": GSClass,
         "copyright": str,
         "customParameters": GSCustomParameter,
@@ -3792,6 +3811,7 @@ class GSFont(GSBase):
         self._glyphs = []
         self._instances = []
         self._masters = []
+        self.axes = []
         self._userData = None
         self._versionMinor = 0
         self.format_version = 2
@@ -4009,6 +4029,7 @@ GSFont._add_parser("fontMaster", "masters", GSFontMaster)
 GSFont._add_parser("kerning", "_kerning", OrderedDict)
 GSFont._add_parser("userData", "userData", dict)
 GSFont._add_parser("date", "date", str, parse_datetime)
+GSFont._add_parser("axes", "axes", GSAxis)
 
 
 
