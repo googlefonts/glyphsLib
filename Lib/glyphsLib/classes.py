@@ -3784,102 +3784,104 @@ GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
 
 
 class GSFont(GSBase):
-    __slots__ = (
-        "DisplayStrings",
-        "_classes",
-        "_customParameters",
-        "_featurePrefixes",
-        "_features",
-        "_customParameters",
-        "_glyphs",
-        "_instances",
-        "_kerning",
-        "_masters",
-        "_userData",
-        "_versionMinor",
-        "appVersion",
-        "axes",
-        "copyright",
-        "date",
-        "designer",
-        "designerURL",
-        "disablesAutomaticAlignment",
-        "disablesNiceNames",
-        "familyName",
-        "filepath",
-        "grid",
-        "gridSubDivisions",
-        "keepAlternatesTogether",
-        "keyboardIncrement",
-        "manufacturer",
-        "manufacturerURL",
-        "upm",
-        "versionMajor",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeKeyValue(".appVersion", self.appVersion)
+        if self.format_version > 2:
+            writer.writeKeyValue(".formatVersion", self.format_version)
+
+        writer.writeObjectKeyValue(self, "DisplayStrings", "if_true")
+
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "axes", "if_true")
+        writer.writeObjectKeyValue(self, "classes", "if_true")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "copyright", "if_true")
+
+        writer.writeObjectKeyValue(self, "customParameters")
+        writer.writeObjectKeyValue(self, "date")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "designer", "if_true")
+            writer.writeObjectKeyValue(self, "designerURL", "if_true")
+            writer.writeObjectKeyValue(self, "disablesAutomaticAlignment", "if_true")
+            writer.writeObjectKeyValue(self, "disablesNiceNames", "if_true")
+
+        writer.writeObjectKeyValue(self, "familyName")
+        writer.writeObjectKeyValue(self, "featurePrefixes")
+        writer.writeObjectKeyValue(self, "features")
+        writer.writeKeyValue("fontMaster", self.masters)
+        writer.writeObjectKeyValue(self, "glyphs")
+
+        if writer.format_version == 2:
+            if self.grid != 1:
+                writer.writeKeyValue("gridLength", self.grid)
+            if self.gridSubDivisions != 1:
+                writer.writeKeyValue("gridSubDivision", self.gridSubDivisions)
+
+        writer.writeObjectKeyValue(self, "instances")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
+            writer.writeKeyValue("kerning", self.kerningLTR)
+        else:
+            writer.writeObjectKeyValue(self, "kerningLTR")
+            writer.writeObjectKeyValue(self, "kerningRTL", "if_true")
+            writer.writeObjectKeyValue(self, "kerningVertical", "if_true")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "keyboardIncrement", self.keyboardIncrement != 1
+            )
+            writer.writeObjectKeyValue(self, "manufacturer", "if_true")
+            writer.writeObjectKeyValue(self, "manufacturerURL", "if_true")
+
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "metrics")
+            writer.writeObjectKeyValue(self, "note")
+            writer.writeObjectKeyValue(self, "numbers")
+            writer.writeObjectKeyValue(self, "properties")
+            writer.writeObjectKeyValue(self, "settings")
+            writer.writeObjectKeyValue(self, "stems")
+
+        writer.writeKeyValue("unitsPerEm", self.upm or 1000)
+        writer.writeObjectKeyValue(self, "userData", "if_true")
+        writer.writeObjectKeyValue(self, "versionMajor")
+        writer.writeObjectKeyValue(self, "versionMinor")
+
+        writer.file.write("}")
 
     def _parse_glyphs(self, parser, text, i):
         _glyphs, i = parser._parse(text, i, GSGlyph)
         self.glyphs.setter(_glyphs)
         return i
 
+    def _parse_disablesAutomaticAlignment(self, parser, text, i):
+        val, i = parser._parse(text, i, GSGlyph)
+        self.disablesAutomaticAlignment = bool(val)
+        return i
+
+    def _parse_settings(self, parser, text, i):
+        settings, i = parser._parse(text, i, dict)
+        self.disablesAutomaticAlignment = bool(
+            settings.get("disablesAutomaticAlignment", False)
+        )
+        self.disablesNiceNames = bool(settings.get("disablesNiceNames", False))
+        self.grid = settings.get("gridLength", 1)
+        self.gridSubDivisions = settings.get("gridSubDivision", 1)
+        self.keepAlternatesTogether = bool(
+            settings.get("keepAlternatesTogether", False)
+        )
+        self.keyboardIncrement = settings.get("keyboardIncrement", 1)
+        self.keyboardIncrementBig = settings.get("keyboardIncrementBig", 10)
+        self.keyboardIncrementHuge = settings.get("keyboardIncrementHuge", 100)
+        return i
+
     def _parse___formatVersion(self, parser, text, i):
         val, i = parser._parse_value(text, i, int)
         self.format_version = parser.format_version = val
         return i
-
-    _classesForName = {
-        ".appVersion": str,
-        ".formatVersion": int,
-        "DisplayStrings": str,
-        "axes": GSAxis,
-        "classes": GSClass,
-        "copyright": str,
-        "customParameters": GSCustomParameter,
-        "date": parse_datetime,
-        "designer": str,
-        "designerURL": str,
-        "disablesAutomaticAlignment": bool,
-        "disablesNiceNames": bool,
-        "familyName": str,
-        "featurePrefixes": GSFeaturePrefix,
-        "features": GSFeature,
-        "fontMaster": GSFontMaster,
-        "glyphs": GSGlyph,
-        "gridLength": int,
-        "gridSubDivision": int,
-        "instances": GSInstance,
-        "keepAlternatesTogether": bool,
-        "kerning": OrderedDict,
-        "keyboardIncrement": parse_float_or_int,
-        "manufacturer": str,
-        "manufacturerURL": str,
-        "unitsPerEm": int,
-        "userData": dict,
-        "versionMajor": int,
-        "versionMinor": int,
-    }
-    _wrapperKeysTranslate = {
-        ".appVersion": "appVersion",
-        ".formatVersion": "format_version",
-        "fontMaster": "masters",
-        "unitsPerEm": "upm",
-        "gridLength": "grid",
-        "gridSubDivision": "gridSubDivisions",
-    }
-    _defaultsForName = {
-        "classes": [],
-        "features": [],
-        "featurePrefixes": [],
-        "customParameters": [],
-        "disablesAutomaticAlignment": False,
-        "disablesNiceNames": False,
-        "gridLength": 1,
-        "gridSubDivision": 1,
-        "unitsPerEm": 1000,
-        "kerning": OrderedDict(),
-        "keyboardIncrement": 1,
-        ".formatVersion": 2,
-    }
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
@@ -3891,28 +3893,29 @@ class GSFont(GSBase):
         self._versionMinor = 0
         self.format_version = 2
         self.appVersion = "895"  # minimum required version
-        self.classes = copy.deepcopy(self._defaultsForName["classes"])
-        self.features = copy.deepcopy(self._defaultsForName["features"])
-        self.featurePrefixes = copy.deepcopy(self._defaultsForName["featurePrefixes"])
-        self.copyright = ""
-        self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
+        self.classes = []
+        self.customParameters = []
         self.date = None
-        self.designer = ""
-        self.designerURL = ""
-        self.disablesAutomaticAlignment = self._defaultsForName[
-            "disablesAutomaticAlignment"
-        ]
-        self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
+        self.disablesAutomaticAlignment = False
+        self.disablesNiceNames = False
         self.familyName = "Unnamed font"
+        self.features = []
+        self.featurePrefixes = []
         self.filepath = None
-        self.grid = self._defaultsForName["gridLength"]
-        self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
+        self.grid = 1
+        self.gridSubDivisions = 1
         self.keepAlternatesTogether = False
-        self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
-        self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
-        self.manufacturer = ""
-        self.manufacturerURL = ""
-        self.upm = self._defaultsForName["unitsPerEm"]
+        self._kerningLTR = OrderedDict()
+        self._kerningRTL = OrderedDict()
+        self._kerningVertical = OrderedDict()
+        self.numbers = []
+        self.properties = []
+        self.stems = []
+        self.metrics = []
+        self.keyboardIncrement = 1
+        self.keyboardIncrementBig = 10
+        self.keyboardIncrementHuge = 100
+        self.upm = 1000
         self.versionMajor = 1
 
         if path:
@@ -4021,16 +4024,48 @@ class GSFont(GSBase):
     )
 
     @property
-    def kerning(self):
-        return self._kerning
+    def kerningLTR(self):
+        return self._kerningLTR
 
-    @kerning.setter
-    def kerning(self, kerning):
-        self._kerning = kerning
+    @kerningLTR.setter
+    def kerningLTR(self, kerning):
+        self._kerningLTR = kerning
         for master_map in kerning.values():
             for glyph_map in master_map.values():
                 for right_glyph, value in glyph_map.items():
                     glyph_map[right_glyph] = parse_float_or_int(value)
+
+    @property
+    def kerningRTL(self):
+        return self._kerningRTL
+
+    @kerningRTL.setter
+    def kerningRTL(self, kerning):
+        self._kerningRTL = kerning
+        for master_map in kerning.values():
+            for glyph_map in master_map.values():
+                for right_glyph, value in glyph_map.items():
+                    glyph_map[right_glyph] = parse_float_or_int(value)
+
+    @property
+    def kerningVertical(self):
+        return self._kerningVertical
+
+    @kerningVertical.setter
+    def kerningVertical(self, kerning):
+        self._kerningVertical = kerning
+        for master_map in kerning.values():
+            for glyph_map in master_map.values():
+                for right_glyph, value in glyph_map.items():
+                    glyph_map[right_glyph] = parse_float_or_int(value)
+
+    @property
+    def kerning(self):
+        return self._kerningLTR
+
+    @kerning.setter
+    def kerning(self, kerning):
+        self.kerningLTR = kerning
 
     @property
     def selection(self):
@@ -4059,41 +4094,121 @@ class GSFont(GSBase):
 
     def kerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
+        if not self._kerningLTR:
             return self.EMPTY_KERNING_VALUE
         try:
-            return self._kerning[fontMasterId][leftKey][rightKey]
+            return self._kerningLTR[fontMasterId][leftKey][rightKey]
         except KeyError:
             return self.EMPTY_KERNING_VALUE
 
     def setKerningForPair(self, fontMasterId, leftKey, rightKey, value, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
-            self._kerning = {}
-        if fontMasterId not in self._kerning:
-            self._kerning[fontMasterId] = {}
-        if leftKey not in self._kerning[fontMasterId]:
-            self._kerning[fontMasterId][leftKey] = {}
-        self._kerning[fontMasterId][leftKey][rightKey] = value
+        if not self._kerningLTR:
+            self._kerningLTR = {}
+        if fontMasterId not in self._kerningLTR:
+            self._kerningLTR[fontMasterId] = {}
+        if leftKey not in self._kerningLTR[fontMasterId]:
+            self._kerningLTR[fontMasterId][leftKey] = {}
+        self._kerningLTR[fontMasterId][leftKey][rightKey] = value
 
     def removeKerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
+        if not self._kerningLTR:
             return
-        if fontMasterId not in self._kerning:
+        if fontMasterId not in self._kerningLTR:
             return
-        if leftKey not in self._kerning[fontMasterId]:
+        if leftKey not in self._kerningLTR[fontMasterId]:
             return
-        if rightKey not in self._kerning[fontMasterId][leftKey]:
+        if rightKey not in self._kerningLTR[fontMasterId][leftKey]:
             return
-        del self._kerning[fontMasterId][leftKey][rightKey]
-        if not self._kerning[fontMasterId][leftKey]:
-            del self._kerning[fontMasterId][leftKey]
-        if not self._kerning[fontMasterId]:
-            del self._kerning[fontMasterId]
+        del self._kerningLTR[fontMasterId][leftKey][rightKey]
+        if not self._kerningLTR[fontMasterId][leftKey]:
+            del self._kerningLTR[fontMasterId][leftKey]
+        if not self._kerningLTR[fontMasterId]:
+            del self._kerningLTR[fontMasterId]
+
+    @property
+    def settings(self):
+        _settings = OrderedDict()
+        if self.disablesAutomaticAlignment:
+            _settings["disablesAutomaticAlignment"] = 1
+        if self.disablesNiceNames:
+            _settings["disablesNiceNames"] = 1
+        if self.grid != 1:
+            _settings["gridLength"] = self.grid
+        if self.gridSubDivisions != 1:
+            _settings["gridSubDivision"] = self.gridSubDivisions
+        if self.keepAlternatesTogether:
+            _settings["keepAlternatesTogether"] = 1
+        if self.keyboardIncrement != 1:
+            _settings["keyboardIncrement"] = self.keyboardIncrement
+        if self.keyboardIncrementBig != 10:
+            _settings["keyboardIncrementBig"] = self.keyboardIncrementBig
+        if self.keyboardIncrementHuge != 100:
+            _settings["keyboardIncrementHuge"] = self.keyboardIncrementHuge
+
+        return _settings
+
+    @property
+    def manufacturer(self):
+        return self._get_from_properties("manufacturer")
+
+    @manufacturer.setter
+    def manufacturer(self, value):
+        self._set_in_properties("manufacturer", value)
+
+    @property
+    def manufacturerURL(self):
+        return self._get_from_properties("manufacturerURL")
+
+    @manufacturerURL.setter
+    def manufacturerURL(self, value):
+        self._set_in_properties("manufacturerURL", value)
+
+    @property
+    def copyright(self):
+        return self._get_from_properties("copyright")
+
+    @copyright.setter
+    def copyright(self, value):
+        self._set_in_properties("copyright", value)
+
+    @property
+    def designer(self):
+        return self._get_from_properties("designer")
+
+    @designer.setter
+    def designer(self, value):
+        self._set_in_properties("designer", value)
+
+    @property
+    def designerURL(self):
+        return self._get_from_properties("designerURL")
+
+    @designerURL.setter
+    def designerURL(self, value):
+        self._set_in_properties("designerURL", value)
+
+    def _get_from_properties(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return p.defaultValue
+        return ""
+
+    def _set_in_properties(self, key, value):
+        for p in self.properties:
+            if p.key == key:
+                p.localized_values = None
+                p.value = value
+                return
+        newprop = GSFontInfoValue(key, value)
+        self.properties.append(newprop)
 
 
 GSFont._add_parser("unitsPerEm", "upm", int)
+GSFont._add_parser("gridLength", "grid", int)
+GSFont._add_parser("grid", "grid", int)
+GSFont._add_parser("gridSubDivisions", "gridSubDivision", int)
 GSFont._add_parser("__appVersion", "appVersion", str)
 GSFont._add_parser("classes", "classes", GSClass)
 GSFont._add_parser("instances", "instances", GSInstance)
@@ -4101,10 +4216,17 @@ GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSFont._add_parser("featurePrefixes", "featurePrefixes", GSFeaturePrefix)
 GSFont._add_parser("features", "features", GSFeature)
 GSFont._add_parser("fontMaster", "masters", GSFontMaster)
-GSFont._add_parser("kerning", "_kerning", OrderedDict)
+GSFont._add_parser("kerning", "_kerningLTR", OrderedDict)
+GSFont._add_parser("kerningLTR", "kerningLTR", OrderedDict)
+GSFont._add_parser("kerningRTL", "kerningRTL", OrderedDict)
+GSFont._add_parser("kerningVertical", "kerningVertical", OrderedDict)
 GSFont._add_parser("userData", "userData", dict)
 GSFont._add_parser("date", "date", str, parse_datetime)
 GSFont._add_parser("axes", "axes", GSAxis)
+GSFont._add_parser("stems", "stems", GSMetric)
+GSFont._add_parser("metrics", "metrics", GSMetric)
+GSFont._add_parser("numbers", "numbers", GSMetric)
+GSFont._add_parser("properties", "properties", GSFontInfoValue)
 
 
 Number = Union[int, float]
