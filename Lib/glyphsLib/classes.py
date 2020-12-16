@@ -395,7 +395,7 @@ class GSBase:
                 self[target] = value
             return i
 
-        setattr(self, "_parse_" + keyname, _generic_parser)
+        setattr(cls, "_parse_" + keyname, _generic_parser)
 
 
 class Proxy:
