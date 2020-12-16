@@ -21,7 +21,7 @@ import datetime
 
 import glyphsLib
 from glyphsLib.parser import Parser
-from glyphsLib.classes import GSGlyph, GSLayer
+from glyphsLib.classes import GSGlyph
 
 GLYPH_DATA = """\
 (

@@ -22,7 +22,6 @@ import os
 from glyphsLib import classes
 from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
-from glyphsLib.parser import Parser
 
 from . import test_helpers
 

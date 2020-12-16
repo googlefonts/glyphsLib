@@ -386,7 +386,7 @@ class GSBase:
         return i
 
     @classmethod
-    def _add_parser(self, keyname, target, classname, transform=None):
+    def _add_parser(cls, keyname, target, classname, transform=None):
         def _generic_parser(self, parser, text, i):
             value, i = parser._parse(text, i, classname)
             if transform:

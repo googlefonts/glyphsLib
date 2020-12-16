@@ -54,7 +54,7 @@ class Writer:
 
     def writeDict(self, dictValue):
         if hasattr(dictValue, "_serialize_to_plist"):
-            getattr(dictValue, "_serialize_to_plist")(self)
+            dictValue._serialize_to_plist(self)
             return
         self.file.write("{\n")
         if hasattr(dictValue, "_keyOrder"):
