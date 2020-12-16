@@ -2616,19 +2616,18 @@ GSHint._add_parser("target", "target", str, parse_hint_target)
 
 
 class GSFeature(GSBase):
-    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
-
-    def _parse_code(self, parser, text, i):
-        self["_code"], i = parser._parse(text, i, str)
-        return i
-
-    _classesForName = {
-        "automatic": bool,
-        "code": str,
-        "name": str,
-        "notes": str,
-        "disabled": bool,
-    }
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "automatic", "if_true")
+        writer.writeObjectKeyValue(self, "disabled", "if_true")
+        writer.writeObjectKeyValue(self, "code", True)
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "labels", "if_true")
+            writer.writeKeyValue("tag", self.name)
+        else:
+            writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "notes", "if_true")
+        writer.file.write("}")
 
     def __init__(self, name="xxxx", code=""):
         self.automatic = False
@@ -2636,11 +2635,7 @@ class GSFeature(GSBase):
         self.disabled = False
         self.name = name
         self.notes = ""
-
-    def shouldWriteValueForKey(self, key):
-        if key == "code":
-            return True
-        return super().shouldWriteValueForKey(key)
+        self.labels = {}
 
     def getCode(self):
         return self._code
@@ -2668,11 +2663,22 @@ class GSFeature(GSBase):
         return self._parent
 
 
+GSFeature._add_parser("code", "_code", str)
+GSFeature._add_parser("tag", "name", str)
+GSFeature._add_parser("labels", "labels", dict)
+
+
 class GSClass(GSFeature):
-    pass
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "automatic", "if_true")
+        writer.writeObjectKeyValue(self, "disabled", "if_true")
+        writer.writeObjectKeyValue(self, "code", True)
+        writer.writeKeyValue("name", self.name)
+        writer.file.write("}")
 
 
-class GSFeaturePrefix(GSFeature):
+class GSFeaturePrefix(GSClass):
     pass
 
 
