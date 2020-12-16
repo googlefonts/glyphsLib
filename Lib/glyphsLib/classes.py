@@ -3225,7 +3225,8 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
-        writer.writeObjectKeyValue(self, "components", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "components", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "guides", "if_true")
         elif self.guides:
@@ -3241,7 +3242,12 @@ class GSLayer(GSBase):
             and self.layerId != self.associatedMasterId
         ):
             writer.writeObjectKeyValue(self, "name")
-        writer.writeObjectKeyValue(self, "paths", "if_true")
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "partSelection", "if_true")
+            if self._shapes:
+                writer.writeKeyValue("shapes", self._shapes)
+        else:
+            writer.writeObjectKeyValue(self, "paths", "if_true")
         writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
@@ -3285,6 +3291,7 @@ class GSLayer(GSBase):
         self._selection = []
         self._shapes = []
         self._userData = None
+        self.partSelection = {}
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
@@ -3510,6 +3517,7 @@ GSLayer._add_parser("guideLines", "guides", GSGuide)
 GSLayer._add_parser("components", "components", GSComponent)
 GSLayer._add_parser("hints", "hints", GSHint)
 GSLayer._add_parser("userData", "_userData", dict)
+GSLayer._add_parser("partSelection", "partSelection", dict)
 
 
 class GSBackgroundLayer(GSLayer):
