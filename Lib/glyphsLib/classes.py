@@ -1240,6 +1240,11 @@ class GSCustomParameter(GSBase):
         writer.writeKeyValue("value", self.value)
         writer.file.write("}")
 
+    def _parse_disabled(self, parser, text, i):
+        _value, i = parser._parse(text, i, bool)
+        self.disabled = bool(_value)
+        return i
+
     def _parse_value(self, parser, text, i):
         old_type = parser.current_type
         parser.current_type = None
@@ -1394,7 +1399,6 @@ class GSCustomParameter(GSBase):
     value = property(getValue, setValue)
 
 
-GSCustomParameter._add_parser("disabled", "disabled", bool)
 
 
 class GSAlignmentZone(GSBase):
