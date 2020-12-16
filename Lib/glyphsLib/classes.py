@@ -3182,30 +3182,40 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 
 class GSLayer(GSBase):
-    __slots__ = (
-        "_anchors",
-        "_annotations",
-        "_background",
-        "_foreground",
-        "_guides",
-        "_hints",
-        "_layerId",
-        "_name",
-        "_selection",
-        "_shapes",
-        "_userData",
-        "associatedMasterId",
-        "backgroundImage",
-        "color",
-        "leftMetricsKey",
-        "parent",
-        "rightMetricsKey",
-        "vertOrigin",
-        "vertWidth",
-        "visible",
-        "width",
-        "widthMetricsKey",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "anchors", "if_true")
+        writer.writeObjectKeyValue(self, "annotations", "if_true")
+        if self.layerId != self.associatedMasterId:
+            writer.writeObjectKeyValue(self, "associatedMasterId")
+        writer.writeObjectKeyValue(self, "background", self._background is not None)
+        writer.writeObjectKeyValue(self, "backgroundImage")
+        writer.writeObjectKeyValue(self, "color")
+        writer.writeObjectKeyValue(self, "components", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "guides", "if_true")
+        elif self.guides:
+            writer.writeKeyValue("guideLines", self.guides)
+        writer.writeObjectKeyValue(self, "hints", "if_true")
+        writer.writeObjectKeyValue(self, "layerId", "if_true")
+        writer.writeObjectKeyValue(self, "leftMetricsKey")
+        writer.writeObjectKeyValue(self, "widthMetricsKey")
+        writer.writeObjectKeyValue(self, "rightMetricsKey")
+        if (
+            self.name is not None
+            and len(self.name) > 0
+            and self.layerId != self.associatedMasterId
+        ):
+            writer.writeObjectKeyValue(self, "name")
+        writer.writeObjectKeyValue(self, "paths", "if_true")
+        writer.writeObjectKeyValue(self, "userData", "if_true")
+        writer.writeObjectKeyValue(self, "visible", "if_true")
+        writer.writeObjectKeyValue(self, "vertOrigin")
+        writer.writeObjectKeyValue(self, "vertWidth")
+        writer.writeObjectKeyValue(
+            self, "width", not isinstance(self, GSBackgroundLayer)
+        )
+        writer.file.write("}")
 
     def _parse_shapes(self, parser, text, i):
         shapes, i = parser._parse(text, i, dict)
@@ -3220,29 +3230,6 @@ class GSLayer(GSBase):
             self._shapes.append(shape)
         return i
 
-    _classesForName = {
-        "anchors": GSAnchor,
-        "annotations": GSAnnotation,
-        "associatedMasterId": str,
-        # The next line is added after we define GSBackgroundLayer
-        # "background": GSBackgroundLayer,
-        "backgroundImage": GSBackgroundImage,
-        "color": parse_color,
-        "components": GSComponent,
-        "guideLines": GSGuide,
-        "hints": GSHint,
-        "layerId": str,
-        "leftMetricsKey": str,
-        "name": str,
-        "paths": GSPath,
-        "rightMetricsKey": str,
-        "userData": dict,
-        "vertWidth": parse_float_or_int,
-        "vertOrigin": parse_float_or_int,
-        "visible": bool,
-        "width": parse_float_or_int,
-        "widthMetricsKey": str,
-    }
     _defaultsForName = {
         "width": 600,
         "leftMetricsKey": None,
@@ -3251,29 +3238,6 @@ class GSLayer(GSBase):
         "vertWidth": None,
         "vertOrigin": None,
     }
-    _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
-    _keyOrder = (
-        "anchors",
-        "annotations",
-        "associatedMasterId",
-        "background",
-        "backgroundImage",
-        "color",
-        "components",
-        "guideLines",
-        "hints",
-        "layerId",
-        "leftMetricsKey",
-        "widthMetricsKey",
-        "rightMetricsKey",
-        "name",
-        "paths",
-        "userData",
-        "visible",
-        "vertOrigin",
-        "vertWidth",
-        "width",
-    )
 
     def __init__(self):
         self._anchors = []
@@ -3354,19 +3318,6 @@ class GSLayer(GSBase):
         if self.associatedMasterId and self.parent:
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
-
-    def shouldWriteValueForKey(self, key):
-        if key == "width":
-            return True
-        if key == "associatedMasterId":
-            return self.layerId != self.associatedMasterId
-        if key == "name":
-            return (
-                self.name is not None
-                and len(self.name) > 0
-                and self.layerId != self.associatedMasterId
-            )
-        return super().shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -3528,11 +3479,6 @@ GSLayer._add_parser("userData", "_userData", dict)
 
 
 class GSBackgroundLayer(GSLayer):
-    def shouldWriteValueForKey(self, key):
-        if key == "width":
-            return False
-        return super().shouldWriteValueForKey(key)
-
     @property
     def background(self):
         return None
