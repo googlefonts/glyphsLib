@@ -3784,7 +3784,7 @@ class GSFont(GSBase):
         "unitsPerEm": 1000,
         "kerning": OrderedDict(),
         "keyboardIncrement": 1,
-        "formatVersion": 1
+        ".formatVersion": 2
     }
 
     def __init__(self, path=None):
@@ -3794,7 +3794,7 @@ class GSFont(GSBase):
         self._masters = []
         self._userData = None
         self._versionMinor = 0
-        self.format_version = 1
+        self.format_version = 2
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])
