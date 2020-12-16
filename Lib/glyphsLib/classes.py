@@ -1422,9 +1422,16 @@ class GSAlignmentZone(GSBase):
 class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
         writer.file.write("{\n")
-        for field in ["alignment", "angle", "filter", "locked", "name"]:
+        for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
-        writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "lockAngle", "if_true")
+        for field in ["locked", "name"]:
+            writer.writeObjectKeyValue(self, field, "if_true")
+        if writer.format_version == 3 and self.position != Point(0, 0):
+            writer.writeKeyValue("pos", self.position)
+        else:
+            writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
         writer.file.write("}")
 
@@ -1438,6 +1445,7 @@ class GSGuide(GSBase):
         self.name = ""
         self.position = Point(0, 0)
         self.showMeasurement = False
+        self.lockAngle = False
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1449,7 +1457,8 @@ class GSGuide(GSBase):
         return self._parent
 
 
-GSGuide._add_parser("position", "position", str, transform=Point)
+GSGuide._add_parser("position", "position", str, transform=Point)  # v2
+GSGuide._add_parser("pos", "position", str, transform=Point)  # v3
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
