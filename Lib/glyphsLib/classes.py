@@ -1471,6 +1471,9 @@ class GSFontMaster(GSBase):
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
             writer.writeObjectKeyValue(self, "ascender")
+        if writer.format_version == 3 and self.axes:
+            writer.writeKeyValue("axesValues", self.axes)
+        if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "capHeight")
             if self.customName:
                 writer.writeKeyValue("custom", self.customName)
@@ -1539,6 +1542,7 @@ class GSFontMaster(GSBase):
         self._userData = None
         self.alignmentZones = []
         self.ascender = self._defaultsForName["ascender"]
+        self.axes = []
         self.capHeight = self._defaultsForName["capHeight"]
         self.customName = ""
         self.customValue = self._defaultsForName["customValue"]
@@ -1657,6 +1661,7 @@ GSFontMaster._add_parser("guideLines", "guides", GSGuide)  # v2
 GSFontMaster._add_parser("guides", "guides", GSGuide)  # v3
 GSFontMaster._add_parser("userData", "userData", dict)
 GSFontMaster._add_parser("custom", "customName", str)
+GSFontMaster._add_parser("axesValues", "axes", int)  # v3
 
 
 class GSNode(GSBase):
