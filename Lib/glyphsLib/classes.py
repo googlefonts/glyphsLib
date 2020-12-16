@@ -1234,6 +1234,8 @@ GSAxis._add_parser("tag", "axisTag", str)
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
         writer.file.write("{\n")
+        if writer.format_version > 2 and self.disabled:
+            writer.writeObjectKeyValue(self, "disabled")
         writer.writeKeyValue("name", self.name)
         writer.writeKeyValue("value", self.value)
         writer.file.write("}")
@@ -1358,6 +1360,7 @@ class GSCustomParameter(GSBase):
     def __init__(self, name="New Value", value="New Parameter"):
         self.name = name
         self.value = value
+        self.disabled = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
@@ -1389,6 +1392,9 @@ class GSCustomParameter(GSBase):
         self._value = value
 
     value = property(getValue, setValue)
+
+
+GSCustomParameter._add_parser("disabled", "disabled", bool)
 
 
 class GSAlignmentZone(GSBase):
