@@ -61,7 +61,7 @@ def test_weight_width_custom(axes, ufo_module):
 
     font = to_glyphs(doc)
 
-    if _is_subset_of_default_axes([ GSAxis(name=n, tag=t) for t, n in axes]):
+    if _is_subset_of_default_axes([GSAxis(name=n, tag=t) for t, n in axes]):
         assert font.customParameters["Axes"] is None
     else:
         assert font.customParameters["Axes"] == [

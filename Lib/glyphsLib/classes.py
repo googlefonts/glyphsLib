@@ -3755,7 +3755,7 @@ class GSGlyph(GSBase):
             uni, i = parser._parse(text, i, int)
             if not isinstance(uni, list):
                 uni = [uni]
-            uni = [ "%x" % x for x in uni ]
+            uni = ["%x" % x for x in uni]
         else:
             uni, i = parser._parse_value(text, i, str)
         self["_unicodes"] = UnicodesList(uni)

@@ -388,12 +388,12 @@ class UnicodesList(list):
             return None
         if len(self) == 1:
             if format_version == 3:
-                return str(int(self[0],16))
+                return str(int(self[0], 16))
             return self[0]
         if format_version == 2:
             return '"%s"' % ",".join(self)
         else:
-            return "(%s)" % ",".join([ str(int(x,16)) for x in self])
+            return "(%s)" % ",".join([str(int(x, 16)) for x in self])
 
 
 class BinaryData(bytes):

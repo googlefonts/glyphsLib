@@ -272,7 +272,9 @@ def to_glyphs_axes(self):
     axes_parameter = []
     for axis in self.designspace.axes:
         if axis.tag == "wght":
-            axes_parameter.append(classes.GSAxis(name=axis.name or "Weight", tag="wght"))
+            axes_parameter.append(
+                classes.GSAxis(name=axis.name or "Weight", tag="wght")
+            )
         elif axis.tag == "wdth":
             axes_parameter.append(classes.GSAxis(name=axis.name or "Width", tag="wdth"))
         else:
