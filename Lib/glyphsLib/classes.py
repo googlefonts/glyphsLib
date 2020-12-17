@@ -1390,9 +1390,9 @@ GSMetric._add_parser("horizontal", "horizontal", bool)
 
 
 class GSMetricValue(GSBase):
-    def __init__(self):
-        self.position = 0
-        self.overshoot = 0
+    def __init__(self, position=0, overshoot=0):
+        self.position = position
+        self.overshoot = overshoot
         self.name = ""
         self.filter = ""
         self.metric = ""
@@ -1691,7 +1691,7 @@ class GSFontMaster(GSBase):
         metricIndex = metricLabels.index(metricname)
         if metricIndex > len(self.metrics) - 1:
             return self._defaultsForName[metricname]
-        return self.metrics[metricIndex]
+        return self.metrics[metricIndex].position
 
     def _set_metric(self, metricname, value):
         if not self.font:
@@ -1709,7 +1709,7 @@ class GSFontMaster(GSBase):
         while metricIndex > len(self.metrics) - 1:
             # Pad array with ... zeroes?
             self.metrics.append(0)
-        self.metrics[metricIndex] = value
+        self.metrics[metricIndex] = GSMetricValue(position=value)
 
     @property
     def ascender(self):
