@@ -1509,8 +1509,10 @@ class GSFontMaster(GSBase):
             writer.writeKeyValue("name", self._name or "Regular")
 
         if writer.format_version == 3:
-            writer.writeKeyValue("numberValues", self.numbers)
-            writer.writeKeyValue("stemValues", self.stems)
+            writer.writeObjectKeyValue(
+                self, "numbers", "if_true", keyName="numberValues"
+            )
+            writer.writeObjectKeyValue(self, "stems", "if_true", keyName="stemValues")
 
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if writer.format_version == 2:
@@ -1748,6 +1750,7 @@ GSFontMaster._add_parser("axesValues", "axes", int)  # v3
 GSFontMaster._add_parser("numberValues", "numbers", int)  # v3
 GSFontMaster._add_parser("stemValues", "stems", int)  # v3
 GSFontMaster._add_parser("metricValues", "metrics", GSMetricValue)  # v3
+GSFontMaster._add_parser("name", "_name", str)
 
 
 class GSNode(GSBase):
@@ -2349,6 +2352,9 @@ class GSComponent(GSBase):
     def _parse_piece_dict(self, parser, d):
         self.smartComponentValues = d
 
+    def _parse_pos_dict(self, parser, d):
+        self.position = d
+
     _parent = None
 
     # TODO: glyph arg is required
@@ -2527,7 +2533,10 @@ class GSSmartComponentAxis(GSBase):
 class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "name", "if_true")
-        writer.writeObjectKeyValue(self, "position", True)
+        posKey = "position"
+        if writer.format_version > 2:
+            posKey = "pos"
+        writer.writeObjectKeyValue(self, "position", True, keyName=posKey)
 
     __slots__ = ("position", "name")
 
@@ -2552,6 +2561,7 @@ class GSAnchor(GSBase):
 
 
 GSAnchor._add_parser("position", "position", str, Point)
+GSAnchor._add_parser("pos", "position", str, Point)
 
 
 class GSHint(GSBase):
@@ -3061,12 +3071,14 @@ class GSBackgroundImage(GSBase):
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(self, "crop", default=Rect())
         else:
-            writer.writeObjectKeyValue(self, "crop", True)
+            writer.writeObjectKeyValue(self, "crop", default=Rect())
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "position", keyName="pos", default=Rect())
-            writer.writeKeyValue("scale", Point(list(self.scale)))
+            if self.position != Point(0, 0):
+                writer.writeObjectKeyValue(self, "position", keyName="pos")
+            if self.scale != (1.0, 1.0):
+                writer.writeKeyValue("scale", Point(list(self.scale)))
         else:
             writer.writeObjectKeyValue(
                 self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
@@ -3533,17 +3545,25 @@ class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "case")
+            writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "color")
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(
+                self, "leftKerningGroup", "if_true", keyName="kernLeft"
+            )
+            writer.writeObjectKeyValue(
+                self, "rightKerningGroup", "if_true", keyName="kernRight"
+            )
         writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
-        writer.writeObjectKeyValue(self, "leftKerningGroup")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "metricLeft", "if_true")
             writer.writeObjectKeyValue(self, "metricWidth", "if_true")
         else:
+            writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
             writer.writeObjectKeyValue(
                 self, "metricLeft", "if_true", keyName="leftMetricsKey"
             )
@@ -3554,10 +3574,10 @@ class GSGlyph(GSBase):
                 self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
             )
         writer.writeObjectKeyValue(self, "note")
-        writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "metricRight", "if_true")
         else:
+            writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
             writer.writeObjectKeyValue(
                 self, "metricRight", "if_true", keyName="rightMetricsKey"
             )
@@ -3567,11 +3587,14 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "tags", "if_true")
-        if self.unicodes:
+        if self.unicodes and writer.format_version == 2:
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "script")
-        writer.writeObjectKeyValue(self, "category")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "subCategory")
+        if self.unicodes and writer.format_version > 2:
+            writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if self.smartComponentAxes:
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
@@ -3741,6 +3764,8 @@ class GSGlyph(GSBase):
 GSGlyph._add_parser("glyphname", "name", str)
 GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
 GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
+GSGlyph._add_parser("kernLeft", "leftKerningGroup", str)  # V3
+GSGlyph._add_parser("kernRight", "rightKerningGroup", str)  # V3
 GSGlyph._add_parser("leftMetricsKey", "metricLeft", str)  # V2
 GSGlyph._add_parser("rightMetricsKey", "metricRight", str)  # V2
 GSGlyph._add_parser("widthMetricsKey", "metricWidth", str)  # V2
@@ -3771,7 +3796,7 @@ class GSFont(GSBase):
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "copyright", "if_true")
 
-        writer.writeObjectKeyValue(self, "customParameters")
+        writer.writeObjectKeyValue(self, "customParameters", "if_true")
         writer.writeObjectKeyValue(self, "date")
 
         if writer.format_version == 2:
@@ -3812,9 +3837,9 @@ class GSFont(GSBase):
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "metrics")
             writer.writeObjectKeyValue(self, "_note", "if_true", keyName="note")
-            writer.writeObjectKeyValue(self, "numbers")
-            writer.writeObjectKeyValue(self, "properties")
-            writer.writeObjectKeyValue(self, "settings")
+            writer.writeObjectKeyValue(self, "numbers", "if_true")
+            writer.writeObjectKeyValue(self, "properties", "if_true")
+            writer.writeObjectKeyValue(self, "settings", "if_true")
             writer.writeObjectKeyValue(self, "stems")
 
         writer.writeKeyValue("unitsPerEm", self.upm or 1000)
