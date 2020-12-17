@@ -30,7 +30,6 @@ from fontTools.pens.pointPen import (
     SegmentToPointPen,
 )
 
-import glyphsLib
 from glyphsLib.affine import Affine
 from glyphsLib.parser import Parser
 from glyphsLib.types import (
@@ -38,9 +37,7 @@ from glyphsLib.types import (
     Rect,
     Transform,
     UnicodesList,
-    ValueType,
     floatToString5,
-    parse_color,
     parse_datetime,
     parse_float_or_int,
     readIntlist,
@@ -2962,7 +2959,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         values, i = parser._parse(text, i, dict)
         self.localized_values = {}
         for v in values:
-            if not "language" in v or not "value" in v:
+            if "language" not in v or "value" not in v:
                 continue
             self.localized_values[v["language"]] = v["value"]
         return i
