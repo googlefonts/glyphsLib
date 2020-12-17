@@ -3106,6 +3106,8 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "annotations", "if_true")
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "attr", "if_true")
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
@@ -3131,7 +3133,7 @@ class GSLayer(GSBase):
             and self.layerId != self.associatedMasterId
         ):
             writer.writeObjectKeyValue(self, "name")
-        if writer.format_version == 3:
+        if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "partSelection", "if_true")
             if self._shapes:
                 writer.writeKeyValue("shapes", self._shapes)
@@ -3170,6 +3172,7 @@ class GSLayer(GSBase):
         self._selection = []
         self._shapes = []
         self._userData = None
+        self.attr = {}
         self.partSelection = {}
         self.associatedMasterId = ""
         self.backgroundImage = None
@@ -3425,6 +3428,7 @@ GSLayer._add_parser("partSelection", "partSelection", dict)
 GSLayer._add_parser("leftMetricsKey", "metricLeft", str)  # V2
 GSLayer._add_parser("rightMetricsKey", "metricRight", str)  # V2
 GSLayer._add_parser("widthMetricsKey", "metricWidth", str)  # V2
+GSLayer._add_parser("attr", "attr", dict)  # V3
 
 
 class GSBackgroundLayer(GSLayer):
