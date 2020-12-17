@@ -3390,9 +3390,10 @@ class GSLayer(GSBase):
         for shape_dict in shapes:
             if "ref" in shape_dict:
                 shape, _ = p._parse_dict(shape_dict, 0, GSComponent)
+                self.components.append(shape)
             else:
                 shape, _ = p._parse_dict(shape_dict, 0, GSPath)
-            self._shapes.append(shape)
+                self.paths.append(shape)
         return i
 
     def __init__(self):
