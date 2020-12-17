@@ -1056,11 +1056,17 @@ class CustomParametersProxy(Proxy):
         return None
 
     def _get_parameter_by_key(self, key):
+        if key == "Axes" and isinstance(self._owner, GSFont):
+            return self._owner._get_custom_parameter_from_axes()
+
         for customParameter in self._owner._customParameters:
             if customParameter.name == key:
                 return customParameter
 
     def __setitem__(self, key, value):
+        if key == "Axes" and isinstance(self._owner, GSFont):
+            self._owner._set_axes_from_custom_parameter(value)
+            return
         customParameter = self._get_parameter_by_key(key)
         if customParameter is not None:
             customParameter.value = value
@@ -1080,6 +1086,10 @@ class CustomParametersProxy(Proxy):
 
     def __contains__(self, item):
         if isString(item):
+            if item == "Axes" and isinstance(self._owner, GSFont):
+                return self._owner.axes
+            if item == "Axis Location" and isinstance(self._owner, GSInstance):
+                return self._owner.axes
             return self.__getitem__(item) is not None
         return item in self._owner._customParameters
 
@@ -1180,11 +1190,14 @@ class GSAxis(GSBase):
         writer.writeObjectKeyValue(self, "name", True)
         writer.writeKeyValue("tag", self.axisTag)
 
-    def __init__(self):
-        self.name = ""
-        self.axisTag = ""
+    def __init__(self, name="", tag=""):
+        self.name = name
+        self.axisTag = tag
         self.axisId = None  # ???
         self.hidden = False
+
+    def __eq__(self, other):
+        return self.name == other.name and self.axisTag == other.axisTag
 
 
 GSAxis._add_parser("tag", "axisTag", str)
@@ -1532,12 +1545,6 @@ class GSFontMaster(GSBase):
         # still written to the saved files.
         "weight": "Regular",
         "width": "Regular",
-        "weightValue": 100,
-        "widthValue": 100,
-        "customValue": 0,
-        "customValue1": 0,
-        "customValue2": 0,
-        "customValue3": 0,
         "x-height": 500,
         "cap height": 700,
         "ascender": 800,
@@ -1555,18 +1562,16 @@ class GSFontMaster(GSBase):
         self.visible = bool(visible)
         return i
 
+    _axis_defaults = (100, 100)
+
     def __init__(self):
         self._customParameters = []
         self._name = None
         self._userData = None
         self.alignmentZones = []
         self.metrics = []
-        self.axes = []
+        self.axes = list(self._axis_defaults)
         self.customName = ""
-        self.customValue = self._defaultsForName["customValue"]
-        self.customValue1 = self._defaultsForName["customValue1"]
-        self.customValue2 = self._defaultsForName["customValue2"]
-        self.customValue3 = self._defaultsForName["customValue3"]
         self.font = None
         self.guides = []
         self.horizontalStems = 0
@@ -1578,9 +1583,7 @@ class GSFontMaster(GSBase):
         self.verticalStems = 0
         self.visible = False
         self.weight = self._defaultsForName["weight"]
-        self.weightValue = self._defaultsForName["weightValue"]
         self.width = self._defaultsForName["width"]
-        self.widthValue = self._defaultsForName["widthValue"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1739,6 +1742,73 @@ class GSFontMaster(GSBase):
     @descender.setter
     def descender(self, value):
         self._set_metric("descender", value)
+
+    # v2 compatibility
+    def _get_axis_value(self, index):
+        if index < len(self.axes):
+            return self.axes[index]
+        if index < len(self._axis_defaults):
+            return self._axis_defaults[index]
+        return 0
+
+    def _set_axis_value(self, index, value):
+        if index < len(self.axes):
+            self.axes[index] = value
+            return
+        for j in range(len(self.axes), index):
+            if j < len(self._axis_defaults):
+                self.axes.append(self._axis_defaults[j])
+            else:
+                self.axes.append(0)
+        self.axes.append(value)
+
+    @property
+    def weightValue(self):
+        return self._get_axis_value(0)
+
+    @weightValue.setter
+    def weightValue(self, value):
+        return self._set_axis_value(0, value)
+
+    @property
+    def widthValue(self):
+        return self._get_axis_value(1)
+
+    @widthValue.setter
+    def widthValue(self, value):
+        return self._set_axis_value(1, value)
+
+    @property
+    def customValue(self):
+        return self._get_axis_value(2)
+
+    @customValue.setter
+    def customValue(self, value):
+        return self._set_axis_value(2, value)
+
+    @property
+    def customValue1(self):
+        return self._get_axis_value(3)
+
+    @customValue1.setter
+    def customValue1(self, value):
+        return self._set_axis_value(3, value)
+
+    @property
+    def customValue2(self):
+        return self._get_axis_value(4)
+
+    @customValue2.setter
+    def customValue2(self, value):
+        return self._set_axis_value(4, value)
+
+    @property
+    def customValue3(self):
+        return self._get_axis_value(5)
+
+    @customValue3.setter
+    def customValue3(self, value):
+        return self._set_axis_value(5, value)
 
 
 GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
@@ -2844,12 +2914,6 @@ class GSInstance(GSBase):
     _defaultsForName = {
         "active": True,
         "exports": True,
-        "interpolationCustom": 0,
-        "interpolationCustom1": 0,
-        "interpolationCustom2": 0,
-        "interpolationCustom3": 0,
-        "interpolationWeight": 100,
-        "interpolationWidth": 100,
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
@@ -2858,27 +2922,37 @@ class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "axesValues")
+            writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
-        writer.writeObjectKeyValue(
-            self, "customValue", condition="if_true", keyName="interpolationCustom"
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue1", condition="if_true", keyName="interpolationCustom1"
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue2", condition="if_true", keyName="interpolationCustom2"
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue3", condition="if_true", keyName="interpolationCustom3"
-        )
-        writer.writeObjectKeyValue(
-            self, "weightValue", keyName="interpolationWeight", default=100
-        )
-        writer.writeObjectKeyValue(
-            self, "widthValue", keyName="interpolationWidth", default=100
-        )
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "customValue", condition="if_true", keyName="interpolationCustom"
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue1",
+                condition="if_true",
+                keyName="interpolationCustom1",
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue2",
+                condition="if_true",
+                keyName="interpolationCustom2",
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue3",
+                condition="if_true",
+                keyName="interpolationCustom3",
+            )
+            writer.writeObjectKeyValue(
+                self, "weightValue", keyName="interpolationWeight", default=100
+            )
+            writer.writeObjectKeyValue(
+                self, "widthValue", keyName="interpolationWidth", default=100
+            )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
@@ -2892,15 +2966,13 @@ class GSInstance(GSBase):
             self, "width", default="Medium (normal)", keyName="widthClass"
         )
 
+    _axis_defaults = (100, 100)
+
     def __init__(self):
-        self.axesValues = []
+        self.axes = list(self._axis_defaults)
         self._customParameters = []
         self.active = self._defaultsForName["active"]
         self.custom = None
-        self.customValue = self._defaultsForName["interpolationCustom"]
-        self.customValue1 = self._defaultsForName["interpolationCustom1"]
-        self.customValue2 = self._defaultsForName["interpolationCustom2"]
-        self.customValue3 = self._defaultsForName["interpolationCustom3"]
         self.instanceInterpolations = copy.deepcopy(
             self._defaultsForName["instanceInterpolations"]
         )
@@ -2911,9 +2983,7 @@ class GSInstance(GSBase):
         self.name = "Regular"
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
-        self.weightValue = self._defaultsForName["interpolationWeight"]
         self.width = self._defaultsForName["widthClass"]
-        self.widthValue = self._defaultsForName["interpolationWidth"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -3020,6 +3090,73 @@ class GSInstance(GSBase):
     def fullName(self, value):
         self.customParameters["postscriptFullName"] = value
 
+    # v2 compatibility
+    def _get_axis_value(self, index):
+        if index < len(self.axes):
+            return self.axes[index]
+        if index < len(self._axis_defaults):
+            return self._axis_defaults[index]
+        return 0
+
+    def _set_axis_value(self, index, value):
+        if index < len(self.axes):
+            self.axes[index] = value
+            return
+        for j in range(len(self.axes), index):
+            if j < len(self._axis_defaults):
+                self.axes.append(self._axis_defaults[j])
+            else:
+                self.axes.append(0)
+        self.axes.append(value)
+
+    @property
+    def weightValue(self):
+        return self._get_axis_value(0)
+
+    @weightValue.setter
+    def weightValue(self, value):
+        return self._set_axis_value(0, value)
+
+    @property
+    def widthValue(self):
+        return self._get_axis_value(1)
+
+    @widthValue.setter
+    def widthValue(self, value):
+        return self._set_axis_value(1, value)
+
+    @property
+    def customValue(self):
+        return self._get_axis_value(2)
+
+    @customValue.setter
+    def customValue(self, value):
+        return self._set_axis_value(2, value)
+
+    @property
+    def customValue1(self):
+        return self._get_axis_value(3)
+
+    @customValue1.setter
+    def customValue1(self, value):
+        return self._set_axis_value(3, value)
+
+    @property
+    def customValue2(self):
+        return self._get_axis_value(4)
+
+    @customValue2.setter
+    def customValue2(self, value):
+        return self._set_axis_value(4, value)
+
+    @property
+    def customValue3(self):
+        return self._get_axis_value(5)
+
+    @customValue3.setter
+    def customValue3(self, value):
+        return self._set_axis_value(5, value)
+
 
 GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
@@ -3031,7 +3168,7 @@ GSInstance._add_parser("interpolationWeight", "weightValue", int)
 GSInstance._add_parser("interpolationWidth", "widthValue", int)
 GSInstance._add_parser("weightClass", "weight", str)
 GSInstance._add_parser("widthClass", "width", str)
-GSInstance._add_parser("axesValues", "axesValues", int)
+GSInstance._add_parser("axesValues", "axes", int)
 
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
@@ -3793,6 +3930,7 @@ class GSFont(GSBase):
         GSMetric(type="baseline"),
         GSMetric(type="descender"),
     ]
+    _defaultAxes = [GSAxis(name="Weight", tag="wght"), GSAxis(name="Width", tag="wdth")]
 
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue(".appVersion", self.appVersion)
@@ -3859,6 +3997,12 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
 
+    def _parse_customParameters(self, parser, text, i):
+        _customParameters, i = parser._parse(text, i, GSCustomParameter)
+        for cp in _customParameters:
+            self.customParameters[cp.name] = cp.value  # This will intercept axes
+        return i
+
     def _parse_glyphs(self, parser, text, i):
         _glyphs, i = parser._parse(text, i, GSGlyph)
         self.glyphs.setter(_glyphs)
@@ -3895,7 +4039,7 @@ class GSFont(GSBase):
         self._glyphs = []
         self._instances = []
         self._masters = []
-        self.axes = []
+        self.axes = copy.deepcopy(self._defaultAxes)
         self._userData = None
         self._versionMinor = 0
         self.format_version = 2
@@ -4213,6 +4357,23 @@ class GSFont(GSBase):
         newprop = GSFontInfoValue(key, value)
         self.properties.append(newprop)
 
+    def _get_custom_parameter_from_axes(self):
+        # We were specifically asked for our Axes custom parameter, so we
+        # synthesise one
+        if (
+            len(self.axes) == 2
+            and self.axes[0] == self._defaultAxes[0]
+            and self.axes[1] == self._defaultAxes[1]
+        ):
+            return None
+        return GSCustomParameter(
+            name="Axes",
+            value=[{"Name": ax.name, "Tag": ax.axisTag} for ax in self.axes],
+        )
+
+    def _set_axes_from_custom_parameter(self, value):
+        self.axes = [GSAxis(name=v["Name"], tag=v["Tag"]) for v in value]
+
 
 GSFont._add_parser("unitsPerEm", "upm", int)
 GSFont._add_parser("gridLength", "grid", int)
@@ -4221,7 +4382,6 @@ GSFont._add_parser("gridSubDivisions", "gridSubDivision", int)
 GSFont._add_parser("__appVersion", "appVersion", str)
 GSFont._add_parser("classes", "classes", GSClass)
 GSFont._add_parser("instances", "instances", GSInstance)
-GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSFont._add_parser("featurePrefixes", "featurePrefixes", GSFeaturePrefix)
 GSFont._add_parser("features", "features", GSFeature)
 GSFont._add_parser("fontMaster", "masters", GSFontMaster)

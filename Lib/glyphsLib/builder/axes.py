@@ -272,14 +272,14 @@ def to_glyphs_axes(self):
     axes_parameter = []
     for axis in self.designspace.axes:
         if axis.tag == "wght":
-            axes_parameter.append({"Name": axis.name or "Weight", "Tag": "wght"})
+            axes_parameter.append(classes.GSAxis(name=axis.name or "Weight", tag="wght"))
         elif axis.tag == "wdth":
-            axes_parameter.append({"Name": axis.name or "Width", "Tag": "wdth"})
+            axes_parameter.append(classes.GSAxis(name=axis.name or "Width", tag="wdth"))
         else:
-            axes_parameter.append({"Name": axis.name, "Tag": axis.tag})
+            axes_parameter.append(classes.GSAxis(name=axis.name, tag=axis.tag))
 
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
-        self.font.customParameters["Axes"] = axes_parameter
+        self.font.axes = axes_parameter
 
     if any(a.map for a in self.designspace.axes):
         mapping = {
@@ -317,11 +317,11 @@ class AxisDefinition:
         axis it could be the thickness of a stem, for the width a percentage
         of extension with respect to the normal width.
         """
-        return getattr(glyphs_master_or_instance, self.design_loc_key)
+        return glyphs_master_or_instance._get_axis_value(self.design_loc_key)
 
     def set_design_loc(self, master_or_instance, value):
         """Set the design location of a Glyphs master or instance."""
-        setattr(master_or_instance, self.design_loc_key, value)
+        master_or_instance._set_axis_value(self.design_loc_key, value)
 
     def get_user_loc(self, master_or_instance):
         """Get the user location of a Glyphs master or instance.
@@ -484,14 +484,7 @@ class AxisDefinitionFactory:
         return AxisDefinition(tag, name, design_loc_key, 0.0, None, None, 0.0)
 
     def _design_loc_key(self):
-        if self.axis_index == 0:
-            return "weightValue"
-        elif self.axis_index == 1:
-            return "widthValue"
-        elif self.axis_index == 2:
-            return "customValue"
-        else:
-            return "customValue%d" % (self.axis_index - 2)
+        return self.axis_index
 
 
 defaults_factory = AxisDefinitionFactory()
@@ -516,11 +509,9 @@ def _is_subset_of_default_axes(axes_parameter):
     if len(axes_parameter) > 3:
         return False
     for axis, axis_def in zip(axes_parameter, DEFAULT_AXES_DEFS):
-        if set(axis.keys()) != {"Name", "Tag"}:
+        if axis.name != axis_def.name:
             return False
-        if axis["Name"] != axis_def.name:
-            return False
-        if axis["Tag"] != axis_def.tag:
+        if axis.axisTag != axis_def.tag:
             return False
     return True
 

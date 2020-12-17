@@ -20,7 +20,7 @@ import pytest
 
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
-from glyphsLib.classes import GSFont, GSFontMaster
+from glyphsLib.classes import GSFont, GSFontMaster, GSAxis
 from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
 
 """
@@ -61,7 +61,7 @@ def test_weight_width_custom(axes, ufo_module):
 
     font = to_glyphs(doc)
 
-    if _is_subset_of_default_axes([{"Name": n, "Tag": t} for t, n in axes]):
+    if _is_subset_of_default_axes([ GSAxis(name=n, tag=t) for t, n in axes]):
         assert font.customParameters["Axes"] is None
     else:
         assert font.customParameters["Axes"] == [
