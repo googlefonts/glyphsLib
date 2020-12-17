@@ -3270,15 +3270,6 @@ class GSLayer(GSBase):
             self._shapes.append(shape)
         return i
 
-    _defaultsForName = {
-        "width": 600,
-        "leftMetricsKey": None,
-        "rightMetricsKey": None,
-        "widthMetricsKey": None,
-        "vertWidth": None,
-        "vertOrigin": None,
-    }
-
     def __init__(self):
         self._anchors = []
         self._annotations = []
@@ -3295,14 +3286,14 @@ class GSLayer(GSBase):
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.leftMetricsKey = None
         self.parent = None
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
-        self.vertOrigin = self._defaultsForName["vertOrigin"]
-        self.vertWidth = self._defaultsForName["vertWidth"]
+        self.rightMetricsKey = None
+        self.vertOrigin = None
+        self.vertWidth = None
         self.visible = False
-        self.width = self._defaultsForName["width"]
-        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+        self.width = 600
+        self.widthMetricsKey = None
 
     def _parse_background(self, parser, text, i):
         self._background, i = parser._parse(text, i, GSBackgroundLayer)
@@ -3624,11 +3615,6 @@ class GSGlyph(GSBase):
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
 
-    def shouldWriteValueForKey(self, key):
-        if key in ("script", "category", "subCategory"):
-            return getattr(self, key) is not None
-        return super().shouldWriteValueForKey(key)
-
     layers = property(
         lambda self: GlyphLayerProxy(self),
         lambda self, value: GlyphLayerProxy(self).setter(value),
@@ -3863,11 +3849,6 @@ class GSFont(GSBase):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} "{self.familyName}">'
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("unitsPerEm", "versionMajor", "versionMinor"):
-            return True
-        return super().shouldWriteValueForKey(key)
 
     def save(self, path=None):
         if path is None:
