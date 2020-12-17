@@ -662,8 +662,8 @@ class GlyphsBuilder(_LoggerMixin):
                 ]
 
             self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
-            self.to_glyphs_master_attributes(source, master)
             self._font.masters.insert(len(self._font.masters), master)
+            self.to_glyphs_master_attributes(source, master)
             self._sources[master.id] = source
 
             # First, move free-standing bracket glyphs back to layers to avoid dealing

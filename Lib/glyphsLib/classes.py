@@ -19,6 +19,8 @@ import math
 import os
 import re
 import uuid
+import warnings
+
 from collections import OrderedDict
 from io import StringIO
 from typing import Any, Dict, Optional, Tuple, Union
@@ -1354,9 +1356,9 @@ class GSCustomParameter(GSBase):
 
 
 class GSMetric(GSBase):
-    def __init__(self):
-        self.name = ""
-        self.type = ""
+    def __init__(self, name="", type=""):
+        self.name = name
+        self.type = type
         self.id = ""
         self.filter = ""
         self.horizontal = False
@@ -1534,8 +1536,8 @@ class GSFontMaster(GSBase):
         "customValue1": 0,
         "customValue2": 0,
         "customValue3": 0,
-        "xHeight": 500,
-        "capHeight": 700,
+        "x-height": 500,
+        "cap height": 700,
         "ascender": 800,
         "descender": -200,
         "italicAngle": 0,
@@ -1556,16 +1558,13 @@ class GSFontMaster(GSBase):
         self._name = None
         self._userData = None
         self.alignmentZones = []
-        self._metrics = []
-        self.ascender = self._defaultsForName["ascender"]
+        self.metrics = []
         self.axes = []
-        self.capHeight = self._defaultsForName["capHeight"]
         self.customName = ""
         self.customValue = self._defaultsForName["customValue"]
         self.customValue1 = self._defaultsForName["customValue1"]
         self.customValue2 = self._defaultsForName["customValue2"]
         self.customValue3 = self._defaultsForName["customValue3"]
-        self.descender = self._defaultsForName["descender"]
         self.font = None
         self.guides = []
         self.horizontalStems = 0
@@ -1580,7 +1579,6 @@ class GSFontMaster(GSBase):
         self.weightValue = self._defaultsForName["weightValue"]
         self.width = self._defaultsForName["width"]
         self.widthValue = self._defaultsForName["widthValue"]
-        self.xHeight = self._defaultsForName["xHeight"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1672,6 +1670,73 @@ class GSFontMaster(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value),
     )
+
+    def _get_metric(self, metricname):
+        if not self.font:
+            warnings.warn(
+                "GSFontMaster metric %s accessed without an associated font!"
+                % metricname
+            )
+            metrics = GSFont._defaultMetrics
+        else:
+            metrics = self.font.metrics
+        metricLabels = [x.type for x in metrics]
+        if not metricname in metricLabels:
+            return self._defaultsForName[metricname]
+        metricIndex = metricLabels.index(metricname)
+        if metricIndex > len(self.metrics) - 1:
+            return self._defaultsForName[metricname]
+        return self.metrics[metricIndex]
+
+    def _set_metric(self, metricname, value):
+        if not self.font:
+            warnings.warn(
+                "GSFontMaster metric %s accessed without an associated font!"
+                % metricname
+            )
+            metrics = GSFont._defaultMetrics
+        else:
+            metrics = self.font.metrics
+        metricLabels = [x.type for x in metrics]
+        if not metricname in metricLabels:
+            self.font.metrics.append(GSMetric(type=metricname))
+        metricIndex = metricLabels.index(metricname)
+        while metricIndex > len(self.metrics) - 1:
+            # Pad array with ... zeroes?
+            self.metrics.append(0)
+        self.metrics[metricIndex] = value
+
+    @property
+    def ascender(self):
+        return self._get_metric("ascender")
+
+    @ascender.setter
+    def ascender(self, value):
+        self._set_metric("ascender", value)
+
+    @property
+    def xHeight(self):
+        return self._get_metric("x-height")
+
+    @xHeight.setter
+    def xHeight(self, value):
+        self._set_metric("x-height", value)
+
+    @property
+    def capHeight(self):
+        return self._get_metric("cap height")
+
+    @capHeight.setter
+    def capHeight(self, value):
+        self._set_metric("cap height", value)
+
+    @property
+    def descender(self):
+        return self._get_metric("descender")
+
+    @descender.setter
+    def descender(self, value):
+        self._set_metric("descender", value)
 
 
 GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
@@ -3683,6 +3748,15 @@ GSGlyph._add_parser("vertWidthMetricsKey", "metricVertWidth", str)  # V2
 
 
 class GSFont(GSBase):
+
+    _defaultMetrics = [
+        GSMetric(type="ascender"),
+        GSMetric(type="cap height"),
+        GSMetric(type="x-height"),
+        GSMetric(type="baseline"),
+        GSMetric(type="descender"),
+    ]
+
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue(".appVersion", self.appVersion)
         if self.format_version > 2:
@@ -3807,7 +3881,7 @@ class GSFont(GSBase):
         self.numbers = []
         self.properties = []
         self.stems = []
-        self.metrics = []
+        self.metrics = copy.deepcopy(self._defaultMetrics)
         self.keyboardIncrement = 1
         self.keyboardIncrementBig = 10
         self.keyboardIncrementHuge = 100
