@@ -3113,9 +3113,14 @@ class GSLayer(GSBase):
             writer.writeKeyValue("guideLines", self.guides)
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
-        writer.writeObjectKeyValue(self, "leftMetricsKey")
-        writer.writeObjectKeyValue(self, "widthMetricsKey")
-        writer.writeObjectKeyValue(self, "rightMetricsKey")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
+            writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
+            writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
+        else:
+            writer.writeObjectKeyValue(self, "metricLeft")
+            writer.writeObjectKeyValue(self, "metricRight")
+            writer.writeObjectKeyValue(self, "metricWidth")
         if (
             self.name is not None
             and len(self.name) > 0
@@ -3165,14 +3170,14 @@ class GSLayer(GSBase):
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
-        self.leftMetricsKey = None
+        self.metricLeft = None
         self.parent = None
-        self.rightMetricsKey = None
+        self.metricRight = None
         self.vertOrigin = None
         self.vertWidth = None
         self.visible = False
         self.width = 600
-        self.widthMetricsKey = None
+        self.metricWidth = None
 
     def _parse_background(self, parser, text, i):
         self._background, i = parser._parse(text, i, GSBackgroundLayer)
@@ -3378,6 +3383,30 @@ class GSLayer(GSBase):
         for component in self.components:
             component.drawPoints(pointPen)
 
+    @property
+    def rightMetricsKey(self):
+        return self.metricRight
+
+    @property
+    def leftMetricsKey(self):
+        return self.metricLeft
+
+    @property
+    def widthMetricsKey(self):
+        return self.metricWidth
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value):
+        self.metricRight = value
+
+    @leftMetricsKey.setter
+    def leftMetricsKey(self, value):
+        self.metricLeft = value
+
+    @widthMetricsKey.setter
+    def widthMetricsKey(self, value):
+        self.metricWidth = value
+
 
 GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
 GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
@@ -3389,6 +3418,9 @@ GSLayer._add_parser("components", "components", GSComponent)
 GSLayer._add_parser("hints", "hints", GSHint)
 GSLayer._add_parser("userData", "_userData", dict)
 GSLayer._add_parser("partSelection", "partSelection", dict)
+GSLayer._add_parser("leftMetricsKey", "metricLeft", str)  # V2
+GSLayer._add_parser("rightMetricsKey", "metricRight", str)  # V2
+GSLayer._add_parser("widthMetricsKey", "metricWidth", str)  # V2
 
 
 class GSBackgroundLayer(GSLayer):
@@ -3424,12 +3456,27 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
         writer.writeObjectKeyValue(self, "leftKerningGroup")
-        writer.writeObjectKeyValue(self, "leftMetricsKey", "if_true")
-        writer.writeObjectKeyValue(self, "widthMetricsKey", "if_true")
-        writer.writeObjectKeyValue(self, "vertWidthMetricsKey", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "metricLeft", "if_true")
+            writer.writeObjectKeyValue(self, "metricWidth", "if_true")
+        else:
+            writer.writeObjectKeyValue(
+                self, "metricLeft", "if_true", keyName="leftMetricsKey"
+            )
+            writer.writeObjectKeyValue(
+                self, "metricWidth", "if_true", keyName="widthMetricsKey"
+            )
+            writer.writeObjectKeyValue(
+                self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
+            )
         writer.writeObjectKeyValue(self, "note")
         writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
-        writer.writeObjectKeyValue(self, "rightMetricsKey", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "metricRight", "if_true")
+        else:
+            writer.writeObjectKeyValue(
+                self, "metricRight", "if_true", keyName="rightMetricsKey"
+            )
         writer.writeObjectKeyValue(self, "topKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
@@ -3474,7 +3521,7 @@ class GSGlyph(GSBase):
         self.lastChange = None
         self.leftKerningGroup = None
         self.leftKerningKey = ""
-        self.leftMetricsKey = None
+        self.metricLeft = None
         self.name = name
         self.note = None
         self.parent = None
@@ -3482,7 +3529,7 @@ class GSGlyph(GSBase):
         self.production = ""
         self.rightKerningGroup = None
         self.rightKerningKey = ""
-        self.rightMetricsKey = None
+        self.metricRight = None
         self.script = None
         self.selected = False
         self.subCategory = None
@@ -3490,8 +3537,8 @@ class GSGlyph(GSBase):
         self.topKerningGroup = ""
         self.topMetricsKey = ""
         self.userData = None
-        self.vertWidthMetricsKey = ""
-        self.widthMetricsKey = None
+        self.metricVertWidth = ""
+        self.metricWidth = None
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
@@ -3573,10 +3620,47 @@ class GSGlyph(GSBase):
     def unicodes(self, unicodes):
         self._unicodes = UnicodesList(unicodes)
 
+    # V2 compatible interface
+    @property
+    def rightMetricsKey(self):
+        return self.metricRight
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value):
+        self.metricRight = value
+
+    @property
+    def leftMetricsKey(self):
+        return self.metricLeft
+
+    @leftMetricsKey.setter
+    def leftMetricsKey(self, value):
+        self.metricLeft = value
+
+    @property
+    def widthMetricsKey(self):
+        return self.metricWidth
+
+    @widthMetricsKey.setter
+    def widthMetricsKey(self, value):
+        self.metricWidth = value
+
+    @property
+    def vertWidthMetricsKey(self):
+        return self.metricVertWidth
+
+    @vertWidthMetricsKey.setter
+    def vertWidthMetricsKey(self, value):
+        self.metricVertWidth = value
+
 
 GSGlyph._add_parser("glyphname", "name", str)
 GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
 GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
+GSGlyph._add_parser("leftMetricsKey", "metricLeft", str)  # V2
+GSGlyph._add_parser("rightMetricsKey", "metricRight", str)  # V2
+GSGlyph._add_parser("widthMetricsKey", "metricWidth", str)  # V2
+GSGlyph._add_parser("vertWidthMetricsKey", "metricVertWidth", str)  # V2
 
 
 class GSFont(GSBase):
