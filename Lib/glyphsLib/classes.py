@@ -1193,8 +1193,7 @@ GSAxis._add_parser("tag", "axisTag", str)
 
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
-        if writer.format_version > 2 and self.disabled:
-            writer.writeObjectKeyValue(self, "disabled")
+        writer.writeObjectKeyValue(self, "disabled", self.disabled)
         writer.writeKeyValue("name", self.name)
         writer.writeKeyValue("value", self.value)
 
@@ -1360,20 +1359,20 @@ class GSCustomParameter(GSBase):
 class GSMetric(GSBase):
     def __init__(self):
         self.name = ""
+        self.type = ""
         self.id = ""
         self.filter = ""
         self.horizontal = False
 
     def _serialize_to_plist(self, writer):
-        if self.horizontal:
-            writer.writeKeyValue("horizontal", self.horizontal)
-        if self.filter:
-            writer.writeKeyValue("filter", self.filter)
-        writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "horizontal", "if_true")
+        writer.writeObjectKeyValue(self, "filter", "if_true")
+        writer.writeObjectKeyValue(self, "name", "if_true")
+        writer.writeObjectKeyValue(self, "type", "if_true")
 
 
 GSMetric._add_parser("name", "name", str)
-GSMetric._add_parser("type", "name", str)
+GSMetric._add_parser("type", "type", str)
 GSMetric._add_parser("filter", "filter", str)
 GSMetric._add_parser("horizontal", "horizontal", bool)
 
@@ -2265,12 +2264,28 @@ class GSComponent(GSBase):
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        writer.writeObjectKeyValue(self, "name")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "name")
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
-        writer.writeObjectKeyValue(
-            self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
-        )
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            writer.writeObjectKeyValue(self, "name", keyName="ref")
+            if self.scale != (1, 1):
+                writer.writeKeyValue("scale", Point(list(self.scale)))
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
+            )
+
+    def _parse_ref_dict(self, parser, d):
+        self.name = d
+
+    def _parse_angle_dict(self, parser, d):
+        self.rotation = d
+
+    def _parse_piece_dict(self, parser, d):
+        self.smartComponentValues = d
 
     _parent = None
 
@@ -2423,7 +2438,7 @@ class GSComponent(GSBase):
 
 GSComponent._add_parser("transform", "transform", str, Transform)
 GSComponent._add_parser("piece", "smartComponentValues", dict)
-GSComponent._add_parser("ref", "name", str)
+GSComponent._add_parser("angle", "rotation", float)
 
 
 class GSSmartComponentAxis(GSBase):
@@ -2978,25 +2993,22 @@ GSFontInfoValue._add_parser("value", "value", str)
 
 
 class GSBackgroundImage(GSBase):
-    __slots__ = (
-        "_R",
-        "_alpha",
-        "_sX",
-        "_sY",
-        "crop",
-        "imagePath",
-        "locked",
-        "transform",
-    )
-
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
-        writer.writeObjectKeyValue(self, "crop")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            writer.writeObjectKeyValue(self, "crop", default=Rect())
+        else:
+            writer.writeObjectKeyValue(self, "crop", True)
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        writer.writeObjectKeyValue(
-            self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
-        )
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "position", keyName="pos", default=Rect())
+            writer.writeKeyValue("scale", Point(list(self.scale)))
+        else:
+            writer.writeObjectKeyValue(
+                self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
+            )
 
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
 
@@ -3090,6 +3102,8 @@ class GSBackgroundImage(GSBase):
 
 GSBackgroundImage._add_parser("transform", "transform", str, Transform)
 GSBackgroundImage._add_parser("crop", "crop", str, Rect)
+GSBackgroundImage._add_parser("angle", "rotation", float)
+GSBackgroundImage._add_parser("pos", "position", float)
 
 
 class LayerPathsProxy(LayerShapesProxy):
@@ -3726,7 +3740,7 @@ class GSFont(GSBase):
 
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "metrics")
-            writer.writeObjectKeyValue(self, "note")
+            writer.writeObjectKeyValue(self, "_note", "if_true", keyName="note")
             writer.writeObjectKeyValue(self, "numbers")
             writer.writeObjectKeyValue(self, "properties")
             writer.writeObjectKeyValue(self, "settings")
@@ -3779,7 +3793,7 @@ class GSFont(GSBase):
         self.format_version = 2
         self.appVersion = "895"  # minimum required version
         self.classes = []
-        self.customParameters = []
+        self._customParameters = []
         self.date = None
         self.disablesAutomaticAlignment = False
         self.disablesNiceNames = False
@@ -3802,6 +3816,7 @@ class GSFont(GSBase):
         self.keyboardIncrementHuge = 100
         self.upm = 1000
         self.versionMajor = 1
+        self._note = ""
 
         if path:
             path = os.fsdecode(os.fspath(path))
@@ -3953,15 +3968,21 @@ class GSFont(GSBase):
 
     @property
     def note(self):
-        value = self.customParameters["note"]
-        if value:
-            return value
+        if self.format_version < 3:
+            value = self.customParameters["note"]
+            if value:
+                return value
+            else:
+                return ""
         else:
-            return ""
+            return self._note
 
     @note.setter
     def note(self, value):
-        self.customParameters["note"] = value
+        if self.format_version < 3:
+            self.customParameters["note"] = value
+        else:
+            self._note = value
 
     @property
     def gridLength(self):
@@ -4107,6 +4128,7 @@ GSFont._add_parser("stems", "stems", GSMetric)
 GSFont._add_parser("metrics", "metrics", GSMetric)
 GSFont._add_parser("numbers", "numbers", GSMetric)
 GSFont._add_parser("properties", "properties", GSFontInfoValue)
+GSFont._add_parser("note", "_note", str)
 
 
 Number = Union[int, float]
