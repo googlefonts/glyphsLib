@@ -1426,9 +1426,9 @@ class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
-        writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "lockAngle", "if_true")
+        writer.writeObjectKeyValue(self, "locked", "if_true")
 
         writer.writeObjectKeyValue(self, "name", "if_true")
         if writer.format_version == 3 and self.position != Point(0, 0):
@@ -3556,7 +3556,8 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(
                 self, "rightKerningGroup", "if_true", keyName="kernRight"
             )
-        writer.writeObjectKeyValue(self, "production", "if_true")
+        # if writer.format_version == 2:
+        #     writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
         if writer.format_version > 2:
@@ -3585,14 +3586,15 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "tags", "if_true")
         if self.unicodes and writer.format_version == 2:
             writer.writeKeyValue("unicode", self.unicodes)
+        writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "script")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "subCategory")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "tags", "if_true")
         if self.unicodes and writer.format_version > 2:
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "userData", "if_true")

@@ -80,3 +80,13 @@ def test_parser_main_v3(capsys):
     glyphsLib.parser.main([filename])
     out, _err = capsys.readouterr()
     assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+
+
+def test_parser_main_v3_upstream(capsys):
+    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsFileFormatv3.glyphs")
+    with open(filename) as f:
+        expected = f.read()
+
+    glyphsLib.parser.main([filename])
+    out, _err = capsys.readouterr()
+    assert expected == out, "The roundtrip should output the .glyphs file unmodified."

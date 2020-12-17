@@ -1,5 +1,5 @@
 {
-.appVersion = "3027";
+.appVersion = "3044";
 .formatVersion = 3;
 DisplayStrings = (
 A,
@@ -123,8 +123,8 @@ layers = (
 guides = (
 {
 angle = 8.1446;
-locked = 1;
 lockAngle = 1;
+locked = 1;
 pos = (151,402);
 showMeasurement = 1;
 }
@@ -273,6 +273,25 @@ width = 200;
 }
 );
 unicode = 32;
+},
+{
+category = Icon;
+glyphname = Smily;
+lastChange = "2020-12-17 12:04:17 +0000";
+layers = (
+{
+layerId = m01;
+vertWidth = 600;
+width = 600;
+}
+);
+production = someSmily;
+script = "Black Letter";
+subCategory = Emoji;
+tags = (
+new,
+unfinished
+);
 },
 {
 export = 0;
