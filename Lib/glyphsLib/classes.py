@@ -3489,12 +3489,12 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "tags", "if_true")
         if self.unicodes:
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "script")
         writer.writeObjectKeyValue(self, "category")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "tags", "if_true")
         writer.writeObjectKeyValue(self, "subCategory")
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if self.smartComponentAxes:
