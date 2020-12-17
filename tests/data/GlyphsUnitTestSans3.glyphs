@@ -330,6 +330,7 @@ GSOffsetVertical = 10;
 glyphs = (
 {
 category = "";
+color = (120,220,20,4);
 glyphname = A;
 kernLeft = A;
 kernRight = A;
