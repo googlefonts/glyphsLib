@@ -123,7 +123,7 @@ class Writer:
         if condition == "if_true":
             condition = bool(value)
         if condition is None:
-            if default:
+            if default is not None:
                 condition = value != default
             else:
                 condition = value is not None

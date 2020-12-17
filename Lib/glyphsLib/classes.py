@@ -2503,9 +2503,14 @@ class GSSmartComponentAxis(GSBase):
 
 
 class GSAnchor(GSBase):
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "name", "if_true")
+        writer.writeObjectKeyValue(self, "position", True)
+        writer.file.write("}")
+
     __slots__ = ("position", "name")
 
-    _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
@@ -2520,11 +2525,6 @@ class GSAnchor(GSBase):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
             self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key == "position":
-            return True
-        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2784,36 +2784,22 @@ class GSFeaturePrefix(GSClass):
 
 
 class GSAnnotation(GSBase):
-    __slots__ = (
-        "angle",
-        "position",
-        "text",
-        "type",
-        "width",
-    )
-
-    _classesForName = {
-        "angle": parse_float_or_int,
-        "position": Point,
-        "text": str,
-        "type": str,
-        "width": parse_float_or_int,  # the width of the text field or size of the cicle
-    }
-    _defaultsForName = {
-        "angle": 0,
-        "position": Point(0, 0),
-        "text": None,
-        "type": 0,
-        "width": 100,
-    }
-    _parent = None
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "angle", default=0)
+        writer.writeObjectKeyValue(self, "position", default=Point(0, 0))
+        writer.writeObjectKeyValue(self, "text", "if_true")
+        writer.writeObjectKeyValue(self, "type", "if_true")
+        writer.writeObjectKeyValue(self, "width", default=100)
+        writer.file.write("}")
 
     def __init__(self):
-        self.angle = self._defaultsForName["angle"]
-        self.position = copy.deepcopy(self._defaultsForName["position"])
-        self.text = self._defaultsForName["text"]
-        self.type = self._defaultsForName["type"]
-        self.width = self._defaultsForName["width"]
+        self.angle = 0
+        self.position = Point(0, 0)
+        self.text = None
+        self.type = 0
+        self.width = 100
+        self._parent = None
 
     @property
     def parent(self):
@@ -3069,15 +3055,18 @@ class GSBackgroundImage(GSBase):
         "transform",
     )
 
-    _classesForName = {
-        "crop": Rect,
-        "imagePath": str,
-        "locked": bool,
-        "transform": Transform,
-        "alpha": int,
-    }
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
+        writer.writeObjectKeyValue(self, "crop")
+        writer.writeObjectKeyValue(self, "imagePath")
+        writer.writeObjectKeyValue(self, "locked", "if_true")
+        writer.writeObjectKeyValue(
+            self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
+        )
+        writer.file.write("}")
+
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
-    _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
         self._R = 0.0
@@ -3495,9 +3484,6 @@ class GSBackgroundLayer(GSLayer):
     @width.setter
     def width(self, whatever):
         pass
-
-
-GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
