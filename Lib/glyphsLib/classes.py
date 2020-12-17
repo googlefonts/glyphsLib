@@ -2334,6 +2334,9 @@ class GSComponent(GSBase):
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
         if writer.format_version > 2:
+            writer.writeObjectKeyValue(
+                self, "position", keyName="pos", default=Point(0, 0)
+            )
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(self, "name", keyName="ref")
             if self.scale != (1, 1):
@@ -2809,7 +2812,13 @@ class GSFeaturePrefix(GSClass):
 class GSAnnotation(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "angle", default=0)
-        writer.writeObjectKeyValue(self, "position", default=Point(0, 0))
+        posKey = "position"
+        if writer.format_version > 2:
+            posKey = "pos"
+        writer.writeObjectKeyValue(
+            self, "position", keyName=posKey, default=Point(0, 0)
+        )
+
         writer.writeObjectKeyValue(self, "text", "if_true")
         writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(self, "width", default=100)
@@ -2828,6 +2837,7 @@ class GSAnnotation(GSBase):
 
 
 GSAnnotation._add_parser("position", "position", str, Point)
+GSAnnotation._add_parser("pos", "position", str, Point)
 
 
 class GSInstance(GSBase):
@@ -3071,7 +3081,7 @@ class GSBackgroundImage(GSBase):
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(self, "crop", default=Rect())
         else:
-            writer.writeObjectKeyValue(self, "crop", default=Rect())
+            writer.writeObjectKeyValue(self, "crop")
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version > 2:
