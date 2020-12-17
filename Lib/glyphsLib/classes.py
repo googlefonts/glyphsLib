@@ -1683,7 +1683,7 @@ class GSFontMaster(GSBase):
         else:
             metrics = self.font.metrics
         metricLabels = [x.type for x in metrics]
-        if not metricname in metricLabels:
+        if metricname not in metricLabels:
             return self._defaultsForName[metricname]
         metricIndex = metricLabels.index(metricname)
         if metricIndex > len(self.metrics) - 1:
@@ -1700,7 +1700,7 @@ class GSFontMaster(GSBase):
         else:
             metrics = self.font.metrics
         metricLabels = [x.type for x in metrics]
-        if not metricname in metricLabels:
+        if metricname not in metricLabels:
             self.font.metrics.append(GSMetric(type=metricname))
         metricIndex = metricLabels.index(metricname)
         while metricIndex > len(self.metrics) - 1:

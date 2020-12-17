@@ -71,7 +71,9 @@ def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans3.glyphs")
+    filename = os.path.join(
+        os.path.dirname(__file__), "data/GlyphsUnitTestSans3.glyphs"
+    )
     with open(filename) as f:
         expected = f.read()
 
