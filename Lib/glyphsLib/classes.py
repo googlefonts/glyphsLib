@@ -3546,112 +3546,34 @@ GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
-    __slots__ = (
-        "_layers",
-        "_unicodes",
-        "_userData",
-        "bottomKerningGroup",
-        "bottomMetricsKey",
-        "category",
-        "color",
-        "export",
-        "lastChange",
-        "leftKerningGroup",
-        "leftKerningKey",
-        "leftMetricsKey",
-        "name",
-        "note",
-        "parent",
-        "partsSettings",
-        "production",
-        "rightKerningGroup",
-        "rightKerningKey",
-        "rightMetricsKey",
-        "script",
-        "selected",
-        "subCategory",
-        "topKerningGroup",
-        "topMetricsKey",
-        "vertWidthMetricsKey",
-        "widthMetricsKey",
-    )
-
-    _classesForName = {
-        ".appVersion": str,
-        "DisplayStrings": str,
-        "bottomKerningGroup": str,
-        "bottomMetricsKey": str,
-        "category": str,
-        "classes": GSClass,
-        "color": parse_color,
-        "export": bool,
-        "glyphname": str,
-        "lastChange": parse_datetime,
-        "layers": GSLayer,
-        "leftKerningGroup": str,
-        "leftKerningKey": str,
-        "leftMetricsKey": str,
-        "note": str,
-        "partsSettings": GSSmartComponentAxis,
-        "production": str,
-        "rightKerningGroup": str,
-        "rightKerningKey": str,
-        "rightMetricsKey": str,
-        "script": str,
-        "subCategory": str,
-        "topKerningGroup": str,
-        "topMetricsKey": str,
-        "unicode": UnicodesList,
-        "userData": dict,
-        "vertWidthMetricsKey": str,
-        "widthMetricsKey": str,
-    }
-    _wrapperKeysTranslate = {
-        "unicode": "unicodes",
-        "glyphname": "name",
-        "partsSettings": "smartComponentAxes",
-    }
-    _defaultsForName = {
-        "category": None,
-        "color": None,
-        "export": True,
-        "lastChange": None,
-        "leftKerningGroup": None,
-        "leftMetricsKey": None,
-        "name": None,
-        "note": None,
-        "rightKerningGroup": None,
-        "rightMetricsKey": None,
-        "script": None,
-        "subCategory": None,
-        "userData": None,
-        "widthMetricsKey": None,
-    }
-    _keyOrder = (
-        "color",
-        "export",
-        "glyphname",
-        "production",
-        "lastChange",
-        "layers",
-        "leftKerningGroup",
-        "leftMetricsKey",
-        "widthMetricsKey",
-        "vertWidthMetricsKey",
-        "note",
-        "rightKerningGroup",
-        "rightMetricsKey",
-        "topKerningGroup",
-        "topMetricsKey",
-        "bottomKerningGroup",
-        "bottomMetricsKey",
-        "unicode",
-        "script",
-        "category",
-        "subCategory",
-        "userData",
-        "partsSettings",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "color")
+        writer.writeObjectKeyValue(self, "export", not self.export)
+        writer.writeKeyValue("glyphname", self.name)
+        writer.writeObjectKeyValue(self, "production", "if_true")
+        writer.writeObjectKeyValue(self, "lastChange")
+        writer.writeObjectKeyValue(self, "layers", "if_true")
+        writer.writeObjectKeyValue(self, "leftKerningGroup")
+        writer.writeObjectKeyValue(self, "leftMetricsKey", "if_true")
+        writer.writeObjectKeyValue(self, "widthMetricsKey", "if_true")
+        writer.writeObjectKeyValue(self, "vertWidthMetricsKey", "if_true")
+        writer.writeObjectKeyValue(self, "note")
+        writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
+        writer.writeObjectKeyValue(self, "rightMetricsKey", "if_true")
+        writer.writeObjectKeyValue(self, "topKerningGroup", "if_true")
+        writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
+        writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
+        writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
+        if self.unicodes:
+            writer.writeKeyValue("unicode", self.unicodes)
+        writer.writeObjectKeyValue(self, "script")
+        writer.writeObjectKeyValue(self, "category")
+        writer.writeObjectKeyValue(self, "subCategory")
+        writer.writeObjectKeyValue(self, "userData", "if_true")
+        if self.smartComponentAxes:
+            writer.writeKeyValue("partsSettings", self.smartComponentAxes)
+        writer.file.write("}")
 
     def _parse_unicode(self, parser, text, i):
         parser.current_type = None
@@ -3675,29 +3597,29 @@ class GSGlyph(GSBase):
         self._unicodes = []
         self.bottomKerningGroup = ""
         self.bottomMetricsKey = ""
-        self.category = self._defaultsForName["category"]
-        self.color = self._defaultsForName["color"]
-        self.export = self._defaultsForName["export"]
-        self.lastChange = self._defaultsForName["lastChange"]
-        self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
+        self.category = None
+        self.color = None
+        self.export = True
+        self.lastChange = None
+        self.leftKerningGroup = None
         self.leftKerningKey = ""
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.leftMetricsKey = None
         self.name = name
-        self.note = self._defaultsForName["note"]
+        self.note = None
         self.parent = None
         self.partsSettings = []
         self.production = ""
-        self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
+        self.rightKerningGroup = None
         self.rightKerningKey = ""
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
-        self.script = self._defaultsForName["script"]
+        self.rightMetricsKey = None
+        self.script = None
         self.selected = False
-        self.subCategory = self._defaultsForName["subCategory"]
+        self.subCategory = None
         self.topKerningGroup = ""
         self.topMetricsKey = ""
-        self.userData = self._defaultsForName["userData"]
+        self.userData = None
         self.vertWidthMetricsKey = ""
-        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+        self.widthMetricsKey = None
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
