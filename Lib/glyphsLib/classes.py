@@ -1744,7 +1744,7 @@ class GSNode(GSBase):
         string = ""
         if self._userData is not None and len(self._userData) > 0:
             string = StringIO()
-            writer = Writer(string)
+            writer = Writer(string, format_version=format_version)
             writer.writeDict(self._userData)
 
         if format_version == 2:
@@ -1769,7 +1769,7 @@ class GSNode(GSBase):
             if self.smooth:
                 content += "s"
             if string:
-                content += "," + self._encode_dict_as_string(string.getvalue())
+                content += "," + string.getvalue()
             return "({},{},{})".format(
                 floatToString5(self.position[0]),
                 floatToString5(self.position[1]),
