@@ -1177,11 +1177,9 @@ class UserDataProxy(Proxy):
 
 class GSAxis(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "hidden", "if_true")
         writer.writeObjectKeyValue(self, "name", True)
         writer.writeKeyValue("tag", self.axisTag)
-        writer.file.write("}")
 
     def __init__(self):
         self.name = ""
@@ -1195,12 +1193,10 @@ GSAxis._add_parser("tag", "axisTag", str)
 
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         if writer.format_version > 2 and self.disabled:
             writer.writeObjectKeyValue(self, "disabled")
         writer.writeKeyValue("name", self.name)
         writer.writeKeyValue("value", self.value)
-        writer.file.write("}")
 
     def _parse_disabled(self, parser, text, i):
         _value, i = parser._parse(text, i, bool)
@@ -1336,7 +1332,7 @@ class GSCustomParameter(GSBase):
         string = StringIO()
         writer = Writer(string)
         self._serialize_to_plist(writer)
-        return string.getvalue()
+        return "{\n" + string.getvalue() + "}"
 
     def getValue(self):
         return self._value
@@ -1369,16 +1365,15 @@ class GSMetric(GSBase):
         self.horizontal = False
 
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         if self.horizontal:
             writer.writeKeyValue("horizontal", self.horizontal)
-        writer.writeKeyValue("name", self.name)
         if self.filter:
             writer.writeKeyValue("filter", self.filter)
-        writer.file.write("}")
+        writer.writeKeyValue("name", self.name)
 
 
 GSMetric._add_parser("name", "name", str)
+GSMetric._add_parser("type", "name", str)
 GSMetric._add_parser("filter", "filter", str)
 GSMetric._add_parser("horizontal", "horizontal", bool)
 
@@ -1392,11 +1387,9 @@ class GSMetricValue(GSBase):
         self.metric = ""
 
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeKeyValue("over", self.overshoot)
         if self.position:
             writer.writeKeyValue("pos", self.position)
-        writer.file.write("}")
 
 
 GSMetricValue._add_parser("over", "overshoot", int)
@@ -1433,19 +1426,18 @@ class GSAlignmentZone(GSBase):
 
 class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
+        writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "lockAngle", "if_true")
-        for field in ["locked", "name"]:
-            writer.writeObjectKeyValue(self, field, "if_true")
+
+        writer.writeObjectKeyValue(self, "name", "if_true")
         if writer.format_version == 3 and self.position != Point(0, 0):
             writer.writeKeyValue("pos", self.position)
         else:
             writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
-        writer.file.write("}")
 
     _parent = None
 
@@ -1479,7 +1471,6 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 class GSFontMaster(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
             writer.writeObjectKeyValue(self, "ascender")
@@ -1534,8 +1525,6 @@ class GSFontMaster(GSBase):
             writer.writeObjectKeyValue(self, "width", self.width != "Regular")
             writer.writeObjectKeyValue(self, "widthValue", self.widthValue != 100)
             writer.writeObjectKeyValue(self, "xHeight")
-
-        writer.file.write("}")
 
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
@@ -1932,12 +1921,10 @@ class GSNode(GSBase):
 
 class GSPath(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         if writer.format_version == 3 and self.attr:
             writer.writeObjectKeyValue(self, "attr")
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
-        writer.file.write("}")
 
     def _parse_nodes(self, parser, text, i):
         _nodes, i = parser._parse(text, i, str)
@@ -2275,7 +2262,6 @@ class segment(list):
 
 class GSComponent(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         writer.writeObjectKeyValue(self, "locked", "if_true")
@@ -2285,7 +2271,6 @@ class GSComponent(GSBase):
         writer.writeObjectKeyValue(
             self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
         )
-        writer.file.write("}")
 
     _parent = None
 
@@ -2443,7 +2428,6 @@ GSComponent._add_parser("ref", "name", str)
 
 class GSSmartComponentAxis(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "bottomName", "if_true")
             writer.writeObjectKeyValue(self, "bottomValue")
@@ -2454,7 +2438,6 @@ class GSSmartComponentAxis(GSBase):
             writer.writeObjectKeyValue(self, "bottomValue", True)
         writer.writeObjectKeyValue(self, "topName", "if_true")
         writer.writeObjectKeyValue(self, "topValue", True)
-        writer.file.write("}")
 
     def __init__(self):
         self.bottomName = ""
@@ -2466,10 +2449,8 @@ class GSSmartComponentAxis(GSBase):
 
 class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "name", "if_true")
         writer.writeObjectKeyValue(self, "position", True)
-        writer.file.write("}")
 
     __slots__ = ("position", "name")
 
@@ -2498,7 +2479,6 @@ GSAnchor._add_parser("position", "position", str, Point)
 
 class GSHint(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "horizontal", "if_true")
 
         for field in ["origin", "place"]:
@@ -2519,8 +2499,6 @@ class GSHint(GSBase):
 
         for field in ["type", "name", "options", "settings"]:
             writer.writeObjectKeyValue(self, field, condition="if_true")
-
-        writer.file.write("}")
 
     def __init__(self):
         self.horizontal = False
@@ -2680,7 +2658,6 @@ GSHint._add_parser("target", "target", str, parse_hint_target)
 
 class GSFeature(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
@@ -2690,7 +2667,6 @@ class GSFeature(GSBase):
         else:
             writer.writeKeyValue("name", self.name)
         writer.writeObjectKeyValue(self, "notes", "if_true")
-        writer.file.write("}")
 
     def __init__(self, name="xxxx", code=""):
         self.automatic = False
@@ -2733,12 +2709,10 @@ GSFeature._add_parser("labels", "labels", dict)
 
 class GSClass(GSFeature):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeKeyValue("name", self.name)
-        writer.file.write("}")
 
 
 class GSFeaturePrefix(GSClass):
@@ -2747,13 +2721,11 @@ class GSFeaturePrefix(GSClass):
 
 class GSAnnotation(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "angle", default=0)
         writer.writeObjectKeyValue(self, "position", default=Point(0, 0))
         writer.writeObjectKeyValue(self, "text", "if_true")
         writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(self, "width", default=100)
-        writer.file.write("}")
 
     def __init__(self):
         self.angle = 0
@@ -2787,7 +2759,6 @@ class GSInstance(GSBase):
     }
 
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
@@ -2821,7 +2792,6 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(
             self, "width", default="Medium (normal)", keyName="widthClass"
         )
-        writer.file.write("}")
 
     def __init__(self):
         self._customParameters = []
@@ -2979,7 +2949,6 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         return i
 
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "key", "if_true")
         if self.localized_values:
             writer.writeKeyValue(
@@ -2988,7 +2957,6 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
             )
         else:
             writer.writeObjectKeyValue(self, "value")
-        writer.file.write("}")
 
     @property
     def defaultValue(self):
@@ -3018,7 +2986,6 @@ class GSBackgroundImage(GSBase):
     )
 
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
         writer.writeObjectKeyValue(self, "crop")
         writer.writeObjectKeyValue(self, "imagePath")
@@ -3026,7 +2993,6 @@ class GSBackgroundImage(GSBase):
         writer.writeObjectKeyValue(
             self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
         )
-        writer.file.write("}")
 
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
 
@@ -3132,7 +3098,6 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 class GSLayer(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeObjectKeyValue(self, "anchors", "if_true")
         writer.writeObjectKeyValue(self, "annotations", "if_true")
         if self.layerId != self.associatedMasterId:
@@ -3170,7 +3135,6 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
-        writer.file.write("}")
 
     def _parse_shapes(self, parser, text, i):
         shapes, i = parser._parse(text, i, dict)
@@ -3419,7 +3383,8 @@ GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
 GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
 GSLayer._add_parser("paths", "paths", GSPath)
 GSLayer._add_parser("anchors", "anchors", GSAnchor)
-GSLayer._add_parser("guideLines", "guides", GSGuide)
+GSLayer._add_parser("guideLines", "guides", GSGuide)  # V2
+GSLayer._add_parser("guides", "guides", GSGuide)  # V3
 GSLayer._add_parser("components", "components", GSComponent)
 GSLayer._add_parser("hints", "hints", GSHint)
 GSLayer._add_parser("userData", "_userData", dict)
@@ -3450,7 +3415,8 @@ class GSBackgroundLayer(GSLayer):
 
 class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "case")
         writer.writeObjectKeyValue(self, "color")
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
@@ -3472,11 +3438,12 @@ class GSGlyph(GSBase):
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "script")
         writer.writeObjectKeyValue(self, "category")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "tags", "if_true")
         writer.writeObjectKeyValue(self, "subCategory")
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if self.smartComponentAxes:
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
-        writer.file.write("}")
 
     def _parse_unicode(self, parser, text, i):
         parser.current_type = None
@@ -3501,6 +3468,7 @@ class GSGlyph(GSBase):
         self.bottomKerningGroup = ""
         self.bottomMetricsKey = ""
         self.category = None
+        self.case = None
         self.color = None
         self.export = True
         self.lastChange = None
@@ -3518,6 +3486,7 @@ class GSGlyph(GSBase):
         self.script = None
         self.selected = False
         self.subCategory = None
+        self.tags = []
         self.topKerningGroup = ""
         self.topMetricsKey = ""
         self.userData = None
@@ -3612,7 +3581,6 @@ GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
 
 class GSFont(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.file.write("{\n")
         writer.writeKeyValue(".appVersion", self.appVersion)
         if self.format_version > 2:
             writer.writeKeyValue(".formatVersion", self.format_version)
@@ -3676,8 +3644,6 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
-
-        writer.file.write("}")
 
     def _parse_glyphs(self, parser, text, i):
         _glyphs, i = parser._parse(text, i, GSGlyph)

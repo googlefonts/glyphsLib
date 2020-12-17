@@ -54,7 +54,9 @@ class Writer:
 
     def writeDict(self, dictValue):
         if hasattr(dictValue, "_serialize_to_plist"):
+            self.file.write("{\n")
             dictValue._serialize_to_plist(self)
+            self.file.write("}")
             return
         self.file.write("{\n")
         keys = dictValue.keys()
