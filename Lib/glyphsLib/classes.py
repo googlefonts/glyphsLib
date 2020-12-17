@@ -2312,25 +2312,19 @@ class segment(list):
 
 
 class GSComponent(GSBase):
-    __slots__ = (
-        "alignment",
-        "anchor",
-        "locked",
-        "name",
-        "smartComponentValues",
-        "transform",
-    )
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "alignment", "if_true")
+        writer.writeObjectKeyValue(self, "anchor", "if_true")
+        writer.writeObjectKeyValue(self, "locked", "if_true")
+        writer.writeObjectKeyValue(self, "name")
+        if self.smartComponentValues:
+            writer.writeKeyValue("piece", self.smartComponentValues)
+        writer.writeObjectKeyValue(
+            self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
+        )
+        writer.file.write("}")
 
-    _classesForName = {
-        "alignment": int,
-        "anchor": str,
-        "locked": bool,
-        "name": str,
-        "piece": dict,
-        "transform": Transform,
-    }
-    _wrapperKeysTranslate = {"piece": "smartComponentValues"}
-    _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
     _parent = None
 
     # TODO: glyph arg is required
@@ -2352,7 +2346,7 @@ class GSComponent(GSBase):
                 dx, dy = offset
                 self.transform = Transform(xx, 0, 0, yy, dx, dy)
             else:
-                self.transform = copy.deepcopy(self._defaultsForName["transform"])
+                self.transform = Transform(1, 0, 0, 1, 0, 0)
         else:
             self.transform = transform
 
@@ -2360,12 +2354,6 @@ class GSComponent(GSBase):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
             self.name, self.transform[4], self.transform[5]
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key == "piece":
-            value = self.smartComponentValues
-            return len(value) > 0
-        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2836,46 +2824,6 @@ GSAnnotation._add_parser("position", "position", str, Point)
 
 
 class GSInstance(GSBase):
-    __slots__ = (
-        "_customParameters",
-        "active",
-        "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "instanceInterpolations",
-        "isBold",
-        "isItalic",
-        "linkStyle",
-        "manualInterpolation",
-        "name",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-    )
-
-    _classesForName = {
-        "customParameters": GSCustomParameter,
-        "active": bool,
-        "exports": bool,
-        "instanceInterpolations": dict,
-        "interpolationCustom": parse_float_or_int,
-        "interpolationCustom1": parse_float_or_int,
-        "interpolationCustom2": parse_float_or_int,
-        "interpolationCustom3": parse_float_or_int,
-        "interpolationWeight": parse_float_or_int,
-        "interpolationWidth": parse_float_or_int,
-        "isBold": bool,
-        "isItalic": bool,
-        "linkStyle": str,
-        "manualInterpolation": bool,
-        "name": str,
-        "weightClass": str,
-        "widthClass": str,
-    }
     _defaultsForName = {
         "active": True,
         "exports": True,
@@ -2889,35 +2837,43 @@ class GSInstance(GSBase):
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
     }
-    _keyOrder = (
-        "active",
-        "exports",
-        "customParameters",
-        "interpolationCustom",
-        "interpolationCustom1",
-        "interpolationCustom2",
-        "interpolationCustom3",
-        "interpolationWeight",
-        "interpolationWidth",
-        "instanceInterpolations",
-        "isBold",
-        "isItalic",
-        "linkStyle",
-        "manualInterpolation",
-        "name",
-        "weightClass",
-        "widthClass",
-    )
-    _wrapperKeysTranslate = {
-        "weightClass": "weight",
-        "widthClass": "width",
-        "interpolationWeight": "weightValue",
-        "interpolationWidth": "widthValue",
-        "interpolationCustom": "customValue",
-        "interpolationCustom1": "customValue1",
-        "interpolationCustom2": "customValue2",
-        "interpolationCustom3": "customValue3",
-    }
+
+    def _serialize_to_plist(self, writer):
+        writer.file.write("{\n")
+        writer.writeObjectKeyValue(self, "active", condition=(not self.active))
+        writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
+        writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
+        writer.writeObjectKeyValue(
+            self, "customValue", condition="if_true", keyName="interpolationCustom"
+        )
+        writer.writeObjectKeyValue(
+            self, "customValue1", condition="if_true", keyName="interpolationCustom1"
+        )
+        writer.writeObjectKeyValue(
+            self, "customValue2", condition="if_true", keyName="interpolationCustom2"
+        )
+        writer.writeObjectKeyValue(
+            self, "customValue3", condition="if_true", keyName="interpolationCustom3"
+        )
+        writer.writeObjectKeyValue(
+            self, "weightValue", keyName="interpolationWeight", default=100
+        )
+        writer.writeObjectKeyValue(
+            self, "widthValue", keyName="interpolationWidth", default=100
+        )
+        writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
+        writer.writeObjectKeyValue(self, "isBold", "if_true")
+        writer.writeObjectKeyValue(self, "isItalic", "if_true")
+        writer.writeObjectKeyValue(self, "linkStyle", "if_true")
+        writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
+        writer.writeObjectKeyValue(self, "name")
+        writer.writeObjectKeyValue(
+            self, "weight", default="Regular", keyName="weightClass"
+        )
+        writer.writeObjectKeyValue(
+            self, "width", default="Medium (normal)", keyName="widthClass"
+        )
+        writer.file.write("}")
 
     def __init__(self):
         self._customParameters = []
@@ -3049,6 +3005,14 @@ class GSInstance(GSBase):
 
 GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
 GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
+GSInstance._add_parser("interpolationCustom", "customValue", int)
+GSInstance._add_parser("interpolationCustom1", "customValue1", int)
+GSInstance._add_parser("interpolationCustom2", "customValue2", int)
+GSInstance._add_parser("interpolationCustom3", "customValue3", int)
+GSInstance._add_parser("interpolationWeight", "weightValue", int)
+GSInstance._add_parser("interpolationWidth", "widthValue", int)
+GSInstance._add_parser("weightClass", "weight", str)
+GSInstance._add_parser("widthClass", "width", str)
 
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties

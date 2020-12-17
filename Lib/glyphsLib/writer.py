@@ -118,14 +118,17 @@ class Writer:
         self.writeValue(value, key)
         self.file.write(";\n")
 
-    def writeObjectKeyValue(self, d, key, condition=None):
+    def writeObjectKeyValue(self, d, key, condition=None, keyName=None, default=None):
         value = getattr(d, key)
         if condition == "if_true":
             condition = bool(value)
         if condition is None:
-            condition = value is not None
+            if default:
+                condition = value != default
+            else:
+                condition = value is not None
         if condition:
-            self.writeKey(key)
+            self.writeKey(keyName or key)
             self.writeValue(value, key)
             self.file.write(";\n")
 
