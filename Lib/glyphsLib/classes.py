@@ -2760,6 +2760,8 @@ class GSInstance(GSBase):
 
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
         writer.writeObjectKeyValue(
@@ -2794,6 +2796,7 @@ class GSInstance(GSBase):
         )
 
     def __init__(self):
+        self.axesValues = []
         self._customParameters = []
         self.active = self._defaultsForName["active"]
         self.custom = None
@@ -2931,6 +2934,7 @@ GSInstance._add_parser("interpolationWeight", "weightValue", int)
 GSInstance._add_parser("interpolationWidth", "widthValue", int)
 GSInstance._add_parser("weightClass", "weight", str)
 GSInstance._add_parser("widthClass", "width", str)
+GSInstance._add_parser("axesValues", "axesValues", int)
 
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
