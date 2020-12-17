@@ -57,33 +57,19 @@ class Writer:
             dictValue._serialize_to_plist(self)
             return
         self.file.write("{\n")
-        if hasattr(dictValue, "_keyOrder"):
-            keys = dictValue._keyOrder
-        elif hasattr(dictValue, "_classesForName"):
-            keys = sorted(dictValue._classesForName.keys())
-        else:
-            keys = dictValue.keys()
-            if not isinstance(dictValue, OrderedDict):
-                keys = sorted(keys)
+        keys = dictValue.keys()
+        if not isinstance(dictValue, OrderedDict):
+            keys = sorted(keys)
         for key in keys:
-            if hasattr(dictValue, f"_write_{key}"):
-                getattr(dictValue, f"_write_{key}")(self)
-                continue
             try:
                 if isinstance(dictValue, (dict, OrderedDict)):
                     value = dictValue[key]
                 else:
                     getKey = key
-                    if hasattr(dictValue, "_wrapperKeysTranslate"):
-                        getKey = dictValue._wrapperKeysTranslate.get(key, key)
                     value = getattr(dictValue, getKey)
             except AttributeError:
                 continue
             if value is None:
-                continue
-            if hasattr(
-                dictValue, "shouldWriteValueForKey"
-            ) and not dictValue.shouldWriteValueForKey(key):
                 continue
             self.writeKeyValue(key, value)
         self.file.write("}")

@@ -316,31 +316,19 @@ class GSBase:
     """Represent the base class for all GS classes.
 
     Attributes:
-        _classesForName (dict): Pre-PEP 484 way of annotating instance variables with
-            their types. Used by the parser during deserialization to insert
-            instance variables into GS classes. Used during serialization to determine
-            if some values should be serialized.
         _defaultsForName (dict): Used to determine which values to serialize and which
             to imply by their absence.
         _wrapperKeysTranslate (dict): Used to map field names to GS* instance variables
             during (de)serialization.
     """
 
-    _classesForName = {}
     _defaultsForName = {}
-    _wrapperKeysTranslate = {}
 
     def __repr__(self):
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
         return f"<{self.__class__.__name__} {content}>"
-
-    def classForName(self, name):
-        return self._classesForName.get(name, str)
-
-    def default_attr_value(self, attr_name):
-        """Return the default value of the given attribute, if any."""
 
     # Note:
     # The dictionary API exposed by GS* classes is "private" in the sense that:
@@ -352,33 +340,7 @@ class GSBase:
     # Users of the library should only rely on the object-oriented API that is
     # documented at https://docu.glyphsapp.com/
     def __setitem__(self, key, value):
-        if isinstance(value, bytes) and key in self._classesForName:
-            new_type = self._classesForName[key]
-            if new_type is str:
-                value = value.decode("utf-8")
-            else:
-                try:
-                    value = new_type().read(value)
-                except Exception:
-                    # FIXME: too broad, should only catch specific exceptions
-                    value = new_type(value)
-        key = self._wrapperKeysTranslate.get(key, key)
         setattr(self, key, value)
-
-    def shouldWriteValueForKey(self, key):
-        getKey = self._wrapperKeysTranslate.get(key, key)
-        value = getattr(self, getKey)
-        klass = self._classesForName[key]
-        default = self._defaultsForName.get(key, None)
-        if isinstance(value, (list, glyphsLib.classes.Proxy, str)) and len(value) == 0:
-            return False
-        if default is not None:
-            return default != value
-        if klass in (int, float, bool) and value == 0:
-            return False
-        if isinstance(value, ValueType) and value.value is None:
-            return False
-        return True
 
     def _default_key_value_parser(self, parser, name, text, i):
         result, i = parser._parse(text, i)
