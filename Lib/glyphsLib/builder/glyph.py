@@ -14,16 +14,19 @@
 
 
 import logging
+import re
 
 import glyphsLib.glyphdata
 from .common import to_ufo_time, from_loose_ufo_time
 from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, PUBLIC_PREFIX
+from .builders import BRACKET_GLYPH_RE
 
 logger = logging.getLogger(__name__)
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
 ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
@@ -82,7 +85,15 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
-    production_name = glyph.production or glyphinfo.production_name
+    if glyph.production:
+        production_name = glyph.production
+        # Make sure production names of bracket glyphs also get a BRACKET suffix.
+        bracket_glyph_name = BRACKET_GLYPH_RE.match(ufo_glyph.name)
+        prod_bracket_glyph_name = BRACKET_GLYPH_RE.match(production_name)
+        if bracket_glyph_name and not prod_bracket_glyph_name:
+            production_name += BRACKET_GLYPH_SUFFIX_RE.match(ufo_glyph.name).group(1)
+    else:
+        production_name = glyphinfo.production_name
     if production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
         if postscriptNamesKey not in ufo_font.lib:
