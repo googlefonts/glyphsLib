@@ -16,6 +16,7 @@
 
 import io
 import os
+from fontTools.designspaceLib import DesignSpaceDocument
 from xmldiff import main, formatting
 
 import itertools
@@ -285,6 +286,36 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert "a.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs
+
+
+def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
+    with open(str(datadir.join("PSNames.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace: DesignSpaceDocument = to_designspace(font, ufo_module=ufo_module)
+
+    assert designspace.findDefault().font.lib["public.postscriptNames"] == {
+        "a-cy": "uni0430",
+        "a-cy.BRACKET.18": "uni0430.BRACKET.18",
+        "a-cy.alt": "uni0430.alt",
+    }
+
+    font_rt = to_glyphs(designspace)
+    designspace_rt = to_designspace(font_rt, ufo_module=ufo_module)
+
+    assert designspace_rt.findDefault().font.lib["public.postscriptNames"] == {
+        "a-cy": "uni0430",
+        "a-cy.BRACKET.18": "uni0430.BRACKET.18",
+        "a-cy.alt": "uni0430.alt",
+    }
+
+    font_rt2 = to_glyphs(designspace_rt)
+    designspace_rt2 = to_designspace(font_rt2, ufo_module=ufo_module)
+
+    assert designspace_rt2.findDefault().font.lib["public.postscriptNames"] == {
+        "a-cy": "uni0430",
+        "a-cy.BRACKET.18": "uni0430.BRACKET.18",
+        "a-cy.alt": "uni0430.alt",
+    }
 
 
 def test_designspace_generation_bracket_roundtrip_no_layername(datadir, ufo_module):

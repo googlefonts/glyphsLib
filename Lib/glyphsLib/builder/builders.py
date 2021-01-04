@@ -37,6 +37,7 @@ BRACKET_GLYPH_RE = re.compile(
         REVERSE_BRACKET_LABEL
     )
 )
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
 class _LoggerMixin:
