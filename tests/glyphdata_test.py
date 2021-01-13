@@ -138,6 +138,12 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("_aaa"), (None, None))
         self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
         self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
+        self.assertEqual(cat("a.sc"), ("Letter", "Smallcaps"))
+        self.assertEqual(cat("a.sc.ss01"), ("Letter", "Smallcaps"))
+        self.assertEqual(cat("a.smcp"), ("Letter", "Smallcaps"))
+        self.assertEqual(cat("a.smcp.ss01"), ("Letter", "Smallcaps"))
+        self.assertEqual(cat("a.c2sc"), ("Letter", "Smallcaps"))
+        self.assertEqual(cat("a.c2sc.ss01"), ("Letter", "Smallcaps"))
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
