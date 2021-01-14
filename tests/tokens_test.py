@@ -18,6 +18,7 @@ import os
 import pytest
 from glyphsLib.classes import GSFont
 from glyphsLib.builder.tokens import TokenExpander
+from glyphsLib.builder import to_ufos
 
 TESTFONT = GSFont(os.path.join(
     os.path.dirname(__file__), os.path.join("data", "TokenTest.glyphs")
@@ -76,3 +77,10 @@ def test_token_expander(test_input, expected, throws):
     else:
         output = expander.expand(test_input)
         assert output == expected
+
+def test_end_to_end():
+    ufos = to_ufos(TESTFONT)
+    assert "@SmallCaps = [ A.sc ]" in ufos[0].features.text
+
+    assert "pos A A.sc 100" in ufos[0].features.text
+    assert "pos A A.sc 500" in ufos[1].features.text

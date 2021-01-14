@@ -20,6 +20,7 @@ from io import StringIO
 from fontTools.feaLib import ast, parser
 
 from .constants import GLYPHLIB_PREFIX
+from .tokens import TokenExpander
 
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
@@ -46,10 +47,11 @@ def to_ufo_features(self):
                 ufo,
                 generate_GDEF=self.generate_GDEF,
                 skip_export_glyphs=skip_export_glyphs,
+                master = master
             )
 
 
-def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=None):
+def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=None, master=None):
     """Convert GSFont features, including prefixes and classes, to UFO.
 
     Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
@@ -59,16 +61,22 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=Non
         ufo: Optional[defcon.Font]
         generate_GDEF: bool
         skip_export_glyphs: Optional[List[str]]
+        master: Optional[GSFontMaster]
 
     Returns: str
     """
+    if not master:
+        master = font.masters[0]
+
+    expander = TokenExpander(font, master)
+
     prefixes = []
     for prefix in font.featurePrefixes:
         strings = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
             strings.append("# Prefix: %s\n" % prefix.name)
         strings.append(autostr(prefix.automatic))
-        strings.append(prefix.code)
+        strings.append(expander.expand(prefix.code))
         prefixes.append("".join(strings))
 
     prefix_str = "\n\n".join(prefixes)
@@ -78,13 +86,13 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=Non
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
-            "{}{} = [ {} ];".format(autostr(class_.automatic), name, class_.code)
+            "{}{} = [ {} ];".format(autostr(class_.automatic), name, expander.expand(class_.code))
         )
     class_str = "\n\n".join(class_defs)
 
     feature_defs = []
     for feature in font.features:
-        code = feature.code
+        code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         if feature.notes:
             lines.append("# notes:")

@@ -1,8 +1,28 @@
 {
 .appVersion = "3039";
 .formatVersion = 3;
+classes = (
+{
+code = "$[name endswith \".sc\"]";
+name = SmallCaps;
+}
+);
 date = "2021-01-14 10:00:03 +0000";
 familyName = "New Font";
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+features = (
+{
+code = "pos A A.sc ${padding*2};";
+tag = dist;
+}
+);
 fontMaster = (
 {
 id = m01;
