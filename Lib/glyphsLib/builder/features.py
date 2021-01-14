@@ -20,7 +20,7 @@ from io import StringIO
 from fontTools.feaLib import ast, parser
 
 from .constants import GLYPHLIB_PREFIX
-from .tokens import TokenExpander
+from .tokens import TokenExpander, PassThruExpander
 
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
@@ -68,9 +68,9 @@ def _to_ufo_features(
     Returns: str
     """
     if not master:
-        master = font.masters[0]
-
-    expander = TokenExpander(font, master)
+        expander = PassThruExpander()
+    else:
+        expander = TokenExpander(font, master)
 
     prefixes = []
     for prefix in font.featurePrefixes:

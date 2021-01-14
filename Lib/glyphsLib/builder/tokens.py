@@ -291,3 +291,8 @@ class TokenExpander:
             return "OR"
 
         return False
+
+
+class PassThruExpander():
+    def expand(self, token):
+        return token
