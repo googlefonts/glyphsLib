@@ -258,8 +258,7 @@ class TokenExpander:
         except AttributeError:
             raise ValueError(
                 "Glyphs attribute %s used in predicate '%s'"
-                " but glyphsLib does not support it"
-                % (value, self.originaltoken)
+                " but glyphsLib does not support it" % (value, self.originaltoken)
             )
 
     apply_comparators = {
@@ -293,6 +292,6 @@ class TokenExpander:
         return False
 
 
-class PassThruExpander():
+class PassThruExpander:
     def expand(self, token):
         return token
