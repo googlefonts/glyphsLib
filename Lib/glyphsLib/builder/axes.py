@@ -263,7 +263,7 @@ def font_uses_axis_locations(font):
     # resort to using instances or other old tricks to get the mapping.
     # https://github.com/googlefonts/glyphsLib/issues/409
     # https://github.com/googlefonts/glyphsLib/issues/411
-    return font.customParameters["Axes"] and all(
+    return font.axes and all(
         master.customParameters["Axis Location"] for master in font.masters
     )
 
