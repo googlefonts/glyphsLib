@@ -50,7 +50,10 @@ expander = TokenExpander(TESTFONT, master)
         # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
         # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL
         # ('$[colorIndex == 5]', "", False),
-        # ('$[case == smallCaps]', "", False), # predefined constants: noCase, upper, lower, smallCaps, minor, other
+
+        # ('$[case == smallCaps]', "", False),
+        # predefined constants: noCase, upper, lower, smallCaps, minor, other
+
         (
             '$[name matches "S|s.*"]',
             "A.sc Sacute",
@@ -74,13 +77,17 @@ expander = TokenExpander(TESTFONT, master)
             "A",
             False,
         ),  # connect multiple conditions with ORor AND
-        # ('$[hasComponents == true and script == "latin"]', "", False), # connect multiple conditions with ORor AND
+
+        # ('$[hasComponents == true and script == "latin"]', "", False),
+        # connect multiple conditions with ORor AND
+
         # ('$[hasTrueTypeHints == false]', "", False),
         # ('$[hasAlignedWidth == true]', "", False),
         # ('$[hasPostScriptHints == true]', "", False),
         # ('$[hasAnnotations == true]', "", False),
         # ('$[hasCorners == true]', "", False), # corners = corner components
-        # ('$[hasSpecialLayers == yes]', "", False), # special layers = color, brace and bracket layers
+        # ('$[hasSpecialLayers == yes]', "", False),
+        # special layers = color, brace and bracket layers
         # ('$[isHangulKeyGlyph == no]', "", False),
     ],
 )

@@ -257,7 +257,8 @@ class TokenExpander:
             return getattr(g, value)
         except AttributeError:
             raise ValueError(
-                "Glyphs attribute %s used in predicate '%s' but glyphsLib does not support it"
+                "Glyphs attribute %s used in predicate '%s'"
+                " but glyphsLib does not support it"
                 % (value, self.originaltoken)
             )
 
