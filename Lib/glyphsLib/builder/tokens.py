@@ -8,12 +8,12 @@ class TokenExpander:
     glyph_predicate_re = r"\$\[([^\]]+)\]"
     bare_number_value_re = r"\$(\w+)\b"
 
-    def __init__(self, font, featurecode, master):
+    def __init__(self, font, master):
         self.font = font
-        self.featurecode = featurecode
         self.master = master
 
-    def parse(self):
+    def expand(self, featurecode):
+        self.featurecode = featurecode
         self.output = ""
         self.position = 0
         while len(self.featurecode) > 0:

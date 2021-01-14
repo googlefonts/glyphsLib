@@ -22,6 +22,8 @@ from glyphsLib.builder.tokens import TokenExpander
 TESTFONT = GSFont(os.path.join(
     os.path.dirname(__file__), os.path.join("data", "TokenTest.glyphs")
 ))
+master = TESTFONT.masters[1]
+expander = TokenExpander(TESTFONT, master)
 
 @pytest.mark.parametrize("test_input,expected,throws", [
     ("sub a by b;", "sub a by b;", False),
@@ -67,12 +69,10 @@ TESTFONT = GSFont(os.path.join(
     # ('$[isHangulKeyGlyph == no]', "", False),
 ])
 def test_token_expander(test_input, expected, throws):
-    master = TESTFONT.masters[1]
-    expander = TokenExpander(TESTFONT, test_input, master)
 
     if throws:
         with pytest.raises(ValueError):
-            expander.parse()
+            expander.expand(test_input)
     else:
-        output = expander.parse()
+        output = expander.expand(test_input)
         assert output == expected
