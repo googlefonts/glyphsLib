@@ -153,7 +153,7 @@ class Writer:
         elif type(value) == int:
             self.file.write(str(value))
         elif type(value) == bytes:
-            self.file.write('<'+value.hex()+'>')
+            self.file.write("<" + value.hex() + ">")
         elif type(value) == bool:
             if value:
                 self.file.write("1")

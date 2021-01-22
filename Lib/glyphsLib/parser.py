@@ -23,7 +23,7 @@ import sys
 logger = logging.getLogger(__name__)
 
 
-class Parser():
+class Parser:
     """Parses Python dictionaries from Glyphs files."""
 
     def __init__(self, current_type=OrderedDict, format_version=2):
@@ -38,7 +38,8 @@ class Parser():
                 d = openstep_plist.loads(d.decode(), use_numbers=True)
             result, i = self._parse(d, 0)
         except openstep_plist.parser.ParseError as e:
-            raise ValueError(); # For API compatibility
+            raise ValueError()
+            # For API compatibility
         return result
 
     def _parse(self, d, _, new_type=None):
@@ -109,11 +110,13 @@ def loads(s):
     p.parse_into_object(res, openstep_plist.loads(s, use_numbers=True))
     return res
 
+
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
         fp = open(arg, "r", encoding="utf-8")
         glyphsLib.dump(load(fp), sys.stdout)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
