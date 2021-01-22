@@ -486,9 +486,10 @@ class UFOBuilder(_LoggerMixin):
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             for (location, reverse), layers in glyph_bracket_layers.items():
                 for layer in layers:
-                    ufo_layer = self._sources[
+                    ufo_font = ufo_layer = self._sources[
                         layer.associatedMasterId or layer.layerId
-                    ].font.layers.defaultLayer
+                    ].font
+                    ufo_layer = ufo_font.layers.defaultLayer
                     ufo_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
                     ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                     self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
@@ -506,6 +507,25 @@ class UFOBuilder(_LoggerMixin):
                         )
                         if bracket_comp_name in bracket_glyphs:
                             comp.baseGlyph = bracket_comp_name
+                    # Update kerning groups and pairs, bracket glyphs inherit the
+                    # parent's kerning.
+                    for group, names in ufo_font.groups.items():
+                        if not group.startswith(("public.kern1.", "public.kern2.")):
+                            continue
+                        name_set = set(names)
+                        if glyph_name in name_set and ufo_glyph_name not in name_set:
+                            names.append(ufo_glyph_name)
+                    bracket_kerning = {}
+                    for (first, second), value in ufo_font.kerning.items():
+                        first_match = first == glyph_name
+                        second_match = second == glyph_name
+                        if first_match and second_match:
+                            bracket_kerning[(ufo_glyph_name, ufo_glyph_name)] = value
+                        elif first_match:
+                            bracket_kerning[(ufo_glyph_name, second)] = value
+                        elif second_match:
+                            bracket_kerning[(first, ufo_glyph_name)] = value
+                    ufo_font.kerning.update(bracket_kerning)
 
     # Implementation is split into one file per feature
     from .anchors import to_ufo_propagate_font_anchors, to_ufo_glyph_anchors
