@@ -346,7 +346,6 @@ class GSBase:
     @classmethod
     def _add_parsers(cls, specification):
         for field in specification:
-            # { "plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster },
             keyname = field["plist_name"]
             dict_parser_name = "_parse_%s_dict" % keyname
             target = field.get("object_name", keyname)
