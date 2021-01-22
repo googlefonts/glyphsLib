@@ -368,7 +368,7 @@ class GSBase:
                     else:
                         self[target] = transformer(value)
                 else:
-                    obj, i = parser._parse(value, 0, classname)
+                    obj = parser._parse(value, classname)
                     self[target] = obj
 
             setattr(cls, dict_parser_name, _generic_parser)
@@ -1557,7 +1557,7 @@ class GSFontMaster(GSBase):
     }
 
     def _parse_alignmentZones_dict(self, parser, text):
-        _zones, i = parser._parse(text, 0, str)
+        _zones = parser._parse(text, str)
         self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
     _axis_defaults = (100, 100)
@@ -3395,10 +3395,10 @@ class GSLayer(GSBase):
     def _parse_shapes_dict(self, parser, shapes):
         for shape_dict in shapes:
             if "ref" in shape_dict:
-                shape, _ = parser._parse_dict(shape_dict, 0, GSComponent)
+                shape = parser._parse_dict(shape_dict, GSComponent)
                 self.components.append(shape)
             else:
-                shape, _ = parser._parse_dict(shape_dict, 0, GSPath)
+                shape = parser._parse_dict(shape_dict, GSPath)
                 self.paths.append(shape)
 
     def __init__(self):
@@ -3428,7 +3428,7 @@ class GSLayer(GSBase):
         self.metricWidth = None
 
     def _parse_background_dict(self, parser, value):
-        self._background, i = parser._parse(value, 0, GSBackgroundLayer)
+        self._background = parser._parse(value, GSBackgroundLayer)
         self._background._foreground = self
         self._background.parent = self.parent
 
@@ -3790,7 +3790,7 @@ class GSGlyph(GSBase):
         self["_unicodes"] = UnicodesList(uni)
 
     def _parse_layers_dict(self, parser, value):
-        layers, i = parser._parse(value, 0, GSLayer)
+        layers = parser._parse(value, GSLayer)
         for l in layers:
             self.layers.append(l)
         return 0
@@ -3975,7 +3975,7 @@ class GSFont(GSBase):
     _defaultAxes = [GSAxis(name="Weight", tag="wght"), GSAxis(name="Width", tag="wdth")]
 
     def _parse_glyphs_dict(self, parser, value):
-        glyphs, i = parser._parse(value, 0, GSGlyph)
+        glyphs = parser._parse(value, GSGlyph)
         for l in glyphs:
             self.glyphs.append(l)
         return 0
@@ -4046,7 +4046,7 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMinor")
 
     def _parse_customParameters_dict(self, parser, value):
-        _customParameters, i = parser._parse(value, 0, GSCustomParameter)
+        _customParameters = parser._parse(value, GSCustomParameter)
         for cp in _customParameters:
             self.customParameters[cp.name] = cp.value  # This will intercept axes
 
