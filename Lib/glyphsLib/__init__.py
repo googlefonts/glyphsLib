@@ -21,7 +21,7 @@ import logging
 from glyphsLib.classes import GSFont, __all__ as __all_classes__
 from glyphsLib.classes import *  # noqa
 from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
-from glyphsLib.parser import load, loads  # noqa
+from glyphsLib.dictParser import load, loads  # noqa
 from glyphsLib.writer import dump, dumps  # noqa
 from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
 
