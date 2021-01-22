@@ -25,6 +25,8 @@ from collections import OrderedDict
 from io import StringIO
 from typing import Any, Dict, Optional, Tuple, Union
 
+import openstep_plist
+
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
     AbstractPointPen,
@@ -34,6 +36,7 @@ from fontTools.pens.pointPen import (
 
 from glyphsLib.affine import Affine
 from glyphsLib.parser import Parser
+from glyphsLib.dictParser import DictParser
 from glyphsLib.types import (
     Point,
     Rect,
@@ -357,6 +360,25 @@ class GSBase:
             return i
 
         setattr(cls, "_parse_" + keyname, _generic_parser)
+        dict_parser_name = "_parse_" + keyname+"_dict"
+        if hasattr(cls, dict_parser_name):
+            return
+
+        dict_transformer = transform
+        if not dict_transformer and (classname == int or classname == float or classname == bool):
+            dict_transformer = classname
+        if dict_transformer:
+            def _generic_dict_parser(self, parser, value):
+                if isinstance(value, list) and dict_transformer != Point:
+                    self[target] = [ dict_transformer(v) for v in value ]
+                else:
+                    self[target] = dict_transformer(value)
+            setattr(cls, dict_parser_name, _generic_dict_parser)
+        elif keyname != target or (classname and not (classname == str or classname == dict)):
+            def _generic_dict_parser2(self, parser, value):
+                obj, i = parser._parse(value, 0, classname)
+                self[target] = obj
+            setattr(cls, dict_parser_name, _generic_dict_parser2)
 
 
 class Proxy:
@@ -1557,6 +1579,10 @@ class GSFontMaster(GSBase):
         self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
         return i
 
+    def _parse_alignmentZones_dict(self, parser, text):
+        _zones, i = parser._parse(text, 0, str)
+        self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
+
     def _parse_visible(self, parser, text, i):
         visible, i = parser._parse(text, i, bool)
         self.visible = bool(visible)
@@ -2603,6 +2629,10 @@ class GSSmartComponentAxis(GSBase):
         self.topValue = 0
 
 
+GSSmartComponentAxis._add_parser("topValue", "topValue", int)
+GSSmartComponentAxis._add_parser("bottomValue", "bottomValue", int)
+
+
 class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "name", "if_true")
@@ -2659,6 +2689,13 @@ class GSHint(GSBase):
 
         for field in ["type", "name", "options", "settings"]:
             writer.writeObjectKeyValue(self, field, condition="if_true")
+
+    def _parse_target_dict(self, parser, value):
+        # In glyphs 2 this is a string, in glyphs 3 it is a point or string
+        if isinstance(value, str):
+            self.target = parse_hint_target(value)
+        else:
+            self.target = Point([int(x) for x in value])
 
     def __init__(self):
         self.horizontal = False
@@ -3169,6 +3206,7 @@ GSInstance._add_parser("interpolationWidth", "widthValue", int)
 GSInstance._add_parser("weightClass", "weight", str)
 GSInstance._add_parser("widthClass", "width", str)
 GSInstance._add_parser("axesValues", "axes", int)
+GSInstance._add_parser("manualInterpolation", "manualInterpolation", bool)
 
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
@@ -3185,6 +3223,13 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 continue
             self.localized_values[v["language"]] = v["value"]
         return i
+
+    def _parse_values_dict(self, parser, values):
+        self.localized_values = {}
+        for v in values:
+            if "language" not in v or "value" not in v:
+                continue
+            self.localized_values[v["language"]] = v["value"]
 
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "key", "if_true")
@@ -3396,6 +3441,15 @@ class GSLayer(GSBase):
                 self.paths.append(shape)
         return i
 
+    def _parse_shapes_dict(self, parser, shapes):
+        for shape_dict in shapes:
+            if "ref" in shape_dict:
+                shape, _ = parser._parse_dict(shape_dict, 0, GSComponent)
+                self.components.append(shape)
+            else:
+                shape, _ = parser._parse_dict(shape_dict, 0, GSPath)
+                self.paths.append(shape)
+
     def __init__(self):
         self._anchors = []
         self._annotations = []
@@ -3423,10 +3477,15 @@ class GSLayer(GSBase):
         self.metricWidth = None
 
     def _parse_background(self, parser, text, i):
-        self._background, i = parser._parse(text, i, GSBackgroundLayer)
+        self._background, i = parser._parse(text, 0, GSBackgroundLayer)
         self._background._foreground = self
         self._background.parent = self.parent
         return i
+
+    def _parse_background_dict(self, parser, value):
+        self._background, i = parser._parse(value, 0, GSBackgroundLayer)
+        self._background._foreground = self
+        self._background.parent = self.parent
 
     def __repr__(self):
         name = self.name
@@ -3688,6 +3747,7 @@ class GSBackgroundLayer(GSLayer):
     def width(self, whatever):
         pass
 
+GSLayer._add_parser("background", "_background", GSBackgroundLayer)
 
 class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
@@ -3761,11 +3821,33 @@ class GSGlyph(GSBase):
         self["_unicodes"] = UnicodesList(uni)
         return i
 
+    def _parse_unicode_dict(self, parser, value):
+        parser.current_type = None
+        if parser.format_version == 3:
+            if not isinstance(value, list):
+                value = [value]
+            uni = ["%x" % x for x in value]
+        elif isinstance(value, int):
+            # This is unfortunate. We've used the openstep_plist parser with
+            # use_numbers=True, and it's seen something like "0041". It's
+            # then interpreted this as a *decimal* integer. We have to make it
+            # look like a hex string again
+            uni = ["%04i" % value]
+        else:
+            uni = value
+        self["_unicodes"] = UnicodesList(uni)
+
     def _parse_layers(self, parser, text, i):
         layers, i = parser._parse(text, i, GSLayer)
         for l in layers:
             self.layers.append(l)
         return i
+
+    def _parse_layers_dict(self, parser, value):
+        layers, i = parser._parse(value, 0, GSLayer)
+        for l in layers:
+            self.layers.append(l)
+        return 0
 
     def __init__(self, name=None):
         self._layers = OrderedDict()
@@ -3920,7 +4002,8 @@ GSGlyph._add_parser("kernRight", "rightKerningGroup", str)  # V3
 GSGlyph._add_parser("leftMetricsKey", "metricLeft", str)  # V2
 GSGlyph._add_parser("rightMetricsKey", "metricRight", str)  # V2
 GSGlyph._add_parser("widthMetricsKey", "metricWidth", str)  # V2
-GSGlyph._add_parser("vertWidthMetricsKey", "metricVertWidth", str)  # V2
+GSLayer._add_parser("vertWidthMetricsKey", "metricVertWidth", str)  # V2
+GSGlyph._add_parser("color", "color", int)
 
 
 class GSFont(GSBase):
@@ -3933,6 +4016,12 @@ class GSFont(GSBase):
         GSMetric(type="descender"),
     ]
     _defaultAxes = [GSAxis(name="Weight", tag="wght"), GSAxis(name="Width", tag="wdth")]
+
+    def _parse_glyphs_dict(self, parser, value):
+        glyphs, i = parser._parse(value, 0, GSGlyph)
+        for l in glyphs:
+            self.glyphs.append(l)
+        return 0
 
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue(".appVersion", self.appVersion)
@@ -4005,6 +4094,11 @@ class GSFont(GSBase):
             self.customParameters[cp.name] = cp.value  # This will intercept axes
         return i
 
+    def _parse_customParameters_dict(self, parser, value):
+        _customParameters, i = parser._parse(value, 0, GSCustomParameter)
+        for cp in _customParameters:
+            self.customParameters[cp.name] = cp.value  # This will intercept axes
+
     def _parse_glyphs(self, parser, text, i):
         _glyphs, i = parser._parse(text, i, GSGlyph)
         self.glyphs.setter(_glyphs)
@@ -4031,10 +4125,28 @@ class GSFont(GSBase):
         self.keyboardIncrementHuge = settings.get("keyboardIncrementHuge", 100)
         return i
 
+
+    def _parse_settings_dict(self, parser, settings):
+        self.disablesAutomaticAlignment = bool(
+            settings.get("disablesAutomaticAlignment", False)
+        )
+        self.disablesNiceNames = bool(settings.get("disablesNiceNames", False))
+        self.grid = settings.get("gridLength", 1)
+        self.gridSubDivisions = settings.get("gridSubDivision", 1)
+        self.keepAlternatesTogether = bool(
+            settings.get("keepAlternatesTogether", False)
+        )
+        self.keyboardIncrement = settings.get("keyboardIncrement", 1)
+        self.keyboardIncrementBig = settings.get("keyboardIncrementBig", 10)
+        self.keyboardIncrementHuge = settings.get("keyboardIncrementHuge", 100)
+
     def _parse___formatVersion(self, parser, text, i):
         val, i = parser._parse_value(text, i, int)
         self.format_version = parser.format_version = val
         return i
+
+    def _parse___formatVersion_dict(self, parser, val):
+        self.format_version = parser.format_version = val
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
@@ -4399,6 +4511,9 @@ GSFont._add_parser("metrics", "metrics", GSMetric)
 GSFont._add_parser("numbers", "numbers", GSMetric)
 GSFont._add_parser("properties", "properties", GSFontInfoValue)
 GSFont._add_parser("note", "_note", str)
+GSFont._add_parser("versionMinor", "versionMinor", int)
+GSFont._add_parser("versionMajor", "versionMajor", int)
+GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)
 
 
 Number = Union[int, float]
