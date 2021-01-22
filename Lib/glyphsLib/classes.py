@@ -343,33 +343,25 @@ class GSBase:
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
-    def _default_key_value_parser(self, parser, name, text, i):
-        result, i = parser._parse(text, i)
-        self[name] = result
-        return i
-
     @classmethod
-    def _add_parser(cls, keyname, target, classname, transform=None):
-        dict_parser_name = "_parse_" + keyname+"_dict"
-        if hasattr(cls, dict_parser_name):
-            return
-
-        dict_transformer = transform
-        if not dict_transformer and (classname == int or classname == float or classname == bool):
-            dict_transformer = classname
-        if dict_transformer:
-            def _generic_dict_parser(self, parser, value):
-                if isinstance(value, list) and dict_transformer != Point:
-                    self[target] = [ dict_transformer(v) for v in value ]
+    def _add_parsers(cls, specification):
+        for field in specification:
+            # { "plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster },
+            keyname = field["plist_name"]
+            dict_parser_name = "_parse_%s_dict" % keyname
+            target = field.get("object_name", keyname)
+            classname = field.get("type")
+            transformer = field.get("converter")
+            def _generic_parser(self, parser, value,keyname=keyname, target=target, classname=classname, transformer=transformer):
+                if transformer:
+                    if isinstance(value, list) and transformer != Point:
+                        self[target] = [ transformer(v) for v in value ]
+                    else:
+                        self[target] = transformer(value)
                 else:
-                    self[target] = dict_transformer(value)
-            setattr(cls, dict_parser_name, _generic_dict_parser)
-        elif keyname != target or (classname and not (classname == str or classname == dict)):
-            def _generic_dict_parser2(self, parser, value):
-                obj, i = parser._parse(value, 0, classname)
-                self[target] = obj
-            setattr(cls, dict_parser_name, _generic_dict_parser2)
-
+                    obj, i = parser._parse(value, 0, classname)
+                    self[target] = obj
+            setattr(cls, dict_parser_name, _generic_parser)
 
 class Proxy:
     __slots__ = "_owner"
@@ -1212,7 +1204,7 @@ class GSAxis(GSBase):
         return self.name == other.name and self.axisTag == other.axisTag
 
 
-GSAxis._add_parser("tag", "axisTag", str)
+GSAxis._add_parsers([{"plist_name":"tag", "object_name": "axisTag"}])
 
 
 class GSCustomParameter(GSBase):
@@ -1396,8 +1388,10 @@ class GSMetricValue(GSBase):
             writer.writeKeyValue("pos", self.position)
 
 
-GSMetricValue._add_parser("over", "overshoot", int)
-GSMetricValue._add_parser("pos", "position", int)
+GSMetricValue._add_parsers([
+    {"plist_name":"over", "object_name": "overshoot"},
+    {"plist_name":"pos", "object_name": "position"}
+])
 
 
 class GSAlignmentZone(GSBase):
@@ -1465,8 +1459,10 @@ class GSGuide(GSBase):
         return self._parent
 
 
-GSGuide._add_parser("position", "position", str, transform=Point)  # v2
-GSGuide._add_parser("pos", "position", str, transform=Point)  # v3
+GSGuide._add_parsers([
+    { "plist_name": "position", "converter": Point },  # v2
+    { "plist_name": "pos", "object_name": "position", "converter": Point },  # v3
+])
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
@@ -1798,17 +1794,17 @@ class GSFontMaster(GSBase):
         return self._set_axis_value(5, value)
 
 
-GSFontMaster._add_parser("customParameters", "customParameters", GSCustomParameter)
-GSFontMaster._add_parser("guideLines", "guides", GSGuide)  # v2
-GSFontMaster._add_parser("guides", "guides", GSGuide)  # v3
-GSFontMaster._add_parser("userData", "userData", dict)
-GSFontMaster._add_parser("custom", "customName", str)
-GSFontMaster._add_parser("axesValues", "axes", int)  # v3
-GSFontMaster._add_parser("numberValues", "numbers", int)  # v3
-GSFontMaster._add_parser("stemValues", "stems", int)  # v3
-GSFontMaster._add_parser("metricValues", "metrics", GSMetricValue)  # v3
-GSFontMaster._add_parser("name", "_name", str)
-
+GSFontMaster._add_parsers([
+{ "plist_name": "customParameters", "type": GSCustomParameter },
+{ "plist_name": "guideLines", "object_name": "guides", "type": GSGuide },  # v2
+{ "plist_name": "guides", "object_name": "guides", "type": GSGuide },  # v3
+{ "plist_name": "custom", "object_name": "customName" },
+{ "plist_name": "axesValues", "object_name": "axes" },  # v3
+{ "plist_name": "numberValues", "object_name": "numbers"},  # v3
+{ "plist_name": "stemValues", "object_name": "stems"},  # v3
+{ "plist_name": "metricValues", "object_name": "metrics", "type": GSMetricValue},  # v3
+{ "plist_name": "name", "object_name": "_name"}
+])
 
 class GSNode(GSBase):
     __slots__ = ("_userData", "_position", "smooth", "type")
@@ -2394,18 +2390,6 @@ class GSComponent(GSBase):
                 self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
             )
 
-    def _parse_ref_dict(self, parser, d):
-        self.name = d
-
-    def _parse_angle_dict(self, parser, d):
-        self.rotation = d
-
-    def _parse_piece_dict(self, parser, d):
-        self.smartComponentValues = d
-
-    def _parse_pos_dict(self, parser, d):
-        self.position = d
-
     _parent = None
 
     # TODO: glyph arg is required
@@ -2554,11 +2538,13 @@ class GSComponent(GSBase):
         """Draws points of component with given point pen."""
         pointPen.addComponent(self.name, self.transform)
 
-
-GSComponent._add_parser("transform", "transform", str, Transform)
-GSComponent._add_parser("piece", "smartComponentValues", dict)
-GSComponent._add_parser("angle", "rotation", float)
-
+GSComponent._add_parsers([
+    { "plist_name": "transform", "object_name": "transform", "converter": Transform },
+    { "plist_name": "piece", "object_name": "smartComponentValues", "type": dict },
+    { "plist_name": "angle", "object_name": "rotation", "type": float },
+    { "plist_name": "pos", "object_name": "position", "converter": Point },
+    { "plist_name": "ref", "object_name": "name" }
+])
 
 class GSSmartComponentAxis(GSBase):
     def _serialize_to_plist(self, writer):
@@ -2579,10 +2565,6 @@ class GSSmartComponentAxis(GSBase):
         self.name = ""
         self.topName = ""
         self.topValue = 0
-
-
-GSSmartComponentAxis._add_parser("topValue", "topValue", int)
-GSSmartComponentAxis._add_parser("bottomValue", "bottomValue", int)
 
 
 class GSAnchor(GSBase):
@@ -2615,8 +2597,10 @@ class GSAnchor(GSBase):
         return self._parent
 
 
-GSAnchor._add_parser("position", "position", str, Point)
-GSAnchor._add_parser("pos", "position", str, Point)
+GSAnchor._add_parsers([
+    { "plist_name": "pos", "object_name": "position", "converter": Point },
+    { "plist_name": "position", "converter": Point },
+])
 
 
 class GSHint(GSBase):
@@ -2797,12 +2781,13 @@ class GSHint(GSBase):
         self._otherNode2 = None
 
 
-GSHint._add_parser("origin", "_origin", str, Point)
-GSHint._add_parser("other1", "_other1", str, Point)
-GSHint._add_parser("other2", "_other2", str, Point)
-GSHint._add_parser("place", "place", str, Point)
-GSHint._add_parser("scale", "scale", str, Point)
-GSHint._add_parser("target", "target", str, parse_hint_target)
+GSHint._add_parsers([
+    { "plist_name": "origin", "object_name": "_origin", "converter": Point },
+    { "plist_name": "other1", "object_name": "_other1", "converter": Point },
+    { "plist_name": "other2", "object_name": "_other2", "converter": Point },
+    { "plist_name": "place", "converter": Point },
+    { "plist_name": "scale", "converter": Point },
+])
 
 
 class GSFeature(GSBase):
@@ -2850,10 +2835,11 @@ class GSFeature(GSBase):
     def parent(self):
         return self._parent
 
-
-GSFeature._add_parser("code", "_code", str)
-GSFeature._add_parser("tag", "name", str)
-GSFeature._add_parser("labels", "labels", dict)
+GSFeature._add_parsers([
+    { "plist_name": "code", "object_name": "_code" },
+    { "plist_name": "tag", "object_name": "name" },
+    { "plist_name": "labels", "type": dict }
+])
 
 
 class GSClass(GSFeature):
@@ -2895,9 +2881,10 @@ class GSAnnotation(GSBase):
         return self._parent
 
 
-GSAnnotation._add_parser("position", "position", str, Point)
-GSAnnotation._add_parser("pos", "position", str, Point)
-
+GSAnnotation._add_parsers([
+    { "plist_name": "pos", "object_name": "position", "converter": Point },
+    { "plist_name": "position", "converter": Point },
+])
 
 class GSInstance(GSBase):
     _defaultsForName = {
@@ -3142,19 +3129,20 @@ class GSInstance(GSBase):
         return self._set_axis_value(5, value)
 
 
-GSInstance._add_parser("customParameters", "customParameters", GSCustomParameter)
-GSInstance._add_parser("instanceInterpolations", "instanceInterpolations", dict)
-GSInstance._add_parser("interpolationCustom", "customValue", int)
-GSInstance._add_parser("interpolationCustom1", "customValue1", int)
-GSInstance._add_parser("interpolationCustom2", "customValue2", int)
-GSInstance._add_parser("interpolationCustom3", "customValue3", int)
-GSInstance._add_parser("interpolationWeight", "weightValue", int)
-GSInstance._add_parser("interpolationWidth", "widthValue", int)
-GSInstance._add_parser("weightClass", "weight", str)
-GSInstance._add_parser("widthClass", "width", str)
-GSInstance._add_parser("axesValues", "axes", int)
-GSInstance._add_parser("manualInterpolation", "manualInterpolation", bool)
-
+GSInstance._add_parsers([
+    { "plist_name": "customParameters",  "type": GSCustomParameter },
+    { "plist_name": "instanceInterpolations", "type": dict },
+    { "plist_name": "interpolationCustom", "object_name": "customValue" },
+    { "plist_name": "interpolationCustom1", "object_name": "customValue1" },
+    { "plist_name": "interpolationCustom2", "object_name": "customValue2" },
+    { "plist_name": "interpolationCustom3", "object_name": "customValue3" },
+    { "plist_name": "interpolationWeight", "object_name": "weightValue" },
+    { "plist_name": "interpolationWidth", "object_name": "widthValue" },
+    { "plist_name": "weightClass", "object_name": "weight" },
+    { "plist_name": "widthClass", "object_name": "width" },
+    { "plist_name": "axesValues", "object_name": "axes" },
+    { "plist_name": "manualInterpolation", "converter": bool },
+])
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def __init__(self, key="", value=""):
@@ -3188,10 +3176,6 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         if "ENG" in self.localized_values:
             return self.localized_values["ENG"]
         return self.localized_values.values()[0]
-
-
-GSFontInfoValue._add_parser("key", "key", str)
-GSFontInfoValue._add_parser("value", "value", str)
 
 
 class GSBackgroundImage(GSBase):
@@ -3303,11 +3287,12 @@ class GSBackgroundImage(GSBase):
             affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
         )
 
-
-GSBackgroundImage._add_parser("transform", "transform", str, Transform)
-GSBackgroundImage._add_parser("crop", "crop", str, Rect)
-GSBackgroundImage._add_parser("angle", "rotation", float)
-GSBackgroundImage._add_parser("pos", "position", float)
+GSBackgroundImage._add_parsers([
+    { "plist_name": "transform", "converter": Transform },
+    { "plist_name": "crop", "converter": Rect },
+    { "plist_name": "angle", "object_name": "rotation" },
+    { "plist_name": "pos", "object_name": "position" },
+])
 
 
 class LayerPathsProxy(LayerShapesProxy):
@@ -3628,20 +3613,23 @@ class GSLayer(GSBase):
         self.metricWidth = value
 
 
-GSLayer._add_parser("annotations", "_annotations", GSAnnotation)
-GSLayer._add_parser("backgroundImage", "backgroundImage", GSBackgroundImage)
-GSLayer._add_parser("paths", "paths", GSPath)
-GSLayer._add_parser("anchors", "anchors", GSAnchor)
-GSLayer._add_parser("guideLines", "guides", GSGuide)  # V2
-GSLayer._add_parser("guides", "guides", GSGuide)  # V3
-GSLayer._add_parser("components", "components", GSComponent)
-GSLayer._add_parser("hints", "hints", GSHint)
-GSLayer._add_parser("userData", "_userData", dict)
-GSLayer._add_parser("partSelection", "partSelection", dict)
-GSLayer._add_parser("leftMetricsKey", "metricLeft", str)  # V2
-GSLayer._add_parser("rightMetricsKey", "metricRight", str)  # V2
-GSLayer._add_parser("widthMetricsKey", "metricWidth", str)  # V2
-GSLayer._add_parser("attr", "attr", dict)  # V3
+GSLayer._add_parsers([
+    { "plist_name": "annotations", "object_name": "_annotations", "type": GSAnnotation },
+    { "plist_name": "backgroundImage", "type": GSBackgroundImage },
+    { "plist_name": "paths", "type": GSPath },
+    { "plist_name": "anchors", "type": GSAnchor },
+    { "plist_name": "guideLines", "object_name": "guides", "type": GSGuide }, # V2
+    { "plist_name": "guides", "type": GSGuide }, # V3
+    { "plist_name": "components", "type": GSComponent },
+    { "plist_name": "hints", "type": GSHint },
+    { "plist_name": "userData", "object_name": "_userData", "type": dict},
+    { "plist_name": "partSelection", "object_name": "partSelection", "type": dict},
+    { "plist_name": "leftMetricsKey", "object_name": "metricLeft", "type": str},  # V2
+    { "plist_name": "rightMetricsKey", "object_name": "metricRight", "type": str},  # V2
+    { "plist_name": "widthMetricsKey", "object_name": "metricWidth", "type": str},  # V2
+    { "plist_name": "attr", "type": dict},  # V3
+])
+
 
 
 class GSBackgroundLayer(GSLayer):
@@ -3665,7 +3653,6 @@ class GSBackgroundLayer(GSLayer):
     def width(self, whatever):
         pass
 
-GSLayer._add_parser("background", "_background", GSBackgroundLayer)
 
 class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
@@ -3894,15 +3881,17 @@ class GSGlyph(GSBase):
         self.metricVertWidth = value
 
 
-GSGlyph._add_parser("glyphname", "name", str)
-GSGlyph._add_parser("partsSettings", "partsSettings", GSSmartComponentAxis)
-GSGlyph._add_parser("lastChange", "lastChange", str, parse_datetime)
-GSGlyph._add_parser("kernLeft", "leftKerningGroup", str)  # V3
-GSGlyph._add_parser("kernRight", "rightKerningGroup", str)  # V3
-GSGlyph._add_parser("leftMetricsKey", "metricLeft", str)  # V2
-GSGlyph._add_parser("rightMetricsKey", "metricRight", str)  # V2
-GSGlyph._add_parser("widthMetricsKey", "metricWidth", str)  # V2
-GSLayer._add_parser("vertWidthMetricsKey", "metricVertWidth", str)  # V2
+GSGlyph._add_parsers([
+    { "plist_name": "glyphname", "object_name": "name" },
+    { "plist_name": "partsSettings", "object_name": "partsSettings", "type": GSSmartComponentAxis },
+    { "plist_name": "lastChange", "object_name": "lastChange", "converter": parse_datetime },
+    { "plist_name": "kernLeft", "object_name": "leftKerningGroup"},   # V3
+    { "plist_name": "kernRight", "object_name": "rightKerningGroup"},   # V3
+    { "plist_name": "leftMetricsKey", "object_name": "metricLeft"},   # V2
+    { "plist_name": "rightMetricsKey", "object_name": "metricRight"},   # V2
+    { "plist_name": "widthMetricsKey", "object_name": "metricWidth"},   # V2
+    { "plist_name": "vertWidthMetricsKey", "object_name": "metricVertWidth"},   # V2
+])
 
 
 class GSFont(GSBase):
@@ -4349,28 +4338,28 @@ class GSFont(GSBase):
     def _set_axes_from_custom_parameter(self, value):
         self.axes = [GSAxis(name=v["Name"], tag=v["Tag"]) for v in value]
 
-
-GSFont._add_parser("unitsPerEm", "upm", int)
-GSFont._add_parser("gridLength", "grid", int)
-GSFont._add_parser("gridSubDivisions", "gridSubDivision", int)
-GSFont._add_parser("__appVersion", "appVersion", str)
-GSFont._add_parser("classes", "classes", GSClass)
-GSFont._add_parser("instances", "instances", GSInstance)
-GSFont._add_parser("featurePrefixes", "featurePrefixes", GSFeaturePrefix)
-GSFont._add_parser("features", "features", GSFeature)
-GSFont._add_parser("fontMaster", "masters", GSFontMaster)
-GSFont._add_parser("kerning", "_kerningLTR", OrderedDict)
-GSFont._add_parser("kerningLTR", "kerningLTR", OrderedDict)
-GSFont._add_parser("kerningRTL", "kerningRTL", OrderedDict)
-GSFont._add_parser("kerningVertical", "kerningVertical", OrderedDict)
-GSFont._add_parser("date", "date", str, parse_datetime)
-GSFont._add_parser("axes", "axes", GSAxis)
-GSFont._add_parser("stems", "stems", GSMetric)
-GSFont._add_parser("metrics", "metrics", GSMetric)
-GSFont._add_parser("numbers", "numbers", GSMetric)
-GSFont._add_parser("properties", "properties", GSFontInfoValue)
-GSFont._add_parser("note", "_note", str)
-GSFont._add_parser("customParameters", "customParameters", GSCustomParameter)
+GSFont._add_parsers([
+    { "plist_name": "unitsPerEm", "object_name": "upm" },
+    { "plist_name": "gridLength", "object_name": "grid" },
+    { "plist_name": "gridSubDivisions", "object_name": "gridSubDivision" },
+    { "plist_name": "__appVersion", "object_name": "appVersion" },
+    { "plist_name": "classes", "type": GSClass },
+    { "plist_name": "instances", "type": GSInstance },
+    { "plist_name": "featurePrefixes",  "type": GSFeaturePrefix },
+    { "plist_name": "features", "type": GSFeature },
+    { "plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster },
+    { "plist_name": "kerning", "object_name": "_kerningLTR", "type": OrderedDict },
+    { "plist_name": "kerningLTR", "type": OrderedDict },
+    { "plist_name": "kerningRTL", "type": OrderedDict },
+    { "plist_name": "kerningVertical",  "type": OrderedDict },
+    { "plist_name": "date", "converter": parse_datetime },
+    { "plist_name": "axes", "type": GSAxis },
+    { "plist_name": "stems", "type": GSMetric },
+    { "plist_name": "metrics", "type": GSMetric },
+    { "plist_name": "numbers", "type": GSMetric },
+    { "plist_name": "properties", "type": GSFontInfoValue },
+    { "plist_name": "note", "object_name": "_note" },
+])
 
 
 Number = Union[int, float]
