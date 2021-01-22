@@ -19,7 +19,6 @@ import logging
 import datetime
 from collections import OrderedDict
 from io import StringIO
-import base64
 
 
 """
