@@ -36,7 +36,6 @@ from fontTools.pens.pointPen import (
 
 from glyphsLib.affine import Affine
 from glyphsLib.parser import Parser
-from glyphsLib.dictParser import DictParser
 from glyphsLib.types import (
     Point,
     Rect,
@@ -3429,9 +3428,7 @@ class GSLayer(GSBase):
 
     def _parse_shapes(self, parser, text, i):
         shapes, i = parser._parse(text, i, dict)
-        from glyphsLib.dictParser import DictParser
-
-        p = DictParser(format_version=3)
+        p = Parser(format_version=3)
         for shape_dict in shapes:
             if "ref" in shape_dict:
                 shape, _ = p._parse_dict(shape_dict, 0, GSComponent)
@@ -4192,7 +4189,7 @@ class GSFont(GSBase):
 
             with open(path, "r", encoding="utf-8") as fp:
                 logger.info('Parsing "%s" file into <GSFont>', path)
-                p = DictParser()
+                p = Parser()
                 p.parse_into_object(self, openstep_plist.load(fp, use_numbers=True))
             self.filepath = path
             for master in self.masters:
