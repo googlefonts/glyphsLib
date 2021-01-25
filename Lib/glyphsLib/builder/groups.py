@@ -93,6 +93,10 @@ def to_glyphs_groups(self):
     groups = []
     for source in self._sources.values():
         for name, glyphs in source.font.groups.items():
+            # Filter out all BRACKET glyphs first, as they are created at
+            # to_designspace time to inherit glyph kerning to their bracket
+            # variants. They need to be removed because Glpyhs.app handles that
+            # on its own.
             glyphs = [name for name in glyphs if not BRACKET_GLYPH_RE.match(name)]
             if _is_kerning_group(name):
                 _to_glyphs_kerning_group(self, name, glyphs)
