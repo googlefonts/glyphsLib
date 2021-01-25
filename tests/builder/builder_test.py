@@ -1170,6 +1170,82 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
 class ToUfosTestUfoLib2(ToUfosTestBase, unittest.TestCase):
     ufo_module = ufoLib2
 
+    def test_load_kerning_bracket(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "..", "data", "BracketTestFontKerning.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+
+        ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+        bracketed_groups = {
+            "public.kern2.foo": ["a", "a.BRACKET.300"],
+            "public.kern1.foo": ["x", "x.BRACKET.300", "x.BRACKET.600"],
+        }
+        self.assertEqual(ds.sources[0].font.groups, bracketed_groups)
+        self.assertEqual(ds.sources[1].font.groups, bracketed_groups)
+        self.assertEqual(ds.sources[2].font.groups, bracketed_groups)
+        self.assertEqual(ds.sources[3].font.groups, bracketed_groups)
+        self.assertEqual(
+            ds.sources[0].font.kerning,
+            {
+                ("public.kern1.foo", "public.kern2.foo"): -200,
+                ("a", "x"): -100,
+                ("a.BRACKET.300", "x"): -100,
+                ("a", "x.BRACKET.300"): -100,
+                ("a.BRACKET.300", "x.BRACKET.300"): -100,
+                ("a", "x.BRACKET.600"): -100,
+                ("a.BRACKET.300", "x.BRACKET.600"): -100,
+            },
+        )
+        self.assertEqual(ds.sources[1].font.kerning, {})
+        self.assertEqual(
+            ds.sources[2].font.kerning, {("public.kern1.foo", "public.kern2.foo"): -300}
+        )
+        self.assertEqual(ds.sources[3].font.kerning, {})
+
+        font2 = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+        self.assertEqual(
+            font2.kerning,
+            {
+                "1034EC4A-9832-4D17-A75A-2B17BF7C4AA6": {
+                    "@MMK_L_foo": {"@MMK_R_foo": -200},
+                    "a": {"x": -100},
+                },
+                "C402BD76-83A2-4350-9191-E5499E97AF5D": {
+                    "@MMK_L_foo": {"@MMK_R_foo": -300}
+                },
+            },
+        )
+
+        ds2 = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+        bracketed_groups = {
+            "public.kern2.foo": ["a", "a.BRACKET.300"],
+            "public.kern1.foo": ["x", "x.BRACKET.300", "x.BRACKET.600"],
+        }
+        self.assertEqual(ds2.sources[0].font.groups, bracketed_groups)
+        self.assertEqual(ds2.sources[1].font.groups, bracketed_groups)
+        self.assertEqual(ds2.sources[2].font.groups, bracketed_groups)
+        self.assertEqual(ds2.sources[3].font.groups, bracketed_groups)
+        self.assertEqual(
+            ds2.sources[0].font.kerning,
+            {
+                ("public.kern1.foo", "public.kern2.foo"): -200,
+                ("a", "x"): -100,
+                ("a.BRACKET.300", "x"): -100,
+                ("a", "x.BRACKET.300"): -100,
+                ("a.BRACKET.300", "x.BRACKET.300"): -100,
+                ("a", "x.BRACKET.600"): -100,
+                ("a.BRACKET.300", "x.BRACKET.600"): -100,
+            },
+        )
+        self.assertEqual(ds2.sources[1].font.kerning, {})
+        self.assertEqual(
+            ds2.sources[2].font.kerning,
+            {("public.kern1.foo", "public.kern2.foo"): -300},
+        )
+        self.assertEqual(ds2.sources[3].font.kerning, {})
+
 
 class ToUfosTestDefcon(ToUfosTestBase, unittest.TestCase):
     ufo_module = defcon

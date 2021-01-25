@@ -15,6 +15,8 @@
 
 import re
 
+from .glyph import BRACKET_GLYPH_RE
+
 UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 
@@ -49,6 +51,10 @@ def to_glyphs_kerning(self):
     """Add UFO kerning to GSFont."""
     for master_id, source in self._sources.items():
         for (left, right), value in source.font.kerning.items():
+            if BRACKET_GLYPH_RE.match(left) or BRACKET_GLYPH_RE.match(right):
+                # Skip all bracket glyph entries, as they are duplicates of their
+                # parents'.
+                continue
             left_match = UFO_KERN_GROUP_PATTERN.match(left)
             right_match = UFO_KERN_GROUP_PATTERN.match(right)
             if left_match:
