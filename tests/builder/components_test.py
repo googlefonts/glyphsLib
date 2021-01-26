@@ -1,5 +1,9 @@
+import pytest
+from fontTools.pens.basePen import MissingComponentError
+
 import glyphsLib
 from glyphsLib import to_designspace
+from glyphsLib.classes import GSComponent
 
 
 def test_background_component_decompose(datadir):
@@ -35,3 +39,13 @@ def test_background_component_decompose(datadir):
         ufo_bd.layers["Apr 27 20, 17:59.background"]["B"].contours
         == ufo_bd["A"].contours
     )
+
+
+def test_background_component_decompose_missing(datadir):
+    font = glyphsLib.GSFont(str(datadir.join("Recursion.glyphs")))
+
+    layer = font.glyphs["B"].layers["DB4D7D04-C02D-48DE-811E-03AA03052DD2"].background
+    layer.components.append(GSComponent("xxx"))
+
+    with pytest.raises(MissingComponentError):
+        to_designspace(font)
