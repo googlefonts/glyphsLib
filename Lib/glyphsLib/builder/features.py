@@ -78,7 +78,7 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, skip_export_glyphs=Non
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
-            "{}{} = [ {} ];".format(autostr(class_.automatic), name, class_.code)
+            "{}{} = [ {}\n];".format(autostr(class_.automatic), name, class_.code)
         )
     class_str = "\n\n".join(class_defs)
 
