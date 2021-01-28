@@ -319,8 +319,6 @@ class GSBase:
     Attributes:
         _defaultsForName (dict): Used to determine which values to serialize and which
             to imply by their absence.
-        _wrapperKeysTranslate (dict): Used to map field names to GS* instance variables
-            during (de)serialization.
     """
 
     _defaultsForName = {}
