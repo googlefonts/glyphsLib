@@ -498,14 +498,13 @@ def test_build_GDEF_incomplete_glyphOrder():
 
     assert "[b c a d], # Base" in _build_gdef(font)
 
+
 def test_comments_in_classes(ufo_module):
-    filename = os.path.join(
-        os.path.dirname(__file__), "../data/CommentedClass.glyphs"
-    )
+    filename = os.path.join(os.path.dirname(__file__), "../data/CommentedClass.glyphs")
     font = classes.GSFont(filename)
-    (ufo, ) = to_ufos(font)
+    (ufo,) = to_ufos(font)
     assert ufo.features.text == dedent(
-            """\
+        """\
             @Test = [ A
             # B
             ];
