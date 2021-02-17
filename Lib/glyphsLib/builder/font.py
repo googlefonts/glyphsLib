@@ -122,7 +122,8 @@ def _set_glyphs_font_attributes(self, source):
         # FIXME: (jany) should wrap in glyphs_datetime? or maybe the GSFont
         #     should wrap in glyphs_datetime if needed?
         font.date = from_ufo_time(info.openTypeHeadCreated)
-    font.upm = info.unitsPerEm
+    if info.unitsPerEm is not None:
+        font.upm = info.unitsPerEm
     if info.versionMajor is not None:
         font.versionMajor = info.versionMajor
     if info.versionMinor is not None:

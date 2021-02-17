@@ -118,10 +118,14 @@ def to_glyphs_master_attributes(self, source, master):
         # relative to anything.
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = os.path.basename(ufo.path)
 
-    master.ascender = ufo.info.ascender
-    master.capHeight = ufo.info.capHeight
-    master.descender = ufo.info.descender
-    master.xHeight = ufo.info.xHeight
+    if ufo.info.ascender is not None:
+        master.ascender = ufo.info.ascender
+    if ufo.info.capHeight is not None:
+        master.capHeight = ufo.info.capHeight
+    if ufo.info.descender is not None:
+        master.descender = ufo.info.descender
+    if ufo.info.xHeight is not None:
+        master.xHeight = ufo.info.xHeight
 
     horizontal_stems = ufo.info.postscriptStemSnapH
     vertical_stems = ufo.info.postscriptStemSnapV
