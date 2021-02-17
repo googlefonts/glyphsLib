@@ -90,13 +90,17 @@ def test_classes(tmpdir, ufo_module):
     # FIXME: (jany) no whitespace is preserved in this section
     ufo.features.text = dedent(
         """\
-        @lc = [ a b ];
+        @lc = [ a b
+        ];
 
-        @UC = [ A B ];
+        @UC = [ A B
+        ];
 
-        @all = [ @lc @UC zero one ];
+        @all = [ @lc @UC zero one
+        ];
 
-        @more = [ dot @UC colon @lc paren ];
+        @more = [ dot @UC colon @lc paren
+        ];
     """
     )
 
@@ -115,7 +119,8 @@ def test_class_synonym(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
-        @lc = [ a b ];
+        @lc = [ a b
+        ];
 
         @lower = @lc;
     """
@@ -130,9 +135,11 @@ def test_class_synonym(tmpdir, ufo_module):
     # FIXME: (jany) should roundtrip
     assert rtufo.features.text == dedent(
         """\
-        @lc = [ a b ];
+        @lc = [ a b
+        ];
 
-        @lower = [ @lc ];
+        @lower = [ @lc
+        ];
     """
     )
 
@@ -490,3 +497,16 @@ def test_build_GDEF_incomplete_glyphOrder():
         glyph.appendAnchor({"name": "top", "x": 0, "y": 0})
 
     assert "[b c a d], # Base" in _build_gdef(font)
+
+
+def test_comments_in_classes(ufo_module):
+    filename = os.path.join(os.path.dirname(__file__), "../data/CommentedClass.glyphs")
+    font = classes.GSFont(filename)
+    (ufo,) = to_ufos(font)
+    assert ufo.features.text == dedent(
+        """\
+            @Test = [ A
+            # B
+            ];
+"""
+    )

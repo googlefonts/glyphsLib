@@ -15,6 +15,7 @@
 
 import logging
 
+from fontTools.pens.basePen import MissingComponentError
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
@@ -109,7 +110,13 @@ def to_ufo_components_background_decompose(self, ufo_glyph, layer):
 
     rpen = DecomposingRecordingPen(glyphSet=layers)
     for component in layer.components:
-        component.draw(rpen)
+        try:
+            component.draw(rpen)
+        except MissingComponentError as e:
+            raise MissingComponentError(
+                f"Glyph '{ufo_glyph.name}', background layer: component "
+                f"'{component.name}' points to a non-existent glyph."
+            ) from e
     rpen.replay(ufo_glyph.getPen())
 
 
