@@ -88,11 +88,9 @@ def to_ufo_font_attributes(self, family_name):
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
-        ufo.lib["com.github.googlei18n.ufo2ft.filters"] = [{
-            "namespace": "glyphsLib.filters",
-            "name": "eraseOpenCorners",
-            "pre": True
-        }]
+        ufo.lib["com.github.googlei18n.ufo2ft.filters"] = [
+            {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
+        ]
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
         self._designspace.addSource(source)
         self._sources[master.id] = source

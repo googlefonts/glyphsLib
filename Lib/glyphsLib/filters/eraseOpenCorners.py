@@ -1,10 +1,8 @@
 import logging
 
 from fontTools.pens.basePen import BasePen
-from fontTools.pens.recordingPen import RecordingPen
 from fontTools.misc.bezierTools import segmentSegmentIntersections, _split_segment_at_t
 from ufo2ft.filters import BaseFilter
-import beziers
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +41,7 @@ class EraseOpenCornersPen(BasePen):
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
                 if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
             ]
-            if intersection and (
-                (intersection[0].t1 > 0.5 and intersection[0].t2 < 0.5)
-            ):
+            if intersection and (intersection[0].t1 > 0.5 and intersection[0].t2 < 0.5):
                 (segs[ix - 1], _) = _split_segment_at_t(
                     segs[ix - 1], intersection[0].t1
                 )
