@@ -736,7 +736,7 @@ class GlyphsBuilder(_LoggerMixin):
                         del layer[glyph_name]
 
             for layer in _sorted_backgrounds_last(source.font.layers):
-                self.to_glyphs_layer_lib(layer)
+                self.to_glyphs_layer_lib(layer, master)
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
 
