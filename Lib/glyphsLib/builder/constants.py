@@ -100,3 +100,5 @@ DEFAULT_FEATURE_WRITERS = [
     {"class": "KernFeatureWriter", "options": {"mode": "append"}},
     {"class": "MarkFeatureWriter", "options": {"mode": "skip"}},
 ]
+
+DEFAULT_LAYER_NAME = PUBLIC_PREFIX + "default"

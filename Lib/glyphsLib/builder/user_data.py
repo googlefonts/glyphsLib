@@ -22,11 +22,13 @@ from .constants import (
     PUBLIC_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,
+    DEFAULT_LAYER_NAME,
 )
 
 UFO_DATA_KEY = GLYPHLIB_PREFIX + "ufoData"
 FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "fontUserData"
 LAYER_LIB_KEY = GLYPHLIB_PREFIX + "layerLib"
+LAYER_NAME_KEY = GLYPHLIB_PREFIX + "layerName"
 GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + "glyphUserData"
 NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + "nodeUserData"
 
@@ -92,6 +94,14 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
         ufo_layer.lib.update(self.font.userData[key])
     if key in master.userData.keys():
         ufo_layer.lib.update(master.userData[key])
+        if LAYER_NAME_KEY in ufo_layer.lib:
+            layer_name = ufo_layer.lib.pop(LAYER_NAME_KEY)
+            # ufoLib2
+            if hasattr(ufo, "renameLayer") and callable(ufo.renameLayer):
+                ufo.renameLayer(ufo_layer.name, layer_name)
+            # defcon
+            else:
+                ufo_layer.name = layer_name
 
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
@@ -164,16 +174,17 @@ def to_glyphs_layer_lib(self, ufo_layer, master):
             user_data[key] = value
 
     # the default layer may have a custom name
+    layer_name = ufo_layer.name
     if (
-        ufo_layer.name == self._sources[master.id].font.layers.defaultLayer.name
-        and ufo_layer.name != "public.default"
+        layer_name == self._sources[master.id].font.layers.defaultLayer.name
+        and layer_name != DEFAULT_LAYER_NAME
     ):
-        key = UFO_DATA_KEY + ".layerName"
-        user_data[key] = ufo_layer.name
+        user_data[LAYER_NAME_KEY] = ufo_layer.name
+        layer_name = DEFAULT_LAYER_NAME
 
     if user_data:
-        key = LAYER_LIB_KEY + "." + ufo_layer.name
-        self.font.userData[key] = user_data
+        key = LAYER_LIB_KEY + "." + layer_name
+        master.userData[key] = user_data
 
 
 def to_glyphs_layer_user_data(self, ufo_glyph, layer):
