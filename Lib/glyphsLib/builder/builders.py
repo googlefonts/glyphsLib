@@ -259,12 +259,12 @@ class UFOBuilder(_LoggerMixin):
 
         for master_id, source in self._sources.items():
             ufo = source.font
+            master = self.font.masters[master_id]
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
-            for layer in ufo.layers:
-                self.to_ufo_layer_lib(layer)
+            for layer in list(ufo.layers):
+                self.to_ufo_layer_lib(master, ufo, layer)
 
-            master = self.font.masters[master_id]
             # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
             # parameters so it requires UFOs have their features set first; at the
             # same time, to generate a GDEF table we first need to have defined the

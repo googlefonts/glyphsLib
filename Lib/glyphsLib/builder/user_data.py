@@ -77,10 +77,21 @@ def to_ufo_glyph_user_data(self, ufo, glyph):
         ufo.lib[key] = dict(glyph.userData)
 
 
-def to_ufo_layer_lib(self, ufo_layer):
+def to_ufo_layer_lib(self, master, ufo, ufo_layer):
     key = LAYER_LIB_KEY + "." + ufo_layer.name
+    # glyphsLib v5.3.2 and previous versions stored the layer lib in
+    # the GSFont useData under a key named after the layer.
+    # When different original UFOs each had a layer with the same layer name,
+    # only the layer lib of the last one was stored and was exported to UFOs
     if key in self.font.userData.keys():
-        ufo_layer.lib = self.font.userData[key]
+        self.logger.warning(
+            f"Layer '{ufo_layer.name}' lib is stored once in GSFont userData "
+            "instead of in each GSFontMaster but may have been different in "
+            "previous UFOs."
+        )
+        ufo_layer.lib.update(self.font.userData[key])
+    if key in master.userData.keys():
+        ufo_layer.lib.update(master.userData[key])
 
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
