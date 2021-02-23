@@ -146,11 +146,19 @@ def to_glyphs_glyph_user_data(self, ufo, glyph):
         glyph.userData = ufo.lib[key]
 
 
-def to_glyphs_layer_lib(self, ufo_layer):
+def to_glyphs_layer_lib(self, ufo_layer, master):
     user_data = {}
     for key, value in ufo_layer.lib.items():
         if _user_data_has_no_special_meaning(key):
             user_data[key] = value
+
+    # the default layer may have a custom name
+    if (
+        ufo_layer.name == self._sources[master.id].font.layers.defaultLayer.name
+        and ufo_layer.name != "public.default"
+    ):
+        key = UFO_DATA_KEY + ".layerName"
+        user_data[key] = ufo_layer.name
 
     if user_data:
         key = LAYER_LIB_KEY + "." + ufo_layer.name
