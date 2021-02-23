@@ -51,6 +51,7 @@ def to_glyphs_hints(self, ufo_glyph, layer):
             setattr(hi, attr, hint[attr])
         for attr in ["origin", "other1", "other2", "place", "scale", "target"]:
             if attr in hint:
+                # https://github.com/googlefonts/glyphsLib/pull/613
                 # handle target = ['u', 'p'] or ['d', 'o', 'w', 'n']
                 if attr == "target" and hint[attr] in (list("down"), list("up")):
                     value = "".join(hint[attr])
