@@ -32,6 +32,8 @@ class EraseOpenCornersPen(BasePen):
 
     def endPath(self):
         segs = self.segments
+        if not segs:
+            return
 
         ix = 0
         while ix < len(segs):
