@@ -151,6 +151,43 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
 
 
+def to_ufo_openTypeCategories(self, ufo):
+    # See:
+    # * glyphsLib.builder.features._build_gdef
+    # * https://github.com/googlefonts/glyphsLib/issues/85
+    # * https://github.com/googlefonts/glyphsLib/pull/100#issuecomment-275430289
+    openTypeCategories = dict()
+    for ufo_glyph in ufo:
+        glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+        category = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "category") or glyphinfo.category
+        subCategory = (
+            ufo_glyph.lib.get(GLYPHLIB_PREFIX + "subCategory") or glyphinfo.subCategory
+        )
+        has_base_anchor = any(
+            not a.name.startswith("_") for a in ufo_glyph.anchors if a.name
+        )
+
+        if subCategory == "Ligature" and has_base_anchor:
+            openTypeCategory = "ligature"
+        elif category == "Mark" and (
+            subCategory in {"Nonspacing", "Spacing Combining"}
+        ):
+            openTypeCategory = "mark"
+        elif has_base_anchor:
+            openTypeCategory = "base"
+        else:
+            openTypeCategory = None
+
+        if openTypeCategory:
+            openTypeCategories[ufo_glyph.name] = openTypeCategory
+
+    if openTypeCategories:
+        openTypeCategoryKey = PUBLIC_PREFIX + "openTypeCategories"
+        if openTypeCategoryKey not in ufo.lib:
+            ufo.lib[openTypeCategoryKey] = dict()
+        ufo.lib.get(openTypeCategoryKey).update(openTypeCategories)
+
+
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
     If the matching GSGlyph does not exist, then it is created,

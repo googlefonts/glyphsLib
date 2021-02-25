@@ -262,6 +262,7 @@ class UFOBuilder(_LoggerMixin):
             master = self.font.masters[master_id]
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
+            self.to_ufo_openTypeCategories(ufo)
             for layer in list(ufo.layers):
                 self.to_ufo_layer_lib(master, ufo, layer)
 
@@ -542,6 +543,7 @@ class UFOBuilder(_LoggerMixin):
         to_ufo_glyph,
         to_ufo_glyph_background,
         to_ufo_glyph_height_and_vertical_origin,
+        to_ufo_openTypeCategories,
     )
     from .user_data import (
         to_designspace_family_user_data,
