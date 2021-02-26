@@ -15,10 +15,8 @@
 
 import os
 from collections import OrderedDict
-import logging
 
 from fontTools.designspaceLib import DesignSpaceDocument
-from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import classes
 from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import (
@@ -245,7 +243,6 @@ def test_layer_lib_into_master_user_data(ufo_module):
 
 
 def test_layer_lib_in_font_user_data(ufo_module):
-    logger = logging.getLogger("glyphsLib.builder.builders.UFOBuilder")
     font = classes.GSFont()
     font.masters.append(classes.GSFontMaster())
     font.masters.append(classes.GSFontMaster())
@@ -264,14 +261,11 @@ def test_layer_lib_in_font_user_data(ufo_module):
         "layerLibKey": "layerLibValue"
     }
 
-    with CapturingLogHandler(logger, level="WARNING") as captor:
-        ufo1, ufo2 = to_ufos(font)
+    ufo1, ufo2 = to_ufos(font)
     assert "layerLibKey" in ufo1.layers["public.default"].lib
     assert ufo1.layers["public.default"].lib["layerLibKey"] == "layerLibValue"
     assert "layerLibKey" in ufo2.layers["public.default"].lib
     assert ufo2.layers["public.default"].lib["layerLibKey"] == "layerLibValue"
-
-    assert len([r for r in captor.records if "in GSFont userData" in r.msg]) == 2
 
 
 def test_glyph_user_data_into_ufo_lib():
