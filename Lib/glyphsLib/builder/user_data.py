@@ -86,11 +86,6 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
     # When different original UFOs each had a layer with the same layer name,
     # only the layer lib of the last one was stored and was exported to UFOs
     if key in self.font.userData.keys():
-        self.logger.warning(
-            f"Layer '{ufo_layer.name}' lib is stored once in GSFont userData "
-            "instead of in each GSFontMaster but may have been different in "
-            "previous UFOs."
-        )
         ufo_layer.lib.update(self.font.userData[key])
     if key in master.userData.keys():
         ufo_layer.lib.update(master.userData[key])
@@ -176,7 +171,7 @@ def to_glyphs_layer_lib(self, ufo_layer, master):
     # the default layer may have a custom name
     layer_name = ufo_layer.name
     if (
-        layer_name == self._sources[master.id].font.layers.defaultLayer.name
+        ufo_layer is self._sources[master.id].font.layers.defaultLayer
         and layer_name != DEFAULT_LAYER_NAME
     ):
         user_data[LAYER_NAME_KEY] = ufo_layer.name
