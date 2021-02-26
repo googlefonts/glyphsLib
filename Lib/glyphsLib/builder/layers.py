@@ -71,7 +71,7 @@ def _layer_order_in_glyph(self, layer):
 
 
 def to_glyphs_layer(self, ufo_layer, glyph, master):
-    if ufo_layer.name == self._sources[master.id].font.layers.defaultLayer.name:
+    if ufo_layer is self._sources[master.id].font.layers.defaultLayer:
         layer = _get_or_make_foreground(self, glyph, master)
     elif ufo_layer.name == "public.background":
         master_layer = _get_or_make_foreground(self, glyph, master)
