@@ -49,14 +49,29 @@ def to_ufo_layer(self, glyph, layer):
     return ufo_layer
 
 
-def to_ufo_background_layer(self, layer):
+def to_ufo_background_layer(self, glyph, layer):
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
     if layer.associatedMasterId == layer.layerId:
         layer_name = "public.background"
     else:
         layer_name = layer.name + ".background"
+
     if layer_name not in ufo_font.layers:
         background_layer = ufo_font.newLayer(layer_name)
+    elif layer_name in ufo_font.layers and glyph.name in ufo_font.layers[layer_name]:
+        self.logger.warning(
+            "%s %s: Glyph %s, layer %s: Duplicate glyph layer name",
+            ufo_font.info.familyName,
+            ufo_font.info.styleName,
+            glyph.name,
+            layer_name,
+        )
+        n = 1
+        new_layer_name = layer_name
+        while new_layer_name in ufo_font.layers:
+            new_layer_name = layer.name + " #" + repr(n) + ".background"
+            n += 1
+        background_layer = ufo_font.newLayer(new_layer_name)
     else:
         background_layer = ufo_font.layers[layer_name]
     return background_layer
