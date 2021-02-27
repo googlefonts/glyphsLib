@@ -619,6 +619,106 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         self.assertIn("[foo], # Liga", features)
         self.assertIn("[bar baz], # Mark", features)
 
+    def test_openTypeCategories(self):
+        font = generate_minimal_font()
+        for glyph in (
+            "space",
+            "A",
+            "A.alt",
+            "wigglylinebelowcomb",
+            "wigglylinebelowcomb.alt",
+            "fi",
+            "fi.alt",
+            "t_e_s_t",
+            "t_e_s_t.alt",
+        ):
+            add_glyph(font, glyph)
+        add_anchor(font, "A", "bottom", 300, -10)
+        add_anchor(font, "wigglylinebelowcomb", "_bottom", 100, 40)
+        add_anchor(font, "fi", "caret_1", 150, 0)
+        add_anchor(font, "t_e_s_t.alt", "caret_1", 200, 0)
+        add_anchor(font, "t_e_s_t.alt", "caret_2", 400, 0)
+        add_anchor(font, "t_e_s_t.alt", "caret_3", 600, 0)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {
+            "A": "base",
+            "fi": "ligature",
+            "t_e_s_t.alt": "ligature",
+            "wigglylinebelowcomb": "mark",
+            "wigglylinebelowcomb.alt": "mark",
+        }
+
+    def test_openTypeCategories_with_attaching_anchor(self):
+        font = generate_minimal_font()
+        add_glyph(font, "A.alt")
+        add_anchor(font, "A.alt", "top", 400, 1000)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib["public.openTypeCategories"] == {"A.alt": "base"}
+
+    def test_openTypeCategories_base_with_nonattaching_anchor(self):
+        font = generate_minimal_font()
+        add_glyph(font, "A.alt")
+        add_anchor(font, "A.alt", "_top", 400, 1000)
+        ufo = self.to_ufos(font)[0]
+        assert "public.openTypeCategories" not in ufo.lib
+
+    def test_openTypeCategories_ligature_with_attaching_anchor(self):
+        font = generate_minimal_font()
+        add_glyph(font, "fi")
+        add_anchor(font, "fi", "top", 400, 1000)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {"fi": "ligature"}
+
+    def test_openTypeCategories_ligature_with_nonattaching_anchor(self):
+        font = generate_minimal_font()
+        add_glyph(font, "fi")
+        add_anchor(font, "fi", "_top", 400, 1000)
+        ufo = self.to_ufos(font)[0]
+        assert "public.openTypeCategories" not in ufo.lib
+
+    def test_openTypeCategories_mark(self):
+        font = generate_minimal_font()
+        add_glyph(font, "eeMatra-gurmukhi")
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {"eeMatra-gurmukhi": "mark"}
+
+    def test_openTypeCategories_custom_category_subCategory(self):
+        font = generate_minimal_font()
+        add_glyph(font, "foo")["subCategory"] = "Ligature"
+        add_anchor(font, "foo", "top", 400, 1000)
+        bar = add_glyph(font, "bar")
+        bar["category"], bar["subCategory"] = "Mark", "Nonspacing"
+        baz = add_glyph(font, "baz")
+        baz["category"], baz["subCategory"] = "Mark", "Spacing Combining"
+        ufo = self.to_ufos(font, propagate_anchors=False)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {
+            "bar": "mark",
+            "baz": "mark",
+            "foo": "ligature",
+        }
+
+    def test_openTypeCategories_with_propagated_anchors(self):
+        font = generate_minimal_font()
+        add_glyph(font, "A")
+        add_anchor(font, "A", "top", 400, 1000)
+        add_glyph(font, "acutecomb")
+        add_anchor(font, "acutecomb", "_top", 0, 1000)
+        add_anchor(font, "acutecomb", "top", 0, 1200)
+        add_glyph(font, "Aacute")
+        add_component(font, "Aacute", "A", (1, 0, 0, 1, 0, 0))
+        add_component(font, "Aacute", "acutecomb", (1, 0, 0, 1, 400, 0))
+        ufo = self.to_ufos(font, propagate_anchors=False)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {
+            "A": "base",
+            "acutecomb": "mark",
+        }
+        ufo = self.to_ufos(font, propagate_anchors=True)[0]
+        assert ufo.lib.get("public.openTypeCategories") == {
+            "A": "base",
+            "Aacute": "base",
+            "acutecomb": "mark",
+        }
+
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
