@@ -905,6 +905,83 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         )
         captor.assertRegex("Duplicate glyph layer name")
 
+    def test_color_layer_with_background(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "..", "data", "ColorColrCpalFont.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+        ufo = self.to_ufos(font, minimize_glyphs_diffs=False)[0]
+
+        glyph = font.glyphs["I"]
+        assert {
+            (
+                l.name,
+                l.lib.get("com.schriftgestaltung.layerId"),
+                l.lib.get("com.schriftgestaltung.foregroundLayerId"),
+            )
+            for l in ufo.layers
+        } == {
+            ("public.default", None, None),
+            ("Color 0", glyph.layers[1].layerId, None),
+            ("Color 1", None, None),
+            ("Color 2", glyph.layers[3].layerId, None),
+            ("Color 2.background", None, glyph.layers[3].layerId),
+            ("Color 2 #1", glyph.layers[4].layerId, None),
+            ("Color 2 #1.background", None, glyph.layers[4].layerId),
+            ("Color 0 #1", glyph.layers[5].layerId, None),
+            ("Color 0 #1.background", None, glyph.layers[5].layerId),
+        }
+        glyph = font.glyphs["I.001"]
+        assert {
+            (
+                l.name,
+                l.lib.get("com.schriftgestaltung.layerId"),
+                l.lib.get("com.schriftgestaltung.foregroundLayerId"),
+            )
+            for l in ufo.layers
+        } == {
+            ("public.default", None, None),
+            ("Color 1", None, None),
+            ("Color 2 #1", glyph.layers[2].layerId, None),
+            ("Color 2 #1.background", None, glyph.layers[2].layerId),
+            ("Color 2", glyph.layers[3].layerId, None),
+            ("Color 2.background", None, glyph.layers[3].layerId),
+            ("Color 0 #1", glyph.layers[4].layerId, None),
+            ("Color 0 #1.background", None, glyph.layers[4].layerId),
+            ("Color 0", glyph.layers[5].layerId, None),
+        }
+
+        font = to_glyphs((ufo,))
+        glyph = font.glyphs["I"]
+        assert [l.name for l in glyph.layers] == [
+            "Regular",
+            "Color 0",
+            "Color 1",
+            "Color 2",
+            "Color 2",
+            "Color 0",
+        ]
+        assert len(glyph.layers[1].background.paths) == 0
+        assert len(glyph.layers[2].background.paths) == 0
+        assert len(glyph.layers[3].background.paths) == 1
+        assert len(glyph.layers[4].background.paths) == 2
+        assert len(glyph.layers[5].background.paths) == 1
+        glyph = font.glyphs["I.001"]
+        assert [l.name for l in glyph.layers] == [
+            "Regular",
+            "Color 1",
+            "Color 2",
+            "Color 2",
+            "Color 0",
+            "Color 0",
+        ]
+        assert len(glyph.layers[1].background.paths) == 0
+        assert len(glyph.layers[2].background.paths) == 2
+        assert len(glyph.layers[3].background.paths) == 1
+        assert len(glyph.layers[4].background.paths) == 1
+        assert len(glyph.layers[5].background.paths) == 0
+
     def test_glyph_lib_Export(self):
         font = generate_minimal_font()
         glyph = add_glyph(font, "a")
