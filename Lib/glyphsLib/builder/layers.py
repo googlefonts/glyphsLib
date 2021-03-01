@@ -12,34 +12,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 from .constants import GLYPHS_PREFIX
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
 LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."
 LAYER_ORDER_TEMP_USER_DATA_KEY = "__layerOrder"
+LAYER_ORIGINAL_NAME_KEY = GLYPHS_PREFIX + "layerOriginalName"
+FOREGROUND_LAYER_ID_KEY = GLYPHS_PREFIX + "foregroundLayerId"
 
 
 def to_ufo_layer(self, glyph, layer):
+    layer_names_ids = {
+        (l.name, l.layerId)
+        for g in self.font.glyphs
+        for l in glyph.layers
+        if (l.associatedMasterId == layer.associatedMasterId)
+    }
+    layers_with_name = [name for name, _ in layer_names_ids if name == layer.name]
+    glyphs_layers = self.font.glyphs[glyph.name].layers
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+
     if layer.associatedMasterId == layer.layerId:
         ufo_layer = ufo_font.layers.defaultLayer
     elif layer.name not in ufo_font.layers:
         ufo_layer = ufo_font.newLayer(layer.name)
-    elif layer.name in ufo_font.layers and glyph.name in ufo_font.layers[layer.name]:
-        self.logger.warning(
-            f"{ufo_font.info.familyName} {ufo_font.info.styleName}: "
-            f"Glyph {glyph.name}, layer {layer.name}: Duplicate glyph layer name",
+    elif len(layers_with_name) > 1:
+        # If there's already a layer with the same layerId, use it.
+        # Otherwise make up a new layer with a new name.
+        layer_name = next(
+            (
+                l.name
+                for l in ufo_font.layers
+                if l.lib.get(LAYER_ID_KEY) == layer.layerId
+            ),
+            None,
         )
-        n = 1
-        new_layer_name = layer.name
-        while new_layer_name in ufo_font.layers:
-            new_layer_name = f"{layer.name} #{n!r}"
-            n += 1
-        ufo_layer = ufo_font.newLayer(new_layer_name)
+        if layer_name is not None:
+            ufo_layer = ufo_font.layers[layer_name]
+        else:
+            self.logger.warning(
+                f"{ufo_font.info.familyName} {ufo_font.info.styleName}: "
+                f"Glyph {glyph.name}, layer {layer.name}: Duplicate glyph layer name",
+            )
+            n = 1
+            new_layer_name = layer.name
+            while new_layer_name in ufo_font.layers:
+                new_layer_name = f"{layer.name} #{n!r}"
+                n += 1
+            ufo_layer = ufo_font.newLayer(new_layer_name)
+        ufo_layer.lib[LAYER_ORIGINAL_NAME_KEY] = layer.name
     else:
         ufo_layer = ufo_font.layers[layer.name]
-    if self.minimize_glyphs_diffs:
+
+    # Store layerId when other layers have the same name or when minimizing
+    # Glyphs diffs.
+    if len(layers_with_name) > 1 or self.minimize_glyphs_diffs:
         ufo_layer.lib[LAYER_ID_KEY] = layer.layerId
+
+    # Store the layer order when color layers are present or when minimizing
+    # Glyphs diffs.
+    if (
+        any([re.match(r"^Color \d+$", l.name) for l in glyphs_layers])
+        or self.minimize_glyphs_diffs
+    ):
         ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
             self, layer
         )
@@ -47,27 +84,41 @@ def to_ufo_layer(self, glyph, layer):
 
 
 def to_ufo_background_layer(self, glyph, layer):
+    layer_names_ids = {
+        (l.name, l.layerId)
+        for glyph in self.font.glyphs
+        for l in glyph.layers
+        if (l.associatedMasterId == layer.associatedMasterId)
+    }
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
     if layer.associatedMasterId == layer.layerId:
         layer_name = "public.background"
     else:
         layer_name = f"{layer.name}.background"
 
+    layers_with_name = [name for name, _ in layer_names_ids if name == layer.name]
+    if len(layers_with_name) > 1:
+        # Find foreground layer and use the same name as a base for the
+        # background layer name.
+        foreground_name = next(
+            (
+                l.name
+                for l in ufo_font.layers
+                if l.lib.get(LAYER_ID_KEY) == layer.layerId
+            ),
+            None,
+        )
+        assert foreground_name is not None
+        layer_name = f"{foreground_name}.background"
+
     if layer_name not in ufo_font.layers:
         background_layer = ufo_font.newLayer(layer_name)
-    elif layer_name in ufo_font.layers and glyph.name in ufo_font.layers[layer_name]:
-        self.logger.warning(
-            f"{ufo_font.info.familyName} {ufo_font.info.styleName}: "
-            f"Glyph {glyph.name}, layer {layer_name}: Duplicate glyph layer name",
-        )
-        n = 1
-        new_layer_name = layer_name
-        while new_layer_name in ufo_font.layers:
-            new_layer_name = f"{layer.name} #{n!r}.background"
-            n += 1
-        background_layer = ufo_font.newLayer(new_layer_name)
     else:
         background_layer = ufo_font.layers[layer_name]
+
+    # Store foreground layerId when other foreground layers have the same name.
+    if len(layers_with_name) > 1:
+        background_layer.lib[FOREGROUND_LAYER_ID_KEY] = layer.layerId
     return background_layer
 
 
@@ -87,13 +138,32 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
         layer = master_layer.background
     elif ufo_layer.name.endswith(".background"):
         # Find or create the foreground layer
-        # TODO: (jany) add lib attribute to find foreground by layer id
-        foreground_name = ufo_layer.name[: -len(".background")]
+        if FOREGROUND_LAYER_ID_KEY in ufo_layer.lib:
+            foreground_layerId = ufo_layer.lib[FOREGROUND_LAYER_ID_KEY]
+            foreground_layer = next(
+                (
+                    l
+                    for l in self._sources[master.id].font.layers
+                    if (l.lib.get(LAYER_ID_KEY) == foreground_layerId)
+                ),
+                None,
+            )
+            assert foreground_layer is not None
+            foreground_name = foreground_layer.lib.get(LAYER_ORIGINAL_NAME_KEY)
+        else:
+            foreground_layerId = None
+            foreground_name = None
+
+        if foreground_name is None:
+            foreground_name = ufo_layer.name[: -len(".background")]
+
         foreground = next(
             (
                 l
                 for l in glyph.layers
-                if l.name == foreground_name and l.associatedMasterId == master.id
+                if (foreground_layerId is None or foreground_layerId == l.layerId)
+                and l.name == foreground_name
+                and l.associatedMasterId == master.id
             ),
             None,
         )
@@ -117,7 +187,10 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
         layer.associatedMasterId = master.id
         if LAYER_ID_KEY in ufo_layer.lib:
             layer.layerId = ufo_layer.lib[LAYER_ID_KEY]
-        layer.name = ufo_layer.name
+        if LAYER_ORIGINAL_NAME_KEY in ufo_layer.lib:
+            layer.name = ufo_layer.lib[LAYER_ORIGINAL_NAME_KEY]
+        else:
+            layer.name = ufo_layer.name
         glyph.layers.append(layer)
     order_key = LAYER_ORDER_PREFIX + glyph.name
     if order_key in ufo_layer.lib:
