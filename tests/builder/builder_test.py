@@ -861,13 +861,11 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         sublayer.width = 0
         sublayer.name = "SubLayer"
         glyph.layers.append(sublayer)
-        with CapturingLogHandler(builder.logger, level="WARNING") as captor:
-            ufo = self.to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         self.assertEqual(
             [l.name for l in ufo.layers], ["public.default", "SubLayer", "SubLayer #1"]
         )
-        captor.assertRegex("Duplicate glyph layer name")
 
     def test_duplicate_supplementary_background_layers(self):
         """Test glyph background layers with same name."""
@@ -890,8 +888,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         sublayer.name = "SubLayer"
         sublayer.background.width = 0
         glyph.layers.append(sublayer)
-        with CapturingLogHandler(builder.logger, level="WARNING") as captor:
-            ufo = self.to_ufos(font)[0]
+        ufo = self.to_ufos(font)[0]
 
         self.assertEqual(
             [l.name for l in ufo.layers],
@@ -903,7 +900,6 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
                 "SubLayer #1.background",
             ],
         )
-        captor.assertRegex("Duplicate glyph layer name")
 
     def test_color_layer_with_background(self):
         filename = os.path.join(
