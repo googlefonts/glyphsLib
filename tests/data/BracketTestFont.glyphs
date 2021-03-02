@@ -23,7 +23,7 @@ value = 1;
 }
 );
 date = "2019-01-09 16:33:47 +0000";
-familyName = "New Font";
+familyName = BracketTestFont;
 fontMaster = (
 {
 ascender = 800;
