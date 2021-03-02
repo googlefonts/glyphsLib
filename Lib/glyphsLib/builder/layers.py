@@ -154,9 +154,23 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
         )
         if layer is None:
             layer = self.glyphs_module.GSLayer()
+
         layer.associatedMasterId = master.id
         if LAYER_ID_KEY in ufo_layer.lib:
             layer.layerId = ufo_layer.lib[LAYER_ID_KEY]
+        else:
+            # Try to find the layerId associated with the ufo_layer and use it
+            layerId = next(
+                (
+                    l.layerId
+                    for g in self.font.glyphs
+                    for l in g.layers
+                    if l.name == ufo_layer.name and l.associatedMasterId == master.id
+                ),
+                None,
+            )
+            if layerId:
+                layer.layerId = layerId
         if LAYER_ORIGINAL_NAME_KEY in ufo_layer.lib:
             layer.name = ufo_layer.lib[LAYER_ORIGINAL_NAME_KEY]
         else:
