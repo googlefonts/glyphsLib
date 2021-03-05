@@ -146,6 +146,18 @@ class GlyphsObjectProxy:
         opposed to a master or instance."""
         return hasattr(self._owner, "glyphs")
 
+    def has_properties(self):
+        if self.is_font():
+            return self._owner.format_version > 2
+        else:
+            return hasattr(self._owner, "properties")
+
+    def get_property(self, key):
+        for prop in self._owner.properties:
+            if key == prop.key:
+                return prop.defaultValue
+        return None
+
 
 class UFOProxy:
     """Record access to the UFO's lib custom parameters"""
@@ -198,6 +210,7 @@ class ParamHandler(AbstractParamHandler):
         ufo_name=None,
         glyphs_long_name=None,
         glyphs_multivalued=False,
+        glyphs3_property=None,
         ufo_prefix=CUSTOM_PARAM_PREFIX,
         ufo_info=True,
         ufo_default=None,
@@ -207,6 +220,7 @@ class ParamHandler(AbstractParamHandler):
         self.glyphs_name = glyphs_name
         self.glyphs_long_name = glyphs_long_name
         self.glyphs_multivalued = glyphs_multivalued
+        self.glyphs3_property = glyphs3_property
         # By default, they have the same name in both
         self.ufo_name = ufo_name or glyphs_name
         self.ufo_prefix = ufo_prefix
@@ -234,6 +248,9 @@ class ParamHandler(AbstractParamHandler):
         self._write_to_ufo(glyphs, ufo, ufo_value)
 
     def _read_from_glyphs(self, glyphs):
+        # Is it now a property?
+        if self.glyphs3_property and glyphs.has_properties():
+            return glyphs.get_property(self.glyphs3_property)
         # Try both the prefixed (long) name and the short name
         if self.glyphs_multivalued:
             getter = glyphs.get_custom_values
@@ -248,6 +265,11 @@ class ParamHandler(AbstractParamHandler):
         return None
 
     def _write_to_glyphs(self, glyphs, value):
+        # We currently convert UFO to Glyphs2 files.
+        # If we ever export Glyphs3 by default, we need a similar test
+        # here to the one in _read_from_glyphs to determine whether a
+        # value should be placed in the new properties top-level key.
+
         # Never write the prefixed (long) name?
         # FIXME: (jany) maybe should rather preserve the naming choice of user
         if self.glyphs_multivalued:
@@ -290,13 +312,8 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("hheaDescender", "openTypeHheaDescender"),
     ("hheaLineGap", "openTypeHheaLineGap"),
     ("compatibleFullName", "openTypeNameCompatibleFullName"),
-    ("description", "openTypeNameDescription"),
-    ("license", "openTypeNameLicense"),
-    ("licenseURL", "openTypeNameLicenseURL"),
     ("preferredFamilyName", "openTypeNamePreferredFamilyName"),
     ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName"),
-    ("sampleText", "openTypeNameSampleText"),
-    ("WWSFamilyName", "openTypeNameWWSFamilyName"),
     ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
@@ -338,6 +355,21 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
 
+GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
+    ("license", "openTypeNameLicense", "licenses"),
+    ("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
+    ("trademark", "trademark", "trademarks"),
+    ("description", "openTypeNameDescription", "descriptions"),
+    ("sampleText", "openTypeNameSampleText", "sampleText"),
+    ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
+    ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
+    ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
+    ("versionString", "openTypeNameVersion", "versionString")
+)
+
+for glyphs_name, ufo_name, property_name in GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES:
+    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs3_property=property_name))
+
 # TODO: (jany) for all the following fields, check that they are stored in a
 # meaningful Glyphs customParameter. Maybe they have short names?
 GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
@@ -352,8 +384,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeNameVersion",
     "openTypeNameUniqueID",
     "openTypeOS2FamilyClass",
-    "postscriptFontName",
-    "postscriptFullName",
     "postscriptSlantAngle",
     "postscriptUniqueID",
     # Should this be handled in `blue_values.py`?
@@ -368,7 +398,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "postscriptWindowsCharacterSet",
     "macintoshFONDFamilyID",
     "macintoshFONDName",
-    "trademark",
     "styleMapFamilyName",
     "styleMapStyleName",
 )
@@ -376,8 +405,6 @@ for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))
 
 
-# TODO: (jany) handle dynamic version number replacement
-register(ParamHandler("versionString", "openTypeNameVersion"))
 
 
 class EmptyListDefaultParamHandler(ParamHandler):
