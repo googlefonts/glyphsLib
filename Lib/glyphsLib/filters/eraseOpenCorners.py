@@ -1,10 +1,17 @@
 import logging
 
 from fontTools.pens.basePen import BasePen
-from fontTools.misc.bezierTools import segmentSegmentIntersections, _split_segment_at_t
+from fontTools.misc.bezierTools import (
+    segmentSegmentIntersections,
+    _split_segment_at_t,
+)
 from ufo2ft.filters import BaseFilter
 
 logger = logging.getLogger(__name__)
+
+def _pointIsLeftOfLine(line, aPoint):
+    a,b = line
+    return ((b[0] - a[0]) * (aPoint[1] - a[1]) - (b[1] - a[1]) * (aPoint[0] - a[0])) >= 0
 
 
 class EraseOpenCornersPen(BasePen):
@@ -38,11 +45,26 @@ class EraseOpenCornersPen(BasePen):
         ix = 0
         while ix < len(segs):
             next_ix = (ix + 1) % len(segs)
+
+            # Am I a line segment?
+            if not len(segs[ix]) == 2:
+                ix = ix + 1
+                continue
+
+            # Are the first point of the previous segment and the last point
+            # of the next segment both on the right side of the line?
+            # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
+            pt1 = segs[ix - 1][0]
+            pt2 = segs[next_ix][-1]
             intersection = [
                 i
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
                 if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
             ]
+            if not intersection or _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
+                ix = ix + 1
+                continue
+
             if intersection and (intersection[0].t1 > 0.5 and intersection[0].t2 < 0.5):
                 (segs[ix - 1], _) = _split_segment_at_t(
                     segs[ix - 1], intersection[0].t1
