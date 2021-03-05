@@ -1030,29 +1030,17 @@ class LayerShapesProxy(IndexedObjectsProxy):
 class LayerHintsProxy(IndexedObjectsProxy):
     _objects_name = "_hints"
 
-    def __init__(self, owner):
-        super().__init__(owner)
-
 
 class LayerAnnotationProxy(IndexedObjectsProxy):
     _objects_name = "_annotations"
-
-    def __init__(self, owner):
-        super().__init__(owner)
 
 
 class LayerGuideLinesProxy(IndexedObjectsProxy):
     _objects_name = "_guides"
 
-    def __init__(self, owner):
-        super().__init__(owner)
-
 
 class PathNodesProxy(IndexedObjectsProxy):
     _objects_name = "_nodes"
-
-    def __init__(self, owner):
-        super().__init__(owner)
 
 
 class CustomParametersProxy(Proxy):
