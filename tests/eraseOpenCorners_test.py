@@ -14,9 +14,9 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                     "width": 600,
                     "outline": [
                         ("moveTo", ((20, 0),)),
-                        ("lineTo", ((198, 360),)),
-                        ("lineTo", ((60, 353),)),
                         ("lineTo", ((179, 0),)),
+                        ("lineTo", ((60, 353),)),
+                        ("lineTo", ((198, 360),)),
                         ("closePath", ()),
                     ],
                 },
@@ -88,12 +88,22 @@ def font(request):
         pen = glyph.getPen()
         for operator, operands in param.get("outline", []):
             getattr(pen, operator)(*operands)
+
+        glyph = font.newGlyph(param["name"]+".reversed")
+        glyph.width = param.get("width", 0)
+        pen = glyph.getPen()
+        for operator, operands in param.get("outline", []):
+            getattr(pen, operator)(*operands)
+        for c in glyph:
+            c.reverse()
     return font
 
 
 def test_empty_glyph(font):
-    philter = EraseOpenCornersFilter(include={"space"})
-    assert not philter(font)
+    glyph = "space"
+    for g in [glyph, glyph+".reversed"]:
+        philter = EraseOpenCornersFilter(include=g)
+        assert not philter(font)
 
 
 def test_corner_glyph(font):
@@ -102,9 +112,12 @@ def test_corner_glyph(font):
 
     newcontour = font["hasCornerGlyph"][0]
     assert len(newcontour) == 3
-    assert newcontour[1].x == pytest.approx(114.5417)
-    assert newcontour[1].y == pytest.approx(191.2080)
+    assert newcontour[2].x == pytest.approx(114.5417)
+    assert newcontour[2].y == pytest.approx(191.2080)
 
+
+    philter = EraseOpenCornersFilter(include={"hasCornerGlyph.reversed"})
+    assert not philter(font)
 
 def test_curve_curve_glyph(font):
     philter = EraseOpenCornersFilter(include={"curvyCornerGlyph"})
@@ -114,6 +127,9 @@ def test_curve_curve_glyph(font):
     assert len(newcontour) == 7
     assert newcontour[0].x == pytest.approx(406.4859)
     assert newcontour[0].y == pytest.approx(104.5666)
+
+    philter = EraseOpenCornersFilter(include={"curvyCornerGlyph.reversed"})
+    assert not philter(font)
 
 
 def test_double_corner_glyph(font):
@@ -127,7 +143,12 @@ def test_double_corner_glyph(font):
     assert newcontour[2].x == 400 and newcontour[2].y == 400
     assert newcontour[3].x == 100 and newcontour[3].y == 400
 
+    philter = EraseOpenCornersFilter(include={"doubleCornerGlyph.reversed"})
+    assert not philter(font)
 
+
+# In this, the corner point of the contour is at array index 0, so we
+# need to wrap around the array indexes.
 def test_double_corner_glyph_wrap(font):
     philter = EraseOpenCornersFilter(include={"doubleCornerGlyphTrickyBitInMiddle"})
     assert philter(font)
@@ -151,3 +172,6 @@ def test_curve_corner(font):
     assert len(newcontour) == 8
     assert newcontour[5].x == pytest.approx(501.81019332487494)
     assert newcontour[5].y == pytest.approx(462.5782044264)
+
+    philter = EraseOpenCornersFilter(include={"curveCorner.reversed"})
+    assert not philter(font)
