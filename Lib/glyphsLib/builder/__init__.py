@@ -32,6 +32,7 @@ def to_ufos(
     store_editor_state=True,
     write_skipexportglyphs=False,
     minimal=False,
+    glyph_data=None,
 ):
     """Take a GSFont object and convert it into one UFO per master.
 
@@ -60,6 +61,7 @@ def to_ufos(
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
         minimal=minimal,
+        glyph_data=glyph_data,
     )
 
     result = list(builder.masters)
@@ -80,6 +82,7 @@ def to_designspace(
     store_editor_state=True,
     write_skipexportglyphs=False,
     minimal=False,
+    glyph_data=None,
 ):
     """Take a GSFont object and convert it into a Designspace Document + UFOS.
     The UFOs are available as the attribute `font` of each SourceDescriptor of
@@ -115,6 +118,7 @@ def to_designspace(
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
         minimal=minimal,
+        glyph_data=glyph_data,
     )
     return builder.designspace
 

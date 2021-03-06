@@ -23,7 +23,7 @@ from typing import Any, Dict
 
 from fontTools import designspaceLib
 
-from glyphsLib import classes, util
+from glyphsLib import classes, glyphdata, util
 from .constants import (
     PUBLIC_PREFIX,
     FONT_CUSTOM_PARAM_PREFIX,
@@ -73,6 +73,7 @@ class UFOBuilder(_LoggerMixin):
         store_editor_state=True,
         write_skipexportglyphs=False,
         minimal=False,
+        glyph_data=None,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -103,6 +104,7 @@ class UFOBuilder(_LoggerMixin):
                                          into the UFOs' and Designspace's lib instead
                                          of the glyph level lib key
                                          "com.schriftgestaltung.Glyphs.Export".
+        glyph_data -- A list of GlyphData.
         """
         self.font = font
 
@@ -187,6 +189,17 @@ class UFOBuilder(_LoggerMixin):
             # use a custom 'family_name' to name master UFOs, and only build
             # instances with matching 'familyName' custom parameter
             self._do_filter_instances_by_family = True
+
+        if glyph_data:
+            from io import BytesIO
+
+            glyphdata_files = []
+            for path in glyph_data:
+                with open(path, "rb") as fp:
+                    glyphdata_files.append(BytesIO(fp.read()))
+            self.glyphdata = glyphdata.GlyphData.from_files(*glyphdata_files)
+        else:
+            self.glyphdata = None
 
     def _is_vertical(self):
         master_ids = {m.id for m in self.font.masters}

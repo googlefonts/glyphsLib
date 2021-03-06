@@ -88,6 +88,7 @@ def build_masters(
     write_skipexportglyphs=False,
     ufo_module=None,
     minimal=False,
+    glyph_data=None,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
