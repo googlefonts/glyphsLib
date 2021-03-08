@@ -9,9 +9,12 @@ from ufo2ft.filters import BaseFilter
 
 logger = logging.getLogger(__name__)
 
+
 def _pointIsLeftOfLine(line, aPoint):
-    a,b = line
-    return ((b[0] - a[0]) * (aPoint[1] - a[1]) - (b[1] - a[1]) * (aPoint[0] - a[0])) >= 0
+    a, b = line
+    return (
+        (b[0] - a[0]) * (aPoint[1] - a[1]) - (b[1] - a[1]) * (aPoint[0] - a[0])
+    ) >= 0
 
 
 class EraseOpenCornersPen(BasePen):
@@ -61,7 +64,11 @@ class EraseOpenCornersPen(BasePen):
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
                 if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
             ]
-            if not intersection or _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
+            if (
+                not intersection
+                or _pointIsLeftOfLine(segs[ix], pt1)
+                or _pointIsLeftOfLine(segs[ix], pt2)
+            ):
                 ix = ix + 1
                 continue
 

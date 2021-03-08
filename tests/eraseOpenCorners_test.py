@@ -89,7 +89,7 @@ def font(request):
         for operator, operands in param.get("outline", []):
             getattr(pen, operator)(*operands)
 
-        glyph = font.newGlyph(param["name"]+".reversed")
+        glyph = font.newGlyph(param["name"] + ".reversed")
         glyph.width = param.get("width", 0)
         pen = glyph.getPen()
         for operator, operands in param.get("outline", []):
@@ -101,7 +101,7 @@ def font(request):
 
 def test_empty_glyph(font):
     glyph = "space"
-    for g in [glyph, glyph+".reversed"]:
+    for g in [glyph, glyph + ".reversed"]:
         philter = EraseOpenCornersFilter(include=g)
         assert not philter(font)
 
@@ -115,9 +115,9 @@ def test_corner_glyph(font):
     assert newcontour[2].x == pytest.approx(114.5417)
     assert newcontour[2].y == pytest.approx(191.2080)
 
-
     philter = EraseOpenCornersFilter(include={"hasCornerGlyph.reversed"})
     assert not philter(font)
+
 
 def test_curve_curve_glyph(font):
     philter = EraseOpenCornersFilter(include={"curvyCornerGlyph"})
