@@ -364,11 +364,18 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
-    ("versionString", "openTypeNameVersion", "versionString")
+    ("versionString", "openTypeNameVersion", "versionString"),
 )
 
 for glyphs_name, ufo_name, property_name in GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES:
-    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs3_property=property_name))
+    register(
+        ParamHandler(
+            glyphs_name,
+            ufo_name,
+            glyphs_long_name=ufo_name,
+            glyphs3_property=property_name,
+        )
+    )
 
 # TODO: (jany) for all the following fields, check that they are stored in a
 # meaningful Glyphs customParameter. Maybe they have short names?
@@ -403,8 +410,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))
-
-
 
 
 class EmptyListDefaultParamHandler(ParamHandler):
