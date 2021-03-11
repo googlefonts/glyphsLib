@@ -4322,11 +4322,11 @@ class GSFont(GSBase):
 
     @property
     def manufacturer(self):
-        return self._get_from_properties("manufacturer")
+        return self._get_from_properties("manufacturers")
 
     @manufacturer.setter
     def manufacturer(self, value):
-        self._set_in_properties("manufacturer", value)
+        self._set_in_properties("manufacturers", value)
 
     @property
     def manufacturerURL(self):
@@ -4338,19 +4338,19 @@ class GSFont(GSBase):
 
     @property
     def copyright(self):
-        return self._get_from_properties("copyright")
+        return self._get_from_properties("copyrights")
 
     @copyright.setter
     def copyright(self, value):
-        self._set_in_properties("copyright", value)
+        self._set_in_properties("copyrights", value)
 
     @property
     def designer(self):
-        return self._get_from_properties("designer")
+        return self._get_from_properties("designers")
 
     @designer.setter
     def designer(self, value):
-        self._set_in_properties("designer", value)
+        self._set_in_properties("designers", value)
 
     @property
     def designerURL(self):
