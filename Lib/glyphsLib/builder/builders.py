@@ -262,7 +262,8 @@ class UFOBuilder(_LoggerMixin):
             master = self.font.masters[master_id]
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
-            self.to_ufo_openTypeCategories(ufo)
+            if not self.generate_GDEF:
+                self.to_ufo_openTypeCategories(ufo)
             for layer in list(ufo.layers):
                 self.to_ufo_layer_lib(master, ufo, layer)
 
