@@ -19,7 +19,7 @@ import logging
 import os
 import re
 from textwrap import dedent
-from typing import Dict
+from typing import Any, Dict
 
 from fontTools import designspaceLib
 
@@ -37,6 +37,7 @@ BRACKET_GLYPH_RE = re.compile(
         REVERSE_BRACKET_LABEL
     )
 )
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
 class _LoggerMixin:
@@ -256,12 +257,20 @@ class UFOBuilder(_LoggerMixin):
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
-        for source in self._sources.values():
+        for master_id, source in self._sources.items():
             ufo = source.font
+            master = self.font.masters[master_id]
             if self.propagate_anchors:
                 self.to_ufo_propagate_font_anchors(ufo)
-            for layer in ufo.layers:
-                self.to_ufo_layer_lib(layer)
+            for layer in list(ufo.layers):
+                self.to_ufo_layer_lib(master, ufo, layer)
+
+            # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
+            # parameters so it requires UFOs have their features set first; at the
+            # same time, to generate a GDEF table we first need to have defined the
+            # glyphOrder, exported the glyphs and propagated anchors from components.
+            self.to_ufo_master_features(ufo, master)
+            self.to_ufo_custom_params(ufo, master)
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
@@ -275,7 +284,6 @@ class UFOBuilder(_LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
-        self.to_ufo_features()  # This depends on the glyphOrder key
         self.to_ufo_groups()
         self.to_ufo_kerning()
 
@@ -455,7 +463,7 @@ class UFOBuilder(_LoggerMixin):
         # re-generate the GDEF table since we have added new BRACKET glyphs, which may
         # also need to be included: https://github.com/googlefonts/glyphsLib/issues/578
         if self.generate_GDEF:
-            self.to_ufo_features()
+            self.regenerate_gdef()
 
     def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         font = self.font
@@ -485,9 +493,9 @@ class UFOBuilder(_LoggerMixin):
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             for (location, reverse), layers in glyph_bracket_layers.items():
                 for layer in layers:
-                    ufo_layer = self._sources[
-                        layer.associatedMasterId or layer.layerId
-                    ].font.layers.defaultLayer
+                    layer_id = layer.associatedMasterId or layer.layerId
+                    ufo_font = self._sources[layer_id].font
+                    ufo_layer = ufo_font.layers.defaultLayer
                     ufo_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
                     ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                     self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
@@ -505,6 +513,9 @@ class UFOBuilder(_LoggerMixin):
                         )
                         if bracket_comp_name in bracket_glyphs:
                             comp.baseGlyph = bracket_comp_name
+                    # Update kerning groups and pairs, bracket glyphs inherit the
+                    # parent's kerning.
+                    _expand_kerning_to_brackets(glyph_name, ufo_glyph_name, ufo_font)
 
     # Implementation is split into one file per feature
     from .anchors import to_ufo_propagate_font_anchors, to_ufo_glyph_anchors
@@ -515,7 +526,7 @@ class UFOBuilder(_LoggerMixin):
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
     from .custom_params import to_ufo_custom_params
-    from .features import to_ufo_features
+    from .features import regenerate_gdef, to_ufo_master_features
     from .font import to_ufo_font_attributes
     from .groups import to_ufo_groups
     from .guidelines import to_ufo_guidelines
@@ -563,6 +574,31 @@ def _make_designspace_rule(glyph_names, axis_name, range_min, range_max, reverse
         sub_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
         rule.subs.append((glyph_name, sub_glyph_name))
     return rule
+
+
+def _expand_kerning_to_brackets(
+    glyph_name: str, ufo_glyph_name: str, ufo_font: Any
+) -> None:
+    """Ensures that bracket glyphs inherit their parents' kerning."""
+
+    for group, names in ufo_font.groups.items():
+        if not group.startswith(("public.kern1.", "public.kern2.")):
+            continue
+        name_set = set(names)
+        if glyph_name in name_set and ufo_glyph_name not in name_set:
+            names.append(ufo_glyph_name)
+
+    bracket_kerning = {}
+    for (first, second), value in ufo_font.kerning.items():
+        first_match = first == glyph_name
+        second_match = second == glyph_name
+        if first_match and second_match:
+            bracket_kerning[(ufo_glyph_name, ufo_glyph_name)] = value
+        elif first_match:
+            bracket_kerning[(ufo_glyph_name, second)] = value
+        elif second_match:
+            bracket_kerning[(first, ufo_glyph_name)] = value
+    ufo_font.kerning.update(bracket_kerning)
 
 
 def filter_instances_by_family(instances, family_name=None):
@@ -700,7 +736,7 @@ class GlyphsBuilder(_LoggerMixin):
                         del layer[glyph_name]
 
             for layer in _sorted_backgrounds_last(source.font.layers):
-                self.to_glyphs_layer_lib(layer)
+                self.to_glyphs_layer_lib(layer, master)
                 for glyph in layer:
                     self.to_glyphs_glyph(glyph, layer, master)
 

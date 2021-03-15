@@ -585,6 +585,23 @@ def test_custom_stylemap_style_name(ufo_module):
     assert ufo.info.styleMapStyleName == "bold"
 
 
+def test_custom_default_layer_name(ufo_module):
+    ufo1 = ufo_module.Font()
+    ufo2 = ufo_module.Font()
+    if hasattr(ufo1, "renameLayer") and callable(ufo1.renameLayer):
+        ufo1.renameLayer("public.default", "custom default")
+        ufo2.renameLayer("public.default", "other default")
+    else:
+        ufo1.layers.defaultLayer.name = "custom default"
+        ufo2.layers.defaultLayer.name = "other default"
+
+    font = to_glyphs([ufo1, ufo2])
+    (ufo1, ufo2) = to_ufos(font)
+
+    assert ufo1.layers.defaultLayer.name == "custom default"
+    assert ufo2.layers.defaultLayer.name == "other default"
+
+
 def test_weird_kerning_roundtrip(ufo_module):
     groups = {
         "public.kern1.i": [

@@ -32,8 +32,9 @@ def to_ufo_hints(self, ufo_glyph, layer):
             hint[attr] = val
         for attr in ["origin", "other1", "other2", "place", "scale", "target"]:
             val = getattr(hi, attr, None)
-            # FIXME: (jany) what about target = up/down?
-            if val is not None and not any(v is None for v in val):
+            if attr == "target" and val in ("up", "down"):
+                hint[attr] = val
+            elif val is not None and not any(v is None for v in val):
                 hint[attr] = list(val)
         hints.append(hint)
 
@@ -49,8 +50,15 @@ def to_glyphs_hints(self, ufo_glyph, layer):
         for attr in ["horizontal", "options", "stem", "type"]:
             setattr(hi, attr, hint[attr])
         for attr in ["origin", "other1", "other2", "place", "scale", "target"]:
-            # FIXME: (jany) what about target = up/down?
             if attr in hint:
-                value = Point(*hint[attr])
+                # https://github.com/googlefonts/glyphsLib/pull/613
+                # handle target = ['u', 'p'] or ['d', 'o', 'w', 'n']
+                if attr == "target" and hint[attr] in (list("down"), list("up")):
+                    value = "".join(hint[attr])
+                # handle target = "up" or "down"
+                elif attr == "target" and hint[attr] in ("down", "up"):
+                    value = hint[attr]
+                else:
+                    value = Point(*hint[attr])
                 setattr(hi, attr, value)
         layer.hints.append(hi)

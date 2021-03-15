@@ -302,7 +302,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
     def test_glyphs(self):
         font = self.font
         self.assertGreaterEqual(len(list(font.glyphs)), 1)
-        by_index = font.glyphs[3]
+        by_index = font.glyphs[4]
         by_name = font.glyphs["adieresis"]
         by_unicode_char = font.glyphs["ä"]
         by_unicode_value = font.glyphs["00E4"]
@@ -1528,6 +1528,13 @@ class GSPathFromFileTest(GSObjectsTestCase):
         del path.nodes[-2]
         del path.nodes[-1]
         self.assertEqual(amount, len(path.nodes))
+
+    def test_node_position(self):
+        n = GSNode()
+        n.position = Point("{10, 10}")
+        self.assertEqual(n.position.x, 10)
+        n.position = (20, 20)
+        self.assertEqual(n.position.x, 20)
 
     # TODO: GSPath.closed
 
