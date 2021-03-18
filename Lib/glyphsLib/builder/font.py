@@ -83,9 +83,9 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_family_user_data(ufo)
 
-        ufo.lib[UFO2FT_FILTERS_KEY] = [
+        ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
             {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
-        ]
+        )
 
         self.to_ufo_custom_params(ufo, font)
 
