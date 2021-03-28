@@ -211,7 +211,7 @@ def test_guidelines(ufo_module):
         assert horizontal.position.y == 20
         assert horizontal.angle == 0
 
-    (ufo,) = to_ufos(font)
+    (ufo,) = to_ufos(font, minimal=False)
 
     for obj in [ufo, ufo["a"]]:
         angled, vertical, horizontal = obj.guidelines
@@ -470,7 +470,7 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_mod
     saved_font = classes.GSFont(path)
 
     for font in [font, saved_font]:
-        (ufo,) = to_ufos(font)
+        (ufo,) = to_ufos(font, minimal=False)
 
         assert ufo["a"].width == 100
         assert ufo.layers["public.background"]["a"].width == 0
