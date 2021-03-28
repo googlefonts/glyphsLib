@@ -150,10 +150,11 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     else:
         ufo_glyph.width = width
 
-    self.to_ufo_background_image(ufo_glyph, layer)
-    self.to_ufo_guidelines(ufo_glyph, layer)
-    self.to_ufo_glyph_background(ufo_glyph, layer)
-    self.to_ufo_annotations(ufo_glyph, layer)
+    if not self.minimal:
+        self.to_ufo_background_image(ufo_glyph, layer)
+        self.to_ufo_guidelines(ufo_glyph, layer)
+        self.to_ufo_glyph_background(ufo_glyph, layer)
+        self.to_ufo_annotations(ufo_glyph, layer)
     self.to_ufo_hints(ufo_glyph, layer)
     self.to_ufo_glyph_user_data(ufo_font, glyph)
     self.to_ufo_layer_user_data(ufo_glyph, layer)
