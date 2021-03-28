@@ -69,6 +69,7 @@ class UFOBuilder(_LoggerMixin):
         generate_GDEF=True,
         store_editor_state=True,
         write_skipexportglyphs=False,
+        minimal=True
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -115,6 +116,7 @@ class UFOBuilder(_LoggerMixin):
         self.store_editor_state = store_editor_state
         self.bracket_layers = []
         self.write_skipexportglyphs = write_skipexportglyphs
+        self.minimal = minimal
 
         if propagate_anchors is None:
             propagate_anchors = font.customParameters["Propagate Anchors"]

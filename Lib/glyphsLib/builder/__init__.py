@@ -31,6 +31,7 @@ def to_ufos(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    minimal=True
 ):
     """Take a GSFont object and convert it into one UFO per master.
 
@@ -44,6 +45,10 @@ def to_ufos(
 
     If generate_GDEF is True, write a `table GDEF {...}` statement in the
     UFO's features.fea, containing GlyphClassDef and LigatureCaretByPos.
+
+    If minimal is True, it is assumed that the UFOs will only be used in
+    font production, and unnecessary steps (e.g. converting background layers)
+    will be skipped.
     """
     builder = UFOBuilder(
         font,
@@ -54,6 +59,7 @@ def to_ufos(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        minimal=minimal
     )
 
     result = list(builder.masters)
@@ -73,6 +79,7 @@ def to_designspace(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    minimal=True,
 ):
     """Take a GSFont object and convert it into a Designspace Document + UFOS.
     The UFOs are available as the attribute `font` of each SourceDescriptor of
@@ -107,6 +114,7 @@ def to_designspace(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        minimal=minimal
     )
     return builder.designspace
 
