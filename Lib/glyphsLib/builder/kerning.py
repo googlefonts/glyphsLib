@@ -21,8 +21,12 @@ UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 
 def to_ufo_kerning(self):
-    for master_id, kerning in self.font.kerning.items():
-        _to_ufo_kerning(self, self._sources[master_id].font, kerning)
+    for master in self.font.masters:
+        master_id = master.id
+        kerning_source = master.metricsSource.id  # Maybe be a linked master
+        if kerning_source in self.font.kerning:
+            kerning = self.font.kerning[kerning_source]
+            _to_ufo_kerning(self, self._sources[master_id].font, kerning)
 
 
 def _to_ufo_kerning(self, ufo, kerning_data):

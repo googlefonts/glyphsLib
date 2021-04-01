@@ -123,7 +123,22 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
         ufo_glyph.lib[GLYPHLIB_PREFIX + "subCategory"] = subCategory
 
     # load width before background, which is loaded with lib data
-    width = layer.width
+
+    # The width may be taken from another master via the customParameters
+    # 'Link Metrics With Master' or 'Link Metrics With First Master'.
+    master = self.font.masters[layer.associatedMasterId or layer.layerId]
+    metric_source = master.metricsSource.id
+    metric_layer = self.font.glyphs[glyph.name].layers[metric_source]
+    if metric_layer:
+        width = metric_layer.width
+        if layer.width != width:
+            logger.debug(
+                f"{layer.parent.name}: Applying width from master "
+                f"'{metric_source}': {layer.width} -> {width}"
+            )
+    else:
+        width = None
+
     if width is None:
         pass
     elif category == "Mark" and subCategory == "Nonspacing" and width > 0:
