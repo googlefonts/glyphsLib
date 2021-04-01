@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 from collections import OrderedDict, defaultdict
 from functools import partial
 import logging
@@ -180,8 +179,7 @@ class UFOBuilder(_LoggerMixin):
 
     @property
     def masters(self):
-        """Get an iterator over master UFOs that match the given family_name.
-        """
+        """Get an iterator over master UFOs that match the given family_name."""
         if self._sources:
             for source in self._sources.values():
                 yield source.font
@@ -508,6 +506,10 @@ class UFOBuilder(_LoggerMixin):
                     )
                     # swap components if base glyph contains matching bracket layers.
                     for comp in ufo_glyph.components:
+                        if comp.baseGlyph == glyph_name:
+                            # Do not create self referencing glyph components. See:
+                            # tests\builder\designspace_roundtrip_test.py::test_roundtrip_self_ref
+                            continue
                         bracket_comp_name = _bracket_glyph_name(
                             comp.baseGlyph, reverse, location
                         )
