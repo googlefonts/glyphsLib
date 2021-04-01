@@ -14,11 +14,8 @@
 
 
 import re
-import logging
 
 from .glyph import BRACKET_GLYPH_RE
-
-logger = logging.getLogger(__name__)
 
 UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
