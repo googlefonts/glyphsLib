@@ -1532,6 +1532,33 @@ class GSFontMaster(GSBase):
         return super().shouldWriteValueForKey(key)
 
     @property
+    def metricsSource(self):
+        """Returns the source master to be used for glyph and kerning metrics.
+
+        Normally this is the current master itself, but when linked metrics
+        custom parameters are being used, the master referred to in the custom
+        parameter is returned instead."""
+        if self.customParameters["Link Metrics With First Master"]:
+            return self.font.masters[0]
+        source_master_id = self.customParameters["Link Metrics With Master"]
+
+        # No custom parameters apply, go home
+        if not source_master_id:
+            return self
+
+        if source_master_id in self.font.masters:
+            return self.font.masters[source_master_id]
+
+        # Try by name
+        for source_master in self.font.masters:
+            if source_master.name == source_master_id:
+                return source_master
+
+        logger.warning(f"Source master for metrics not found: '{source_master_id}'")
+        return self
+
+
+    @property
     def name(self):
         name = self.customParameters["Master Name"]
         if name:
