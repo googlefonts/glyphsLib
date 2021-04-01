@@ -25,39 +25,11 @@ UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 
 def to_ufo_kerning(self):
-    # Check if the kerning should be copied from another master
-    kerning_source_masters = {}
-
     for master in self.font.masters:
         master_id = master.id
-        master = self.font.masters[master_id]
-        source_master_id = master.customParameters["Link Metrics With Master"]
-        if source_master_id is None:
-            source_master_id = master.customParameters["Link Metrics With First Master"]
-            if source_master_id == 1:
-                kerning_source_masters[master_id] = self.font.masters[0].id
-        else:
-            source_master = self.font.masters[source_master_id]
-            if source_master is None:
-                # Try by name instead of master ID
-                found = False
-                for source_master in self.font.masters:
-                    if source_master.name == source_master_id:
-                        found = True
-                        source_master_id = source_master.id
-                        break
-            else:
-                found = True
-            if found:
-                kerning_source_masters[master_id] = source_master_id
-            else:
-                logger.info(f"Source master for kerning not found: '{source_master_id}'")
-
-    for master in self.font.masters:
-        master_id = master.id
-        source_master_id = kerning_source_masters.get(master_id, master_id)
-        if source_master_id in self.font.kerning:
-            kerning = deepcopy(self.font.kerning[source_master_id])
+        kerning_source = master.metricsSource.id  # Maybe be a linked master
+        if kerning_source in self.font.kerning:
+            kerning = self.font.kerning[kerning_source]
             _to_ufo_kerning(self, self._sources[master_id].font, kerning)
 
 

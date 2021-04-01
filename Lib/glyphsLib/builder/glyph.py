@@ -127,44 +127,17 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     # The width may be taken from another master via the customParameters
     # 'Link Metrics With Master' or 'Link Metrics With First Master'.
     master = self.font.masters[layer.associatedMasterId or layer.layerId]
-    source_master_id = master.customParameters["Link Metrics With Master"]
-    if source_master_id is None:
-        user_first_master = master.customParameters["Link Metrics With First Master"]
-        if user_first_master == 1:
-            width = self.font.glyphs[glyph.name].layers[0].width
-            if layer.width != width:
-                logger.info(
-                    f"{layer.parent.name}: Applying width from first master: "
-                    f"{layer.width} -> {width}"
-                )
-        else:
-            width = layer.width
+    metric_source = master.metricsSource.id
+    metric_layer = self.font.glyphs[glyph.name].layers[metric_source]
+    if metric_layer:
+        width = metric_layer.width
     else:
-        source_layer = self.font.glyphs[glyph.name].layers[source_master_id]
-        if source_layer is None:
-            # Try by name instead of master ID
-            found = False
-            for master in self.font.masters:
-                if master.name == source_master_id:
-                    found = True
-                    source_layer = self.font.glyphs[glyph.name].layers[master.id]
-                    break
-        else:
-            found = True
-        if found:
-            width = source_layer.width
-        else:
-            logger.info(
-                f"{layer.parent.name}: Trying to apply width from master "
-                f"'{source_master_id}': master not found."
-            )
-            # Use the current layer width
-            width = layer.width
-        if layer.width != width:
-            logger.debug(
-                f"{layer.parent.name}: Applying width from master "
-                f"'{source_master_id}': {layer.width} -> {width}"
-            )
+        width = None
+    if layer.width != width:
+        logger.debug(
+            f"{layer.parent.name}: Applying width from master "
+            f"'{metric_source}': {layer.width} -> {width}"
+        )
 
     if width is None:
         pass
