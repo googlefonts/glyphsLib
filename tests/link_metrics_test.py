@@ -31,6 +31,7 @@ def test_link_metrics_to_master():
     assert M1.kerning == M3.kerning
     assert M1["A"].width == M3["A"].width
 
+
 def test_link_metrics_to_first_master():
     ufos = load_to_ufos(glyphs_file_path())
     # M2 should be linked to M0
@@ -38,6 +39,7 @@ def test_link_metrics_to_first_master():
     M2 = ufos[2]
     assert M2.kerning == M0.kerning
     assert M2["A"].width == M0["A"].width
+
 
 def test_link_metrics_to_master_missing():
     ufos = load_to_ufos(glyphs_file_path())
