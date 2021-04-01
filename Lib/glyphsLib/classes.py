@@ -1557,7 +1557,6 @@ class GSFontMaster(GSBase):
         logger.warning(f"Source master for metrics not found: '{source_master_id}'")
         return self
 
-
     @property
     def name(self):
         name = self.customParameters["Master Name"]
@@ -3296,7 +3295,7 @@ class GSLayer(GSBase):
             return Rect(Point(left, bottom), Point(right - left, top - bottom))
 
     def _find_node_by_indices(self, point):
-        """"Find the GSNode that is refered to by the given indices.
+        """ "Find the GSNode that is refered to by the given indices.
 
         See GSNode::_indices()
         """

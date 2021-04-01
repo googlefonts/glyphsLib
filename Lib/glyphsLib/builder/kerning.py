@@ -16,7 +16,6 @@
 import re
 import logging
 
-from copy import deepcopy
 from .glyph import BRACKET_GLYPH_RE
 
 logger = logging.getLogger(__name__)
