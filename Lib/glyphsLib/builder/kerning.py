@@ -14,9 +14,12 @@
 
 
 import re
+import logging
 
 from copy import deepcopy
 from .glyph import BRACKET_GLYPH_RE
+
+logger = logging.getLogger(__name__)
 
 UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
@@ -48,7 +51,7 @@ def to_ufo_kerning(self):
             if found:
                 kerning_source_masters[master_id] = source_master_id
             else:
-                print(f"Source master for kerning not found: '{source_master_id}'")
+                logger.info(f"Source master for kerning not found: '{source_master_id}'")
 
     for master in self.font.masters:
         master_id = master.id

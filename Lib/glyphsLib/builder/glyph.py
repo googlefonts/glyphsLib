@@ -154,14 +154,14 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
         if found:
             width = source_layer.width
         else:
-            logger.debug(
+            logger.info(
                 f"{layer.parent.name}: Trying to apply width from master "
                 f"'{source_master_id}': master not found."
             )
             # Use the current layer width
             width = layer.width
         if layer.width != width:
-            logger.info(
+            logger.debug(
                 f"{layer.parent.name}: Applying width from master "
                 f"'{source_master_id}': {layer.width} -> {width}"
             )
