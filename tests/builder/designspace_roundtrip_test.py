@@ -79,18 +79,19 @@ def test_default_master_roundtrips(ufo_module):
 
 
 def test_roundtrip_self_ref(datadir, ufo_module):
-    """This test is to solve the problem of roundtrips sometimes resulting in broken
-    ufos when working with bracket layers.
+    """This test is to solve the problem of roundtrips sometimes resulting in
+    broken ufos when working with bracket layers.
 
-    Starting with UFO: It's okay to have a bracket glyph that references its base
-    glyph as a component. However, on the glyphs.app side it's not okay because the base and 
-    bracket glyphs are merged into a single glyph with the bracket glyph now being a layer.
-    Glyphsapp (2.6.1) does not like the self referencing component, but that's the best we can
-    do to preserve the information
-    
-    The goal here is to make sure that the valid ufo we start with, is still valid in ufo after
-    roundtriping. We are not concerned with making glyphs.app work properly at the intemediary
-    stage.
+    Starting with UFO: It's okay to have a bracket glyph that references its
+    base glyph as a component. However, on the glyphs.app side it's not okay
+    because the base and bracket glyphs are merged into a single glyph with
+    the bracket glyph now being a layer. Glyphsapp (2.6.1) does not like the
+    self referencing component, but that's the best we can do to preserve the
+    information.
+
+    The goal here is to make sure that the valid ufo we start with, is still
+    valid in ufo after roundtriping. We are not concerned with making
+    glyphs.app work properly at the intemediary stage.
     """
     path = datadir / "BracketSelfReference/BracketSelfReference.designspace"
     designspace = designspaceLib.DesignSpaceDocument.fromfile(path)
