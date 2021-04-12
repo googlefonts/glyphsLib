@@ -261,7 +261,10 @@ def test_glyph_height_and_vertical_origin(ufo_module):
     a = ufo.newGlyph("a")
     a.height = 1024
     a.verticalOrigin = 100
-    ufo.newGlyph("b")
+    b = ufo.newGlyph("b")
+    b.height = ufo.info.ascender - ufo.info.descender  # Glyphs default vertWidth
+    c = ufo.newGlyph("c")
+    assert c.height == 0  # defcon default glyph.height == 0
 
     font = to_glyphs([ufo])
 
@@ -269,13 +272,17 @@ def test_glyph_height_and_vertical_origin(ufo_module):
     assert font.glyphs["a"].layers[0].vertOrigin == 900
     assert font.glyphs["b"].layers[0].vertWidth is None
     assert font.glyphs["b"].layers[0].vertOrigin is None
+    assert font.glyphs["c"].layers[0].vertWidth == 0
+    assert font.glyphs["c"].layers[0].vertOrigin is None
 
     (ufo,) = to_ufos(font)
 
     assert ufo["a"].height == font.glyphs["a"].layers[0].vertWidth
     assert ufo["a"].verticalOrigin == 100
     assert ufo["b"].height == (ufo.info.ascender - ufo.info.descender)
-    assert ufo["b"].verticalOrigin == 1000
+    assert ufo["b"].verticalOrigin == ufo.info.ascender
+    assert ufo["c"].height == 0
+    assert ufo["c"].verticalOrigin == ufo.info.ascender
 
 
 def test_glyph_height_and_vertical_origin_trigger_vhea_metrics(ufo_module):

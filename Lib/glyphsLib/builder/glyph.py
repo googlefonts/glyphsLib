@@ -292,12 +292,12 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
 
     ascender, descender = _get_typo_ascender_descender(layer.master)
 
-    if layer.vertWidth:
+    if layer.vertWidth is not None:
         ufo_glyph.height = layer.vertWidth
     else:
         ufo_glyph.height = ascender - descender
 
-    if layer.vertOrigin:
+    if layer.vertOrigin is not None:
         ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
     else:
         ufo_glyph.verticalOrigin = ascender
@@ -354,9 +354,9 @@ def _to_glyphs_color(color):
 
 
 def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
-    if ufo_glyph.height:
+    ascender, descender = _get_typo_ascender_descender(master)
+    if ufo_glyph.height != (ascender - descender):
         layer.vertWidth = ufo_glyph.height
 
-    if ufo_glyph.verticalOrigin:
-        ascender, _ = _get_typo_ascender_descender(master)
+    if ufo_glyph.verticalOrigin is not None and ufo_glyph.verticalOrigin != ascender:
         layer.vertOrigin = ascender - ufo_glyph.verticalOrigin
