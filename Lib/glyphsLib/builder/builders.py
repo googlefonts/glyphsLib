@@ -69,7 +69,7 @@ class UFOBuilder(_LoggerMixin):
         generate_GDEF=True,
         store_editor_state=True,
         write_skipexportglyphs=False,
-        minimal=True
+        minimal=True,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -188,8 +188,7 @@ class UFOBuilder(_LoggerMixin):
 
     @property
     def masters(self):
-        """Get an iterator over master UFOs that match the given family_name.
-        """
+        """Get an iterator over master UFOs that match the given family_name."""
         if self._sources:
             for source in self._sources.values():
                 yield source.font

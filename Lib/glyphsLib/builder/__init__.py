@@ -31,7 +31,7 @@ def to_ufos(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
-    minimal=True
+    minimal=True,
 ):
     """Take a GSFont object and convert it into one UFO per master.
 
@@ -59,7 +59,7 @@ def to_ufos(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
-        minimal=minimal
+        minimal=minimal,
     )
 
     result = list(builder.masters)
@@ -114,7 +114,7 @@ def to_designspace(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
-        minimal=minimal
+        minimal=minimal,
     )
     return builder.designspace
 

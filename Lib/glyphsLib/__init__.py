@@ -69,7 +69,7 @@ def load_to_ufos(
         family_name=family_name,
         propagate_anchors=propagate_anchors,
         ufo_module=ufo_module,
-        minimal=minimal
+        minimal=minimal,
     )
 
 
@@ -87,7 +87,7 @@ def build_masters(
     store_editor_state=True,
     write_skipexportglyphs=False,
     ufo_module=None,
-    minimal=True
+    minimal=True,
 ):
     """Write and return UFOs from the masters and the designspace defined in a
     .glyphs file.
@@ -124,7 +124,7 @@ def build_masters(
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
         ufo_module=ufo_module,
-        minimal=minimal
+        minimal=minimal,
     )
 
     # Only write full masters to disk. This assumes that layer sources are always part
