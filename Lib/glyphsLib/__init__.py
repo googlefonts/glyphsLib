@@ -53,6 +53,7 @@ def load_to_ufos(
     family_name=None,
     propagate_anchors=None,
     ufo_module=None,
+    minimal=None
 ):
     """Load an unpacked .glyphs object to UFO objects."""
 
@@ -68,6 +69,7 @@ def load_to_ufos(
         family_name=family_name,
         propagate_anchors=propagate_anchors,
         ufo_module=ufo_module,
+        minimal=minimal
     )
 
 
