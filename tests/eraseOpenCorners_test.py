@@ -76,6 +76,54 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "curveCornerPlusSquare",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((316, 437),)),
+                        (
+                            "curveTo",
+                            (
+                                (388.67761, 437.0),
+                                (446.1305580343, 401.4757887467),
+                                (475, 344),
+                            ),
+                        ),
+                        ("lineTo", ((588, 407),)),
+                        ("lineTo", ((567, 260),)),
+                        ("curveTo", ((567, 414), (464, 510), (316, 510))),
+                        ("closePath", ()),
+                        ("moveTo", ((100, 100),)),
+                        ("lineTo", ((100, 200),)),
+                        ("lineTo", ((200, 200),)),
+                        ("lineTo", ((200, 100),)),
+                        ("closePath", ()),
+                    ],
+                },
+                {
+                    "name": "squarePlusCurveCorner",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((100, 100),)),
+                        ("lineTo", ((100, 200),)),
+                        ("lineTo", ((200, 200),)),
+                        ("lineTo", ((200, 100),)),
+                        ("closePath", ()),
+                        ("moveTo", ((316, 437),)),
+                        (
+                            "curveTo",
+                            (
+                                (388.67761, 437.0),
+                                (446.1305580343, 401.4757887467),
+                                (475, 344),
+                            ),
+                        ),
+                        ("lineTo", ((588, 407),)),
+                        ("lineTo", ((567, 260),)),
+                        ("curveTo", ((567, 414), (464, 510), (316, 510))),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -175,3 +223,35 @@ def test_curve_corner(font):
 
     philter = EraseOpenCornersFilter(include={"curveCorner.reversed"})
     assert not philter(font)
+
+def test_curve_corner_plus_square(font):
+    oldcontour = font["curveCornerPlusSquare"][0]
+    assert len(oldcontour) == 9
+
+    philter = EraseOpenCornersFilter(include={"curveCornerPlusSquare"})
+    assert philter(font)
+    assert len(font["curveCornerPlusSquare"][1]) == 4
+    newcontour = font["curveCornerPlusSquare"][0]
+    assert len(newcontour) == 8
+    assert newcontour[5].x == pytest.approx(501.81019332487494)
+    assert newcontour[5].y == pytest.approx(462.5782044264)
+
+    philter = EraseOpenCornersFilter(include={"curveCornerPlusSquare.reversed"})
+    assert not philter(font)
+
+
+def test_square_plus_curve_corner(font):
+    oldcontour = font["squarePlusCurveCorner"][1]
+    assert len(oldcontour) == 9
+
+    philter = EraseOpenCornersFilter(include={"squarePlusCurveCorner"})
+    assert philter(font)
+    assert len(font["squarePlusCurveCorner"][0]) == 4
+    newcontour = font["squarePlusCurveCorner"][1]
+    assert len(newcontour) == 8
+    assert newcontour[5].x == pytest.approx(501.81019332487494)
+    assert newcontour[5].y == pytest.approx(462.5782044264)
+
+    philter = EraseOpenCornersFilter(include={"squarePlusCurveCorner.reversed"})
+    assert not philter(font)
+
