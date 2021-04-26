@@ -25,10 +25,8 @@ class EraseOpenCornersPen(BasePen):
         self.outpen = outpen
 
     def _moveTo(self, p1):
-        if self.segments or self.is_closed:
-            raise ValueError(
-                "EraseOpenCornersPen should only be used on single contours"
-            )
+        self.segments = []
+        self.is_closed = False
 
     def _operate(self, *points):
         self.segments.append((self._getCurrentPoint(), *points))
@@ -106,13 +104,10 @@ class EraseOpenCornersFilter(BaseFilter):
         if not len(glyph):
             return False
 
-        affected = False
         contours = list(glyph)
         glyph.clearContours()
         outpen = glyph.getPen()
+        p = EraseOpenCornersPen(outpen)
         for contour in contours:
-            p = EraseOpenCornersPen(outpen)
             contour.draw(p)
-            if p.affected:
-                affected = True
-        return affected
+        return p.affected
