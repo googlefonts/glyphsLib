@@ -224,6 +224,7 @@ def test_curve_corner(font):
     philter = EraseOpenCornersFilter(include={"curveCorner.reversed"})
     assert not philter(font)
 
+
 def test_curve_corner_plus_square(font):
     oldcontour = font["curveCornerPlusSquare"][0]
     assert len(oldcontour) == 9
@@ -254,4 +255,3 @@ def test_square_plus_curve_corner(font):
 
     philter = EraseOpenCornersFilter(include={"squarePlusCurveCorner.reversed"})
     assert not philter(font)
-
