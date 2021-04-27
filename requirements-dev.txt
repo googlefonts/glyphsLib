@@ -29,7 +29,7 @@ fs==2.4.12
     # via fonttools
 iniconfig==1.1.1
     # via pytest
-lxml==4.6.2
+lxml==4.6.3
     # via xmldiff
 packaging==20.9
     # via pytest
@@ -59,8 +59,6 @@ ufo2ft==2.19.2
     # via -r requirements-dev.in
 ufonormalizer==0.5.3
     # via -r requirements-dev.in
-unicodedata2==13.0.0.post2
-    # via fonttools
 xmldiff==2.4
     # via -r requirements-dev.in
 
