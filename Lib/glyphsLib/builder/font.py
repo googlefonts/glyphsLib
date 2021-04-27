@@ -16,7 +16,7 @@
 import logging
 
 from .common import to_ufo_time, from_ufo_time
-from .constants import GLYPHS_PREFIX
+from .constants import GLYPHS_PREFIX, UFO2FT_FILTERS_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -82,11 +82,17 @@ def to_ufo_font_attributes(self, family_name):
 
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_family_user_data(ufo)
+
+        ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
+            {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
+        )
+
         self.to_ufo_custom_params(ufo, font)
 
         self.to_ufo_master_attributes(source, master)
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
+
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
         self._designspace.addSource(source)
         self._sources[master.id] = source
