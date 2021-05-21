@@ -51,7 +51,7 @@ def load_to_ufos(
     file_or_path,
     include_instances=False,
     family_name=None,
-    propagate_anchors=True,
+    propagate_anchors=None,
     ufo_module=None,
 ):
     """Load an unpacked .glyphs object to UFO objects."""
@@ -77,7 +77,7 @@ def build_masters(
     designspace_instance_dir=None,
     designspace_path=None,
     family_name=None,
-    propagate_anchors=True,
+    propagate_anchors=None,
     minimize_glyphs_diffs=False,
     normalize_ufos=False,
     create_background_layers=False,

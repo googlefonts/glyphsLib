@@ -63,7 +63,7 @@ class UFOBuilder(_LoggerMixin):
         designspace_module=designspaceLib,
         family_name=None,
         instance_dir=None,
-        propagate_anchors=True,
+        propagate_anchors=None,
         use_designspace=False,
         minimize_glyphs_diffs=False,
         generate_GDEF=True,
@@ -83,7 +83,9 @@ class UFOBuilder(_LoggerMixin):
                        only instances with this name will be returned.
         instance_dir -- if provided, instance UFOs will be located in this
                         directory, according to their Designspace filenames.
-        propagate_anchors -- set to False to prevent anchor propagation
+        propagate_anchors -- set to True or False to explicitly control anchor
+                             propagation, the default is to check for
+                             "Propagate Anchors" custom parameter.
         use_designspace -- set to True to make optimal use of the designspace:
                            data that is common to all ufos will go there.
         minimize_glyphs_diffs -- set to True to store extra info in UFOs
@@ -107,13 +109,17 @@ class UFOBuilder(_LoggerMixin):
 
         self.designspace_module = designspace_module
         self.instance_dir = instance_dir
-        self.propagate_anchors = propagate_anchors
         self.use_designspace = use_designspace
         self.minimize_glyphs_diffs = minimize_glyphs_diffs
         self.generate_GDEF = generate_GDEF
         self.store_editor_state = store_editor_state
         self.bracket_layers = []
         self.write_skipexportglyphs = write_skipexportglyphs
+
+        if propagate_anchors is None:
+            propagate_anchors = font.customParameters["Propagate Anchors"]
+            propagate_anchors = bool(propagate_anchors is None or propagate_anchors)
+        self.propagate_anchors = propagate_anchors
 
         # The set of (SourceDescriptor + UFO)s that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.

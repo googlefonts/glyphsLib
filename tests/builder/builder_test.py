@@ -406,7 +406,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         self.assertEqual(ufo.kerning["public.kern1.A", "v"], -100)
         self.assertEqual(ufo.kerning["a", "public.kern2.V"], 100)
 
-    def test_propagate_anchors(self):
+    def test_propagate_anchors_on(self):
         """Test anchor propagation for some relatively complicated cases."""
 
         font = generate_minimal_font()
@@ -421,13 +421,13 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             ("yodyod", [("yod", 0, 0), ("yod", 100, 0)], []),
         )
         for name, component_data, anchor_data in glyphs:
-            glyph = add_glyph(font, name)
+            add_glyph(font, name)
             for n, x, y in anchor_data:
                 add_anchor(font, name, n, x, y)
             for n, x, y in component_data:
                 add_component(font, name, n, (1, 0, 0, 1, x, y))
 
-        ufos = self.to_ufos(font)
+        ufos = self.to_ufos(font, propagate_anchors=True)
         ufo = ufos[0]
 
         glyph = ufo["dadDotbelow"]
@@ -451,6 +451,85 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             else:
                 self.assertEqual(anchor.name, "bottom_2")
                 self.assertEqual(anchor.x, 150)
+
+    def test_propagate_anchors_off(self):
+        """Test disabling anchor propagation."""
+
+        font = generate_minimal_font()
+        font.customParameters["Propagate Anchors"] = 0
+
+        glyphs = (
+            ("sad", [], [("bottom", 50, -50), ("top", 50, 150)]),
+            ("dotabove", [], [("top", 0, 150), ("_top", 0, 100)]),
+            ("dad", [("sad", 0, 0), ("dotabove", 50, 50)], []),
+        )
+        for name, component_data, anchor_data in glyphs:
+            add_glyph(font, name)
+            for n, x, y in anchor_data:
+                add_anchor(font, name, n, x, y)
+            for n, x, y in component_data:
+                add_component(font, name, n, (1, 0, 0, 1, x, y))
+
+        ufos = self.to_ufos(font, propagate_anchors=False)
+        ufo = ufos[0]
+
+        self.assertEqual(len(ufo["dad"].anchors), 0)
+
+    def test_propagate_anchors_custom_parameter_on(self):
+        """Test anchor propagation with Propagate Anchors set to 1."""
+
+        font = generate_minimal_font()
+        font.customParameters["Propagate Anchors"] = 1
+
+        glyphs = (
+            ("sad", [], [("bottom", 50, -50), ("top", 50, 150)]),
+            ("dotabove", [], [("top", 0, 150), ("_top", 0, 100)]),
+            ("dad", [("sad", 0, 0), ("dotabove", 50, 50)], []),
+        )
+        for name, component_data, anchor_data in glyphs:
+            add_glyph(font, name)
+            for n, x, y in anchor_data:
+                add_anchor(font, name, n, x, y)
+            for n, x, y in component_data:
+                add_component(font, name, n, (1, 0, 0, 1, x, y))
+
+        ufos = self.to_ufos(font)
+        ufo = ufos[0]
+
+        glyph = ufo["dad"]
+        self.assertEqual(len(glyph.anchors), 2)
+        # check propagated anchors are appended in a deterministic order
+        self.assertEqual([anchor.name for anchor in glyph.anchors], ["bottom", "top"])
+        for anchor in glyph.anchors:
+            self.assertEqual(anchor.x, 50)
+            if anchor.name == "bottom":
+                self.assertEqual(anchor.y, -50)
+            else:
+                self.assertEqual(anchor.name, "top")
+                self.assertEqual(anchor.y, 200)
+
+    def test_propagate_anchors_custom_parameter_off(self):
+        """Test anchor propagation with Propagate Anchors set to 0."""
+
+        font = generate_minimal_font()
+        font.customParameters["Propagate Anchors"] = 0
+
+        glyphs = (
+            ("sad", [], [("bottom", 50, -50), ("top", 50, 150)]),
+            ("dotabove", [], [("top", 0, 150), ("_top", 0, 100)]),
+            ("dad", [("sad", 0, 0), ("dotabove", 50, 50)], []),
+        )
+        for name, component_data, anchor_data in glyphs:
+            add_glyph(font, name)
+            for n, x, y in anchor_data:
+                add_anchor(font, name, n, x, y)
+            for n, x, y in component_data:
+                add_component(font, name, n, (1, 0, 0, 1, x, y))
+
+        ufos = self.to_ufos(font)
+        ufo = ufos[0]
+
+        self.assertEqual(len(ufo["dad"].anchors), 0)
 
     def test_fail_during_anchor_propagation(self):
         """Fix https://github.com/googlefonts/glyphsLib/issues/317."""
