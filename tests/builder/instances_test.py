@@ -110,3 +110,16 @@ def test_reencode_glyphs(tmpdir):
     assert ufos[1]["A"].unicode is None
     assert ufos[1]["A.alt"].unicode == 0x0041
     assert ufos[1]["C"].unicode is None
+
+
+def test_glyphs3_mapping():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3Instances.glyphs"))
+    # Instance1: designspace 200 -> userspace 400
+    # Instance2: designspace 800 -> userspace 900
+    # Instance2: designspace 600 -> userspace 650
+    doc = glyphsLib.to_designspace(font)
+    assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    assert doc.instances[0].location == {'Weight': 200}
+    assert doc.instances[1].location == {'Weight': 800}
+    assert doc.instances[2].location == {'Weight': 650}
+
