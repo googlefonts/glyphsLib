@@ -1678,10 +1678,6 @@ class GSFontMaster(GSBase):
 
     def _set_metric(self, metricname, value):
         if not self.font:
-            warnings.warn(
-                "GSFontMaster metric %s accessed without an associated font!"
-                % metricname
-            )
             metrics = GSFont._defaultMetrics
         else:
             metrics = self.font.metrics
