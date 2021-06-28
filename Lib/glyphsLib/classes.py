@@ -3887,6 +3887,9 @@ class GSFont(GSBase):
         for cp in _customParameters:
             self.customParameters[cp.name] = cp.value  # This will intercept axes
 
+    def _parse___formatVersion_dict(self, parser, val):
+        self.format_version = parser.format_version = val
+
     def __init__(self, path=None):
         self.DisplayStrings = ""
         self._glyphs = []
@@ -3895,15 +3898,13 @@ class GSFont(GSBase):
         self.axes = copy.deepcopy(self._defaultAxes)
         self._userData = None
         self._versionMinor = 0
+        self.format_version = 2
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])
         self.featurePrefixes = copy.deepcopy(self._defaultsForName["featurePrefixes"])
-        self.copyright = ""
         self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
         self.date = None
-        self.designer = ""
-        self.designerURL = ""
         self.disablesAutomaticAlignment = self._defaultsForName[
             "disablesAutomaticAlignment"
         ]
@@ -3915,9 +3916,8 @@ class GSFont(GSBase):
         self.keepAlternatesTogether = False
         self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
-        self.manufacturer = ""
-        self.manufacturerURL = ""
         self.metrics = copy.deepcopy(self._defaultMetrics)
+        self.properties = []
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
 
@@ -4092,6 +4092,61 @@ class GSFont(GSBase):
             del self._kerning[fontMasterId][leftKey]
         if not self._kerning[fontMasterId]:
             del self._kerning[fontMasterId]
+
+    @property
+    def manufacturer(self):
+        return self._get_from_properties("manufacturers")
+
+    @manufacturer.setter
+    def manufacturer(self, value):
+        self._set_in_properties("manufacturers", value)
+
+    @property
+    def manufacturerURL(self):
+        return self._get_from_properties("manufacturerURL")
+
+    @manufacturerURL.setter
+    def manufacturerURL(self, value):
+        self._set_in_properties("manufacturerURL", value)
+
+    @property
+    def copyright(self):
+        return self._get_from_properties("copyrights")
+
+    @copyright.setter
+    def copyright(self, value):
+        self._set_in_properties("copyrights", value)
+
+    @property
+    def designer(self):
+        return self._get_from_properties("designers")
+
+    @designer.setter
+    def designer(self, value):
+        self._set_in_properties("designers", value)
+
+    @property
+    def designerURL(self):
+        return self._get_from_properties("designerURL")
+
+    @designerURL.setter
+    def designerURL(self, value):
+        self._set_in_properties("designerURL", value)
+
+    def _get_from_properties(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return p.defaultValue
+        return ""
+
+    def _set_in_properties(self, key, value):
+        for p in self.properties:
+            if p.key == key:
+                p.localized_values = None
+                p.value = value
+                return
+        newprop = GSFontInfoValue(key, value)
+        self.properties.append(newprop)
 
     def _get_custom_parameter_from_axes(self):
         # We were specifically asked for our Axes custom parameter, so we
