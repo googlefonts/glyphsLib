@@ -2070,6 +2070,8 @@ class GSPath(GSBase):
     _parent = None
 
     def _serialize_to_plist(self, writer):
+        if writer.format_version == 3 and self.attr:
+            writer.writeObjectKeyValue(self, "attr")
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
@@ -2083,6 +2085,7 @@ class GSPath(GSBase):
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
         self.nodes = []
+        self.attr = {}
 
     @property
     def parent(self):
