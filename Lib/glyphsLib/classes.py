@@ -1147,6 +1147,25 @@ class UserDataProxy(Proxy):
         self._owner._userData = values
 
 
+class GSAxis(GSBase):
+    def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "hidden", "if_true")
+        writer.writeObjectKeyValue(self, "name", True)
+        writer.writeKeyValue("tag", self.axisTag)
+
+    def __init__(self, name="", tag=""):
+        self.name = name
+        self.axisTag = tag
+        self.axisId = None
+        self.hidden = False
+
+    def __eq__(self, other):
+        return self.name == other.name and self.axisTag == other.axisTag
+
+
+GSAxis._add_parsers([{"plist_name": "tag", "object_name": "axisTag"}])
+
+
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue("name", self.name)
@@ -1295,6 +1314,43 @@ class GSCustomParameter(GSBase):
         self._value = value
 
     value = property(getValue, setValue)
+
+
+class GSMetric(GSBase):
+    def __init__(self, name="", type=""):
+        self.name = name
+        self.type = type
+        self.id = ""
+        self.filter = ""
+        self.horizontal = False
+
+    def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "horizontal", "if_true")
+        writer.writeObjectKeyValue(self, "filter", "if_true")
+        writer.writeObjectKeyValue(self, "name", "if_true")
+        writer.writeObjectKeyValue(self, "type", "if_true")
+
+
+class GSMetricValue(GSBase):
+    def __init__(self, position=0, overshoot=0):
+        self.position = position
+        self.overshoot = overshoot
+        self.name = ""
+        self.filter = ""
+        self.metric = ""
+
+    def _serialize_to_plist(self, writer):
+        writer.writeKeyValue("over", self.overshoot)
+        if self.position:
+            writer.writeKeyValue("pos", self.position)
+
+
+GSMetricValue._add_parsers(
+    [
+        {"plist_name": "over", "object_name": "overshoot"},
+        {"plist_name": "pos", "object_name": "position"},
+    ]
+)
 
 
 class GSAlignmentZone(GSBase):
@@ -2838,6 +2894,40 @@ GSInstance._add_parsers(
         {"plist_name": "manualInterpolation", "converter": bool},
     ]
 )
+
+
+class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
+    def __init__(self, key="", value=""):
+        self.key = key
+        self.value = value
+        self.localized_values = None
+
+    def _parse_values_dict(self, parser, values):
+        self.localized_values = {}
+        for v in values:
+            if "language" not in v or "value" not in v:
+                continue
+            self.localized_values[v["language"]] = v["value"]
+
+    def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "key", "if_true")
+        if self.localized_values:
+            writer.writeKeyValue(
+                "values",
+                [{"language": l, "value": v} for l, v in self.localized_values.items()],
+            )
+        else:
+            writer.writeObjectKeyValue(self, "value")
+
+    @property
+    def defaultValue(self):
+        if not self.localized_values:
+            return self.value
+        if "dflt" in self.localized_values:
+            return self.localized_values["dflt"]
+        if "ENG" in self.localized_values:
+            return self.localized_values["ENG"]
+        return self.localized_values.values()[0]
 
 
 class GSBackgroundImage(GSBase):
