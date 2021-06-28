@@ -1515,8 +1515,8 @@ class GSFontMaster(GSBase):
         # still written to the saved files.
         "weight": "Regular",
         "width": "Regular",
-        "xHeight": 500,
-        "capHeight": 700,
+        "x-height": 500,
+        "cap height": 700,
         "ascender": 800,
         "descender": -200,
         "italicAngle": 0,
@@ -1534,10 +1534,8 @@ class GSFontMaster(GSBase):
         self._userData = None
         self.alignmentZones = []
         self.axes = list(self._axis_defaults)
-        self.ascender = self._defaultsForName["ascender"]
-        self.capHeight = self._defaultsForName["capHeight"]
+        self.metrics = []
         self.customName = ""
-        self.descender = self._defaultsForName["descender"]
         self.font = None
         self.guides = []
         self.horizontalStems = 0
@@ -1548,7 +1546,6 @@ class GSFontMaster(GSBase):
         self.visible = False
         self.weight = self._defaultsForName["weight"]
         self.width = self._defaultsForName["width"]
-        self.xHeight = self._defaultsForName["xHeight"]
 
     def __repr__(self):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
@@ -1666,6 +1663,65 @@ class GSFontMaster(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value),
     )
+
+    def _get_metric(self, metricname):
+        if not self.font:
+            metrics = GSFont._defaultMetrics
+        else:
+            metrics = self.font.metrics
+        metricLabels = [x.type for x in metrics]
+        if metricname not in metricLabels:
+            return self._defaultsForName[metricname]
+        metricIndex = metricLabels.index(metricname)
+        if metricIndex > len(self.metrics) - 1:
+            return self._defaultsForName[metricname]
+        return self.metrics[metricIndex].position
+
+    def _set_metric(self, metricname, value):
+        if not self.font:
+            metrics = GSFont._defaultMetrics
+        else:
+            metrics = self.font.metrics
+        metricLabels = [x.type for x in metrics]
+        if metricname not in metricLabels:
+            self.font.metrics.append(GSMetric(type=metricname))
+        metricIndex = metricLabels.index(metricname)
+        while metricIndex > len(self.metrics) - 1:
+            # Pad array with ... zeroes?
+            self.metrics.append(GSMetricValue(position=0))
+        self.metrics[metricIndex] = GSMetricValue(position=value)
+
+    @property
+    def ascender(self):
+        return self._get_metric("ascender")
+
+    @ascender.setter
+    def ascender(self, value):
+        self._set_metric("ascender", value)
+
+    @property
+    def xHeight(self):
+        return self._get_metric("x-height")
+
+    @xHeight.setter
+    def xHeight(self, value):
+        self._set_metric("x-height", value)
+
+    @property
+    def capHeight(self):
+        return self._get_metric("cap height")
+
+    @capHeight.setter
+    def capHeight(self, value):
+        self._set_metric("cap height", value)
+
+    @property
+    def descender(self):
+        return self._get_metric("descender")
+
+    @descender.setter
+    def descender(self, value):
+        self._set_metric("descender", value)
 
     def _get_axis_value(self, index):
         if index < len(self.axes):
@@ -3811,6 +3867,13 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
 
+    _defaultMetrics = [
+        GSMetric(type="ascender"),
+        GSMetric(type="cap height"),
+        GSMetric(type="x-height"),
+        GSMetric(type="baseline"),
+        GSMetric(type="descender"),
+    ]
     _defaultAxes = [GSAxis(name="Weight", tag="wght"), GSAxis(name="Width", tag="wdth")]
 
     def _parse_glyphs_dict(self, parser, value):
@@ -3854,6 +3917,7 @@ class GSFont(GSBase):
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.manufacturer = ""
         self.manufacturerURL = ""
+        self.metrics = copy.deepcopy(self._defaultMetrics)
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
 
