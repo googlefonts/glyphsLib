@@ -2397,12 +2397,22 @@ class GSComponent(GSBase):
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        writer.writeObjectKeyValue(self, "name")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "name")
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
-        writer.writeObjectKeyValue(
-            self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
-        )
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(
+                self, "position", keyName="pos", default=Point(0, 0)
+            )
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            writer.writeObjectKeyValue(self, "name", keyName="ref")
+            if self.scale != (1, 1):
+                writer.writeKeyValue("scale", Point(list(self.scale)))
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
+            )
 
     _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
     _parent = None
