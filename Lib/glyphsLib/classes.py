@@ -3380,9 +3380,14 @@ class GSLayer(GSBase):
             writer.writeKeyValue("guideLines", self.guides)
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
-        writer.writeObjectKeyValue(self, "leftMetricsKey")
-        writer.writeObjectKeyValue(self, "widthMetricsKey")
-        writer.writeObjectKeyValue(self, "rightMetricsKey")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
+            writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
+            writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
+        else:
+            writer.writeObjectKeyValue(self, "metricLeft")
+            writer.writeObjectKeyValue(self, "metricRight")
+            writer.writeObjectKeyValue(self, "metricWidth")
         if (
             self.name is not None
             and len(self.name) > 0
@@ -3400,9 +3405,9 @@ class GSLayer(GSBase):
 
     _defaultsForName = {
         "width": 600,
-        "leftMetricsKey": None,
-        "rightMetricsKey": None,
-        "widthMetricsKey": None,
+        "metricLeft": None,
+        "metricRight": None,
+        "metricWidth": None,
         "vertWidth": None,
         "vertOrigin": None,
     }
@@ -3427,14 +3432,14 @@ class GSLayer(GSBase):
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.metricLeft = self._defaultsForName["metricLeft"]
         self.parent = None
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.metricRight = self._defaultsForName["metricRight"]
         self.vertOrigin = self._defaultsForName["vertOrigin"]
         self.vertWidth = self._defaultsForName["vertWidth"]
         self.visible = False
         self.width = self._defaultsForName["width"]
-        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+        self.metricWidth = self._defaultsForName["metricWidth"]
 
     def __setitem__(self, key, value):
         # On parsing, a background layer is attached to self via GSBase.__setitem__. We
@@ -3642,6 +3647,30 @@ class GSLayer(GSBase):
         for component in self.components:
             component.drawPoints(pointPen)
 
+    @property
+    def rightMetricsKey(self):
+        return self.metricRight
+
+    @property
+    def leftMetricsKey(self):
+        return self.metricLeft
+
+    @property
+    def widthMetricsKey(self):
+        return self.metricWidth
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value):
+        self.metricRight = value
+
+    @leftMetricsKey.setter
+    def leftMetricsKey(self, value):
+        self.metricLeft = value
+
+    @widthMetricsKey.setter
+    def widthMetricsKey(self, value):
+        self.metricWidth = value
+
 
 GSLayer._add_parsers(
     [
@@ -3660,12 +3689,12 @@ GSLayer._add_parsers(
         {"plist_name": "partSelection", "object_name": "partSelection", "type": dict},
         {
             "plist_name": "leftMetricsKey",
-            "object_name": "leftMetricsKey",
+            "object_name": "metricLeft",
             "type": str,
         },  # V2
         {
             "plist_name": "rightMetricsKey",
-            "object_name": "rightMetricsKey",
+            "object_name": "metricRight",
             "type": str,
         },  # V2
         {
