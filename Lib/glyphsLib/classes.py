@@ -1214,6 +1214,7 @@ GSAxis._add_parsers([{"plist_name": "tag", "object_name": "axisTag"}])
 
 class GSCustomParameter(GSBase):
     def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "disabled", self.disabled)
         writer.writeKeyValue("name", self.name)
         writer.writeKeyValue("value", self.value)
 
@@ -1329,6 +1330,7 @@ class GSCustomParameter(GSBase):
     def __init__(self, name="New Value", value="New Parameter"):
         self.name = name
         self.value = value
+        self.disabled = False
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
