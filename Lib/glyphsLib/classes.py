@@ -2552,6 +2552,8 @@ class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "name", "if_true")
         posKey = "position"
+        if writer.format_version > 2:
+            posKey = "pos"
         writer.writeObjectKeyValue(self, "position", True, keyName=posKey)
 
     _parent = None
