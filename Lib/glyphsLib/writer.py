@@ -125,10 +125,18 @@ class Writer:
             value = value.plistValue(format_version=self.format_version)
             if value is not None:
                 self.file.write(value)
-        elif forKey == "color" and hasattr(value, "__iter__"):
+        elif forKey in ["color", "strokeColor"] and hasattr(value, "__iter__"):
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
-            self.file.write(str(tuple(value)))
+            if self.format_version == 2:
+                self.file.write(str(tuple(value)))
+            else:
+                self.file.write("(")
+                for ix, v in enumerate(value):
+                    self.file.write(str(v))
+                    if ix < len(value) - 1:
+                        self.file.write(",")
+                self.file.write(")")
         elif isinstance(value, (list, glyphsLib.classes.Proxy)):
             if isinstance(value, glyphsLib.classes.UserDataProxy):
                 self.writeUserData(value)
@@ -151,8 +159,12 @@ class Writer:
             self.file.write('"%s +0000"' % str(value))
         else:
             value = str(value)
-            if forKey != "unicode":
-                value = escape_string(value)
+            if self.format_version < 3:
+                if forKey != "unicode":
+                    value = escape_string(value)
+            else:
+                if _needs_quotes(value) or " " in value:
+                     value = '"%s"' % value
             self.file.write(value)
 
     def writeKey(self, key):

@@ -86,7 +86,7 @@ def Vector(dim):
 
         dimension = dim
         default = [0.0] * dimension
-        regex = re.compile("{%s}" % ", ".join(["([-.e\\d]+)"] * dimension))
+        regex = re.compile("[({]%s[})]" % ", ".join(["([-.e\\d]+)"] * dimension))
 
         def fromString(self, src):
             if isinstance(src, list):
@@ -97,7 +97,10 @@ def Vector(dim):
 
         def plistValue(self, format_version=2):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
-            return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+            if format_version == 2:
+                return '"{%s}"' % (", ".join(floatToString3(v) for v in self.value))
+            else:
+                return "(%s)" % (",".join(floatToString3(v) for v in self.value))
 
         def __getitem__(self, key):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
@@ -384,8 +387,13 @@ class UnicodesList(list):
         if not self:
             return None
         if len(self) == 1:
+            if format_version == 3:
+                return str(int(self[0], 16))
             return self[0]
-        return '"%s"' % ",".join(self)
+        if format_version == 2:
+            return '"%s"' % ",".join(self)
+        else:
+            return "(%s)" % ",".join([str(int(x, 16)) for x in self])
 
 
 class BinaryData(bytes):
