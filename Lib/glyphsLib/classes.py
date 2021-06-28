@@ -3887,6 +3887,20 @@ class GSFont(GSBase):
         for cp in _customParameters:
             self.customParameters[cp.name] = cp.value  # This will intercept axes
 
+    def _parse_settings_dict(self, parser, settings):
+        self.disablesAutomaticAlignment = bool(
+            settings.get("disablesAutomaticAlignment", False)
+        )
+        self.disablesNiceNames = bool(settings.get("disablesNiceNames", False))
+        self.grid = settings.get("gridLength", 1)
+        self.gridSubDivisions = settings.get("gridSubDivision", 1)
+        self.keepAlternatesTogether = bool(
+            settings.get("keepAlternatesTogether", False)
+        )
+        self.keyboardIncrement = settings.get("keyboardIncrement", 1)
+        self.keyboardIncrementBig = settings.get("keyboardIncrementBig", 10)
+        self.keyboardIncrementHuge = settings.get("keyboardIncrementHuge", 100)
+
     def _parse___formatVersion_dict(self, parser, val):
         self.format_version = parser.format_version = val
 
@@ -3918,6 +3932,10 @@ class GSFont(GSBase):
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.metrics = copy.deepcopy(self._defaultMetrics)
         self.properties = []
+        self.keepAlternatesTogether = False
+        self.keyboardIncrement = 1
+        self.keyboardIncrementBig = 10
+        self.keyboardIncrementHuge = 100
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
 
@@ -4164,6 +4182,28 @@ class GSFont(GSBase):
 
     def _set_axes_from_custom_parameter(self, value):
         self.axes = [GSAxis(name=v["Name"], tag=v["Tag"]) for v in value]
+
+    @property
+    def settings(self):
+        _settings = OrderedDict()
+        if self.disablesAutomaticAlignment:
+            _settings["disablesAutomaticAlignment"] = 1
+        if self.disablesNiceNames:
+            _settings["disablesNiceNames"] = 1
+        if self.grid != 1:
+            _settings["gridLength"] = self.grid
+        if self.gridSubDivisions != 1:
+            _settings["gridSubDivision"] = self.gridSubDivisions
+        if self.keepAlternatesTogether:
+            _settings["keepAlternatesTogether"] = 1
+        if self.keyboardIncrement != 1:
+            _settings["keyboardIncrement"] = self.keyboardIncrement
+        if self.keyboardIncrementBig != 10:
+            _settings["keyboardIncrementBig"] = self.keyboardIncrementBig
+        if self.keyboardIncrementHuge != 100:
+            _settings["keyboardIncrementHuge"] = self.keyboardIncrementHuge
+
+        return _settings
 
 
 GSFont._add_parsers(
