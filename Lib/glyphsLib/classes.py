@@ -4095,11 +4095,6 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
 
-    def _parse_customParameters_dict(self, parser, value):
-        _customParameters = parser._parse(value, GSCustomParameter)
-        for cp in _customParameters:
-            self.customParameters[cp.name] = cp.value  # This will intercept axes
-
     _defaultMetrics = [
         GSMetric(type="ascender"),
         GSMetric(type="cap height"),

@@ -2,6 +2,13 @@ import re
 from collections import OrderedDict
 
 
+def _like(got, expected):
+    expected = expected.replace("?", ".")
+    expected = expected.replace("*", ".*")
+    # Technically we should be a bit stricter than this
+    return re.match(expected, str(got))
+
+
 class TokenExpander:
 
     number_token_re = r"\$\{([^}]+)\}"
@@ -50,7 +57,7 @@ class TokenExpander:
         # Find index of number
         try:
             index = [metric.name for metric in self.font.numbers].index(number)
-        except ValueError as e:
+        except ValueError:
             raise ValueError(
                 "Unknown number token '$%s' at position %i" % (number, self.position)
             )
@@ -154,7 +161,10 @@ class TokenExpander:
     gsglyph_predicate_object_re = (
         r"^\s*(" + "|".join(gsglyph_predicate_objects) + r"\b)"
     )
-    comparators_re = r"(?i)\s*(beginswith|contains|endswith|like|matches|==?|>=|=>|<=|=<|!=|<>|>|<|between|in)\s*"
+    comparators_re = (
+        r"(?i)\s*(beginswith|contains|endswith|like|matches|==?|>=|"
+        r"=>|<=|=<|!=|<>|>|<|between|in)\s*"
+    )
 
     def _parse_glyph_predicate_to_array(self):
         invert = self._parse_optional_not()
@@ -250,12 +260,6 @@ class TokenExpander:
                 "Glyphs attribute %s used in predicate '%s'"
                 " but glyphsLib does not support it" % (value, self.originaltoken)
             )
-
-    def _like(got, expected):
-        expected = expected.replace("?", ".")
-        expected = expected.replace("*", ".*")
-        # Technically we should be a bit stricter than this
-        return re.match(expected, str(got))
 
     apply_comparators = {
         "beginswith": lambda got, exp: str(got).startswith(exp),

@@ -164,7 +164,7 @@ class Writer:
                     value = escape_string(value)
             else:
                 if _needs_quotes(value) or " " in value:
-                     value = '"%s"' % value
+                    value = '"%s"' % value
             self.file.write(value)
 
     def writeKey(self, key):
