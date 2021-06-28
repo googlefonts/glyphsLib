@@ -4130,7 +4130,9 @@ class GSFont(GSBase):
         self.grid = self._defaultsForName["gridLength"]
         self.gridSubDivisions = self._defaultsForName["gridSubDivision"]
         self.keepAlternatesTogether = False
-        self.kerning = copy.deepcopy(self._defaultsForName["kerning"])
+        self._kerningLTR = OrderedDict()
+        self._kerningRTL = OrderedDict()
+        self._kerningVertical = OrderedDict()
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.metrics = copy.deepcopy(self._defaultMetrics)
         self.properties = []
@@ -4243,11 +4245,43 @@ class GSFont(GSBase):
 
     @property
     def kerning(self):
-        return self._kerning
+        return self._kerningLTR
 
     @kerning.setter
     def kerning(self, kerning):
-        self._kerning = kerning
+        self.kerningLTR = kerning
+
+    @property
+    def kerningLTR(self):
+        return self._kerningLTR
+
+    @kerningLTR.setter
+    def kerningLTR(self, kerning):
+        self._kerningLTR = kerning
+        for master_map in kerning.values():
+            for glyph_map in master_map.values():
+                for right_glyph, value in glyph_map.items():
+                    glyph_map[right_glyph] = parse_float_or_int(value)
+
+    @property
+    def kerningRTL(self):
+        return self._kerningRTL
+
+    @kerningRTL.setter
+    def kerningRTL(self, kerning):
+        self._kerningRTL = kerning
+        for master_map in kerning.values():
+            for glyph_map in master_map.values():
+                for right_glyph, value in glyph_map.items():
+                    glyph_map[right_glyph] = parse_float_or_int(value)
+
+    @property
+    def kerningVertical(self):
+        return self._kerningVertical
+
+    @kerningVertical.setter
+    def kerningVertical(self, kerning):
+        self._kerningVertical = kerning
         for master_map in kerning.values():
             for glyph_map in master_map.values():
                 for right_glyph, value in glyph_map.items():
@@ -4279,39 +4313,60 @@ class GSFont(GSBase):
     EMPTY_KERNING_VALUE = (1 << 63) - 1  # As per the documentation
 
     def kerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
-        # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
+        if direction == LTR:
+            kerntable = self._kerningLTR
+        elif direction == RTL:
+            kerntable = self._kerningRTL
+        else:
+            kerntable = self._kerningVertical
+        if not kerntable:
             return self.EMPTY_KERNING_VALUE
         try:
-            return self._kerning[fontMasterId][leftKey][rightKey]
+            return kerntable[fontMasterId][leftKey][rightKey]
         except KeyError:
             return self.EMPTY_KERNING_VALUE
 
     def setKerningForPair(self, fontMasterId, leftKey, rightKey, value, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
-            self._kerning = {}
-        if fontMasterId not in self._kerning:
-            self._kerning[fontMasterId] = {}
-        if leftKey not in self._kerning[fontMasterId]:
-            self._kerning[fontMasterId][leftKey] = {}
-        self._kerning[fontMasterId][leftKey][rightKey] = value
+        if direction == LTR:
+            if not self._kerningLTR:
+                self._kerningLTR = {}
+            kerntable = self._kerningLTR
+        elif direction == RTL:
+            if not self._kerningRTL:
+                self._kerningRTL = {}
+            kerntable = self._kerningRTL
+        else:
+            if not self._kerningVertical:
+                self._kerningVertical = {}
+            kerntable = self._kerningVertical
+        if fontMasterId not in kerntable:
+            kerntable[fontMasterId] = {}
+        if leftKey not in kerntable[fontMasterId]:
+            kerntable[fontMasterId][leftKey] = {}
+        kerntable[fontMasterId][leftKey][rightKey] = value
 
     def removeKerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
         # TODO: (jany) understand and use the direction parameter
-        if not self._kerning:
+        if direction == LTR:
+            kerntable = self._kerningLTR
+        elif direction == RTL:
+            kerntable = self._kerningRTL
+        else:
+            kerntable = self._kerningVertical
+        if not kerntable:
             return
-        if fontMasterId not in self._kerning:
+        if fontMasterId not in kerntable:
             return
-        if leftKey not in self._kerning[fontMasterId]:
+        if leftKey not in kerntable[fontMasterId]:
             return
-        if rightKey not in self._kerning[fontMasterId][leftKey]:
+        if rightKey not in kerntable[fontMasterId][leftKey]:
             return
-        del self._kerning[fontMasterId][leftKey][rightKey]
-        if not self._kerning[fontMasterId][leftKey]:
-            del self._kerning[fontMasterId][leftKey]
-        if not self._kerning[fontMasterId]:
-            del self._kerning[fontMasterId]
+        del kerntable[fontMasterId][leftKey][rightKey]
+        if not kerntable[fontMasterId][leftKey]:
+            del kerntable[fontMasterId][leftKey]
+        if not kerntable[fontMasterId]:
+            del kerntable[fontMasterId]
 
     @property
     def manufacturer(self):
@@ -4419,7 +4474,10 @@ GSFont._add_parsers(
         {"plist_name": "featurePrefixes", "type": GSFeaturePrefix},
         {"plist_name": "features", "type": GSFeature},
         {"plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster},
-        {"plist_name": "kerning", "object_name": "_kerning", "type": OrderedDict},
+        {"plist_name": "kerning", "object_name": "_kerningLTR", "type": OrderedDict},
+        {"plist_name": "kerningLTR", "type": OrderedDict},
+        {"plist_name": "kerningRTL", "type": OrderedDict},
+        {"plist_name": "kerningVertical", "type": OrderedDict},
         {"plist_name": "date", "converter": parse_datetime},
         {"plist_name": "note", "object_name": "_note"},
     ]
