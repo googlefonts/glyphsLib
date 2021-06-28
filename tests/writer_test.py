@@ -302,7 +302,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # blueValues: not handled because it is read-only
         # otherBlues: not handled because it is read-only
         # guides
-        guide = classes.GSGuideLine()
+        guide = classes.GSGuide()
         guide.name = "middle"
         master.guides.append(guide)
         # userData
@@ -750,7 +750,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         component = classes.GSComponent(glyph="glyphName")
         layer.components.append(component)
         # guides
-        guide = classes.GSGuideLine()
+        guide = classes.GSGuide()
         guide.name = "xheight"
         layer.guides.append(guide)
         # annotations
@@ -1035,7 +1035,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         self.assertEqual(test_user_data, dict(node.userData))
 
     def test_write_guideline(self):
-        line = classes.GSGuideLine()
+        line = classes.GSGuide()
         # http://docu.glyphsapp.com/#GSGuideLine
         line.position = Point(56, 45)
         line.angle = 11.0

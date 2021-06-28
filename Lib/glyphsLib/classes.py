@@ -65,7 +65,7 @@ __all__ = [
     "GSSmartComponentAxis",
     "GSPath",
     "GSNode",
-    "GSGuideLine",
+    "GSGuide",
     "GSAnnotation",
     "GSHint",
     "GSBackgroundImage",
@@ -1416,7 +1416,7 @@ class GSAlignmentZone(GSBase):
         )
 
 
-class GSGuideLine(GSBase):
+class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
@@ -1448,7 +1448,7 @@ class GSGuideLine(GSBase):
         return self._parent
 
 
-GSGuideLine._add_parsers([{"plist_name": "position", "converter": Point}])
+GSGuide._add_parsers([{"plist_name": "position", "converter": Point}])
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
@@ -1660,7 +1660,7 @@ class GSFontMaster(GSBase):
 GSFontMaster._add_parsers(
     [
         {"plist_name": "customParameters", "type": GSCustomParameter},
-        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuideLine},
+        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},
         {"plist_name": "custom", "object_name": "customName"},
         {"plist_name": "name", "object_name": "_name"},
     ]
@@ -3372,7 +3372,7 @@ GSLayer._add_parsers(
         {"plist_name": "backgroundImage", "type": GSBackgroundImage},
         {"plist_name": "paths", "type": GSPath},
         {"plist_name": "anchors", "type": GSAnchor},
-        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuideLine},
+        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},
         {"plist_name": "components", "type": GSComponent},
         {"plist_name": "hints", "type": GSHint},
         {"plist_name": "userData", "object_name": "_userData", "type": dict},

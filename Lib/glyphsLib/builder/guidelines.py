@@ -67,7 +67,7 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
     if not ufo_obj.guidelines:
         return
     for guideline in ufo_obj.guidelines:
-        new_guideline = self.glyphs_module.GSGuideLine()
+        new_guideline = self.glyphs_module.GSGuide()
         name = guideline.name
         # Locked
         if name is not None and name.endswith(LOCKED_NAME_SUFFIX):
