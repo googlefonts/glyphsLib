@@ -2946,26 +2946,38 @@ GSAnnotation._add_parsers(
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
-        writer.writeObjectKeyValue(
-            self, "customValue", condition="if_true", keyName="interpolationCustom"
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue1", condition="if_true", keyName="interpolationCustom1",
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue2", condition="if_true", keyName="interpolationCustom2",
-        )
-        writer.writeObjectKeyValue(
-            self, "customValue3", condition="if_true", keyName="interpolationCustom3",
-        )
-        writer.writeObjectKeyValue(
-            self, "weightValue", keyName="interpolationWeight", default=100
-        )
-        writer.writeObjectKeyValue(
-            self, "widthValue", keyName="interpolationWidth", default=100
-        )
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "customValue", condition="if_true", keyName="interpolationCustom"
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue1",
+                condition="if_true",
+                keyName="interpolationCustom1",
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue2",
+                condition="if_true",
+                keyName="interpolationCustom2",
+            )
+            writer.writeObjectKeyValue(
+                self,
+                "customValue3",
+                condition="if_true",
+                keyName="interpolationCustom3",
+            )
+            writer.writeObjectKeyValue(
+                self, "weightValue", keyName="interpolationWeight", default=100
+            )
+            writer.writeObjectKeyValue(
+                self, "widthValue", keyName="interpolationWidth", default=100
+            )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
