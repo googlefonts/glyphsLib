@@ -2577,9 +2577,14 @@ GSComponent._add_parsers(
 
 class GSSmartComponentAxis(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.writeObjectKeyValue(self, "name")
-        writer.writeObjectKeyValue(self, "bottomName", "if_true")
-        writer.writeObjectKeyValue(self, "bottomValue", True)
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "bottomName", "if_true")
+            writer.writeObjectKeyValue(self, "bottomValue")
+            writer.writeObjectKeyValue(self, "name")
+        else:
+            writer.writeObjectKeyValue(self, "name")
+            writer.writeObjectKeyValue(self, "bottomName", "if_true")
+            writer.writeObjectKeyValue(self, "bottomValue", True)
         writer.writeObjectKeyValue(self, "topName", "if_true")
         writer.writeObjectKeyValue(self, "topValue", True)
 
