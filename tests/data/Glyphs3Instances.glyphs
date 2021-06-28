@@ -1,0 +1,142 @@
+{
+.appVersion = "3072";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+date = "2021-06-17 08:08:47 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+axesValues = (
+200
+);
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = -16;
+}
+);
+name = Regular;
+},
+{
+axesValues = (
+800
+);
+id = "7FD2BBCE-D198-428D-96D7-DC493157778D";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = A;
+lastChange = "2021-06-17 08:09:03 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "7FD2BBCE-D198-428D-96D7-DC493157778D";
+width = 600;
+}
+);
+unicode = 65;
+}
+);
+instances = (
+{
+axesValues = (
+200
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+},
+{
+axesValues = (
+800
+);
+instanceInterpolations = {
+"7FD2BBCE-D198-428D-96D7-DC493157778D" = 1;
+};
+name = Heavy;
+weightClass = 900;
+},
+{
+axesValues = (
+650
+);
+instanceInterpolations = {
+"7FD2BBCE-D198-428D-96D7-DC493157778D" = 0.75;
+m01 = 0.25;
+};
+name = SemiBold;
+weightClass = 600;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
