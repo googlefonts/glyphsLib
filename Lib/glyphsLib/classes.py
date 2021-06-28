@@ -3372,11 +3372,16 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "annotations", "if_true")
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "attr", "if_true")
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
-        writer.writeObjectKeyValue(self, "components", "if_true")
-        if self.guides:
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "components", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "guides", "if_true")
+        elif self.guides:
             writer.writeKeyValue("guideLines", self.guides)
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
@@ -3394,7 +3399,12 @@ class GSLayer(GSBase):
             and self.layerId != self.associatedMasterId
         ):
             writer.writeObjectKeyValue(self, "name")
-        writer.writeObjectKeyValue(self, "paths", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "partSelection", "if_true")
+            if self._shapes:
+                writer.writeKeyValue("shapes", self._shapes)
+        else:
+            writer.writeObjectKeyValue(self, "paths", "if_true")
         writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
@@ -3402,6 +3412,15 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
+
+    def _parse_shapes_dict(self, parser, shapes):
+        for shape_dict in shapes:
+            if "ref" in shape_dict:
+                shape = parser._parse_dict(shape_dict, GSComponent)
+                self.components.append(shape)
+            else:
+                shape = parser._parse_dict(shape_dict, GSPath)
+                self.paths.append(shape)
 
     _defaultsForName = {
         "width": 600,
@@ -3429,6 +3448,8 @@ class GSLayer(GSBase):
         self._selection = []
         self._shapes = []
         self._userData = None
+        self.attr = {}
+        self.partSelection = {}
         self.associatedMasterId = ""
         self.backgroundImage = None
         self.color = None
@@ -3440,14 +3461,6 @@ class GSLayer(GSBase):
         self.visible = False
         self.width = self._defaultsForName["width"]
         self.metricWidth = self._defaultsForName["metricWidth"]
-
-    def __setitem__(self, key, value):
-        # On parsing, a background layer is attached to self via GSBase.__setitem__. We
-        # must additionally set a backreference in it.
-        super().__setitem__(key, value)
-        if key == "background":
-            self._background._foreground = self
-            self._background.parent = self.parent
 
     def __repr__(self):
         name = self.name
@@ -3682,7 +3695,8 @@ GSLayer._add_parsers(
         {"plist_name": "backgroundImage", "type": GSBackgroundImage},
         {"plist_name": "paths", "type": GSPath},
         {"plist_name": "anchors", "type": GSAnchor},
-        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},
+        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # V2
+        {"plist_name": "guides", "type": GSGuide},  # V3
         {"plist_name": "components", "type": GSComponent},
         {"plist_name": "hints", "type": GSHint},
         {"plist_name": "userData", "object_name": "_userData", "type": dict},
@@ -3702,6 +3716,7 @@ GSLayer._add_parsers(
             "object_name": "metricWidth",
             "type": str,
         },  # V2
+        {"plist_name": "attr", "type": dict},  # V3
     ]
 )
 
