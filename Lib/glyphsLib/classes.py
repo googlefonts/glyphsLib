@@ -1685,6 +1685,22 @@ class GSNode(GSBase):
 
         return self
 
+    def read_v3(self, lst):
+        self.position = Point(lst[0], lst[1])
+        self.smooth = lst[2].endswith("s")
+        if lst[2][0] == "c":
+            self.type = CURVE
+        elif lst[2][0] == "o":
+            self.type = OFFCURVE
+        elif lst[2][0] == "l":
+            self.type = LINE
+        elif lst[2][0] == "q":
+            self.type = QCURVE
+
+        if len(lst) > 3:
+            self._userData = lst[3]
+        return self
+
     @property
     def name(self):
         if "name" in self.userData:
@@ -1795,7 +1811,10 @@ class GSPath(GSBase):
 
     def _parse_nodes_dict(self, parser, d):
         for x in d:
-            self.nodes.append(GSNode().read(x))
+            if parser.format_version == 3:
+                self.nodes.append(GSNode().read_v3(x))
+            else:
+                self.nodes.append(GSNode().read(x))
 
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
