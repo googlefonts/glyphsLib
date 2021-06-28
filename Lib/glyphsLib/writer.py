@@ -131,6 +131,8 @@ class Writer:
             self.file.write(floatToString5(value))
         elif type(value) == int:
             self.file.write(str(value))
+        elif type(value) == bytes:
+             self.file.write("<" + value.hex() + ">")
         elif type(value) == bool:
             if value:
                 self.file.write("1")

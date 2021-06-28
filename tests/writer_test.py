@@ -1030,7 +1030,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         )
         self.assertWritesValue(node, expected_output)
         # Check that we can read the userData back
-        node = Parser(classes.GSNode).parse(expected_output)
+        node = classes.GSNode().read(expected_output[1:-1])
         self.assertEqual(test_user_data, dict(node.userData))
 
     def test_write_guideline(self):
