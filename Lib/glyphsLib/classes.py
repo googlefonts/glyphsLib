@@ -4027,20 +4027,26 @@ class GSFont(GSBase):
 
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue(".appVersion", self.appVersion)
+        if self.format_version > 2:
+            writer.writeKeyValue(".formatVersion", self.format_version)
 
         writer.writeObjectKeyValue(self, "DisplayStrings", "if_true")
 
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "axes", "if_true")
         writer.writeObjectKeyValue(self, "classes", "if_true")
 
-        writer.writeObjectKeyValue(self, "copyright", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "copyright", "if_true")
 
         writer.writeObjectKeyValue(self, "customParameters", "if_true")
         writer.writeObjectKeyValue(self, "date")
 
-        writer.writeObjectKeyValue(self, "designer", "if_true")
-        writer.writeObjectKeyValue(self, "designerURL", "if_true")
-        writer.writeObjectKeyValue(self, "disablesAutomaticAlignment", "if_true")
-        writer.writeObjectKeyValue(self, "disablesNiceNames", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "designer", "if_true")
+            writer.writeObjectKeyValue(self, "designerURL", "if_true")
+            writer.writeObjectKeyValue(self, "disablesAutomaticAlignment", "if_true")
+            writer.writeObjectKeyValue(self, "disablesNiceNames", "if_true")
 
         writer.writeObjectKeyValue(self, "familyName")
         writer.writeObjectKeyValue(self, "featurePrefixes")
@@ -4048,26 +4054,46 @@ class GSFont(GSBase):
         writer.writeKeyValue("fontMaster", self.masters)
         writer.writeObjectKeyValue(self, "glyphs")
 
-        if self.grid != 1:
-            writer.writeKeyValue("gridLength", self.grid)
-        if self.gridSubDivisions != 1:
-            writer.writeKeyValue("gridSubDivision", self.gridSubDivisions)
+        if writer.format_version == 2:
+            if self.grid != 1:
+                writer.writeKeyValue("gridLength", self.grid)
+            if self.gridSubDivisions != 1:
+                writer.writeKeyValue("gridSubDivision", self.gridSubDivisions)
 
         writer.writeObjectKeyValue(self, "instances")
 
-        writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
-        writer.writeKeyValue("kerning", self.kerning)
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
+            writer.writeKeyValue("kerning", self.kerningLTR)
+        else:
+            writer.writeObjectKeyValue(self, "kerningLTR")
+            writer.writeObjectKeyValue(self, "kerningRTL", "if_true")
+            writer.writeObjectKeyValue(self, "kerningVertical", "if_true")
 
-        writer.writeObjectKeyValue(
-            self, "keyboardIncrement", self.keyboardIncrement != 1
-        )
-        writer.writeObjectKeyValue(self, "manufacturer", "if_true")
-        writer.writeObjectKeyValue(self, "manufacturerURL", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(
+                self, "keyboardIncrement", self.keyboardIncrement != 1
+            )
+            writer.writeObjectKeyValue(self, "manufacturer", "if_true")
+            writer.writeObjectKeyValue(self, "manufacturerURL", "if_true")
+
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "metrics")
+            writer.writeObjectKeyValue(self, "_note", "if_true", keyName="note")
+            writer.writeObjectKeyValue(self, "numbers", "if_true")
+            writer.writeObjectKeyValue(self, "properties", "if_true")
+            writer.writeObjectKeyValue(self, "settings", "if_true")
+            writer.writeObjectKeyValue(self, "stems")
 
         writer.writeKeyValue("unitsPerEm", self.upm or 1000)
         writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
+
+    def _parse_customParameters_dict(self, parser, value):
+        _customParameters = parser._parse(value, GSCustomParameter)
+        for cp in _customParameters:
+            self.customParameters[cp.name] = cp.value  # This will intercept axes
 
     _defaultMetrics = [
         GSMetric(type="ascender"),
@@ -4135,13 +4161,16 @@ class GSFont(GSBase):
         self._kerningVertical = OrderedDict()
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.metrics = copy.deepcopy(self._defaultMetrics)
+        self.numbers = []
         self.properties = []
+        self.stems = []
         self.keepAlternatesTogether = False
         self.keyboardIncrement = 1
         self.keyboardIncrementBig = 10
         self.keyboardIncrementHuge = 100
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
+        self._note = ""
 
         if path:
             path = os.fsdecode(os.fspath(path))
@@ -4293,15 +4322,21 @@ class GSFont(GSBase):
 
     @property
     def note(self):
-        value = self.customParameters["note"]
-        if value:
-            return value
+        if self.format_version < 3:
+            value = self.customParameters["note"]
+            if value:
+                return value
+            else:
+                return ""
         else:
-            return ""
+            return self._note
 
     @note.setter
     def note(self, value):
-        self.customParameters["note"] = value
+        if self.format_version < 3:
+            self.customParameters["note"] = value
+        else:
+            self._note = value
 
     @property
     def gridLength(self):
@@ -4479,6 +4514,11 @@ GSFont._add_parsers(
         {"plist_name": "kerningRTL", "type": OrderedDict},
         {"plist_name": "kerningVertical", "type": OrderedDict},
         {"plist_name": "date", "converter": parse_datetime},
+        {"plist_name": "axes", "type": GSAxis},
+        {"plist_name": "stems", "type": GSMetric},
+        {"plist_name": "metrics", "type": GSMetric},
+        {"plist_name": "numbers", "type": GSMetric},
+        {"plist_name": "properties", "type": GSFontInfoValue},
         {"plist_name": "note", "object_name": "_note"},
     ]
 )
