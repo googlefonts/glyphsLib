@@ -52,38 +52,27 @@ class Writer:
         self.file.write("\n")
 
     def writeDict(self, dictValue):
+        if hasattr(dictValue, "_serialize_to_plist"):
+            self.file.write("{\n")
+            dictValue._serialize_to_plist(self)
+            self.file.write("}")
+            return
         self.file.write("{\n")
-        forType = None
-        if hasattr(dictValue, "_keyOrder"):
-            keys = dictValue._keyOrder
-        elif hasattr(dictValue, "_classesForName"):
-            keys = sorted(dictValue._classesForName.keys())
-        else:
-            keys = dictValue.keys()
-            if not isinstance(dictValue, OrderedDict):
-                keys = sorted(keys)
+        keys = dictValue.keys()
+        if not isinstance(dictValue, OrderedDict):
+            keys = sorted(keys)
         for key in keys:
-            if hasattr(dictValue, "_classesForName"):
-                forType = dictValue._classesForName[key]
             try:
                 if isinstance(dictValue, (dict, OrderedDict)):
                     value = dictValue[key]
                 else:
                     getKey = key
-                    if hasattr(dictValue, "_wrapperKeysTranslate"):
-                        getKey = dictValue._wrapperKeysTranslate.get(key, key)
                     value = getattr(dictValue, getKey)
             except AttributeError:
                 continue
             if value is None:
                 continue
-            if hasattr(
-                dictValue, "shouldWriteValueForKey"
-            ) and not dictValue.shouldWriteValueForKey(key):
-                continue
-            self.writeKey(key)
-            self.writeValue(value, key, forType=forType)
-            self.file.write(";\n")
+            self.writeKeyValue(key, value)
         self.file.write("}")
 
     def writeArray(self, arrayValue):
@@ -111,7 +100,26 @@ class Writer:
             self.file.write(";\n")
         self.file.write("}")
 
-    def writeValue(self, value, forKey=None, forType=None):
+    def writeKeyValue(self, key, value):
+        self.writeKey(key)
+        self.writeValue(value, key)
+        self.file.write(";\n")
+
+    def writeObjectKeyValue(self, d, key, condition=None, keyName=None, default=None):
+        value = getattr(d, key)
+        if condition == "if_true":
+            condition = bool(value)
+        if condition is None:
+            if default is not None:
+                condition = value != default
+            else:
+                condition = value is not None
+        if condition:
+            self.writeKey(keyName or key)
+            self.writeValue(value, key)
+            self.file.write(";\n")
+
+    def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
             value = value.plistValue()
             if value is not None:
@@ -132,7 +140,7 @@ class Writer:
         elif type(value) == int:
             self.file.write(str(value))
         elif type(value) == bytes:
-             self.file.write("<" + value.hex() + ">")
+            self.file.write("<" + value.hex() + ">")
         elif type(value) == bool:
             if value:
                 self.file.write("1")
