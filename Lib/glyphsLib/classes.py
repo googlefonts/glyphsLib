@@ -2787,7 +2787,11 @@ class GSFeature(GSBase):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
-        writer.writeKeyValue("name", self.name)
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "labels", "if_true")
+            writer.writeKeyValue("tag", self.name)
+        else:
+            writer.writeKeyValue("name", self.name)
         writer.writeObjectKeyValue(self, "notes", "if_true")
 
     def __init__(self, name="xxxx", code=""):
@@ -2796,6 +2800,7 @@ class GSFeature(GSBase):
         self.disabled = False
         self.name = name
         self.notes = ""
+        self.labels = {}
 
     def getCode(self):
         return self._code
