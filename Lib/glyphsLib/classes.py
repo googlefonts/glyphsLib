@@ -1477,37 +1477,62 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 class GSFontMaster(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
-        writer.writeObjectKeyValue(self, "ascender")
-        writer.writeObjectKeyValue(self, "capHeight")
-        if self.customName:
-            writer.writeKeyValue("custom", self.customName)
-        writer.writeObjectKeyValue(self, "customValue", "if_true")
-        writer.writeObjectKeyValue(self, "customValue1", "if_true")
-        writer.writeObjectKeyValue(self, "customValue2", "if_true")
-        writer.writeObjectKeyValue(self, "customValue3", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
+            writer.writeObjectKeyValue(self, "ascender")
+        if writer.format_version == 3 and self.axes:
+            writer.writeKeyValue("axesValues", self.axes)
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "capHeight")
+            if self.customName:
+                writer.writeKeyValue("custom", self.customName)
+            writer.writeObjectKeyValue(self, "customValue", "if_true")
+            writer.writeObjectKeyValue(self, "customValue1", "if_true")
+            writer.writeObjectKeyValue(self, "customValue2", "if_true")
+            writer.writeObjectKeyValue(self, "customValue3", "if_true")
+
         writer.writeObjectKeyValue(self, "customParameters", "if_true")
-        writer.writeObjectKeyValue(self, "descender")
+
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "descender")
 
         if self.guides:
-            writer.writeKeyValue("guideLines", self.guides)
+            if writer.format_version == 3:
+                writer.writeKeyValue("guides", self.guides)
+            else:
+                writer.writeKeyValue("guideLines", self.guides)
 
-        writer.writeObjectKeyValue(self, "horizontalStems", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "horizontalStems", "if_true")
 
         writer.writeObjectKeyValue(self, "iconName", "if_true")
         writer.writeObjectKeyValue(self, "id")
         writer.writeObjectKeyValue(self, "italicAngle", "if_true")
+        if writer.format_version == 3:
+            writer.writeKeyValue("metricValues", self.metrics)
 
-        if self._name and self._name != self.name:
+        if (
+            self._name and self._name != self.name
+        ) or writer.format_version == 3:  # Check this
             writer.writeKeyValue("name", self._name or "Regular")
 
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(
+                self, "numbers", "if_true", keyName="numberValues"
+            )
+            writer.writeObjectKeyValue(self, "stems", "if_true", keyName="stemValues")
+
         writer.writeObjectKeyValue(self, "userData", "if_true")
-        writer.writeObjectKeyValue(self, "verticalStems", "if_true")
-        writer.writeObjectKeyValue(self, "weight", self.weight != "Regular")
-        writer.writeObjectKeyValue(self, "weightValue", self.weightValue != 100)
-        writer.writeObjectKeyValue(self, "width", self.width != "Regular")
-        writer.writeObjectKeyValue(self, "widthValue", self.widthValue != 100)
-        writer.writeObjectKeyValue(self, "xHeight")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "verticalStems", "if_true")
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "visible", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "weight", self.weight != "Regular")
+            writer.writeObjectKeyValue(self, "weightValue", self.weightValue != 100)
+            writer.writeObjectKeyValue(self, "width", self.width != "Regular")
+            writer.writeObjectKeyValue(self, "widthValue", self.widthValue != 100)
+            writer.writeObjectKeyValue(self, "xHeight")
 
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
@@ -1542,6 +1567,8 @@ class GSFontMaster(GSBase):
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
         self.italicAngle = self._defaultsForName["italicAngle"]
+        self.numbers = []
+        self.stems = []
         self.verticalStems = 0
         self.visible = False
         self.weight = self._defaultsForName["weight"]
@@ -1796,6 +1823,14 @@ GSFontMaster._add_parsers(
         {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # v2
         {"plist_name": "guides", "object_name": "guides", "type": GSGuide},  # v3
         {"plist_name": "custom", "object_name": "customName"},
+        {"plist_name": "axesValues", "object_name": "axes"},  # v3
+        {"plist_name": "numberValues", "object_name": "numbers"},  # v3
+        {"plist_name": "stemValues", "object_name": "stems"},  # v3
+        {
+            "plist_name": "metricValues",
+            "object_name": "metrics",
+            "type": GSMetricValue,
+        },  # v3
         {"plist_name": "name", "object_name": "_name"},
     ]
 )
