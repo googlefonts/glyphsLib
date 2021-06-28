@@ -3745,36 +3745,58 @@ class GSBackgroundLayer(GSLayer):
 
 class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "case")
+            writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "color")
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(
+                self, "leftKerningGroup", "if_true", keyName="kernLeft"
+            )
+            writer.writeObjectKeyValue(
+                self, "rightKerningGroup", "if_true", keyName="kernRight"
+            )
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
-        writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
-        writer.writeObjectKeyValue(
-            self, "leftMetricsKey", "if_true", keyName="leftMetricsKey"
-        )
-        writer.writeObjectKeyValue(
-            self, "widthMetricsKey", "if_true", keyName="widthMetricsKey"
-        )
-        writer.writeObjectKeyValue(
-            self, "vertWidthMetricsKey", "if_true", keyName="vertWidthMetricsKey"
-        )
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "metricLeft", "if_true")
+            writer.writeObjectKeyValue(self, "metricWidth", "if_true")
+        else:
+            writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
+            writer.writeObjectKeyValue(
+                self, "metricLeft", "if_true", keyName="leftMetricsKey"
+            )
+            writer.writeObjectKeyValue(
+                self, "metricWidth", "if_true", keyName="widthMetricsKey"
+            )
+            writer.writeObjectKeyValue(
+                self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
+            )
         writer.writeObjectKeyValue(self, "note")
-        writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
-        writer.writeObjectKeyValue(
-            self, "rightMetricsKey", "if_true", keyName="rightMetricsKey"
-        )
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "metricRight", "if_true")
+        else:
+            writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
+            writer.writeObjectKeyValue(
+                self, "metricRight", "if_true", keyName="rightMetricsKey"
+            )
         writer.writeObjectKeyValue(self, "topKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
-        if self.unicodes:
+        if self.unicodes and writer.format_version == 2:
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "script")
-        writer.writeObjectKeyValue(self, "category")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "subCategory")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "tags", "if_true")
+        if self.unicodes and writer.format_version > 2:
+            writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if self.smartComponentAxes:
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
@@ -3785,20 +3807,25 @@ class GSGlyph(GSBase):
         "export": True,
         "lastChange": None,
         "leftKerningGroup": None,
-        "leftMetricsKey": None,
+        "metricLeft": None,
         "name": None,
         "note": None,
         "rightKerningGroup": None,
-        "rightMetricsKey": None,
+        "metricRight": None,
         "script": None,
         "subCategory": None,
         "userData": None,
-        "widthMetricsKey": None,
+        "metricWidth": None,
+        "metricVertWidth": None,
     }
 
     def _parse_unicode_dict(self, parser, value):
         parser.current_type = None
-        if isinstance(value, int):
+        if parser.format_version == 3:
+            if not isinstance(value, list):
+                value = [value]
+            uni = ["%x" % x for x in value]
+        elif isinstance(value, int):
             # This is unfortunate. We've used the openstep_plist parser with
             # use_numbers=True, and it's seen something like "0041". It's
             # then interpreted this as a *decimal* integer. We have to make it
@@ -3820,12 +3847,13 @@ class GSGlyph(GSBase):
         self.bottomKerningGroup = ""
         self.bottomMetricsKey = ""
         self.category = self._defaultsForName["category"]
+        self.case = None
         self.color = self._defaultsForName["color"]
         self.export = self._defaultsForName["export"]
         self.lastChange = self._defaultsForName["lastChange"]
         self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
         self.leftKerningKey = ""
-        self.leftMetricsKey = self._defaultsForName["leftMetricsKey"]
+        self.metricLeft = self._defaultsForName["metricLeft"]
         self.name = name
         self.note = self._defaultsForName["note"]
         self.parent = None
@@ -3833,15 +3861,17 @@ class GSGlyph(GSBase):
         self.production = ""
         self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
         self.rightKerningKey = ""
-        self.rightMetricsKey = self._defaultsForName["rightMetricsKey"]
+        self.metricRight = self._defaultsForName["metricRight"]
         self.script = self._defaultsForName["script"]
         self.selected = False
         self.subCategory = self._defaultsForName["subCategory"]
+        self.tags = []
         self.topKerningGroup = ""
         self.topMetricsKey = ""
         self.userData = self._defaultsForName["userData"]
         self.vertWidthMetricsKey = ""
-        self.widthMetricsKey = self._defaultsForName["widthMetricsKey"]
+        self.metricVertWidth = self._defaultsForName["metricVertWidth"]
+        self.metricWidth = self._defaultsForName["metricWidth"]
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
@@ -3923,6 +3953,39 @@ class GSGlyph(GSBase):
     def unicodes(self, unicodes):
         self._unicodes = UnicodesList(unicodes)
 
+    # V2 compatible interface
+    @property
+    def rightMetricsKey(self):
+        return self.metricRight
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value):
+        self.metricRight = value
+
+    @property
+    def leftMetricsKey(self):
+        return self.metricLeft
+
+    @leftMetricsKey.setter
+    def leftMetricsKey(self, value):
+        self.metricLeft = value
+
+    @property
+    def widthMetricsKey(self):
+        return self.metricWidth
+
+    @widthMetricsKey.setter
+    def widthMetricsKey(self, value):
+        self.metricWidth = value
+
+    @property
+    def vertWidthMetricsKey(self):
+        return self.metricVertWidth
+
+    @vertWidthMetricsKey.setter
+    def vertWidthMetricsKey(self, value):
+        self.metricVertWidth = value
+
 
 GSGlyph._add_parsers(
     [
@@ -3937,6 +4000,12 @@ GSGlyph._add_parsers(
             "object_name": "lastChange",
             "converter": parse_datetime,
         },
+        {"plist_name": "kernLeft", "object_name": "leftKerningGroup"},  # V3
+        {"plist_name": "kernRight", "object_name": "rightKerningGroup"},  # V3
+        {"plist_name": "leftMetricsKey", "object_name": "metricLeft"},  # V2
+        {"plist_name": "rightMetricsKey", "object_name": "metricRight"},  # V2
+        {"plist_name": "widthMetricsKey", "object_name": "metricWidth"},  # V2
+        {"plist_name": "vertWidthMetricsKey", "object_name": "metricVertWidth"},  # V2
     ]
 )
 
