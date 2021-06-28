@@ -315,31 +315,17 @@ class GSBase:
     """Represent the base class for all GS classes.
 
     Attributes:
-        _classesForName (dict): Pre-PEP 484 way of annotating instance variables with
-            their types. Used by the parser during deserialization to insert
-            instance variables into GS classes. Used during serialization to determine
-            if some values should be serialized.
         _defaultsForName (dict): Used to determine which values to serialize and which
             to imply by their absence.
-        _wrapperKeysTranslate (dict): Used to map field names to GS* instance variables
-            during (de)serialization.
     """
 
-    _classesForName = {}
     _defaultsForName = {}
-    _wrapperKeysTranslate = {}
 
     def __repr__(self):
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
         return f"<{self.__class__.__name__} {content}>"
-
-    def classForName(self, name):
-        return self._classesForName.get(name, str)
-
-    def default_attr_value(self, attr_name):
-        """Return the default value of the given attribute, if any."""
 
     # Note:
     # The dictionary API exposed by GS* classes is "private" in the sense that:
@@ -352,21 +338,6 @@ class GSBase:
     # documented at https://docu.glyphsapp.com/
     def __setitem__(self, key, value):
         setattr(self, key, value)
-
-    def shouldWriteValueForKey(self, key):
-        getKey = self._wrapperKeysTranslate.get(key, key)
-        value = getattr(self, getKey)
-        klass = self._classesForName[key]
-        default = self._defaultsForName.get(key, None)
-        if isinstance(value, (list, glyphsLib.classes.Proxy, str)) and len(value) == 0:
-            return False
-        if default is not None:
-            return default != value
-        if klass in (int, float, bool) and value == 0:
-            return False
-        if isinstance(value, ValueType) and value.value is None:
-            return False
-        return True
 
     @classmethod
     def _add_parsers(cls, specification):
@@ -1181,10 +1152,6 @@ class GSCustomParameter(GSBase):
         writer.writeKeyValue("name", self.name)
         writer.writeKeyValue("value", self.value)
 
-    __slots__ = ("name", "_value")
-
-    _classesForName = {"name": str, "value": None}
-
     _CUSTOM_INT_PARAMS = frozenset(
         (
             "ascender",
@@ -1331,8 +1298,6 @@ class GSCustomParameter(GSBase):
 
 
 class GSAlignmentZone(GSBase):
-    __slots__ = ("position", "size")
-
     def __init__(self, pos=0, size=20):
         self.position = pos
         self.size = size
@@ -1368,25 +1333,6 @@ class GSGuideLine(GSBase):
         writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
 
-    __slots__ = (
-        "alignment",
-        "angle",
-        "filter",
-        "locked",
-        "name",
-        "position",
-        "showMeasurement",
-    )
-
-    _classesForName = {
-        "alignment": str,
-        "angle": parse_float_or_int,
-        "locked": bool,
-        "position": Point,
-        "showMeasurement": bool,
-        "filter": str,
-        "name": str,
-    }
     _parent = None
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
@@ -1450,60 +1396,6 @@ class GSFontMaster(GSBase):
         writer.writeObjectKeyValue(self, "widthValue", self.widthValue != 100)
         writer.writeObjectKeyValue(self, "xHeight")
 
-    __slots__ = (
-        "_customParameters",
-        "_name",
-        "_userData",
-        "alignmentZones",
-        "ascender",
-        "capHeight",
-        "customName",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "descender",
-        "font",
-        "guides",
-        "horizontalStems",
-        "iconName",
-        "id",
-        "italicAngle",
-        "verticalStems",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-        "xHeight",
-    )
-
-    _classesForName = {
-        "alignmentZones": GSAlignmentZone,
-        "ascender": parse_float_or_int,
-        "capHeight": parse_float_or_int,
-        "custom": str,
-        "customValue": parse_float_or_int,
-        "customValue1": parse_float_or_int,
-        "customValue2": parse_float_or_int,
-        "customValue3": parse_float_or_int,
-        "customParameters": GSCustomParameter,
-        "descender": parse_float_or_int,
-        "guideLines": GSGuideLine,
-        "horizontalStems": int,
-        "iconName": str,
-        "id": str,
-        "italicAngle": parse_float_or_int,
-        "name": str,
-        "userData": dict,
-        "verticalStems": int,
-        "visible": bool,
-        "weight": str,
-        "weightValue": parse_float_or_int,
-        "width": str,
-        "widthValue": parse_float_or_int,
-        "xHeight": parse_float_or_int,
-    }
     _defaultsForName = {
         # FIXME: (jany) In the latest Glyphs (1113), masters don't have a width
         # and weight anymore as attributes, even though those properties are
@@ -1522,37 +1414,6 @@ class GSFontMaster(GSBase):
         "descender": -200,
         "italicAngle": 0,
     }
-    _wrapperKeysTranslate = {
-        "guideLines": "guides",
-        "custom": "customName",
-        "name": "_name",
-    }
-    _keyOrder = (
-        "alignmentZones",
-        "ascender",
-        "capHeight",
-        "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "customParameters",
-        "descender",
-        "guideLines",
-        "horizontalStems",
-        "iconName",
-        "id",
-        "italicAngle",
-        "name",
-        "userData",
-        "verticalStems",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-        "xHeight",
-    )
 
     def _parse_alignmentZones_dict(self, parser, text):
         _zones = parser._parse(text, str)
@@ -1589,17 +1450,6 @@ class GSFontMaster(GSBase):
         return '<GSFontMaster "{}" width {} weight {}>'.format(
             self.name, self.widthValue, self.weightValue
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("weight", "width"):
-            return getattr(self, key) != "Regular"
-        if key in ("xHeight", "capHeight", "ascender", "descender"):
-            # Always write those values
-            return True
-        if key == "_name":
-            # Only write out the name if we can't make it by joining the parts
-            return self._name != self.name
-        return super().shouldWriteValueForKey(key)
 
     @property
     def metricsSource(self):
@@ -1725,8 +1575,6 @@ GSFontMaster._add_parsers(
 
 
 class GSNode(GSBase):
-    __slots__ = ("_userData", "_position", "smooth", "type")
-
     _PLIST_VALUE_RE = re.compile(
         r"([-.e\d]+) ([-.e\d]+) (LINE|CURVE|QCURVE|OFFCURVE|n/a)"
         r"(?: (SMOOTH))?(?: ({.*}))?",
@@ -1917,9 +1765,6 @@ class GSNode(GSBase):
 
 
 class GSPath(GSBase):
-    __slots__ = ("closed", "_nodes")
-
-    _classesForName = {"nodes": GSNode, "closed": bool}
     _defaultsForName = {"closed": True}
     _parent = None
 
@@ -1938,11 +1783,6 @@ class GSPath(GSBase):
     @property
     def parent(self):
         return self._parent
-
-    def shouldWriteValueForKey(self, key):
-        if key == "closed":
-            return True
-        return super().shouldWriteValueForKey(key)
 
     nodes = property(
         lambda self: PathNodesProxy(self),
@@ -2136,8 +1976,6 @@ _UFO_NODE_TYPES = {"line", "curve", "qcurve"}
 
 
 class segment(list):
-    __slots__ = ("nodes", "parent", "index")
-
     def appendNode(self, node):
         if not hasattr(
             self, "nodes"
@@ -2264,24 +2102,6 @@ class GSComponent(GSBase):
             self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
         )
 
-    __slots__ = (
-        "alignment",
-        "anchor",
-        "locked",
-        "name",
-        "smartComponentValues",
-        "transform",
-    )
-
-    _classesForName = {
-        "alignment": int,
-        "anchor": str,
-        "locked": bool,
-        "name": str,
-        "piece": dict,
-        "transform": Transform,
-    }
-    _wrapperKeysTranslate = {"piece": "smartComponentValues"}
     _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
     _parent = None
 
@@ -2312,12 +2132,6 @@ class GSComponent(GSBase):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
             self.name, self.transform[4], self.transform[5]
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key == "piece":
-            value = self.smartComponentValues
-            return len(value) > 0
-        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2457,23 +2271,7 @@ class GSSmartComponentAxis(GSBase):
         writer.writeObjectKeyValue(self, "topName", "if_true")
         writer.writeObjectKeyValue(self, "topValue", True)
 
-    __slots__ = (
-        "bottomName",
-        "bottomValue",
-        "name",
-        "topName",
-        "topValue",
-    )
-
-    _classesForName = {
-        "name": str,
-        "bottomName": str,
-        "bottomValue": parse_float_or_int,
-        "topName": str,
-        "topValue": parse_float_or_int,
-    }
     _defaultsForName = {"bottomValue": 0, "topValue": 0}
-    _keyOrder = ("name", "bottomName", "bottomValue", "topName", "topValue")
 
     def __init__(self):
         self.bottomName = ""
@@ -2482,11 +2280,6 @@ class GSSmartComponentAxis(GSBase):
         self.topName = ""
         self.topValue = self._defaultsForName["topValue"]
 
-    def shouldWriteValueForKey(self, key):
-        if key in ("bottomValue", "topValue"):
-            return True
-        return super().shouldWriteValueForKey(key)
-
 
 class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
@@ -2494,9 +2287,6 @@ class GSAnchor(GSBase):
         posKey = "position"
         writer.writeObjectKeyValue(self, "position", True, keyName=posKey)
 
-    __slots__ = ("position", "name")
-
-    _classesForName = {"name": str, "position": Point}
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
@@ -2511,11 +2301,6 @@ class GSAnchor(GSBase):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
             self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
-
-    def shouldWriteValueForKey(self, key):
-        if key == "position":
-            return True
-        return super().shouldWriteValueForKey(key)
 
     @property
     def parent(self):
@@ -2544,39 +2329,6 @@ class GSHint(GSBase):
         for field in ["type", "name", "options", "settings"]:
             writer.writeObjectKeyValue(self, field, condition="if_true")
 
-    __slots__ = (
-        "_origin",
-        "_originNode",
-        "_other1",
-        "_other2",
-        "_otherNode1",
-        "_otherNode2",
-        "_target",
-        "_targetNode",
-        "horizontal",
-        "name",
-        "options",
-        "place",
-        "scale",
-        "settings",
-        "stem",
-        "type",
-    )
-
-    _classesForName = {
-        "horizontal": bool,
-        "options": int,  # bitfield
-        "origin": Point,  # Index path to node
-        "other1": Point,  # Index path to node for third node
-        "other2": Point,  # Index path to node for fourth node
-        "place": Point,  # (position, width)
-        "scale": Point,  # for corners
-        "stem": int,  # index of stem
-        "target": parse_hint_target,  # Index path to node or 'up'/'down'
-        "type": str,
-        "name": str,
-        "settings": dict,
-    }
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
         "origin": None,
@@ -2586,20 +2338,6 @@ class GSHint(GSBase):
         "scale": None,
         "stem": -2,
     }
-    _keyOrder = (
-        "horizontal",
-        "origin",
-        "place",
-        "target",
-        "other1",
-        "other2",
-        "scale",
-        "type",
-        "stem",
-        "name",
-        "options",
-        "settings",
-    )
 
     def _parse_target_dict(self, parser, value):
         # In glyphs 2 this is a string, in glyphs 3 it is a point or string
@@ -2622,11 +2360,6 @@ class GSHint(GSBase):
         self.type = ""
         self._target = None
         self._targetNode = None
-
-    def shouldWriteValueForKey(self, key):
-        if key == "settings" and (self.settings is None or len(self.settings) == 0):
-            return None
-        return super().shouldWriteValueForKey(key)
 
     def _origin_pos(self):
         if self.originNode:
@@ -2780,27 +2513,12 @@ class GSFeature(GSBase):
         writer.writeKeyValue("name", self.name)
         writer.writeObjectKeyValue(self, "notes", "if_true")
 
-    __slots__ = ("automatic", "_code", "disabled", "name", "notes")
-
-    _classesForName = {
-        "automatic": bool,
-        "code": str,
-        "name": str,
-        "notes": str,
-        "disabled": bool,
-    }
-
     def __init__(self, name="xxxx", code=""):
         self.automatic = False
         self.code = code
         self.disabled = False
         self.name = name
         self.notes = ""
-
-    def shouldWriteValueForKey(self, key):
-        if key == "code":
-            return True
-        return super().shouldWriteValueForKey(key)
 
     def getCode(self):
         return self._code
@@ -2862,21 +2580,6 @@ class GSAnnotation(GSBase):
         writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(self, "width", default=100)
 
-    __slots__ = (
-        "angle",
-        "position",
-        "text",
-        "type",
-        "width",
-    )
-
-    _classesForName = {
-        "angle": parse_float_or_int,
-        "position": Point,
-        "text": str,
-        "type": str,
-        "width": parse_float_or_int,  # the width of the text field or size of the cicle
-    }
     _defaultsForName = {
         "angle": 0,
         "position": Point(0, 0),
@@ -2942,46 +2645,6 @@ class GSInstance(GSBase):
             self, "width", default="Medium (normal)", keyName="widthClass"
         )
 
-    __slots__ = (
-        "_customParameters",
-        "active",
-        "custom",
-        "customValue",
-        "customValue1",
-        "customValue2",
-        "customValue3",
-        "instanceInterpolations",
-        "isBold",
-        "isItalic",
-        "linkStyle",
-        "manualInterpolation",
-        "name",
-        "visible",
-        "weight",
-        "weightValue",
-        "width",
-        "widthValue",
-    )
-
-    _classesForName = {
-        "customParameters": GSCustomParameter,
-        "active": bool,
-        "exports": bool,
-        "instanceInterpolations": dict,
-        "interpolationCustom": parse_float_or_int,
-        "interpolationCustom1": parse_float_or_int,
-        "interpolationCustom2": parse_float_or_int,
-        "interpolationCustom3": parse_float_or_int,
-        "interpolationWeight": parse_float_or_int,
-        "interpolationWidth": parse_float_or_int,
-        "isBold": bool,
-        "isItalic": bool,
-        "linkStyle": str,
-        "manualInterpolation": bool,
-        "name": str,
-        "weightClass": str,
-        "widthClass": str,
-    }
     _defaultsForName = {
         "active": True,
         "exports": True,
@@ -2994,35 +2657,6 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
-    }
-    _keyOrder = (
-        "active",
-        "exports",
-        "customParameters",
-        "interpolationCustom",
-        "interpolationCustom1",
-        "interpolationCustom2",
-        "interpolationCustom3",
-        "interpolationWeight",
-        "interpolationWidth",
-        "instanceInterpolations",
-        "isBold",
-        "isItalic",
-        "linkStyle",
-        "manualInterpolation",
-        "name",
-        "weightClass",
-        "widthClass",
-    )
-    _wrapperKeysTranslate = {
-        "weightClass": "weight",
-        "widthClass": "width",
-        "interpolationWeight": "weightValue",
-        "interpolationWidth": "widthValue",
-        "interpolationCustom": "customValue",
-        "interpolationCustom1": "customValue1",
-        "interpolationCustom2": "customValue2",
-        "interpolationCustom3": "customValue3",
     }
 
     def __init__(self):
@@ -3176,26 +2810,7 @@ class GSBackgroundImage(GSBase):
             self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
         )
 
-    __slots__ = (
-        "_R",
-        "_alpha",
-        "_sX",
-        "_sY",
-        "crop",
-        "imagePath",
-        "locked",
-        "transform",
-    )
-
-    _classesForName = {
-        "crop": Rect,
-        "imagePath": str,
-        "locked": bool,
-        "transform": Transform,
-        "alpha": int,
-    }
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
-    _wrapperKeysTranslate = {"alpha": "_alpha"}
 
     def __init__(self, path=None):
         self._R = 0.0
@@ -3327,55 +2942,6 @@ class GSLayer(GSBase):
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
 
-    __slots__ = (
-        "_anchors",
-        "_annotations",
-        "_background",
-        "_components",
-        "_foreground",
-        "_guides",
-        "_hints",
-        "_layerId",
-        "_name",
-        "_paths",
-        "_selection",
-        "_userData",
-        "associatedMasterId",
-        "backgroundImage",
-        "color",
-        "leftMetricsKey",
-        "parent",
-        "rightMetricsKey",
-        "vertOrigin",
-        "vertWidth",
-        "visible",
-        "width",
-        "widthMetricsKey",
-    )
-
-    _classesForName = {
-        "anchors": GSAnchor,
-        "annotations": GSAnnotation,
-        "associatedMasterId": str,
-        # The next line is added after we define GSBackgroundLayer
-        # "background": GSBackgroundLayer,
-        "backgroundImage": GSBackgroundImage,
-        "color": parse_color,
-        "components": GSComponent,
-        "guideLines": GSGuideLine,
-        "hints": GSHint,
-        "layerId": str,
-        "leftMetricsKey": str,
-        "name": str,
-        "paths": GSPath,
-        "rightMetricsKey": str,
-        "userData": dict,
-        "vertWidth": parse_float_or_int,
-        "vertOrigin": parse_float_or_int,
-        "visible": bool,
-        "width": parse_float_or_int,
-        "widthMetricsKey": str,
-    }
     _defaultsForName = {
         "width": 600,
         "leftMetricsKey": None,
@@ -3384,29 +2950,6 @@ class GSLayer(GSBase):
         "vertWidth": None,
         "vertOrigin": None,
     }
-    _wrapperKeysTranslate = {"guideLines": "guides", "background": "_background"}
-    _keyOrder = (
-        "anchors",
-        "annotations",
-        "associatedMasterId",
-        "background",
-        "backgroundImage",
-        "color",
-        "components",
-        "guideLines",
-        "hints",
-        "layerId",
-        "leftMetricsKey",
-        "widthMetricsKey",
-        "rightMetricsKey",
-        "name",
-        "paths",
-        "userData",
-        "visible",
-        "vertOrigin",
-        "vertWidth",
-        "width",
-    )
 
     def _parse_background_dict(self, parser, value):
         self._background = parser._parse(value, GSBackgroundLayer)
@@ -3495,19 +3038,6 @@ class GSLayer(GSBase):
         if self.associatedMasterId and self.parent:
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
-
-    def shouldWriteValueForKey(self, key):
-        if key == "width":
-            return True
-        if key == "associatedMasterId":
-            return self.layerId != self.associatedMasterId
-        if key == "name":
-            return (
-                self.name is not None
-                and len(self.name) > 0
-                and self.layerId != self.associatedMasterId
-            )
-        return super().shouldWriteValueForKey(key)
 
     @property
     def name(self):
@@ -3693,11 +3223,6 @@ GSLayer._add_parsers(
 
 
 class GSBackgroundLayer(GSLayer):
-    def shouldWriteValueForKey(self, key):
-        if key == "width":
-            return False
-        return super().shouldWriteValueForKey(key)
-
     @property
     def background(self):
         return None
@@ -3717,9 +3242,6 @@ class GSBackgroundLayer(GSLayer):
     @width.setter
     def width(self, whatever):
         pass
-
-
-GSLayer._classesForName["background"] = GSBackgroundLayer
 
 
 class GSGlyph(GSBase):
@@ -3758,68 +3280,6 @@ class GSGlyph(GSBase):
         if self.smartComponentAxes:
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
 
-    __slots__ = (
-        "_layers",
-        "_unicodes",
-        "_userData",
-        "bottomKerningGroup",
-        "bottomMetricsKey",
-        "category",
-        "color",
-        "export",
-        "lastChange",
-        "leftKerningGroup",
-        "leftKerningKey",
-        "leftMetricsKey",
-        "name",
-        "note",
-        "parent",
-        "partsSettings",
-        "production",
-        "rightKerningGroup",
-        "rightKerningKey",
-        "rightMetricsKey",
-        "script",
-        "selected",
-        "subCategory",
-        "topKerningGroup",
-        "topMetricsKey",
-        "vertWidthMetricsKey",
-        "widthMetricsKey",
-    )
-
-    _classesForName = {
-        "bottomKerningGroup": str,
-        "bottomMetricsKey": str,
-        "category": str,
-        "color": parse_color,
-        "export": bool,
-        "glyphname": str,
-        "lastChange": parse_datetime,
-        "layers": GSLayer,
-        "leftKerningGroup": str,
-        "leftKerningKey": str,
-        "leftMetricsKey": str,
-        "note": str,
-        "partsSettings": GSSmartComponentAxis,
-        "production": str,
-        "rightKerningGroup": str,
-        "rightKerningKey": str,
-        "rightMetricsKey": str,
-        "script": str,
-        "subCategory": str,
-        "topKerningGroup": str,
-        "topMetricsKey": str,
-        "unicode": UnicodesList,
-        "userData": dict,
-        "vertWidthMetricsKey": str,
-        "widthMetricsKey": str,
-    }
-    _wrapperKeysTranslate = {
-        "unicode": "unicodes",
-        "glyphname": "name",
-        "partsSettings": "smartComponentAxes",
-    }
     _defaultsForName = {
         "category": None,
         "color": None,
@@ -3836,31 +3296,6 @@ class GSGlyph(GSBase):
         "userData": None,
         "widthMetricsKey": None,
     }
-    _keyOrder = (
-        "color",
-        "export",
-        "glyphname",
-        "production",
-        "lastChange",
-        "layers",
-        "leftKerningGroup",
-        "leftMetricsKey",
-        "widthMetricsKey",
-        "vertWidthMetricsKey",
-        "note",
-        "rightKerningGroup",
-        "rightMetricsKey",
-        "topKerningGroup",
-        "topMetricsKey",
-        "bottomKerningGroup",
-        "bottomMetricsKey",
-        "unicode",
-        "script",
-        "category",
-        "subCategory",
-        "userData",
-        "partsSettings",
-    )
 
     def _parse_unicode_dict(self, parser, value):
         parser.current_type = None
@@ -3911,11 +3346,6 @@ class GSGlyph(GSBase):
 
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("script", "category", "subCategory"):
-            return getattr(self, key) is not None
-        return super().shouldWriteValueForKey(key)
 
     layers = property(
         lambda self: GlyphLayerProxy(self),
@@ -4013,74 +3443,6 @@ GSGlyph._add_parsers(
 
 
 class GSFont(GSBase):
-    __slots__ = (
-        "DisplayStrings",
-        "_classes",
-        "_customParameters",
-        "_featurePrefixes",
-        "_features",
-        "_customParameters",
-        "_glyphs",
-        "_instances",
-        "_kerning",
-        "_masters",
-        "_userData",
-        "_versionMinor",
-        "appVersion",
-        "copyright",
-        "date",
-        "designer",
-        "designerURL",
-        "disablesAutomaticAlignment",
-        "disablesNiceNames",
-        "familyName",
-        "filepath",
-        "grid",
-        "gridSubDivisions",
-        "keepAlternatesTogether",
-        "keyboardIncrement",
-        "manufacturer",
-        "manufacturerURL",
-        "upm",
-        "versionMajor",
-    )
-
-    _classesForName = {
-        ".appVersion": str,
-        "DisplayStrings": str,
-        "classes": GSClass,
-        "copyright": str,
-        "customParameters": GSCustomParameter,
-        "date": parse_datetime,
-        "designer": str,
-        "designerURL": str,
-        "disablesAutomaticAlignment": bool,
-        "disablesNiceNames": bool,
-        "familyName": str,
-        "featurePrefixes": GSFeaturePrefix,
-        "features": GSFeature,
-        "fontMaster": GSFontMaster,
-        "glyphs": GSGlyph,
-        "gridLength": int,
-        "gridSubDivision": int,
-        "instances": GSInstance,
-        "keepAlternatesTogether": bool,
-        "kerning": OrderedDict,
-        "keyboardIncrement": parse_float_or_int,
-        "manufacturer": str,
-        "manufacturerURL": str,
-        "unitsPerEm": int,
-        "userData": dict,
-        "versionMajor": int,
-        "versionMinor": int,
-    }
-    _wrapperKeysTranslate = {
-        ".appVersion": "appVersion",
-        "fontMaster": "masters",
-        "unitsPerEm": "upm",
-        "gridLength": "grid",
-        "gridSubDivision": "gridSubDivisions",
-    }
     _defaultsForName = {
         "classes": [],
         "features": [],
@@ -4193,11 +3555,6 @@ class GSFont(GSBase):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} "{self.familyName}">'
-
-    def shouldWriteValueForKey(self, key):
-        if key in ("unitsPerEm", "versionMajor", "versionMinor"):
-            return True
-        return super().shouldWriteValueForKey(key)
 
     def save(self, path=None):
         if path is None:
@@ -4382,8 +3739,6 @@ class LayerPointPen(AbstractPointPen):
     See :mod:`fontTools.pens.basePen` and :mod:`fontTools.pens.pointPen` for an
     introduction to pens.
     """
-
-    __slots__ = ("_layer", "_path")
 
     def __init__(self, layer: GSLayer) -> None:
         self._layer: GSLayer = layer
