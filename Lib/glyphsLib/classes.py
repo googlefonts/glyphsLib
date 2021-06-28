@@ -1420,10 +1420,15 @@ class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
+        if writer.format_version == 3:
+            writer.writeObjectKeyValue(self, "lockAngle", "if_true")
         writer.writeObjectKeyValue(self, "locked", "if_true")
 
         writer.writeObjectKeyValue(self, "name", "if_true")
-        writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
+        if writer.format_version == 3 and self.position != Point(0, 0):
+            writer.writeKeyValue("pos", self.position)
+        else:
+            writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
 
     _parent = None
@@ -1431,12 +1436,13 @@ class GSGuide(GSBase):
 
     def __init__(self):
         self.alignment = ""
-        self.angle = self._defaultsForName["angle"]
+        self.angle = 0
         self.filter = ""
         self.locked = False
         self.name = ""
-        self.position = copy.deepcopy(self._defaultsForName["position"])
+        self.position = Point(0, 0)
         self.showMeasurement = False
+        self.lockAngle = False
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1448,7 +1454,12 @@ class GSGuide(GSBase):
         return self._parent
 
 
-GSGuide._add_parsers([{"plist_name": "position", "converter": Point}])
+GSGuide._add_parsers(
+    [
+        {"plist_name": "position", "converter": Point},  # v2
+        {"plist_name": "pos", "object_name": "position", "converter": Point},  # v3
+    ]
+)
 
 
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
@@ -1660,7 +1671,8 @@ class GSFontMaster(GSBase):
 GSFontMaster._add_parsers(
     [
         {"plist_name": "customParameters", "type": GSCustomParameter},
-        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},
+        {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # v2
+        {"plist_name": "guides", "object_name": "guides", "type": GSGuide},  # v3
         {"plist_name": "custom", "object_name": "customName"},
         {"plist_name": "name", "object_name": "_name"},
     ]
