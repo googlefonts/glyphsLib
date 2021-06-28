@@ -1268,7 +1268,7 @@ class GSCustomParameter(GSBase):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         string = StringIO()
         writer = Writer(string)
         writer.writeDict({"name": self.name, "value": self.value})
@@ -1317,7 +1317,7 @@ class GSAlignmentZone(GSBase):
     def __lt__(self, other):
         return (self.position, self.size) < (other.position, other.size)
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         return '"{{{}, {}}}"'.format(
             floatToString5(self.position), floatToString5(self.size)
         )
@@ -1623,13 +1623,13 @@ class GSNode(GSBase):
     def parent(self):
         return self._parent
 
-    def plistValue(self):
+    def plistValue(self, format_version=2):
         content = self.type.upper()
         if self.smooth:
             content += " SMOOTH"
         if self._userData is not None and len(self._userData) > 0:
             string = StringIO()
-            writer = Writer(string)
+            writer = Writer(string, format_version=format_version)
             writer.writeDict(self._userData)
             content += " "
             content += self._encode_dict_as_string(string.getvalue())

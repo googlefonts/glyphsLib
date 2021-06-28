@@ -27,17 +27,17 @@ from . import test_helpers
 
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def assertWrites(self, glyphs_object, text):
+    def assertWrites(self, glyphs_object, text, format_version=2):
         """Assert that the given object, when given to the writer,
         produces the given text.
         """
         expected = text.splitlines()
-        actual = test_helpers.write_to_lines(glyphs_object)
+        actual = test_helpers.write_to_lines(glyphs_object, format_version)
         self.assertLinesEqual(
             expected, actual, "The writer has not produced the expected output"
         )
 
-    def assertWritesValue(self, glyphs_value, text):
+    def assertWritesValue(self, glyphs_value, text, format_version=2):
         """Assert that the writer produces the given text for the given value."""
         expected = (
             dedent(
@@ -51,7 +51,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             .splitlines()
         )
         # We wrap the value in a dict to use the same test helper
-        actual = test_helpers.write_to_lines({"writtenValue": glyphs_value})
+        actual = test_helpers.write_to_lines(
+            {"writtenValue": glyphs_value}, format_version
+        )
         self.assertLinesEqual(
             expected, actual, "The writer has not produced the expected output"
         )
