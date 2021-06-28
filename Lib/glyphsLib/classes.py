@@ -3241,12 +3241,22 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
 class GSBackgroundImage(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
-        writer.writeObjectKeyValue(self, "crop")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            writer.writeObjectKeyValue(self, "crop", default=Rect())
+        else:
+            writer.writeObjectKeyValue(self, "crop")
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        writer.writeObjectKeyValue(
-            self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
-        )
+        if writer.format_version > 2:
+            if self.position != Point(0, 0):
+                writer.writeObjectKeyValue(self, "position", keyName="pos")
+            if self.scale != (1.0, 1.0):
+                writer.writeKeyValue("scale", Point(list(self.scale)))
+        else:
+            writer.writeObjectKeyValue(
+                self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
+            )
 
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
 
