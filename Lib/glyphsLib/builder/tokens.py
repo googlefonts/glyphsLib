@@ -57,10 +57,10 @@ class TokenExpander:
         # Find index of number
         try:
             index = [metric.name for metric in self.font.numbers].index(number)
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 "Unknown number token '$%s' at position %i" % (number, self.position)
-            )
+            ) from e
 
         value = self.master.numbers[index]
         # We don't add this to the output, because we use the same routine in

@@ -37,9 +37,8 @@ class Parser:
             elif isinstance(d, bytes):
                 d = openstep_plist.loads(d.decode(), use_numbers=True)
             result = self._parse(d)
-        except openstep_plist.parser.ParseError:
-            raise ValueError()
-            # For API compatibility
+        except openstep_plist.parser.ParseError as e:
+            raise ValueError("Failed to parse file") from e
         return result
 
     def _parse(self, d, new_type=None):
