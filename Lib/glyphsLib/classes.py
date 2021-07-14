@@ -1515,7 +1515,7 @@ class GSFontMaster(GSBase):
 
         if (
             self._name and self._name != self.name
-        ) or writer.format_version == 3:  # Check this
+        ) or writer.format_version == 3:
             writer.writeKeyValue("name", self._name or "Regular")
 
         if writer.format_version == 3:
@@ -4362,7 +4362,6 @@ class GSFont(GSBase):
             return self.EMPTY_KERNING_VALUE
 
     def setKerningForPair(self, fontMasterId, leftKey, rightKey, value, direction=LTR):
-        # TODO: (jany) understand and use the direction parameter
         if direction == LTR:
             if not self._kerningLTR:
                 self._kerningLTR = {}
@@ -4382,7 +4381,6 @@ class GSFont(GSBase):
         kerntable[fontMasterId][leftKey][rightKey] = value
 
     def removeKerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
-        # TODO: (jany) understand and use the direction parameter
         if direction == LTR:
             kerntable = self._kerningLTR
         elif direction == RTL:
