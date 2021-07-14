@@ -2607,7 +2607,7 @@ class GSAnchor(GSBase):
         posKey = "position"
         if writer.format_version > 2:
             posKey = "pos"
-        writer.writeObjectKeyValue(self, "position", True, keyName=posKey)
+        writer.writeObjectKeyValue(self, "position", True, keyName=posKey, default=Point(0, 0))
 
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
@@ -3754,6 +3754,8 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "color")
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "production", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(
                 self, "leftKerningGroup", "if_true", keyName="kernLeft"
@@ -3791,7 +3793,8 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
         if self.unicodes and writer.format_version == 2:
             writer.writeKeyValue("unicode", self.unicodes)
-        writer.writeObjectKeyValue(self, "production", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "script")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "category")
@@ -4052,8 +4055,10 @@ class GSFont(GSBase):
             writer.writeObjectKeyValue(self, "disablesNiceNames", "if_true")
 
         writer.writeObjectKeyValue(self, "familyName")
-        writer.writeObjectKeyValue(self, "featurePrefixes")
-        writer.writeObjectKeyValue(self, "features")
+        if self.featurePrefixes:
+            writer.writeObjectKeyValue(self, "featurePrefixes")
+        if self.features:
+            writer.writeObjectKeyValue(self, "features")
         writer.writeKeyValue("fontMaster", self.masters)
         writer.writeObjectKeyValue(self, "glyphs")
 
@@ -4067,7 +4072,8 @@ class GSFont(GSBase):
 
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
-            writer.writeKeyValue("kerning", self.kerningLTR)
+            if self.kerningLTR:
+                writer.writeKeyValue("kerning", self.kerningLTR)
         else:
             writer.writeObjectKeyValue(self, "kerningLTR")
             writer.writeObjectKeyValue(self, "kerningRTL", "if_true")
