@@ -2607,7 +2607,9 @@ class GSAnchor(GSBase):
         posKey = "position"
         if writer.format_version > 2:
             posKey = "pos"
-        writer.writeObjectKeyValue(self, "position", True, keyName=posKey, default=Point(0, 0))
+        writer.writeObjectKeyValue(
+            self, "position", True, keyName=posKey, default=Point(0, 0)
+        )
 
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
