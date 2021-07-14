@@ -1513,9 +1513,7 @@ class GSFontMaster(GSBase):
         if writer.format_version == 3:
             writer.writeKeyValue("metricValues", self.metrics)
 
-        if (
-            self._name and self._name != self.name
-        ) or writer.format_version == 3:
+        if (self._name and self._name != self.name) or writer.format_version == 3:
             writer.writeKeyValue("name", self._name or "Regular")
 
         if writer.format_version == 3:
