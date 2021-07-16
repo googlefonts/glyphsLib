@@ -376,8 +376,18 @@ class UnicodesList(list):
             unicodes = []
         elif isinstance(value, str):
             unicodes = value.split(",")
+        elif isinstance(value, list) or isinstance(value, tuple):
+            unicodes = []
+            for uVal in value:
+                if isinstance(uVal, list):
+                    if len(uVal) == 1:
+                        unicodes.extend([str(subUVal) for subUVal in uVal])
+                    else:
+                        raise Exception
+                else:
+                    unicodes.append(str(uVal))
         else:
-            unicodes = [str(v) for v in value]
+            raise Exception
         super().__init__(unicodes)
 
     def plistValue(self):
