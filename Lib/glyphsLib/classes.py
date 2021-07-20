@@ -2578,6 +2578,7 @@ GSComponent._add_parsers(
         {"plist_name": "angle", "object_name": "rotation", "type": float},
         {"plist_name": "pos", "object_name": "position", "converter": Point},
         {"plist_name": "ref", "object_name": "name"},
+        {"plist_name": "locked", "converter": bool},
     ]
 )
 
@@ -2837,6 +2838,7 @@ GSHint._add_parsers(
         {"plist_name": "other2", "object_name": "_other2", "converter": Point},
         {"plist_name": "place", "converter": Point},
         {"plist_name": "scale", "converter": Point},
+        {"plist_name": "horizontal", "converter": bool},
     ]
 )
 
@@ -3361,6 +3363,7 @@ GSBackgroundImage._add_parsers(
     [
         {"plist_name": "transform", "converter": Transform},
         {"plist_name": "crop", "converter": Rect},
+        {"plist_name": "locked", "converter": bool},
         {"plist_name": "angle", "object_name": "rotation"},
         {"plist_name": "pos", "object_name": "position"},
     ]
@@ -4007,6 +4010,7 @@ GSGlyph._add_parsers(
             "object_name": "partsSettings",
             "type": GSSmartComponentAxis,
         },
+        {"plist_name": "export", "object_name": "export", "converter": bool},
         {
             "plist_name": "lastChange",
             "object_name": "lastChange",
@@ -4528,6 +4532,7 @@ GSFont._add_parsers(
         {"plist_name": "kerningRTL", "type": OrderedDict},
         {"plist_name": "kerningVertical", "type": OrderedDict},
         {"plist_name": "date", "converter": parse_datetime},
+        {"plist_name": "disablesAutomaticAlignment", "converter": bool},
         {"plist_name": "axes", "type": GSAxis},
         {"plist_name": "stems", "type": GSMetric},
         {"plist_name": "metrics", "type": GSMetric},
