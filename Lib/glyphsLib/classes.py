@@ -1105,10 +1105,15 @@ class CustomParametersProxy(Proxy):
     def __iter__(self):
         for index in range(len(self._owner._customParameters)):
             yield self._owner._customParameters[index]
-        if isinstance(self._owner, GSFont):
+        if self._should_add_axes():
+            yield self._owner._get_custom_parameter_from_axes()
+
+    def _should_add_axes(self):
+        if isinstance(self._owner, GSFont) and self._owner.format_version < 3:
             axes = self._owner._get_custom_parameter_from_axes()
             if axes:
-                yield axes
+                return True
+        return False
 
     def append(self, parameter):
         parameter.parent = self._owner
@@ -1129,6 +1134,9 @@ class CustomParametersProxy(Proxy):
         self._owner._customParameters.insert(index, parameter)
 
     def __len__(self):
+        if self._should_add_axes():
+            return len(self._owner._customParameters) + 1
+
         return len(self._owner._customParameters)
 
     def values(self):
@@ -4485,10 +4493,7 @@ class GSFont(GSBase):
             if ax.hidden:
                 value["Hidden"] = True
             values.append(value)
-        return GSCustomParameter(
-            name="Axes",
-            value=values,
-        )
+        return GSCustomParameter(name="Axes", value=values,)
 
     def _set_axes_from_custom_parameter(self, value):
         self.axes = [GSAxis(name=v["Name"], tag=v["Tag"]) for v in value]
