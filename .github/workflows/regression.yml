@@ -12,8 +12,9 @@ jobs:
     # Check out a *known good* version
     # For now I am assuming 'main' is known good
     - uses: actions/checkout@v2
-      repository: googlefonts/glyphsLib
-      ref: main
+      with:
+        repository: googlefonts/glyphsLib
+        ref: main
 
     - name: Install dependencies
       run: |
