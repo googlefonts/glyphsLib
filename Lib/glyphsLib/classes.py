@@ -4475,9 +4475,15 @@ class GSFont(GSBase):
             and self.axes[1] == self._defaultAxes[1]
         ):
             return None
+        values = []
+        for ax in self.axes:
+            value = {"Name": ax.name, "Tag": ax.axisTag}
+            if ax.hidden:
+                value["Hidden"] = True
+            values.append(value)
         return GSCustomParameter(
             name="Axes",
-            value=[{"Name": ax.name, "Tag": ax.axisTag} for ax in self.axes],
+            value=values,
         )
 
     def _set_axes_from_custom_parameter(self, value):
