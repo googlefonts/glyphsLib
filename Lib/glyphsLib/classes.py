@@ -1211,17 +1211,22 @@ class GSAxis(GSBase):
         writer.writeObjectKeyValue(self, "name", True)
         writer.writeKeyValue("tag", self.axisTag)
 
-    def __init__(self, name="", tag=""):
+    def __init__(self, name="", tag="", hidden=False):
         self.name = name
         self.axisTag = tag
         self.axisId = None
-        self.hidden = False
+        self.hidden = hidden
 
     def __eq__(self, other):
         return self.name == other.name and self.axisTag == other.axisTag
 
 
-GSAxis._add_parsers([{"plist_name": "tag", "object_name": "axisTag"}])
+GSAxis._add_parsers(
+    [
+        {"plist_name": "tag", "object_name": "axisTag"},
+        {"plist_name": "hidden", "converter": bool},
+    ]
+)
 
 
 class GSCustomParameter(GSBase):
@@ -4480,23 +4485,29 @@ class GSFont(GSBase):
 
     def _get_custom_parameter_from_axes(self):
         # We were specifically asked for our Axes custom parameter, so we
-        # synthesise one
+        # synthesise one.
+
+        # However, if the axes are default, we don't synthesise one *unless*
+        # we also have an Axis Mappings custom parameter.
         if (
             len(self.axes) == 2
             and self.axes[0] == self._defaultAxes[0]
             and self.axes[1] == self._defaultAxes[1]
-        ):
+        ) and "Axis Mappings" not in self.customParameters:
             return None
         values = []
         for ax in self.axes:
             value = {"Name": ax.name, "Tag": ax.axisTag}
             if ax.hidden:
-                value["Hidden"] = True
+                value["Hidden"] = 1
             values.append(value)
         return GSCustomParameter(name="Axes", value=values,)
 
     def _set_axes_from_custom_parameter(self, value):
-        self.axes = [GSAxis(name=v["Name"], tag=v["Tag"]) for v in value]
+        self.axes = [
+            GSAxis(name=v["Name"], tag=v["Tag"], hidden=v.get("Hidden", False))
+            for v in value
+        ]
 
     @property
     def settings(self):
