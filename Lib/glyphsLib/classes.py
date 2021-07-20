@@ -1105,6 +1105,10 @@ class CustomParametersProxy(Proxy):
     def __iter__(self):
         for index in range(len(self._owner._customParameters)):
             yield self._owner._customParameters[index]
+        if isinstance(self._owner, GSFont):
+            axes = self._owner._get_custom_parameter_from_axes()
+            if axes:
+                yield axes
 
     def append(self, parameter):
         parameter.parent = self._owner
