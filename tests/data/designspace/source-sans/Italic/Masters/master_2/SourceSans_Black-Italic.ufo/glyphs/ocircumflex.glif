@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="ocircumflex" format="2">
+	<unicode hex="00F4"/>
+	<advance width="538"/>
+	<outline>
+		<component base="o"/>
+		<component base="circumflexcmb" xOffset="220"/>
+	</outline>
+	<anchor name="aboverightLC" x="590" y="522"/>
+	<anchor name="belowLC" x="200" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

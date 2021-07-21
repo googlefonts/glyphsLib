@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="istroke" format="2">
+	<unicode hex="0268"/>
+	<advance width="262"/>
+	<outline>
+		<component base="istroke.x"/>
+		<component base="dotaccentcmb" xOffset="130"/>
+	</outline>
+	<anchor name="belowLC" x="116" y="-22"/>
+	<anchor name="ogonekLC" x="116" y="0"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.4,0.8,0.9989,1</string>
+		</dict>
+	</lib>
+</glyph>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="hoicmb" format="2">
+	<unicode hex="0309"/>
+	<outline>
+		<contour>
+			<point x="52" y="566" type="line"/>
+			<point x="160" y="570"/>
+			<point x="226" y="624"/>
+			<point x="226" y="702" type="curve" smooth="yes"/>
+			<point x="226" y="762"/>
+			<point x="180" y="794"/>
+			<point x="54" y="796" type="curve"/>
+			<point x="26" y="702" type="line"/>
+			<point x="76" y="698"/>
+			<point x="96" y="687"/>
+			<point x="96" y="669" type="curve" smooth="yes"/>
+			<point x="96" y="646"/>
+			<point x="78" y="636"/>
+			<point x="48" y="632" type="curve"/>
+		</contour>
+	</outline>
+	<anchor name="_aboveLC" x="100" y="522"/>
+	<anchor name="aboveLC" x="140" y="732"/>
+</glyph>

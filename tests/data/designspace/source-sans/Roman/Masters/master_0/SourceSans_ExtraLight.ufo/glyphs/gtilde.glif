@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="gtilde" format="2">
+	<advance width="480"/>
+	<outline>
+		<component base="g"/>
+		<component base="tildecmb" xOffset="250"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.9855,0.0093,0.9992,1</string>
+		</dict>
+	</lib>
+</glyph>

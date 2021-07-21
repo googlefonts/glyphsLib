@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Astroke" format="2">
+	<unicode hex="023A"/>
+	<advance width="584"/>
+	<outline>
+		<contour>
+			<point x="236" y="-66" type="line"/>
+			<point x="396" y="706" type="line"/>
+			<point x="350" y="716" type="line"/>
+			<point x="190" y="-56" type="line"/>
+		</contour>
+		<component base="A"/>
+	</outline>
+	<anchor name="aboveUC" x="290" y="672"/>
+	<anchor name="belowLC" x="290" y="-22"/>
+	<guideline x="243" y="-46" angle="0" identifier="2fvMakXKCW"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>1,1,0,1</string>
+		</dict>
+	</lib>
+</glyph>

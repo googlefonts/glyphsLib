@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Upsilonlatin" format="2">
+	<unicode hex="01B1"/>
+	<advance width="652"/>
+	<outline>
+		<component base="Omega" xScale="-1" yScale="-1" xOffset="652" yOffset="660"/>
+	</outline>
+	<anchor name="aboveUC" x="330" y="682"/>
+	<anchor name="belowLC" x="330" y="-22"/>
+	<anchor name="ogonekUC" x="330" y="0"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.986,0.0082,0.5019,1</string>
+		</dict>
+	</lib>
+</glyph>

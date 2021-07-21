@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Iotamacron" format="2">
+	<unicode hex="1FD9"/>
+	<advance width="232"/>
+	<outline>
+		<component base="Imacron"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.0595,0.5019,0.9985,1</string>
+		</dict>
+	</lib>
+</glyph>

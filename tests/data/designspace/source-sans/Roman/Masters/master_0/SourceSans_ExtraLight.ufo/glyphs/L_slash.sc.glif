@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Lslash.sc" format="2">
+	<advance width="420"/>
+	<outline>
+		<contour>
+			<point x="16" y="156" type="line"/>
+			<point x="116" y="198" type="line"/>
+			<point x="128" y="200" type="line"/>
+			<point x="320" y="284" type="line"/>
+			<point x="308" y="310" type="line"/>
+			<point x="128" y="232" type="line"/>
+			<point x="116" y="230" type="line"/>
+			<point x="4" y="182" type="line"/>
+		</contour>
+		<component base="L.sc" xOffset="10"/>
+	</outline>
+	<anchor name="aboveUC" x="130" y="562"/>
+	<anchor name="belowLC" x="270" y="-22"/>
+</glyph>

@@ -1,0 +1,20 @@
+# inlcuded by /SourceSans3/features.fea
+
+include (../markclasses.fea);
+
+feature mark {
+	include (../mark.fea);
+} mark;
+
+
+feature mkmk {
+	include (../mkmk.fea);
+} mkmk;
+
+
+feature kern {
+	lookupflag IgnoreMarks;
+    lookup KERN useExtension {
+		include (../kern.fea);
+    } KERN;
+} kern;

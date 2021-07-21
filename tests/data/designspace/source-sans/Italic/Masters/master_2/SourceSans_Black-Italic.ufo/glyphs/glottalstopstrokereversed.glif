@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="glottalstopstrokereversed" format="2">
+	<unicode hex="02A2"/>
+	<advance width="442"/>
+	<outline>
+		<contour>
+			<point x="26" y="116" type="line"/>
+			<point x="396" y="116" type="line"/>
+			<point x="414" y="212" type="line"/>
+			<point x="152" y="212" type="line"/>
+			<point x="44" y="206" type="line"/>
+		</contour>
+		<component base="glottalstopreversed"/>
+	</outline>
+	<anchor name="aboveUC" x="340" y="722"/>
+	<anchor name="belowLC" x="190" y="-22"/>
+</glyph>

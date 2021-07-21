@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Tstroke.sc" format="2">
+	<advance width="479"/>
+	<outline>
+		<contour>
+			<point x="72" y="-38" type="line"/>
+			<point x="512" y="550" type="line"/>
+			<point x="474" y="576" type="line"/>
+			<point x="34" y="-12" type="line"/>
+		</contour>
+		<component base="T.sc"/>
+	</outline>
+	<anchor name="aboveUC" x="240" y="562"/>
+	<anchor name="belowLC" x="240" y="-22"/>
+</glyph>

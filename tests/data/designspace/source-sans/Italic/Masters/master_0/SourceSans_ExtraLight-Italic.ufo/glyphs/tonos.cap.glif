@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="tonos.cap" format="2">
+	<advance width="30"/>
+	<outline>
+		<contour>
+			<point x="20" y="450" type="line"/>
+			<point x="44" y="450" type="line"/>
+			<point x="130" y="656" type="line"/>
+			<point x="128" y="660" type="line"/>
+			<point x="98" y="660" type="line"/>
+		</contour>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.0595,0.5019,0.9985,1</string>
+		</dict>
+	</lib>
+</glyph>

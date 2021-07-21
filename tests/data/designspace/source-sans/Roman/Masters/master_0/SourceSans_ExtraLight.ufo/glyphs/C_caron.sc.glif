@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Ccaron.sc" format="2">
+	<advance width="490"/>
+	<outline>
+		<component base="C.sc"/>
+		<component base="caroncmb.cap" xOffset="280" yOffset="-120"/>
+	</outline>
+	<anchor name="aboverightUC" x="500" y="562"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

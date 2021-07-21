@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Ubar.sc" format="2">
+	<advance width="604"/>
+	<outline>
+		<contour>
+			<point x="20" y="258" type="line"/>
+			<point x="580" y="258" type="line"/>
+			<point x="580" y="286" type="line"/>
+			<point x="120" y="286" type="line"/>
+			<point x="20" y="282" type="line"/>
+		</contour>
+		<component base="U.sc" xOffset="20"/>
+	</outline>
+	<anchor name="aboveUC" x="300" y="562"/>
+	<anchor name="belowLC" x="300" y="-22"/>
+</glyph>

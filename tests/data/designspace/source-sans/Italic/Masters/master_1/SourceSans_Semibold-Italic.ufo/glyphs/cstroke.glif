@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="cstroke" format="2">
+	<unicode hex="023C"/>
+	<advance width="439"/>
+	<outline>
+		<contour>
+			<point x="150" y="-58" type="line"/>
+			<point x="422" y="540" type="line"/>
+			<point x="384" y="556" type="line"/>
+			<point x="112" y="-42" type="line"/>
+		</contour>
+		<component base="c"/>
+	</outline>
+	<anchor name="aboveLC" x="300" y="514"/>
+	<anchor name="belowLC" x="200" y="-22"/>
+</glyph>

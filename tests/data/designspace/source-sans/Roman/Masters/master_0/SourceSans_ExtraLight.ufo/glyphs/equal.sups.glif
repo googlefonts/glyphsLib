@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="equal.sups" format="2">
+	<unicode hex="207C"/>
+	<unicode hex="02ED"/>
+	<advance width="360"/>
+	<outline>
+		<component base="equal.subs" yOffset="590"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="l.supa" format="2">
+	<advance width="151"/>
+	<outline>
+		<contour>
+			<point x="94" y="410" type="line"/>
+			<point x="120" y="410" type="line"/>
+			<point x="214" y="884" type="line"/>
+			<point x="188" y="884" type="line"/>
+		</contour>
+	</outline>
+</glyph>
