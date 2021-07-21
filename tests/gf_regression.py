@@ -141,4 +141,4 @@ elif sys.argv[1] == "--test":
 
     logging.basicConfig(level=logging.ERROR)
     register_tests()
-    pytest.main([sys.argv[0]] + sys.argv[2:])
+    sys.exit(pytest.main([sys.argv[0]] + sys.argv[2:]))
