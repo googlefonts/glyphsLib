@@ -7,6 +7,9 @@ import difflib
 import unittest
 import tempfile
 import logging
+from pathlib import Path
+
+from fontTools.designspaceLib import DesignSpaceDocument
 
 
 # https://stackoverflow.com/a/24860799
@@ -41,16 +44,33 @@ def diff_directories(dir1, dir2):
     return report
 
 
-TEST_FILES = glob.glob("tests/data/gf/*.glyphs")
+def diff_files(file1, file2):
+    if filecmp.cmp(file1, file2, shallow=False):
+        left = Path(file1).read_text().splitlines()
+        right = Path(file2).read_text().splitlines()
+        return "".join(difflib.unified_diff(left, right))
 
 
-def generate_ufos():
-    for t in TEST_FILES:
+TEST_FILES_GLYPHS = glob.glob("tests/data/gf/*.glyphs")
+TEST_FILES_DESIGNSPACE = glob.glob(
+    "tests/data/designspace/**/*.designspace", recursive=True
+)
+
+
+def generate():
+    for t in TEST_FILES_GLYPHS:
         outputdir = os.path.splitext(t)[0]
         ds = os.path.join(
             outputdir, os.path.basename(os.path.splitext(t)[0]) + ".designspace"
         )
         glyphsLib.build_masters(t, outputdir, None, designspace_path=ds)
+    for t in TEST_FILES_DESIGNSPACE:
+        path = Path(t)
+        gs = path.with_suffix(".glyphs")
+        ds = DesignSpaceDocument.fromfile(path)
+        glyphs = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+        glyphs.save(gs)
+        print(f"Saved {gs}")
 
 
 class GlyphsToDesignspace(unittest.TestCase):
@@ -75,21 +95,50 @@ class GlyphsToDesignspace(unittest.TestCase):
             self.run_test(filename)
 
         file_basename = os.path.basename(filename)
-        test_name = "test_{}".format(file_basename.replace(r"[^a-zA-Z]", ""),)
+        test_name = "test_{}".format(file_basename.replace(r"[^a-zA-Z]", ""))
         test_method.__name__ = test_name
         setattr(cls, test_name, test_method)
 
 
-def run_tests():
-    for t in TEST_FILES:
-        GlyphsToDesignspace.add_test(t)
-    import pytest
+class DesignspaceToGlyphs(unittest.TestCase):
+    @classmethod
+    def run_test(cls, filename):
+        filename = Path(filename)
+        with tempfile.TemporaryDirectory() as outputdir:
+            outputdir = Path(outputdir)
+            ds = DesignSpaceDocument.fromfile(filename)
+            glyphs = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+            gs = outputdir / filename.with_suffix(".glyphs").name
+            glyphs.save(gs)
 
-    pytest.main([sys.argv[0]] + sys.argv[2:])
+            report = diff_files(filename.with_suffix(".glyphs"), gs)
+            if report:
+                print("".join(report))
+            assert not report
+
+    @classmethod
+    def add_test(cls, filename):
+        def test_method(self, filename=filename):
+            self.run_test(filename)
+
+        file_basename = os.path.basename(filename)
+        test_name = "test_{}".format(file_basename.replace(r"[^a-zA-Z]", ""))
+        test_method.__name__ = test_name
+        setattr(cls, test_name, test_method)
+
+
+def register_tests():
+    for t in TEST_FILES_GLYPHS:
+        GlyphsToDesignspace.add_test(t)
+    for t in TEST_FILES_DESIGNSPACE:
+        DesignspaceToGlyphs.add_test(t)
 
 
 if sys.argv[1] == "--generate":
-    generate_ufos()
+    generate()
 elif sys.argv[1] == "--test":
+    import pytest
+
     logging.basicConfig(level=logging.ERROR)
-    run_tests()
+    register_tests()
+    pytest.main([sys.argv[0]] + sys.argv[2:])
