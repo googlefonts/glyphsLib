@@ -524,7 +524,7 @@ def _is_subset_of_default_axes(axes_parameter):
 def _has_meaningful_map(axis, designspace):
     if not axis.map:
         return False
-    for k,v in axis.map:
+    for k, v in axis.map:
         if k != v:
             return True
     # We have an identity map. We could elide it, but...
