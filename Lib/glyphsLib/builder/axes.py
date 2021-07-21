@@ -286,7 +286,7 @@ def to_glyphs_axes(self):
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.axes = axes_parameter
 
-    if any(a.map for a in self.designspace.axes):
+    if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
             axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
         }
@@ -519,6 +519,34 @@ def _is_subset_of_default_axes(axes_parameter):
         if axis.axisTag != axis_def.tag:
             return False
     return True
+
+
+def _has_meaningful_map(axis, designspace):
+    if not axis.map:
+        return False
+    for k,v in axis.map:
+        if k != v:
+            return True
+    # We have an identity map. We could elide it, but...
+    # sometimes we use an identity map to force a particular
+    # range even though the sources don't fill that range.
+    min_axis = None
+    max_axis = None
+    for source in designspace.sources:
+        loc = source.location.get(axis.name)
+        if loc is None:
+            continue
+        if min_axis is None:
+            min_axis = loc
+        else:
+            min_axis = min(loc, min_axis)
+        if max_axis is None:
+            max_axis = loc
+        else:
+            max_axis = max(loc, max_axis)
+    if min_axis != axis.map[0][0] or max_axis != axis.map[-1][0]:
+        return True
+    return False
 
 
 def get_regular_master(font):
