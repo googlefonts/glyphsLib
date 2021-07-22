@@ -40,6 +40,6 @@ jobs:
 
     - name: Run tests
       continue-on-error: true
-      run: pytest --run-regression-tests tests/regression_test.py
+      run: pytest --run-regression-tests tests/regression_test.py -n auto
       env:
         PYTHONPATH: Lib
