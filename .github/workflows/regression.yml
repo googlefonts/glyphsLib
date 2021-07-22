@@ -12,14 +12,9 @@ jobs:
     # Check out a *known good* version
     # For now I am assuming 'main' is known good
     - uses: actions/checkout@v2
-
-      # For testing purposes this is commented out (because obviously
-      # right now, "main" doesn't have the regression tests suite in it...).
-      # When the PR has landed, uncomment this.
-
-      # with:
-      #   repository: googlefonts/glyphsLib
-      #   ref: main
+      with:
+        repository: googlefonts/glyphsLib
+        ref: main
 
     - name: Install dependencies
       run: |
