@@ -1,0 +1,43 @@
+name: Regression Tests
+
+on: [pull_request, push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+
+    # Check out a *known good* version
+    # For now I am assuming 'main' is known good
+    - uses: actions/checkout@v2
+
+      # For testing purposes this is commented out (because obviously
+      # right now, "main" doesn't have the regression tests suite in it...).
+      # When the PR has landed, uncomment this.
+
+      # with:
+      #   repository: googlefonts/glyphsLib
+      #   ref: main
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Generate test files
+      run: python3 tests/gf_regression.py --generate
+      env:
+        PYTHONPATH: Lib
+
+    # Now check out the version we want to test
+    - uses: actions/checkout@v2
+      with:
+        clean: false
+
+    - name: Run tests
+      run: python3 tests/gf_regression.py --test
+      env:
+        PYTHONPATH: Lib
