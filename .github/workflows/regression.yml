@@ -28,7 +28,7 @@ jobs:
         pip install -r requirements-dev.txt
 
     - name: Generate test files
-      run: python3 tests/gf_regression.py --generate
+      run: python3 tests/tools/generate_regression_test_files.py
       env:
         PYTHONPATH: Lib
 
