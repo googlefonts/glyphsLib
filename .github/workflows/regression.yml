@@ -39,6 +39,6 @@ jobs:
 
     - name: Run tests
       continue-on-error: true
-      run: python3 tests/gf_regression.py --test
+      run: pytest --run-regression-tests tests/regression_test.py
       env:
         PYTHONPATH: Lib
