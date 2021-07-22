@@ -1,6 +1,5 @@
 import difflib
 import filecmp
-import glob
 import logging
 import os
 import tempfile
@@ -52,10 +51,8 @@ def diff_files(file1, file2):
         return "".join(difflib.unified_diff(left, right))
 
 
-TEST_FILES_GLYPHS = glob.glob("tests/data/gf/*.glyphs")
-TEST_FILES_DESIGNSPACE = glob.glob(
-    "tests/data/designspace/**/*.designspace", recursive=True
-)
+TEST_FILES_GLYPHS = Path("tests/data/gf").glob("*.glyphs")
+TEST_FILES_DESIGNSPACE = Path("tests/data/designspace").glob("**/*.designspace")
 
 
 @pytest.mark.regression_test
@@ -66,20 +63,18 @@ class GlyphsToDesignspace(unittest.TestCase):
         self._caplog = caplog
 
     @staticmethod
-    def run_test(filename, caplog):
+    def run_test(filename: Path, caplog):
         with tempfile.TemporaryDirectory() as outputdir:
-            ds = os.path.join(
-                outputdir,
-                os.path.basename(os.path.splitext(filename)[0]) + ".designspace",
-            )
+            tmp_dir = Path(outputdir)
+            ds = tmp_dir / filename.with_suffix(".designspace").name
 
             # Conversion can generate lots of warnings that we are not interested
             # in here and which can clog up error logs.
             with caplog.at_level(logging.ERROR):
-                glyphsLib.build_masters(filename, outputdir, None, designspace_path=ds)
+                glyphsLib.build_masters(filename, tmp_dir, None, designspace_path=ds)
 
-            realoutputdir = os.path.splitext(filename)[0]
-            report = diff_directories(outputdir, realoutputdir)
+            reference_output_dir = filename.parent / filename.stem
+            report = diff_directories(tmp_dir, reference_output_dir)
             if report:
                 print("".join(report))
             assert not report
@@ -103,10 +98,9 @@ class DesignspaceToGlyphs(unittest.TestCase):
         self._caplog = caplog
 
     @staticmethod
-    def run_test(filename, caplog):
+    def run_test(filename: Path, caplog):
         filename = Path(filename)
         with tempfile.TemporaryDirectory() as outputdir:
-            outputdir = Path(outputdir)
             ds = DesignSpaceDocument.fromfile(filename)
 
             # Conversion can generate lots of warnings that we are not interested
@@ -114,7 +108,7 @@ class DesignspaceToGlyphs(unittest.TestCase):
             with caplog.at_level(logging.ERROR):
                 glyphs = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
 
-            gs = outputdir / filename.with_suffix(".glyphs").name
+            gs = Path(outputdir) / filename.with_suffix(".glyphs").name
             glyphs.save(gs)
 
             report = diff_files(filename.with_suffix(".glyphs"), gs)
