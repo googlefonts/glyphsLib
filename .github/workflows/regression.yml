@@ -34,6 +34,8 @@ jobs:
 
     # Now check out the version we want to test
     - uses: actions/checkout@v2
+      with:
+        clean: false
 
     - name: Run tests
       run: python3 tests/gf_regression.py --test
