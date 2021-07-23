@@ -1,6 +1,11 @@
 name: Regression Tests
 
-on: [pull_request, push]
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
@@ -12,9 +17,10 @@ jobs:
     # Check out a *known good* version
     # For now I am assuming 'main' is known good
     - uses: actions/checkout@v2
-      with:
-        repository: googlefonts/glyphsLib
-        ref: main
+      # XXX: UNCOMMENT ONCE MERGED
+      # with:
+      #   repository: googlefonts/glyphsLib
+      #   ref: main
 
     - name: Install dependencies
       run: |
@@ -23,7 +29,7 @@ jobs:
         pip install -r requirements-dev.txt
 
     - name: Generate test files
-      run: python3 tests/gf_regression.py --generate
+      run: python3 tests/tools/generate_regression_test_files.py
       env:
         PYTHONPATH: Lib
 
@@ -33,6 +39,7 @@ jobs:
         clean: false
 
     - name: Run tests
-      run: python3 tests/gf_regression.py --test
+      continue-on-error: true
+      run: pytest --run-regression-tests tests/regression_test.py -n auto
       env:
         PYTHONPATH: Lib

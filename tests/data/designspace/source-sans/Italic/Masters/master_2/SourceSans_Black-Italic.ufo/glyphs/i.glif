@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="i" format="2">
+	<unicode hex="0069"/>
+	<advance width="276"/>
+	<outline>
+		<component base="dotlessi"/>
+		<component base="dotaccentcmb" xOffset="90"/>
+	</outline>
+	<anchor name="belowLC" x="90" y="-22"/>
+	<anchor name="ogonekLC" x="90" y="0"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.9855,0.0093,0.9992,1</string>
+		</dict>
+	</lib>
+</glyph>

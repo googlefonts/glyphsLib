@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="egrave.sups" format="2">
+	<advance width="316"/>
+	<outline>
+		<contour>
+			<point x="298" y="790" type="line"/>
+			<point x="320" y="790" type="line"/>
+			<point x="244" y="890" type="line"/>
+			<point x="212" y="890" type="line"/>
+			<point x="210" y="886" type="line"/>
+		</contour>
+		<component base="e.sups"/>
+	</outline>
+</glyph>

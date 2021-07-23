@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Mu.sc" format="2">
+	<advance width="616"/>
+	<outline>
+		<component base="M.sc"/>
+	</outline>
+	<anchor name="aboveLC" x="308" y="562"/>
+	<anchor name="belowLC" x="308" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

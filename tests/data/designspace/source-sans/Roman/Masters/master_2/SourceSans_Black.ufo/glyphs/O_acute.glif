@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Oacute" format="2">
+	<unicode hex="00D3"/>
+	<advance width="692"/>
+	<outline>
+		<component base="O"/>
+		<component base="acutecmb.cap" xOffset="346"/>
+	</outline>
+	<anchor name="aboverightUC" x="630" y="672"/>
+	<anchor name="belowLC" x="346" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

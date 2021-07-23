@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="tturned" format="2">
+	<unicode hex="0287"/>
+	<advance width="400"/>
+	<outline>
+		<component base="t" xScale="-1" yScale="-1" xOffset="400" yOffset="500"/>
+	</outline>
+	<anchor name="aboveLC" x="180" y="522"/>
+	<anchor name="belowLC" x="210" y="-160"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.986,0.0082,0.5019,1</string>
+		</dict>
+	</lib>
+</glyph>

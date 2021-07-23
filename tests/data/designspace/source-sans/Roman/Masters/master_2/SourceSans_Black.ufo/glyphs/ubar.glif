@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="ubar" format="2">
+	<unicode hex="0289"/>
+	<advance width="638"/>
+	<outline>
+		<contour>
+			<point x="18" y="254" type="line"/>
+			<point x="616" y="254" type="line"/>
+			<point x="616" y="366" type="line"/>
+			<point x="84" y="366" type="line"/>
+			<point x="18" y="360" type="line"/>
+		</contour>
+		<component base="u" xOffset="30"/>
+	</outline>
+	<anchor name="aboveLC" x="320" y="522"/>
+	<anchor name="baseLC" x="280" y="0"/>
+	<anchor name="belowLC" x="310" y="-22"/>
+	<anchor name="ogonekLC" x="450" y="0"/>
+</glyph>

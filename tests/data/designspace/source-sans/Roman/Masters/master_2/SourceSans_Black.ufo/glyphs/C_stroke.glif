@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Cstroke" format="2">
+	<unicode hex="023B"/>
+	<advance width="586"/>
+	<outline>
+		<contour>
+			<point x="266" y="-66" type="line"/>
+			<point x="466" y="706" type="line"/>
+			<point x="420" y="716" type="line"/>
+			<point x="220" y="-56" type="line"/>
+		</contour>
+		<component base="C"/>
+	</outline>
+	<anchor name="aboveUC" x="350" y="672"/>
+	<anchor name="belowLC" x="350" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>1,1,0,1</string>
+		</dict>
+	</lib>
+</glyph>

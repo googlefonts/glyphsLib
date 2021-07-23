@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Gje.sc" format="2">
+	<advance width="428"/>
+	<outline>
+		<component base="Ghe.sc"/>
+		<component base="acutecmb.cap" xOffset="266" yOffset="-150"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="alphaiotasub" format="2">
+	<unicode hex="1FB3"/>
+	<advance width="532"/>
+	<outline>
+		<component base="alpha"/>
+		<component base="iotasubscriptcmb" xOffset="270"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.0595,0.5019,0.9985,1</string>
+		</dict>
+	</lib>
+</glyph>

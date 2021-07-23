@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="eacute.sups" format="2">
+	<advance width="336"/>
+	<outline>
+		<contour>
+			<point x="230" y="750" type="line"/>
+			<point x="310" y="750" type="line"/>
+			<point x="440" y="862" type="line"/>
+			<point x="430" y="880" type="line"/>
+			<point x="310" y="880" type="line"/>
+		</contour>
+		<component base="e.sups"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.9958,0.8001,0.4,1</string>
+		</dict>
+	</lib>
+</glyph>
