@@ -3,8 +3,8 @@ import filecmp
 import logging
 import os
 import tempfile
-import unittest
 from pathlib import Path
+from typing import Any
 
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -56,82 +56,39 @@ TEST_FILES_DESIGNSPACE = Path("tests/data/designspace").glob("**/*.designspace")
 
 
 @pytest.mark.regression_test
-class GlyphsToDesignspace(unittest.TestCase):
-    # https://stackoverflow.com/a/50375022
-    @pytest.fixture(autouse=True)
-    def inject_fixtures(self, caplog):
-        self._caplog = caplog
+@pytest.mark.parametrize("filename", TEST_FILES_GLYPHS, ids=lambda p: p.name)
+def test_glyphs_to_designspace(filename: Path, caplog: Any) -> None:
+    with tempfile.TemporaryDirectory() as outputdir:
+        tmp_dir = Path(outputdir)
+        ds = tmp_dir / filename.with_suffix(".designspace").name
 
-    @staticmethod
-    def run_test(filename: Path, caplog):
-        with tempfile.TemporaryDirectory() as outputdir:
-            tmp_dir = Path(outputdir)
-            ds = tmp_dir / filename.with_suffix(".designspace").name
+        # Conversion can generate lots of warnings that we are not interested
+        # in here and which can clog up error logs.
+        with caplog.at_level(logging.ERROR):
+            glyphsLib.build_masters(filename, tmp_dir, None, designspace_path=ds)
 
-            # Conversion can generate lots of warnings that we are not interested
-            # in here and which can clog up error logs.
-            with caplog.at_level(logging.ERROR):
-                glyphsLib.build_masters(filename, tmp_dir, None, designspace_path=ds)
-
-            reference_output_dir = filename.parent / filename.stem
-            report = diff_directories(tmp_dir, reference_output_dir)
-            if report:
-                print("".join(report))
-            assert not report
-
-    @classmethod
-    def add_test(cls, filename):
-        def test_method(self, filename=filename):
-            self.run_test(filename, self._caplog)
-
-        file_basename = os.path.basename(filename)
-        test_name = "test_{}".format(file_basename.replace(r"[^a-zA-Z]", ""))
-        test_method.__name__ = test_name
-        setattr(cls, test_name, test_method)
+        reference_output_dir = filename.parent / filename.stem
+        report = diff_directories(tmp_dir, reference_output_dir)
+        if report:
+            print("".join(report))
+        assert not report
 
 
 @pytest.mark.regression_test
-class DesignspaceToGlyphs(unittest.TestCase):
-    # https://stackoverflow.com/a/50375022
-    @pytest.fixture(autouse=True)
-    def inject_fixtures(self, caplog):
-        self._caplog = caplog
+@pytest.mark.parametrize("filename", TEST_FILES_DESIGNSPACE, ids=lambda p: p.name)
+def test_designspace_to_glyphs(filename: Path, caplog: Any) -> None:
+    with tempfile.TemporaryDirectory() as outputdir:
+        ds = DesignSpaceDocument.fromfile(filename)
 
-    @staticmethod
-    def run_test(filename: Path, caplog):
-        filename = Path(filename)
-        with tempfile.TemporaryDirectory() as outputdir:
-            ds = DesignSpaceDocument.fromfile(filename)
+        # Conversion can generate lots of warnings that we are not interested
+        # in here and which can clog up error logs.
+        with caplog.at_level(logging.ERROR):
+            glyphs = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
 
-            # Conversion can generate lots of warnings that we are not interested
-            # in here and which can clog up error logs.
-            with caplog.at_level(logging.ERROR):
-                glyphs = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+        gs = Path(outputdir) / filename.with_suffix(".glyphs").name
+        glyphs.save(gs)
 
-            gs = Path(outputdir) / filename.with_suffix(".glyphs").name
-            glyphs.save(gs)
-
-            report = diff_files(filename.with_suffix(".glyphs"), gs)
-            if report:
-                print("".join(report))
-            assert not report
-
-    @classmethod
-    def add_test(cls, filename):
-        def test_method(self, filename=filename):
-            self.run_test(filename, self._caplog)
-
-        file_basename = os.path.basename(filename)
-        test_name = "test_{}".format(file_basename.replace(r"[^a-zA-Z]", ""))
-        test_method.__name__ = test_name
-        setattr(cls, test_name, test_method)
-
-
-def register_tests():
-    for t in TEST_FILES_GLYPHS:
-        GlyphsToDesignspace.add_test(t)
-    for t in TEST_FILES_DESIGNSPACE:
-        DesignspaceToGlyphs.add_test(t)
-
-
-register_tests()
+        report = diff_files(filename.with_suffix(".glyphs"), gs)
+        if report:
+            print("".join(report))
+        assert not report
