@@ -21,8 +21,10 @@ repos:
   hooks:
   - id: trailing-whitespace
     language: python_venv
+    exclude: ^tests/data
   - id: end-of-file-fixer
     language: python_venv
+    exclude: ^tests/data
   - id: check-yaml
     language: python_venv
   - id: check-ast

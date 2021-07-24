@@ -1,6 +1,7 @@
 coverage
 pytest>=2.8
 pytest-randomly
+pytest-xdist
 xmldiff>=2.2
 # extras
 ufoNormalizer>=0.3.2

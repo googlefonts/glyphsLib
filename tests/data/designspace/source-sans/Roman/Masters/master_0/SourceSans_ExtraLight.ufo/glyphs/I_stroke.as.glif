@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Istroke.as" format="2">
+	<advance width="300"/>
+	<outline>
+		<contour>
+			<point x="52" y="260" type="line"/>
+			<point x="242" y="260" type="line"/>
+			<point x="242" y="286" type="line"/>
+			<point x="136" y="286" type="line"/>
+			<point x="52" y="282" type="line"/>
+		</contour>
+		<component base="I.as"/>
+	</outline>
+	<anchor name="aboveUC" x="150" y="562"/>
+	<anchor name="belowLC" x="150" y="-22"/>
+	<lib>
+		<dict>
+			<key>com.typemytype.robofont.mark</key>
+			<array>
+				<real>0.8</real>
+				<real>0.8</real>
+				<real>0.6</real>
+				<integer>1</integer>
+			</array>
+		</dict>
+	</lib>
+</glyph>

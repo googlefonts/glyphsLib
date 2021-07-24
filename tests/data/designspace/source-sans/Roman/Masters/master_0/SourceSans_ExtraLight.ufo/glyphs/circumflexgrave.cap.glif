@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="circumflexgrave.cap" format="2">
+	<outline>
+		<contour>
+			<point x="-130" y="710" type="line"/>
+			<point x="-94" y="710" type="line"/>
+			<point x="-2" y="778" type="line"/>
+			<point x="2" y="778" type="line"/>
+			<point x="94" y="710" type="line"/>
+			<point x="130" y="710" type="line"/>
+			<point x="10" y="810" type="line"/>
+			<point x="-10" y="810" type="line"/>
+		</contour>
+		<contour>
+			<point x="-100" y="780" type="line"/>
+			<point x="-70" y="780" type="line"/>
+			<point x="-160" y="880" type="line"/>
+			<point x="-198" y="880" type="line"/>
+			<point x="-200" y="876" type="line"/>
+		</contour>
+	</outline>
+	<anchor name="_aboveUC" x="0" y="682"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.9958,0.8001,0.4,1</string>
+		</dict>
+	</lib>
+</glyph>

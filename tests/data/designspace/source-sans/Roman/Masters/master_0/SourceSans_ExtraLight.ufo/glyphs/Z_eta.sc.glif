@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Zeta.sc" format="2">
+	<advance width="471"/>
+	<outline>
+		<component base="Z.sc"/>
+	</outline>
+	<anchor name="aboveLC" x="246" y="562"/>
+	<anchor name="belowLC" x="254" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0,0.5,1,1</string>
+		</dict>
+	</lib>
+</glyph>

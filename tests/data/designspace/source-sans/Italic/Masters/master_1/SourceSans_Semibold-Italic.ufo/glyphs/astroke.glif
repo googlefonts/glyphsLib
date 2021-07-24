@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="astroke" format="2">
+	<unicode hex="2C65"/>
+	<advance width="544"/>
+	<outline>
+		<contour>
+			<point x="142" y="-58" type="line"/>
+			<point x="430" y="540" type="line"/>
+			<point x="392" y="556" type="line"/>
+			<point x="104" y="-42" type="line"/>
+		</contour>
+		<component base="a"/>
+	</outline>
+	<anchor name="aboveLC" x="316" y="514"/>
+	<anchor name="belowLC" x="228" y="-22"/>
+</glyph>

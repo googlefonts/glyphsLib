@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="clickalveolar" format="2">
+	<unicode hex="01C2"/>
+	<advance width="387"/>
+	<outline>
+		<contour>
+			<point x="10" y="224" type="line"/>
+			<point x="360" y="224" type="line"/>
+			<point x="378" y="306" type="line"/>
+			<point x="102" y="306" type="line"/>
+			<point x="26" y="300" type="line"/>
+		</contour>
+		<contour>
+			<point x="46" y="398" type="line"/>
+			<point x="396" y="398" type="line"/>
+			<point x="414" y="480" type="line"/>
+			<point x="138" y="480" type="line"/>
+			<point x="62" y="474" type="line"/>
+		</contour>
+		<component base="l.a" xOffset="68"/>
+	</outline>
+	<anchor name="aboveUC" x="284" y="726"/>
+	<anchor name="belowLC" x="132" y="-22"/>
+</glyph>

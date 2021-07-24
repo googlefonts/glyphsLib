@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="varia.cap" format="2">
+	<advance width="150"/>
+	<outline>
+		<contour>
+			<point x="110" y="400" type="line"/>
+			<point x="200" y="400" type="line"/>
+			<point x="190" y="660" type="line"/>
+			<point x="60" y="660" type="line"/>
+			<point x="50" y="642" type="line"/>
+		</contour>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.9958,0.8001,0.4,1</string>
+		</dict>
+	</lib>
+</glyph>

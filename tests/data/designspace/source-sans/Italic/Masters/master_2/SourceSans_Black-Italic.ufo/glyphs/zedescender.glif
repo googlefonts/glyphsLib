@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="zedescender" format="2">
+	<unicode hex="0499"/>
+	<advance width="448"/>
+	<outline>
+		<contour>
+			<point x="54" y="-172" type="line"/>
+			<point x="212" y="-172" type="line"/>
+			<point x="232" y="-30" type="line"/>
+			<point x="108" y="-30" type="line"/>
+		</contour>
+		<component base="ze"/>
+	</outline>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.4,1,0.8,1</string>
+		</dict>
+	</lib>
+</glyph>

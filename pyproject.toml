@@ -1,6 +1,21 @@
 [tool.black]
 target-version = ["py36"]
 
+[tool.pytest.ini_options]
+norecursedirs = [
+    "*.egg",
+    ".*",
+    "_darcs",
+    "build",
+    "CVS",
+    "dist",
+    "node_modules",
+    "venv",
+    "{arch}",
+    "downloaded",
+    "data",
+]
+
 [build-system]
 requires = ["setuptools>=30.3.0", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Lbardbl" format="2">
+	<unicode hex="2C60"/>
+	<advance width="550"/>
+	<outline>
+		<contour>
+			<point x="22" y="256" type="line"/>
+			<point x="418" y="256" type="line"/>
+			<point x="418" y="340" type="line"/>
+			<point x="94" y="340" type="line"/>
+			<point x="22" y="334" type="line"/>
+		</contour>
+		<contour>
+			<point x="22" y="384" type="line"/>
+			<point x="418" y="384" type="line"/>
+			<point x="418" y="468" type="line"/>
+			<point x="94" y="468" type="line"/>
+			<point x="22" y="462" type="line"/>
+		</contour>
+		<component base="L" xOffset="20"/>
+	</outline>
+	<anchor name="aboveUC" x="180" y="672"/>
+	<anchor name="belowLC" x="310" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.4,1,0.8,1</string>
+		</dict>
+	</lib>
+</glyph>

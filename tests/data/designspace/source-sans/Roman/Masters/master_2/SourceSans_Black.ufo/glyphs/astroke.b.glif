@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="astroke.b" format="2">
+	<advance width="540"/>
+	<outline>
+		<contour>
+			<point x="236" y="-66" type="line"/>
+			<point x="368" y="568" type="line"/>
+			<point x="322" y="578" type="line"/>
+			<point x="190" y="-56" type="line"/>
+		</contour>
+		<component base="a.b"/>
+	</outline>
+	<anchor name="aboveLC" x="280" y="522"/>
+	<anchor name="belowLC" x="260" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>1,1,0,1</string>
+		</dict>
+	</lib>
+</glyph>

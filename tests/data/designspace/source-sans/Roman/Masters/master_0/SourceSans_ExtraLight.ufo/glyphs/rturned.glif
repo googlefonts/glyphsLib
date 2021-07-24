@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="rturned" format="2">
+	<unicode hex="0279"/>
+	<advance width="306"/>
+	<outline>
+		<component base="r" xScale="-1" yScale="-1" xOffset="306" yOffset="478"/>
+	</outline>
+	<anchor name="aboveLC" x="190" y="502"/>
+	<anchor name="belowLC" x="100" y="-22"/>
+	<anchor name="center" x="180" y="260"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.986,0.0082,0.5019,1</string>
+		</dict>
+	</lib>
+</glyph>

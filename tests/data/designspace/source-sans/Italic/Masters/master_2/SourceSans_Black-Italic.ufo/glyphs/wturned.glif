@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="wturned" format="2">
+	<unicode hex="028D"/>
+	<advance width="764"/>
+	<outline>
+		<component base="w" xScale="-1" yScale="-1" xOffset="774" yOffset="500"/>
+	</outline>
+	<anchor name="aboveLC" x="440" y="522"/>
+	<anchor name="belowLC" x="340" y="-22"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.986,0.0082,0.5019,1</string>
+		</dict>
+	</lib>
+</glyph>

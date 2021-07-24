@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="ghe" format="2">
+	<unicode hex="0433"/>
+	<advance width="422"/>
+	<outline>
+		<contour>
+			<point x="73" y="0" type="line"/>
+			<point x="188" y="0" type="line"/>
+			<point x="188" y="400" type="line"/>
+			<point x="396" y="400" type="line"/>
+			<point x="396" y="491" type="line"/>
+			<point x="73" y="491" type="line"/>
+		</contour>
+	</outline>
+	<anchor name="aboveLC" x="244" y="514"/>
+	<lib>
+		<dict>
+			<key>public.markColor</key>
+			<string>0.0595,0.5019,0.9985,1</string>
+		</dict>
+	</lib>
+</glyph>

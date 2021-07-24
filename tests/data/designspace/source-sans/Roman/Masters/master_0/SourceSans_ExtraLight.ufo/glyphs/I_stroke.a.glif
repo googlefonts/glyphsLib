@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="Istroke.a" format="2">
+	<advance width="300"/>
+	<outline>
+		<contour>
+			<point x="52" y="338" type="line"/>
+			<point x="240" y="338" type="line"/>
+			<point x="240" y="366" type="line"/>
+			<point x="136" y="366" type="line"/>
+			<point x="52" y="362" type="line"/>
+		</contour>
+		<component base="I.a"/>
+	</outline>
+	<anchor name="aboveUC" x="150" y="682"/>
+	<anchor name="belowLC" x="150" y="-22"/>
+</glyph>

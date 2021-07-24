@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="ghestroke" format="2">
+	<unicode hex="0493"/>
+	<advance width="486"/>
+	<outline>
+		<contour>
+			<point x="18" y="170" type="line"/>
+			<point x="392" y="170" type="line"/>
+			<point x="392" y="282" type="line"/>
+			<point x="104" y="282" type="line"/>
+			<point x="18" y="276" type="line"/>
+		</contour>
+		<component base="ghe" xOffset="46"/>
+	</outline>
+</glyph>

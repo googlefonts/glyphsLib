@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="istroke.x" format="2">
+	<advance width="262"/>
+	<outline>
+		<contour>
+			<point x="22" y="238" type="line"/>
+			<point x="236" y="238" type="line"/>
+			<point x="236" y="266" type="line"/>
+			<point x="116" y="266" type="line"/>
+			<point x="22" y="262" type="line"/>
+		</contour>
+		<component base="dotlessi" xOffset="20"/>
+	</outline>
+	<anchor name="aboveLC" x="130" y="502"/>
+	<anchor name="belowLC" x="130" y="-22"/>
+	<anchor name="ogonekLC" x="130" y="0"/>
+</glyph>

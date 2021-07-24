@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="tstroke" format="2">
+	<unicode hex="2C66"/>
+	<advance width="346"/>
+	<outline>
+		<contour>
+			<point x="-2" y="-40" type="line"/>
+			<point x="424" y="522" type="line"/>
+			<point x="392" y="546" type="line"/>
+			<point x="-34" y="-16" type="line"/>
+		</contour>
+		<component base="t"/>
+	</outline>
+	<anchor name="aboveLC" x="236" y="650"/>
+	<anchor name="belowLC" x="168" y="-22"/>
+</glyph>
