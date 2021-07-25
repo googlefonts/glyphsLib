@@ -35,6 +35,7 @@ from glyphsLib.affine import Affine
 from glyphsLib.parser import Parser
 from glyphsLib.types import (
     Point,
+    IndexPath,
     Rect,
     Transform,
     UnicodesList,
@@ -252,7 +253,7 @@ def parse_hint_target(line=None):
     if line is None:
         return None
     if line[0] == "{":
-        return Point(line)
+        return IndexPath(line)
     else:
         return line
 
@@ -2423,9 +2424,9 @@ class GSHint(GSBase):
     _classesForName = {
         "horizontal": bool,
         "options": int,  # bitfield
-        "origin": Point,  # Index path to node
-        "other1": Point,  # Index path to node for third node
-        "other2": Point,  # Index path to node for fourth node
+        "origin": IndexPath,  # Index path to node
+        "other1": IndexPath,  # Index path to node for third node
+        "other2": IndexPath,  # Index path to node for fourth node
         "place": Point,  # (position, width)
         "scale": Point,  # for corners
         "stem": int,  # index of stem
