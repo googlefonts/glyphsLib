@@ -31,7 +31,7 @@ def diff_directories(dir1, dir2):
     for f in compared.funny_files:
         report.append("? %s" % f)
     for d in compared.diff_files:
-        report.append("! %s" % d)
+        report.append("! %s - %s" % (os.path.join(dir1, d), os.path.join(dir2, d)))
         left = open(os.path.join(dir1, d))
         right = open(os.path.join(dir2, d))
         report.append(
