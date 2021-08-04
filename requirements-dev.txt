@@ -24,7 +24,7 @@ defcon==0.8.1
     # via -r requirements-dev.in
 execnet==1.9.0
     # via pytest-xdist
-fonttools[ufo,unicode]==4.25.2
+fonttools[ufo,unicode]==4.21.1
     # via
     #   booleanoperations
     #   cffsubr
