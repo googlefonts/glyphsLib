@@ -14,6 +14,8 @@ fonttools[ufo,unicode]==4.21.1
     #   ufolib2
 fs==2.4.12
     # via fonttools
+openstep-plist==0.2.2
+    # via glyphsLib (setup.py)
 pytz==2021.1
     # via fs
 six==1.15.0

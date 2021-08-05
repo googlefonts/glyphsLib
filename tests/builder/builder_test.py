@@ -34,7 +34,7 @@ from glyphsLib.classes import (
     GSPath,
     GSNode,
     GSAlignmentZone,
-    GSGuideLine,
+    GSGuide,
 )
 from glyphsLib.types import Point
 
@@ -880,7 +880,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             pt = Point(
                 value=guide_data["position"][0], value2=guide_data["position"][1]
             )
-            guide = GSGuideLine()
+            guide = GSGuide()
             guide.position = pt
             guide.angle = guide_data["angle"]
             layer.guides.append(guide)

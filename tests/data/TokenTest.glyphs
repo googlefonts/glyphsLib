@@ -1,0 +1,157 @@
+{
+.appVersion = "3039";
+.formatVersion = 3;
+classes = (
+{
+code = "$[name endswith \".sc\"]";
+name = SmallCaps;
+}
+);
+date = "2021-01-14 10:00:03 +0000";
+familyName = "New Font";
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+features = (
+{
+code = "pos A A.sc ${padding*2};";
+tag = dist;
+}
+);
+fontMaster = (
+{
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+}
+);
+name = Regular;
+numberValues = (
+50
+);
+},
+{
+iconName = Bold;
+id = "11119B89-ADF6-486B-9172-E51437C3592A";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+}
+);
+name = Bold;
+numberValues = (
+250
+);
+}
+);
+glyphs = (
+{
+glyphname = A;
+kernLeft = H;
+kernRight = L;
+lastChange = "2021-01-14 12:22:21 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
+width = 600;
+}
+);
+script = latin;
+unicode = 65;
+},
+{
+glyphname = A.sc;
+lastChange = "2021-01-14 11:54:35 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
+width = 600;
+}
+);
+note = "I love it!";
+},
+{
+category = Separator;
+glyphname = Sacute;
+lastChange = "2021-01-14 12:22:48 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
+width = 600;
+}
+);
+subCategory = Arrow;
+unicode = 346;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+}
+);
+numbers = (
+{
+name = padding;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
