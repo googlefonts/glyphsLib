@@ -8,36 +8,38 @@ appdirs==1.4.4
     # via fs
 atomicwrites==1.4.0
     # via pytest
-attrs==20.3.0
+attrs==21.2.0
     # via pytest
 booleanoperations==0.9.0
     # via ufo2ft
+cffsubr==0.2.8
+    # via ufo2ft
 colorama==0.4.4
     # via pytest
-compreffor==0.5.1
-    # via ufo2ft
 coverage==5.5
     # via -r requirements-dev.in
 cu2qu==1.6.7
     # via ufo2ft
-defcon==0.7.2
+defcon==0.8.1
     # via -r requirements-dev.in
 execnet==1.9.0
     # via pytest-xdist
-fonttools[ufo,unicode]==4.21.1
+fonttools[ufo,unicode]==4.26.1
     # via
     #   booleanoperations
-    #   compreffor
+    #   cffsubr
     #   cu2qu
     #   defcon
     #   ufo2ft
-fs==2.4.12
+fs==2.4.13
     # via fonttools
+importlib-metadata==4.6.3
+    # via pytest-randomly
 iniconfig==1.1.1
     # via pytest
 lxml==4.6.3
     # via xmldiff
-packaging==20.9
+packaging==21.0
     # via pytest
 pluggy==0.13.1
     # via pytest
@@ -45,11 +47,11 @@ py==1.10.0
     # via
     #   pytest
     #   pytest-forked
-pyclipper==1.2.1
+pyclipper==1.3.0
     # via booleanoperations
 pyparsing==2.4.7
     # via packaging
-pytest==6.2.2
+pytest==6.2.4
     # via
     #   -r requirements-dev.in
     #   pytest-forked
@@ -57,26 +59,28 @@ pytest==6.2.2
     #   pytest-xdist
 pytest-forked==1.3.0
     # via pytest-xdist
-pytest-randomly==3.5.0
+pytest-randomly==3.8.0
     # via -r requirements-dev.in
 pytest-xdist==2.3.0
     # via -r requirements-dev.in
 pytz==2021.1
     # via fs
-six==1.15.0
+six==1.16.0
     # via
     #   fs
     #   xmldiff
 toml==0.10.2
     # via pytest
-ufo2ft==2.19.2
+ufo2ft==2.24.0
     # via -r requirements-dev.in
-ufonormalizer==0.5.3
+ufonormalizer==0.6.0
     # via -r requirements-dev.in
 unicodedata2==13.0.0.post2
     # via fonttools
 xmldiff==2.4
     # via -r requirements-dev.in
+zipp==3.5.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
