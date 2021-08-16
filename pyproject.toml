@@ -16,6 +16,9 @@ norecursedirs = [
     "data",
 ]
 
+[tool.setuptools_scm]
+write_to = "Lib/glyphsLib/_version.py"
+
 [build-system]
-requires = ["setuptools>=30.3.0", "wheel", "setuptools_scm"]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
 build-backend = "setuptools.build_meta"
