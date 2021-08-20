@@ -4223,7 +4223,7 @@ class GSFont(GSBase):
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
         with open(path, "w", encoding="utf-8") as fp:
-            w = Writer(fp)
+            w = Writer(fp, format_version=self.format_version)
             logger.info("Writing %r to .glyphs file", self)
             w.write(self)
 
