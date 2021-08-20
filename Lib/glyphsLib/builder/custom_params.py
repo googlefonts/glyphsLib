@@ -322,7 +322,6 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("typoDescender", "openTypeOS2TypoDescender"),
     ("typoLineGap", "openTypeOS2TypoLineGap"),
     ("unicodeRanges", "openTypeOS2UnicodeRanges"),
-    ("vendorID", "openTypeOS2VendorID"),
     ("strikeoutSize", "openTypeOS2StrikeoutSize"),
     ("strikeoutPosition", "openTypeOS2StrikeoutPosition"),
     # OS/2 Subscript parameters
@@ -364,6 +363,7 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
+    ("vendorID", "openTypeOS2VendorID", "vendorID"),
     ("versionString", "openTypeNameVersion", "versionString"),
 )
 
