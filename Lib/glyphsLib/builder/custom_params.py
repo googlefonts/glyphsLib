@@ -360,7 +360,7 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
     ("trademark", "trademark", "trademarks"),
     ("description", "openTypeNameDescription", "descriptions"),
-    ("sampleText", "openTypeNameSampleText", "sampleText"),
+    ("sampleText", "openTypeNameSampleText", "sampleTexts"),
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
