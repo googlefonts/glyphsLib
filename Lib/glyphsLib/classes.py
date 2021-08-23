@@ -1354,7 +1354,7 @@ class GSCustomParameter(GSBase):
 
     def plistValue(self, format_version=2):
         string = StringIO()
-        writer = Writer(string)
+        writer = Writer(string, format_version=format_version)
         self._serialize_to_plist(writer)
         return "{\n" + string.getvalue() + "}"
 
