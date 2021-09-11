@@ -33,6 +33,8 @@ BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
 def _color_index(index):
+    if isinstance(index, int):
+        return index
     if index.startswith("*"):
         return 0xFFFF
     try:
@@ -50,6 +52,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     # mapping is a tuple of (layer name, palette index), but we don’t know the
     # final UFO layer names yet, so we use Glyphs layer IDs and change them to
     # layer names in to_ufo_color_layer_names().
+
+    # Glyphs 2.
     if layer.layerId == layer.associatedMasterId and any(
         l.name.startswith("Color ") and l.associatedMasterId == layer.associatedMasterId
         for l in glyph.layers
@@ -58,6 +62,17 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
             (l.layerId, _color_index(l.name[len("Color ") :]))
             for l in glyph.layers
             if l.name.startswith("Color ")
+            and l.associatedMasterId == layer.associatedMasterId
+        ]
+    # Glyphs 3.
+    elif layer.layerId == layer.associatedMasterId and any(
+        "colorPalette" in l.attr and l.associatedMasterId == layer.associatedMasterId
+        for l in glyph.layers
+    ):
+        ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [
+            (l.layerId, _color_index(l.attr["colorPalette"]))
+            for l in glyph.layers
+            if "colorPalette" in l.attr
             and l.associatedMasterId == layer.associatedMasterId
         ]
 

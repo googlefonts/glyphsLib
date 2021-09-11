@@ -529,7 +529,10 @@ register(
 
 
 def _to_ufo_color(color):
-    ret = [int(v) / 255 for v in color.split(",")]
+    if isinstance(color, str):
+        ret = [int(v) / 255 for v in color.split(",")]
+    else:
+        ret = [v / 255 for v in color]
     if len(ret) == 2:
         ret = [ret[0], ret[0], ret[0], ret[1]]
     return ret
