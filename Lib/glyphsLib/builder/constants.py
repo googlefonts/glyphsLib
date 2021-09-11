@@ -85,6 +85,8 @@ REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}
 
 UFO2FT_FEATURE_WRITERS_KEY = "com.github.googlei18n.ufo2ft.featureWriters"
 
+UFO2FT_COLOR_PALETTES_KEY = "com.github.googlei18n.ufo2ft.colorPalettes"
+
 # ufo2ft KernFeatureWriter default to "skip" mode (i.e. do not write features
 # if they are already present), while Glyphs.app always adds its automatic
 # kerning to any user written kern lookups. So we need to pass custom "append"

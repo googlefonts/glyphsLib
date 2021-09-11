@@ -20,6 +20,7 @@ from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
 from .constants import (
     GLYPHS_PREFIX,
+    UFO2FT_COLOR_PALETTES_KEY,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,
@@ -523,6 +524,39 @@ register(
         ufo_name="openTypeGaspRangeRecords",
         value_to_ufo=to_ufo_gasp_table,
         value_to_glyphs=to_glyphs_gasp_table,
+    )
+)
+
+
+def _to_ufo_color(color):
+    ret = [int(v) / 255 for v in color.split(",")]
+    if len(ret) == 2:
+        ret = [ret[0], ret[0], ret[0], ret[1]]
+    return ret
+
+
+def to_ufo_color_palettes(value):
+    return [[_to_ufo_color(color) for color in palette] for palette in value]
+
+
+def _to_glyphs_color(color):
+    if color[0] == color[1] == color[2]:
+        color = [color[0], color[3]]
+    return ",".join(str(round(v * 255)) for v in color)
+
+
+def to_glyphs_color_palettes(value):
+    return [[_to_glyphs_color(color) for color in palette] for palette in value]
+
+
+register(
+    ParamHandler(
+        glyphs_name="Color Palettes",
+        ufo_name=UFO2FT_COLOR_PALETTES_KEY,
+        ufo_info=False,
+        ufo_prefix="",
+        value_to_ufo=to_ufo_color_palettes,
+        value_to_glyphs=to_glyphs_color_palettes,
     )
 )
 
