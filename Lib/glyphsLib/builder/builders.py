@@ -127,6 +127,9 @@ class UFOBuilder(_LoggerMixin):
         # indexed by master ID, the same order as masters in the source GSFont.
         self._sources = OrderedDict()
 
+        # Map Glyphs layer IDs to UFO layer names.
+        self._layer_map = {}
+
         # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
         # for passing into pens as glyph sets.
         self._glyph_sets: Dict[str, Dict[str, classes.GSLayer]] = {}
@@ -208,6 +211,10 @@ class UFOBuilder(_LoggerMixin):
                 self.to_ufo_propagate_font_anchors(ufo)
             for layer in list(ufo.layers):
                 self.to_ufo_layer_lib(master, ufo, layer)
+
+            # Color layer mapping is stored using layer IDs, we now rewrite it
+            # to use the final UFO layer names.
+            self.to_ufo_color_layer_names(master, ufo)
 
             # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
             # parameters so it requires UFOs have their features set first; at the
@@ -545,7 +552,7 @@ class UFOBuilder(_LoggerMixin):
     from .hints import to_ufo_hints
     from .instances import to_designspace_instances
     from .kerning import to_ufo_kerning
-    from .layers import to_ufo_layer, to_ufo_background_layer
+    from .layers import to_ufo_layer, to_ufo_background_layer, to_ufo_color_layer_names
     from .masters import to_ufo_master_attributes
     from .names import to_ufo_names
     from .paths import to_ufo_paths

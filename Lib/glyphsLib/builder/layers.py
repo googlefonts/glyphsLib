@@ -12,11 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .constants import GLYPHS_PREFIX
+from .constants import GLYPHS_PREFIX, UFO2FT_COLOR_LAYER_MAPPING_KEY
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
 LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."
 LAYER_ORDER_TEMP_USER_DATA_KEY = "__layerOrder"
+
+
+def to_ufo_color_layer_names(self, master, ufo):
+    for glyph in ufo.layers.defaultLayer:
+        if UFO2FT_COLOR_LAYER_MAPPING_KEY in glyph.lib:
+            glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [
+                (self._layer_map[v[0]], v[1])
+                for v in glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY]
+            ]
 
 
 def to_ufo_layer(self, glyph, layer):
@@ -46,6 +55,7 @@ def to_ufo_layer(self, glyph, layer):
         ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
             self, layer
         )
+    self._layer_map[layer.layerId] = ufo_layer.name
     return ufo_layer
 
 

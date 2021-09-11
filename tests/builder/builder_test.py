@@ -27,6 +27,7 @@ import ufoLib2
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import (
+    GSComponent,
     GSFont,
     GSFontMaster,
     GSGlyph,
@@ -1173,6 +1174,80 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             ufo["c"].lib[GLYPHS_PREFIX + "componentsSmartComponentValues"],
             [{"height": 0}, {}],
         )
+
+    def test_glyph_lib_color_mapping(self):
+        font = generate_minimal_font()
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+        glyphc = add_glyph(font, "c")
+        glyphd = add_glyph(font, "d")
+        for i, g in enumerate([glypha, glyphb, glyphc, glyphd]):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 1, i + 1), nodetype="line"),
+                GSNode(position=(i + 2, i + 2), nodetype="line"),
+                GSNode(position=(i + 3, i + 3), nodetype="line"),
+            ]
+            g.layers[0].paths.append(path)
+
+        compc = GSComponent(glyph=glyphc)
+        compd = GSComponent(glyph=glyphd)
+
+        color0 = GSLayer()
+        color1 = GSLayer()
+        color3 = GSLayer()
+        colorx = GSLayer()
+        color0.name = "Color 0"
+        color1.name = "Color 1"
+        color3.name = "Color 3"
+        colorx.name = "Color *"
+        color0.components.append(compd)
+        color0.components.append(compc)
+        color3.components.append(compc)
+        colorx.components.append(compc)
+        color1.paths.append(path)
+
+        glypha.layers.append(color1)
+        glypha.layers.append(color0)
+        glypha.layers.append(color3)
+        glypha.layers.append(colorx)
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+
+        assert ufo["a"].lib["com.github.googlei18n.ufo2ft.colorLayerMapping"] == [
+            ("Color 1", 1),
+            ("Color 0", 0),
+            ("Color 3", 3),
+            ("Color *", 65535),
+        ]
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["b"].lib
+
+        assert len(ufo.layers["Color 0"]["a"].components) == 0
+        assert len(ufo.layers["Color 0"]["a"]) == 2
+        pen1 = _PointDataPen()
+        ufo.layers["Color 0"]["a"].drawPoints(pen1)
+        pen2 = _PointDataPen()
+        ufo["d"].drawPoints(pen2)
+        ufo["c"].drawPoints(pen2)
+        assert pen1.contours == pen2.contours
+
+        assert len(ufo.layers["Color 1"]["a"].components) == 0
+        assert len(ufo.layers["Color 1"]["a"]) == 1
+        pen1 = _PointDataPen()
+        ufo.layers["Color 1"]["a"].drawPoints(pen1)
+        pen2 = _PointDataPen()
+        ufo["d"].drawPoints(pen2)
+        assert pen1.contours == pen2.contours
+
+        assert len(ufo.layers["Color 3"]["a"].components) == 0
+        assert len(ufo.layers["Color 3"]["a"]) == 1
+        pen1 = _PointDataPen()
+        ufo.layers["Color 3"]["a"].drawPoints(pen1)
+        pen2 = _PointDataPen()
+        ufo["c"].drawPoints(pen2)
+        assert pen1.contours == pen2.contours
 
     def test_master_with_light_weight_but_thin_name(self):
         font = generate_minimal_font()

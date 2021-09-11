@@ -17,7 +17,12 @@ import logging
 
 import glyphsLib.glyphdata
 from .common import to_ufo_time, from_loose_ufo_time
-from .constants import GLYPHLIB_PREFIX, GLYPHS_COLORS, PUBLIC_PREFIX
+from .constants import (
+    GLYPHLIB_PREFIX,
+    GLYPHS_COLORS,
+    PUBLIC_PREFIX,
+    UFO2FT_COLOR_LAYER_MAPPING_KEY,
+)
 from .builders import BRACKET_GLYPH_RE, BRACKET_GLYPH_SUFFIX_RE
 
 logger = logging.getLogger(__name__)
@@ -27,9 +32,34 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
+def _color_index(index):
+    if index.startswith("*"):
+        return 0xFFFF
+    try:
+        return int(index)
+    except Exception as ex:
+        raise TypeError("Invalid color palette index, must be integer or *") from ex
+
+
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+
+    # Here we handle color layers. If this is a master layer and the glyph has
+    # color layers, add ufo2ft lib key with the layer mapping. The layer
+    # mapping is a tuple of (layer name, palette index), but we don’t know the
+    # final UFO layer names yet, so we use Glyphs layer IDs and change them to
+    # layer names in to_ufo_color_layer_names().
+    if layer.layerId == layer.associatedMasterId and any(
+        l.name.startswith("Color ") and l.associatedMasterId == layer.associatedMasterId
+        for l in glyph.layers
+    ):
+        ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [
+            (l.layerId, _color_index(l.name[len("Color ") :]))
+            for l in glyph.layers
+            if l.name.startswith("Color ")
+            and l.associatedMasterId == layer.associatedMasterId
+        ]
 
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
