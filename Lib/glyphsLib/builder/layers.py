@@ -30,26 +30,32 @@ def to_ufo_color_layer_names(self, master, ufo):
 
 def to_ufo_layer(self, glyph, layer):
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+
+    layer_name = layer.name
+    # Give Glyphs 3 color layers better names
+    if "colorPalette" in layer.attr:
+        layer_name = f"color.{layer.attr['colorPalette']}"
+
     if layer.associatedMasterId == layer.layerId:
         ufo_layer = ufo_font.layers.defaultLayer
-    elif layer.name not in ufo_font.layers:
-        ufo_layer = ufo_font.newLayer(layer.name)
-    elif layer.name in ufo_font.layers and glyph.name in ufo_font.layers[layer.name]:
+    elif layer_name not in ufo_font.layers:
+        ufo_layer = ufo_font.newLayer(layer_name)
+    elif layer_name in ufo_font.layers and glyph.name in ufo_font.layers[layer_name]:
         self.logger.warning(
             "%s %s: Glyph %s, layer %s: Duplicate glyph layer name",
             ufo_font.info.familyName,
             ufo_font.info.styleName,
             glyph.name,
-            layer.name,
+            layer_name,
         )
         n = 1
-        new_layer_name = layer.name
+        new_layer_name = layer_name
         while new_layer_name in ufo_font.layers:
-            new_layer_name = layer.name + " #" + repr(n)
+            new_layer_name = layer_name + " #" + repr(n)
             n += 1
         ufo_layer = ufo_font.newLayer(new_layer_name)
     else:
-        ufo_layer = ufo_font.layers[layer.name]
+        ufo_layer = ufo_font.layers[layer_name]
     if self.minimize_glyphs_diffs:
         ufo_layer.lib[LAYER_ID_KEY] = layer.layerId
         ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
