@@ -51,9 +51,21 @@ class ParserTest(unittest.TestCase):
         self.run_test('{mystr="a\\"s\\077d\\U2019f";}', [("mystr", 'a"s?d’f')])
         self.run_test('{mystr="\\\\backslash";}', [("mystr", "\\backslash")])
 
-    def test_trailing_content(self):
+    def test_trailing_content_not_semicolon(self):
+        # all trailing content that is not a semicolon should raise
+        # a ValueError
         with self.assertRaises(ValueError):
             self.run_test("{myval=1;}trailing", [("myval", "1")])
+
+    def test_parse_trailing_content_semicolon(self):
+        # FontLab 7 uses a final semicolon in glyphs source exports
+        # This trailing content should parse and not raise a ValueError
+        self.run_test("{myval=1;};", [("myval", 1)])
+
+    def test_parse_trailing_content_bytes_semicolon(self):
+        # FontLab 7 uses a final semicolon in glyphs source exports
+        # This trailing content should parse and not raise a ValueError
+        self.run_test(b"{myval=1;};", [("myval", 1)])
 
     def test_unexpected_content(self):
         with self.assertRaises(ValueError):

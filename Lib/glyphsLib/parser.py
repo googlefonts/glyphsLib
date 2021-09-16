@@ -33,13 +33,25 @@ class Parser:
     def parse(self, d):
         try:
             if isinstance(d, str):
+                d = self._fl7_format_clean(d)
                 d = openstep_plist.loads(d, use_numbers=True)
             elif isinstance(d, bytes):
+                d = self._fl7_format_clean(d)
                 d = openstep_plist.loads(d.decode(), use_numbers=True)
             result = self._parse(d)
         except openstep_plist.parser.ParseError as e:
             raise ValueError("Failed to parse file") from e
         return result
+
+    def _fl7_format_clean(self, d):
+        """FontLab 7 glyphs source format exports include a final closing semicolon.
+        This method removes the semicolon before passing the string to the parser."""
+        # see https://github.com/googlefonts/fontmake/issues/806
+        if isinstance(d, str):
+            d = d.rstrip(";\n")
+        elif isinstance(d, bytes):
+            d = d.rstrip(b";\n")
+        return d
 
     def _parse(self, d, new_type=None):
         self.current_type = new_type or self.current_type
