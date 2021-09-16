@@ -255,11 +255,11 @@ class TokenExpander:
     def _get_value_for_glyph(self, g, value):
         try:
             return getattr(g, value)
-        except AttributeError:
+        except AttributeError as exc:
             raise ValueError(
                 "Glyphs attribute %s used in predicate '%s'"
                 " but glyphsLib does not support it" % (value, self.originaltoken)
-            )
+            ) from exc
 
     apply_comparators = {
         "beginswith": lambda got, exp: str(got).startswith(exp),
