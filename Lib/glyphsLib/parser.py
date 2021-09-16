@@ -48,15 +48,9 @@ class Parser:
         This method removes the semicolon before passing the string to the parser."""
         # see https://github.com/googlefonts/fontmake/issues/806
         if isinstance(d, str):
-            if d.endswith(";"):
-                d = d.rstrip(";")
-            elif d.endswith(";\n"):
-                d = d.rstrip(";\n")
+            d = d.rstrip(";\n")
         elif isinstance(d, bytes):
-            if d.endswith(b";"):
-                d = d.rstrip(b";")
-            elif d.endswith(b";\n"):
-                d = d.rstrip(b";\n")
+            d = d.rstrip(b";\n")
         return d
 
     def _parse(self, d, new_type=None):
