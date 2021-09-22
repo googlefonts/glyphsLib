@@ -82,6 +82,7 @@ def main(args=None):
     )
     group.add_argument(
         "--propagate-anchors",
+        default=None,
         action="store_true",
         help=(
             "Copy anchors from underlying components to actual "
