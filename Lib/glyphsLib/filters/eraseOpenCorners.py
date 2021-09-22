@@ -53,10 +53,10 @@ class EraseOpenCornersPen(BasePen):
                 ix = ix + 1
                 continue
 
-            # Are the first point of the previous segment and the last point
-            # of the next segment both on the right side of the line?
+            # Are the incoming point from the previous segment and the outgoing point
+            # from the next segment both on the right side of the line?
             # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
-            pt1 = segs[ix - 1][0]
+            pt1 = segs[ix - 1][-2]
             pt2 = segs[next_ix][1]
             intersection = [
                 i
