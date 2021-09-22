@@ -136,6 +136,17 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "sofiaSans",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((190, 327),)),
+                        ("lineTo", ((199, 497),)),
+                        ("lineTo", ((199, 488),)),
+                        ("lineTo", ((32, 503),)),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -278,6 +289,16 @@ def test_circle_no_overlap(font):
     newcontour = font["dotabove-ar"][0]
     assert len(newcontour) == 12
     assert oldcontour == newcontour
+
+
+def test_self_loop(font):
+    oldcontour = font["sofiaSans"][0]
+    assert len(oldcontour) == 4
+
+    philter = EraseOpenCornersFilter(include={"sofiaSans"})
+    assert philter(font)
+    newcontour = font["sofiaSans"][0]
+    assert len(newcontour) == 3
 
 
 def structure(contour):
