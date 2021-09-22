@@ -517,6 +517,15 @@ register(
     )
 )
 
+register(
+    ParamHandler(
+        glyphs_name="gasp Table",
+        ufo_name="openTypeGaspRangeRecords",
+        value_to_ufo=to_ufo_gasp_table,
+        value_to_glyphs=to_glyphs_gasp_table,
+    )
+)
+
 # TODO: (jany) look at
 # https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
 # Use Name Table Entry for the next param
