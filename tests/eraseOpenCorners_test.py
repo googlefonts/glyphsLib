@@ -124,6 +124,18 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "dotabove-ar",
+                    "width": 116,
+                    "outline": [
+                        ("moveTo", ((58, -58),)),
+                        ("curveTo", ((90, -58), (116, -32), (116, 0))),
+                        ("curveTo", ((116, 32), (90, 58), (58, 58))),
+                        ("curveTo", ((26, 58), (0, 32), (0, 0))),
+                        ("curveTo", ((0, -32), (26, -58), (58, -58))),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -255,3 +267,14 @@ def test_square_plus_curve_corner(font):
 
     philter = EraseOpenCornersFilter(include={"squarePlusCurveCorner.reversed"})
     assert not philter(font)
+
+
+def test_circle_no_overlap(font):
+    oldcontour = font["dotabove-ar"][0]
+    assert len(oldcontour) == 12
+
+    philter = EraseOpenCornersFilter(include={"dotabove-ar"})
+    assert not philter(font)
+    newcontour = font["dotabove-ar"][0]
+    assert len(newcontour) == 12
+    assert oldcontour == newcontour

@@ -1,6 +1,7 @@
 import logging
 
 from fontTools.pens.basePen import BasePen
+from fontTools.pens.recordingPen import RecordingPen
 from fontTools.misc.bezierTools import (
     segmentSegmentIntersections,
     _split_segment_at_t,
@@ -105,9 +106,11 @@ class EraseOpenCornersFilter(BaseFilter):
             return False
 
         contours = list(glyph)
-        glyph.clearContours()
-        outpen = glyph.getPen()
+        outpen = RecordingPen()
         p = EraseOpenCornersPen(outpen)
         for contour in contours:
             contour.draw(p)
+        if p.affected:
+            glyph.clearContours()
+            outpen.replay(glyph.getPen())
         return p.affected
