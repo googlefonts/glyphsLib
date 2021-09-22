@@ -57,7 +57,7 @@ class EraseOpenCornersPen(BasePen):
             # of the next segment both on the right side of the line?
             # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
             pt1 = segs[ix - 1][0]
-            pt2 = segs[next_ix][-1]
+            pt2 = segs[next_ix][1]
             intersection = [
                 i
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
