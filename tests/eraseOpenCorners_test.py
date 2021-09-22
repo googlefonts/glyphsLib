@@ -278,3 +278,19 @@ def test_circle_no_overlap(font):
     newcontour = font["dotabove-ar"][0]
     assert len(newcontour) == 12
     assert oldcontour == newcontour
+
+
+def structure(contour):
+    return [x.segmentType for x in contour]
+
+
+def test_compatibility():
+    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
+    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+    philter = EraseOpenCornersFilter(include={"incompatible"})
+    assert philter(font1)
+    assert philter(font2)
+    newcontour1 = font1["incompatible"][0]
+    newcontour2 = font2["incompatible"][0]
+    assert len(newcontour1) == len(newcontour2)
+    assert structure(newcontour1) == structure(newcontour2)
