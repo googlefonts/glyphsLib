@@ -8,7 +8,7 @@ from glyphsLib.classes import GSComponent
 
 def test_background_component_decompose(datadir):
     font = glyphsLib.GSFont(str(datadir.join("Recursion.glyphs")))
-    ds = to_designspace(font)
+    ds = to_designspace(font, minimal=False)
 
     for source in ds.sources:
         for layer in source.font.layers:
@@ -48,4 +48,4 @@ def test_background_component_decompose_missing(datadir):
     layer.components.append(GSComponent("xxx"))
 
     with pytest.raises(MissingComponentError):
-        to_designspace(font)
+        to_designspace(font, minimal=False)

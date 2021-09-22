@@ -885,7 +885,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             guide.angle = guide_data["angle"]
             layer.guides.append(guide)
         glyph.layers.append(layer)
-        ufo = self.to_ufos(font)[0]
+        ufo = self.to_ufos(font, minimal=False)[0]
         self.assertEqual([dict(g) for g in ufo["a"].guidelines], expected)
 
     def test_set_guidelines(self):
@@ -918,7 +918,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         sublayer.width = 0
         sublayer.name = "SubLayer"
         glyph.layers.append(sublayer)
-        ufo = self.to_ufos(font)[0]
+        ufo = self.to_ufos(font, minimal=False)[0]
         self.assertEqual([l.name for l in ufo.layers], ["public.default", "SubLayer"])
 
     def test_duplicate_supplementary_layers(self):
@@ -941,7 +941,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         sublayer.name = "SubLayer"
         glyph.layers.append(sublayer)
         with CapturingLogHandler(builder.logger, level="WARNING") as captor:
-            ufo = self.to_ufos(font)[0]
+            ufo = self.to_ufos(font, minimal=False)[0]
 
         self.assertEqual(
             [l.name for l in ufo.layers], ["public.default", "SubLayer", "SubLayer #1"]

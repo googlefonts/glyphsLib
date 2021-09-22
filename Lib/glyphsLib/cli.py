@@ -218,6 +218,7 @@ def glyphs2ufo(options):
         store_editor_state=not options.no_store_editor_state,
         write_skipexportglyphs=options.write_public_skip_export_glyphs,
         ufo_module=__import__(options.ufo_module),
+        minimal=False,
     )
 
 

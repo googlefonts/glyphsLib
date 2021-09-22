@@ -230,7 +230,7 @@ def test_layer_lib_into_master_user_data(ufo_module):
         "layerLibKey2": "ufo2 layerLibValue2"
     }
 
-    (ufo1, ufo2) = to_ufos(font)
+    (ufo1, ufo2) = to_ufos(font, minimal=False)
 
     assert ufo1.layers["public.default"].lib["layerLibKey1"] == "ufo1 layerLibValue1"
     assert "layerLibKey1" not in ufo1.layers["sketches"].lib
@@ -321,7 +321,7 @@ def test_glif_lib_equivalent_to_layer_user_data(ufo_module):
     assert "glifLibKeyB" not in default_layer.userData.keys()
     assert middleground.userData["glifLibKeyB"] == "glifLibValueB"
 
-    (ufo,) = to_ufos(font)
+    (ufo,) = to_ufos(font, minimal=False)
 
     assert ufo["a"].lib["glifLibKeyA"] == "glifLibValueA"
     assert "glifLibKeyA" not in ufo.layers["middleground"]["a"]

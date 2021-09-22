@@ -423,7 +423,7 @@ def test_designspace_generation_bracket_no_export_glyph(datadir, ufo_module):
     font.glyphs["E"].export = False
 
     designspace = to_designspace(
-        font, write_skipexportglyphs=True, ufo_module=ufo_module
+        font, write_skipexportglyphs=True, ufo_module=ufo_module, minimal=False
     )
 
     assert "E" in designspace.lib.get("public.skipExportGlyphs")
