@@ -24,7 +24,14 @@ from typing import Any, Dict
 from fontTools import designspaceLib
 
 from glyphsLib import classes, util
-from .constants import PUBLIC_PREFIX, FONT_CUSTOM_PARAM_PREFIX, GLYPHLIB_PREFIX
+from .constants import (
+    FONT_CUSTOM_PARAM_PREFIX,
+    FOREGROUND_LAYER_ID_KEY,
+    GLYPHLIB_PREFIX,
+    LAYER_ID_KEY,
+    LAYER_ORIGINAL_NAME_KEY,
+    PUBLIC_PREFIX,
+)
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
@@ -186,8 +193,7 @@ class UFOBuilder(_LoggerMixin):
 
     @property
     def masters(self):
-        """Get an iterator over master UFOs that match the given family_name.
-        """
+        """Get an iterator over master UFOs that match the given family_name."""
         if self._sources:
             for source in self._sources.values():
                 yield source.font
@@ -221,6 +227,10 @@ class UFOBuilder(_LoggerMixin):
                 ufo_layer = self.to_ufo_layer(glyph, layer)
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)
+
+        # Prepare layers with the same name in Glyphs as layers UFO must have
+        # unique names.
+        self._prepare_layers_with_same_name_to_ufo()
 
         # And sublayers (brace, bracket, ...) second.
         for glyph, layer in supplementary_layer_data:
@@ -522,6 +532,63 @@ class UFOBuilder(_LoggerMixin):
                     # Update kerning groups and pairs, bracket glyphs inherit the
                     # parent's kerning.
                     _expand_kerning_to_brackets(glyph_name, ufo_glyph_name, ufo_font)
+
+    def _prepare_layers_with_same_name_to_ufo(self):
+        for master in self.font.masters:
+            ufo_font = self._sources[master.id].font
+
+            # Collect layers in the order we first see them
+            layers_by_name = dict()
+            for glyph in self.font.glyphs:
+                for layer in glyph.layers:
+                    if master.id == layer.associatedMasterId:
+                        if layer.name not in layers_by_name:
+                            layers_by_name[layer.name] = []
+                        layers_by_name[layer.name].append(layer)
+
+            # Create layers that must have different names in UFO and
+            # store layerId and original layer name for foreground layers
+            # or foreground layerId for background layers.
+            for name, layers_with_name in layers_by_name.items():
+                layerIds = {l.layerId for l in layers_with_name}
+                if len(layerIds) == 1:
+                    continue
+                if BRACKET_LAYER_RE.match(name):
+                    continue
+
+                for layer in layers_with_name:
+                    if layer.layerId == master.id:
+                        continue
+
+                    layer_name = next(
+                        (
+                            l.name
+                            for l in ufo_font.layers
+                            if l.lib.get(LAYER_ID_KEY) == layer.layerId
+                        ),
+                        None,
+                    )
+
+                    if layer_name is not None:
+                        ufo_layer = ufo_font.layers[layer_name]
+                    else:
+                        n = 1
+                        layer_name = layer.name
+                        while layer_name in ufo_font.layers:
+                            layer_name = f"{layer.name} #{n!r}"
+                            n += 1
+                        ufo_layer = ufo_font.newLayer(layer_name)
+                        if layer.name != "Color 1":
+                            ufo_layer.lib[LAYER_ORIGINAL_NAME_KEY] = layer.name
+                            ufo_layer.lib[LAYER_ID_KEY] = layer.layerId
+
+                    if layer.hasBackground:
+                        layer_name = f"{layer_name}.background"
+                        if layer_name not in ufo_font.layers:
+                            background_layer = ufo_font.newLayer(layer_name)
+                            background_layer.lib[
+                                FOREGROUND_LAYER_ID_KEY
+                            ] = layer.layerId
 
     # Implementation is split into one file per feature
     from .anchors import to_ufo_propagate_font_anchors, to_ufo_glyph_anchors

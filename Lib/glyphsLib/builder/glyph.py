@@ -325,7 +325,7 @@ def to_ufo_glyph_background(self, glyph, layer):
         return
 
     background = layer.background
-    ufo_layer = self.to_ufo_background_layer(layer)
+    ufo_layer = self.to_ufo_background_layer(glyph, layer)
     new_glyph = ufo_layer.newGlyph(glyph.name)
 
     width = background.userData[BACKGROUND_WIDTH_KEY]
