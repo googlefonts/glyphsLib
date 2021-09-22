@@ -4,5 +4,7 @@
   <dict>
     <key>incompatible</key>
     <string>incompatible.glif</string>
+    <key>incompatible2</key>
+    <string>incompatible2.glif</string>
   </dict>
 </plist>
