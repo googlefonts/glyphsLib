@@ -47,7 +47,8 @@ def to_ufo_components(self, ufo_glyph, layer):
 
     # The same for color layers.
     if (
-        layer.components
+        not self.minimal
+        and layer.components
         and layer.layerId != layer.associatedMasterId
         and (layer.name.startswith("Color ") or "colorPalette" in layer.attr)
     ):

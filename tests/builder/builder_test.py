@@ -1249,6 +1249,29 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo["c"].drawPoints(pen2)
         assert pen1.contours == pen2.contours
 
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": [
+                ("a.color0", 1),
+                ("a.color1", 0),
+                ("a.color2", 3),
+                ("a.color3", 65535),
+            ]
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"].components) == 0
+        assert len(ufo["a.color0"]) == 1
+
+        assert len(ufo["a.color1"].components) == 2
+        assert len(ufo["a.color1"]) == 0
+
+        assert len(ufo["a.color2"].components) == 1
+        assert len(ufo["a.color2"]) == 0
+
+        assert len(ufo["a.color3"].components) == 1
+        assert len(ufo["a.color3"]) == 0
+
     def test_master_with_light_weight_but_thin_name(self):
         font = generate_minimal_font()
         master = font.masters[0]
