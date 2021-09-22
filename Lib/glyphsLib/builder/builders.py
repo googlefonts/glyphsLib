@@ -69,7 +69,7 @@ class UFOBuilder(_LoggerMixin):
         generate_GDEF=True,
         store_editor_state=True,
         write_skipexportglyphs=False,
-        minimal=True,
+        minimal=False,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
