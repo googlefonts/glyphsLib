@@ -1354,7 +1354,7 @@ class GSCustomParameter(GSBase):
 
     def plistValue(self, format_version=2):
         string = StringIO()
-        writer = Writer(string)
+        writer = Writer(string, format_version=format_version)
         self._serialize_to_plist(writer)
         return "{\n" + string.getvalue() + "}"
 
@@ -4223,7 +4223,7 @@ class GSFont(GSBase):
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
         with open(path, "w", encoding="utf-8") as fp:
-            w = Writer(fp)
+            w = Writer(fp, format_version=self.format_version)
             logger.info("Writing %r to .glyphs file", self)
             w.write(self)
 
