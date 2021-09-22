@@ -194,6 +194,47 @@ class UFOBuilder(_LoggerMixin):
                 yield source.font
             return
 
+        # TODO(jamesgk) maybe create one font at a time to reduce memory usage
+        # TODO: (jany) in the future, return a lazy iterator that builds UFOs
+        #     on demand.
+        self.to_ufo_font_attributes(self.family_name)
+
+        self.to_ufo_layers()
+
+        for master_id, source in self._sources.items():
+            ufo = source.font
+            master = self.font.masters[master_id]
+            if self.propagate_anchors:
+                self.to_ufo_propagate_font_anchors(ufo)
+            for layer in list(ufo.layers):
+                self.to_ufo_layer_lib(master, ufo, layer)
+
+            # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
+            # parameters so it requires UFOs have their features set first; at the
+            # same time, to generate a GDEF table we first need to have defined the
+            # glyphOrder, exported the glyphs and propagated anchors from components.
+            self.to_ufo_master_features(ufo, master)
+            self.to_ufo_custom_params(ufo, master)
+
+        if self.write_skipexportglyphs:
+            # Sanitize skip list and write it to both Designspace- and UFO-level lib
+            # keys. The latter is unnecessary when using e.g. the ufo2ft.compile*FromDS`
+            # functions, but the data may take a different path. Writing it everywhere
+            # can save on surprises/logic in other software.
+            skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
+            if skip_export_glyphs is not None:
+                skip_export_glyphs = sorted(set(skip_export_glyphs))
+                self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
+                for source in self._sources.values():
+                    source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
+
+        self.to_ufo_groups()
+        self.to_ufo_kerning()
+
+        for source in self._sources.values():
+            yield source.font
+
+    def to_ufo_layers(self):
         # Store set of actually existing master (layer) ids. This helps with
         # catching dangling layer data that Glyphs may ignore, e.g. when
         # copying glyphs from other fonts with, naturally, different master
@@ -203,11 +244,6 @@ class UFOBuilder(_LoggerMixin):
 
         # stores background data from "associated layers"
         supplementary_layer_data = []
-
-        # TODO(jamesgk) maybe create one font at a time to reduce memory usage
-        # TODO: (jany) in the future, return a lazy iterator that builds UFOs
-        #     on demand.
-        self.to_ufo_font_attributes(self.family_name)
 
         # Generate the main (master) layers first.
         for glyph in self.font.glyphs:
@@ -265,39 +301,6 @@ class UFOBuilder(_LoggerMixin):
                 ufo_layer = self.to_ufo_layer(glyph, layer)
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
-
-        for master_id, source in self._sources.items():
-            ufo = source.font
-            master = self.font.masters[master_id]
-            if self.propagate_anchors:
-                self.to_ufo_propagate_font_anchors(ufo)
-            for layer in list(ufo.layers):
-                self.to_ufo_layer_lib(master, ufo, layer)
-
-            # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
-            # parameters so it requires UFOs have their features set first; at the
-            # same time, to generate a GDEF table we first need to have defined the
-            # glyphOrder, exported the glyphs and propagated anchors from components.
-            self.to_ufo_master_features(ufo, master)
-            self.to_ufo_custom_params(ufo, master)
-
-        if self.write_skipexportglyphs:
-            # Sanitize skip list and write it to both Designspace- and UFO-level lib
-            # keys. The latter is unnecessary when using e.g. the ufo2ft.compile*FromDS`
-            # functions, but the data may take a different path. Writing it everywhere
-            # can save on surprises/logic in other software.
-            skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-            if skip_export_glyphs is not None:
-                skip_export_glyphs = sorted(set(skip_export_glyphs))
-                self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
-                for source in self._sources.values():
-                    source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
-
-        self.to_ufo_groups()
-        self.to_ufo_kerning()
-
-        for source in self._sources.values():
-            yield source.font
 
     @property
     def designspace(self):
