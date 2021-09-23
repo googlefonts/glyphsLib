@@ -45,6 +45,11 @@ class EraseOpenCornersPen(BasePen):
             return
 
         ix = 0
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Starting open corner removal, count of segments now: %i" % len(segs))
+            logger.debug("Segments: %s" % segs)
+
         while ix < len(segs):
             next_ix = (ix + 1) % len(segs)
 
@@ -77,7 +82,19 @@ class EraseOpenCornersPen(BasePen):
                 ix = ix + 1
                 continue
 
-            if intersection and (intersection[0].t1 > 0.5 and intersection[0].t2 < 0.5):
+            # The t values of the intersection are measured as follows:
+            #  line1 is coming *towards* the open corner line, i.e. t1=0.9 is very near
+            #  the open corner.
+            #  line2 is going *away from* the open corner line, i.e. t2=0.1 is very near
+            #  the open corner.
+            # This is a bit confusing, so we invert the value of t1 so that
+            # both values mean 0 is at the open corner and 1 is far from it.
+            t1 = 1 - intersection[0].t1
+            t2 = intersection[0].t2
+
+            # Glyphs logic provided by Georg at
+            # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
+            if ((t1 < 0.5 and t2 < 0.5) or t1 < 0.3 or t2 < 0.3) and t1 > 0.0001 and t2 > 0.0001:
                 logger.debug("Found an open corner")
                 (segs[ix - 1], _) = _split_segment_at_t(
                     segs[ix - 1], intersection[0].t1
@@ -89,11 +106,17 @@ class EraseOpenCornersPen(BasePen):
                 segs[next_ix] = (segs[ix - 1][-1],) + segs[next_ix][1:]
                 segs[ix : ix + 1] = []
                 self.affected = True
+                # Start again!
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("After removing seg %i, count of segments now: %i" % (ix, len(segs)))
+                    logger.debug("Segments: %s" % segs)
+                ix = 0
+                continue
             ix = ix + 1
 
         self.outpen.moveTo(segs[0][0])
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("Count of segments now: %i" % len(segs))
+            logger.debug("All done, count of segments now: %i" % len(segs))
             logger.debug("Segments: %s" % segs)
 
         for seg in segs:

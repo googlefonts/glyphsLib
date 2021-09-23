@@ -147,6 +147,17 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "largeCrossing",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((378, 615),)),
+                        ("lineTo", ((344, 706),)),
+                        ("lineTo", ((444, 660),)),
+                        ("lineTo", ((281, 699),)),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -301,6 +312,15 @@ def test_self_loop(font):
     assert len(newcontour) == 3
 
 
+def test_large_crossing(font):
+    oldcontour = font["largeCrossing"][0]
+    assert len(oldcontour) == 4
+    philter = EraseOpenCornersFilter(include={"largeCrossing"})
+    assert philter(font)
+    newcontour = font["largeCrossing"][0]
+    assert len(newcontour) == 3
+
+
 def structure(contour):
     return [x.segmentType for x in contour]
 
@@ -333,10 +353,6 @@ def test_compatibility3():
     font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
     font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
     philter = EraseOpenCornersFilter(include={"incompatible3"})
-    import logging
-
-    logger = logging.getLogger("glyphsLib.filters.eraseOpenCorners")
-    logger.setLevel(logging.DEBUG)
 
     assert philter(font1)
     newcontour1 = font1["incompatible3"][0]
