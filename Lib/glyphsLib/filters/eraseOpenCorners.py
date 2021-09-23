@@ -53,25 +53,32 @@ class EraseOpenCornersPen(BasePen):
                 ix = ix + 1
                 continue
 
+            logger.debug("Considering line segment (%i,%i)-(%i,%i)" % (*segs[ix][0], *segs[ix][1]))
             # Are the incoming point from the previous segment and the outgoing point
             # from the next segment both on the right side of the line?
             # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
             pt1 = segs[ix - 1][-2]
             pt2 = segs[next_ix][1]
+            if _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
+                logger.debug("Crossing points (%i, %i) and (%i, %i) were not on same side of line segment" % (*pt1, *pt2))
+                ix = ix + 1
+                continue
+
+            logger.debug("Testing for intersections between %s and %s" % (segs[ix-1], segs[next_ix]))
+
             intersection = [
                 i
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
                 if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
             ]
-            if (
-                not intersection
-                or _pointIsLeftOfLine(segs[ix], pt1)
-                or _pointIsLeftOfLine(segs[ix], pt2)
-            ):
+            logger.debug("Intersections: %s" % intersection)
+            if not intersection:
+                logger.debug("No intersections")
                 ix = ix + 1
                 continue
 
             if intersection and (intersection[0].t1 > 0.5 and intersection[0].t2 < 0.5):
+                logger.debug("Found an open corner")
                 (segs[ix - 1], _) = _split_segment_at_t(
                     segs[ix - 1], intersection[0].t1
                 )
@@ -85,6 +92,9 @@ class EraseOpenCornersPen(BasePen):
             ix = ix + 1
 
         self.outpen.moveTo(segs[0][0])
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Count of segments now: %i" % len(segs))
+            logger.debug("Segments: %s" % segs)
 
         for seg in segs:
             if len(seg) == 2:

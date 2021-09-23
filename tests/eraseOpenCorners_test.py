@@ -321,11 +321,6 @@ def test_compatibility2():
     font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
     font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
     philter = EraseOpenCornersFilter(include={"incompatible2"})
-    import logging
-
-    logger = logging.getLogger("glyphsLib.filters.eraseOpenCorners")
-    logger.setLevel(logging.DEBUG)
-
     assert philter(font1)
     newcontour1 = font1["incompatible2"][0]
     assert philter(font2)
