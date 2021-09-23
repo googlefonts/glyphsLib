@@ -71,8 +71,8 @@ class EraseOpenCornersPen(BasePen):
             pt2 = segs[next_ix][1]
             if _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
                 logger.debug(
-                    "Crossing points (%i, %i) and (%i, %i) were not on same side of line segment"
-                    % (*pt1, *pt2)
+                    "Crossing points (%i, %i) and (%i, %i) were not on "
+                    "same side of line segment" % (*pt1, *pt2)
                 )
                 ix = ix + 1
                 continue
