@@ -47,7 +47,9 @@ class EraseOpenCornersPen(BasePen):
         ix = 0
 
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("Starting open corner removal, count of segments now: %i" % len(segs))
+            logger.debug(
+                "Starting open corner removal, count of segments now: %i" % len(segs)
+            )
             logger.debug("Segments: %s" % segs)
 
         while ix < len(segs):
@@ -58,18 +60,27 @@ class EraseOpenCornersPen(BasePen):
                 ix = ix + 1
                 continue
 
-            logger.debug("Considering line segment (%i,%i)-(%i,%i)" % (*segs[ix][0], *segs[ix][1]))
+            logger.debug(
+                "Considering line segment (%i,%i)-(%i,%i)"
+                % (*segs[ix][0], *segs[ix][1])
+            )
             # Are the incoming point from the previous segment and the outgoing point
             # from the next segment both on the right side of the line?
             # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
             pt1 = segs[ix - 1][-2]
             pt2 = segs[next_ix][1]
             if _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
-                logger.debug("Crossing points (%i, %i) and (%i, %i) were not on same side of line segment" % (*pt1, *pt2))
+                logger.debug(
+                    "Crossing points (%i, %i) and (%i, %i) were not on same side of line segment"
+                    % (*pt1, *pt2)
+                )
                 ix = ix + 1
                 continue
 
-            logger.debug("Testing for intersections between %s and %s" % (segs[ix-1], segs[next_ix]))
+            logger.debug(
+                "Testing for intersections between %s and %s"
+                % (segs[ix - 1], segs[next_ix])
+            )
 
             intersection = [
                 i
@@ -94,7 +105,11 @@ class EraseOpenCornersPen(BasePen):
 
             # Glyphs logic provided by Georg at
             # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
-            if ((t1 < 0.5 and t2 < 0.5) or t1 < 0.3 or t2 < 0.3) and t1 > 0.0001 and t2 > 0.0001:
+            if (
+                ((t1 < 0.5 and t2 < 0.5) or t1 < 0.3 or t2 < 0.3)
+                and t1 > 0.0001
+                and t2 > 0.0001
+            ):
                 logger.debug("Found an open corner")
                 (segs[ix - 1], _) = _split_segment_at_t(
                     segs[ix - 1], intersection[0].t1
@@ -108,7 +123,10 @@ class EraseOpenCornersPen(BasePen):
                 self.affected = True
                 # Start again!
                 if logger.isEnabledFor(logging.DEBUG):
-                    logger.debug("After removing seg %i, count of segments now: %i" % (ix, len(segs)))
+                    logger.debug(
+                        "After removing seg %i, count of segments now: %i"
+                        % (ix, len(segs))
+                    )
                     logger.debug("Segments: %s" % segs)
                 ix = 0
                 continue
