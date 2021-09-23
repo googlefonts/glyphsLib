@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="incompatible3" format="2">
+	<advance width="491"/>
+	<outline>
+		<contour>
+			<point x="295" y="452" type="line"/>
+			<point x="410" y="676" type="line"/>
+			<point x="387" y="594" type="line"/>
+			<point x="344" y="706" type="line"/>
+			<point x="444" y="660" type="line"/>
+			<point x="281" y="699" type="line"/>
+		</contour>
+	</outline>
+	<lib>
+		<dict>
+			<key>com.schriftgestaltung.Glyphs.lastChange</key>
+			<string>2021-09-23 08:13:11 +0000</string>
+		</dict>
+	</lib>
+</glyph>
