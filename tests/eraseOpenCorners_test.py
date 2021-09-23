@@ -136,6 +136,28 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "sofiaSans",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((190, 327),)),
+                        ("lineTo", ((199, 497),)),
+                        ("lineTo", ((199, 488),)),
+                        ("lineTo", ((32, 503),)),
+                        ("closePath", ()),
+                    ],
+                },
+                {
+                    "name": "largeCrossing",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((378, 615),)),
+                        ("lineTo", ((344, 706),)),
+                        ("lineTo", ((444, 660),)),
+                        ("lineTo", ((281, 699),)),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -278,3 +300,63 @@ def test_circle_no_overlap(font):
     newcontour = font["dotabove-ar"][0]
     assert len(newcontour) == 12
     assert oldcontour == newcontour
+
+
+def test_self_loop(font):
+    oldcontour = font["sofiaSans"][0]
+    assert len(oldcontour) == 4
+
+    philter = EraseOpenCornersFilter(include={"sofiaSans"})
+    assert philter(font)
+    newcontour = font["sofiaSans"][0]
+    assert len(newcontour) == 3
+
+
+def test_large_crossing(font):
+    oldcontour = font["largeCrossing"][0]
+    assert len(oldcontour) == 4
+    philter = EraseOpenCornersFilter(include={"largeCrossing"})
+    assert philter(font)
+    newcontour = font["largeCrossing"][0]
+    assert len(newcontour) == 3
+
+
+def structure(contour):
+    return [x.segmentType for x in contour]
+
+
+def test_compatibility():
+    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
+    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+    philter = EraseOpenCornersFilter(include={"incompatible"})
+    assert philter(font1)
+    assert philter(font2)
+    newcontour1 = font1["incompatible"][0]
+    newcontour2 = font2["incompatible"][0]
+    assert len(newcontour1) == len(newcontour2)
+    assert structure(newcontour1) == structure(newcontour2)
+
+
+def test_compatibility2():
+    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
+    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+    philter = EraseOpenCornersFilter(include={"incompatible2"})
+    assert philter(font1)
+    newcontour1 = font1["incompatible2"][0]
+    assert philter(font2)
+    newcontour2 = font2["incompatible2"][0]
+    assert len(newcontour1) == len(newcontour2)
+    assert structure(newcontour1) == structure(newcontour2)
+
+
+def test_compatibility3():
+    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
+    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+    philter = EraseOpenCornersFilter(include={"incompatible3"})
+
+    assert philter(font1)
+    newcontour1 = font1["incompatible3"][0]
+    assert philter(font2)
+    newcontour2 = font2["incompatible3"][0]
+    assert len(newcontour1) == len(newcontour2)
+    assert structure(newcontour1) == structure(newcontour2)
