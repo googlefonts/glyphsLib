@@ -56,10 +56,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: "3.x"
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
     - name: Extract release notes from annotated tag message
       id: release_notes
       env:
@@ -104,5 +100,6 @@ jobs:
         else
           echo "DEBUG: This is a final release"
         fi
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+        # use https://github.com/pypa/build for our setup.py-less setup
+        pipx run build
+        pipx run twine upload dist/*
