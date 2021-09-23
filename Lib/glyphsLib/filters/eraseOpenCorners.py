@@ -48,9 +48,9 @@ class EraseOpenCornersPen(BasePen):
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(
-                "Starting open corner removal, count of segments now: %i" % len(segs)
+                "Starting open corner removal, count of segments now: %i", len(segs)
             )
-            logger.debug("Segments: %s" % segs)
+            logger.debug("Segments: %s", segs)
 
         while ix < len(segs):
             next_ix = (ix + 1) % len(segs)
@@ -61,8 +61,7 @@ class EraseOpenCornersPen(BasePen):
                 continue
 
             logger.debug(
-                "Considering line segment (%i,%i)-(%i,%i)"
-                % (*segs[ix][0], *segs[ix][1])
+                "Considering line segment (%i,%i)-(%i,%i)", *segs[ix][0], *segs[ix][1]
             )
             # Are the incoming point from the previous segment and the outgoing point
             # from the next segment both on the right side of the line?
@@ -72,14 +71,17 @@ class EraseOpenCornersPen(BasePen):
             if _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
                 logger.debug(
                     "Crossing points (%i, %i) and (%i, %i) were not on "
-                    "same side of line segment" % (*pt1, *pt2)
+                    "same side of line segment",
+                    *pt1,
+                    *pt2,
                 )
                 ix = ix + 1
                 continue
 
             logger.debug(
-                "Testing for intersections between %s and %s"
-                % (segs[ix - 1], segs[next_ix])
+                "Testing for intersections between %s and %s",
+                segs[ix - 1],
+                segs[next_ix],
             )
 
             intersection = [
@@ -87,7 +89,7 @@ class EraseOpenCornersPen(BasePen):
                 for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
                 if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
             ]
-            logger.debug("Intersections: %s" % intersection)
+            logger.debug("Intersections: %s", intersection)
             if not intersection:
                 logger.debug("No intersections")
                 ix = ix + 1
@@ -124,18 +126,19 @@ class EraseOpenCornersPen(BasePen):
                 # Start again!
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(
-                        "After removing seg %i, count of segments now: %i"
-                        % (ix, len(segs))
+                        "After removing seg %i, count of segments now: %i",
+                        ix,
+                        len(segs),
                     )
-                    logger.debug("Segments: %s" % segs)
+                    logger.debug("Segments: %s", segs)
                 ix = 0
                 continue
             ix = ix + 1
 
         self.outpen.moveTo(segs[0][0])
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("All done, count of segments now: %i" % len(segs))
-            logger.debug("Segments: %s" % segs)
+            logger.debug("All done, count of segments now: %i", len(segs))
+            logger.debug("Segments: %s", segs)
 
         for seg in segs:
             if len(seg) == 2:
