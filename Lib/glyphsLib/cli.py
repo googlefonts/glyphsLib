@@ -72,6 +72,11 @@ def main(args=None):
         "Roundtripping between Glyphs and UFOs"
     )
     group.add_argument(
+        "--minimal",
+        action="store_true",
+        help=("Create minimal UFO files with only data needed for building fonts."),
+    )
+    group.add_argument(
         "--no-preserve-glyphsapp-metadata",
         action="store_false",
         help=(
@@ -82,6 +87,7 @@ def main(args=None):
     )
     group.add_argument(
         "--propagate-anchors",
+        default=None,
         action="store_true",
         help=(
             "Copy anchors from underlying components to actual "
@@ -218,7 +224,7 @@ def glyphs2ufo(options):
         store_editor_state=not options.no_store_editor_state,
         write_skipexportglyphs=options.write_public_skip_export_glyphs,
         ufo_module=__import__(options.ufo_module),
-        minimal=False,
+        minimal=options.minimal,
     )
 
 
