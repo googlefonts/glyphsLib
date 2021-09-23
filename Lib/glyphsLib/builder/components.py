@@ -42,7 +42,21 @@ def to_ufo_components(self, ufo_glyph, layer):
             f"Glyph '{ufo_glyph.name}': All components of the background layer of "
             f"'{layer.foreground.name}' will be decomposed."
         )
-        to_ufo_components_background_decompose(self, ufo_glyph, layer)
+        to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
+        return
+
+    # The same for color layers.
+    if (
+        not self.minimal
+        and layer.components
+        and layer.layerId != layer.associatedMasterId
+        and (layer.name.startswith("Color ") or "colorPalette" in layer.attr)
+    ):
+        logger.warning(
+            f"Glyph '{ufo_glyph.name}': All components of the color layer "
+            f"'{layer.name}' will be decomposed."
+        )
+        to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
         return
 
     pen = ufo_glyph.getPointPen()
@@ -71,12 +85,16 @@ def to_ufo_components(self, ufo_glyph, layer):
             ufo_glyph.lib[_lib_key(key)] = values
 
 
-def to_ufo_components_background_decompose(self, ufo_glyph, layer):
-    """Draw decomposed .glyphs background components with a pen, adding them to
-    the parent glyph."""
+def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
+    """Draw decomposed .glyphs background and non-master layers with a pen,
+    adding them to the parent glyph."""
 
-    layer_id = layer.foreground.layerId
-    layer_master_id = layer.foreground.associatedMasterId
+    if isinstance(layer, GSBackgroundLayer):
+        layer_id = layer.foreground.layerId
+        layer_master_id = layer.foreground.associatedMasterId
+    else:
+        layer_id = layer.layerId
+        layer_master_id = layer.associatedMasterId
 
     if layer_id in self._glyph_sets:
         layers = self._glyph_sets[layer_id]
