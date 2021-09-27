@@ -86,7 +86,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
         if layerMapping is not None:
             if not self.minimal:
                 ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = layerMapping
-            else:
+            elif glyph.export:
                 layers = []
                 for layerId, colorId in layerMapping:
                     layers.append((glyph.layers[layerId], colorId))

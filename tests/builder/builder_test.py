@@ -1327,6 +1327,27 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         assert len(ufo["a.color2"].components) == 1
         assert len(ufo["a.color2"]) == 0
 
+    def test_glyph_color_layers_explode_no_export(self):
+        font = generate_minimal_font()
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+
+        color0 = GSLayer()
+        color1 = GSLayer()
+        color0.name = "Color 0"
+        color1.name = "Color 1"
+
+        glypha.export = False
+        glypha.layers.append(color0)
+        glyphb.layers.append(color1)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "b": [("b.color0", 1)]
+        }
+
     def test_master_with_light_weight_but_thin_name(self):
         font = generate_minimal_font()
         master = font.masters[0]
