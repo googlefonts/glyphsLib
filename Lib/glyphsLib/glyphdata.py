@@ -94,11 +94,7 @@ def get_glyph(glyph_name, data=None):
     if data is None:
         global GLYPHDATA
         if GLYPHDATA is None:
-            try:
-                from importlib.resources import open_binary
-            except ImportError:
-                # use backport for python < 3.7
-                from importlib_resources import open_binary
+            from importlib.resources import open_binary
 
             GLYPHDATA = GlyphData.from_files(
                 open_binary("glyphsLib.data", "GlyphData.xml"),
