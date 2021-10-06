@@ -3709,6 +3709,23 @@ class GSLayer(GSBase):
     def widthMetricsKey(self, value):
         self.metricWidth = value
 
+    BRACKET_LAYER_RE = re.compile(r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*")
+
+    def _is_bracket_layer(self):
+        return re.match(self.BRACKET_LAYER_RE, self.name)
+
+    def _bracket_info(self):
+        if not self._is_bracket_layer():
+            return None
+        m = re.match(self.BRACKET_LAYER_RE, self.name)
+        axis_index = 0 # For glyphs 2
+        reverse = m.group("first_bracket") == "]"
+        bracket_crossover = int(m.group("value"))
+        if reverse:
+            return axis_index, None, bracket_crossover
+        else:
+            return axis_index, bracket_crossover, None
+
 
 GSLayer._add_parsers(
     [

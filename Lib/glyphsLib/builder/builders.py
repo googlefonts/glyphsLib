@@ -34,7 +34,6 @@ from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_val
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 
-BRACKET_LAYER_RE = re.compile(r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*")
 BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
 REVERSE_BRACKET_LABEL = "REV_"
 BRACKET_GLYPH_RE = re.compile(
@@ -307,7 +306,7 @@ class UFOBuilder(_LoggerMixin):
             # set to non-export (in which case makes no sense to have Designspace rules
             # referencing non existent glyphs).
             if (
-                BRACKET_LAYER_RE.match(layer.name)
+                layer._is_bracket_layer()
                 and glyph.export
                 and ".background" not in layer.name
             ):
@@ -428,13 +427,19 @@ class UFOBuilder(_LoggerMixin):
         # can go through the layers by location and copy them to free-standing glyphs
         bracket_layer_map = defaultdict(partial(defaultdict, list))
         for layer in self.bracket_layers:
+            bracket_axis_id, bracket_min, bracket_max = layer._bracket_info()
+            if bracket_axis_id != 0:
+                raise ValueError(
+                    "For now, bracket layers can only apply to the first axis"
+                )
             glyph_name = layer.parent.name
 
-            m = BRACKET_LAYER_RE.match(layer.name)
-            assert m
-
-            reverse = m.group("first_bracket") == "]"
-            bracket_crossover = int(m.group("value"))
+            if bracket_max is None:
+                reverse = False
+                bracket_crossover = bracket_min
+            else:
+                reverse = True
+                bracket_crossover = bracket_max
 
             if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
                 raise ValueError(
