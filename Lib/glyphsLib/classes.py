@@ -2967,6 +2967,40 @@ GSAnnotation._add_parsers(
 )
 
 
+class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
+    def __init__(self, key="", value=""):
+        self.key = key
+        self.value = value
+        self.localized_values = None
+
+    def _parse_values_dict(self, parser, values):
+        self.localized_values = {}
+        for v in values:
+            if "language" not in v or "value" not in v:
+                continue
+            self.localized_values[v["language"]] = v["value"]
+
+    def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "key", "if_true")
+        if self.localized_values:
+            writer.writeKeyValue(
+                "values",
+                [{"language": l, "value": v} for l, v in self.localized_values.items()],
+            )
+        else:
+            writer.writeObjectKeyValue(self, "value")
+
+    @property
+    def defaultValue(self):
+        if not self.localized_values:
+            return self.value
+        if "dflt" in self.localized_values:
+            return self.localized_values["dflt"]
+        if "ENG" in self.localized_values:
+            return self.localized_values["ENG"]
+        return self.localized_values.values()[0]
+
+
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
@@ -3226,40 +3260,6 @@ GSInstance._add_parsers(
         {"plist_name": "manualInterpolation", "converter": bool},
     ]
 )
-
-
-class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
-    def __init__(self, key="", value=""):
-        self.key = key
-        self.value = value
-        self.localized_values = None
-
-    def _parse_values_dict(self, parser, values):
-        self.localized_values = {}
-        for v in values:
-            if "language" not in v or "value" not in v:
-                continue
-            self.localized_values[v["language"]] = v["value"]
-
-    def _serialize_to_plist(self, writer):
-        writer.writeObjectKeyValue(self, "key", "if_true")
-        if self.localized_values:
-            writer.writeKeyValue(
-                "values",
-                [{"language": l, "value": v} for l, v in self.localized_values.items()],
-            )
-        else:
-            writer.writeObjectKeyValue(self, "value")
-
-    @property
-    def defaultValue(self):
-        if not self.localized_values:
-            return self.value
-        if "dflt" in self.localized_values:
-            return self.localized_values["dflt"]
-        if "ENG" in self.localized_values:
-            return self.localized_values["ENG"]
-        return self.localized_values.values()[0]
 
 
 class GSBackgroundImage(GSBase):
