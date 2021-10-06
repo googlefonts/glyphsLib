@@ -131,14 +131,14 @@ def test_glyphs3_instance_filtering():
     # Loaded from default font family name
     assert not font.instances[0].properties
     assert not font.instances[1].properties
-    assert font.instances[0].familyName == 'MyFamily'
-    assert font.instances[1].familyName == 'MyFamily'
+    assert font.instances[0].familyName == "MyFamily"
+    assert font.instances[1].familyName == "MyFamily"
 
     # Loaded from .properties
-    assert font.instances[2].familyName == 'MyFamily 12pt'
-    assert font.instances[3].familyName == 'MyFamily 12pt'
-    assert font.instances[4].familyName == 'MyFamily 72pt'
-    assert font.instances[5].familyName == 'MyFamily 72pt'
+    assert font.instances[2].familyName == "MyFamily 12pt"
+    assert font.instances[3].familyName == "MyFamily 12pt"
+    assert font.instances[4].familyName == "MyFamily 72pt"
+    assert font.instances[5].familyName == "MyFamily 72pt"
 
     doc = glyphsLib.to_designspace(font)
     assert len(doc.instances) == 6
