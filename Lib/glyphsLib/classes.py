@@ -1526,7 +1526,8 @@ class GSFontMaster(GSBase):
 
         writer.writeObjectKeyValue(self, "iconName", "if_true")
         writer.writeObjectKeyValue(self, "id")
-        writer.writeObjectKeyValue(self, "italicAngle", "if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "italicAngle", "if_true")
         if writer.format_version == 3:
             writer.writeKeyValue("metricValues", self.metrics)
 
@@ -1561,7 +1562,7 @@ class GSFontMaster(GSBase):
         "cap height": 700,
         "ascender": 800,
         "descender": -200,
-        "italicAngle": 0,
+        "italic angle": 0,
     }
 
     _axis_defaults = (100, 100)
@@ -1583,7 +1584,6 @@ class GSFontMaster(GSBase):
         self.horizontalStems = 0
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
-        self.italicAngle = self._defaultsForName["italicAngle"]
         self.numbers = []
         self.stems = []
         self.verticalStems = 0
@@ -1766,6 +1766,14 @@ class GSFontMaster(GSBase):
     @descender.setter
     def descender(self, value):
         self._set_metric("descender", value)
+
+    @property
+    def italicAngle(self):
+        return self._get_metric("italic angle")
+
+    @italicAngle.setter
+    def italicAngle(self, value):
+        self._set_metric("italic angle", value)
 
     def _get_axis_value(self, index):
         if index < len(self.axes):
@@ -4128,6 +4136,7 @@ class GSFont(GSBase):
         GSMetric(type="x-height"),
         GSMetric(type="baseline"),
         GSMetric(type="descender"),
+        GSMetric(type="italic angle"),
     ]
     _defaultAxes = [GSAxis(name="Weight", tag="wght"), GSAxis(name="Width", tag="wdth")]
 
