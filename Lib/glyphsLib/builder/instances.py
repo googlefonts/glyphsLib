@@ -58,9 +58,7 @@ def _to_designspace_instance(self, instance):
     # at least according to https://docu.glyphsapp.com/#fontName
     for p in instance.customParameters:
         param, value = p.name, p.value
-        if param == "familyName":
-            ufo_instance.familyName = value
-        elif param == "postscriptFontName":
+        if param == "postscriptFontName":
             # Glyphs uses "postscriptFontName", not "postScriptFontName"
             ufo_instance.postScriptFontName = value
         elif param == "fileName":
@@ -69,8 +67,8 @@ def _to_designspace_instance(self, instance):
                 fname = self.instance_dir + "/" + fname
             ufo_instance.filename = fname
 
-    if ufo_instance.familyName is None:
-        ufo_instance.familyName = self.family_name
+    # Read either from properties or custom parameter or the font
+    ufo_instance.familyName = instance.familyName
     ufo_instance.styleName = instance.name
 
     fname = (
