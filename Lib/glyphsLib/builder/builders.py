@@ -440,15 +440,20 @@ class UFOBuilder(_LoggerMixin):
                 bracket_max = None
 
             if bracket_min is not None and bracket_max is not None:
-                raise ValueError("Alternate rules with min and max range not yet supported")
+                raise ValueError(
+                    "Alternate rules with min and max range not yet supported"
+                )
             if bracket_min is None and bracket_max is None:
                 continue
 
             glyph_name = layer.parent.name
 
             if (
-                (bracket_min is not None and not bracket_axis_min <= bracket_min <= bracket_axis_max) or
-                (bracket_max is not None and not bracket_axis_min <= bracket_max <= bracket_axis_max)
+                bracket_min is not None
+                and not bracket_axis_min <= bracket_min <= bracket_axis_max
+            ) or (
+                bracket_max is not None
+                and not bracket_axis_min <= bracket_max <= bracket_axis_max
             ):
                 raise ValueError(
                     "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
@@ -542,7 +547,10 @@ class UFOBuilder(_LoggerMixin):
 
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             glyph = font.glyphs[glyph_name]
-            for (bracket_min, bracket_max), bracket_layers in glyph_bracket_layers.items():
+            for (
+                (bracket_min, bracket_max),
+                bracket_layers,
+            ) in glyph_bracket_layers.items():
 
                 for missing_master_layer_id in master_ids.difference(
                     bl.associatedMasterId for bl in bracket_layers
