@@ -3723,8 +3723,6 @@ class GSLayer(GSBase):
             rules = self.attr["axisRules"]
             if any(rules[1:]):
                 raise ValueError("Alternate rules on non-first axis not yet supported")
-            if "min" in rules[0] and "max" in rules[0]:
-                raise ValueError("Alternate rules with min and max range not yet supported")
             return 0, rules[0].get("min"), rules[0].get("max")
 
         # Glyphs 2

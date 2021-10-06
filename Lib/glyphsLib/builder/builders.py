@@ -432,16 +432,24 @@ class UFOBuilder(_LoggerMixin):
                 raise ValueError(
                     "For now, bracket layers can only apply to the first axis"
                 )
+
+            # Convert [500<wght<(max)] to [500<wght], etc.
+            if bracket_min == bracket_axis_min:
+                bracket_min = None
+            if bracket_max == bracket_axis_max:
+                bracket_max = None
+
+            if bracket_min is not None and bracket_max is not None:
+                raise ValueError("Alternate rules with min and max range not yet supported")
+            if bracket_min is None and bracket_max is None:
+                continue
+
             glyph_name = layer.parent.name
 
-            if bracket_max is None:
-                reverse = False
-                bracket_crossover = bracket_min
-            else:
-                reverse = True
-                bracket_crossover = bracket_max
-
-            if not bracket_axis_min <= bracket_crossover <= bracket_axis_max:
+            if (
+                (bracket_min is not None and not bracket_axis_min <= bracket_min <= bracket_axis_max) or
+                (bracket_max is not None and not bracket_axis_min <= bracket_max <= bracket_axis_max)
+            ):
                 raise ValueError(
                     "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
                     "design space bounds of the {bracket_axis_name} axis: minimum "
@@ -453,7 +461,7 @@ class UFOBuilder(_LoggerMixin):
                         bracket_axis_maximum=bracket_axis_max,
                     )
                 )
-            bracket_layer_map[glyph_name][(bracket_crossover, reverse)].append(layer)
+            bracket_layer_map[glyph_name][(bracket_min, bracket_max)].append(layer)
 
         # Sort crossovers into rule buckets, one for regular bracket layers (in which
         # the location represents the min value) and one for 'reverse' bracket layers
@@ -463,11 +471,11 @@ class UFOBuilder(_LoggerMixin):
         for glyph_name, glyph_bracket_layers in sorted(bracket_layer_map.items()):
             min_crossovers = set()
             max_crossovers = set()
-            for location, reverse in glyph_bracket_layers.keys():
-                if reverse:
-                    max_crossovers.add(location)
-                else:
-                    min_crossovers.add(location)
+            for bracket_min, bracket_max in glyph_bracket_layers.keys():
+                if bracket_min is not None:
+                    min_crossovers.add(bracket_min)
+                elif bracket_max is not None:
+                    max_crossovers.add(bracket_max)
             # reverse and non-reverse bracket layers with overlapping ranges are
             # tricky to implement as DS rules. They are relatively unlikely, and
             # can usually be rewritten so that they do not overlap. For laziness/
@@ -483,15 +491,17 @@ class UFOBuilder(_LoggerMixin):
                     glyph_name,
                     ", ".join("]{}] > [{}]".format(*values) for values in invalid_locs),
                 )
-            for crossover_min, crossover_max in util.pairwise(
-                [bracket_axis_min] + sorted(max_crossovers)
-            ):
+            max_crossovers = list(sorted(max_crossovers))
+            if bracket_axis_min not in max_crossovers:
+                max_crossovers = [bracket_axis_min] + max_crossovers
+            for crossover_min, crossover_max in util.pairwise(max_crossovers):
                 max_rule_bucket[(int(crossover_min), int(crossover_max))].append(
                     glyph_name
                 )
-            for crossover_min, crossover_max in util.pairwise(
-                sorted(min_crossovers) + [bracket_axis_max]
-            ):
+            min_crossovers = list(sorted(min_crossovers))
+            if bracket_axis_max not in min_crossovers:
+                min_crossovers = min_crossovers + [bracket_axis_max]
+            for crossover_min, crossover_max in util.pairwise(min_crossovers):
                 min_rule_bucket[(int(crossover_min), int(crossover_max))].append(
                     glyph_name
                 )
@@ -532,7 +542,7 @@ class UFOBuilder(_LoggerMixin):
 
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
             glyph = font.glyphs[glyph_name]
-            for (location, reverse), bracket_layers in glyph_bracket_layers.items():
+            for (bracket_min, bracket_max), bracket_layers in glyph_bracket_layers.items():
 
                 for missing_master_layer_id in master_ids.difference(
                     bl.associatedMasterId for bl in bracket_layers
@@ -541,10 +551,24 @@ class UFOBuilder(_LoggerMixin):
                     bracket_layers.append(master_layer)
                     implicit_bracket_layers.add(id(master_layer))
 
+                if bracket_max is None:
+                    reverse = False
+                    location = bracket_min
+                else:
+                    reverse = True
+                    location = bracket_max
+
                 bracket_glyphs.add(_bracket_glyph_name(glyph_name, reverse, location))
 
         for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
-            for (location, reverse), layers in glyph_bracket_layers.items():
+            for (bracket_min, bracket_max), layers in glyph_bracket_layers.items():
+                if bracket_max is None:
+                    reverse = False
+                    location = bracket_min
+                else:
+                    reverse = True
+                    location = bracket_max
+
                 for layer in layers:
                     layer_id = layer.associatedMasterId or layer.layerId
                     ufo_font = self._sources[layer_id].font
