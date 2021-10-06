@@ -3091,9 +3091,18 @@ class GSInstance(GSBase):
     def exports(self, value):
         self.active = value
 
+    def _get_from_properties(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return p.defaultValue
+        return None
+
     @property
     def familyName(self):
-        value = self.customParameters["familyName"]
+        value = (
+            self._get_from_properties("familyNames")
+            or self.customParameters["familyName"]
+        )
         if value:
             return value
         return self.parent.familyName
