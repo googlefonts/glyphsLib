@@ -3072,6 +3072,7 @@ class GSInstance(GSBase):
         self.linkStyle = ""
         self.manualInterpolation = False
         self.name = "Regular"
+        self.properties = []
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
@@ -3258,6 +3259,7 @@ GSInstance._add_parsers(
         {"plist_name": "widthClass", "object_name": "width"},
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
+        {"plist_name": "properties", "type": GSFontInfoValue},
     ]
 )
 
