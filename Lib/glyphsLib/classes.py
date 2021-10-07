@@ -1979,6 +1979,8 @@ class GSNode(GSBase):
             node_type = LINE
         elif lst[2][0] == "q":
             node_type = QCURVE
+        else:
+            node_type = None
         node = cls(position=position, type=node_type, smooth=smooth)
         if len(lst) > 3:
             node._userData = lst[3]
