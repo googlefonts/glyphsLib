@@ -1866,8 +1866,8 @@ class GSNode(GSBase):
         self, position=(0, 0), type=LINE, smooth=False, name=None, nodetype=None
     ):
         self._position = Point(position[0], position[1])
-        if smooth:
-            self.smooth = smooth
+        self._userData = None
+        self.smooth = smooth
         self.type = type
         if nodetype is not None:  # for backward compatibility
             self.type = nodetype
@@ -1937,8 +1937,9 @@ class GSNode(GSBase):
                 floatToString5(self.position[1]),
                 content,
             )
+
     @classmethod
-    def read(self, line):
+    def read(cls, line):
         """Parse a Glyphs node string into a GSNode.
 
         The format of a Glyphs node string (`line`) is:
@@ -1953,17 +1954,21 @@ class GSNode(GSBase):
         WARNING: This method is HOT. It is called for every single node and can
         account for a significant portion of the file parsing time.
         """
-        m = self._PLIST_VALUE_RE.match(line).groups()
-        node = GSNode(position=(parse_float_or_int(m[0]), parse_float_or_int(m[1])), type=m[2].lower(), smooth=bool(m[3]))
+        m = cls._PLIST_VALUE_RE.match(line).groups()
+        node = cls(
+            position=(parse_float_or_int(m[0]), parse_float_or_int(m[1])),
+            type=m[2].lower(),
+            smooth=bool(m[3]),
+        )
         if m[4] is not None and len(m[4]) > 0:
-            value = self._decode_dict_as_string(m[4])
+            value = cls._decode_dict_as_string(m[4])
             parser = Parser()
             node._userData = parser.parse(value)
 
         return node
 
     @classmethod
-    def read_v3(self, lst):
+    def read_v3(cls, lst):
         position = (lst[0], lst[1])
         smooth = lst[2].endswith("s")
         if lst[2][0] == "c":
@@ -1974,7 +1979,7 @@ class GSNode(GSBase):
             node_type = LINE
         elif lst[2][0] == "q":
             node_type = QCURVE
-        node = GSNode(position=position, type=node_type, smooth=smooth)
+        node = cls(position=position, type=node_type, smooth=smooth)
         if len(lst) > 3:
             node._userData = lst[3]
         return node
@@ -4502,7 +4507,7 @@ class GSFont(GSBase):
             if ax.hidden:
                 value["Hidden"] = 1
             values.append(value)
-        return GSCustomParameter(name="Axes", value=values,)
+        return GSCustomParameter(name="Axes", value=values)
 
     def _set_axes_from_custom_parameter(self, value):
         self.axes = [
