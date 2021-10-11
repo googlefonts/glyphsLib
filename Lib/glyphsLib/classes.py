@@ -2097,11 +2097,12 @@ class GSPath(GSBase):
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
     def _parse_nodes_dict(self, parser, d):
+        if parser.format_version == 3:
+            read_node = GSNode.read_v3
+        else:
+            read_node = GSNode.read
         for x in d:
-            if parser.format_version == 3:
-                node = GSNode.read_v3(x)
-            else:
-                node = GSNode.read(x)
+            node = read_node(x)
             node._parent = self
             self._nodes.append(node)
 
