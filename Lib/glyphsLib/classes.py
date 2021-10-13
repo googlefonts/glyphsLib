@@ -1859,13 +1859,14 @@ class GSNode(GSBase):
         r"(?: (SMOOTH))?(?: ({.*}))?",
         re.DOTALL,
     )
-    _parent = None
+
+    __slots__ = "_parent", "_userData", "_position", "smooth", "type"
 
     def __init__(
         self, position=(0, 0), type=LINE, smooth=False, name=None, nodetype=None
     ):
-        self._userData = None
         self._position = Point(position[0], position[1])
+        self._userData = None
         self.smooth = smooth
         self.type = type
         if nodetype is not None:  # for backward compatibility
@@ -1937,7 +1938,8 @@ class GSNode(GSBase):
                 content,
             )
 
-    def read(self, line):
+    @classmethod
+    def read(cls, line):
         """Parse a Glyphs node string into a GSNode.
 
         The format of a Glyphs node string (`line`) is:
@@ -1952,33 +1954,37 @@ class GSNode(GSBase):
         WARNING: This method is HOT. It is called for every single node and can
         account for a significant portion of the file parsing time.
         """
-        m = self._PLIST_VALUE_RE.match(line).groups()
-        self.position = Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))
-        self.type = m[2].lower()
-        self.smooth = bool(m[3])
-
+        m = cls._PLIST_VALUE_RE.match(line).groups()
+        node = cls(
+            position=(parse_float_or_int(m[0]), parse_float_or_int(m[1])),
+            type=m[2].lower(),
+            smooth=bool(m[3]),
+        )
         if m[4] is not None and len(m[4]) > 0:
-            value = self._decode_dict_as_string(m[4])
+            value = cls._decode_dict_as_string(m[4])
             parser = Parser()
-            self._userData = parser.parse(value)
+            node._userData = parser.parse(value)
 
-        return self
+        return node
 
-    def read_v3(self, lst):
-        self.position = Point(lst[0], lst[1])
-        self.smooth = lst[2].endswith("s")
+    @classmethod
+    def read_v3(cls, lst):
+        position = (lst[0], lst[1])
+        smooth = lst[2].endswith("s")
         if lst[2][0] == "c":
-            self.type = CURVE
+            node_type = CURVE
         elif lst[2][0] == "o":
-            self.type = OFFCURVE
+            node_type = OFFCURVE
         elif lst[2][0] == "l":
-            self.type = LINE
+            node_type = LINE
         elif lst[2][0] == "q":
-            self.type = QCURVE
-
+            node_type = QCURVE
+        else:
+            node_type = None
+        node = cls(position=position, type=node_type, smooth=smooth)
         if len(lst) > 3:
-            self._userData = lst[3]
-        return self
+            node._userData = lst[3]
+        return node
 
     @property
     def name(self):
@@ -2091,15 +2097,18 @@ class GSPath(GSBase):
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
     def _parse_nodes_dict(self, parser, d):
+        if parser.format_version == 3:
+            read_node = GSNode.read_v3
+        else:
+            read_node = GSNode.read
         for x in d:
-            if parser.format_version == 3:
-                self.nodes.append(GSNode().read_v3(x))
-            else:
-                self.nodes.append(GSNode().read(x))
+            node = read_node(x)
+            node._parent = self
+            self._nodes.append(node)
 
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
-        self.nodes = []
+        self._nodes = []
         self.attr = {}
 
     @property
@@ -4501,7 +4510,7 @@ class GSFont(GSBase):
             if ax.hidden:
                 value["Hidden"] = 1
             values.append(value)
-        return GSCustomParameter(name="Axes", value=values,)
+        return GSCustomParameter(name="Axes", value=values)
 
     def _set_axes_from_custom_parameter(self, value):
         self.axes = [
