@@ -1,0 +1,70 @@
+{
+.appVersion = "3072";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+date = "2021-10-06 13:16:36 +0000";
+fontMaster = (
+{
+axesValues = (
+40
+);
+iconName = Light;
+id = "21A50CEC-A8F8-47E3-8EB4-99CD9DCFA5F3";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 17;
+pos = 704;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+pos = 11;
+}
+);
+name = "72pt Thin Italic";
+}
+);
+glyphs = (
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 3;
+}
