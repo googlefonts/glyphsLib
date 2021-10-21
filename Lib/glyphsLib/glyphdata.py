@@ -91,7 +91,7 @@ class GlyphData:
         )
 
 
-def get_glyph(glyph_name, unicodes=[], data=None):
+def get_glyph(glyph_name, unicodes=None, data=None):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
@@ -115,7 +115,7 @@ def get_glyph(glyph_name, unicodes=[], data=None):
     attributes = _lookup_attributes(glyph_name, data)
 
     # Look up by unicode
-    if attributes == {} and unicodes:
+    if attributes == {} and unicodes is not None:
         for unicode in unicodes:
             attributes = _lookup_attributes_by_unicode(unicode, data)
             if attributes:
