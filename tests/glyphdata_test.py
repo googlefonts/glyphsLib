@@ -139,6 +139,13 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
         self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
 
+    def test_category_buy_unicode(self):
+        def cat(n, u):
+            return get_glyph(n, u).category, get_glyph(n, u).subCategory
+
+        # "SignU.bn" is a non-standard name not defined in GlyphData.xml
+        self.assertEqual(cat("SignU.bn", ["09C1"]), ("Mark", "Nonspacing"))
+
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
         u, g = get_glyph("uni07F0"), get_glyph("longlowtonecomb-nko")

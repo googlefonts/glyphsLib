@@ -143,7 +143,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
             ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
 
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, glyph.unicodes)
     if glyph.production:
         production_name = glyph.production
         # Make sure production names of bracket glyphs also get a BRACKET suffix.
@@ -283,7 +283,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
         # production_name = glyph.production or glyphinfo.production_name
 
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, glyph.unicodes)
 
     layer = self.to_glyphs_layer(ufo_layer, glyph, master)
 

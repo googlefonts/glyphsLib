@@ -50,12 +50,13 @@ class GlyphData:
     dictionaries.
     """
 
-    __slots__ = ["names", "alternative_names", "production_names"]
+    __slots__ = ["names", "alternative_names", "production_names", "unicodes"]
 
-    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping):
+    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping):
         self.names = name_mapping
         self.alternative_names = alt_name_mapping
         self.production_names = production_name_mapping
+        self.unicodes = unicodes_mapping
 
     @classmethod
     def from_files(cls, *glyphdata_files):
@@ -63,6 +64,7 @@ class GlyphData:
         name_mapping = {}
         alt_name_mapping = {}
         production_name_mapping = {}
+        unicodes_mapping = {}
 
         for glyphdata_file in glyphdata_files:
             glyph_data = xml.etree.ElementTree.parse(glyphdata_file).getroot()
@@ -70,6 +72,7 @@ class GlyphData:
                 glyph_name = glyph.attrib["name"]
                 glyph_name_alternatives = glyph.attrib.get("altNames")
                 glyph_name_production = glyph.attrib.get("production")
+                glyph_unicode = glyph.attrib.get("unicode")
 
                 name_mapping[glyph_name] = glyph.attrib
                 if glyph_name_alternatives:
@@ -78,16 +81,18 @@ class GlyphData:
                         alt_name_mapping[glyph_name_alternative] = glyph.attrib
                 if glyph_name_production:
                     production_name_mapping[glyph_name_production] = glyph.attrib
+                if glyph_unicode:
+                    unicodes_mapping[glyph_unicode] = glyph.attrib
 
-        return cls(name_mapping, alt_name_mapping, production_name_mapping)
+        return cls(name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping)
 
 
-def get_glyph(glyph_name, data=None):
+def get_glyph(glyph_name, unicodes=[], data=None):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
     The information is derived from an included copy of GlyphData.xml
-    and GlyphData_Ideographs.xml, going purely by the glyph name.
+    and GlyphData_Ideographs.xml, going by the glyph name or unicode fallback.
     """
 
     # Read data on first use.
@@ -104,6 +109,13 @@ def get_glyph(glyph_name, data=None):
 
     # Look up data by full glyph name first.
     attributes = _lookup_attributes(glyph_name, data)
+
+    # Look up by unicode
+    if attributes == {} and unicodes:
+        for unicode in unicodes:
+            attributes = _lookup_attributes_by_unicode(unicode, data)
+            if attributes:
+                break
 
     production_name = attributes.get("production")
     if production_name is None:
@@ -144,6 +156,14 @@ def _lookup_attributes(glyph_name, data):
         or data.production_names.get(glyph_name)
         or {}
     )
+    return attributes
+
+
+def _lookup_attributes_by_unicode(unicode, data):
+    """Look up glyph attributes in data by unicode
+    or return empty dictionary.
+    """
+    attributes = data.unicodes.get(unicode) or {}
     return attributes
 
 
