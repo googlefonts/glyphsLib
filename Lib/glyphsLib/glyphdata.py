@@ -52,7 +52,9 @@ class GlyphData:
 
     __slots__ = ["names", "alternative_names", "production_names", "unicodes"]
 
-    def __init__(self, name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping):
+    def __init__(
+        self, name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping
+    ):
         self.names = name_mapping
         self.alternative_names = alt_name_mapping
         self.production_names = production_name_mapping
@@ -84,7 +86,9 @@ class GlyphData:
                 if glyph_unicode:
                     unicodes_mapping[glyph_unicode] = glyph.attrib
 
-        return cls(name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping)
+        return cls(
+            name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping
+        )
 
 
 def get_glyph(glyph_name, unicodes=[], data=None):
