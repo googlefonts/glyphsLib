@@ -256,10 +256,6 @@ def parse_hint_target(line=None):
         return line
 
 
-def isString(string):
-    return isinstance(string, str)
-
-
 def transformStructToScaleAndRotation(transform):
     Det = transform[0] * transform[3] - transform[1] * transform[2]
     _sX = math.sqrt(math.pow(transform[0], 2) + math.pow(transform[1], 2))
@@ -486,29 +482,26 @@ class FontFontMasterProxy(Proxy):
     """
 
     def __getitem__(self, Key):
-        if type(Key) == slice:
+        if isinstance(Key, str):
+            # UUIDs are case-sensitive in Glyphs.app.
+            return next((master for master in self.values() if master.id == Key), None)
+        if isinstance(Key, slice):
             return self.values().__getitem__(Key)
-        if type(Key) is int:
+        if isinstance(Key, int):
             if Key < 0:
                 Key = self.__len__() + Key
             return self.values()[Key]
-        elif isString(Key):
-            # UUIDs are case-sensitive in Glyphs.app.
-            for master in self.values():
-                if master.id == Key:
-                    return master
-        else:
-            raise KeyError
+        raise KeyError(Key)
 
     def __setitem__(self, Key, FontMaster):
         FontMaster.font = self._owner
-        if type(Key) is int:
+        if isinstance(Key, int):
             OldFontMaster = self.__getitem__(Key)
             if Key < 0:
                 Key = self.__len__() + Key
             FontMaster.id = OldFontMaster.id
             self._owner._masters[Key] = FontMaster
-        elif isString(Key):
+        elif isinstance(Key, str):
             OldFontMaster = self.__getitem__(Key)
             FontMaster.id = OldFontMaster.id
             Index = self._owner._masters.index(OldFontMaster)
@@ -517,7 +510,7 @@ class FontFontMasterProxy(Proxy):
             raise KeyError
 
     def __delitem__(self, Key):
-        if type(Key) is int:
+        if isinstance(Key, int):
             if Key < 0:
                 Key = self.__len__() + Key
             return self.remove(self._owner._masters[Key])
@@ -595,7 +588,7 @@ class FontGlyphsProxy(Proxy):
         return None
 
     def __setitem__(self, key, glyph):
-        if type(key) is int:
+        if isinstance(key, int):
             self._owner._setupGlyph(glyph)
             self._owner._glyphs[key] = glyph
         else:
@@ -604,7 +597,7 @@ class FontGlyphsProxy(Proxy):
     def __delitem__(self, key):
         if isinstance(key, int):
             del self._owner._glyphs[key]
-        elif isString(key):
+        elif isinstance(key, str):
             glyph = self._get_glyph_by_string(key)
             if not glyph:
                 raise KeyError("No glyph '%s' in the font" % key)
@@ -613,7 +606,7 @@ class FontGlyphsProxy(Proxy):
             raise KeyError
 
     def __contains__(self, item):
-        if isString(item):
+        if isinstance(item, str):
             return self._get_glyph_by_string(item) is not None
         return item in self._owner._glyphs
 
@@ -757,7 +750,7 @@ class GlyphLayerProxy(Proxy):
             if self._owner.parent:
                 return list(self)[key]
             return list(self.values())[key]
-        elif isString(key):
+        elif isinstance(key, str):
             if key in self._owner._layers:
                 return self._owner._layers[key]
 
@@ -1094,7 +1087,7 @@ class CustomParametersProxy(Proxy):
             raise KeyError
 
     def __contains__(self, item):
-        if isString(item):
+        if isinstance(item, str):
             if item == "Axes" and isinstance(self._owner, GSFont):
                 return self._owner.axes
             if item == "Axis Location" and isinstance(self._owner, GSInstance):
@@ -1125,7 +1118,7 @@ class CustomParametersProxy(Proxy):
         self._owner._customParameters.extend(parameters)
 
     def remove(self, parameter):
-        if isString(parameter):
+        if isinstance(parameter, str):
             parameter = self.__getitem__(parameter)
         self._owner._customParameters.remove(parameter)
 
