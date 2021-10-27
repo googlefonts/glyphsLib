@@ -126,9 +126,12 @@ def _to_designspace_source(self, master, is_regular):
             )
         n += 1
 
+    designspace_axis_tags = {a.tag for a in self.designspace.axes}
     location = {}
     for axis_def in get_axis_definitions(self.font):
-        location[axis_def.name] = axis_def.get_design_loc(master)
+        # Only write locations along defined axes
+        if axis_def.tag in designspace_axis_tags:
+            location[axis_def.name] = axis_def.get_design_loc(master)
     source.location = location
 
 
