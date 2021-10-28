@@ -1,0 +1,274 @@
+{
+.appVersion = "3072";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+},
+{
+name = "Optical size";
+tag = opsz;
+}
+);
+date = "2020-09-29 10:46:45 +0000";
+familyName = MyFamily;
+fontMaster = (
+{
+axesValues = (
+40,
+72
+);
+iconName = Light;
+id = "65D1C757-52A4-41AF-B6F1-0B1906938095";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 704;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+}
+);
+name = "72pt Thin";
+},
+{
+axesValues = (
+84,
+72
+);
+iconName = Bold;
+id = "C4D96FDC-31F2-4CF4-BEA5-4CCE99FECD99";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 704;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+}
+);
+name = "72pt Black";
+},
+{
+axesValues = (
+40,
+12
+);
+iconName = Light_SemiExtended;
+id = "891D9FC5-7784-4CE6-B01A-BC8B0C8DC68C";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 704;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+}
+);
+name = Thin;
+},
+{
+axesValues = (
+84,
+12
+);
+iconName = Bold_SemiExtended;
+id = "B67CA61C-C7DB-4511-8D93-FE28BE810A6B";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 704;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+}
+);
+name = Black;
+}
+);
+glyphs = (
+{
+glyphname = newGlyph;
+lastChange = "2021-10-06 11:45:21 +0000";
+layers = (
+{
+layerId = "65D1C757-52A4-41AF-B6F1-0B1906938095";
+width = 600;
+},
+{
+layerId = "C4D96FDC-31F2-4CF4-BEA5-4CCE99FECD99";
+width = 600;
+},
+{
+layerId = "891D9FC5-7784-4CE6-B01A-BC8B0C8DC68C";
+width = 600;
+},
+{
+layerId = "B67CA61C-C7DB-4511-8D93-FE28BE810A6B";
+width = 600;
+}
+);
+}
+);
+instances = (
+{
+axesValues = (
+40,
+12
+);
+instanceInterpolations = {
+"891D9FC5-7784-4CE6-B01A-BC8B0C8DC68C" = 1;
+};
+name = Thin;
+weightClass = 100;
+},
+{
+axesValues = (
+84,
+12
+);
+instanceInterpolations = {
+"B67CA61C-C7DB-4511-8D93-FE28BE810A6B" = 1;
+};
+name = Black;
+weightClass = 900;
+},
+{
+axesValues = (
+40,
+12
+);
+instanceInterpolations = {
+"891D9FC5-7784-4CE6-B01A-BC8B0C8DC68C" = 1;
+};
+name = Thin;
+properties = (
+{
+key = familyNames;
+values = (
+{
+language = dflt;
+value = "MyFamily 12pt";
+}
+);
+}
+);
+weightClass = 100;
+},
+{
+axesValues = (
+84,
+12
+);
+instanceInterpolations = {
+"B67CA61C-C7DB-4511-8D93-FE28BE810A6B" = 1;
+};
+name = Black;
+properties = (
+{
+key = familyNames;
+values = (
+{
+language = dflt;
+value = "MyFamily 12pt";
+}
+);
+}
+);
+weightClass = 900;
+},
+{
+axesValues = (
+40,
+72
+);
+instanceInterpolations = {
+"65D1C757-52A4-41AF-B6F1-0B1906938095" = 1;
+};
+name = Thin;
+properties = (
+{
+key = familyNames;
+values = (
+{
+language = dflt;
+value = "MyFamily 72pt";
+}
+);
+}
+);
+weightClass = 100;
+},
+{
+axesValues = (
+84,
+72
+);
+instanceInterpolations = {
+"C4D96FDC-31F2-4CF4-BEA5-4CCE99FECD99" = 1;
+};
+name = Black;
+properties = (
+{
+key = familyNames;
+values = (
+{
+language = dflt;
+value = "MyFamily 72pt";
+}
+);
+}
+);
+weightClass = 900;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 3;
+}

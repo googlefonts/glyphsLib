@@ -122,3 +122,26 @@ def test_glyphs3_mapping():
     assert doc.instances[0].location == {"Weight": 200}
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
+
+
+def test_glyphs3_instance_filtering():
+    font = glyphsLib.GSFont(os.path.join(DATA, "InstanceFamilyName-G3.glyphs"))
+    assert len(font.instances) == 6
+
+    # Loaded from default font family name
+    assert not font.instances[0].properties
+    assert not font.instances[1].properties
+    assert font.instances[0].familyName == "MyFamily"
+    assert font.instances[1].familyName == "MyFamily"
+
+    # Loaded from .properties
+    assert font.instances[2].familyName == "MyFamily 12pt"
+    assert font.instances[3].familyName == "MyFamily 12pt"
+    assert font.instances[4].familyName == "MyFamily 72pt"
+    assert font.instances[5].familyName == "MyFamily 72pt"
+
+    doc = glyphsLib.to_designspace(font)
+    assert len(doc.instances) == 6
+
+    doc = glyphsLib.to_designspace(font, family_name="MyFamily 12pt")
+    assert len(doc.instances) == 2

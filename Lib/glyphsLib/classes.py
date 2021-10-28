@@ -2977,6 +2977,40 @@ GSAnnotation._add_parsers(
 )
 
 
+class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
+    def __init__(self, key="", value=""):
+        self.key = key
+        self.value = value
+        self.localized_values = None
+
+    def _parse_values_dict(self, parser, values):
+        self.localized_values = {}
+        for v in values:
+            if "language" not in v or "value" not in v:
+                continue
+            self.localized_values[v["language"]] = v["value"]
+
+    def _serialize_to_plist(self, writer):
+        writer.writeObjectKeyValue(self, "key", "if_true")
+        if self.localized_values:
+            writer.writeKeyValue(
+                "values",
+                [{"language": l, "value": v} for l, v in self.localized_values.items()],
+            )
+        else:
+            writer.writeObjectKeyValue(self, "value")
+
+    @property
+    def defaultValue(self):
+        if not self.localized_values:
+            return self.value
+        if "dflt" in self.localized_values:
+            return self.localized_values["dflt"]
+        if "ENG" in self.localized_values:
+            return self.localized_values["ENG"]
+        return self.localized_values.values()[0]
+
+
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
@@ -3048,6 +3082,7 @@ class GSInstance(GSBase):
         self.linkStyle = ""
         self.manualInterpolation = False
         self.name = "Regular"
+        self.properties = []
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
@@ -3066,9 +3101,18 @@ class GSInstance(GSBase):
     def exports(self, value):
         self.active = value
 
+    def _get_from_properties(self, key):
+        for p in self.properties:
+            if p.key == key:
+                return p.defaultValue
+        return None
+
     @property
     def familyName(self):
-        value = self.customParameters["familyName"]
+        value = (
+            self._get_from_properties("familyNames")
+            or self.customParameters["familyName"]
+        )
         if value:
             return value
         return self.parent.familyName
@@ -3234,42 +3278,9 @@ GSInstance._add_parsers(
         {"plist_name": "widthClass", "object_name": "width"},
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
+        {"plist_name": "properties", "type": GSFontInfoValue},
     ]
 )
-
-
-class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
-    def __init__(self, key="", value=""):
-        self.key = key
-        self.value = value
-        self.localized_values = None
-
-    def _parse_values_dict(self, parser, values):
-        self.localized_values = {}
-        for v in values:
-            if "language" not in v or "value" not in v:
-                continue
-            self.localized_values[v["language"]] = v["value"]
-
-    def _serialize_to_plist(self, writer):
-        writer.writeObjectKeyValue(self, "key", "if_true")
-        if self.localized_values:
-            writer.writeKeyValue(
-                "values",
-                [{"language": l, "value": v} for l, v in self.localized_values.items()],
-            )
-        else:
-            writer.writeObjectKeyValue(self, "value")
-
-    @property
-    def defaultValue(self):
-        if not self.localized_values:
-            return self.value
-        if "dflt" in self.localized_values:
-            return self.localized_values["dflt"]
-        if "ENG" in self.localized_values:
-            return self.localized_values["ENG"]
-        return self.localized_values.values()[0]
 
 
 class GSBackgroundImage(GSBase):
