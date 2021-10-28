@@ -3730,6 +3730,34 @@ class GSLayer(GSBase):
     def widthMetricsKey(self, value):
         self.metricWidth = value
 
+    BRACKET_LAYER_RE = re.compile(
+        r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*"
+    )
+
+    def _is_bracket_layer(self):
+        return "axisRules" in self.attr or re.match(self.BRACKET_LAYER_RE, self.name)
+
+    def _bracket_info(self):
+        if not self._is_bracket_layer():
+            return None
+
+        if "axisRules" in self.attr:
+            # Glyphs 3
+            rules = self.attr["axisRules"]
+            if any(rules[1:]):
+                raise ValueError("Alternate rules on non-first axis not yet supported")
+            return 0, rules[0].get("min"), rules[0].get("max")
+
+        # Glyphs 2
+        m = re.match(self.BRACKET_LAYER_RE, self.name)
+        axis_index = 0  # For glyphs 2
+        reverse = m.group("first_bracket") == "]"
+        bracket_crossover = int(m.group("value"))
+        if reverse:
+            return axis_index, None, bracket_crossover
+        else:
+            return axis_index, bracket_crossover, None
+
 
 GSLayer._add_parsers(
     [

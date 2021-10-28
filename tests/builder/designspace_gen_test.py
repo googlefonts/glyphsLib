@@ -492,3 +492,13 @@ def test_designspace_generation_bracket_GDEF(datadir, ufo_module):
             "x.BRACKET.300",
             "x.BRACKET.600",
         }
+
+
+def test_designspace_generation_bracket_glyphs3_simple(datadir, ufo_module):
+    with open(str(datadir.join("Alternate-g3-axis1.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    designspace = to_designspace(font, ufo_module=ufo_module)
+
+    for source in designspace.sources:
+        assert "A.BRACKET.600" in source.font
