@@ -158,18 +158,24 @@ class Writer:
         elif type(value) == datetime.datetime:
             self.file.write('"%s +0000"' % str(value))
         else:
-            value = str(value)
-            if self.format_version < 3:
-                if forKey != "unicode":
-                    value = escape_string(value)
-            else:
-                if _needs_quotes(value) or " " in value:
-                    value = '"%s"' % value
+            value = self.escape_string(str(value), forKey)
             self.file.write(value)
 
     def writeKey(self, key):
-        key = escape_string(key)
+        key = self.escape_string(key, None)
         self.file.write("%s = " % key)
+
+    def escape_string(self, string, forKey):
+        if _needs_quotes(string):
+            if self.format_version < 3 and forKey != "unicode":
+                string = string.replace("\\", "\\\\")
+                string = string.replace('"', '\\"')
+                string = string.replace("\n", "\\012")
+            else:
+                string = string.replace("\\", "\\\\")
+                string = string.replace('"', '\\"')
+            string = '"%s"' % string
+        return string
 
 
 def dump(obj, fp):
@@ -356,12 +362,3 @@ def _needs_quotes(string):
         return False
     else:
         return True
-
-
-def escape_string(string):
-    if _needs_quotes(string):
-        string = string.replace("\\", "\\\\")
-        string = string.replace('"', '\\"')
-        string = string.replace("\n", "\\012")
-        string = '"%s"' % string
-    return string

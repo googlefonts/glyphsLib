@@ -3448,6 +3448,7 @@ type = ascender;
 type = "cap height";
 },
 {
+filter = "category == \"letter\"";
 type = "x-height";
 },
 {
