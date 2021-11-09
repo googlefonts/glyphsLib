@@ -1925,6 +1925,8 @@ class GSNode(GSBase):
         else:
             if self.type == CURVE:
                 content = "c"
+            elif self.type == QCURVE:
+                content = "q"
             elif self.type == OFFCURVE:
                 content = "o"
             elif self.type == LINE:
