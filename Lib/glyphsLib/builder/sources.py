@@ -151,30 +151,21 @@ def _to_designspace_source_layer(self):
 
     # First, collect all brace layers in the font and which glyphs and which masters
     # they belong to.
-    layer_name_to_master_ids = collections.defaultdict(set)
-    layer_name_to_glyph_names = collections.defaultdict(list)
+    layer_to_master_ids = collections.defaultdict(set)
+    layer_to_glyph_names = collections.defaultdict(list)
     for glyph in self.font.glyphs:
         for layer in glyph.layers:
-            if (
-                "{" in layer.name
-                and "}" in layer.name
-                and ".background" not in layer.name
-            ):
-                layer_name_to_master_ids[layer.name].add(layer.associatedMasterId)
-                layer_name_to_glyph_names[layer.name].append(glyph.name)
+            if layer._is_brace_layer():
+                key = (layer.name, tuple(layer._brace_coordinates()))
+                layer_to_master_ids[key].add(layer.associatedMasterId)
+                layer_to_glyph_names[key].append(glyph.name)
 
     # Next, insert the brace layers in a defined location in the existing designspace.
     designspace = self._designspace
     layers_to_insert = collections.defaultdict(list)
-    for layer_name, master_ids in layer_name_to_master_ids.items():
-        # Construct coordinates first...
-        brace_coordinates = [
-            float(c)
-            for c in layer_name[
-                layer_name.index("{") + 1 : layer_name.index("}")
-            ].split(",")
-        ]
-
+    for key, master_ids in layer_to_master_ids.items():
+        brace_coordinates = list(key[1])
+        layer_name = key[0]
         for master_id in master_ids:
             # ... as they may need to be filled up with the values of the associated
             # master.
@@ -189,7 +180,7 @@ def _to_designspace_source_layer(self):
                 logger.warning(
                     "Glyph(s) %s, brace layer '%s' defines more locations than "
                     "there are design axes.",
-                    layer_name_to_glyph_names[layer_name],
+                    layer_to_glyph_names[key],
                     layer_name,
                 )
 

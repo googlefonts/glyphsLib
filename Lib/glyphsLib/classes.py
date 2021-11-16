@@ -3765,6 +3765,24 @@ class GSLayer(GSBase):
         else:
             return axis_index, bracket_crossover, None
 
+    def _is_brace_layer(self):
+        if self.parent.parent.format_version > 2:
+            return "coordinates" in self.attributes  # Glyphs 3
+        # Glyphs 2
+        return "{" in self.name and "}" in self.name and ".background" not in self.name
+
+    def _brace_coordinates(self):
+        if not self._is_brace_layer():
+            return None
+
+        if self.parent.parent.format_version > 2:
+            return self.attributes["coordinates"]  # Glyphs 3
+
+        # Glyphs 2
+        name = self.name
+        coordinates = name[name.index("{") + 1 : name.index("}")]
+        return [float(c) for c in coordinates.split(",")]
+
 
 GSLayer._add_parsers(
     [

@@ -157,8 +157,9 @@ def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
     assert designspace.sources[0].filename != designspace.sources[2].filename
 
 
-def test_designspace_generation_brace_layers(datadir, ufo_module):
-    with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
+@pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
+def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
+    with open(str(datadir.join(filename))) as f:
         font = glyphsLib.load(f)
     designspace = to_designspace(font, ufo_module=ufo_module)
 
@@ -192,8 +193,9 @@ def test_designspace_generation_brace_layers(datadir, ufo_module):
         masters[source.filename] = source.font
 
 
-def test_designspace_generation_instances(datadir, ufo_module):
-    with open(str(datadir.join("BraceTestFont.glyphs"))) as f:
+@pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
+def test_designspace_generation_instances(datadir, filename, ufo_module):
+    with open(str(datadir.join(filename))) as f:
         font = glyphsLib.load(f)
     designspace = to_designspace(font, ufo_module=ufo_module)
 
@@ -211,8 +213,9 @@ def test_designspace_generation_instances(datadir, ufo_module):
     ]
 
 
-def test_designspace_generation_on_disk(datadir, tmpdir, ufo_module):
-    glyphsLib.build_masters(str(datadir.join("BraceTestFont.glyphs")), str(tmpdir))
+@pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
+def test_designspace_generation_on_disk(datadir, tmpdir, filename, ufo_module):
+    glyphsLib.build_masters(str(datadir.join(filename)), str(tmpdir))
 
     ufo_paths = list(tmpdir.visit(fil="*.ufo"))
     assert len(ufo_paths) == 4  # Source layers should not be written to disk.
