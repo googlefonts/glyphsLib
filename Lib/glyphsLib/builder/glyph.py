@@ -72,14 +72,14 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
             ]
         # Glyphs 3.
         elif any(
-            "colorPalette" in l.attr
+            "colorPalette" in l.attributes
             and l.associatedMasterId == layer.associatedMasterId
             for l in glyph.layers
         ):
             layerMapping = [
-                (l.layerId, _color_index(l.attr["colorPalette"]))
+                (l.layerId, _color_index(l.attributes["colorPalette"]))
                 for l in glyph.layers
-                if "colorPalette" in l.attr
+                if "colorPalette" in l.attributes
                 and l.associatedMasterId == layer.associatedMasterId
             ]
 

@@ -2094,8 +2094,8 @@ class GSPath(GSBase):
     _parent = None
 
     def _serialize_to_plist(self, writer):
-        if writer.format_version == 3 and self.attr:
-            writer.writeObjectKeyValue(self, "attr")
+        if writer.format_version == 3 and self.attributes:
+            writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
@@ -2112,7 +2112,7 @@ class GSPath(GSBase):
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
         self._nodes = []
-        self.attr = {}
+        self.attributes = {}
 
     @property
     def parent(self):
@@ -2303,6 +2303,9 @@ class GSPath(GSBase):
                 userData=node_data,
             )
         pointPen.endPath()
+
+
+GSPath._add_parsers([{"plist_name": "attr", "object_name": "attributes"}])  # V3
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
@@ -3421,7 +3424,7 @@ class GSLayer(GSBase):
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "attr", "if_true")
+            writer.writeObjectKeyValue(self, "attributes", "if_true", keyName="attr")
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
@@ -3496,7 +3499,7 @@ class GSLayer(GSBase):
         self._selection = []
         self._shapes = []
         self._userData = None
-        self.attr = {}
+        self.attributes = {}
         self.partSelection = {}
         self.associatedMasterId = ""
         self.backgroundImage = None
@@ -3737,15 +3740,17 @@ class GSLayer(GSBase):
     )
 
     def _is_bracket_layer(self):
-        return "axisRules" in self.attr or re.match(self.BRACKET_LAYER_RE, self.name)
+        return "axisRules" in self.attributes or re.match(
+            self.BRACKET_LAYER_RE, self.name
+        )
 
     def _bracket_info(self):
         if not self._is_bracket_layer():
             return None
 
-        if "axisRules" in self.attr:
+        if "axisRules" in self.attributes:
             # Glyphs 3
-            rules = self.attr["axisRules"]
+            rules = self.attributes["axisRules"]
             if any(rules[1:]):
                 raise ValueError("Alternate rules on non-first axis not yet supported")
             return 0, rules[0].get("min"), rules[0].get("max")
@@ -3792,7 +3797,7 @@ GSLayer._add_parsers(
             "object_name": "metricWidth",
             "type": str,
         },  # V2
-        {"plist_name": "attr", "type": dict},  # V3
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
     ]
 )
 

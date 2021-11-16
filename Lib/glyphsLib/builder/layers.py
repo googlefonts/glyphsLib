@@ -33,8 +33,8 @@ def to_ufo_layer(self, glyph, layer):
 
     layer_name = layer.name
     # Give Glyphs 3 color layers better names
-    if "colorPalette" in layer.attr:
-        layer_name = f"color.{layer.attr['colorPalette']}"
+    if "colorPalette" in layer.attributes:
+        layer_name = f"color.{layer.attributes['colorPalette']}"
 
     if layer.associatedMasterId == layer.layerId:
         ufo_layer = ufo_font.layers.defaultLayer
