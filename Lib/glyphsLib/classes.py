@@ -3740,15 +3740,15 @@ class GSLayer(GSBase):
     )
 
     def _is_bracket_layer(self):
-        return "axisRules" in self.attributes or re.match(
-            self.BRACKET_LAYER_RE, self.name
-        )
+        if self.parent.parent.format_version > 2:
+            return "axisRules" in self.attributes  # Glyphs 3
+        return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
     def _bracket_info(self):
         if not self._is_bracket_layer():
             return None
 
-        if "axisRules" in self.attributes:
+        if self.parent.parent.format_version > 2:
             # Glyphs 3
             rules = self.attributes["axisRules"]
             if any(rules[1:]):
