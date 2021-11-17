@@ -1216,6 +1216,24 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             ("color.65535", 65535),
         ]
 
+    def test_glyph_lib_color_mapping_invalid_index(self):
+        font = generate_minimal_font()
+        glyph = add_glyph(font, "a")
+        color = GSLayer()
+        color.name = "Color f"
+        glyph.layers.append(color)
+
+        color = GSLayer()
+        color.name = "Color 0"
+        glyph.layers.append(color)
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+
+        assert ufo["a"].lib["com.github.googlei18n.ufo2ft.colorLayerMapping"] == [
+            ("color.0", 0),
+        ]
+
     def test_glyph_color_layers_decompose(self):
         font = generate_minimal_font()
         glypha = add_glyph(font, "a")
