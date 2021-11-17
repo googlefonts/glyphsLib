@@ -3783,6 +3783,28 @@ class GSLayer(GSBase):
         coordinates = name[name.index("{") + 1 : name.index("}")]
         return [float(c) for c in coordinates.split(",")]
 
+    def _is_color_palette_layer(self):
+        if self.parent.parent.format_version > 2:
+            return "colorPalette" in self.attributes  # Glyphs 3
+        return self.name.startswith("Color ")  # Glyphs 2
+
+    def _color_palette_index(self):
+        if not self._is_color_palette_layer():
+            return None
+
+        if self.parent.parent.format_version > 2:
+            # Glyphs 3
+            index = self.attributes["colorPalette"]
+            if index == "*":
+                return 0xFFFF
+            return index
+
+        # Glyphs 2
+        index = self.name[len("Color ") :]
+        if index.startswith("*"):
+            return 0xFFFF
+        return int(index)
+
 
 GSLayer._add_parsers(
     [

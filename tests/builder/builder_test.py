@@ -1195,9 +1195,9 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo = ds.sources[0].font
 
         assert ufo["a"].lib["com.github.googlei18n.ufo2ft.colorLayerMapping"] == [
-            ("Color 1", 1),
-            ("Color 0", 0),
-            ("Color 3", 3),
+            ("color.1", 1),
+            ("color.0", 0),
+            ("color.3", 3),
         ]
         assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["b"].lib
 
@@ -1213,7 +1213,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo = ds.sources[0].font
 
         assert ufo["a"].lib["com.github.googlei18n.ufo2ft.colorLayerMapping"] == [
-            ("Color *", 65535),
+            ("color.65535", 65535),
         ]
 
     def test_glyph_color_layers_decompose(self):
@@ -1253,27 +1253,27 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ds = self.to_designspace(font)
         ufo = ds.sources[0].font
 
-        assert len(ufo.layers["Color 0"]["a"].components) == 0
-        assert len(ufo.layers["Color 0"]["a"]) == 2
+        assert len(ufo.layers["color.0"]["a"].components) == 0
+        assert len(ufo.layers["color.0"]["a"]) == 2
         pen1 = _PointDataPen()
-        ufo.layers["Color 0"]["a"].drawPoints(pen1)
+        ufo.layers["color.0"]["a"].drawPoints(pen1)
         pen2 = _PointDataPen()
         ufo["d"].drawPoints(pen2)
         ufo["c"].drawPoints(pen2)
         assert pen1.contours == pen2.contours
 
-        assert len(ufo.layers["Color 1"]["a"].components) == 0
-        assert len(ufo.layers["Color 1"]["a"]) == 1
+        assert len(ufo.layers["color.1"]["a"].components) == 0
+        assert len(ufo.layers["color.1"]["a"]) == 1
         pen1 = _PointDataPen()
-        ufo.layers["Color 1"]["a"].drawPoints(pen1)
+        ufo.layers["color.1"]["a"].drawPoints(pen1)
         pen2 = _PointDataPen()
         ufo["d"].drawPoints(pen2)
         assert pen1.contours == pen2.contours
 
-        assert len(ufo.layers["Color 3"]["a"].components) == 0
-        assert len(ufo.layers["Color 3"]["a"]) == 1
+        assert len(ufo.layers["color.3"]["a"].components) == 0
+        assert len(ufo.layers["color.3"]["a"]) == 1
         pen1 = _PointDataPen()
-        ufo.layers["Color 3"]["a"].drawPoints(pen1)
+        ufo.layers["color.3"]["a"].drawPoints(pen1)
         pen2 = _PointDataPen()
         ufo["c"].drawPoints(pen2)
         assert pen1.contours == pen2.contours
