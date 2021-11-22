@@ -2094,8 +2094,8 @@ class GSPath(GSBase):
     _parent = None
 
     def _serialize_to_plist(self, writer):
-        if writer.format_version == 3 and self.attr:
-            writer.writeObjectKeyValue(self, "attr")
+        if writer.format_version == 3 and self.attributes:
+            writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
@@ -2112,7 +2112,7 @@ class GSPath(GSBase):
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
         self._nodes = []
-        self.attr = {}
+        self.attributes = {}
 
     @property
     def parent(self):
@@ -2303,6 +2303,9 @@ class GSPath(GSBase):
                 userData=node_data,
             )
         pointPen.endPath()
+
+
+GSPath._add_parsers([{"plist_name": "attr", "object_name": "attributes"}])  # V3
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
@@ -3421,7 +3424,7 @@ class GSLayer(GSBase):
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "attr", "if_true")
+            writer.writeObjectKeyValue(self, "attributes", "if_true", keyName="attr")
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
@@ -3496,7 +3499,7 @@ class GSLayer(GSBase):
         self._selection = []
         self._shapes = []
         self._userData = None
-        self.attr = {}
+        self.attributes = {}
         self.partSelection = {}
         self.associatedMasterId = ""
         self.backgroundImage = None
@@ -3737,15 +3740,17 @@ class GSLayer(GSBase):
     )
 
     def _is_bracket_layer(self):
-        return "axisRules" in self.attr or re.match(self.BRACKET_LAYER_RE, self.name)
+        if self.parent.parent.format_version > 2:
+            return "axisRules" in self.attributes  # Glyphs 3
+        return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
     def _bracket_info(self):
         if not self._is_bracket_layer():
             return None
 
-        if "axisRules" in self.attr:
+        if self.parent.parent.format_version > 2:
             # Glyphs 3
-            rules = self.attr["axisRules"]
+            rules = self.attributes["axisRules"]
             if any(rules[1:]):
                 raise ValueError("Alternate rules on non-first axis not yet supported")
             return 0, rules[0].get("min"), rules[0].get("max")
@@ -3759,6 +3764,49 @@ class GSLayer(GSBase):
             return axis_index, None, bracket_crossover
         else:
             return axis_index, bracket_crossover, None
+
+    def _is_brace_layer(self):
+        if self.parent.parent.format_version > 2:
+            return "coordinates" in self.attributes  # Glyphs 3
+        # Glyphs 2
+        return "{" in self.name and "}" in self.name and ".background" not in self.name
+
+    def _brace_coordinates(self):
+        if not self._is_brace_layer():
+            return None
+
+        if self.parent.parent.format_version > 2:
+            return self.attributes["coordinates"]  # Glyphs 3
+
+        # Glyphs 2
+        name = self.name
+        coordinates = name[name.index("{") + 1 : name.index("}")]
+        return [float(c) for c in coordinates.split(",")]
+
+    COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
+
+    def _is_color_palette_layer(self):
+        if self.parent.parent.format_version > 2:
+            return "colorPalette" in self.attributes  # Glyphs 3
+        return re.match(self.COLOR_PALETTE_LAYER_RE, self.name.strip())  # Glyphs 2
+
+    def _color_palette_index(self):
+        if not self._is_color_palette_layer():
+            return None
+
+        if self.parent.parent.format_version > 2:
+            # Glyphs 3
+            index = self.attributes["colorPalette"]
+            if index == "*":
+                return 0xFFFF
+            return index
+
+        # Glyphs 2
+        m = re.match(self.COLOR_PALETTE_LAYER_RE, self.name)
+        index = m.group("index")
+        if index.startswith("*"):
+            return 0xFFFF
+        return int(index)
 
 
 GSLayer._add_parsers(
@@ -3792,7 +3840,7 @@ GSLayer._add_parsers(
             "object_name": "metricWidth",
             "type": str,
         },  # V2
-        {"plist_name": "attr", "type": dict},  # V3
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
     ]
 )
 

@@ -32,17 +32,6 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
-def _color_index(index):
-    if isinstance(index, int):
-        return index
-    if index.startswith("*"):
-        return 0xFFFF
-    try:
-        return int(index)
-    except Exception as ex:
-        raise TypeError("Invalid color palette index, must be integer or *") from ex
-
-
 def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
@@ -56,34 +45,18 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
         # When building minimal UFOs, we instead collect color layers and later
         # add them as separate glyphs to the UFO font.
 
-        layerMapping = None
-
-        # Glyphs 2.
         if any(
-            l.name.startswith("Color ")
+            l._is_color_palette_layer()
             and l.associatedMasterId == layer.associatedMasterId
             for l in glyph.layers
         ):
             layerMapping = [
-                (l.layerId, _color_index(l.name[len("Color ") :]))
+                (l.layerId, l._color_palette_index())
                 for l in glyph.layers
-                if l.name.startswith("Color ")
-                and l.associatedMasterId == layer.associatedMasterId
-            ]
-        # Glyphs 3.
-        elif any(
-            "colorPalette" in l.attr
-            and l.associatedMasterId == layer.associatedMasterId
-            for l in glyph.layers
-        ):
-            layerMapping = [
-                (l.layerId, _color_index(l.attr["colorPalette"]))
-                for l in glyph.layers
-                if "colorPalette" in l.attr
+                if l._is_color_palette_layer()
                 and l.associatedMasterId == layer.associatedMasterId
             ]
 
-        if layerMapping is not None:
             if not self.minimal:
                 ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = layerMapping
             elif glyph.export:
