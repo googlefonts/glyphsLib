@@ -134,8 +134,8 @@ class UFOBuilder(_LoggerMixin):
         # Map Glyphs layer IDs to UFO layer names.
         self._layer_map = {}
 
-        # List of exploded color layer when building minimal UFOs.
-        self._color_layers = []
+        # List of exploded color palette layers when building minimal UFOs.
+        self._color_palette_layers = []
 
         # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
         # for passing into pens as glyph sets.
@@ -319,7 +319,7 @@ class UFOBuilder(_LoggerMixin):
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
 
     def to_ufo_color_layers(self):
-        for (glyph, masterLayer), layers in self._color_layers:
+        for (glyph, masterLayer), layers in self._color_palette_layers:
             ufo_font = self._sources[
                 masterLayer.associatedMasterId or masterLayer.layerId
             ].font

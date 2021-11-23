@@ -37,11 +37,15 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
     if layer.layerId == layer.associatedMasterId:
-        # Here we handle color layers. If this is a master layer and the glyph has
-        # color layers, add ufo2ft lib key with the layer mapping. The layer
-        # mapping is a tuple of (layer name, palette index), but we don’t know the
-        # final UFO layer names yet, so we use Glyphs layer IDs and change them to
-        # layer names in to_ufo_color_layer_names().
+        # Here we handle color layers. If this is a master layer and the glyph
+        # has color layers, add ufo2ft lib key with the layer mapping.
+
+        # There are two kinds of color layers: first, color palette layers that
+        # are handled below, which are used to build COLRv0 table. For color
+        # palette layers, the layer mapping is a tuple of (layer name, palette
+        # index), but we don’t know the final UFO layer names yet, so we use
+        # Glyphs layer IDs and change them to layer names in
+        # to_ufo_color_layer_names().
         # When building minimal UFOs, we instead collect color layers and later
         # add them as separate glyphs to the UFO font.
 
@@ -63,7 +67,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
                 layers = []
                 for layerId, colorId in layerMapping:
                     layers.append((glyph.layers[layerId], colorId))
-                self._color_layers.append(((glyph, layer), layers))
+                self._color_palette_layers.append(((glyph, layer), layers))
 
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
