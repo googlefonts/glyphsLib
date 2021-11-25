@@ -39,6 +39,8 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
 
 
 def _find_or_insert_color(color, palette):
+    if color is None:
+        return 0xFFFF, 1
     color = to_ufo_color(color)
     palette, old = palette
     if color not in palette:
@@ -118,6 +120,34 @@ def _to_gradient_paint(gradient, layer, palette):
     return paint
 
 
+def _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo):
+    try:
+        import pathops
+    except ImportError as ex:
+        raise RuntimeError(
+            f"Stroked color layer path in '{layer.parent.name}' requires "
+            f"'pathops' module."
+        ) from ex
+
+    pos = attributes.get("strokePos", 0)
+    if pos:
+        raise NotImplementedError(
+            f"Unsupported color layer path attribute 'strokePos' "
+            f"in '{layer.parent.name}'"
+        )
+
+    width = attributes.get("strokeWidth", 1)
+    path = pathops.Path()
+    ufo_glyph.draw(path.getPen(glyphSet=ufo))
+    path.stroke(width, pathops.LineCap.BUTT_CAP, pathops.LineJoin.MITER_JOIN, 4)
+    ufo_glyph.clear()
+    path.draw(ufo_glyph.getPen())
+
+    color = attributes.get("strokeColor")
+    paletteIndex, a = _find_or_insert_color(color, palette)
+    return dict(Format=PaintFormat.PaintSolid, Alpha=a, PaletteIndex=paletteIndex)
+
+
 def _to_ufo_color_layers(builder, ufo, master, layerMapping):
     palette = ([], ufo.lib.get(UFO2FT_COLOR_PALETTES_KEY, [[]])[0])
     for (glyph, masterLayer), layers in builder._color_layers:
@@ -146,6 +176,12 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 paint = dict(
                     Format=PaintFormat.PaintSolid, Alpha=a, PaletteIndex=paletteIndex
                 )
+            elif (
+                "strokeColor" in attributes
+                or "strokeWidth" in attributes
+                or not attributes
+            ):
+                paint = _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo)
             else:
                 raise NotImplementedError(
                     f"Unsupported color layer path attributes in '{glyph.name}'"
