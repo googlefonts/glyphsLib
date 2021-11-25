@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import copy
+import itertools
 import logging
 
 import glyphsLib.glyphdata
@@ -68,6 +70,43 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
                 for layerId, colorId in layerMapping:
                     layers.append((glyph.layers[layerId], colorId))
                 self._color_palette_layers.append(((glyph, layer), layers))
+
+        if self.minimal:
+            # The other kind of color layers supports solid colors and
+            # gradients among other things, and we use it to build COLRv1
+            # table.
+            # For each color layer, we collect paths that has the same
+            # attributes, then we make a clone of the layer for each group with
+            # only the paths in this group. We do this splitting because a
+            # COLRv1 layer can’t have multiple gradients or colors.
+            color_layers = [
+                l
+                for l in glyph.layers
+                if l.attributes.get("color")
+                and l.associatedMasterId == layer.associatedMasterId
+            ]
+            if color_layers:
+                layers = []
+                for color_layer in color_layers:
+                    if color_layer.components:
+                        raise NotImplementedError(
+                            f"Color layer with components in '{glyph.name}'"
+                        )
+
+                    # Group consecutive paths with same attributes together.
+                    groups = [
+                        list(g)
+                        for k, g in itertools.groupby(
+                            color_layer.paths, key=lambda p: p.attributes
+                        )
+                    ]
+                    for paths in groups:
+                        new_layer = copy.copy(color_layer)
+                        new_layer.paths = paths
+                        new_layer.components = []
+                        layers.append(new_layer)
+
+                self._color_layers.append(((glyph, layer), layers))
 
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 

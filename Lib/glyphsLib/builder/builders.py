@@ -136,6 +136,9 @@ class UFOBuilder(_LoggerMixin):
         # List of exploded color palette layers when building minimal UFOs.
         self._color_palette_layers = []
 
+        # List of color layers when building minimal UFOs.
+        self._color_layers = []
+
         # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
         # for passing into pens as glyph sets.
         self._glyph_sets: Dict[str, Dict[str, classes.GSLayer]] = {}
@@ -229,7 +232,7 @@ class UFOBuilder(_LoggerMixin):
             self.to_ufo_master_features(ufo, master)
             self.to_ufo_custom_params(ufo, master)
 
-        self.to_ufo_color_layers()
+            self.to_ufo_color_layers(ufo, master)
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
