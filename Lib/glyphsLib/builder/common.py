@@ -40,9 +40,11 @@ def from_loose_ufo_time(string):
 
 def to_ufo_color(color):
     if isinstance(color, str):
-        ret = [int(v) / 255 for v in color.split(",")]
-    else:
-        ret = [v / 255 for v in color]
-    if len(ret) == 2:
-        ret = [ret[0], ret[0], ret[0], ret[1]]
-    return tuple(ret)
+        color = [int(v) for v in color.split(",")]
+    if len(color) == 2:
+        # Greyscale color
+        color = (color[0], color[0], color[0], color[1])
+    elif len(color) == 5:
+        # CMYK color
+        raise NotImplementedError("CMYK colors are not supported")
+    return tuple(c / 255 for c in color)
