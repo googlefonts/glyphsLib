@@ -16,6 +16,7 @@ import math
 
 from fontTools.ttLib.tables.otTables import PaintFormat
 
+from .common import to_ufo_color
 from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
 
 
@@ -38,12 +39,11 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
 
 
 def _find_or_insert_color(color, palette):
-    r, g, b, a = color
-    r, g, b, a = r / 255, g / 255, b / 255, a / 255
+    color = to_ufo_color(color)
     palette, old = palette
-    if (r, g, b, a) not in palette:
-        palette.append((r, g, b, a))
-    return len(old) + palette.index((r, g, b, a)), a
+    if color not in palette:
+        palette.append(color)
+    return len(old) + palette.index(color), color[-1]
 
 
 def _radius(rect, point):
@@ -74,8 +74,8 @@ def _to_gradient_paint(gradient, layer, palette):
 
     colorStop = []
     for stop in gradient.get("colors"):
-        (r, g, b, a), o = stop
-        paletteIndex, a = _find_or_insert_color((r, g, b, a), palette)
+        color, o = stop
+        paletteIndex, a = _find_or_insert_color(color, palette)
         colorStop.append(dict(StopOffset=o, Alpha=a, PaletteIndex=paletteIndex))
 
     colorLine = dict(Extend="pad", ColorStop=colorStop)

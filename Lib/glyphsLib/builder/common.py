@@ -36,3 +36,13 @@ def from_loose_ufo_time(string):
         return from_ufo_time(string)
     except ValueError:
         return parse_datetime(string)
+
+
+def to_ufo_color(color):
+    if isinstance(color, str):
+        ret = [int(v) / 255 for v in color.split(",")]
+    else:
+        ret = [v / 255 for v in color]
+    if len(ret) == 2:
+        ret = [ret[0], ret[0], ret[0], ret[1]]
+    return tuple(ret)

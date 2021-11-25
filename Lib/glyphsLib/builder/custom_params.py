@@ -18,6 +18,7 @@ import re
 
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
+from .common import to_ufo_color
 from .constants import (
     GLYPHS_PREFIX,
     UFO2FT_COLOR_PALETTES_KEY,
@@ -528,18 +529,8 @@ register(
 )
 
 
-def _to_ufo_color(color):
-    if isinstance(color, str):
-        ret = [int(v) / 255 for v in color.split(",")]
-    else:
-        ret = [v / 255 for v in color]
-    if len(ret) == 2:
-        ret = [ret[0], ret[0], ret[0], ret[1]]
-    return ret
-
-
 def to_ufo_color_palettes(value):
-    return [[_to_ufo_color(color) for color in palette] for palette in value]
+    return [[to_ufo_color(color) for color in palette] for palette in value]
 
 
 def _to_glyphs_color(color):
