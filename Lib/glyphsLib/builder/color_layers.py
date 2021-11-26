@@ -14,6 +14,7 @@
 
 import math
 
+from fontTools.misc.transform import Identity, Transform
 from fontTools.ttLib.tables.otTables import PaintFormat
 
 from .common import to_ufo_color
@@ -148,6 +149,19 @@ def _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo):
     return dict(Format=PaintFormat.PaintSolid, Alpha=a, PaletteIndex=paletteIndex)
 
 
+def _to_component_paint(component):
+    paint = dict(Format=PaintFormat.PaintColrGlyph, Glyph=component.name)
+    t = Transform(*component.transform)
+    if t != Identity:
+        if t[:4] == (1, 0, 0, 1):
+            return dict(
+                Format=PaintFormat.PaintTranslate, Paint=paint, dx=t.dx, dy=t.dy
+            )
+        else:
+            return dict(Format=PaintFormat.PaintTransform, Paint=paint, Transform=t)
+    return paint
+
+
 def _to_ufo_color_layers(builder, ufo, master, layerMapping):
     palette = ([], ufo.lib.get(UFO2FT_COLOR_PALETTES_KEY, [[]])[0])
     for (glyph, masterLayer), layers in builder._color_layers:
@@ -163,6 +177,10 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
 
         colorLayers = []
         for i, layer in enumerate(layers):
+            if layer.components and layer.attributes:
+                colorLayers.append(_to_component_paint(layer.components[0]))
+                continue
+
             if layer != masterLayer:
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
@@ -171,7 +189,7 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
             else:
                 layerGlyphName = glyph.name
 
-            attributes = layer.paths[0].attributes
+            attributes = layer.paths[0].attributes if layer.paths else {}
             if "gradient" in attributes:
                 gradient = attributes["gradient"]
                 paint = _to_gradient_paint(gradient, layer, palette)

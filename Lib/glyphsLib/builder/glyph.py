@@ -34,6 +34,15 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
+def _clone_layer(layer, paths=None, components=None):
+    paths = paths if paths is not None else []
+    components = components if components is not None else []
+    new_layer = copy.copy(layer)
+    new_layer.paths = paths
+    new_layer.components = components
+    return new_layer
+
+
 def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
@@ -88,11 +97,6 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             if color_layers:
                 layers = []
                 for color_layer in color_layers:
-                    if color_layer.components:
-                        raise NotImplementedError(
-                            f"Color layer with components in '{glyph.name}'"
-                        )
-
                     # Group consecutive paths with same attributes together.
                     groups = [
                         list(g)
@@ -101,10 +105,29 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
                         )
                     ]
                     for paths in groups:
-                        new_layer = copy.copy(color_layer)
-                        new_layer.paths = paths
-                        new_layer.components = []
-                        layers.append(new_layer)
+                        layers.append(_clone_layer(color_layer, paths=paths))
+
+                    # Group components based on whether component glyph has
+                    # color layers or not.
+                    groups = [
+                        (k, list(g))
+                        for k, g in itertools.groupby(
+                            color_layer.components,
+                            key=lambda c: any(
+                                l.attributes.get("color")
+                                for l in c.component.layers
+                                if l.associatedMasterId == layer.associatedMasterId
+                            ),
+                        )
+                    ]
+                    for has_color, components in groups:
+                        if not has_color:
+                            new_layer = _clone_layer(color_layer, components=components)
+                            new_layer.attributes = {}
+                            layers.append(new_layer)
+                        else:
+                            for c in components:
+                                layers.append(_clone_layer(color_layer, components=[c]))
 
                 self._color_layers.append(((glyph, layer), layers))
 
