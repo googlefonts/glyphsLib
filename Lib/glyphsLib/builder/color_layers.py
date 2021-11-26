@@ -154,6 +154,11 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
         if master.id != masterLayer.associatedMasterId:
             continue
 
+        if glyph.name in layerMapping and isinstance(layerMapping[glyph.name], int):
+            raise RuntimeError(
+                f"Same glyph can’t have both Color Palette and Color layers: "
+                f"{glyph.name}"
+            )
         assert glyph.name not in layerMapping
 
         colorLayers = []
