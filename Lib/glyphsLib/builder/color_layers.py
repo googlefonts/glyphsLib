@@ -167,7 +167,7 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
-                builder.to_ufo_glyph(ufo_glyph, layer, glyph)
+                builder.to_ufo_glyph(ufo_glyph, layer, glyph, do_color_layers=False)
             else:
                 layerGlyphName = glyph.name
 

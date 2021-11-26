@@ -34,11 +34,11 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
+def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
-    if layer.layerId == layer.associatedMasterId:
+    if layer.layerId == layer.associatedMasterId and do_color_layers:
         # Here we handle color layers. If this is a master layer and the glyph
         # has color layers, add ufo2ft lib key with the layer mapping.
 
