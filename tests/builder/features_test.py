@@ -253,10 +253,6 @@ def test_feature_names_full(tmpdir, ufo_module):
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
-        # notes:
-        # featureNames {
-        #     name 1 "Alternate g";
-        # };
         featureNames {
             name 1 "Alternate g";
         };
@@ -301,11 +297,6 @@ def test_feature_names_multi(tmpdir, ufo_module):
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
-        # notes:
-        # featureNames {
-        #     name "Alternate g";
-        #     name 1 "Alternate g";
-        # };
         featureNames {
             name "Alternate g";
             name 1 "Alternate g";

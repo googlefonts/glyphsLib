@@ -99,15 +99,21 @@ def _to_ufo_features(
             feature_name = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
             if feature_name:
                 name = feature_name.groups()[-1]
-                lines.append("# notes:")
-                lines.extend("# " + line for line in notes.strip().splitlines())
+                # Remove the name from the note
+                notes = notes.replace(name, "")
+                # Add notes only if they still contain data
+                if notes.strip():
+                    lines.append("# notes:")
+                    lines.extend(
+                        "# " + line for line in notes.splitlines() if line.strip()
+                    )
                 lines.extend(name.splitlines())
             else:
                 feature_name = re.search(r"^(Name: (.+))", notes)
                 if feature_name:
                     line, name = feature_name.groups()
                     # Remove the name from the note
-                    notes = notes.replace(f"{line}", "")
+                    notes = notes.replace(line, "")
                     # Add notes only if they still contain data
                     if notes.strip():
                         lines.append("# notes:")
