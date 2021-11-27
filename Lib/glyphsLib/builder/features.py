@@ -95,38 +95,28 @@ def _to_ufo_features(
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
+        feature_names = None
         if notes:
-            feature_name = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
-            if feature_name:
-                name = feature_name.groups()[-1]
+            m = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
+            if m:
+                name = m.groups()[0]
                 # Remove the name from the note
-                notes = notes.replace(name, "")
-                # Add notes only if they still contain data
-                if notes.strip():
-                    lines.append("# notes:")
-                    lines.extend(
-                        "# " + line for line in notes.splitlines() if line.strip()
-                    )
-                lines.extend(name.splitlines())
+                notes = notes.replace(name, "").strip()
+                feature_names = name.splitlines()
             else:
-                feature_name = re.search(r"^(Name: (.+))", notes)
-                if feature_name:
-                    line, name = feature_name.groups()
+                m = re.search(r"^(Name: (.+))", notes)
+                if m:
+                    line, name = m.groups()
                     # Remove the name from the note
-                    notes = notes.replace(line, "")
-                    # Add notes only if they still contain data
-                    if notes.strip():
-                        lines.append("# notes:")
-                        lines.extend(
-                            "# " + line for line in notes.splitlines() if line.strip()
-                        )
+                    notes = notes.replace(line, "").strip()
                     # Replace special chars backslash and doublequote for AFDKO syntax
-                    name = name.replace("\\", r"\005c")
-                    name = name.replace('"', r"\0022")
-                    lines.extend(["featureNames {", f'  name "{name}";', "};"])
-                else:
-                    lines.append("# notes:")
-                    lines.extend("# " + line for line in notes.splitlines())
+                    name = name.replace("\\", r"\005c").replace('"', r"\0022")
+                    feature_names = ["featureNames {", f'  name "{name}";', "};"]
+        if notes:
+            lines.append("# notes:")
+            lines.extend("# " + line for line in notes.splitlines())
+        if feature_names:
+            lines.extend(feature_names)
         if feature.automatic:
             lines.append("# automatic")
         if feature.disabled:
