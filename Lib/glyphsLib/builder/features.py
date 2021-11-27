@@ -94,28 +94,25 @@ def _to_ufo_features(
     for feature in font.features:
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
-        if feature.notes:
-            feature_name = re.search(
-                "(featureNames {.+};)", feature.notes, flags=re.DOTALL
-            )
+        notes = feature.notes
+        if notes:
+            feature_name = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
             if feature_name:
                 name = feature_name.groups()[-1]
                 lines.append("# notes:")
-                lines.extend("# " + line for line in feature.notes.splitlines())
+                lines.extend("# " + line for line in notes.splitlines())
                 lines.extend(name.splitlines())
             else:
-                feature_name = re.search(r"^(Name: (.+))", feature.notes)
+                feature_name = re.search(r"^(Name: (.+))", notes)
                 if feature_name:
                     line, name = feature_name.groups()
                     # Remove the name from the note
-                    feature.notes = feature.notes.replace(f"{line}", "")
+                    notes = notes.replace(f"{line}", "")
                     # Add notes only if they still contain data
-                    if feature.notes.strip():
+                    if notes.strip():
                         lines.append("# notes:")
                         lines.extend(
-                            "# " + line
-                            for line in feature.notes.splitlines()
-                            if line.strip()
+                            "# " + line for line in notes.splitlines() if line.strip()
                         )
                     # Replace special chars backslash and doublequote for AFDKO syntax
                     name = name.replace("\\", r"\005c")
@@ -123,7 +120,7 @@ def _to_ufo_features(
                     lines.extend(["featureNames {", f'  name "{name}";', "};"])
                 else:
                     lines.append("# notes:")
-                    lines.extend("# " + line for line in feature.notes.splitlines())
+                    lines.extend("# " + line for line in notes.splitlines())
         if feature.automatic:
             lines.append("# automatic")
         if feature.disabled:
