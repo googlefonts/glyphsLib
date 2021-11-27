@@ -28,7 +28,6 @@ from .constants import (
     PUBLIC_PREFIX,
     FONT_CUSTOM_PARAM_PREFIX,
     GLYPHLIB_PREFIX,
-    UFO2FT_COLOR_LAYERS_KEY,
 )
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 
@@ -134,7 +133,10 @@ class UFOBuilder(_LoggerMixin):
         # Map Glyphs layer IDs to UFO layer names.
         self._layer_map = {}
 
-        # List of exploded color layer when building minimal UFOs.
+        # List of exploded color palette layers when building minimal UFOs.
+        self._color_palette_layers = []
+
+        # List of color layers when building minimal UFOs.
         self._color_layers = []
 
         # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
@@ -230,7 +232,7 @@ class UFOBuilder(_LoggerMixin):
             self.to_ufo_master_features(ufo, master)
             self.to_ufo_custom_params(ufo, master)
 
-        self.to_ufo_color_layers()
+            self.to_ufo_color_layers(ufo, master)
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
@@ -317,25 +319,6 @@ class UFOBuilder(_LoggerMixin):
                 ufo_layer = self.to_ufo_layer(glyph, layer)
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
-
-    def to_ufo_color_layers(self):
-        for (glyph, masterLayer), layers in self._color_layers:
-            ufo_font = self._sources[
-                masterLayer.associatedMasterId or masterLayer.layerId
-            ].font
-            colorLayers = []
-            for i, (layer, colorId) in enumerate(layers):
-                if layer != masterLayer:
-                    layerGlyphName = f"{glyph.name}.color{i}"
-                    ufo_layer = self.to_ufo_layer(glyph, masterLayer)
-                    ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
-                    self.to_ufo_glyph(ufo_glyph, layer, glyph)
-                else:
-                    layerGlyphName = glyph.name
-                colorLayers.append((layerGlyphName, colorId))
-            ufo_font.lib.setdefault(UFO2FT_COLOR_LAYERS_KEY, {})[
-                glyph.name
-            ] = colorLayers
 
     @property
     def designspace(self):
@@ -614,6 +597,7 @@ class UFOBuilder(_LoggerMixin):
     from .axes import to_designspace_axes
     from .background_image import to_ufo_background_image
     from .blue_values import to_ufo_blue_values
+    from .color_layers import to_ufo_color_layers
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
     from .custom_params import to_ufo_custom_params

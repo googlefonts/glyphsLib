@@ -1296,7 +1296,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo["c"].drawPoints(pen2)
         assert pen1.contours == pen2.contours
 
-    def test_glyph_color_layers_explode(self):
+    def test_glyph_color_palette_layers_explode(self):
         font = generate_minimal_font()
         glypha = add_glyph(font, "a")
         glyphb = add_glyph(font, "b")
@@ -1345,7 +1345,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         assert len(ufo["a.color2"].components) == 1
         assert len(ufo["a.color2"]) == 0
 
-    def test_glyph_color_layers_explode_no_export(self):
+    def test_glyph_color_palette_layers_explode_no_export(self):
         font = generate_minimal_font()
         glypha = add_glyph(font, "a")
         glyphb = add_glyph(font, "b")
@@ -1365,6 +1365,771 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
             "b": [("b.color0", 1)]
         }
+
+    def test_glyph_color_palette_layers_explode_v3(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+        glyphc = add_glyph(font, "c")
+        glyphd = add_glyph(font, "d")
+        for i, g in enumerate([glypha, glyphb, glyphc, glyphd]):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 1, i + 1), nodetype="line"),
+                GSNode(position=(i + 2, i + 2), nodetype="line"),
+                GSNode(position=(i + 3, i + 3), nodetype="line"),
+            ]
+            g.layers[0].paths.append(path)
+
+        compc = GSComponent(glyph=glyphc)
+        compd = GSComponent(glyph=glyphd)
+
+        color0 = GSLayer()
+        color1 = GSLayer()
+        color3 = GSLayer()
+        color0.attributes["colorPalette"] = 0
+        color1.attributes["colorPalette"] = 1
+        color3.attributes["colorPalette"] = 3
+        color0.components.append(compd)
+        color0.components.append(compc)
+        color3.components.append(compc)
+        color1.paths.append(path)
+
+        glypha.layers.append(color1)
+        glypha.layers.append(color0)
+        glypha.layers.append(color3)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": [("a.color0", 1), ("a.color1", 0), ("a.color2", 3)]
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"].components) == 0
+        assert len(ufo["a.color0"]) == 1
+
+        assert len(ufo["a.color1"].components) == 2
+        assert len(ufo["a.color1"]) == 0
+
+        assert len(ufo["a.color2"].components) == 1
+        assert len(ufo["a.color2"]) == 0
+
+    def test_glyph_color_layers_explode(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color0 = GSLayer()
+        color1 = GSLayer()
+        color2 = GSLayer()
+        color0.attributes["color"] = 1
+        color1.attributes["color"] = 1
+        color2.attributes["color"] = 1
+        glypha.layers.append(color0)
+        glypha.layers.append(color1)
+        glypha.layers.append(color2)
+
+        for i, layer in enumerate(glypha.layers):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 100, i + 100), nodetype="line"),
+                GSNode(position=(i + 200, i + 200), nodetype="line"),
+                GSNode(position=(i + 300, i + 300), nodetype="line"),
+            ]
+            if i == 1:
+                path.attributes["fillColor"] = [255, 124, 0, 225]
+            elif i == 2:
+                path.attributes["gradient"] = {
+                    "colors": [[[0, 0, 0, 255], 0], [[185, 0, 0, 255], 1]],
+                    "end": [0.2, 0.3],
+                    "start": [0.4, 0.09],
+                }
+            elif i == 3:
+                path.attributes["gradient"] = {
+                    "colors": [[[185, 0, 0, 255], 0], [[0, 0, 0, 255], 1]],
+                    "end": [0.2, 0.3],
+                    "start": [0.4, 0.09],
+                    "type": "circle",
+                }
+            layer.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [
+                (1.0, 0.48627450980392156, 0.0, 0.8823529411764706),
+                (0.0, 0.0, 0.0, 1.0),
+                (0.7254901960784313, 0.0, 0.0, 1.0),
+            ]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {
+                            "Alpha": 0.8823529411764706,
+                            "Format": 2,
+                            "PaletteIndex": 0,
+                        },
+                    },
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color1",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 2, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 4,
+                            "x0": 122.0,
+                            "x1": 62.0,
+                            "x2": 185.0,
+                            "y0": 29.0,
+                            "y1": 92.0,
+                            "y2": 89.0,
+                        },
+                    },
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color2",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 2, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 6,
+                            "r0": 0,
+                            "r1": 327.0,
+                            "x0": 123.0,
+                            "x1": 123.0,
+                            "y0": 30.0,
+                            "y1": 30.0,
+                        },
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+    def test_glyph_color_layers_strokecolor(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        glypha.layers.append(color)
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        path.attributes["strokeColor"] = [255, 124, 0, 225]
+        color.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 0.48627450980392156, 0.0, 0.8823529411764706)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {
+                            "Alpha": 0.8823529411764706,
+                            "Format": 2,
+                            "PaletteIndex": 0,
+                        },
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"]) == 2
+        pen = _PointDataPen()
+        ufo["a.color0"].drawPoints(pen)
+        assert pen.contours == [
+            [
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+                (100.35355377197266, 99.64644622802734, "line", False),
+                (200.35354614257812, 199.64645385742188, "line", False),
+                (300.3535461425781, 299.6464538574219, "line", False),
+            ],
+            [
+                (300.3535461425781, 299.6464538574219, "line", False),
+                (300.0, 300.0, "line", False),
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (199.64645385742188, 200.35354614257812, "line", False),
+                (99.64644622802734, 100.35355377197266, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.0, 0.0, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+            ],
+        ]
+
+    def test_glyph_color_layers_strokewidth(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        glypha.layers.append(color)
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        path.attributes["strokeWidth"] = 10
+        color.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert "com.github.googlei18n.ufo2ft.colorPalettes" not in ufo.lib
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {"Alpha": 1, "Format": 2, "PaletteIndex": 0xFFFF},
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"]) == 2
+        pen = _PointDataPen()
+        ufo["a.color0"].drawPoints(pen)
+        assert pen.contours == [
+            [
+                (296.4644775390625, 303.5355224609375, "line", False),
+                (-3.535533905029297, 3.535533905029297, "line", False),
+                (3.535533905029297, -3.535533905029297, "line", False),
+                (103.53553771972656, 96.46446228027344, "line", False),
+                (203.53553771972656, 196.46446228027344, "line", False),
+                (303.5355224609375, 296.4644775390625, "line", False),
+            ],
+            [
+                (303.5355224609375, 296.4644775390625, "line", False),
+                (300.0, 300.0, "line", False),
+                (296.4644775390625, 303.5355224609375, "line", False),
+                (196.46446228027344, 203.53553771972656, "line", False),
+                (96.46446228027344, 103.53553771972656, "line", False),
+                (-3.535533905029297, 3.535533905029297, "line", False),
+                (0.0, 0.0, "line", False),
+                (3.535533905029297, -3.535533905029297, "line", False),
+            ],
+        ]
+
+    def test_glyph_color_layers_stroke_no_attributes(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        glypha.layers.append(color)
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        color.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert "com.github.googlei18n.ufo2ft.colorPalettes" not in ufo.lib
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {"Alpha": 1, "Format": 2, "PaletteIndex": 0xFFFF},
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"]) == 2
+        pen = _PointDataPen()
+        ufo["a.color0"].drawPoints(pen)
+        assert pen.contours == [
+            [
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+                (100.35355377197266, 99.64644622802734, "line", False),
+                (200.35354614257812, 199.64645385742188, "line", False),
+                (300.3535461425781, 299.6464538574219, "line", False),
+            ],
+            [
+                (300.3535461425781, 299.6464538574219, "line", False),
+                (300.0, 300.0, "line", False),
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (199.64645385742188, 200.35354614257812, "line", False),
+                (99.64644622802734, 100.35355377197266, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.0, 0.0, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+            ],
+        ]
+
+    def test_glyph_color_layers_component(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        glyphb.layers[0].paths.append(path)
+        comp = GSComponent(glyph=glyphb)
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        color.components.append(comp)
+        glypha.layers.append(color)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert "com.github.googlei18n.ufo2ft.colorPalettes" not in ufo.lib
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {"Alpha": 1, "Format": 2, "PaletteIndex": 0xFFFF},
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+        assert len(ufo["a.color0"]) == 2
+        pen = _PointDataPen()
+        ufo["a.color0"].drawPoints(pen)
+        assert pen.contours == [
+            [
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+                (100.35355377197266, 99.64644622802734, "line", False),
+                (200.35354614257812, 199.64645385742188, "line", False),
+                (300.3535461425781, 299.6464538574219, "line", False),
+            ],
+            [
+                (300.3535461425781, 299.6464538574219, "line", False),
+                (300.0, 300.0, "line", False),
+                (299.6464538574219, 300.3535461425781, "line", False),
+                (199.64645385742188, 200.35354614257812, "line", False),
+                (99.64644622802734, 100.35355377197266, "line", False),
+                (-0.3535533845424652, 0.3535533845424652, "line", False),
+                (0.0, 0.0, "line", False),
+                (0.3535533845424652, -0.3535533845424652, "line", False),
+            ],
+        ]
+
+    def test_glyph_color_layers_component_color(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        path.attributes["gradient"] = {
+            "colors": [[[255, 255, 255, 255], 0], [[0, 0, 0, 255], 1]],
+            "end": [0.2, 0.3],
+            "start": [0.4, 0.09],
+            "type": "circle",
+        }
+        glyphb.layers[0].attributes["color"] = 1
+        glyphb.layers[0].paths.append(path)
+        comp = GSComponent(glyph=glyphb)
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        color.components.append(comp)
+        glypha.layers.append(color)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+
+        assert "a.color0" not in ufo
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {"Format": 1, "Layers": [{"Format": 11, "Glyph": "b"}]},
+            "b": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "b.color0",
+                        "Paint": {
+                            "Format": 6,
+                            "ColorLine": {
+                                "Extend": "pad",
+                                "ColorStop": [
+                                    {"StopOffset": 0, "Alpha": 1.0, "PaletteIndex": 0},
+                                    {"StopOffset": 1, "Alpha": 1.0, "PaletteIndex": 1},
+                                ],
+                            },
+                            "x0": 120.0,
+                            "y0": 27.0,
+                            "x1": 120.0,
+                            "y1": 27.0,
+                            "r0": 0,
+                            "r1": 327.0,
+                        },
+                    }
+                ],
+            },
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+    def test_glyph_color_layers_component_color_translate(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        path.attributes["gradient"] = {
+            "colors": [[[255, 255, 255, 255], 0], [[0, 0, 0, 255], 1]],
+            "end": [0.2, 0.3],
+            "start": [0.4, 0.09],
+            "type": "circle",
+        }
+        glyphb.layers[0].attributes["color"] = 1
+        glyphb.layers[0].paths.append(path)
+        comp = GSComponent(glyph=glyphb, offset=(100, 20))
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        color.components.append(comp)
+        glypha.layers.append(color)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+
+        assert "a.color0" not in ufo
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 14,
+                        "Paint": {"Format": 11, "Glyph": "b"},
+                        "dx": 100,
+                        "dy": 20,
+                    }
+                ],
+            },
+            "b": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "b.color0",
+                        "Paint": {
+                            "Format": 6,
+                            "ColorLine": {
+                                "Extend": "pad",
+                                "ColorStop": [
+                                    {"StopOffset": 0, "Alpha": 1.0, "PaletteIndex": 0},
+                                    {"StopOffset": 1, "Alpha": 1.0, "PaletteIndex": 1},
+                                ],
+                            },
+                            "x0": 120.0,
+                            "y0": 27.0,
+                            "x1": 120.0,
+                            "y1": 27.0,
+                            "r0": 0,
+                            "r1": 327.0,
+                        },
+                    }
+                ],
+            },
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+    def test_glyph_color_layers_component_color_transform(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+        glyphb = add_glyph(font, "b")
+
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(0, 0), nodetype="line"),
+            GSNode(position=(100, 100), nodetype="line"),
+            GSNode(position=(200, 200), nodetype="line"),
+            GSNode(position=(300, 300), nodetype="line"),
+        ]
+        path.attributes["gradient"] = {
+            "colors": [[[255, 255, 255, 255], 0], [[0, 0, 0, 255], 1]],
+            "end": [0.2, 0.3],
+            "start": [0.4, 0.09],
+            "type": "circle",
+        }
+        glyphb.layers[0].attributes["color"] = 1
+        glyphb.layers[0].paths.append(path)
+        comp = GSComponent(glyph=glyphb, transform=(-1.0, 0.0, 0.0, -1.0, 282, 700))
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        color.components.append(comp)
+        glypha.layers.append(color)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+
+        assert "a.color0" not in ufo
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 12,
+                        "Paint": {"Format": 11, "Glyph": "b"},
+                        "Transform": (-1.0, 0.0, 0.0, -1.0, 282, 700),
+                    }
+                ],
+            },
+            "b": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "b.color0",
+                        "Paint": {
+                            "Format": 6,
+                            "ColorLine": {
+                                "Extend": "pad",
+                                "ColorStop": [
+                                    {"StopOffset": 0, "Alpha": 1.0, "PaletteIndex": 0},
+                                    {"StopOffset": 1, "Alpha": 1.0, "PaletteIndex": 1},
+                                ],
+                            },
+                            "x0": 120.0,
+                            "y0": 27.0,
+                            "x1": 120.0,
+                            "y1": 27.0,
+                            "r0": 0,
+                            "r1": 327.0,
+                        },
+                    }
+                ],
+            },
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+    def test_glyph_color_layers_group_paths(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        glypha.layers.append(color)
+
+        for i in range(2):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 100, i + 100), nodetype="line"),
+                GSNode(position=(i + 200, i + 200), nodetype="line"),
+                GSNode(position=(i + 300, i + 300), nodetype="line"),
+            ]
+            path.attributes["gradient"] = {
+                "colors": [[[255, 255, 255, 255], 0], [[0, 0, 0, 255], 1]],
+                "end": [0.2, 0.3],
+                "start": [0.4, 0.09],
+                "type": "circle",
+            }
+            color.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 0, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 6,
+                            "r0": 0,
+                            "r1": 328.09000000000003,
+                            "x0": 120.4,
+                            "x1": 120.4,
+                            "y0": 27.09,
+                            "y1": 27.09,
+                        },
+                    }
+                ],
+            }
+        }
+
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+    def test_glyph_color_layers_group_paths_nonconsecutive(self):
+        font = generate_minimal_font(format_version=3)
+        glypha = add_glyph(font, "a")
+
+        color = GSLayer()
+        color.attributes["color"] = 1
+        glypha.layers.append(color)
+
+        for i in range(3):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 100, i + 100), nodetype="line"),
+                GSNode(position=(i + 200, i + 200), nodetype="line"),
+                GSNode(position=(i + 300, i + 300), nodetype="line"),
+            ]
+            path.attributes["gradient"] = {
+                "colors": [[[255, 255, 255, 255], 0], [[0, 0, 0, 255], 1]],
+                "end": [0.2, 0.3],
+                "start": [0.4, 0.09],
+                "type": "circle",
+            }
+            if i == 1:
+                path.attributes["foo"] = True
+            color.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [(1.0, 1.0, 1.0, 1.0), (0.0, 0.0, 0.0, 1.0)]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 0, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 6,
+                            "r0": 0,
+                            "r1": 327.0,
+                            "x0": 120.0,
+                            "x1": 120.0,
+                            "y0": 27.0,
+                            "y1": 27.0,
+                        },
+                    },
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color1",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 0, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 6,
+                            "r0": 0,
+                            "r1": 327.0,
+                            "x0": 121.0,
+                            "x1": 121.0,
+                            "y0": 28.0,
+                            "y1": 28.0,
+                        },
+                    },
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color2",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 0, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 6,
+                            "r0": 0,
+                            "r1": 327.0,
+                            "x0": 122.0,
+                            "x1": 122.0,
+                            "y0": 29.0,
+                            "y1": 29.0,
+                        },
+                    },
+                ],
+            }
+        }
+
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
 
     def test_master_with_light_weight_but_thin_name(self):
         font = generate_minimal_font()

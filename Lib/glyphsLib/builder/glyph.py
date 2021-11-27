@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import copy
+import itertools
 import logging
 
 import glyphsLib.glyphdata
@@ -32,16 +34,29 @@ ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
 BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
+def _clone_layer(layer, paths=None, components=None):
+    paths = paths if paths is not None else []
+    components = components if components is not None else []
+    new_layer = copy.copy(layer)
+    new_layer.paths = paths
+    new_layer.components = components
+    return new_layer
+
+
+def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
-    if layer.layerId == layer.associatedMasterId:
-        # Here we handle color layers. If this is a master layer and the glyph has
-        # color layers, add ufo2ft lib key with the layer mapping. The layer
-        # mapping is a tuple of (layer name, palette index), but we don’t know the
-        # final UFO layer names yet, so we use Glyphs layer IDs and change them to
-        # layer names in to_ufo_color_layer_names().
+    if layer.layerId == layer.associatedMasterId and do_color_layers:
+        # Here we handle color layers. If this is a master layer and the glyph
+        # has color layers, add ufo2ft lib key with the layer mapping.
+
+        # There are two kinds of color layers: first, color palette layers that
+        # are handled below, which are used to build COLRv0 table. For color
+        # palette layers, the layer mapping is a tuple of (layer name, palette
+        # index), but we don’t know the final UFO layer names yet, so we use
+        # Glyphs layer IDs and change them to layer names in
+        # to_ufo_color_layer_names().
         # When building minimal UFOs, we instead collect color layers and later
         # add them as separate glyphs to the UFO font.
 
@@ -63,6 +78,57 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph):  # noqa: C901
                 layers = []
                 for layerId, colorId in layerMapping:
                     layers.append((glyph.layers[layerId], colorId))
+                self._color_palette_layers.append(((glyph, layer), layers))
+
+        if self.minimal:
+            # The other kind of color layers supports solid colors and
+            # gradients among other things, and we use it to build COLRv1
+            # table.
+            # For each color layer, we collect paths that has the same
+            # attributes, then we make a clone of the layer for each group with
+            # only the paths in this group. We do this splitting because a
+            # COLRv1 layer can’t have multiple gradients or colors.
+            color_layers = [
+                l
+                for l in glyph.layers
+                if l.attributes.get("color")
+                and l.associatedMasterId == layer.associatedMasterId
+            ]
+            if color_layers:
+                layers = []
+                for color_layer in color_layers:
+                    # Group consecutive paths with same attributes together.
+                    groups = [
+                        list(g)
+                        for k, g in itertools.groupby(
+                            color_layer.paths, key=lambda p: p.attributes
+                        )
+                    ]
+                    for paths in groups:
+                        layers.append(_clone_layer(color_layer, paths=paths))
+
+                    # Group components based on whether component glyph has
+                    # color layers or not.
+                    groups = [
+                        (k, list(g))
+                        for k, g in itertools.groupby(
+                            color_layer.components,
+                            key=lambda c: any(
+                                l.attributes.get("color")
+                                for l in c.component.layers
+                                if l.associatedMasterId == layer.associatedMasterId
+                            ),
+                        )
+                    ]
+                    for has_color, components in groups:
+                        if not has_color:
+                            new_layer = _clone_layer(color_layer, components=components)
+                            new_layer.attributes = {}
+                            layers.append(new_layer)
+                        else:
+                            for c in components:
+                                layers.append(_clone_layer(color_layer, components=[c]))
+
                 self._color_layers.append(((glyph, layer), layers))
 
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]

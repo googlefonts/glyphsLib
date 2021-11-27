@@ -65,6 +65,8 @@ six==1.16.0
     # via
     #   fs
     #   xmldiff
+skia-pathops==0.7.1
+    # via -r requirements-dev.in
 toml==0.10.2
     # via pytest
 ufo2ft==2.24.0

@@ -36,3 +36,15 @@ def from_loose_ufo_time(string):
         return from_ufo_time(string)
     except ValueError:
         return parse_datetime(string)
+
+
+def to_ufo_color(color):
+    if isinstance(color, str):
+        color = [int(v) for v in color.split(",")]
+    if len(color) == 2:
+        # Greyscale color
+        color = (color[0], color[0], color[0], color[1])
+    elif len(color) == 5:
+        # CMYK color
+        raise NotImplementedError("CMYK colors are not supported")
+    return tuple(c / 255 for c in color)

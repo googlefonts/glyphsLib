@@ -7,3 +7,4 @@ xmldiff>=2.2
 ufoNormalizer>=0.3.2
 defcon>=0.6.0
 ufo2ft
+skia-pathops
