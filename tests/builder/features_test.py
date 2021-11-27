@@ -222,6 +222,102 @@ def test_feature_names_notes(tmpdir, ufo_module):
     )
 
 
+def test_feature_names_full(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == dedent(
+        """\
+        featureNames {
+            name 1 "Alternate g";
+        };"""
+    )
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        # notes:
+        # featureNames {
+        #     name 1 "Alternate g";
+        # };
+        featureNames {
+            name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+
+def test_feature_names_multi(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name "Alternate g";
+          name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == dedent(
+        """\
+        featureNames {
+            name "Alternate g";
+            name 1 "Alternate g";
+        };"""
+    )
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        # notes:
+        # featureNames {
+        #     name "Alternate g";
+        #     name 1 "Alternate g";
+        # };
+        featureNames {
+            name "Alternate g";
+            name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+
 def test_include(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(

@@ -100,7 +100,7 @@ def _to_ufo_features(
             if feature_name:
                 name = feature_name.groups()[-1]
                 lines.append("# notes:")
-                lines.extend("# " + line for line in notes.splitlines())
+                lines.extend("# " + line for line in notes.strip().splitlines())
                 lines.extend(name.splitlines())
             else:
                 feature_name = re.search(r"^(Name: (.+))", notes)
@@ -667,6 +667,33 @@ class FeatureFileProcessor:
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
+        if feature.automatic:
+            # See if there is a feature names block in the code that should be
+            # written to the notes.
+            feature_names = None
+            for i, statement in enumerate(contents):
+                if (
+                    isinstance(statement, ast.NestedBlock)
+                    and statement.block_name == "featureNames"
+                ):
+                    feature_names = contents.pop(i)
+                    break
+            if feature_names and feature_names.statements:
+                # If there is only one name has default platformID, platEncID
+                # and langID, write it using the simple syntax. Otherwise write
+                # out the full featureNames statement.
+                name = feature_names.statements[0]
+                if (
+                    len(feature_names.statements) == 1
+                    and name.platformID == 3
+                    and name.platEncID == 1
+                    and name.langID == 0x409
+                ):
+                    name_text = f"Name: {name.string}"
+                else:
+                    name_text = str(feature_names)
+                notes_text = name_text + "\n" + notes_text
+                notes = True
         if notes:
             feature.notes = notes_text
         if disabled:
@@ -677,25 +704,6 @@ class FeatureFileProcessor:
             #    the block is only made of comments
         else:
             feature.code = self._rstrip_newlines(self.doc.text(contents))
-        if feature.automatic:
-            # See if there is a feature name in the code that should be
-            # written to the notes
-            feature_name = re.search(
-                r"(featureNames\s*{\s*name\s+\"(.+)\";\s*};)",
-                feature.code,
-                flags=re.MULTILINE | re.DOTALL,
-            )
-            if feature_name:
-                _statement, name = feature_name.groups()
-
-                # Don't add if the name is already there
-                if not re.search("Name: .+", feature.notes, flags=re.DOTALL):
-                    feature.notes = f"Name: {name}\n" + feature.notes
-
-                # Remove the name statement from the feature code
-                feature.code = feature.code.replace(
-                    feature_name.groups()[0], ""
-                ).lstrip()
         self._font.features.append(feature)
         return True
 
