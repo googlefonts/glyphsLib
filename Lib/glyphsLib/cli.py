@@ -138,6 +138,16 @@ def main(args=None):
             "key."
         ),
     )
+    group = parser_glyphs2ufo.add_argument_group("Glyph data")
+    group.add_argument(
+        "--glyph-data",
+        action="append",
+        metavar="GLYPHDATA",
+        help=(
+            "Custom GlyphData XML file with glyph info (production name, "
+            "script, category, subCategory, etc.). Can be used more than once."
+        ),
+    )
 
     parser_ufo2glyphs = subparsers.add_parser("ufo2glyphs", help=ufo2glyphs.__doc__)
     parser_ufo2glyphs.set_defaults(func=ufo2glyphs)
@@ -225,6 +235,7 @@ def glyphs2ufo(options):
         write_skipexportglyphs=options.write_public_skip_export_glyphs,
         ufo_module=__import__(options.ufo_module),
         minimal=options.minimal,
+        glyph_data=options.glyph_data or None,
     )
 
 

@@ -183,8 +183,31 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
-    if glyph.production:
-        production_name = glyph.production
+    if self.glyphdata is not None:
+        custom = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, self.glyphdata)
+        production_name = glyph.production or (
+            custom.production_name
+            if custom.production_name != glyphinfo.production_name
+            else None
+        )
+        category = glyph.category or (
+            custom.category if custom.category != glyphinfo.category else None
+        )
+        subCategory = glyph.subCategory or (
+            custom.subCategory if custom.subCategory != glyphinfo.subCategory else None
+        )
+        script = glyph.script or (
+            custom.script if custom.script != glyphinfo.script else None
+        )
+    else:
+        production_name, category, subCategory, script = (
+            glyph.production,
+            glyph.category,
+            glyph.subCategory,
+            glyph.script,
+        )
+
+    if production_name:
         # Make sure production names of bracket glyphs also get a BRACKET suffix.
         bracket_glyph_name = BRACKET_GLYPH_RE.match(ufo_glyph.name)
         prod_bracket_glyph_name = BRACKET_GLYPH_RE.match(production_name)
@@ -206,21 +229,19 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         if value:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "glyph." + key] = value
 
-    if glyph.script is not None:
-        ufo_glyph.lib[SCRIPT_LIB_KEY] = glyph.script
+    if script:
+        ufo_glyph.lib[SCRIPT_LIB_KEY] = script
 
     # if glyph contains custom 'category' and 'subCategory' overrides, store
     # them in the UFO glyph's lib
-    category = glyph.category
-    if category is None:
-        category = glyphinfo.category
-    else:
+    if category:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "category"] = category
-    subCategory = glyph.subCategory
-    if subCategory is None:
-        subCategory = glyphinfo.subCategory
     else:
+        category = glyphinfo.category
+    if subCategory:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "subCategory"] = subCategory
+    else:
+        subCategory = glyphinfo.subCategory
 
     # load width before background, which is loaded with lib data
 

@@ -141,7 +141,10 @@ class GlyphDataTest(unittest.TestCase):
 
     def test_category_buy_unicode(self):
         def cat(n, u):
-            return get_glyph(n, u).category, get_glyph(n, u).subCategory
+            return (
+                get_glyph(n, unicodes=u).category,
+                get_glyph(n, unicodes=u).subCategory,
+            )
 
         # "SignU.bn" is a non-standard name not defined in GlyphData.xml
         self.assertEqual(cat("SignU.bn", ["09C1"]), ("Mark", "Nonspacing"))

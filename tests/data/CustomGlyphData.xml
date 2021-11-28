@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<glyphData>
+    <glyph name="foo" category="Letter" subCategory="Lowercase" production="fooprod" script="Latin" />
+    <glyph name="bar" category="Mark" subCategory="Nonspacing" production="barprod" script="Latin" />
+    <glyph name="baz" category="Letter" subCategory="Uppercase" production="bazprod" script="Latin" />
+</glyphData>

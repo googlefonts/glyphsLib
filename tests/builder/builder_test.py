@@ -2202,6 +2202,49 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         font_rt = to_glyphs(ufos)
         assert len({m.id for m in font_rt.masters}) == 2
 
+    def test_custom_glyph_data(self):
+        font = generate_minimal_font()
+        for glyph_name in ("A", "foo", "bar", "baz"):
+            add_glyph(font, glyph_name)
+        font.glyphs["baz"].production = "bazglyph"
+        font.glyphs["baz"].category = "Number"
+        font.glyphs["baz"].subCategory = "Decimal Digit"
+        font.glyphs["baz"].script = "Arabic"
+        filename = os.path.join(
+            os.path.dirname(__file__), "..", "data", "CustomGlyphData.xml"
+        )
+        (ufo,) = self.to_ufos(font, minimize_glyphs_diffs=True, glyph_data=[filename])
+
+        postscriptNames = ufo.lib.get("public.postscriptNames")
+        categoryKey = "com.schriftgestaltung.Glyphs.category"
+        subCategoryKey = "com.schriftgestaltung.Glyphs.subCategory"
+        scriptKey = "com.schriftgestaltung.Glyphs.script"
+        assert postscriptNames is not None
+        # default, only in GlyphData.xml
+        assert postscriptNames.get("A") is None
+        lib = ufo["A"].lib
+        assert lib.get(categoryKey) is None
+        assert lib.get(subCategoryKey) is None
+        assert lib.get(scriptKey) is None
+        # from customGlyphData.xml
+        lib = ufo["foo"].lib
+        assert postscriptNames.get("foo") == "fooprod"
+        assert lib.get(categoryKey) == "Letter"
+        assert lib.get(subCategoryKey) == "Lowercase"
+        assert lib.get(scriptKey) == "Latin"
+        # from CustomGlyphData.xml instead of GlyphData.xml
+        lib = ufo["bar"].lib
+        assert postscriptNames.get("bar") == "barprod"
+        assert lib.get(categoryKey) == "Mark"
+        assert lib.get(subCategoryKey) == "Nonspacing"
+        assert lib.get(scriptKey) == "Latin"
+        # from glyph attributes instead of CustomGlyphData.xml
+        lib = ufo["baz"].lib
+        assert postscriptNames.get("baz") == "bazglyph"
+        assert lib.get(categoryKey) == "Number"
+        assert lib.get(subCategoryKey) == "Decimal Digit"
+        assert lib.get(scriptKey) == "Arabic"
+
 
 class ToUfosTestUfoLib2(ToUfosTestBase, unittest.TestCase):
     ufo_module = ufoLib2
