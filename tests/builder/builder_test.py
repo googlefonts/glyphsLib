@@ -24,6 +24,7 @@ import shutil
 import glyphsLib
 import defcon
 import ufoLib2
+from textwrap import dedent
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import (
@@ -1176,6 +1177,34 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
                 ),
                 ufo.features.text,
             )
+
+    def test_glyph_lib_Export_feature_names_from_labels(self):
+        font = generate_minimal_font(format_version=3)
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+
+        # Name should be exported when in first line
+        for lang, name in (
+            ("dflt", 'Single\\storey "a"'),
+            ("ENG", 'Single\\storey "ä"'),
+            ("ARA", 'Sɨngłe\\storey "ä"'),
+        ):
+            font.features[0].labels.append(dict(language=lang, value=name))
+        ufos = self.to_ufos(font)
+        assert ufos[0].features.text == dedent(
+            """\
+            feature ss01 {
+            featureNames {
+              name "Single\\005cstorey \\0022a\\0022";
+              name 3 1 0x409 "Single\\005cstorey \\0022ä\\0022";
+              name 3 1 0xC01 "Sɨngłe\\005cstorey \\0022ä\\0022";
+            };
+            sub a by a.ss01;
+            } ss01;
+            """
+        )
 
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()
