@@ -91,7 +91,7 @@ class GlyphData:
         )
 
 
-def get_glyph(glyph_name, unicodes=None, data=None):
+def get_glyph(glyph_name, data=None, unicodes=None):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 

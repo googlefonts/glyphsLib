@@ -171,7 +171,7 @@ def _build_gdef(ufo, skipExportGlyphs=None):
         # First check glyph.lib for category/subCategory overrides. Otherwise,
         # use global values from GlyphData.
         glyphinfo = glyphdata.get_glyph(
-            glyph.name, [f"{c:04X}" for c in glyph.unicodes]
+            glyph.name, unicodes=[f"{c:04X}" for c in glyph.unicodes]
         )
         category = glyph.lib.get(category_key) or glyphinfo.category
         subCategory = glyph.lib.get(subCategory_key) or glyphinfo.subCategory
