@@ -36,9 +36,20 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
-      run: pip install tox
+      run: pip install tox coverage
     - name: Test with tox
       run: tox -e py
+    - name: Produce coverage files
+      run: |
+        coverage combine
+        coverage xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        file: coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: true
   deploy:
     # only run if the commit is tagged...
     if: startsWith(github.ref, 'refs/tags/v')
