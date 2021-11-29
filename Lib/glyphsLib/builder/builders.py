@@ -758,7 +758,6 @@ class GlyphsBuilder(_LoggerMixin):
             self.skip_export_glyphs = set()
 
         self._font = None
-        """The GSFont that will be built."""
 
     @property
     def font(self):
