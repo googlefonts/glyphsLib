@@ -24,10 +24,12 @@ import shutil
 import glyphsLib
 import defcon
 import ufoLib2
+from textwrap import dedent
 from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib import builder
 from glyphsLib.classes import (
     GSComponent,
+    GSFeature,
     GSFont,
     GSFontMaster,
     GSGlyph,
@@ -1088,6 +1090,121 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ds2 = self.to_designspace(font, write_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
         self.assertEqual(ufo2.features.text, "")
+
+    def test_glyph_lib_Export_feature_names_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+
+        # Name should be exported when in first line
+        for note in (
+            'Name: Single\\storey "ä"',
+            'Name: Single\\storey "ä"\nFoo',
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn(r'name "Single\005cstorey \0022ä\0022";', ufo.features.text)
+            self.assertNotIn(note, ufo.features.text)
+
+        # Name should not be exported when not in first line
+        for note in (
+            'A Comment\nName: Single\\storey "ä"\nFoo',
+            'A Comment\nName: Single\\storey "ä"',
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertNotIn(
+                r'name "Single\005cstorey \0022ä\0022";', ufo.features.text
+            )
+
+    def test_glyph_lib_Export_feature_names_long_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+        for note in (
+            (
+                'featureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                '  name 3 1 0x409 "Alternate {};";\n};\n'
+            ),
+            (
+                'Name: "bla"\nfeatureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                '  name 3 1 0x409 "Alternate {};";\n};\nHello\n'
+            ),
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn(
+                (
+                    'featureNames {\n  name 3 1 0x401 "Alternate {ä};";\n'
+                    '  name 3 1 0x409 "Alternate {};";\n};'
+                ),
+                ufo.features.text,
+            )
+
+    def test_glyph_lib_Export_feature_names_long_escaped_from_notes(self):
+        font = generate_minimal_font()
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+        for note in (
+            (
+                'featureNames {\n  name "Round dots";\n  name 3 1 0x0C01 '
+                '"\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\n'
+            ),
+            (
+                'Name: "bla"\nfeatureNames {\n  name "Round dots";\n  name 3 1 '
+                '0x0C01 "\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\nHello\n'
+            ),
+        ):
+            font.features[0].notes = note
+            ufos = self.to_ufos(font)
+            ufo = ufos[0]
+            self.assertIn(
+                (
+                    'featureNames {\n  name "Round dots";\n  name 3 1 0x0C01 '
+                    '"\\062d\\0631\\0648\\0641 \\0645\\0647\\0645\\0644\\0629 '
+                    '(\\0628\\0644\\0627 \\0646\\0642\\0627\\0637)";\n};\n'
+                ),
+                ufo.features.text,
+            )
+
+    def test_glyph_lib_Export_feature_names_from_labels(self):
+        font = generate_minimal_font(format_version=3)
+        add_glyph(font, "a")
+        add_glyph(font, "a.ss01")
+        ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+        font.features.append(ss01)
+
+        # Name should be exported when in first line
+        for lang, name in (
+            ("dflt", 'Single\\storey "a"'),
+            ("ENG", 'Single\\storey "ä"'),
+            ("ARA", 'Sɨngłe\\storey "ä"'),
+        ):
+            font.features[0].labels.append(dict(language=lang, value=name))
+        ufos = self.to_ufos(font)
+        assert ufos[0].features.text == dedent(
+            """\
+            feature ss01 {
+            featureNames {
+              name "Single\\005cstorey \\0022a\\0022";
+              name 3 1 0x409 "Single\\005cstorey \\0022ä\\0022";
+              name 3 1 0xC01 "Sɨngłe\\005cstorey \\0022ä\\0022";
+            };
+            sub a by a.ss01;
+            } ss01;
+            """
+        )
 
     def test_glyph_lib_Export_fake_designspace(self):
         font = generate_minimal_font()

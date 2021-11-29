@@ -2889,7 +2889,7 @@ class GSFeature(GSBase):
         self.disabled = False
         self.name = name
         self.notes = ""
-        self.labels = {}
+        self.labels = []
 
     def getCode(self):
         return self._code
