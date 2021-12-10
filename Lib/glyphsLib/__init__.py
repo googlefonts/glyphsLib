@@ -54,6 +54,7 @@ def load_to_ufos(
     propagate_anchors=None,
     ufo_module=None,
     minimal=False,
+    glyph_data=None,
 ):
     """Load an unpacked .glyphs object to UFO objects."""
 
@@ -70,6 +71,7 @@ def load_to_ufos(
         propagate_anchors=propagate_anchors,
         ufo_module=ufo_module,
         minimal=minimal,
+        glyph_data=glyph_data,
     )
 
 
@@ -126,6 +128,7 @@ def build_masters(
         write_skipexportglyphs=write_skipexportglyphs,
         ufo_module=ufo_module,
         minimal=minimal,
+        glyph_data=glyph_data,
     )
 
     # Only write full masters to disk. This assumes that layer sources are always part
