@@ -28,13 +28,15 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
 
         colorLayers = []
         for i, (layer, colorId) in enumerate(layers):
-            if layer != masterLayer:
+            if layer.layerId == master.id:
+                # This is master layer, we can re-use its UFO glyph.
+                layerGlyphName = glyph.name
+            else:
+                # Not the master layer, create a new UFO glyph for it.
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
                 builder.to_ufo_glyph(ufo_glyph, layer, glyph)
-            else:
-                layerGlyphName = glyph.name
             colorLayers.append((layerGlyphName, colorId))
         layerMapping[glyph.name] = colorLayers
 
@@ -181,13 +183,15 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 colorLayers.append(_to_component_paint(layer.components[0]))
                 continue
 
-            if layer != masterLayer:
+            if layer.layerId == master.id:
+                # This is master layer, we can re-use its UFO glyph.
+                layerGlyphName = glyph.name
+            else:
+                # Not the master layer, create a new UFO glyph for it.
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
                 builder.to_ufo_glyph(ufo_glyph, layer, glyph, do_color_layers=False)
-            else:
-                layerGlyphName = glyph.name
 
             attributes = layer.paths[0].attributes if layer.paths else {}
             if "gradient" in attributes:
