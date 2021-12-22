@@ -1918,7 +1918,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
                 "Layers": [
                     {
                         "Format": 10,
-                        "Glyph": "b.color0",
+                        "Glyph": "b",
                         "Paint": {
                             "Format": 6,
                             "ColorLine": {
@@ -1992,7 +1992,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
                 "Layers": [
                     {
                         "Format": 10,
-                        "Glyph": "b.color0",
+                        "Glyph": "b",
                         "Paint": {
                             "Format": 6,
                             "ColorLine": {
@@ -2065,7 +2065,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
                 "Layers": [
                     {
                         "Format": 10,
-                        "Glyph": "b.color0",
+                        "Glyph": "b",
                         "Paint": {
                             "Format": 6,
                             "ColorLine": {
