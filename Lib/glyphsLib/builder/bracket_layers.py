@@ -66,44 +66,8 @@ def to_ufo_bracket_layers(self):
     # (in which the location is the max value).
     max_rule_bucket = defaultdict(list)
     min_rule_bucket = defaultdict(list)
-    bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, bracket_axis)
     for glyph_name, glyph_bracket_layers in sorted(bracket_layer_map.items()):
-        min_crossovers = set()
-        max_crossovers = set()
-        for bracket_min, bracket_max in glyph_bracket_layers.keys():
-            if bracket_min is not None:
-                min_crossovers.add(bracket_min)
-            elif bracket_max is not None:
-                max_crossovers.add(bracket_max)
-        # reverse and non-reverse bracket layers with overlapping ranges are
-        # tricky to implement as DS rules. They are relatively unlikely, and
-        # can usually be rewritten so that they do not overlap. For laziness/
-        # simplicity, where we simply warn that output may not be as expected.
-        invalid_locs = [
-            (mx, mn)
-            for mx, mn in zip(sorted(max_crossovers), sorted(min_crossovers))
-            if mx > mn
-        ]
-        if invalid_locs:
-            self.logger.warning(
-                "Bracket layers for glyph '%s' have overlapping ranges: %s",
-                glyph_name,
-                ", ".join("]{}] > [{}]".format(*values) for values in invalid_locs),
-            )
-        max_crossovers = list(sorted(max_crossovers))
-        if bracket_axis_min not in max_crossovers:
-            max_crossovers = [bracket_axis_min] + max_crossovers
-        for crossover_min, crossover_max in util.pairwise(max_crossovers):
-            max_rule_bucket[(int(crossover_min), int(crossover_max))].append(
-                glyph_name
-            )
-        min_crossovers = list(sorted(min_crossovers))
-        if bracket_axis_max not in min_crossovers:
-            min_crossovers = min_crossovers + [bracket_axis_max]
-        for crossover_min, crossover_max in util.pairwise(min_crossovers):
-            min_rule_bucket[(int(crossover_min), int(crossover_max))].append(
-                glyph_name
-            )
+        add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket, max_rule_bucket)
 
     # Generate rules for the bracket layers.
     for reverse, rule_bucket in ((True, max_rule_bucket), (False, min_rule_bucket)):
@@ -176,6 +140,51 @@ def validate_bracket_info(self, layer):
             )
         )
     return (bracket_min, bracket_max)
+
+
+def add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket, max_rule_bucket):
+    min_crossovers = set()
+    max_crossovers = set()
+    bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, self._designspace.axes[0])
+    for bracket_min, bracket_max in glyph_bracket_layers.keys():
+        if bracket_min is not None:
+            min_crossovers.add(bracket_min)
+        elif bracket_max is not None:
+            max_crossovers.add(bracket_max)
+
+    check_for_overlapping_locations(self, glyph_name, min_crossovers, max_crossovers)
+
+    max_crossovers = list(sorted(max_crossovers))
+    if bracket_axis_min not in max_crossovers:
+        max_crossovers = [bracket_axis_min] + max_crossovers
+    for crossover_min, crossover_max in util.pairwise(max_crossovers):
+        max_rule_bucket[(int(crossover_min), int(crossover_max))].append(
+            glyph_name
+        )
+    min_crossovers = list(sorted(min_crossovers))
+    if bracket_axis_max not in min_crossovers:
+        min_crossovers = min_crossovers + [bracket_axis_max]
+    for crossover_min, crossover_max in util.pairwise(min_crossovers):
+        min_rule_bucket[(int(crossover_min), int(crossover_max))].append(
+            glyph_name
+        )
+
+# reverse and non-reverse bracket layers with overlapping ranges are tricky to
+# implement as DS rules. They are relatively unlikely, and can usually be
+# rewritten so that they do not overlap. For laziness/simplicity, where we
+# simply warn that output may not be as expected.
+def check_for_overlapping_locations(self, glyph_name, min_crossovers, max_crossovers):
+    invalid_locs = [
+        (mx, mn)
+        for mx, mn in zip(sorted(max_crossovers), sorted(min_crossovers))
+        if mx > mn
+    ]
+    if invalid_locs:
+        self.logger.warning(
+            "Bracket layers for glyph '%s' have overlapping ranges: %s",
+            glyph_name,
+            ", ".join("]{}] > [{}]".format(*values) for values in invalid_locs),
+        )
 
 def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
     font = self.font
