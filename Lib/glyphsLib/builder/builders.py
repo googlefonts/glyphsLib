@@ -409,23 +409,11 @@ class UFOBuilder(_LoggerMixin):
             )
         bracket_axis = self._designspace.axes[0]
 
-        # Determine the axis scale in design space because crossovers/locations are
-        # in design space (axis.default/minimum/maximum may be user space).
-        if bracket_axis.map:
-            axis_scale = [design_location for _, design_location in bracket_axis.map]
-            bracket_axis_min = min(axis_scale)
-            bracket_axis_max = max(axis_scale)
-        else:  # No mapping means user and design space are the same.
-            bracket_axis_min = bracket_axis.minimum
-            bracket_axis_max = bracket_axis.maximum
-
         # Organize all bracket layers by glyph name and crossover value, so later we
         # can go through the layers by location and copy them to free-standing glyphs
         bracket_layer_map = defaultdict(partial(defaultdict, list))
         for layer in self.bracket_layers:
-            bracket_min, bracket_max = self.validate_bracket_info(
-                layer, bracket_axis, bracket_axis_min, bracket_axis_max
-            )
+            bracket_min, bracket_max = self.validate_bracket_info(layer, bracket_axis)
             if bracket_min is None and bracket_max is None:
                 continue
             glyph_name = layer.parent.name
@@ -436,6 +424,7 @@ class UFOBuilder(_LoggerMixin):
         # (in which the location is the max value).
         max_rule_bucket = defaultdict(list)
         min_rule_bucket = defaultdict(list)
+        bracket_axis_min, bracket_axis_max = self._designspace_axis_limits(bracket_axis)
         for glyph_name, glyph_bracket_layers in sorted(bracket_layer_map.items()):
             min_crossovers = set()
             max_crossovers = set()
@@ -496,14 +485,25 @@ class UFOBuilder(_LoggerMixin):
         if self.generate_GDEF:
             self.regenerate_gdef()
 
+    def _designspace_axis_limits(self, axis):
+        # Determine the axis scale in design space because crossovers/locations are
+        # in design space (axis.default/minimum/maximum may be user space).
+        if axis.map:
+            axis_scale = [design_location for _, design_location in axis.map]
+            return min(axis_scale), max(axis_scale)
+        else:  # No mapping means user and design space are the same.
+            return axis.minimum, axis.maximum
+
     def validate_bracket_info(
-        self, layer, bracket_axis, bracket_axis_min, bracket_axis_max
+        self, layer, bracket_axis
     ):
         bracket_info = layer._bracket_info()
         bracket_axis_id = self._designspace.axes.index(bracket_axis)
         if bracket_axis_id not in bracket_info:
             return bracket_axis_id, None, None
         bracket_min, bracket_max = bracket_info[bracket_axis_id]
+
+        bracket_axis_min, bracket_axis_max = self._designspace_axis_limits(bracket_axis)
 
         # Convert [500<wght<(max)] to [500<wght], etc.
         if bracket_min == bracket_axis_min:
