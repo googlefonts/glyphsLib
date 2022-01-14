@@ -3751,8 +3751,6 @@ class GSLayer(GSBase):
         if self.parent.parent.format_version > 2:
             # Glyphs 3
             rules = self.attributes["axisRules"]
-            if any(rules[1:]):
-                logger.warning(f"Alternate rules on non-first axis found, but currently ignored")
             return {
                 ix: (rule.get("min"), rule.get("max"))
                 for ix, rule in enumerate(rules)

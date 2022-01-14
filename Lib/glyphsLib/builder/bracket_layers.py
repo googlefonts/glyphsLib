@@ -2,6 +2,7 @@ from collections import OrderedDict, defaultdict
 from functools import partial
 import re
 from typing import Any, Dict
+import itertools
 
 from fontTools import designspaceLib
 
@@ -21,6 +22,18 @@ BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
 class Region(frozenset):
+    def __repr__(self):  # For debugging
+        names = []
+        for ax, amin, amax in self:
+            name = ""
+            if amin is not None:
+                name += "%i<" % amin
+            name += ax.tag
+            if amax is not None:
+                name += "<%i" % amax
+            names.append(name)
+        return ",".join(names)
+
     def __lt__(self, other):
         # Most specific first
         if len(self) != len(other):
@@ -134,6 +147,7 @@ def to_ufo_bracket_layers(self):
     for glyph_name, glyph_bracket_layers in sorted(bracket_layer_map.items()):
         add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket, max_rule_bucket)
 
+    import IPython;IPython.embed()
     # Generate rules for the bracket layers.
     for reverse, rule_bucket in ((True, max_rule_bucket), (False, min_rule_bucket)):
         for region, glyph_names in sorted(rule_bucket.items()):
@@ -225,18 +239,30 @@ def add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket,
         if bracket_axis_max not in min_crossovers_axis:
             min_crossovers[axis.name] = min_crossovers_axis + [bracket_axis_max]
 
-    bracket_axis = self._designspace.axes[0]
-    max_crossovers = max_crossovers[bracket_axis.name]
-    min_crossovers = min_crossovers[bracket_axis.name]
+    # We're going to have to Cartesian-product this thing.
+    for axis in self._designspace.axes:
+        max_crossovers[axis.name] = list(util.pairwise(max_crossovers[axis.name]))
+        min_crossovers[axis.name] = list(util.pairwise(min_crossovers[axis.name]))
 
-    for crossover_min, crossover_max in util.pairwise(max_crossovers):
-        max_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max))] )].append(
-            glyph_name
-        )
-    for crossover_min, crossover_max in util.pairwise(min_crossovers):
-        min_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max) )] )].append(
-            glyph_name
-        )
+    for max_region in make_cartesian_regions(self, max_crossovers):
+        max_rule_bucket[max_region].append(glyph_name)
+    for min_region in make_cartesian_regions(self, min_crossovers):
+        min_rule_bucket[min_region].append(glyph_name)
+
+
+def make_cartesian_regions(self, crossovers):
+    elements = []
+    axis_map = { axis.name: axis for axis in self._designspace.axes }
+    for axis_name, axis_crossovers in crossovers.items():
+        this_element = []
+        for crossover in axis_crossovers:
+            this_element.append( (axis_map[axis_name], crossover[0], crossover[1]) )
+        if this_element:
+            elements.append(this_element)
+    if elements:
+        return map(Region, itertools.product(*elements))
+    else:
+        return []
 
 # reverse and non-reverse bracket layers with overlapping ranges are tricky to
 # implement as DS rules. They are relatively unlikely, and can usually be
