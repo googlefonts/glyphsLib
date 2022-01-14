@@ -214,23 +214,25 @@ def add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket,
 
     check_for_overlapping_locations(self, glyph_name, min_crossovers, max_crossovers)
 
-    bracket_axis = self._designspace.axes[0]
-    bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, bracket_axis)
+    for axis in self._designspace.axes:
+        bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, axis)
 
-    # XXX
+        max_crossovers_axis = list(sorted(max_crossovers[axis.name]))
+        if bracket_axis_min not in max_crossovers_axis:
+            max_crossovers[axis.name] = [bracket_axis_min] + max_crossovers_axis
+
+        min_crossovers_axis = list(sorted(min_crossovers[axis.name]))
+        if bracket_axis_max not in min_crossovers_axis:
+            min_crossovers[axis.name] = min_crossovers_axis + [bracket_axis_max]
+
+    bracket_axis = self._designspace.axes[0]
     max_crossovers = max_crossovers[bracket_axis.name]
     min_crossovers = min_crossovers[bracket_axis.name]
 
-    max_crossovers = list(sorted(max_crossovers))
-    if bracket_axis_min not in max_crossovers:
-        max_crossovers = [bracket_axis_min] + max_crossovers
     for crossover_min, crossover_max in util.pairwise(max_crossovers):
         max_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max))] )].append(
             glyph_name
         )
-    min_crossovers = list(sorted(min_crossovers))
-    if bracket_axis_max not in min_crossovers:
-        min_crossovers = min_crossovers + [bracket_axis_max]
     for crossover_min, crossover_max in util.pairwise(min_crossovers):
         min_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max) )] )].append(
             glyph_name
