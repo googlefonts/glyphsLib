@@ -423,7 +423,7 @@ class UFOBuilder(_LoggerMixin):
         # can go through the layers by location and copy them to free-standing glyphs
         bracket_layer_map = defaultdict(partial(defaultdict, list))
         for layer in self.bracket_layers:
-            bracket_axis_id, bracket_min, bracket_max = self.validate_bracket_info(
+            bracket_min, bracket_max = self.validate_bracket_info(
                 layer, bracket_axis, bracket_axis_min, bracket_axis_max
             )
             if bracket_min is None and bracket_max is None:
@@ -499,10 +499,11 @@ class UFOBuilder(_LoggerMixin):
     def validate_bracket_info(
         self, layer, bracket_axis, bracket_axis_min, bracket_axis_max
     ):
-        bracket_axis_id, bracket_min, bracket_max = layer._bracket_info()
-
-        if bracket_axis_id != 0:
-            raise ValueError("For now, bracket layers can only apply to the first axis")
+        bracket_info = layer._bracket_info()
+        bracket_axis_id = self._designspace.axes.index(bracket_axis)
+        if bracket_axis_id not in bracket_info:
+            return bracket_axis_id, None, None
+        bracket_min, bracket_max = bracket_info[bracket_axis_id]
 
         # Convert [500<wght<(max)] to [500<wght], etc.
         if bracket_min == bracket_axis_min:
@@ -533,7 +534,7 @@ class UFOBuilder(_LoggerMixin):
                     bracket_axis_maximum=bracket_axis_max,
                 )
             )
-        return bracket_axis_id, bracket_min, bracket_max
+        return bracket_min, bracket_max
 
     def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         font = self.font

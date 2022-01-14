@@ -3752,8 +3752,11 @@ class GSLayer(GSBase):
             # Glyphs 3
             rules = self.attributes["axisRules"]
             if any(rules[1:]):
-                raise ValueError("Alternate rules on non-first axis not yet supported")
-            return 0, rules[0].get("min"), rules[0].get("max")
+                logger.warning(f"Alternate rules on non-first axis found, but currently ignored")
+            return {
+                ix: (rule.get("min"), rule.get("max"))
+                for ix, rule in enumerate(rules)
+            }
 
         # Glyphs 2
         m = re.match(self.BRACKET_LAYER_RE, self.name)
@@ -3761,9 +3764,9 @@ class GSLayer(GSBase):
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return axis_index, None, bracket_crossover
+            return { axis_index: (None, bracket_crossover) }
         else:
-            return axis_index, bracket_crossover, None
+            return { axis_index: (bracket_crossover, None) }
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:
