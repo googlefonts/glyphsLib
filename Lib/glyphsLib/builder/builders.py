@@ -407,17 +407,18 @@ class UFOBuilder(_LoggerMixin):
             raise ValueError(
                 "Cannot apply bracket layers unless at least one axis is defined."
             )
-        bracket_axis = self._designspace.axes[0]
 
         # Organize all bracket layers by glyph name and crossover value, so later we
         # can go through the layers by location and copy them to free-standing glyphs
         bracket_layer_map = defaultdict(partial(defaultdict, list))
         for layer in self.bracket_layers:
-            bracket_min, bracket_max = self.validate_bracket_info(layer, bracket_axis)
-            if bracket_min is None and bracket_max is None:
+            location = self.validate_bracket_info(layer)
+            if location is None:
                 continue
             glyph_name = layer.parent.name
-            bracket_layer_map[glyph_name][(bracket_min, bracket_max)].append(layer)
+            bracket_layer_map[glyph_name][location].append(layer)
+
+        bracket_axis = self._designspace.axes[0]
 
         # Sort crossovers into rule buckets, one for regular bracket layers (in which
         # the location represents the min value) and one for 'reverse' bracket layers
@@ -494,13 +495,12 @@ class UFOBuilder(_LoggerMixin):
         else:  # No mapping means user and design space are the same.
             return axis.minimum, axis.maximum
 
-    def validate_bracket_info(
-        self, layer, bracket_axis
-    ):
+    def validate_bracket_info(self, layer):
         bracket_info = layer._bracket_info()
-        bracket_axis_id = self._designspace.axes.index(bracket_axis)
+        bracket_axis = self._designspace.axes[0]
+        bracket_axis_id = 0
         if bracket_axis_id not in bracket_info:
-            return bracket_axis_id, None, None
+            return None
         bracket_min, bracket_max = bracket_info[bracket_axis_id]
 
         bracket_axis_min, bracket_axis_max = self._designspace_axis_limits(bracket_axis)
@@ -534,7 +534,7 @@ class UFOBuilder(_LoggerMixin):
                     bracket_axis_maximum=bracket_axis_max,
                 )
             )
-        return bracket_min, bracket_max
+        return (bracket_min, bracket_max)
 
     def _copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         font = self.font
