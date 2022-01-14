@@ -48,14 +48,25 @@ class Region(frozenset):
                 max_crossovers[axis.name].add(bracket_max)
 
     def bracket_glyph_name(self, glyph_name, reverse=None):
-        d = self.as_dict()
-        (bracket_min, bracket_max) = list(d.values())[0] # XXX
-        if reverse is None:
-            reverse = bracket_max is not None
-        if reverse:
-            location = bracket_max
+        if len(self) > 1:
+            locations = []
+            for axis, bracket_min, bracket_max in self:
+                this_location = axis.tag + "."
+                if bracket_max is not None:
+                    this_location += "REVERSE." + str(bracket_max)
+                else:
+                    this_location += str(bracket_min)
+                locations.append(this_location)
+            location = ".".join(locations)
+            reverse = False
         else:
-            location = bracket_min
+            (_, bracket_min, bracket_max) = list(self)[0]
+            if reverse is None:
+                reverse = bracket_max is not None
+            if reverse:
+                location = bracket_max
+            else:
+                location = bracket_min
         return BRACKET_GLYPH_TEMPLATE.format(
             glyph_name=glyph_name,
             rev=REVERSE_BRACKET_LABEL if reverse else "",
