@@ -23,11 +23,10 @@ BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 class Region(frozenset):
     def __lt__(self, other):
         # Most specific first
-        d1 = dict(self)
-        d2 = dict(other)
-        if len(d1.keys()) != len(d2.keys()):
-            return len(d1.keys()) < len(d2.keys())
-
+        if len(self) != len(other):
+            return len(self) < len(other)
+        d1 = self.as_dict()
+        d2 = other.as_dict()
         for axis in set(d1.keys()) | set(d2.keys()):
             if axis in d1 and axis in d2:
                 if d1[axis][0] != d2[axis][0]:
@@ -35,16 +34,21 @@ class Region(frozenset):
                 return d1[axis][1] < d2[axis][1]
         return list(d1.keys()) < list(d2.keys())
 
+    def as_dict(self):
+        d = {}
+        for axis, bracket_min, bracket_max in self:
+            d[axis.name] = (bracket_min, bracket_max)
+        return d
+
     def find_crossovers(self, min_crossovers, max_crossovers):
-        d = dict(self)
-        for axis_name, (bracket_min, bracket_max) in d.items():
+        for axis, bracket_min, bracket_max in self:
             if bracket_min is not None:
-                min_crossovers[axis_name].add(bracket_min)
+                min_crossovers[axis.name].add(bracket_min)
             elif bracket_max is not None:
-                max_crossovers[axis_name].add(bracket_max)
+                max_crossovers[axis.name].add(bracket_max)
 
     def bracket_glyph_name(self, glyph_name, reverse=None):
-        d = dict(self)
+        d = self.as_dict()
         (bracket_min, bracket_max) = list(d.values())[0] # XXX
         if reverse is None:
             reverse = bracket_max is not None
@@ -60,18 +64,18 @@ class Region(frozenset):
 
     def rule_name(self):
         if len(self) == 1:
-            (range_min, range_max) = list(dict(self).values())[0]
+            (_, range_min, range_max) = list(self)[0]
             assert range_min and range_max
             return f"BRACKET.{range_min}.{range_max}"
         return "BRACKET." + ".".join(
-            f"{axis}.{range_min}.{range_max}" for axis, (range_min, range_max)
+            f"{axis.tag}.{range_min}.{range_max}" for (axis, range_min, range_max)
             in self
         )
 
     def condition_set(self):
         return [
-            {"name": axis_name, "minimum": range_min, "maximum": range_max}
-            for axis_name, (range_min, range_max) in dict(self).items()
+            {"name": axis.name, "minimum": range_min, "maximum": range_max}
+            for axis, range_min, range_max in self
         ]
 
 def to_ufo_bracket_layers(self):
@@ -148,7 +152,7 @@ def _designspace_axis_limits(self, axis):
 
 def validate_bracket_info(self, layer):
     bracket_info = layer._bracket_info()
-    r = {}
+    r = []
     for bracket_axis_id, bracket_axis in enumerate(self._designspace.axes):
         if bracket_axis_id not in bracket_info:
             continue
@@ -185,10 +189,10 @@ def validate_bracket_info(self, layer):
                     bracket_axis_maximum=bracket_axis_max,
                 )
             )
-        r[bracket_axis.name] = (bracket_min, bracket_max)
+        r.append( (bracket_axis, bracket_min, bracket_max) )
     if not r:
         return None
-    return Region(r.items())
+    return Region(r)
 
 
 def add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket, max_rule_bucket):
@@ -210,14 +214,14 @@ def add_to_rule_buckets(self, glyph_name, glyph_bracket_layers, min_rule_bucket,
     if bracket_axis_min not in max_crossovers:
         max_crossovers = [bracket_axis_min] + max_crossovers
     for crossover_min, crossover_max in util.pairwise(max_crossovers):
-        max_rule_bucket[Region({bracket_axis.name: (int(crossover_min), int(crossover_max))}.items())].append(
+        max_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max))] )].append(
             glyph_name
         )
     min_crossovers = list(sorted(min_crossovers))
     if bracket_axis_max not in min_crossovers:
         min_crossovers = min_crossovers + [bracket_axis_max]
     for crossover_min, crossover_max in util.pairwise(min_crossovers):
-        min_rule_bucket[Region({bracket_axis.name: (int(crossover_min), int(crossover_max))}.items())].append(
+        min_rule_bucket[Region( [(bracket_axis, int(crossover_min), int(crossover_max) )] )].append(
             glyph_name
         )
 
