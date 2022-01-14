@@ -25,7 +25,7 @@ from .constants import (
     PUBLIC_PREFIX,
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
 )
-from .builders import BRACKET_GLYPH_RE, BRACKET_GLYPH_SUFFIX_RE
+from .bracket_layers import BRACKET_GLYPH_RE, BRACKET_GLYPH_SUFFIX_RE
 
 logger = logging.getLogger(__name__)
 
