@@ -409,14 +409,14 @@ class UFOBuilder(_LoggerMixin):
             )
 
         # Organize all bracket layers by glyph name and crossover value, so later we
-        # can go through the layers by location and copy them to free-standing glyphs
+        # can go through the layers by region and copy them to free-standing glyphs
         bracket_layer_map = defaultdict(partial(defaultdict, list))
         for layer in self.bracket_layers:
-            location = self.validate_bracket_info(layer)
-            if location is None:
+            region = self.validate_bracket_info(layer)
+            if region is None:
                 continue
             glyph_name = layer.parent.name
-            bracket_layer_map[glyph_name][location].append(layer)
+            bracket_layer_map[glyph_name][region].append(layer)
 
         bracket_axis = self._designspace.axes[0]
 
