@@ -59,9 +59,14 @@ class Region(frozenset):
         )
 
     def rule_name(self):
-        (range_min, range_max) = list(dict(self).values())[0] # XXX
-        assert range_min and range_max
-        return f"BRACKET.{range_min}.{range_max}"
+        if len(self) == 1:
+            (range_min, range_max) = list(dict(self).values())[0]
+            assert range_min and range_max
+            return f"BRACKET.{range_min}.{range_max}"
+        return "BRACKET." + ".".join(
+            f"{axis}.{range_min}.{range_max}" for axis, (range_min, range_max)
+            in self
+        )
 
     def condition_set(self):
         return [
@@ -143,44 +148,46 @@ def _designspace_axis_limits(self, axis):
 
 def validate_bracket_info(self, layer):
     bracket_info = layer._bracket_info()
-    bracket_axis = self._designspace.axes[0]
-    bracket_axis_id = 0
-    if bracket_axis_id not in bracket_info:
-        return None
-    bracket_min, bracket_max = bracket_info[bracket_axis_id]
+    r = {}
+    for bracket_axis_id, bracket_axis in enumerate(self._designspace.axes):
+        if bracket_axis_id not in bracket_info:
+            continue
+        bracket_min, bracket_max = bracket_info[bracket_axis_id]
 
-    bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, bracket_axis)
+        bracket_axis_min, bracket_axis_max = _designspace_axis_limits(self, bracket_axis)
 
-    # Convert [500<wght<(max)] to [500<wght], etc.
-    if bracket_min == bracket_axis_min:
-        bracket_min = None
-    if bracket_max == bracket_axis_max:
-        bracket_max = None
+        # Convert [500<wght<(max)] to [500<wght], etc.
+        if bracket_min == bracket_axis_min:
+            bracket_min = None
+        if bracket_max == bracket_axis_max:
+            bracket_max = None
 
-    if bracket_min is not None and bracket_max is not None:
-        raise ValueError("Alternate rules with min and max range not yet supported")
+        if bracket_min is not None and bracket_max is not None:
+            raise ValueError("Alternate rules with min and max range not yet supported")
 
-    glyph_name = layer.parent.name
+        glyph_name = layer.parent.name
 
-    if (
-        bracket_min is not None
-        and not bracket_axis_min <= bracket_min <= bracket_axis_max
-    ) or (
-        bracket_max is not None
-        and not bracket_axis_min <= bracket_max <= bracket_axis_max
-    ):
-        raise ValueError(
-            "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
-            "design space bounds of the {bracket_axis_name} axis: minimum "
-            "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
-                glyph_name=glyph_name,
-                layer_name=layer.name,
-                bracket_axis_name=bracket_axis.name,
-                bracket_axis_minimum=bracket_axis_min,
-                bracket_axis_maximum=bracket_axis_max,
+        if (
+            bracket_min is not None
+            and not bracket_axis_min <= bracket_min <= bracket_axis_max
+        ) or (
+            bracket_max is not None
+            and not bracket_axis_min <= bracket_max <= bracket_axis_max
+        ):
+            raise ValueError(
+                "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
+                "design space bounds of the {bracket_axis_name} axis: minimum "
+                "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
+                    glyph_name=glyph_name,
+                    layer_name=layer.name,
+                    bracket_axis_name=bracket_axis.name,
+                    bracket_axis_minimum=bracket_axis_min,
+                    bracket_axis_maximum=bracket_axis_max,
+                )
             )
-        )
-    r = {bracket_axis.name: (bracket_min, bracket_max)}
+        r[bracket_axis.name] = (bracket_min, bracket_max)
+    if not r:
+        return None
     return Region(r.items())
 
 
