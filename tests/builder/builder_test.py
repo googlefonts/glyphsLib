@@ -2248,6 +2248,87 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
 
         assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
 
+    def test_glyph_color_layers_master_layer(self):
+        font = generate_minimal_font(format_version=3)
+        glyph = add_glyph(font, "a")
+
+        layer = glyph.layers[0]
+        layer.attributes["color"] = 1
+
+        for i in range(2):
+            path = GSPath()
+            path.nodes = [
+                GSNode(position=(i + 0, i + 0), nodetype="line"),
+                GSNode(position=(i + 100, i + 100), nodetype="line"),
+                GSNode(position=(i + 200, i + 200), nodetype="line"),
+                GSNode(position=(i + 300, i + 300), nodetype="line"),
+            ]
+            path.attributes["gradient"] = {
+                "colors": [[[0 + i, 0, 0, 255], 0], [[185 + i, 0, 0, 255], 1]],
+                "end": [0.2 + i, 0.3 + i],
+                "start": [0.4 + i, 0.09 + i],
+            }
+            layer.paths.append(path)
+
+        ds = self.to_designspace(font, minimal=True)
+        ufo = ds.sources[0].font
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"] == [
+            [
+                (0.0, 0.0, 0.0, 1.0),
+                (0.7254901960784313, 0.0, 0.0, 1.0),
+                (0.00392156862745098, 0.0, 0.0, 1.0),
+                (0.7294117647058823, 0.0, 0.0, 1.0),
+            ]
+        ]
+        assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+            "a": {
+                "Format": 1,
+                "Layers": [
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color0",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 0, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 1, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 4,
+                            "x0": 120.0,
+                            "x1": 60.0,
+                            "x2": 183.0,
+                            "y0": 27.0,
+                            "y1": 90.0,
+                            "y2": 87.0,
+                        },
+                    },
+                    {
+                        "Format": 10,
+                        "Glyph": "a.color1",
+                        "Paint": {
+                            "ColorLine": {
+                                "ColorStop": [
+                                    {"Alpha": 1.0, "PaletteIndex": 2, "StopOffset": 0},
+                                    {"Alpha": 1.0, "PaletteIndex": 3, "StopOffset": 1},
+                                ],
+                                "Extend": "pad",
+                            },
+                            "Format": 4,
+                            "x0": 421.0,
+                            "x1": 361.0,
+                            "x2": 484.0,
+                            "y0": 328.0,
+                            "y1": 391.0,
+                            "y2": 388.0,
+                        },
+                    },
+                ],
+            }
+        }
+        assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
     def test_master_with_light_weight_but_thin_name(self):
         font = generate_minimal_font()
         master = font.masters[0]
