@@ -3009,11 +3009,10 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def defaultValue(self):
         if not self.localized_values:
             return self.value
-        if "dflt" in self.localized_values:
-            return self.localized_values["dflt"]
-        if "ENG" in self.localized_values:
-            return self.localized_values["ENG"]
-        return self.localized_values.values()[0]
+        for key in ["dflt", "default", "ENG"]:
+            if key in self.localized_values:
+                return self.localized_values[key]
+        return list(self.localized_values.values())[0]
 
 
 class GSInstance(GSBase):
