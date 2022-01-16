@@ -13,19 +13,20 @@
 # limitations under the License.
 
 
-import copy
 import itertools
 import logging
 
 import glyphsLib.glyphdata
-from .common import to_ufo_time, from_loose_ufo_time
+
+from .. import GSLayer
+from .builders import BRACKET_GLYPH_RE, BRACKET_GLYPH_SUFFIX_RE
+from .common import from_loose_ufo_time, to_ufo_time
 from .constants import (
     GLYPHLIB_PREFIX,
     GLYPHS_COLORS,
     PUBLIC_PREFIX,
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
 )
-from .builders import BRACKET_GLYPH_RE, BRACKET_GLYPH_SUFFIX_RE
 
 logger = logging.getLogger(__name__)
 
@@ -37,9 +38,14 @@ BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 def _clone_layer(layer, paths=None, components=None):
     paths = paths if paths is not None else []
     components = components if components is not None else []
-    new_layer = copy.copy(layer)
+    if len(paths) == len(layer.paths) and len(components) == len(layer.components):
+        return layer
+    new_layer = GSLayer()
+    new_layer.associatedMasterId = layer.associatedMasterId
+    new_layer.parent = layer.parent
     new_layer.paths = paths
     new_layer.components = components
+    new_layer.attributes = layer.attributes
     return new_layer
 
 
