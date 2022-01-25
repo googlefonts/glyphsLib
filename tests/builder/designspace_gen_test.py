@@ -161,7 +161,7 @@ def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
 def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
     with open(str(datadir.join(filename))) as f:
         font = glyphsLib.load(f)
-    designspace = to_designspace(font, ufo_module=ufo_module)
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=True)
 
     axes_order = [
         (a.name, a.minimum, a.default, a.maximum, a.map) for a in designspace.axes
@@ -191,6 +191,9 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         if source.filename in masters:
             assert masters[source.filename] is source.font
         masters[source.filename] = source.font
+
+    # Check that brace layer glyph is created
+    assert len(designspace.sources[0].font.layers) == 2
 
 
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])

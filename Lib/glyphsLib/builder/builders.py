@@ -326,7 +326,11 @@ class UFOBuilder(_LoggerMixin):
                 and ".background" not in layer.name
             ):
                 self.bracket_layers.append(layer)
-            elif self.minimal and layer.layerId not in master_layer_ids:
+            elif (
+                self.minimal
+                and layer.layerId not in master_layer_ids
+                and not layer._is_brace_layer()
+            ):
                 continue
             else:
                 ufo_layer = self.to_ufo_layer(glyph, layer)
