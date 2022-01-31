@@ -205,13 +205,7 @@ def _construct_category(glyph_name, data):
 
     # Detect ligatures.
     if "_" in base_name:
-        base_names = base_name.split("_")
-        # The last name has a suffix, add it to all the names.
-        if "-" in base_names[-1]:
-            _, s = base_names[-1].rsplit("-", 1)
-            base_names = [
-                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
-            ]
+        base_names = _split_ligature_glyph_name(base_name, data)
         base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
         first_attribute = base_names_attributes[0]
 
@@ -300,6 +294,19 @@ def _translate_category(glyph_name, unicode_category):
     return glyphs_category
 
 
+def _split_ligature_glyph_name(name, data):
+    parts = name.split("_")
+    if len(parts) > 1 and "-" in parts[-1]:
+        script = parts[-1].rsplit("-", 1)[-1]
+        for i, part in enumerate(parts):
+            if "-" in part:
+                continue
+            if _lookup_attributes(part, data):
+                continue
+            parts[i] = f"{part}-{script}"
+    return parts
+
+
 def _construct_production_name(glyph_name, data=None):
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
@@ -339,7 +346,7 @@ def _construct_production_name(glyph_name, data=None):
 
     # So we have a ligature that is not mapped in the data. Split it up and
     # look up the individual parts.
-    base_name_parts = base_name.split("_")
+    base_name_parts = _split_ligature_glyph_name(base_name, data)
 
     # If all parts are in the AGLFN list, the glyph name is our production
     # name already.
