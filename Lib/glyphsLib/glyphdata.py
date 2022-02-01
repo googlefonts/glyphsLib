@@ -196,7 +196,7 @@ def _construct_category(glyph_name, data):
     # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
     # ".alt" and try a second lookup with just the base name. A variant is hopefully in
     # the same category as its base glyph.
-    base_name = glyph_name.split(".", 1)[0]
+    base_name = _split_glyph_name(glyph_name, data)[0]
     base_attribute = _lookup_attributes(base_name, data) or {}
     if base_attribute:
         category = base_attribute.get("category")
@@ -308,6 +308,23 @@ def _split_ligature_glyph_name(name, data):
     return parts
 
 
+def _split_glyph_name(name, data):
+    # Split glyph name into base and suffix
+    base, dot, suffix = name.partition(".")
+
+    # If there are more than one suffix (e.g. ".below.ro"), try adding each
+    # suffix to the base name, if it results in a known glyph name, use that as
+    # base name.
+    if dot and dot in suffix:
+        suffixes = suffix.split(dot)
+        new = base
+        while suffixes:
+            new += dot + suffixes.pop(0)
+            if _lookup_attributes(new, data):
+                return new, dot, dot.join(suffixes)
+    return base, dot, suffix
+
+
 def _construct_production_name(glyph_name, data=None):
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
@@ -329,7 +346,7 @@ def _construct_production_name(glyph_name, data=None):
 
     # At this point, we have already checked the data for the full glyph name, so
     # directly go to the base name here (e.g. when looking at "fi.alt").
-    base_name, dot, suffix = glyph_name.partition(".")
+    base_name, dot, suffix = _split_glyph_name(glyph_name, data)
     glyphinfo = _lookup_attributes(base_name, data)
     if glyphinfo and glyphinfo.get("production"):
         # Found the base glyph.
