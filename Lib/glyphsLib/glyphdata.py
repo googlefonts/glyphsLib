@@ -299,11 +299,12 @@ def _split_ligature_glyph_name(name, data):
     if len(parts) > 1 and "-" in parts[-1]:
         script = parts[-1].rsplit("-", 1)[-1]
         for i, part in enumerate(parts):
+            new = f"{part}-{script}"
             if "-" in part:
                 continue
-            if _lookup_attributes(part, data):
+            if _lookup_attributes(part, data) and not _lookup_attributes(new, data):
                 continue
-            parts[i] = f"{part}-{script}"
+            parts[i] = new
     return parts
 
 
