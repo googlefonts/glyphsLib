@@ -197,7 +197,7 @@ def _construct_category(glyph_name, data):
     # ".alt" and try a second lookup with just the base name. A variant is hopefully in
     # the same category as its base glyph.
     base_name = glyph_name.split(".", 1)[0]
-    base_attribute = data.names.get(base_name) or {}
+    base_attribute = _lookup_attributes(base_name, data) or {}
     if base_attribute:
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
@@ -362,7 +362,7 @@ def _construct_production_name(glyph_name, data=None):
             # A name present in the AGLFN is a production name already.
             production_names.append(part)
         else:
-            part_entry = data.names.get(part) or {}
+            part_entry = _lookup_attributes(part, data) or {}
             part_production_name = part_entry.get("production")
             if part_production_name:
                 production_names.append(part_production_name)
