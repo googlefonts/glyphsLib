@@ -295,16 +295,29 @@ def _translate_category(glyph_name, unicode_category):
 
 
 def _split_ligature_glyph_name(name, data):
+    # Split name to ligature parts
     parts = name.split("_")
-    if len(parts) > 1 and "-" in parts[-1]:
-        script = parts[-1].rsplit("-", 1)[-1]
-        for i, part in enumerate(parts):
-            new = f"{part}-{script}"
-            if "-" in part:
-                continue
-            if _lookup_attributes(part, data) and not _lookup_attributes(new, data):
-                continue
-            parts[i] = new
+
+    # If the last part has a script suffix, strip it and re-split the name.
+    if "-" in parts[-1]:
+        base, script = name.rsplit("-", 1)
+        parts = base.split("_")
+
+        # If there is more than one part, try adding the script suffix to each
+        # part, if this results in a known glyph name, use it as the part name.
+        if len(parts) > 1:
+            for i, part in enumerate(parts):
+                new = f"{part}-{script}"
+                # If the part already has a script suffix, keep it unchanged.
+                if "-" in part:
+                    continue
+                # If the non suffixed name exists and the suffixed name does
+                # not exist, keep the part name unchanged.
+                if _lookup_attributes(part, data) and not _lookup_attributes(new, data):
+                    continue
+                parts[i] = new
+    else:
+        parts = name.split("_")
     return parts
 
 

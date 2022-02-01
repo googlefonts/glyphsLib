@@ -315,14 +315,14 @@ PRODUCTION_NAMES = {
     "ma_uMatra-tamil": "uni0BAE0BC1",
     "ma_uuMatra-tamil": "uni0BAE0BC2",
     "mo-khmer.below.ro": "uni17D21798.ro",
-    "moMa_underscore-thai": "uni0E21_uni005F",
+    "moMa_underscore-thai": "uni0E21005F",  # uni0E21_uni005F
     "na_iMatra-tamil": "uni0BA80BBF",
     "na_uMatra-tamil": "uni0BA80BC1",
     "na_uuMatra-tamil": "uni0BA80BC2",
     "ng_ya-deva": "uni0919094D092F",
     "nga_uMatra-tamil": "uni0B990BC1",
     "nga_uuMatra-tamil": "uni0B990BC2",
-    "ngoNgu_underscore-thai": "uni0E07_uni005F",
+    "ngoNgu_underscore-thai": "uni0E07005F",  # uni0E07_uni005F
     "niggahita_maiCatawa-lao": "uni0ECD0ECB",
     "niggahita_maiCatawa-lao.right": "uni0ECD0ECB.right",
     "niggahita_maiEk-lao": "uni0ECD0EC8",
@@ -345,7 +345,7 @@ PRODUCTION_NAMES = {
     "nnna_uuMatra-tamil": "uni0BA90BC2",
     "nno-khmer.below.narrow1": "uni17D2178E.narrow1",
     "nno-khmer.below.narrow2": "uni17D2178E.narrow2",
-    "noNu_underscore-thai": "uni0E19_uni005F",
+    "noNu_underscore-thai": "uni0E19005F",  # uni0E19_uni005F
     "nya_iMatra-tamil": "uni0B9E0BBF",
     "nya_uMatra-tamil": "uni0B9E0BC1",
     "nya_uuMatra-tamil": "uni0B9E0BC2",
@@ -397,7 +397,7 @@ PRODUCTION_NAMES = {
     "va_uuMatra-tamil": "uni0BB50BC2",
     "ya_uMatra-tamil": "uni0BAF0BC1",
     "ya_uuMatra-tamil": "uni0BAF0BC2",
-    "yoYing_underscore-thai": "uni0E0D_uni005F",
+    "yoYing_underscore-thai": "uni0E0D005F",  # uni0E0D_uni005F
 }
 
 
