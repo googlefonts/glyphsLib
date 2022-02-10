@@ -16,6 +16,7 @@
 from fontTools.misc.transform import Transform
 from .constants import COMPONENT_INFO_KEY
 import fontTools.pens.boundsPen
+import re
 
 from glyphsLib.types import Point
 
@@ -179,8 +180,23 @@ def _distance(pos1, pos2):
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
+def _is_ligature_in_glyphsapp_naming_scheme(glyph):
+    """
+    Matches Glyphs.app's own ligature naming scheme
+    e.g. shaddaFatha-ar
+    """
+
+    p = re.compile(r"([a-z]+)([A-Z][a-z]+)+(-[a-z]+)?")
+    m = p.match(glyph.name)
+
+    if m and m.groups():
+        return True
+
+
 def _is_ligature_mark(glyph):
-    return not glyph.name.startswith("_") and "_" in glyph.name
+    return (
+        not glyph.name.startswith("_") and "_" in glyph.name
+    ) or _is_ligature_in_glyphsapp_naming_scheme(glyph)
 
 
 def _bounds(component, glyph_set):
