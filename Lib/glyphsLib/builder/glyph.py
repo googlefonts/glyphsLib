@@ -254,7 +254,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     # The width may be taken from another master via the customParameters
     # 'Link Metrics With Master' or 'Link Metrics With First Master'.
     master = self.font.masters[layer.associatedMasterId or layer.layerId]
-    if "Link Metrics With Master" in master.customParameters or "Link Metrics With First Master" in master.customParameters:
+    if (
+        "Link Metrics With Master" in master.customParameters
+        or "Link Metrics With First Master" in master.customParameters
+    ):
         metric_source = master.metricsSource.id
         metric_layer = self.font.glyphs[glyph.name].layers[metric_source]
         if metric_layer:
