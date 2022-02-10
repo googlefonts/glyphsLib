@@ -260,7 +260,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         if metric_layer:
             width = metric_layer.width
             if layer.width != width:
-                logger.warning(
+                logger.debug(
                     f"{layer.parent.name}: Applying width from master "
                     f"'{metric_source}': {layer.width} -> {width}"
                 )
