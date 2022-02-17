@@ -22,11 +22,13 @@ UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
 def to_ufo_kerning(self):
     for master in self.font.masters:
-        master_id = master.id
-        kerning_source = master.metricsSource.id  # Maybe be a linked master
-        if kerning_source in self.font.kerning:
-            kerning = self.font.kerning[kerning_source]
-            _to_ufo_kerning(self, self._sources[master_id].font, kerning)
+        kerning_source = master.metricsSource  # Maybe be a linked master
+        if kerning_source is None:
+            # XXX: What about intermediate layers, can they have their own kerning?
+            kerning_source = master
+        if kerning_source.id in self.font.kerning:
+            kerning = self.font.kerning[kerning_source.id]
+            _to_ufo_kerning(self, self._sources[master.id].font, kerning)
 
 
 def _to_ufo_kerning(self, ufo, kerning_data):
