@@ -234,6 +234,7 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
         info = _lookup_info(glyph_name, data)
 
     # Look up by unicode
+<<<<<<< HEAD
     if not info:
         if unicodes is None and len(glyph_name) == 1:
             unicodes = ["%.4X" % ord(glyph_name)]
@@ -251,6 +252,52 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     #     production_name = _construct_production_name(glyph_name, data=data)
     debug("__get >", info)
     return info, cutSuffix
+=======
+    if attributes == {} and unicodes is not None:
+        for unicode in unicodes:
+            attributes = _lookup_attributes_by_unicode(unicode, data)
+            if attributes:
+                break
+
+    production_name = attributes.get("production")
+    if production_name is None:
+        production_name = _construct_production_name(glyph_name, data=data)
+
+    unicode_value = attributes.get("unicode")
+
+    category = attributes.get("category")
+    sub_category = attributes.get("subCategory")
+    if category is None:
+        category, sub_category = _construct_category(glyph_name, data)
+
+    # TODO: Determine script in ligatures.
+    script = attributes.get("script")
+    description = attributes.get("description")
+
+    # Finally, find script for unencoded derivatives
+    # for example hah-ar.init.swsh
+    if script is None:
+        i = 0
+        num_parts = len(glyph_name.split("."))
+        while script is None and i <= num_parts:
+            until = -1 * i
+            reduced_name = ".".join(glyph_name.split(".")[:until])
+            attributes = _lookup_attributes(reduced_name, data)
+            if attributes.get("script"):
+                script = attributes.get("script")
+                break
+            i += 1
+
+    return Glyph(
+        glyph_name,
+        production_name,
+        unicode_value,
+        category,
+        sub_category,
+        script,
+        description,
+    )
+>>>>>>> When script isn't found for unencoded derivate glyphs (= hah-ar.init.swsh), find it
 
 
 def _lookup_info(glyph_name, data):
