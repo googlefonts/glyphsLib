@@ -157,7 +157,7 @@ def _glyph_kerning_attr(glyph, side):
                 return "rightKerningGroup"
             else:
                 return "leftKerningGroup"
-    else:   # Glyphs 2
+    else:  # Glyphs 2
         if int(side) == 1:
             return "rightKerningGroup"
         else:
