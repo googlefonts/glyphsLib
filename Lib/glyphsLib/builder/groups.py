@@ -146,8 +146,10 @@ def _glyph_kerning_attr(glyph, side):
         glyph_data = glyphdata.get_glyph(glyph.name)
         if glyph.name.startswith("hah-ar"):
             print(glyph.name, glyph_data)
-        if glyph_data.script in ("arabic", "hebrew") and glyph_data.category != "Number":
-            if int(side) == 1:
+        if (
+            glyph_data.script in ("arabic", "hebrew")
+            and glyph_data.category != "Number"
+        ):            if int(side) == 1:
                 return "leftKerningGroup"
             else:
                 return "rightKerningGroup"
