@@ -135,6 +135,20 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     script = attributes.get("script")
     description = attributes.get("description")
 
+    # Finally, find script for unencoded derivatives
+    # for example hah-ar.init.swsh
+    if script is None:
+        i = 0
+        num_parts = len(glyph_name.split("."))
+        while script is None and i <= num_parts:
+            until = -1 * i
+            reduced_name = ".".join(glyph_name.split(".")[:until])
+            attributes = _lookup_attributes(reduced_name, data)
+            if attributes.get("script"):
+                script = attributes.get("script")
+                break
+            i += 1
+
     return Glyph(
         glyph_name,
         production_name,
