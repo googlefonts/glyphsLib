@@ -154,11 +154,11 @@ class GlyphDataTest(unittest.TestCase):
             return get_glyph(n).script
 
         # "SignU.bn" is a non-standard name not defined in GlyphData.xml
-        self.assertEqual(script("hah-ar") , "arabic")
-        self.assertEqual(script("hah-ar.init") , "arabic")
-        self.assertEqual(script("hah-ar.init.swsh") , "arabic")
-        self.assertEqual(script("hah-ar.init.swsh.ss16") , "arabic")
-        self.assertEqual(script("hah-ar.init.swsh.ss16.calt") , "arabic")
+        self.assertEqual(script("hah-ar"), "arabic")
+        self.assertEqual(script("hah-ar.init"), "arabic")
+        self.assertEqual(script("hah-ar.init.swsh"), "arabic")
+        self.assertEqual(script("hah-ar.init.swsh.ss16"), "arabic")
+        self.assertEqual(script("hah-ar.init.swsh.ss16.calt"), "arabic")
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
