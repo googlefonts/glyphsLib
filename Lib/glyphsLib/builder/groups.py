@@ -144,8 +144,6 @@ def _glyph_kerning_attr(glyph, side):
     """
     if glyph.parent.format_version > 2:  # Glyphs 3
         glyph_data = glyphdata.get_glyph(glyph.name)
-        if glyph.name.startswith("hah-ar"):
-            print(glyph.name, glyph_data)
         if (
             glyph_data.script in ("arabic", "hebrew")
             and glyph_data.category != "Number"
