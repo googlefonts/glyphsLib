@@ -24,25 +24,34 @@ def to_ufo_kerning(self):
     for master in self.font.masters:
         master_id = master.id
         kerning_source = master.metricsSource.id  # Maybe be a linked master
-        if kerning_source in self.font.kerning:
-            kerning = self.font.kerning[kerning_source]
+        if kerning_source in self.font.kerningLTR:
+            kerning = self.font.kerningLTR[kerning_source]
             _to_ufo_kerning(self, self._sources[master_id].font, kerning)
+        if kerning_source in self.font.kerningRTL:
+            kerning = self.font.kerningRTL[kerning_source]
+            _to_ufo_kerning(self, self._sources[master_id].font, kerning, "RTL")
 
 
-def _to_ufo_kerning(self, ufo, kerning_data):
+def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     """Add .glyphs kerning to an UFO."""
 
     warning_msg = "Non-existent glyph class %s found in kerning rules."
 
     for left, pairs in kerning_data.items():
-        match = re.match(r"@MMK_L_(.+)", left)
+        if direction == "LTR":
+            match = re.match(r"@MMK_L_(.+)", left)
+        elif direction == "RTL":
+            match = re.match(r"@MMK_R_(.+)", left)
         left_is_class = bool(match)
         if left_is_class:
             left = "public.kern1.%s" % match.group(1)
             if left not in ufo.groups:
                 self.logger.warning(warning_msg % left)
         for right, kerning_val in pairs.items():
-            match = re.match(r"@MMK_R_(.+)", right)
+            if direction == "LTR":
+                match = re.match(r"@MMK_R_(.+)", right)
+            elif direction == "RTL":
+                match = re.match(r"@MMK_L_(.+)", right)
             right_is_class = bool(match)
             if right_is_class:
                 right = "public.kern2.%s" % match.group(1)
