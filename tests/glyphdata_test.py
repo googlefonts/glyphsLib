@@ -971,6 +971,7 @@ class GlyphDataTest(unittest.TestCase):
         def script(n):
             return get_glyph(n).script
 
+<<<<<<< HEAD
         self.assertEqual(script("hah-ar"), "arabic")
         self.assertEqual(script("hah-ar.init"), "arabic")
         self.assertEqual(script("hah-ar.init.swsh"), "arabic")
@@ -979,6 +980,14 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(script("meem_meem-ar.init"), "arabic")
         self.assertEqual(script("meem_meem-ar.init.swsh"), "arabic")
         self.assertEqual(script("lam_meem_meem-ar.init"), "arabic")
+=======
+        # "SignU.bn" is a non-standard name not defined in GlyphData.xml
+        self.assertEqual(script("hah-ar") , "arabic")
+        self.assertEqual(script("hah-ar.init") , "arabic")
+        self.assertEqual(script("hah-ar.init.swsh") , "arabic")
+        self.assertEqual(script("hah-ar.init.swsh.ss16") , "arabic")
+        self.assertEqual(script("hah-ar.init.swsh.ss16.calt") , "arabic")
+>>>>>>> Script guessing test
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
