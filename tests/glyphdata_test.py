@@ -139,7 +139,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
         self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
 
-    def test_category_buy_unicode(self):
+    def test_category_by_unicode(self):
         def cat(n, u):
             return (
                 get_glyph(n, unicodes=u).category,
