@@ -17,7 +17,7 @@ from collections import defaultdict
 import os
 import re
 
-from glyphsLib import classes
+from glyphsLib import classes, glyphdata
 from .constants import GLYPHLIB_PREFIX
 from .glyph import BRACKET_GLYPH_RE
 
@@ -140,12 +140,27 @@ def _to_glyphs_kerning_group(self, name, glyphs):
 
 def _glyph_kerning_attr(glyph, side):
     """Return leftKerningGroup or rightKerningGroup depending on the UFO
-    group's side (1 or 2).
+    group's side (1 or 2) and writing script.
     """
-    if int(side) == 1:
-        return "rightKerningGroup"
-    else:
-        return "leftKerningGroup"
+    if glyph.parent.format_version > 2:  # Glyphs 3
+        glyph_data = glyphdata.get_glyph(glyph.name)
+        if glyph.name.startswith("hah-ar"):
+            print(glyph.name, glyph_data)
+        if glyph_data.script in ("arabic", "hebrew") and glyph_data.category != "Number":
+            if int(side) == 1:
+                return "leftKerningGroup"
+            else:
+                return "rightKerningGroup"
+        else:
+            if int(side) == 1:
+                return "rightKerningGroup"
+            else:
+                return "leftKerningGroup"
+    else:   # Glyphs 2
+        if int(side) == 1:
+            return "rightKerningGroup"
+        else:
+            return "leftKerningGroup"
 
 
 def _assert_groups_are_identical(self, reference_ufo, ufo):
