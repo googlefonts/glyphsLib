@@ -976,6 +976,9 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(script("hah-ar.init.swsh"), "arabic")
         self.assertEqual(script("hah-ar.init.swsh.ss16"), "arabic")
         self.assertEqual(script("hah-ar.init.swsh.ss16.calt"), "arabic")
+        self.assertEqual(script("meem_meem-ar.init"), "arabic")
+        self.assertEqual(script("meem_meem-ar.init.swsh"), "arabic")
+        self.assertEqual(script("lam_meem_meem-ar.init"), "arabic")
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
