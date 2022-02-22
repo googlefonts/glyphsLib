@@ -131,23 +131,11 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     if category is None:
         category, sub_category = _construct_category(glyph_name, data)
 
-    # TODO: Determine script in ligatures.
     script = attributes.get("script")
-    description = attributes.get("description")
-
-    # Finally, find script for unencoded derivatives
-    # for example hah-ar.init.swsh
     if script is None:
-        i = 0
-        num_parts = len(glyph_name.split("."))
-        while script is None and i <= num_parts:
-            until = -1 * i
-            reduced_name = ".".join(glyph_name.split(".")[:until])
-            attributes = _lookup_attributes(reduced_name, data)
-            if attributes.get("script"):
-                script = attributes.get("script")
-                break
-            i += 1
+        script = _construct_script(glyph_name, data=data)
+
+    description = attributes.get("description")
 
     return Glyph(
         glyph_name,
@@ -266,6 +254,40 @@ def _construct_category(glyph_name, data):
         return category, sub_category
 
     return None, None
+
+
+def _construct_script(glyph_name, data):
+    """Derive script of a glyph name."""
+    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
+    # construction helpers without a category.
+    if glyph_name.startswith("_"):
+        return None
+
+    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
+    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
+    # the same category as its base glyph.
+    base_name = glyph_name.split(".", 1)[0]
+    base_attribute = data.names.get(base_name) or {}
+    if base_attribute:
+        script = base_attribute.get("script")
+        return script
+
+    # Detect ligatures.
+    if "_" in base_name:
+        base_names = base_name.split("_")
+        # The last name has a suffix, add it to all the names.
+        if "-" in base_names[-1]:
+            _, s = base_names[-1].rsplit("-", 1)
+            base_names = [(n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names]
+        base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
+        first_attribute = base_names_attributes[0]
+
+        # If the first part is a Letter...
+        if first_attribute.get("category") == "Letter":
+            script = first_attribute.get("script")
+            return script
+
+    return None
 
 
 def _translate_category(glyph_name, unicode_category):
