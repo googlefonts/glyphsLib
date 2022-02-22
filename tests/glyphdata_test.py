@@ -971,7 +971,6 @@ class GlyphDataTest(unittest.TestCase):
         def script(n):
             return get_glyph(n).script
 
-        # "SignU.bn" is a non-standard name not defined in GlyphData.xml
         self.assertEqual(script("hah-ar"), "arabic")
         self.assertEqual(script("hah-ar.init"), "arabic")
         self.assertEqual(script("hah-ar.init.swsh"), "arabic")
