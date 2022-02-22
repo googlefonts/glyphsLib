@@ -278,7 +278,9 @@ def _construct_script(glyph_name, data):
         # The last name has a suffix, add it to all the names.
         if "-" in base_names[-1]:
             _, s = base_names[-1].rsplit("-", 1)
-            base_names = [(n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names]
+            base_names = [
+                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
+            ]
         base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
         first_attribute = base_names_attributes[0]
 
