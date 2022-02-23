@@ -73,20 +73,23 @@ def user_loc_string_to_value(axis_tag, user_loc):
     87.5
     >>> user_loc_string_to_value('wdth', 'Clearly Not From Glyphs UI')
     """
-    # In Glyphs 3 these things are integers now
-    if isinstance(user_loc, int):
-        return user_loc
     if axis_tag == "wght":
-        try:
-            value = _nospace_lookup(WEIGHT_CODES, user_loc)
-        except KeyError:
-            return None
+        if isinstance(user_loc, int):
+            value = user_loc
+        else:
+            try:
+                value = _nospace_lookup(WEIGHT_CODES, user_loc)
+            except KeyError:
+                return None
         return class_to_value("wght", value)
     elif axis_tag == "wdth":
-        try:
-            value = _nospace_lookup(WIDTH_CODES, user_loc)
-        except KeyError:
-            return None
+        if isinstance(user_loc, int):
+            value = user_loc
+        else:
+            try:
+                value = _nospace_lookup(WIDTH_CODES, user_loc)
+            except KeyError:
+                return None
         return class_to_value("wdth", value)
 
     # Currently this function should only be called with a width or weight
