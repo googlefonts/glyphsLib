@@ -744,21 +744,30 @@ class FeatureFileProcessor:
             if st.glyphs.original:
                 for glyph in st.glyphs.original:
                     try:
-                        # Class name (GlyphClassName object)
-                        elements.append("@" + glyph.glyphclass.name)
+                        # Class name (MarkClassName object)
+                        elements.append("@" + glyph.markClass.name)
                     except AttributeError:
                         try:
-                            # Class name (GlyphClassDefinition object)
-                            # FIXME: (jany) why not always the same type?
-                            elements.append("@" + glyph.name)
+                            # Class name (GlyphClassName object)
+                            elements.append("@" + glyph.glyphclass.name)
                         except AttributeError:
-                            # Glyph name
-                            elements.append(glyph)
+                            try:
+                                # Class name (GlyphClassDefinition object)
+                                # FIXME: (jany) why not always the same type?
+                                elements.append("@" + glyph.name)
+                            except AttributeError:
+                                # Glyph name
+                                elements.append(glyph)
             else:
                 elements = st.glyphSet()
         except AttributeError:
             # Single class
-            elements.append("@" + st.glyphs.glyphclass.name)
+            try:
+                # Class name (MarkClassName object)
+                elements.append("@" + st.glyphs.markClass.name)
+            except AttributeError:
+                # Class name (GlyphClassName object)
+                elements.append("@" + st.glyphs.glyphclass.name)
         glyph_class.code = " ".join(elements)
         glyph_class.automatic = bool(automatic)
         self._font.classes.append(glyph_class)
