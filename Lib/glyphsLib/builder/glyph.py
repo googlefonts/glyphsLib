@@ -291,7 +291,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_components(ufo_glyph, layer)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
     if self.is_vertical:
-        self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
+        self.to_ufo_glyph_height_and_vertical_origin(ufo_font, ufo_glyph, layer)
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
@@ -413,7 +413,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
 
 
-def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_font, ufo_glyph, layer):
     # implentation based on:
     # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
     assert self.is_vertical
@@ -422,6 +422,8 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
 
     if layer.vertWidth is not None:
         ufo_glyph.height = layer.vertWidth
+    elif "rotat" in ufo_glyph.name:
+        ufo_glyph.height = ufo_font[ufo_glyph.name.replace(".rotat", "")].width
     else:
         ufo_glyph.height = ascender - descender
 
