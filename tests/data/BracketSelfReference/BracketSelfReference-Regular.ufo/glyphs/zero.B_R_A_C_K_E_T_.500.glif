@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="zero.BRACKET.500" format="2">
+  <advance width="700"/>
+  <outline>
+    <component base="zero" xOffset="160"/>
+  </outline>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.Glyphs._originalLayerName</key>
+      <string>Regular [500]</string>
+      <key>com.schriftgestaltung.Glyphs.lastChange</key>
+      <string>2021/03/31 15:27:05</string>
+    </dict>
+  </lib>
+</glyph>

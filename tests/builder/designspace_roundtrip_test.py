@@ -76,3 +76,52 @@ def test_default_master_roundtrips(ufo_module):
     assert reg.copyGroups is True
     assert reg.copyInfo is True
     assert reg.copyLib is True
+
+
+def test_roundtrip_self_ref(datadir, ufo_module):
+    """This test is to solve the problem of roundtrips sometimes resulting in
+    broken ufos when working with bracket layers.
+
+    Starting with UFO: It's okay to have a bracket glyph that references its
+    base glyph as a component. However, on the glyphs.app side it's not okay
+    because the base and bracket glyphs are merged into a single glyph with
+    the bracket glyph now being a layer. Glyphsapp (2.6.1) does not like the
+    self referencing component, but that's the best we can do to preserve the
+    information.
+
+    The goal here is to make sure that the valid ufo we start with, is still
+    valid in ufo after roundtriping. We are not concerned with making
+    glyphs.app work properly at the intemediary stage.
+    """
+    path = datadir / "BracketSelfReference/BracketSelfReference.designspace"
+    designspace = designspaceLib.DesignSpaceDocument.fromfile(path)
+
+    for source in designspace.sources:
+        font = ufo_module.Font(source.path)
+        assert "zero" in font
+        assert "zero.BRACKET.500" in font
+        assert "space" in font
+
+        # Check zero.BRACKET.500 component correct
+        assert font["zero.BRACKET.500"].components[0].baseGlyph == "zero"
+
+    gs_font = to_glyphs(designspace)
+
+    # Check that the "zero" glyph contains our bracket layers
+    glyph_obj = gs_font.glyphs["zero"]
+    layer_names = [layer.name for layer in glyph_obj.layers]
+    assert "Regular [500]" in layer_names
+    assert "Bold [500]" in layer_names
+
+    # Check that our bracket layers contain the base glyph as a component
+    bracket_layers = [layer for layer in glyph_obj.layers if "[500]" in layer.name]
+    for layer in bracket_layers:
+        component_names = [component.name for component in layer.components]
+        assert component_names == ["zero"]
+
+    designspace2 = to_designspace(gs_font, ufo_module=ufo_module)
+    ufos = [source.font for source in designspace2.sources]
+
+    # Check zero.BRACKET.500 does not reference itself after roundtrip
+    for ufo in ufos:
+        assert ufo["zero.BRACKET.500"].components[0].baseGlyph == "zero"

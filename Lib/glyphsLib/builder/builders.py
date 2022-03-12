@@ -599,6 +599,10 @@ class UFOBuilder(_LoggerMixin):
                     )
                     # swap components if base glyph contains matching bracket layers.
                     for comp in ufo_glyph.components:
+                        if comp.baseGlyph == glyph_name:
+                            # Do not create self referencing glyph components. See:
+                            # tests\builder\designspace_roundtrip_test.py::test_roundtrip_self_ref
+                            continue
                         bracket_comp_name = _bracket_glyph_name(
                             comp.baseGlyph, reverse, location
                         )
