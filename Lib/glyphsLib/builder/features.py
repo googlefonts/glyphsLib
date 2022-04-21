@@ -374,7 +374,7 @@ def _replace_block(kind, tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
     return re.sub(
-        fr"(?<=^{kind} {tag} {{\n)(.*?)(?=^}} {tag};$)",
+        rf"(?<=^{kind} {tag} {{\n)(.*?)(?=^}} {tag};$)",
         repl,
         features,
         count=1,

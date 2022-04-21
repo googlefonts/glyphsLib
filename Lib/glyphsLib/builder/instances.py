@@ -312,14 +312,14 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
 
 
 def set_weight_class(ufo, designspace, instance):
-    """ Set ufo.info.openTypeOS2WeightClass according to the user location
+    """Set ufo.info.openTypeOS2WeightClass according to the user location
     of the designspace instance, as calculated from the axis mapping.
     """
     _set_class_from_instance(ufo, designspace, instance, "wght")
 
 
 def set_width_class(ufo, designspace, instance):
-    """ Set ufo.info.openTypeOS2WidthClass according to the user location
+    """Set ufo.info.openTypeOS2WidthClass according to the user location
     of the designspace instance, as calculated from the axis mapping.
     """
     _set_class_from_instance(ufo, designspace, instance, "wdth")
