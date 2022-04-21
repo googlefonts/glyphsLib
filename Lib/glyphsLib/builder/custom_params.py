@@ -829,7 +829,7 @@ register(ReplaceFeatureParamHandler())
 
 
 class ReencodeGlyphsParamHandler(AbstractParamHandler):
-    """ The "Reencode Glyphs" custom parameter contains a list of
+    """The "Reencode Glyphs" custom parameter contains a list of
     'glyphname=unicodevalue' strings: e.g., ["smiley=E100", "logo=E101"].
     It only applies to specific instance (not to master or globally) and is
     meant to assign Unicode values to glyphs with the specied name at export
@@ -938,8 +938,7 @@ DEFAULT_PARAMETERS = (
 
 
 def _set_default_params(ufo):
-    """ Set Glyphs.app's default parameters when different from ufo2ft ones.
-    """
+    """Set Glyphs.app's default parameters when different from ufo2ft ones."""
     for _, ufo_name, default_value in DEFAULT_PARAMETERS:
         if getattr(ufo.info, ufo_name) is None:
             if isinstance(default_value, list):
@@ -950,7 +949,7 @@ def _set_default_params(ufo):
 
 
 def _unset_default_params(glyphs):
-    """ Unset Glyphs.app's parameters that have default values.
+    """Unset Glyphs.app's parameters that have default values.
     FIXME: (jany) maybe this should be taken care of in the writer? and/or
         classes should have better default values?
     """

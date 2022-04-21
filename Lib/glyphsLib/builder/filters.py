@@ -23,18 +23,18 @@ logger = logging.getLogger(__name__)
 
 def parse_glyphs_filter(filter_str, is_pre=False):
     """Parses glyphs custom filter string into a dict object that
-       ufo2ft can consume.
+    ufo2ft can consume.
 
-        Reference:
-            ufo2ft: https://github.com/googlefonts/ufo2ft
-            Glyphs 2.3 Handbook July 2016, p184
+     Reference:
+         ufo2ft: https://github.com/googlefonts/ufo2ft
+         Glyphs 2.3 Handbook July 2016, p184
 
-        Args:
-            filter_str - a string of glyphs app filter
+     Args:
+         filter_str - a string of glyphs app filter
 
-        Return:
-            A dictionary contains the structured filter.
-            Return None if parse failed.
+     Return:
+         A dictionary contains the structured filter.
+         Return None if parse failed.
     """
     elements = filter_str.split(";")
 

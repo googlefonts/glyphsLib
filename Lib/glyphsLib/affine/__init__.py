@@ -49,7 +49,7 @@ __author__ = "Sean Gillies"
 __version__ = "1.0"
 
 EPSILON = 1e-5
-EPSILON2 = EPSILON ** 2
+EPSILON2 = EPSILON**2
 
 
 def set_epsilon(epsilon):
@@ -65,7 +65,7 @@ def set_epsilon(epsilon):
     """
     global EPSILON, EPSILON2
     EPSILON = float(epsilon)
-    EPSILON2 = EPSILON ** 2
+    EPSILON2 = EPSILON**2
 
 
 class TransformNotInvertibleError(Exception):
