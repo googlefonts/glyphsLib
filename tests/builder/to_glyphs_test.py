@@ -464,12 +464,12 @@ def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_mod
     bg_c = bg.newGlyph("c")
     bg_c.width = 400
 
-    font = to_glyphs([ufo])
+    converted_font = to_glyphs([ufo])
     path = os.path.join(str(tmpdir), "test.glyphs")
-    font.save(path)
+    converted_font.save(path)
     saved_font = classes.GSFont(path)
 
-    for font in [font, saved_font]:
+    for font in [converted_font, saved_font]:
         (ufo,) = to_ufos(font, minimal=False)
 
         assert ufo["a"].width == 100
@@ -490,12 +490,12 @@ def test_double_unicodes(tmpdir, ufo_module):
     z = ufo.newGlyph("z")
     z.unicodes = [0x005A, 0x007A]
 
-    font = to_glyphs([ufo])
+    converted_font = to_glyphs([ufo])
     path = os.path.join(str(tmpdir), "test.glyphs")
-    font.save(path)
+    converted_font.save(path)
     saved_font = classes.GSFont(path)
 
-    for font in [font, saved_font]:
+    for font in [converted_font, saved_font]:
         assert font.glyphs["z"].unicode == "005A"
         assert font.glyphs["z"].unicodes == ["005A", "007A"]
 
