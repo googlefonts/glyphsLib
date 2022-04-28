@@ -3023,7 +3023,9 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
-            writer.writeObjectKeyValue(self, "type", keyName="type", condition="if_true")
+            writer.writeObjectKeyValue(
+                self, "type", keyName="type", condition="if_true"
+            )
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
         if writer.format_version == 2:
