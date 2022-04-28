@@ -48,8 +48,12 @@ def to_designspace_instances(self):
         if self.minimize_glyphs_diffs or (
             is_instance_active(instance)
             and _is_instance_included_in_family(self, instance)
+            and not instance.is_variable_setting
         ):
-            _to_designspace_instance(self, instance)
+            if instance.is_variable_setting:
+                _to_designspace_lib(self, instance)
+            else:
+                _to_designspace_instance(self, instance)
 
 
 def _to_designspace_instance(self, instance):
@@ -146,6 +150,12 @@ def _to_designspace_instance(self, instance):
         ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = params
 
     self.designspace.addInstance(ufo_instance)
+
+
+def _to_designspace_lib(self, instance):
+    # Store a "variable font setting" special instance type in the designspace lib
+    pass
+    # TODO
 
 
 def _is_instance_included_in_family(self, instance):

@@ -141,6 +141,9 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+INSTANCETYPESINGLE = 0
+INSTANCETYPEVARIABLE = 1
+
 TAG = -2
 TOPGHOST = -1
 STEM = 0
@@ -3020,6 +3023,7 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
+            writer.writeObjectKeyValue(self, "type", keyName="type", condition="if_true")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
         if writer.format_version == 2:
@@ -3071,6 +3075,7 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
+        "type": INSTANCETYPESINGLE,
     }
 
     def __init__(self):
@@ -3090,11 +3095,31 @@ class GSInstance(GSBase):
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
+        self.type = self._defaultsForName["type"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value),
     )
+
+    @property
+    def type(self):
+        if self._type == INSTANCETYPEVARIABLE:
+            return "variable"  # "variable" is stored in plist
+        return False
+
+    @type.setter
+    def type(self, value):
+        if value == "variable":  # "variable" is stored in plist
+            self._type = INSTANCETYPEVARIABLE
+        else:
+            self._type = value
+
+    @property
+    def is_variable_setting(self):
+        if self._type == INSTANCETYPEVARIABLE:
+            return True
+        return False
 
     @property
     def exports(self):
@@ -3283,6 +3308,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
+        {"plist_name": "type", "object_name": "type"},
     ]
 )
 
