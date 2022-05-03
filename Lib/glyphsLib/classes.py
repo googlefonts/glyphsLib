@@ -1604,8 +1604,10 @@ class GSFontMaster(GSBase):
         if not source_master_id:
             return None
 
-        if source_master_id in self.font.masters:
-            return self.font.masters[source_master_id]
+        # Try by master id
+        source_master = self.font.masterForId(source_master_id)
+        if source_master is not None:
+            return source_master
 
         # Try by name
         for source_master in self.font.masters:
