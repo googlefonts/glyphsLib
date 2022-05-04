@@ -177,7 +177,11 @@ def _to_ufo_features(
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
             strings.append("# Prefix: %s\n" % prefix.name)
         strings.append(autostr(prefix.automatic))
-        strings.append(expander.expand(prefix.code))
+        if prefix.disabled:
+            strings.append("# disabled\n")
+            strings.extend("# " + line + "\n" for line in prefix.code.splitlines())
+        else:
+            strings.append(expander.expand(prefix.code))
         prefixes.append("".join(strings))
 
     prefix_str = "\n\n".join(prefixes)

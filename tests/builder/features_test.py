@@ -675,3 +675,22 @@ def test_comments_in_classes(ufo_module):
             ];
 """
     )
+
+
+def test_disabled_prefixes(ufo_module):
+    # https://github.com/googlefonts/glyphsLib/issues/562
+    font = to_glyphs([ufo_module.Font()])
+    feature = classes.GSFeaturePrefix(name="disabledTest")
+    feature.code = "Not even feature code"
+    feature.disabled = True
+    font.featurePrefixes.append(feature)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module)
+    assert ufo.features.text == dedent(
+        """\
+        # Prefix: disabledTest
+        # disabled
+        # Not even feature code
+
+    """
+    )
