@@ -675,3 +675,32 @@ def test_comments_in_classes(ufo_module):
             ];
 """
     )
+
+
+def test_mark_class_used_as_glyph_class(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        markClass CombBreve_Macron <anchor -700 1000> @_U;
+        markClass CombGraphemeJoiner <anchor 0 0> @_U;
+        @c_u_diacs = @_U;
+        """
+    )
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+
+    assert font.featurePrefixes[0].code == dedent(
+        """\
+        markClass CombBreve_Macron <anchor -700 1000> @_U;
+        markClass CombGraphemeJoiner <anchor 0 0> @_U;
+        """
+    ).strip()
+    assert font.classes[0].name == "c_u_diacs"
+    assert font.classes[0].code == "@_U"
+
+    (rtufo,) = to_ufos(font, ufo_module=ufo_module)
+
+    # After roundtrip glyph classes are always placed before the mark classes
+    # hence the following assertion would fail...
+    # https://github.com/googlefonts/glyphsLib/issues/694#issuecomment-1117204523
+    # assert rtufo.features.text == ufo.features.text
