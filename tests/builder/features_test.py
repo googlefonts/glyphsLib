@@ -689,12 +689,15 @@ def test_mark_class_used_as_glyph_class(tmpdir, ufo_module):
 
     font = to_glyphs([ufo], minimize_ufo_diffs=True)
 
-    assert font.featurePrefixes[0].code == dedent(
-        """\
-        markClass CombBreve_Macron <anchor -700 1000> @_U;
-        markClass CombGraphemeJoiner <anchor 0 0> @_U;
-        """
-    ).strip()
+    assert (
+        font.featurePrefixes[0].code
+        == dedent(
+            """\
+            markClass CombBreve_Macron <anchor -700 1000> @_U;
+            markClass CombGraphemeJoiner <anchor 0 0> @_U;
+            """
+        ).strip()
+    )
     assert font.classes[0].name == "c_u_diacs"
     assert font.classes[0].code == "@_U"
 
