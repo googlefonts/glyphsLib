@@ -218,7 +218,10 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 Format=PaintFormat.PaintGlyph, Glyph=layerGlyphName, Paint=paint
             )
             colorLayers.append(paintGlyph)
-        layerMapping[glyph.name] = dict(Format=1, Layers=colorLayers)
+        if colorLayers:
+            layerMapping[glyph.name] = dict(
+                Format=PaintFormat.PaintColrLayers, Layers=colorLayers
+            )
 
     if palette[0]:
         for p in ufo.lib.setdefault(UFO2FT_COLOR_PALETTES_KEY, [[]]):
