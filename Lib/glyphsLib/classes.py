@@ -2286,7 +2286,14 @@ class GSPath(GSBase):
         if not self.closed:
             node = nodes.pop(0)
             assert node.type == "line", "Open path starts with off-curve points"
-            pointPen.addPoint(tuple(node.position), segmentType="move")
+            node_data = dict(node.userData)
+            node_name = node_data.pop("name", None)
+            pointPen.addPoint(
+                tuple(node.position),
+                segmentType="move",
+                name=node_name,
+                userData=node_data,
+            )
         else:
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
