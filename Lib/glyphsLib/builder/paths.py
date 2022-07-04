@@ -35,7 +35,11 @@ def to_ufo_paths(self, ufo_glyph, layer):
         if not path.closed:
             node = nodes.pop(0)
             assert node.type == "line", "Open path starts with off-curve points"
-            pen.addPoint(tuple(node.position), segmentType="move")
+            pen.addPoint(
+                tuple(node.position),
+                segmentType="move",
+                name=node.userData.get("name"),
+            )
         else:
             # In Glyphs.app, the starting node of a closed contour is always
             # stored at the end of the nodes list.
