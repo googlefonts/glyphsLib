@@ -467,36 +467,12 @@ def test_designspace_generation_bracket_GDEF(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module, generate_GDEF=True)
 
     for source in designspace.sources:
-        ufo = source.font
-        features = fontTools.feaLib.parser.Parser(
-            io.StringIO(ufo.features.text), glyphNames=ufo.keys()
-        ).parse()
-        for stmt in features.statements:
-            if (
-                isinstance(stmt, fontTools.feaLib.ast.TableBlock)
-                and stmt.name == "GDEF"
-            ):
-                gdef = stmt
-                for stmt in gdef.statements:
-                    if isinstance(stmt, fontTools.feaLib.ast.GlyphClassDefStatement):
-                        glyph_class_defs = stmt
-                        break
-                else:
-                    pytest.fail(
-                        f"No GDEF.GlyphClassDef statement found in {ufo!r} features:\n"
-                        f"{ufo.features.text}"
-                    )
-                break
-        else:
-            pytest.fail(
-                f"No GDEF table definition found in {ufo!r} features:\n"
-                f"{ufo.features.text}"
-            )
+        categories = source.font.lib["public.openTypeCategories"]
 
-        assert set(glyph_class_defs.baseGlyphs.glyphSet()) == {
-            "x",
-            "x.BRACKET.300",
-            "x.BRACKET.600",
+        assert categories == {
+            "x": "base",
+            "x.BRACKET.300": "base",
+            "x.BRACKET.600": "base",
         }
 
 
