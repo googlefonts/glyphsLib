@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from textwrap import dedent
 from io import StringIO
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from fontTools.feaLib import ast, parser
 

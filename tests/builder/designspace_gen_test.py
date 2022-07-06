@@ -14,16 +14,12 @@
 # limitations under the License.
 
 
-import io
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
 from xmldiff import main, formatting
 
 import itertools
 import pytest
-
-import fontTools.feaLib.parser
-import fontTools.feaLib.ast
 
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs

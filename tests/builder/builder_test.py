@@ -1083,7 +1083,7 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         ufo2 = ds2.sources[0].font
         # Unexported glyphs still get their category, because it doesn't hurt to
         # do it.
-        assert ufo.lib["public.openTypeCategories"] == {"d": "base"}
+        assert ufo2.lib["public.openTypeCategories"] == {"d": "base"}
 
     def test_glyph_lib_Export_feature_names_from_notes(self):
         font = generate_minimal_font()
