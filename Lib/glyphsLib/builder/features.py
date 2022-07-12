@@ -412,6 +412,12 @@ def to_glyphs_features(self):
         glyphs_module=self.glyphs_module,
     )
 
+    # Store GDEF category data GSFont-wide to capture bracket glyphs that we
+    # create for UFOs and fold when going back.
+    opentype_categories = ufo.lib.get("public.openTypeCategories")
+    if opentype_categories is not None:
+        self.font.userData[ORIGINAL_CATEGORY_KEY] = opentype_categories
+
 
 def _to_glyphs_features(font, features_text, glyph_names=None, glyphs_module=None):
     """Import features text in GSFont, split into prefixes, features and classes.

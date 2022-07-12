@@ -695,6 +695,56 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
             "baz": "mark",
         }
 
+    def test_GDEF_roundtrip(self):
+        font = generate_minimal_font()
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+        assert "public.openTypeCategories" not in ufo.lib
+
+        ufo.newGlyph("base")
+        ufo.newGlyph("mark")
+        ufo.newGlyph("ligature")
+        ufo.newGlyph("mystery")
+        categories = {
+            "base": "base",
+            "mark": "mark",
+            "ligature": "ligature",
+            "asdf": "component",
+        }
+        ufo.lib["public.openTypeCategories"] = categories
+
+        font2 = to_glyphs(ds)
+        assert (
+            font2.userData["com.schriftgestaltung.Glyphs.originalOpenTypeCategory"]
+            == categories
+        )
+
+        add_anchor(font2, "mystery", "top", 400, 1000)
+        ds2 = self.to_designspace(font2)
+        ufo2 = ds2.sources[0].font
+        assert ufo2.lib["public.openTypeCategories"] == {
+            **categories,
+            "mystery": "base",
+        }
+
+    def test_GDEF_roundtrip_empty(self):
+        font = generate_minimal_font()
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+        assert "public.openTypeCategories" not in ufo.lib
+
+        font2 = to_glyphs(ds)
+        assert (
+            font2.userData["com.schriftgestaltung.Glyphs.originalOpenTypeCategory"]
+            is None
+        )
+
+        ds2 = self.to_designspace(font2)
+        ufo2 = ds2.sources[0].font
+        assert "public.openTypeCategories" not in ufo2.lib
+
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
 
