@@ -27,9 +27,13 @@ from .tokens import TokenExpander, PassThruExpander
 if TYPE_CHECKING:
     from ufoLib2 import Font
 
+    from ..classes import GSFont, GSFontMaster
+    from . import UFOBuilder
+
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
 ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + "originalFeatureCode"
+ORIGINAL_CATEGORY_KEY = GLYPHLIB_PREFIX + "originalOpenTypeCategory"
 
 
 def autostr(automatic):
@@ -150,19 +154,15 @@ def _to_glyphs_language(langID):
     return _REVERSE_LANGUAGE_MAPPING[langID]
 
 
-def _to_ufo_features(font, ufo=None, generate_GDEF=False, master=None):
+def _to_ufo_features(
+    font: GSFont,
+    ufo: Font | None = None,
+    generate_GDEF: bool = False,
+    master: GSFontMaster | None = None,
+) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
     Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
-
-    Args:
-        font: GSFont
-        ufo: Optional[defcon.Font]
-        generate_GDEF: bool
-        skip_export_glyphs: Optional[List[str]]
-        master: Optional[GSFontMaster]
-
-    Returns: str
     """
     if not master:
         expander = PassThruExpander()
@@ -241,14 +241,9 @@ def _to_ufo_features(font, ufo=None, generate_GDEF=False, master=None):
         feature_defs.append("\n".join(lines))
     fea_str = "\n\n".join(feature_defs)
 
-    # Don't add a GDEF table when planning to round-trip. To get Glyphs.app-like
-    # results, we would need anchor propagation or user intervention. Glyphs.app
-    # only generates it on generating binaries.
     if generate_GDEF:
         assert ufo is not None
-        categories = _build_public_opentype_categories(ufo)
-        if categories:
-            ufo.lib["public.openTypeCategories"] = categories
+        regenerate_opentype_categories(font, ufo)
 
     full_text = "\n\n".join(filter(None, [class_str, prefix_str, fea_str])) + "\n"
     return full_text if full_text.strip() else ""
@@ -287,6 +282,9 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
     # NOTE: We can generate the category even for glyphs that are not exported,
     # because entries don't have to exist in the final fonts.
     for glyph in ufo:
+        glyph_name = glyph.name
+        assert glyph_name is not None
+
         has_attaching_anchor = False
         for anchor in glyph.anchors:
             name = anchor.name
@@ -296,29 +294,41 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
         # First check glyph.lib for category/subCategory overrides. Otherwise,
         # use global values from GlyphData.
         glyphinfo = glyphdata.get_glyph(
-            glyph.name, unicodes=[f"{c:04X}" for c in glyph.unicodes]
+            glyph_name, unicodes=[f"{c:04X}" for c in glyph.unicodes]
         )
         category = glyph.lib.get(category_key) or glyphinfo.category
         subCategory = glyph.lib.get(subCategory_key) or glyphinfo.subCategory
 
         if subCategory == "Ligature" and has_attaching_anchor:
-            categories[glyph.name] = "ligature"
+            categories[glyph_name] = "ligature"
         elif category == "Mark" and (
             subCategory == "Nonspacing" or subCategory == "Spacing Combining"
         ):
-            categories[glyph.name] = "mark"
+            categories[glyph_name] = "mark"
         elif has_attaching_anchor:
-            categories[glyph.name] = "base"
+            categories[glyph_name] = "base"
 
     return categories
 
 
-def regenerate_gdef(self):
+def regenerate_gdef(self: UFOBuilder) -> None:
     for source in self._sources.values():
-        ufo = source.font
-        categories = _build_public_opentype_categories(ufo)
-        if categories:
-            ufo.lib["public.openTypeCategories"] = categories
+        regenerate_opentype_categories(self.font, source.font)
+
+
+def regenerate_opentype_categories(font: GSFont, ufo: Font) -> None:
+    categories = _build_public_opentype_categories(ufo)
+
+    # Prefer already stored categories for round-tripping. This will provide
+    # newly guessed categories only for new glyphs. The data is stored
+    # GSFont-wide to capture bracket glyphs that we create for UFOs and fold
+    # when going back.
+    roundtripping_categories = font.userData[ORIGINAL_CATEGORY_KEY]
+    if roundtripping_categories is not None:
+        categories.update(roundtripping_categories)
+
+    if categories:
+        ufo.lib["public.openTypeCategories"] = categories
 
 
 def _replace_block(kind, tag, repl, features):
