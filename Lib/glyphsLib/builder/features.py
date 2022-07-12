@@ -42,13 +42,8 @@ def to_ufo_master_features(self, ufo, master):
     if original is not None:
         ufo.features.text = original
     else:
-        skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
         ufo.features.text = _to_ufo_features(
-            self.font,
-            ufo,
-            generate_GDEF=self.generate_GDEF,
-            skip_export_glyphs=skip_export_glyphs,
-            master=master,
+            self.font, ufo, generate_GDEF=self.generate_GDEF, master=master
         )
 
 
@@ -155,9 +150,7 @@ def _to_glyphs_language(langID):
     return _REVERSE_LANGUAGE_MAPPING[langID]
 
 
-def _to_ufo_features(
-    font, ufo=None, generate_GDEF=False, skip_export_glyphs=None, master=None
-):
+def _to_ufo_features(font, ufo=None, generate_GDEF=False, master=None):
     """Convert GSFont features, including prefixes and classes, to UFO.
 
     Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
