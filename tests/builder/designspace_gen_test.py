@@ -18,6 +18,7 @@ import io
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
 from xmldiff import main, formatting
+from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 
 import itertools
 import pytest
@@ -508,3 +509,26 @@ def test_designspace_generation_bracket_glyphs3_simple(datadir, ufo_module):
 
     for source in designspace.sources:
         assert "A.BRACKET.600" in source.font
+
+
+def test_designspace_generation_bracket_rclt_roundtrip(datadir, ufo_module):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    font.customParameters["Feature for Feature Variations"] = "rclt"
+    designspace = to_designspace(font, ufo_module=ufo_module)
+    assert designspace.rulesProcessingLast
+
+    font_rt = to_glyphs(designspace)
+    assert font_rt.customParameters["Feature for Feature Variations"] == "rclt"
+
+
+def test_designspace_generation_bracket_other_roundtrip(datadir, ufo_module):
+    with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    font.customParameters["Feature for Feature Variations"] = "calt"
+    designspace = to_designspace(font, ufo_module=ufo_module)
+    assert FEAVAR_FEATURETAG_LIB_KEY in designspace.lib
+    assert designspace.lib[FEAVAR_FEATURETAG_LIB_KEY] == "calt"
+
+    font_rt = to_glyphs(designspace)
+    assert font_rt.customParameters["Feature for Feature Variations"] == "calt"

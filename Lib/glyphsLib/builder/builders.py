@@ -22,6 +22,7 @@ from textwrap import dedent
 from typing import Any, Dict
 
 from fontTools import designspaceLib
+from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 
 from glyphsLib import classes, glyphdata, util
 from .constants import (
@@ -491,6 +492,13 @@ class UFOBuilder(_LoggerMixin):
                     reverse,
                 )
                 self._designspace.addRule(rule)
+
+        # Set feature for rules
+        feat = self.font.customParameters["Feature for Feature Variations"]
+        if feat == "rclt":
+            self._designspace.rulesProcessingLast = True
+        elif feat and feat != "rvrn":
+            self._designspace.lib[FEAVAR_FEATURETAG_LIB_KEY] = feat
 
         # Finally, copy bracket layers to their own glyphs.
         self._copy_bracket_layers_to_ufo_glyphs(bracket_layer_map)
