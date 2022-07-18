@@ -521,6 +521,7 @@ def test_designspace_generation_bracket_rclt_roundtrip(datadir, ufo_module):
     font_rt = to_glyphs(designspace)
     assert font_rt.customParameters["Feature for Feature Variations"] == "rclt"
 
+
 def test_designspace_generation_bracket_other_roundtrip(datadir, ufo_module):
     with open(str(datadir.join("BracketTestFont.glyphs"))) as f:
         font = glyphsLib.load(f)
