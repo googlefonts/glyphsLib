@@ -497,7 +497,7 @@ class UFOBuilder(_LoggerMixin):
         feat = self.font.customParameters["Feature for Feature Variations"]
         if feat == "rclt":
             self._designspace.rulesProcessingLast = True
-        elif feat != "rvrn":
+        elif feat and feat != "rvrn":
             self._designspace.lib[FEAVAR_FEATURETAG_LIB_KEY] = feat
 
         # Finally, copy bracket layers to their own glyphs.
