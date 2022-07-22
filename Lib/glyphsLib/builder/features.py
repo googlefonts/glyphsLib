@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from textwrap import dedent
 from io import StringIO
@@ -50,7 +51,11 @@ def to_ufo_master_features(self, ufo, master):
         ufo.features.text = original
     else:
         ufo.features.text = _to_ufo_features(
-            self.font, ufo, generate_GDEF=self.generate_GDEF, master=master
+            self.font,
+            ufo,
+            generate_GDEF=self.generate_GDEF,
+            master=master,
+            expand_includes=self.expand_includes,
         )
 
 
@@ -71,6 +76,7 @@ def _to_ufo_features(
     ufo: Font | None = None,
     generate_GDEF: bool = False,
     master: GSFontMaster | None = None,
+    expand_includes: bool = False,
 ) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
@@ -158,7 +164,23 @@ def _to_ufo_features(
         regenerate_opentype_categories(font, ufo)
 
     full_text = "\n\n".join(filter(None, [class_str, prefix_str, fea_str])) + "\n"
-    return full_text if full_text.strip() else ""
+    full_text = full_text if full_text.strip() else ""
+
+    if not full_text or not expand_includes:
+        return full_text
+
+    # use feaLib Parser to resolve include statements relative to the GSFont
+    # fontpath, and inline them in the output features text.
+    feature_file = StringIO(full_text)
+    include_dir = os.path.dirname(font.filepath) if font.filepath else None
+    fea_parser = parser.Parser(
+        feature_file,
+        glyphNames={glyph.name for glyph in font.glyphs},
+        includeDir=include_dir,
+        followIncludes=expand_includes,
+    )
+    doc = fea_parser.parse()
+    return doc.asFea()
 
 
 def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
@@ -320,11 +342,16 @@ def to_glyphs_features(self):
     ufo = self.designspace.sources[0].font
     if ufo.features.text is None:
         return
+    include_dir = None
+    if self.expand_includes and ufo.path:
+        include_dir = os.path.dirname(os.path.normpath(ufo.path))
     _to_glyphs_features(
         self.font,
         ufo.features.text,
         glyph_names=ufo.keys(),
         glyphs_module=self.glyphs_module,
+        include_dir=include_dir,
+        expand_includes=self.expand_includes,
     )
 
     # Store GDEF category data GSFont-wide to capture bracket glyphs that we
@@ -334,7 +361,14 @@ def to_glyphs_features(self):
         self.font.userData[ORIGINAL_CATEGORY_KEY] = opentype_categories
 
 
-def _to_glyphs_features(font, features_text, glyph_names=None, glyphs_module=None):
+def _to_glyphs_features(
+    font,
+    features_text,
+    glyph_names=None,
+    glyphs_module=None,
+    include_dir=None,
+    expand_includes=False,
+):
     """Import features text in GSFont, split into prefixes, features and classes.
 
     Args:
@@ -342,8 +376,15 @@ def _to_glyphs_features(font, features_text, glyph_names=None, glyphs_module=Non
         feature_text: str
         glyph_names: Optional[Sequence[str]]
         glyphs_module: Optional[Any]
+        include_dir: Optional[str]
+        expand_includes: bool
     """
-    document = FeaDocument(features_text, glyph_names)
+    document = FeaDocument(
+        features_text,
+        glyph_names,
+        include_dir=include_dir,
+        expand_includes=expand_includes,
+    )
     processor = FeatureFileProcessor(document, glyphs_module)
     processor.to_glyphs(font)
 
@@ -389,12 +430,20 @@ def _to_glyphs_features_basic(self):
 class FeaDocument:
     """Parse the string of a fea code into statements."""
 
-    def __init__(self, text, glyph_set=None):
+    def __init__(self, text, glyph_set=None, include_dir=None, expand_includes=False):
         feature_file = StringIO(text)
         glyph_names = glyph_set if glyph_set is not None else ()
         parser_ = parser.Parser(
-            feature_file, glyphNames=glyph_names, followIncludes=False
+            feature_file,
+            glyphNames=glyph_names,
+            includeDir=include_dir,
+            followIncludes=expand_includes,
         )
+        if expand_includes:
+            # if we expand includes, we need to reparse the whole file with the
+            # new content to get the updated locations
+            text = parser_.parse().asFea()
+            parser_ = parser.Parser(StringIO(text), glyphNames=glyph_names)
         self._doc = parser_.parse()
         self.statements = self._doc.statements
         self._lines = text.splitlines(True)  # keepends=True

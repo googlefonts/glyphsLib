@@ -53,6 +53,7 @@ def load_to_ufos(
     family_name=None,
     propagate_anchors=None,
     ufo_module=None,
+    expand_includes=False,
     minimal=False,
     glyph_data=None,
 ):
@@ -70,6 +71,7 @@ def load_to_ufos(
         family_name=family_name,
         propagate_anchors=propagate_anchors,
         ufo_module=ufo_module,
+        expand_includes=expand_includes,
         minimal=minimal,
         glyph_data=glyph_data,
     )
@@ -88,6 +90,7 @@ def build_masters(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    expand_includes=False,
     ufo_module=None,
     minimal=False,
     glyph_data=None,
@@ -126,6 +129,7 @@ def build_masters(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        expand_includes=expand_includes,
         ufo_module=ufo_module,
         minimal=minimal,
         glyph_data=glyph_data,

@@ -151,6 +151,14 @@ def main(args=None):
             "key."
         ),
     )
+    group.add_argument(
+        "--expand-includes",
+        action="store_true",
+        help=(
+            "Expand include statements in the .glyphs features and inline them in "
+            "the exported UFO features.fea."
+        ),
+    )
     group = parser_glyphs2ufo.add_argument_group("Glyph data")
     group.add_argument(
         "--glyph-data",
@@ -211,6 +219,14 @@ def main(args=None):
         action="store_false",
         help="Enable automatic alignment of components in glyphs.",
     )
+    group.add_argument(
+        "--expand-includes",
+        action="store_true",
+        help=(
+            "Expand include statements in the UFO features.fea and inline them in "
+            "the exported .glyphs features."
+        ),
+    )
 
     options = parser.parse_args(args)
 
@@ -246,6 +262,7 @@ def glyphs2ufo(options):
         generate_GDEF=options.generate_GDEF,
         store_editor_state=not options.no_store_editor_state,
         write_skipexportglyphs=options.write_public_skip_export_glyphs,
+        expand_includes=options.expand_includes,
         ufo_module=__import__(options.ufo_module),
         minimal=options.minimal,
         glyph_data=options.glyph_data or None,
@@ -298,6 +315,7 @@ def ufo2glyphs(options):
         object_to_read,
         ufo_module=ufo_module,
         minimize_ufo_diffs=options.no_preserve_glyphsapp_metadata,
+        expand_includes=options.expand_includes,
     )
 
     # Make the Glyphs file more suitable for roundtrip:
