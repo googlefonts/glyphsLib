@@ -635,59 +635,50 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         add_anchor(font, "t_e_s_t.alt", "caret_2", 400, 0)
         add_anchor(font, "t_e_s_t.alt", "caret_3", 600, 0)
         ufo = self.to_ufos(font)[0]
-        self.assertEqual(
-            ufo.features.text.splitlines(),
-            [
-                "table GDEF {",
-                "  # automatic",
-                "  GlyphClassDef",
-                "    [A], # Base",
-                "    [fi t_e_s_t.alt], # Liga",
-                "    [wigglylinebelowcomb wigglylinebelowcomb.alt], # Mark",
-                "    ;",
-                "  LigatureCaretByPos fi 150;",
-                "  LigatureCaretByPos t_e_s_t.alt 200 400 600;",
-                "} GDEF;",
-            ],
-        )
+
+        assert ufo.lib["public.openTypeCategories"] == {
+            "A": "base",
+            "fi": "ligature",
+            "t_e_s_t.alt": "ligature",
+            "wigglylinebelowcomb": "mark",
+            "wigglylinebelowcomb.alt": "mark",
+        }
 
     def test_GDEF_base_with_attaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "A.alt")
         add_anchor(font, "A.alt", "top", 400, 1000)
-        self.assertIn("[A.alt], # Base", self.to_ufos(font)[0].features.text)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib["public.openTypeCategories"] == {"A.alt": "base"}
 
     def test_GDEF_base_with_nonattaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "A.alt")
         add_anchor(font, "A.alt", "_top", 400, 1000)
         self.assertEqual("", self.to_ufos(font)[0].features.text)
+        ufo = self.to_ufos(font)[0]
+        assert "public.openTypeCategories" not in ufo.lib
 
     def test_GDEF_ligature_with_attaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "fi")
         add_anchor(font, "fi", "top", 400, 1000)
-        self.assertIn("[fi], # Liga", self.to_ufos(font)[0].features.text)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib["public.openTypeCategories"] == {"fi": "ligature"}
 
     def test_GDEF_ligature_with_nonattaching_anchor(self):
         font = generate_minimal_font()
         add_glyph(font, "fi")
         add_anchor(font, "fi", "_top", 400, 1000)
-        self.assertEqual("", self.to_ufos(font)[0].features.text)
+        ufo = self.to_ufos(font)[0]
+        self.assertEqual("", ufo.features.text)
+        assert "public.openTypeCategories" not in ufo.lib
 
     def test_GDEF_mark(self):
         font = generate_minimal_font()
         add_glyph(font, "eeMatra-gurmukhi")
-        self.assertIn("[eeMatra-gurmukhi], # Mark", self.to_ufos(font)[0].features.text)
-
-    def test_GDEF_fractional_caret_position(self):
-        # Some Glyphs sources happen to contain fractional caret positions.
-        # In the Adobe feature file syntax (and binary OpenType GDEF tables),
-        # caret positions must be integers.
-        font = generate_minimal_font()
-        add_glyph(font, "fi")
-        add_anchor(font, "fi", "caret_1", 499.9876, 0)
-        self.assertIn("LigatureCaretByPos fi 500;", self.to_ufos(font)[0].features.text)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib["public.openTypeCategories"] == {"eeMatra-gurmukhi": "mark"}
 
     def test_GDEF_custom_category_subCategory(self):
         font = generate_minimal_font()
@@ -697,9 +688,62 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
         bar["category"], bar["subCategory"] = "Mark", "Nonspacing"
         baz = add_glyph(font, "baz")
         baz["category"], baz["subCategory"] = "Mark", "Spacing Combining"
-        features = self.to_ufos(font)[0].features.text
-        self.assertIn("[foo], # Liga", features)
-        self.assertIn("[bar baz], # Mark", features)
+        ufo = self.to_ufos(font)[0]
+        assert ufo.lib["public.openTypeCategories"] == {
+            "foo": "ligature",
+            "bar": "mark",
+            "baz": "mark",
+        }
+
+    def test_GDEF_roundtrip(self):
+        font = generate_minimal_font()
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+        assert "public.openTypeCategories" not in ufo.lib
+
+        ufo.newGlyph("base")
+        ufo.newGlyph("mark")
+        ufo.newGlyph("ligature")
+        ufo.newGlyph("mystery")
+        categories = {
+            "base": "base",
+            "mark": "mark",
+            "ligature": "ligature",
+            "asdf": "component",
+        }
+        ufo.lib["public.openTypeCategories"] = categories
+
+        font2 = to_glyphs(ds)
+        assert (
+            font2.userData["com.schriftgestaltung.Glyphs.originalOpenTypeCategory"]
+            == categories
+        )
+
+        add_anchor(font2, "mystery", "top", 400, 1000)
+        ds2 = self.to_designspace(font2)
+        ufo2 = ds2.sources[0].font
+        assert ufo2.lib["public.openTypeCategories"] == {
+            **categories,
+            "mystery": "base",
+        }
+
+    def test_GDEF_roundtrip_empty(self):
+        font = generate_minimal_font()
+
+        ds = self.to_designspace(font)
+        ufo = ds.sources[0].font
+        assert "public.openTypeCategories" not in ufo.lib
+
+        font2 = to_glyphs(ds)
+        assert (
+            font2.userData["com.schriftgestaltung.Glyphs.originalOpenTypeCategory"]
+            is None
+        )
+
+        ds2 = self.to_designspace(font2)
+        ufo2 = ds2.sources[0].font
+        assert "public.openTypeCategories" not in ufo2.lib
 
     def test_set_blue_values(self):
         """Test that blue values are set correctly from alignment zones."""
@@ -1082,14 +1126,14 @@ class ToUfosTestBase(ParametrizedUfoModuleTestMixin):
 
         ds = self.to_designspace(font, write_skipexportglyphs=True)
         ufo = ds.sources[0].font
-        self.assertIn(
-            "GlyphClassDef[d]", ufo.features.text.replace("\n", "").replace(" ", "")
-        )
+        assert ufo.lib["public.openTypeCategories"] == {"d": "base"}
 
         font.glyphs["d"].export = False
         ds2 = self.to_designspace(font, write_skipexportglyphs=True)
         ufo2 = ds2.sources[0].font
-        self.assertEqual(ufo2.features.text, "")
+        # Unexported glyphs still get their category, because it doesn't hurt to
+        # do it.
+        assert ufo2.lib["public.openTypeCategories"] == {"d": "base"}
 
     def test_glyph_lib_Export_feature_names_from_notes(self):
         font = generate_minimal_font()

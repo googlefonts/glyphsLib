@@ -95,12 +95,25 @@ def main(args=None):
             "full control over all anchors."
         ),
     )
-    group.add_argument(
+    gdef_gen_group = group.add_mutually_exclusive_group()
+    gdef_gen_group.add_argument(
         "--generate-GDEF",
         action="store_true",
+        default=True,
+        dest="generate_GDEF",
         help=(
-            "write a `table GDEF {...}` statement in the UFO features "
-            "containing `GlyphClassDef` and `LigatureCaretByPos` statements"
+            "Write GDEF categories into the UFO's "
+            "`public.openTypeCatgeories` lib key (default behavior; switch for "
+            "backwards compatibility)."
+        ),
+    )
+    gdef_gen_group.add_argument(
+        "--no-generate-GDEF",
+        action="store_false",
+        dest="generate_GDEF",
+        help=(
+            "Skip writing GDEF categories into the UFO's "
+            "`public.openTypeCatgeories` lib key."
         ),
     )
     group.add_argument(

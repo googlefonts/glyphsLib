@@ -18,7 +18,7 @@ import os
 from textwrap import dedent
 
 from glyphsLib import to_glyphs, to_ufos, classes
-from glyphsLib.builder.features import _build_gdef
+from glyphsLib.builder.features import _build_public_opentype_categories
 
 import pytest
 
@@ -588,17 +588,6 @@ def test_roundtrip_existing_GDEF(tmpdir, ufo_with_GDEF):
     assert rtufo.features.text == gdef
 
 
-def test_generate_GDEF_already_exists(tmpdir, ufo_with_GDEF):
-    ufo, _, ufo_module = ufo_with_GDEF
-    font = to_glyphs([ufo])
-    filename = os.path.join(str(tmpdir), "font.glyphs")
-    font.save(filename)
-    font = classes.GSFont(filename)
-
-    with pytest.raises(ValueError, match="features already contain a `table GDEF"):
-        to_ufos(font, generate_GDEF=True, ufo_module=ufo_module)
-
-
 def test_groups_remain_at_top(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.newGlyph("zero")
@@ -661,7 +650,8 @@ def test_build_GDEF_incomplete_glyphOrder():
         glyph = font.newGlyph(name)
         glyph.appendAnchor({"name": "top", "x": 0, "y": 0})
 
-    assert "[b c a d], # Base" in _build_gdef(font)
+    categories = _build_public_opentype_categories(font)
+    assert categories == {"a": "base", "b": "base", "c": "base", "d": "base"}
 
 
 def test_comments_in_classes(ufo_module):
