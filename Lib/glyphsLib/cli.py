@@ -99,21 +99,21 @@ def main(args=None):
     gdef_gen_group.add_argument(
         "--generate-GDEF",
         action="store_true",
-        default=True,
+        default=False,
         dest="generate_GDEF",
         help=(
-            "Write GDEF categories into the UFO's "
-            "`public.openTypeCatgeories` lib key (default behavior; switch for "
-            "backwards compatibility)."
+            "Write GDEF categories into the UFO's `public.openTypeCatgeories` lib key."
         ),
     )
     gdef_gen_group.add_argument(
         "--no-generate-GDEF",
         action="store_false",
+        default=False,
         dest="generate_GDEF",
         help=(
             "Skip writing GDEF categories into the UFO's "
-            "`public.openTypeCatgeories` lib key."
+            "`public.openTypeCatgeories` lib key (default behavior, for backward "
+            "compatibility)."
         ),
     )
     group.add_argument(
