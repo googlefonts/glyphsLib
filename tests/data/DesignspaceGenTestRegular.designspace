@@ -1,37 +1,37 @@
-<?xml version='1.0' encoding='utf-8'?>
-<designspace format="4.1">
-    <axes>
-        <axis default="400" maximum="800" minimum="300" name="Weight" tag="wght" />
-    </axes>
-    <sources>
-        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-Light.ufo" name="CoolFoundry Examplary Serif Light" stylename="Light">
-            <location>
-                <dimension name="Weight" xvalue="300" />
-            </location>
-        </source>
-        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-Regular.ufo" name="CoolFoundry Examplary Serif Regular" stylename="Regular">
-            <lib copy="1" />
-            <groups copy="1" />
-            <features copy="1" />
-            <info copy="1" />
-            <location>
-                <dimension name="Weight" xvalue="400" />
-            </location>
-        </source>
-        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-Medium.ufo" name="CoolFoundry Examplary Serif Medium" stylename="Medium">
-            <location>
-                <dimension name="Weight" xvalue="500" />
-            </location>
-        </source>
-        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-Bold.ufo" name="CoolFoundry Examplary Serif Bold" stylename="Bold">
-            <location>
-                <dimension name="Weight" xvalue="700" />
-            </location>
-        </source>
-        <source familyname="CoolFoundry Examplary Serif" filename="CoolFoundryExamplarySerif-XBold.ufo" name="CoolFoundry Examplary Serif XBold" stylename="XBold">
-            <location>
-                <dimension name="Weight" xvalue="800" />
-            </location>
-        </source>
-    </sources>
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="300" maximum="800" default="400"/>
+  </axes>
+  <sources>
+    <source filename="CoolFoundryExamplarySerif-Light.ufo" name="CoolFoundry Examplary Serif Light" familyname="CoolFoundry Examplary Serif" stylename="Light">
+      <location>
+        <dimension name="Weight" xvalue="300"/>
+      </location>
+    </source>
+    <source filename="CoolFoundryExamplarySerif-Regular.ufo" name="CoolFoundry Examplary Serif Regular" familyname="CoolFoundry Examplary Serif" stylename="Regular">
+      <lib copy="1"/>
+      <groups copy="1"/>
+      <features copy="1"/>
+      <info copy="1"/>
+      <location>
+        <dimension name="Weight" xvalue="400"/>
+      </location>
+    </source>
+    <source filename="CoolFoundryExamplarySerif-Medium.ufo" name="CoolFoundry Examplary Serif Medium" familyname="CoolFoundry Examplary Serif" stylename="Medium">
+      <location>
+        <dimension name="Weight" xvalue="500"/>
+      </location>
+    </source>
+    <source filename="CoolFoundryExamplarySerif-Bold.ufo" name="CoolFoundry Examplary Serif Bold" familyname="CoolFoundry Examplary Serif" stylename="Bold">
+      <location>
+        <dimension name="Weight" xvalue="700"/>
+      </location>
+    </source>
+    <source filename="CoolFoundryExamplarySerif-XBold.ufo" name="CoolFoundry Examplary Serif XBold" familyname="CoolFoundry Examplary Serif" stylename="XBold">
+      <location>
+        <dimension name="Weight" xvalue="800"/>
+      </location>
+    </source>
+  </sources>
 </designspace>

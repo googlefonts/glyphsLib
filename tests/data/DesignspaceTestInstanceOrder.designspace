@@ -1,49 +1,43 @@
-<?xml version='1.0' encoding='utf-8'?>
-<designspace format="4.1">
-    <axes>
-        <axis default="400" maximum="900" minimum="400" name="Weight" tag="wght">
-            <map input="400" output="90" />
-            <map input="700" output="151" />
-            <map input="900" output="190" />
-        </axis>
-    </axes>
-    <sources>
-        <source familyname="DesignspaceTest InstanceOrder" filename="DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylename="Regular">
-            <lib copy="1" />
-            <groups copy="1" />
-            <features copy="1" />
-            <info copy="1" />
-            <location>
-                <dimension name="Weight" xvalue="90" />
-            </location>
-        </source>
-        <source familyname="DesignspaceTest InstanceOrder" filename="DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" stylename="Black">
-            <location>
-                <dimension name="Weight" xvalue="190" />
-            </location>
-        </source>
-    </sources>
-    <instances>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" stylemapfamilyname="DesignspaceTest InstanceOrder Black" stylemapstylename="regular" stylename="Black">
-            <location>
-                <dimension name="Weight" xvalue="190" />
-            </location>
-            <kerning />
-            <info />
-        </instance>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="regular" stylename="Regular">
-            <location>
-                <dimension name="Weight" xvalue="90" />
-            </location>
-            <kerning />
-            <info />
-        </instance>
-        <instance familyname="DesignspaceTest InstanceOrder" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" name="DesignspaceTest InstanceOrder Bold" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="bold" stylename="Bold">
-            <location>
-                <dimension name="Weight" xvalue="151" />
-            </location>
-            <kerning />
-            <info />
-        </instance>
-    </instances>
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="400" maximum="900" default="400">
+      <map input="400" output="90"/>
+      <map input="700" output="151"/>
+      <map input="900" output="190"/>
+    </axis>
+  </axes>
+  <sources>
+    <source filename="DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" familyname="DesignspaceTest InstanceOrder" stylename="Regular">
+      <lib copy="1"/>
+      <groups copy="1"/>
+      <features copy="1"/>
+      <info copy="1"/>
+      <location>
+        <dimension name="Weight" xvalue="90"/>
+      </location>
+    </source>
+    <source filename="DesignspaceTestInstanceOrder-Black.ufo" name="DesignspaceTest InstanceOrder Black" familyname="DesignspaceTest InstanceOrder" stylename="Black">
+      <location>
+        <dimension name="Weight" xvalue="190"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance name="DesignspaceTest InstanceOrder Black" familyname="DesignspaceTest InstanceOrder" stylename="Black" filename="out/DesignspaceTestInstanceOrder-Black.ufo" stylemapfamilyname="DesignspaceTest InstanceOrder Black" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="190"/>
+      </location>
+    </instance>
+    <instance name="DesignspaceTest InstanceOrder Regular" familyname="DesignspaceTest InstanceOrder" stylename="Regular" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="90"/>
+      </location>
+    </instance>
+    <instance name="DesignspaceTest InstanceOrder Bold" familyname="DesignspaceTest InstanceOrder" stylename="Bold" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="bold">
+      <location>
+        <dimension name="Weight" xvalue="151"/>
+      </location>
+    </instance>
+  </instances>
 </designspace>

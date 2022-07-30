@@ -1,33 +1,31 @@
-<?xml version='1.0' encoding='utf-8'?>
-<designspace format="4.1">
-    <axes>
-        <axis default="600" maximum="600" minimum="600" name="Weight" tag="wght">
-            <map input="600" output="128" />
-        </axis>
-    </axes>
-    <sources>
-        <source familyname="DesignspaceTest Inactive" filename="DesignspaceTestInactive-Regular.ufo" name="DesignspaceTest Inactive Regular" stylename="Regular">
-            <lib copy="1" />
-            <groups copy="1" />
-            <features copy="1" />
-            <info copy="1" />
-            <location>
-                <dimension name="Weight" xvalue="90" />
-            </location>
-        </source>
-        <source familyname="DesignspaceTest Inactive" filename="DesignspaceTestInactive-Black.ufo" name="DesignspaceTest Inactive Black" stylename="Black">
-            <location>
-                <dimension name="Weight" xvalue="190" />
-            </location>
-        </source>
-    </sources>
-    <instances>
-        <instance familyname="DesignspaceTest Inactive" filename="out/DesignspaceTestInactive-Semibold.ufo" name="DesignspaceTest Inactive Semibold" stylemapfamilyname="DesignspaceTest Inactive Semibold" stylemapstylename="regular" stylename="Semibold">
-            <location>
-                <dimension name="Weight" xvalue="128" />
-            </location>
-            <kerning />
-            <info />
-        </instance>
-    </instances>
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="Weight" minimum="600" maximum="600" default="600">
+      <map input="600" output="128"/>
+    </axis>
+  </axes>
+  <sources>
+    <source filename="DesignspaceTestInactive-Regular.ufo" name="DesignspaceTest Inactive Regular" familyname="DesignspaceTest Inactive" stylename="Regular">
+      <lib copy="1"/>
+      <groups copy="1"/>
+      <features copy="1"/>
+      <info copy="1"/>
+      <location>
+        <dimension name="Weight" xvalue="90"/>
+      </location>
+    </source>
+    <source filename="DesignspaceTestInactive-Black.ufo" name="DesignspaceTest Inactive Black" familyname="DesignspaceTest Inactive" stylename="Black">
+      <location>
+        <dimension name="Weight" xvalue="190"/>
+      </location>
+    </source>
+  </sources>
+  <instances>
+    <instance name="DesignspaceTest Inactive Semibold" familyname="DesignspaceTest Inactive" stylename="Semibold" filename="out/DesignspaceTestInactive-Semibold.ufo" stylemapfamilyname="DesignspaceTest Inactive Semibold" stylemapstylename="regular">
+      <location>
+        <dimension name="Weight" xvalue="128"/>
+      </location>
+    </instance>
+  </instances>
 </designspace>
