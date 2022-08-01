@@ -32,7 +32,7 @@ flake8==4.0.1
     #   flake8-bugbear
 flake8-bugbear==22.3.23
     # via -r requirements-dev.in
-fonttools[ufo,unicode]==4.32.0
+fonttools[ufo,unicode]==4.34.4
     # via
     #   booleanoperations
     #   cffsubr
