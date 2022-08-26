@@ -19,6 +19,6 @@ def test_glyphs3_italic_angle(datadir):
 
 def test_glyphspackage_load(datadir):
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
-    font1.DisplayStrings = "" # glyphspackages, rather sensibly, don't store user state
+    font1.DisplayStrings = ""  # glyphspackages, rather sensibly, don't store user state
     font2 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
