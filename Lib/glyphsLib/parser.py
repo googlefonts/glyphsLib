@@ -14,9 +14,11 @@
 
 
 from collections import OrderedDict
+from fontTools.misc.filenames import userNameToFileName
 import glyphsLib
 import logging
 import openstep_plist
+import os
 import sys
 
 
@@ -97,15 +99,41 @@ class Parser:
             else:
                 res[name] = d[name]
 
+def load_glyphspackage(package_dir):
+    infofile = os.path.join(package_dir, "fontinfo.plist")
+    orderfile = os.path.join(package_dir, "order.plist")
+    glyphorder = openstep_plist.load(open(orderfile, "r", encoding="utf-8"))
+    data = openstep_plist.load(
+        open(infofile, "r", encoding="utf-8"), use_numbers=True
+    )
+    data["glyphs"] = []
+    for g in glyphorder:
+        glyphname = userNameToFileName(g) + ".glyph"
+        glyphfile = os.path.join(package_dir, "glyphs", glyphname)
+        data["glyphs"].append(
+            openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
+        )
 
-def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
+    return data
+
+
+def load(file):
+    """Read a .glyphs file. 'file' should be a (readable) file object,
+    a file name, or in the case of a .glyphspackage file, a directory
+    name.
     Return a GSFont object.
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)
     logger.info("Parsing .glyphs file")
     res = glyphsLib.classes.GSFont()
-    p.parse_into_object(res, openstep_plist.load(fp, use_numbers=True))
+    if hasattr(file, "read"):
+        data = openstep_plist.load(file, use_numbers=True)
+    elif os.path.isdir(file):
+        data = load_glyphspackage(file)
+    else:
+        fp = open(file, "r", encoding="utf-8")
+        data = openstep_plist.load(fp, use_numbers=True)
+    p.parse_into_object(res, data)
     return res
 
 
@@ -124,8 +152,7 @@ def loads(s):
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
-        fp = open(arg, "r", encoding="utf-8")
-        glyphsLib.dump(load(fp), sys.stdout)
+        glyphsLib.dump(load(arg), sys.stdout)
 
 
 if __name__ == "__main__":
