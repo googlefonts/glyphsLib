@@ -16,13 +16,14 @@
 import logging
 
 from .common import to_ufo_time, from_ufo_time
-from .constants import GLYPHS_PREFIX, UFO2FT_FILTERS_KEY
+from .constants import (
+    UFO2FT_FILTERS_KEY,
+    APP_VERSION_LIB_KEY,
+    KEYBOARD_INCREMENT_KEY,
+    MASTER_ORDER_LIB_KEY,
+)
 
 logger = logging.getLogger(__name__)
-
-APP_VERSION_LIB_KEY = GLYPHS_PREFIX + "appVersion"
-KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + "keyboardIncrement"
-MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + "fontMasterOrder"
 
 
 def to_ufo_font_attributes(self, family_name):
