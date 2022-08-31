@@ -15,9 +15,7 @@
 
 import re
 
-from .glyph import BRACKET_GLYPH_RE
-
-UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
+from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
 
 
 def to_ufo_kerning(self):
