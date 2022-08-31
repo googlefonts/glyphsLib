@@ -17,20 +17,7 @@ import logging
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
-
-# From the spec:
-# https://docs.microsoft.com/en-gb/typography/opentype/spec/os2#uswidthclass
-WIDTH_CLASS_TO_VALUE = {
-    1: 50,  # Ultra-condensed
-    2: 62.5,  # Extra-condensed
-    3: 75,  # Condensed
-    4: 87.5,  # Semi-condensed
-    5: 100,  # Medium
-    6: 112.5,  # Semi-expanded
-    7: 125,  # Expanded
-    8: 150,  # Extra-expanded
-    9: 200,  # Ultra-expanded
-}
+from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
 
 logger = logging.getLogger(__name__)
 
