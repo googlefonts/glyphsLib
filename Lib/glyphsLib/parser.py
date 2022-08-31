@@ -14,9 +14,11 @@
 
 
 from collections import OrderedDict
+from fontTools.misc.filenames import userNameToFileName
 import glyphsLib
 import logging
 import openstep_plist
+import os
 import sys
 
 
@@ -98,14 +100,39 @@ class Parser:
                 res[name] = d[name]
 
 
-def load(fp):
-    """Read a .glyphs file. 'fp' should be (readable) file object.
+def load_glyphspackage(package_dir):
+    infofile = os.path.join(package_dir, "fontinfo.plist")
+    orderfile = os.path.join(package_dir, "order.plist")
+    glyphorder = openstep_plist.load(open(orderfile, "r", encoding="utf-8"))
+    data = openstep_plist.load(open(infofile, "r", encoding="utf-8"), use_numbers=True)
+    data["glyphs"] = []
+    for g in glyphorder:
+        glyphname = userNameToFileName(g) + ".glyph"
+        glyphfile = os.path.join(package_dir, "glyphs", glyphname)
+        data["glyphs"].append(
+            openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
+        )
+
+    return data
+
+
+def load(file_or_path):
+    """Read a .glyphs file. 'file_or_path' should be a (readable) file
+    object, a file name, or in the case of a .glyphspackage file, a
+    directory name.
     Return a GSFont object.
     """
     p = Parser(current_type=glyphsLib.classes.GSFont)
     logger.info("Parsing .glyphs file")
     res = glyphsLib.classes.GSFont()
-    p.parse_into_object(res, openstep_plist.load(fp, use_numbers=True))
+    if hasattr(file_or_path, "read"):
+        data = openstep_plist.load(file_or_path, use_numbers=True)
+    elif os.path.isdir(file_or_path):
+        data = load_glyphspackage(file_or_path)
+    else:
+        fp = open(file_or_path, "r", encoding="utf-8")
+        data = openstep_plist.load(fp, use_numbers=True)
+    p.parse_into_object(res, data)
     return res
 
 
@@ -124,8 +151,7 @@ def loads(s):
 def main(args=None):
     """Roundtrip the .glyphs file given as an argument."""
     for arg in args:
-        fp = open(arg, "r", encoding="utf-8")
-        glyphsLib.dump(load(fp), sys.stdout)
+        glyphsLib.dump(load(arg), sys.stdout)
 
 
 if __name__ == "__main__":
