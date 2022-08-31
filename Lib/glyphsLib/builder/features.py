@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from fontTools.feaLib import ast, parser
 
+from glyphsLib.util import PeekableIterator
 from .constants import GLYPHLIB_PREFIX
 from .tokens import TokenExpander, PassThruExpander
 
@@ -570,30 +571,6 @@ class FeaDocument:
         line, char = self._previous_char(line, char)
 
         return None, line, char
-
-
-class PeekableIterator:
-    """Helper class to iterate and peek over a list."""
-
-    def __init__(self, list):
-        self.index = 0
-        self.list = list
-
-    def has_next(self, n=0):
-        return (self.index + n) < len(self.list)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        res = self.list[self.index]
-        self.index += 1
-        return res
-
-    next = __next__
-
-    def peek(self, n=0):
-        return self.list[self.index + n]
 
 
 class FeatureFileProcessor:

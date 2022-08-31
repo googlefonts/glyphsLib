@@ -141,3 +141,27 @@ class LoggerMixin:
                 ".".join([self.__class__.__module__, self.__class__.__name__])
             )
         return self._logger
+
+
+class PeekableIterator:
+    """Helper class to iterate and peek over a list."""
+
+    def __init__(self, list):
+        self.index = 0
+        self.list = list
+
+    def has_next(self, n=0):
+        return (self.index + n) < len(self.list)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        res = self.list[self.index]
+        self.index += 1
+        return res
+
+    next = __next__
+
+    def peek(self, n=0):
+        return self.list[self.index + n]
