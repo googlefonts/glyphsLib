@@ -16,12 +16,12 @@
 import re
 
 from glyphsLib.types import Point
+from glyphsLib.builder.constants import LOCKED_GUIDE_NAME_SUFFIX
 
 COLOR_NAME_SUFFIX = " [%s]"
 COLOR_NAME_RE = re.compile(r"^.*( \[([0-1.,eE+-]+)\])$")
 IDENTIFIER_NAME_SUFFIX = " [#%s]"
 IDENTIFIER_NAME_RE = re.compile(r"^.*( \[#([^\]]+)\])$")
-LOCKED_NAME_SUFFIX = " [locked]"
 
 
 def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
@@ -55,7 +55,7 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
                 new_guideline["color"] = m.group(2)
                 name = name[: -len(m.group(1))]
         if guideline.locked:
-            name = (name or "") + LOCKED_NAME_SUFFIX
+            name = (name or "") + LOCKED_GUIDE_NAME_SUFFIX
         if name:
             new_guideline["name"] = name
         new_guidelines.append(new_guideline)
@@ -70,8 +70,8 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
         new_guideline = self.glyphs_module.GSGuide()
         name = guideline.name
         # Locked
-        if name is not None and name.endswith(LOCKED_NAME_SUFFIX):
-            name = name[: -len(LOCKED_NAME_SUFFIX)]
+        if name is not None and name.endswith(LOCKED_GUIDE_NAME_SUFFIX):
+            name = name[: -len(LOCKED_GUIDE_NAME_SUFFIX)]
             new_guideline.locked = True
         if guideline.color:
             name = (name or "") + COLOR_NAME_SUFFIX % str(guideline.color)

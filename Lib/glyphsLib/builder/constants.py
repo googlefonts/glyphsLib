@@ -59,6 +59,8 @@ UFO_ORIGINAL_KERNING_GROUPS_KEY = GLYPHLIB_PREFIX + "originalKerningGroups"
 UFO_GROUPS_NOT_IN_FEATURE_KEY = GLYPHLIB_PREFIX + "groupsNotInFeature"
 UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 
+LOCKED_GUIDE_NAME_SUFFIX = " [locked]"
+
 GLYPHS_COLORS = (
     "0.85,0.26,0.06,1",
     "0.99,0.62,0.11,1",
