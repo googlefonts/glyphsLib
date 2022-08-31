@@ -18,12 +18,12 @@ import os
 import re
 
 from glyphsLib import classes
-from .constants import GLYPHLIB_PREFIX
-from .glyph import BRACKET_GLYPH_RE
-
-UFO_ORIGINAL_KERNING_GROUPS_KEY = GLYPHLIB_PREFIX + "originalKerningGroups"
-UFO_GROUPS_NOT_IN_FEATURE_KEY = GLYPHLIB_PREFIX + "groupsNotInFeature"
-UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
+from .constants import (
+    UFO_ORIGINAL_KERNING_GROUPS_KEY,
+    UFO_GROUPS_NOT_IN_FEATURE_KEY,
+    UFO_KERN_GROUP_PATTERN,
+    BRACKET_GLYPH_RE,
+)
 
 
 def to_ufo_groups(self):
