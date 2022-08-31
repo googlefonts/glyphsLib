@@ -26,24 +26,15 @@ from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 
 from glyphsLib import classes, glyphdata, util
 from .constants import (
-    PUBLIC_PREFIX,
+    GLYPH_ORDER_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
+    BRACKET_GLYPH_TEMPLATE,
+    BRACKET_GLYPH_RE,
+    REVERSE_BRACKET_LABEL,
     GLYPHLIB_PREFIX,
 )
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
-
-
-GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
-
-BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
-REVERSE_BRACKET_LABEL = "REV_"
-BRACKET_GLYPH_RE = re.compile(
-    r"(?P<glyph_name>.+)\.(?P<rev>{})?BRACKET\.(?P<location>\d+)$".format(
-        REVERSE_BRACKET_LABEL
-    )
-)
-BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
 class UFOBuilder(LoggerMixin):

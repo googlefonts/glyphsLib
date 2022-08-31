@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import re
 
 
 PUBLIC_PREFIX = "public."
+GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
+
 GLYPHS_PREFIX = "com.schriftgestaltung."
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
 ROBOFONT_PREFIX = "com.typemytype.robofont."
@@ -27,6 +30,15 @@ BACKGROUND_IMAGE_PREFIX = GLYPHS_PREFIX + "backgroundImage."
 CROP_KEY = BACKGROUND_IMAGE_PREFIX + "crop"
 LOCKED_KEY = BACKGROUND_IMAGE_PREFIX + "locked"
 ALPHA_KEY = BACKGROUND_IMAGE_PREFIX + "alpha"
+
+BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
+REVERSE_BRACKET_LABEL = "REV_"
+BRACKET_GLYPH_RE = re.compile(
+    r"(?P<glyph_name>.+)\.(?P<rev>{})?BRACKET\.(?P<location>\d+)$".format(
+        REVERSE_BRACKET_LABEL
+    )
+)
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
 FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
