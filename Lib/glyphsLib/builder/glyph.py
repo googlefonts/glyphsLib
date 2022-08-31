@@ -27,13 +27,12 @@ from .constants import (
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
     BRACKET_GLYPH_RE,
     BRACKET_GLYPH_SUFFIX_RE,
+    SCRIPT_LIB_KEY,
+    ORIGINAL_WIDTH_KEY,
+    BACKGROUND_WIDTH_KEY,
 )
 
 logger = logging.getLogger(__name__)
-
-SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
-ORIGINAL_WIDTH_KEY = GLYPHLIB_PREFIX + "originalWidth"
-BACKGROUND_WIDTH_KEY = GLYPHLIB_PREFIX + "backgroundWidth"
 
 
 def _clone_layer(layer, paths=None, components=None):
