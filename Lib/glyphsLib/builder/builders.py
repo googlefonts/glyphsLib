@@ -31,6 +31,8 @@ from .constants import (
     GLYPHLIB_PREFIX,
 )
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
+from glyphsLib.util import LoggerMixin
+
 
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 
@@ -44,20 +46,7 @@ BRACKET_GLYPH_RE = re.compile(
 BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
 
 
-class _LoggerMixin:
-
-    _logger = None
-
-    @property
-    def logger(self):
-        if self._logger is None:
-            self._logger = logging.getLogger(
-                ".".join([self.__class__.__module__, self.__class__.__name__])
-            )
-        return self._logger
-
-
-class UFOBuilder(_LoggerMixin):
+class UFOBuilder(LoggerMixin):
     """Builder for Glyphs to UFO + designspace."""
 
     def __init__(
@@ -708,7 +697,7 @@ def filter_instances_by_family(instances, family_name=None):
     return (i for i in instances if i.familyName == family_name)
 
 
-class GlyphsBuilder(_LoggerMixin):
+class GlyphsBuilder(LoggerMixin):
     """Builder for UFO + designspace to Glyphs."""
 
     def __init__(

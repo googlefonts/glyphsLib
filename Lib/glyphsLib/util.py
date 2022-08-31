@@ -128,3 +128,16 @@ def tostr(s, encoding="ascii", errors="strict"):
 def pairs(list):
     "s -> (s0,s1), (s2,s3), (s4, s5), ..."
     return [list[i : i + 2] for i in range(0, len(list), 2)]
+
+
+class LoggerMixin:
+
+    _logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = logging.getLogger(
+                ".".join([self.__class__.__module__, self.__class__.__name__])
+            )
+        return self._logger
