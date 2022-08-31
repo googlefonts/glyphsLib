@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-import logging
-
 from .common import to_ufo_time, from_ufo_time
 from .constants import (
     UFO2FT_FILTERS_KEY,
@@ -22,8 +20,6 @@ from .constants import (
     KEYBOARD_INCREMENT_KEY,
     MASTER_ORDER_LIB_KEY,
 )
-
-logger = logging.getLogger(__name__)
 
 
 def to_ufo_font_attributes(self, family_name):
