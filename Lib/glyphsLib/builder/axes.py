@@ -17,10 +17,6 @@ import logging
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
-from .constants import GLYPHLIB_PREFIX
-
-# This is a key into GSFont.userData to store axes defined in the designspace
-AXES_KEY = GLYPHLIB_PREFIX + "axes"
 
 # From the spec:
 # https://docs.microsoft.com/en-gb/typography/opentype/spec/os2#uswidthclass
