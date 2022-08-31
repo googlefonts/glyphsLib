@@ -63,6 +63,15 @@ LOCKED_GUIDE_NAME_SUFFIX = " [locked]"
 
 HINTS_LIB_KEY = GLYPHS_PREFIX + "hints"
 
+EXPORT_KEY = GLYPHS_PREFIX + "export"
+WIDTH_KEY = GLYPHS_PREFIX + "width"
+WEIGHT_KEY = GLYPHS_PREFIX + "weight"
+FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
+MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
+# Following typo kept for backwards compatibility
+INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
+CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
+
 GLYPHS_COLORS = (
     "0.85,0.26,0.06,1",
     "0.99,0.62,0.11,1",

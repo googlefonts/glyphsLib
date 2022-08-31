@@ -18,7 +18,18 @@ import logging
 
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
+from .constants import (
+    GLYPHS_PREFIX,
+    GLYPHLIB_PREFIX,
+    UFO_FILENAME_CUSTOM_PARAM,
+    EXPORT_KEY,
+    WIDTH_KEY,
+    WEIGHT_KEY,
+    FULL_FILENAME_KEY,
+    MANUAL_INTERPOLATION_KEY,
+    INSTANCE_INTERPOLATIONS_KEY,
+    CUSTOM_PARAMETERS_KEY,
+)
 from .names import build_stylemap_names
 from .axes import (
     get_axis_definitions,
@@ -29,14 +40,6 @@ from .axes import (
     AxisDefinitionFactory,
 )
 from .custom_params import to_ufo_custom_params
-
-EXPORT_KEY = GLYPHS_PREFIX + "export"
-WIDTH_KEY = GLYPHS_PREFIX + "width"
-WEIGHT_KEY = GLYPHS_PREFIX + "weight"
-FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
-MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
-INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
-CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
 
 
 logger = logging.getLogger(__name__)
