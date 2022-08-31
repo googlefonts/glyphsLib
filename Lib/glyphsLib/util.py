@@ -123,3 +123,7 @@ def tostr(s, encoding="ascii", errors="strict"):
         return s.decode(encoding, errors)
     else:
         return s
+
+
+def pairs(list):
+    return [list[i : i + 2] for i in range(0, len(list), 2)]
