@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .constants import GLYPHS_PREFIX, UFO2FT_COLOR_LAYER_MAPPING_KEY
-
-LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
-LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."
-LAYER_ORDER_TEMP_USER_DATA_KEY = "__layerOrder"
+from .constants import (
+    UFO2FT_COLOR_LAYER_MAPPING_KEY,
+    LAYER_ID_KEY,
+    LAYER_ORDER_PREFIX,
+    LAYER_ORDER_TEMP_USER_DATA_KEY,
+)
 
 
 def to_ufo_color_layer_names(self, master, ufo):
