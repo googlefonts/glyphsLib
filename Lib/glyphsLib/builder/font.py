@@ -79,14 +79,15 @@ def to_ufo_font_attributes(self, family_name):
 
         self.to_ufo_names(ufo, master, family_name)
         self.to_ufo_family_user_data(ufo)
+        self.to_ufo_names(ufo, master, family_name)  # .names
+        self.to_ufo_family_user_data(ufo)  # .user_data
 
         ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
             {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
         )
 
-        self.to_ufo_custom_params(ufo, font)
-
-        self.to_ufo_master_attributes(source, master)
+        self.to_ufo_custom_params(ufo, font)  # .custom_params
+        self.to_ufo_master_attributes(source, master)  # .masters
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
