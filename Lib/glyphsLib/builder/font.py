@@ -30,55 +30,12 @@ def to_ufo_font_attributes(self, family_name):
 
     font = self.font
 
-    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
-    # https://github.com/googlefonts/glyphsLib/issues/134
-    date_created = getattr(font, "date", None)
-    if date_created is not None:
-        date_created = to_ufo_time(date_created)
-    units_per_em = font.upm
-    version_major = font.versionMajor
-    version_minor = font.versionMinor
-    copyright = font.copyright
-    designer = font.designer
-    designer_url = font.designerURL
-    manufacturer = font.manufacturer
-    manufacturer_url = font.manufacturerURL
-    # XXX note is unused?
-    # note = font.note
-    glyph_order = list(glyph.name for glyph in font.glyphs)
-
     for index, master in enumerate(font.masters):
         source = self._designspace.newSourceDescriptor()
         ufo = self.ufo_module.Font()
         source.font = ufo
 
-        ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
-        ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
-
-        if date_created is not None:
-            ufo.info.openTypeHeadCreated = date_created
-        ufo.info.unitsPerEm = units_per_em
-        ufo.info.versionMajor = version_major
-        ufo.info.versionMinor = version_minor
-
-        if copyright:
-            ufo.info.copyright = copyright
-        if designer:
-            ufo.info.openTypeNameDesigner = designer
-        if designer_url:
-            ufo.info.openTypeNameDesignerURL = designer_url
-        if manufacturer:
-            ufo.info.openTypeNameManufacturer = manufacturer
-        if manufacturer_url:
-            ufo.info.openTypeNameManufacturerURL = manufacturer_url
-
-        # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
-        # order of glyphs in the glyphs file, which can optionally be overwritten
-        # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
-        ufo.glyphOrder = glyph_order
-
-        self.to_ufo_names(ufo, master, family_name)
-        self.to_ufo_family_user_data(ufo)
+        fill_ufo_metadata(master, ufo)
         self.to_ufo_names(ufo, master, family_name)  # .names
         self.to_ufo_family_user_data(ufo)  # .user_data
 
@@ -94,6 +51,44 @@ def to_ufo_font_attributes(self, family_name):
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
         self._designspace.addSource(source)
         self._sources[master.id] = source
+
+
+INFO_FIELDS = (
+    ("unitsPerEm", "upm"),
+    ("versionMajor", "versionMajor"),
+    ("versionMinor", "versionMinor"),
+    ("copyright", "copyright"),
+    ("openTypeNameDesigner", "designer"),
+    ("openTypeNameDesignerURL", "designerURL"),
+    ("openTypeNameManufacturer", "manufacturer"),
+    ("openTypeNameManufacturerURL", "manufacturerURL"),
+)
+
+
+def fill_ufo_metadata(master, ufo):
+    font = master.font
+
+    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
+    # https://github.com/googlefonts/glyphsLib/issues/134
+    for info_key, glyphs_key in INFO_FIELDS:
+        value = getattr(font, glyphs_key)
+        if value is not None:
+            setattr(ufo.info, info_key, value)
+
+    ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
+    ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+
+    date_created = getattr(font, "date", None)
+    if date_created is not None:
+        date_created = to_ufo_time(date_created)
+
+    if date_created is not None:
+        ufo.info.openTypeHeadCreated = date_created
+
+    # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
+    # order of glyphs in the glyphs file, which can optionally be overwritten
+    # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
+    ufo.glyphOrder = list(glyph.name for glyph in font.glyphs)
 
 
 def to_glyphs_font_attributes(self, source, master, is_initial):
