@@ -12,6 +12,7 @@ def test_regular():
     assert map_family == "NotoSans"
     assert map_style == "regular"
 
+
 def test_regular_isBold():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -22,6 +23,7 @@ def test_regular_isBold():
     )
     assert map_family == "NotoSans Regular"
     assert map_style == "bold"
+
 
 def test_regular_isItalic():
     map_family, map_style = build_stylemap_names(
@@ -34,6 +36,7 @@ def test_regular_isItalic():
     assert map_family == "NotoSans Regular"
     assert map_style == "italic"
 
+
 def test_non_regular():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -44,6 +47,7 @@ def test_non_regular():
     )
     assert map_family == "NotoSans ExtraBold"
     assert map_style == "regular"
+
 
 def test_bold_no_style_link():
     map_family, map_style = build_stylemap_names(
@@ -56,6 +60,7 @@ def test_bold_no_style_link():
     assert map_family == "NotoSans Bold"
     assert map_style == "regular"
 
+
 def test_italic_no_style_link():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -66,6 +71,7 @@ def test_italic_no_style_link():
     )
     assert map_family == "NotoSans Italic"
     assert map_style == "regular"
+
 
 def test_bold_italic_no_style_link():
     map_family, map_style = build_stylemap_names(
@@ -78,6 +84,7 @@ def test_bold_italic_no_style_link():
     assert map_family == "NotoSans Bold Italic"
     assert map_style == "regular"
 
+
 def test_bold():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -88,6 +95,7 @@ def test_bold():
     )
     assert map_family == "NotoSans"
     assert map_style == "bold"
+
 
 def test_italic():
     map_family, map_style = build_stylemap_names(
@@ -100,6 +108,7 @@ def test_italic():
     assert map_family == "NotoSans"
     assert map_style == "italic"
 
+
 def test_bold_italic():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -110,6 +119,7 @@ def test_bold_italic():
     )
     assert map_family == "NotoSans"
     assert map_style == "bold italic"
+
 
 def test_incomplete_bold_italic():
     map_family, map_style = build_stylemap_names(
@@ -132,6 +142,7 @@ def test_incomplete_bold_italic():
     assert map_family == "NotoSans"
     assert map_style == "bold italic"
 
+
 def test_italicbold_isBoldItalic():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -142,6 +153,7 @@ def test_italicbold_isBoldItalic():
     )
     assert map_family == "NotoSans"
     assert map_style == "bold italic"
+
 
 def test_linked_style_regular():
     map_family, map_style = build_stylemap_names(
@@ -154,6 +166,7 @@ def test_linked_style_regular():
     assert map_family == "NotoSans Cd"
     assert map_style == "regular"
 
+
 def test_linked_style_bold():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -165,6 +178,7 @@ def test_linked_style_bold():
     assert map_family == "NotoSans Cd"
     assert map_style == "bold"
 
+
 def test_linked_style_italic():
     map_family, map_style = build_stylemap_names(
         family_name="NotoSans",
@@ -175,6 +189,7 @@ def test_linked_style_italic():
     )
     assert map_family == "NotoSans Cd"
     assert map_style == "italic"
+
 
 def test_linked_style_bold_italic():
     map_family, map_style = build_stylemap_names(
