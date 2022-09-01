@@ -363,7 +363,8 @@ class UFOBuilder(LoggerMixin):
         return instance_data
 
     # Implementation is split into one file per feature
-    from .anchors import to_ufo_propagate_font_anchors, to_ufo_glyph_anchors
+    from .anchors import to_ufo_glyph_anchors
+    from .anchor_propagation import to_ufo_propagate_font_anchors
     from .annotations import to_ufo_annotations
     from .axes import to_designspace_axes
     from .background_image import to_ufo_background_image
