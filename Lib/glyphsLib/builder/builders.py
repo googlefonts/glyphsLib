@@ -387,6 +387,7 @@ class UFOBuilder(LoggerMixin):
     from .sources import to_designspace_sources
     from .glyph import (
         to_ufo_glyph,
+        to_ufo_glyph_color,
         to_ufo_glyph_background,
         to_ufo_glyph_height_and_vertical_origin,
     )
