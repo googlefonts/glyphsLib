@@ -15,7 +15,6 @@
 
 
 import collections
-import logging
 import pytest
 import tempfile
 import os
@@ -25,7 +24,6 @@ import glyphsLib
 import defcon
 import ufoLib2
 from textwrap import dedent
-from fontTools.misc.loggingTools import CapturingLogHandler
 from glyphsLib.classes import (
     GSComponent,
     GSFeature,
