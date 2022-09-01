@@ -31,9 +31,7 @@ def to_ufo_font_attributes(self, family_name):
     font = self.font
 
     for index, master in enumerate(font.masters):
-        source = self._designspace.newSourceDescriptor()
         ufo = self.ufo_module.Font()
-        source.font = ufo
 
         fill_ufo_metadata(master, ufo)
         self.to_ufo_names(ufo, master, family_name)  # .names
@@ -49,6 +47,8 @@ def to_ufo_font_attributes(self, family_name):
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
         # FIXME: (jany) in the future, yield this UFO (for memory, lazy iter)
+        source = self._designspace.newSourceDescriptor()
+        source.font = ufo
         self._designspace.addSource(source)
         self._sources[master.id] = source
 
