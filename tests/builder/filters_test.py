@@ -64,18 +64,11 @@ def test_duplicate_exclude_include(caplog):
     expected = {"name": "thisisaname", "args": [34, -3.4], "exclude": ["uni2222"]}
     result = parse_glyphs_filter(inputstr)
 
-    assert (
-        len(
-            [
-                r
-                for r in caplog.records
-                if "can only present as the last argument" in r.msg
-            ]
-        ),
-        (
-            "The parse_glyphs_filter should warn user that the exclude/include "
-            "should only be the last argument in the filter string."
-        ),
+    assert len(
+        [r for r in caplog.records if "can only present as the last argument" in r.msg]
+    ), (
+        "The parse_glyphs_filter should warn user that the exclude/include "
+        "should only be the last argument in the filter string."
     )
     assert result == expected
 
