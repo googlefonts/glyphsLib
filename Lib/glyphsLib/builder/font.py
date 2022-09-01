@@ -54,14 +54,14 @@ def to_ufo_font_attributes(self, family_name):
 
 
 INFO_FIELDS = (
-    ("unitsPerEm", "upm"),
-    ("versionMajor", "versionMajor"),
-    ("versionMinor", "versionMinor"),
-    ("copyright", "copyright"),
-    ("openTypeNameDesigner", "designer"),
-    ("openTypeNameDesignerURL", "designerURL"),
-    ("openTypeNameManufacturer", "manufacturer"),
-    ("openTypeNameManufacturerURL", "manufacturerURL"),
+    ("unitsPerEm", "upm", True),
+    ("versionMajor", "versionMajor", True),
+    ("versionMinor", "versionMinor", True),
+    ("copyright", "copyright", False),
+    ("openTypeNameDesigner", "designer", False),
+    ("openTypeNameDesignerURL", "designerURL", False),
+    ("openTypeNameManufacturer", "manufacturer", False),
+    ("openTypeNameManufacturerURL", "manufacturerURL", False),
 )
 
 
@@ -70,9 +70,9 @@ def fill_ufo_metadata(master, ufo):
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
     # https://github.com/googlefonts/glyphsLib/issues/134
-    for info_key, glyphs_key in INFO_FIELDS:
+    for info_key, glyphs_key, always in INFO_FIELDS:
         value = getattr(font, glyphs_key)
-        if value is not None:
+        if always or value:
             setattr(ufo.info, info_key, value)
 
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
