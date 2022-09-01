@@ -2200,10 +2200,7 @@ def test_unique_masterid(ufo_module):
     font.masters.append(master2)
     ufos = to_ufos(font, minimize_glyphs_diffs=True)
 
-    try:
-        to_glyphs(ufos)
-    except Exception as e:
-        self.fail("Unexpected exception: " + str(e))
+    to_glyphs(ufos)
 
     ufos[1].lib["com.schriftgestaltung.fontMasterID"] = ufos[0].lib[
         "com.schriftgestaltung.fontMasterID"
