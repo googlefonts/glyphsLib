@@ -15,6 +15,8 @@
 
 import logging
 
+from fontTools.varLib.models import piecewiseLinearMap
+
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
@@ -153,8 +155,8 @@ def to_designspace_axes(self):
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
-                reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
-                regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+                reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
+                regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             else:
                 logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
@@ -208,8 +210,8 @@ def to_designspace_axes(self):
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
-            reverse_mapping = [(dl, ul) for ul, dl in sorted(mapping.items())]
-            regularUserLoc = interp(reverse_mapping, regularDesignLoc)
+            reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
+            regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             # TODO make sure that the default is in mapping?
 
         minimum = min(mapping)
@@ -599,21 +601,3 @@ def is_instance_active(instance):
     # to mark instances as inactive. Inactive instances should get ignored.
     # https://github.com/googlefonts/glyphsLib/issues/129
     return instance.exports and getattr(instance, "active", True)
-
-
-def interp(mapping, x):
-    """Compute the piecewise linear interpolation given by mapping for input x.
-
-    >>> interp(((1, 1), (2, 4)), 1.5)
-    2.5
-    """
-    mapping = sorted(mapping)
-    if len(mapping) == 1:
-        xa, ya = mapping[0]
-        if xa == x:
-            return ya
-        return x
-    for (xa, ya), (xb, yb) in zip(mapping[:-1], mapping[1:]):
-        if xa <= x <= xb:
-            return ya + float(x - xa) / (xb - xa) * (yb - ya)
-    return x
