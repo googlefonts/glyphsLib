@@ -170,24 +170,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     # load width before background, which is loaded with lib data
 
-    # The width may be taken from another master via the customParameters
-    # 'Link Metrics With Master' or 'Link Metrics With First Master'.
-    master = self.font.masters[layer.associatedMasterId or layer.layerId]
-    metrics_source = master.metricsSource
-    if metrics_source is None:
-        width = layer.width
-    else:
-        metric_layer = self.font.glyphs[glyph.name].layers[metrics_source.id]
-        if metric_layer:
-            width = metric_layer.width
-            if layer.width != width:
-                logger.debug(
-                    f"{layer.parent.name}: Applying width from master "
-                    f"'{metrics_source.id}': {layer.width} -> {width}"
-                )
-        else:
-            width = None
-
+    width = effective_width(layer, glyph)
     if width is None:
         pass
     elif category == "Mark" and subCategory == "Nonspacing" and width > 0:
@@ -214,6 +197,28 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
+
+
+def effective_width(layer, glyph):
+    # The width may be taken from another master via the customParameters
+    # 'Link Metrics With Master' or 'Link Metrics With First Master'.
+    font = glyph.parent
+    master = font.masters[layer.associatedMasterId or layer.layerId]
+    metrics_source = master.metricsSource
+    if metrics_source is None:
+        width = layer.width
+    else:
+        metric_layer = font.glyphs[glyph.name].layers[metrics_source.id]
+        if metric_layer:
+            width = metric_layer.width
+            if layer.width != width:
+                logger.debug(
+                    f"{layer.parent.name}: Applying width from master "
+                    f"'{metrics_source.id}': {layer.width} -> {width}"
+                )
+        else:
+            width = None
+    return width
 
 
 def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
