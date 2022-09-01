@@ -19,7 +19,6 @@ from .axes import font_uses_axis_locations, get_axis_definitions
 from .constants import (
     GLYPHS_PREFIX,
     MASTER_ID_LIB_KEY,
-    UFO_FILENAME_KEY,
     UFO_YEAR_KEY,
     UFO_NOTE_KEY,
     UFO_FILENAME_CUSTOM_PARAM,

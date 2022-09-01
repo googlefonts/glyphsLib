@@ -22,13 +22,12 @@ from fontTools.varLib.models import piecewiseLinearMap
 import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
 
-from .masters import UFO_FILENAME_KEY
 from .axes import (
     get_axis_definitions,
     get_regular_master,
     font_uses_axis_locations,
 )
-from .constants import UFO_FILENAME_CUSTOM_PARAM
+from .constants import UFO_FILENAME_CUSTOM_PARAM, UFO_FILENAME_KEY
 
 
 logger = logging.getLogger(__name__)
