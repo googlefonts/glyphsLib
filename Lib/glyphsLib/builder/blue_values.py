@@ -53,4 +53,3 @@ def to_glyphs_blue_values(self, ufo, master):
         zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
 
     master.alignmentZones = sorted(zones, key=lambda zone: -zone.position)
-

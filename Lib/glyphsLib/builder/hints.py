@@ -17,7 +17,6 @@ from .constants import HINTS_LIB_KEY
 from glyphsLib.types import Point
 
 
-
 def to_ufo_hints(self, ufo_glyph, layer):
     try:
         value = layer.hints

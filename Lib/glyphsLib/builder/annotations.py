@@ -16,6 +16,7 @@
 from .constants import ANNOTATIONS_LIB_KEY
 from glyphsLib.types import Point
 
+
 def to_ufo_annotations(self, ufo_glyph, layer):
     try:
         value = layer.annotations

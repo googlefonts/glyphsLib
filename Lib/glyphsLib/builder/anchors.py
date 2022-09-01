@@ -37,5 +37,3 @@ def to_glyphs_glyph_anchors(self, ufo_glyph, layer):
         anchor.name = ufo_anchor.name
         anchor.position = Point(ufo_anchor.x, ufo_anchor.y)
         layer.anchors.append(anchor)
-
-

@@ -403,7 +403,6 @@ class UFOBuilder(LoggerMixin):
     )
 
 
-
 def filter_instances_by_family(instances, family_name=None):
     """Yield instances whose 'familyName' custom parameter is
     equal to 'family_name'.
