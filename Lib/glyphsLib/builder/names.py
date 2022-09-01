@@ -19,16 +19,8 @@ from .constants import GLYPHS_PREFIX
 
 
 def to_ufo_names(self, ufo, master, family_name):
-    width = master.width
-    weight = master.weight
-    custom = master.customName
-
-    if weight:
-        ufo.lib[GLYPHS_PREFIX + "weight"] = weight
-    if width:
-        ufo.lib[GLYPHS_PREFIX + "width"] = width
-    if custom:
-        ufo.lib[GLYPHS_PREFIX + "customName"] = master.customName
+    if not self.minimal:
+        to_ufo_names_roundtrip(master, ufo)
 
     is_italic = bool(master.italicAngle)
 
@@ -49,6 +41,19 @@ def to_ufo_names(self, ufo, master, family_name):
         )
         ufo.info.styleMapFamilyName = styleMapFamilyName
         ufo.info.styleMapStyleName = styleMapStyleName
+
+
+def to_ufo_names_roundtrip(master, ufo):
+    width = master.width
+    weight = master.weight
+    custom = master.customName
+
+    if weight:
+        ufo.lib[GLYPHS_PREFIX + "weight"] = weight
+    if width:
+        ufo.lib[GLYPHS_PREFIX + "width"] = width
+    if custom:
+        ufo.lib[GLYPHS_PREFIX + "customName"] = master.customName
 
 
 def build_stylemap_names(
