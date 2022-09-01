@@ -26,7 +26,6 @@ import defcon
 import ufoLib2
 from textwrap import dedent
 from fontTools.misc.loggingTools import CapturingLogHandler
-from glyphsLib import builder
 from glyphsLib.classes import (
     GSComponent,
     GSFeature,

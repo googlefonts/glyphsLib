@@ -230,8 +230,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # add them as separate glyphs to the UFO font.
 
     if any(
-        l._is_color_palette_layer()
-        and l.associatedMasterId == layer.associatedMasterId
+        l._is_color_palette_layer() and l.associatedMasterId == layer.associatedMasterId
         for l in glyph.layers
     ):
         layerMapping = [
@@ -299,7 +298,6 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
                             layers.append(_clone_layer(color_layer, components=[c]))
 
             self._color_layers.append(((glyph, layer), layers))
-
 
 
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901

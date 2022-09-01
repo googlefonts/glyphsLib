@@ -15,7 +15,6 @@
 
 from collections import defaultdict
 import os
-import re
 
 from glyphsLib import classes
 from .constants import (

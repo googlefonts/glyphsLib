@@ -8,7 +8,6 @@ from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 from glyphsLib import util
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
-    BRACKET_GLYPH_RE,
     REVERSE_BRACKET_LABEL,
     GLYPHLIB_PREFIX,
 )

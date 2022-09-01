@@ -21,8 +21,6 @@ from fontTools.varLib.models import piecewiseLinearMap
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
 from .constants import (
-    GLYPHS_PREFIX,
-    GLYPHLIB_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     EXPORT_KEY,
     WIDTH_KEY,

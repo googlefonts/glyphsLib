@@ -18,7 +18,6 @@ import posixpath
 
 from .constants import (
     GLYPHS_PREFIX,
-    GLYPHLIB_PREFIX,
     PUBLIC_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,

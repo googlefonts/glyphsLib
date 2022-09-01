@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from .constants import BACKGROUND_IMAGE_PREFIX, CROP_KEY, LOCKED_KEY, ALPHA_KEY
+from .constants import CROP_KEY, LOCKED_KEY, ALPHA_KEY
 from glyphsLib.types import Transform, Rect, Point, Size
 
 
