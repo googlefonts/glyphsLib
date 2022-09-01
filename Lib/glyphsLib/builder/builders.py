@@ -197,30 +197,31 @@ class UFOBuilder(LoggerMixin):
         # TODO(jamesgk) maybe create one font at a time to reduce memory usage
         # TODO: (jany) in the future, return a lazy iterator that builds UFOs
         #     on demand.
-        self.to_ufo_font_attributes(self.family_name)
+        self.to_ufo_font_attributes(self.family_name)  # .font
 
-        self.to_ufo_layers()
+        self.to_ufo_layers()  # below!
 
         for master_id, source in self._sources.items():
             ufo = source.font
             master = self.font.masters[master_id]
             if self.propagate_anchors:
-                self.to_ufo_propagate_font_anchors(ufo)
-            for layer in list(ufo.layers):
-                self.to_ufo_layer_lib(master, ufo, layer)
+                self.to_ufo_propagate_font_anchors(ufo)  # .anchor_propagation
+            if not self.minimal:
+                for layer in list(ufo.layers):
+                    self.to_ufo_layer_lib(master, ufo, layer)  # .user_data
 
             # Color layer mapping is stored using layer IDs, we now rewrite it
             # to use the final UFO layer names.
-            self.to_ufo_color_layer_names(master, ufo)
+            self.to_ufo_color_layer_names(master, ufo)  # .layers
 
             # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
             # parameters so it requires UFOs have their features set first; at the
             # same time, to generate a GDEF table we first need to have defined the
             # glyphOrder, exported the glyphs and propagated anchors from components.
-            self.to_ufo_master_features(ufo, master)
-            self.to_ufo_custom_params(ufo, master)
+            self.to_ufo_master_features(ufo, master)  # .features
+            self.to_ufo_custom_params(ufo, master)   # .custom_params
 
-            self.to_ufo_color_layers(ufo, master)
+            self.to_ufo_color_layers(ufo, master)  # .color_layers
 
         if self.write_skipexportglyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
@@ -234,8 +235,8 @@ class UFOBuilder(LoggerMixin):
                 for source in self._sources.values():
                     source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
-        self.to_ufo_groups()
-        self.to_ufo_kerning()
+        self.to_ufo_groups()  # .groups
+        self.to_ufo_kerning()  # .kerning
 
         for source in self._sources.values():
             yield source.font
@@ -261,9 +262,9 @@ class UFOBuilder(LoggerMixin):
                     supplementary_layer_data.append((glyph, layer))
                     continue
 
-                ufo_layer = self.to_ufo_layer(glyph, layer)
+                ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
-                self.to_ufo_glyph(ufo_glyph, layer, glyph)
+                self.to_ufo_glyph(ufo_glyph, layer, glyph)  # .glyph
 
         # And sublayers (brace, bracket, ...) second.
         for glyph, layer in supplementary_layer_data:
@@ -308,9 +309,9 @@ class UFOBuilder(LoggerMixin):
             ):
                 continue
             else:
-                ufo_layer = self.to_ufo_layer(glyph, layer)
+                ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
-                self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
+                self.to_ufo_glyph(ufo_glyph, layer, layer.parent)  # .glyph
 
     @property
     def designspace(self):
@@ -322,13 +323,13 @@ class UFOBuilder(LoggerMixin):
 
         self._designspace_is_complete = True
         list(self.masters)  # Make sure that the UFOs are built
-        self.to_designspace_axes()
-        self.to_designspace_sources()
-        self.to_designspace_instances()
-        self.to_designspace_family_user_data()
+        self.to_designspace_axes()  # .axes
+        self.to_designspace_sources()  # .sources
+        self.to_designspace_instances()  # .instances
+        self.to_designspace_family_user_data()  # .user_data
 
         if self.bracket_layers:
-            self.to_designspace_bracket_layers()
+            self.to_designspace_bracket_layers()  # .bracket_layers
 
         # append base style shared by all masters to designspace file name
         base_family = self.family_name or "Unnamed"
