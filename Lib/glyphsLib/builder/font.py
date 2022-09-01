@@ -92,6 +92,7 @@ def fill_ufo_metadata(master, ufo):
 
 
 def fill_ufo_metadata_roundtrip(master, ufo):
+    font = master.font
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
     ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
 
