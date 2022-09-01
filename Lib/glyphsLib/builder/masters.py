@@ -26,8 +26,7 @@ from .constants import (
 )
 
 
-def to_ufo_master_attributes(self, source, master):
-    ufo = source.font
+def to_ufo_master_attributes(self, ufo, master):
     ufo.info.ascender = master.ascender
     ufo.info.capHeight = master.capHeight
     ufo.info.descender = master.descender

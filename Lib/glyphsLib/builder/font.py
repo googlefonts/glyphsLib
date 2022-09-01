@@ -44,7 +44,7 @@ def to_ufo_font_attributes(self, family_name):
         )
 
         self.to_ufo_custom_params(ufo, font)  # .custom_params
-        self.to_ufo_master_attributes(source, master)  # .masters
+        self.to_ufo_master_attributes(ufo, master)  # .masters
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
