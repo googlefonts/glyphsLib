@@ -34,6 +34,9 @@ def to_ufo_font_attributes(self, family_name):
         ufo = self.ufo_module.Font()
 
         fill_ufo_metadata(master, ufo)
+        if not self.minimal:
+            fill_ufo_metadata_roundtrip(master, ufo)
+
         self.to_ufo_names(ufo, master, family_name)  # .names
         self.to_ufo_family_user_data(ufo)  # .user_data
 
@@ -75,9 +78,6 @@ def fill_ufo_metadata(master, ufo):
         if always or value:
             setattr(ufo.info, info_key, value)
 
-    ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
-    ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
-
     date_created = getattr(font, "date", None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)
@@ -89,6 +89,14 @@ def fill_ufo_metadata(master, ufo):
     # order of glyphs in the glyphs file, which can optionally be overwritten
     # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
     ufo.glyphOrder = list(glyph.name for glyph in font.glyphs)
+
+
+def fill_ufo_metadata_roundtrip(master, ufo):
+    ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
+    ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+
+
+# UFO to glyphs
 
 
 def to_glyphs_font_attributes(self, source, master, is_initial):
