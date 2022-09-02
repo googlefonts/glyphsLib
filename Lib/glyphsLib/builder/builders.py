@@ -219,7 +219,7 @@ class UFOBuilder(LoggerMixin):
             # same time, to generate a GDEF table we first need to have defined the
             # glyphOrder, exported the glyphs and propagated anchors from components.
             self.to_ufo_master_features(ufo, master)  # .features
-            self.to_ufo_custom_params(ufo, master)   # .custom_params
+            self.to_ufo_custom_params(ufo, master)  # .custom_params
 
             self.to_ufo_color_layers(ufo, master)  # .color_layers
 
