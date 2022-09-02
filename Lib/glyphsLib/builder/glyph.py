@@ -307,6 +307,63 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
             self._color_layers.append(((glyph, layer), layers))
 
 
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+    # implentation based on:
+    # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
+    assert self.is_vertical
+
+    ascender, descender = _get_typo_ascender_descender(layer.master)
+
+    if layer.vertWidth is not None:
+        ufo_glyph.height = layer.vertWidth
+    else:
+        ufo_glyph.height = ascender - descender
+
+    if layer.vertOrigin is not None:
+        ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
+    else:
+        ufo_glyph.verticalOrigin = ascender
+
+
+def _get_typo_ascender_descender(master):
+    # Glyphsapp will use the typo metrics to set the verOrigin and
+    # vertWidth. If typo metrics are not present, the master
+    # ascender and descender are used instead.
+    if "typoAscender" in master.customParameters:
+        ascender = master.customParameters["typoAscender"]
+    else:
+        ascender = master.ascender
+    if "typoDescender" in master.customParameters:
+        descender = master.customParameters["typoDescender"]
+    else:
+        descender = master.descender
+    return ascender, descender
+
+
+def to_ufo_glyph_background(self, glyph, layer):
+    """Set glyph background."""
+
+    if not layer.hasBackground:
+        return
+
+    background = layer.background
+    ufo_layer = self.to_ufo_background_layer(layer)
+    new_glyph = ufo_layer.newGlyph(glyph.name)
+
+    width = background.userData[BACKGROUND_WIDTH_KEY]
+    if width is not None:
+        new_glyph.width = width
+
+    self.to_ufo_background_image(new_glyph, background)
+    self.to_ufo_paths(new_glyph, background)
+    self.to_ufo_components(new_glyph, background)
+    self.to_ufo_glyph_anchors(new_glyph, background.anchors)
+    self.to_ufo_guidelines(new_glyph, background)
+
+
+# UFO to Glyphs
+
+
 def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
     If the matching GSGlyph does not exist, then it is created,
@@ -424,60 +481,6 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_components(ufo_glyph, layer)
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
-
-
-def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
-    # implentation based on:
-    # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
-    assert self.is_vertical
-
-    ascender, descender = _get_typo_ascender_descender(layer.master)
-
-    if layer.vertWidth is not None:
-        ufo_glyph.height = layer.vertWidth
-    else:
-        ufo_glyph.height = ascender - descender
-
-    if layer.vertOrigin is not None:
-        ufo_glyph.verticalOrigin = ascender - layer.vertOrigin
-    else:
-        ufo_glyph.verticalOrigin = ascender
-
-
-def _get_typo_ascender_descender(master):
-    # Glyphsapp will use the typo metrics to set the verOrigin and
-    # vertWidth. If typo metrics are not present, the master
-    # ascender and descender are used instead.
-    if "typoAscender" in master.customParameters:
-        ascender = master.customParameters["typoAscender"]
-    else:
-        ascender = master.ascender
-    if "typoDescender" in master.customParameters:
-        descender = master.customParameters["typoDescender"]
-    else:
-        descender = master.descender
-    return ascender, descender
-
-
-def to_ufo_glyph_background(self, glyph, layer):
-    """Set glyph background."""
-
-    if not layer.hasBackground:
-        return
-
-    background = layer.background
-    ufo_layer = self.to_ufo_background_layer(layer)
-    new_glyph = ufo_layer.newGlyph(glyph.name)
-
-    width = background.userData[BACKGROUND_WIDTH_KEY]
-    if width is not None:
-        new_glyph.width = width
-
-    self.to_ufo_background_image(new_glyph, background)
-    self.to_ufo_paths(new_glyph, background)
-    self.to_ufo_components(new_glyph, background)
-    self.to_ufo_glyph_anchors(new_glyph, background.anchors)
-    self.to_ufo_guidelines(new_glyph, background)
 
 
 def _to_glyphs_color(color):
