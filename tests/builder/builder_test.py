@@ -2569,8 +2569,8 @@ class TestGlyphOrder:
     #     2. ... a com.schriftgestaltung.glyphOrder key set to a list of glyph names,
     #        it will copy com.schriftgestaltung.glyphOrder verbatim to the font's custom
     #        parameter glyphOrder, including non-existant glyphs and will sort the
-    #        glyphs in the font overview ("Predefined Sorting") as specified by the font's
-    #        custom parameter glyphOrder.
+    #        glyphs in the font overview ("Predefined Sorting") as specified by the
+    #        font's custom parameter glyphOrder.
     #     3. ... a com.schriftgestaltung.glyphOrder key set to False, it will sort
     #        the glyphs in the typical Glyphs way and not create a font custom parameter
     #        glyphOrder.
@@ -2579,8 +2579,8 @@ class TestGlyphOrder:
 
     #     1. If a UFO's public.glyphOrder key...
     #         1. exists: write it to the Glyph font-level glyphOrder custom parameter.
-    #         2. does not exist: Do not write a Glyph font-level glyphOrder custom parameter,
-    #            the order of glyphs is then undefined.
+    #         2. does not exist: Do not write a Glyph font-level glyphOrder custom
+    #            parameter, the order of glyphs is then undefined.
     #     2. If the Glyph font-level glyphOrder custom parameter...
     #         1. exists: write it to a UFO's public.glyphOrder key.
     #         2. does not exist: write the order of Glyphs glyphs into a UFO's

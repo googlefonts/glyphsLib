@@ -14,9 +14,9 @@ class LayerPointPen(AbstractPointPen):
     introduction to pens.
     """
 
-    def __init__(self, layer: "GSLayer") -> None:
-        self._layer: "GSLayer" = layer
-        self._path: Optional["GSPath"] = None
+    def __init__(self, layer: "GSLayer") -> None:  # noqa: F821
+        self._layer: "GSLayer" = layer  # noqa: F821
+        self._path: Optional["GSPath"] = None  # noqa: F821
 
     def beginPath(self, **kwargs: Any) -> None:
         from glyphsLib.classes import GSPath
