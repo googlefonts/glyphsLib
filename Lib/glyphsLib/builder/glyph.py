@@ -141,10 +141,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         self.to_ufo_guidelines(ufo_glyph, layer)  # .guidelines
         self.to_ufo_glyph_background(ufo_glyph, layer)  # below
         self.to_ufo_annotations(ufo_glyph, layer)  # .annotations
-    self.to_ufo_hints(ufo_glyph, layer)  # .hints
-    self.to_ufo_glyph_user_data(ufo_font, glyph)  # .user_data
-    self.to_ufo_layer_user_data(ufo_glyph, layer)  # .user_data
-    self.to_ufo_smart_component_axes(ufo_glyph, glyph)  # .components
+        self.to_ufo_hints(ufo_glyph, layer)  # .hints
+        self.to_ufo_glyph_user_data(ufo_font, glyph)  # .user_data
+        self.to_ufo_layer_user_data(ufo_glyph, layer)  # .user_data
+        self.to_ufo_smart_component_axes(ufo_glyph, glyph)  # .components
 
     self.to_ufo_paths(ufo_glyph, layer)  # .paths
     self.to_ufo_components(ufo_glyph, layer)  # .components
