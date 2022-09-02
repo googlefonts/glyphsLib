@@ -58,45 +58,6 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
-    note = glyph.note
-    if note is not None:
-        ufo_glyph.note = note
-
-    # Optimization: profiling glyphs2ufo of NotoSans-MM.glyphs (6000 glyphs) on a Mac
-    # mini late 2014, Python 3.6.8, revealed that a whopping 17% of the time was spent
-    # converting lastChange to UFO timestamps. I could not reproduce this on a Windows
-    # 10/Python 3.7 setup, so this might be a platform thing. If-guarding anyway
-    # because these timestamps are useless in a UFO scenario if you use Git.
-    if (
-        self.minimize_glyphs_diffs
-        and self.font.customParameters["Disable Last Change"] is not True
-        and glyph.lastChange is not None
-    ):
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
-
-    color_index = glyph.color
-    if color_index is not None:
-        # .3f is enough precision to round-trip uint8 to float losslessly.
-        # https://github.com/unified-font-object/ufo-spec/issues/61
-        # #issuecomment-389759127
-        if (
-            isinstance(color_index, list)
-            and len(color_index) == 4
-            and all(0 <= v < 256 for v in color_index)
-        ):
-            ufo_glyph.markColor = ",".join(
-                "0" if v == 0 else "1" if v == 255 else "{:.3f}".format(v / 255)
-                for v in color_index
-            )
-        elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
-            ufo_glyph.markColor = GLYPHS_COLORS[color_index]
-        else:
-            logger.warning(
-                "Glyph {}, layer {}: Invalid color index/tuple {}".format(
-                    glyph.name, layer.name, color_index
-                )
-            )
-
     export = glyph.export
     if not export:
         if self.write_skipexportglyphs:
@@ -146,14 +107,6 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             ufo_font.lib[postscriptNamesKey] = dict()
         ufo_font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
 
-    for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
-        value = getattr(layer, key, None)
-        if value:
-            ufo_glyph.lib[GLYPHLIB_PREFIX + "layer." + key] = value
-        value = getattr(glyph, key, None)
-        if value:
-            ufo_glyph.lib[GLYPHLIB_PREFIX + "glyph." + key] = value
-
     if script:
         ufo_glyph.lib[SCRIPT_LIB_KEY] = script
 
@@ -183,6 +136,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         ufo_glyph.width = width
 
     if not self.minimal:
+        to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer)  # below
         self.to_ufo_background_image(ufo_glyph, layer)
         self.to_ufo_guidelines(ufo_glyph, layer)
         self.to_ufo_glyph_background(ufo_glyph, layer)
@@ -197,6 +151,54 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)
+
+
+def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
+    note = glyph.note
+    if note is not None:
+        ufo_glyph.note = note
+
+    color_index = glyph.color
+    if color_index is not None:
+        # .3f is enough precision to round-trip uint8 to float losslessly.
+        # https://github.com/unified-font-object/ufo-spec/issues/61
+        # #issuecomment-389759127
+        if (
+            isinstance(color_index, list)
+            and len(color_index) == 4
+            and all(0 <= v < 256 for v in color_index)
+        ):
+            ufo_glyph.markColor = ",".join(
+                "0" if v == 0 else "1" if v == 255 else "{:.3f}".format(v / 255)
+                for v in color_index
+            )
+        elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
+            ufo_glyph.markColor = GLYPHS_COLORS[color_index]
+        else:
+            logger.warning(
+                "Glyph {}, layer {}: Invalid color index/tuple {}".format(
+                    glyph.name, layer.name, color_index
+                )
+            )
+
+    for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
+        value = getattr(layer, key, None)
+        if value:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "layer." + key] = value
+        value = getattr(glyph, key, None)
+        if value:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "glyph." + key] = value
+
+    # Optimization: profiling glyphs2ufo of NotoSans-MM.glyphs (6000 glyphs) on a Mac
+    # mini late 2014, Python 3.6.8, revealed that a whopping 17% of the time was spent
+    # converting lastChange to UFO timestamps. I could not reproduce this on a Windows
+    # 10/Python 3.7 setup, so this might be a platform thing. If-guarding anyway
+    # because these timestamps are useless in a UFO scenario if you use Git.
+    if (
+        glyph.parent.customParameters["Disable Last Change"] is not True
+        and glyph.lastChange is not None
+    ):
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
 
 
 def effective_width(layer, glyph):
