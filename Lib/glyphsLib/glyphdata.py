@@ -83,7 +83,7 @@ class GlyphInfo:
         description=None,
     ):
         self.name = name
-        self.production = production
+        self._production = production
         self.unicodes = unicodes
         self.category = category
         self.subCategory = subCategory
