@@ -138,6 +138,9 @@ class GlyphInfo:
         debug("__set production", production)
         self._production = production
 
+    # glyphsLib contains many references to both .production and .production_name
+    production_name = production
+
 
 # Global variable holding the actual GlyphData data, assigned on first use.
 GLYPHDATA = None
