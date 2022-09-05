@@ -205,7 +205,7 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     and GlyphData_Ideographs.xml, going by the glyph name or unicode fallback.
     """
 
-    return _get_glyph(glyph_name, data, unicodes)[0]
+    return _get_glyph(glyph_name, data, unicodes)[0] or GlyphInfo(glyph_name)
 
 
 def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
