@@ -415,7 +415,7 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
             base_info.name += suffix
             production = base_info._production
             if production is not None:
-                print("__add prod suffix:", production, suffix)
+                debug("__add prod suffix:", production, suffix)
                 production += suffix
                 base_info.production = production
             base_info.unicodes = None
