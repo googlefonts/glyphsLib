@@ -225,12 +225,24 @@ class GlyphDataTest(unittest.TestCase):
 
         info = get_glyph("brevecomb")
         self.assertEqual(info.case, GSLowercase)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
 
         info = get_glyph("brevecomb.case")
         self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
 
         info = get_glyph("dieresiscomb_acutecomb.case")
+        self.assertIsNone(info.unicodes)
         self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("wigglylinebelowcomb.alt")
+        self.assertIsNone(info.unicodes)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
 
         info = get_glyph("two")
         self.assertEqual(info.name, "two")
@@ -286,10 +298,10 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.script, "lao")
 
         info = get_glyph("unicode")
-        self.assertIsNone(info)
+        self.assertIsNone(info.category) # is a fallback info object
 
         info = get_glyph("uniABCG")
-        self.assertIsNone(info)
+        self.assertIsNone(info.category) # is a fallback info object
 
         info = get_glyph("uni0CCD0CB0")
         self.assertEqual(info.name, "ra-kannada.below")
@@ -641,6 +653,7 @@ class GlyphDataTest(unittest.TestCase):
         # pragma mark Arabic
 
         info = get_glyph("reh_lam-ar.fina")
+        self.assertEqual(info.name, "reh_lam-ar.fina")
         self.assertEqual(info.production, "uni06310644.fina")
         self.assertEqual(info.direction, GSRTL)
 
