@@ -30,7 +30,7 @@ from glyphsLib.glyphdata import get_glyph
 class GlyphDataTest(unittest.TestCase):
     def test_infoFromName(self):
         # all the test from Glyphsapp
-
+        '''
         info = get_glyph("sad-ar.medi.liga")
         self.assertEqual(info.name, "sad-ar.medi.liga")
         self.assertIsNone(info.unicodes)
@@ -64,13 +64,13 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.script, "latin")
 
         info = get_glyph("uni0041")
-        self.assertEqual(info.name, "uni0041")  # A
+        self.assertEqual(info.name, "A")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.case, GSUppercase)
         self.assertEqual(info.script, "latin")
 
         info = get_glyph("uni0041.01")
-        self.assertEqual(info.name, "uni0041.01")  # A.01
+        self.assertEqual(info.name, "A.01")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.case, GSUppercase)
         self.assertEqual(info.script, "latin")
@@ -145,14 +145,14 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph("Asuperior")
         self.assertEqual(info.name, "Asuperior")
         self.assertEqual(info.category, "Letter")
-        # self.assertEqual(info.production, "Asuperior")
+        self.assertEqual(info.production, "Asuperior")
         self.assertEqual(info.case, GSMinor)
         self.assertIsNone(info.unicodes)
 
         info = get_glyph("Ainferior")
         self.assertEqual(info.name, "Ainferior")
         self.assertEqual(info.category, "Letter")
-        # self.assertEqual(info.production, "Ainferior")
+        self.assertEqual(info.production, "Ainferior")
         self.assertEqual(info.case, GSMinor)
         self.assertIsNone(info.unicodes)
 
@@ -330,20 +330,12 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph("d_dh_r_ya-deva")
         self.assertEqual(info.name, "d_dh_r_ya-deva")  # d_dh_rakar_ya-deva
         self.assertEqual(info.subCategory, "Conjunct")
-        """
-        TODO:
         self.assertEqual(info.production, "uni0926094D0927094D0930094D092F")
-        """
 
         info = get_glyph("uni0926094D0927094D0930094D092F")
-        self.assertEqual(
-            info.name, "uni0926094D0927094D0930094D092F"
-        )  # d_dh_rakar_ya-deva
+        self.assertEqual(info.name, "d_dh_rakar_ya-deva")
         self.assertEqual(info.subCategory, "Conjunct")
-        """
-        TODO:
         self.assertEqual(info.production, "uni0926094D0927094D0930094D092F")
-        """
 
         info = get_glyph("germandbls.sc")
         self.assertEqual(info.category, "Letter")
@@ -599,14 +591,15 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "uni0915094D0930094D")
 
         info = get_glyph("uni0915094D0930094D")
-        self.assertEqual(info.name, "uni0915094D0930094D")  # k_rakar-deva
+        self.assertEqual(info.name, "k_rakar-deva")
         self.assertEqual(info.production, "uni0915094D0930094D")
 
         info = get_glyph("uni0915094D")
         self.assertEqual(info.name, "k-deva")
-
+        '''
         info = get_glyph("uni0915094D0930")
-        self.assertEqual(info.name, "uni0915094D0930")  # ka_rakar-deva
+        self.assertEqual(info.name, "ka_rakar-deva")  # ka_rakar-deva
+        self.assertEqual(info.production, "uni0915094D0930")
 
         info = get_glyph("h_na-deva")
         self.assertEqual(info.script, "devanagari")
@@ -767,11 +760,8 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph("lam_alefWasla-ar")
 
         info = get_glyph("uniFEFB.fina")
-        self.assertEqual(info.name, "uniFEFB.fina")  # lam_alef-ar.fina
-        """
-        TODO:
+        self.assertEqual(info.name, "lam_alef-ar.fina")
         self.assertEqual(info.production, "uni06440627.fina")
-        """
 
         info = get_glyph("tehMarbutagoal-ar.fina")
         self.assertEqual(info.name, "tehMarbutagoal-ar.fina")
@@ -806,9 +796,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "uni25CC1C36")
 
         info = get_glyph("uni25CC_ran-lepcha.ss01")
-        self.assertEqual(
-            info.name, "uni25CC_ran-lepcha.ss01"
-        )  # dottedCircle_ran-lepcha.ss01
+        self.assertEqual(info.name, "uni25CC_ran-lepcha.ss01")  # dottedCircle_ran-lepcha.ss01
         self.assertEqual(info.production, "uni25CC1C36.ss01")
 
         info = get_glyph("Atilde")
@@ -816,11 +804,11 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "Atilde")
 
         info = get_glyph("uni00C3")
-        self.assertEqual(info.name, "uni00C3")  # Atilde
+        self.assertEqual(info.name, "Atilde")
         self.assertEqual(info.production, "Atilde")
 
         info = get_glyph("uni00C3.ss01")
-        self.assertEqual(info.name, "uni00C3.ss01")  # Atilde.ss01
+        self.assertEqual(info.name, "Atilde.ss01")
 
         info = get_glyph("uni00C300C3.ss01")
         self.assertEqual(info.name, "uni00C300C3.ss01")  # Atilde_Atilde.ss01
