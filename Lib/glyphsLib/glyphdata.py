@@ -442,6 +442,9 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
         base_info, suffixes = _construct_liga_info_names_(base_names, data, cutSuffix)
         debug("__A", glyph_name, base_info)
         if base_info is not None:
+            if cutSuffix is not None and base_info.name.endswith(cutSuffix):
+                glyph_name += cutSuffix
+                cutSuffix = ""
             base_info.name = glyph_name
             return base_info, cutSuffix
 
@@ -668,12 +671,18 @@ def _construct_production_infos(infos, data=None):
             suffix += part_suffix
 
         production_names.append(part_name)
-    if ".medi" in suffix or ".init" in suffix or ".fina" in suffix:
+    count = 0
+    while ".medi." in suffix or ".init." in suffix or ".fina." in suffix:
+        suffix = suffix.replace(".fina.fina", ".fina")
         suffix = suffix.replace(".medi.fina", ".fina")
         suffix = suffix.replace(".medi.fina", ".fina")
+        suffix = suffix.replace(".medi.medi", ".medi")
         suffix = suffix.replace(".init.medi", ".init")
         suffix = suffix.replace(".init.medi", ".init")
         suffix = suffix.replace(".init.fina", "")
+        if count > 3:
+            break
+        count += 1
     # Some names Glyphs uses resolve to other names that are not uniXXXX names and may
     # contain dots (e.g. idotaccent -> i.loclTRK). If there is any name with a "." in
     # it before the last element, punt. We'd have to introduce a "." into the ligature
