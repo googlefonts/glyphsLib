@@ -460,8 +460,6 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
             debug("__x2", base_info)
         if base_info is not None:
             debug("__x3", base_info)
-            # TODO: we fall back to the original name as there are some problems
-            base_info.name = glyph_name
             return base_info, cutSuffix
 
     if _is_unicode_u_value(base_name):
@@ -580,14 +578,13 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
     debug("__4b_suffixes", base_names_suffixes)
     debug("__4b first_info", first_info)
     name_parts = []
-    # lang_suffix = None  # Never used
+    lang_suffix = None
     for info in base_names_infos:
         part_name = info.name
         if "-" in part_name:
             part_name, _lang_suffix = part_name.rsplit("-", 1)
-            # Never used:
-            # if _lang_suffix is not None and len(_lang_suffix) > 0:
-            #     lang_suffix = _lang_suffix
+            if _lang_suffix is not None and len(_lang_suffix) > 0:
+                lang_suffix = _lang_suffix
         name_parts.append(part_name)
     debug("__5a", name_parts)
 
@@ -615,7 +612,9 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
             base_info.subCategory = "Composition"
     elif first_info.category != "Mark":
         base_info.subCategory = "Ligature"
-
+    base_info.name = _construct_join_names(name_parts)
+    if lang_suffix is not None and len(lang_suffix) > 0:
+        base_info.name += "-" + lang_suffix
     base_info.production = _construct_production_infos(base_names_infos)
     base_info.unicodes = None
     debug("__6", base_info, base_names_suffixes)
