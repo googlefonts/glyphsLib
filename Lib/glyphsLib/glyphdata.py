@@ -311,13 +311,14 @@ def _lookup_info_by_unicode(uni, data):
         return None
     return GlyphInfo(
         attributes.get("name"),
-        attributes.get("production", attributes.get("name")),
-        attributes.get("unicode"),
-        attributes.get("category"),
-        attributes.get("subCategory"),
-        attributes.get("case"),
-        attributes.get("script"),
-        attributes.get("description"),
+        production=attributes.get("production"),
+        unicodes=attributes.get("unicode"),
+        category=attributes.get("category"),
+        subCategory=attributes.get("subCategory"),
+        case=attributes.get("case"),
+        script=attributes.get("script"),
+        direction=attributes.get("direction"),
+        description=attributes.get("description")
     )
 
 
