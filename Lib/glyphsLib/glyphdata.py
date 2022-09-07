@@ -250,7 +250,7 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     # if info.production is None:
     #     production_name = _construct_production_name(glyph_name, data=data)
     debug("__get >", info)
-    return info, cutSuffix
+    return info, cutSuffix or ""
 
 
 def _lookup_info(glyph_name, data):
