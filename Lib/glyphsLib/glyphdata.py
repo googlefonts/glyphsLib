@@ -234,7 +234,6 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
         info = _lookup_info(glyph_name, data)
 
     # Look up by unicode
-<<<<<<< HEAD
     if not info:
         if unicodes is None and len(glyph_name) == 1:
             unicodes = ["%.4X" % ord(glyph_name)]
@@ -252,40 +251,6 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     #     production_name = _construct_production_name(glyph_name, data=data)
     debug("__get >", info)
     return info, cutSuffix
-=======
-    if attributes == {} and unicodes is not None:
-        for unicode in unicodes:
-            attributes = _lookup_attributes_by_unicode(unicode, data)
-            if attributes:
-                break
-
-    production_name = attributes.get("production")
-    if production_name is None:
-        production_name = _construct_production_name(glyph_name, data=data)
-
-    unicode_value = attributes.get("unicode")
-
-    category = attributes.get("category")
-    sub_category = attributes.get("subCategory")
-    if category is None:
-        category, sub_category = _construct_category(glyph_name, data)
-
-    script = attributes.get("script")
-    if script is None:
-        script = _construct_script(glyph_name, data=data)
-
-    description = attributes.get("description")
-
-    return Glyph(
-        glyph_name,
-        production_name,
-        unicode_value,
-        category,
-        sub_category,
-        script,
-        description,
-    )
->>>>>>> When script isn't found for unencoded derivate glyphs (= hah-ar.init.swsh), find it
 
 
 def _lookup_info(glyph_name, data):
@@ -353,7 +318,7 @@ def _lookup_info_by_unicode(uni, data):
         case=attributes.get("case"),
         script=attributes.get("script"),
         direction=attributes.get("direction"),
-        description=attributes.get("description")
+        description=attributes.get("description"),
     )
 
 
@@ -533,78 +498,6 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
     return None, None  # GlyphInfo(glyph_name)
 
 
-def _construct_script(glyph_name, data):
-    """Derive script of a glyph name."""
-    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
-    # construction helpers without a category.
-    if glyph_name.startswith("_"):
-        return None
-
-    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
-    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
-    # the same category as its base glyph.
-    base_name = glyph_name.split(".", 1)[0]
-    base_attribute = data.names.get(base_name) or {}
-    if base_attribute:
-        script = base_attribute.get("script")
-        return script
-
-    # Detect ligatures.
-    if "_" in base_name:
-        base_names = base_name.split("_")
-        # The last name has a suffix, add it to all the names.
-        if "-" in base_names[-1]:
-            _, s = base_names[-1].rsplit("-", 1)
-            base_names = [
-                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
-            ]
-        base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
-        first_attribute = base_names_attributes[0]
-
-        # If the first part is a Letter...
-        if first_attribute.get("category") == "Letter":
-            script = first_attribute.get("script")
-            return script
-
-    return None
-
-
-def _construct_script(glyph_name, data):
-    """Derive script of a glyph name."""
-    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
-    # construction helpers without a category.
-    if glyph_name.startswith("_"):
-        return None
-
-    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
-    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
-    # the same category as its base glyph.
-    base_name = glyph_name.split(".", 1)[0]
-    base_attribute = data.names.get(base_name) or {}
-    if base_attribute:
-        script = base_attribute.get("script")
-        return script
-
-    # Detect ligatures.
-    if "_" in base_name:
-        base_names = base_name.split("_")
-        # The last name has a suffix, add it to all the names.
-        if "-" in base_names[-1]:
-            _, s = base_names[-1].rsplit("-", 1)
-            base_names = [
-                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
-            ]
-        base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
-        first_attribute = base_names_attributes[0]
-
-        # If the first part is a Letter...
-        if first_attribute.get("category") == "Letter":
-            script = first_attribute.get("script")
-            return script
-
-    return None
-
-
 def _translate_category(glyph_name, unicode_category):
     """Return a translation from Unicode category letters to Glyphs
     categories."""
@@ -650,7 +543,8 @@ def _translate_category(glyph_name, unicode_category):
 
     return glyphs_category
 
-def _construct_liga_info_names_(base_names, data, cutSuffix=None):
+
+def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
 
     debug("__4a", base_names, cutSuffix)
     base_names_infos = []
@@ -678,18 +572,14 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
                 if next_info.name.startswith("ra-"):
                     base_names_infos[idx] = None
                     rakar_name = next_info.name.replace("ra-", "rakar-")
-                    rakar_info, _ = _get_glyph(
-                        rakar_name, data
-                    )
+                    rakar_info, _ = _get_glyph(rakar_name, data)
                     base_names_infos[idx + 1] = rakar_info
                     continue
             if idx > 0:
                 previous_info = base_names_infos[idx - 1]
                 if previous_info.category != "Halfform" and "a-" in previous_info.name:
                     halfform_name = previous_info.name.replace("a-", "-")
-                    halfform_info, _ = _get_glyph(
-                        halfform_name, data
-                    )
+                    halfform_info, _ = _get_glyph(halfform_name, data)
                     base_names_infos[idx - 1] = halfform_info
                     base_names_infos[idx] = None
                     continue
