@@ -250,7 +250,7 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     # if info.production is None:
     #     production_name = _construct_production_name(glyph_name, data=data)
     debug("__get >", info)
-    return info, cutSuffix
+    return info, cutSuffix or ""
 
 
 def _lookup_info(glyph_name, data):
@@ -318,7 +318,7 @@ def _lookup_info_by_unicode(uni, data):
         case=attributes.get("case"),
         script=attributes.get("script"),
         direction=attributes.get("direction"),
-        description=attributes.get("description")
+        description=attributes.get("description"),
     )
 
 
@@ -382,6 +382,7 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
     base_name = glyph_name
     base_name, lastSuffix = os.path.splitext(base_name)
     debug("__0", base_name, lastSuffix, len(lastSuffix))
+
     while len(lastSuffix) > 0:
         debug("__1", base_name, lastSuffix, suffix)
         suffix += lastSuffix
@@ -543,7 +544,8 @@ def _translate_category(glyph_name, unicode_category):
 
     return glyphs_category
 
-def _construct_liga_info_names_(base_names, data, cutSuffix=None):
+
+def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
 
     debug("__4a", base_names, cutSuffix)
     base_names_infos = []
@@ -571,18 +573,14 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
                 if next_info.name.startswith("ra-"):
                     base_names_infos[idx] = None
                     rakar_name = next_info.name.replace("ra-", "rakar-")
-                    rakar_info, _ = _get_glyph(
-                        rakar_name, data
-                    )
+                    rakar_info, _ = _get_glyph(rakar_name, data)
                     base_names_infos[idx + 1] = rakar_info
                     continue
             if idx > 0:
                 previous_info = base_names_infos[idx - 1]
                 if previous_info.category != "Halfform" and "a-" in previous_info.name:
                     halfform_name = previous_info.name.replace("a-", "-")
-                    halfform_info, _ = _get_glyph(
-                        halfform_name, data
-                    )
+                    halfform_info, _ = _get_glyph(halfform_name, data)
                     base_names_infos[idx - 1] = halfform_info
                     base_names_infos[idx] = None
                     continue
