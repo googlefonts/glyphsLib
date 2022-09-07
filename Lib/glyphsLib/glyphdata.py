@@ -543,7 +543,6 @@ def _translate_category(glyph_name, unicode_category):
 
     return glyphs_category
 
-
 def _construct_liga_info_names_(base_names, data, cutSuffix=None):
 
     debug("__4a", base_names, cutSuffix)
@@ -559,18 +558,36 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
                 name = shortName
         if info is None:
             info = GlyphInfo(name)
-        if "halant-" in info.name:
-            previous_info = base_names_infos[-1]
-            if previous_info.category != "Halfform" and "a-" in previous_info.name:
-                halfform_name = previous_info.name.replace("a-", "-")
-                halfform_info, cutSuffix = _get_glyph(
-                    halfform_name, data, cutSuffix=cutSuffix
-                )
-                base_names_infos[-1] = halfform_info
-                continue
+
         debug("__4d", name, info)
         base_names_infos.append(info.copy())
         base_names_suffixes.append(needSuffix)
+
+    for idx in range(len(base_names_infos)):
+        info = base_names_infos[idx]
+        if "halant-" in info.name:
+            if idx + 1 < len(base_names_infos):
+                next_info = base_names_infos[idx + 1]
+                if next_info.name.startswith("ra-"):
+                    base_names_infos[idx] = None
+                    rakar_name = next_info.name.replace("ra-", "rakar-")
+                    rakar_info, _ = _get_glyph(
+                        rakar_name, data
+                    )
+                    base_names_infos[idx + 1] = rakar_info
+                    continue
+            if idx > 0:
+                previous_info = base_names_infos[idx - 1]
+                if previous_info.category != "Halfform" and "a-" in previous_info.name:
+                    halfform_name = previous_info.name.replace("a-", "-")
+                    halfform_info, _ = _get_glyph(
+                        halfform_name, data
+                    )
+                    base_names_infos[idx - 1] = halfform_info
+                    base_names_infos[idx] = None
+                    continue
+    if None in base_names_infos:
+        base_names_infos.remove(None)
     if len(base_names_infos) == 0:
         return None
     first_info = base_names_infos[0]
