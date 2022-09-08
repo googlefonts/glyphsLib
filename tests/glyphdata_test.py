@@ -913,7 +913,7 @@ class GlyphDataTest(unittest.TestCase):
 
     def test_unicode(self):
         def uni(n):
-            return get_glyph(n).unicode
+            return get_glyph(n).unicodes
 
         self.assertIsNone(uni(".notdef"))
         self.assertEqual(uni("eacute"), "00E9")
