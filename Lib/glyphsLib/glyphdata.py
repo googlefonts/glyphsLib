@@ -595,12 +595,13 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
     name_parts = []
     lang_suffix = None
     for info in base_names_infos:
-        part_name = info.name
-        if "-" in part_name:
-            part_name, _lang_suffix = part_name.rsplit("-", 1)
-            if _lang_suffix is not None and len(_lang_suffix) > 0:
-                lang_suffix = _lang_suffix
-        name_parts.append(part_name)
+        if info is not None:
+            part_name = info.name
+            if "-" in part_name:
+                part_name, _lang_suffix = part_name.rsplit("-", 1)
+                if _lang_suffix is not None and len(_lang_suffix) > 0:
+                    lang_suffix = _lang_suffix
+            name_parts.append(part_name)
     debug("__5a", name_parts)
 
     base_info = first_info.copy()
@@ -611,13 +612,14 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
         numberOfLetters = 0
         numberOfHalfforms = 0
         for componentInfo in base_names_infos:
-            if (
-                componentInfo.category != "Mark"
-                and componentInfo.category != "Separator"
-            ):
-                numberOfLetters += 1
-            if componentInfo.subCategory == "Halfform":
-                numberOfHalfforms += 1
+            if componentInfo is not None:
+                if (
+                    componentInfo.category != "Mark"
+                    and componentInfo.category != "Separator"
+                ):
+                    numberOfLetters += 1
+                if componentInfo.subCategory == "Halfform":
+                    numberOfHalfforms += 1
         # debug("__num", numberOfLetters, numberOfHalfforms)
         if numberOfLetters - numberOfHalfforms > 1:
             base_info.subCategory = "Ligature"
@@ -664,27 +666,29 @@ def _construct_production_infos(infos, data=None):
     production_names = []
     suffix = ""
     for part in infos:
-        part_name = part.name
-        if part_name not in fontTools.agl.AGL2UV:
-            part_name = part.production
-            if part_name is None and (
-                _is_unicode_uni_value(part.name) or _is_unicode_u_value(part.name)
-            ):
-                part_name = part.name
-            if not part_name:
-                # We hit a part that does not seem to be a valid glyph name known to us,
-                # so the entire glyph name can't carry Unicode meaning. Return it
-                # sanitized.
-                debug("__g", part.name)
-                part_name = _agl_compliant_name(part.name)
-        period_pos = part_name.find(".")
-        if period_pos > 0:
-            part_suffix = part_name[period_pos:]
-            part_name = part_name[0:period_pos]
-            debug("__part_suffix + suffix", part_suffix, suffix)
-            suffix += part_suffix
+        if part is not None:
+            part_name = part.name
+            if part_name not in fontTools.agl.AGL2UV:
+                part_name = part.production
+                if part_name is None and (
+                    _is_unicode_uni_value(part.name) or _is_unicode_u_value(part.name)
+                ):
+                    part_name = part.name
+                if not part_name:
+                    # We hit a part that does not seem to be a valid glyph name known
+                    # to us,
+                    # so the entire glyph name can't carry Unicode meaning. Return it
+                    # sanitized.
+                    debug("__g", part.name)
+                    part_name = _agl_compliant_name(part.name)
+            period_pos = part_name.find(".")
+            if period_pos > 0:
+                part_suffix = part_name[period_pos:]
+                part_name = part_name[0:period_pos]
+                debug("__part_suffix + suffix", part_suffix, suffix)
+                suffix += part_suffix
 
-        production_names.append(part_name)
+            production_names.append(part_name)
     count = 0
     while ".medi." in suffix or ".init." in suffix or ".fina." in suffix:
         suffix = suffix.replace(".fina.fina", ".fina")
