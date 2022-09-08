@@ -30,7 +30,7 @@ from glyphsLib.glyphdata import get_glyph
 class GlyphDataTest(unittest.TestCase):
     def test_infoFromName(self):
         # all the test from Glyphsapp
-        '''
+
         info = get_glyph("sad-ar.medi.liga")
         self.assertEqual(info.name, "sad-ar.medi.liga")
         self.assertIsNone(info.unicodes)
@@ -596,7 +596,7 @@ class GlyphDataTest(unittest.TestCase):
 
         info = get_glyph("uni0915094D")
         self.assertEqual(info.name, "k-deva")
-        '''
+
         info = get_glyph("uni0915094D0930")
         self.assertEqual(info.name, "ka_rakar-deva")  # ka_rakar-deva
         self.assertEqual(info.production, "uni0915094D0930")
