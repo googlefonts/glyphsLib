@@ -529,6 +529,7 @@ register(
     )
 )
 
+
 # convert Glyphs' meta Table to UFO openTypeMeta
 def to_ufo_meta_table(value):
     meta = {}
