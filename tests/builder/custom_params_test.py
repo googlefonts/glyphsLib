@@ -460,6 +460,25 @@ class SetCustomParamsTestBase(object):
         font = glyphsLib.to_glyphs([self.ufo])
         self.assertEqual(font.customParameters["Color Palettes"], glyphs_palettes)
 
+    def test_meta_table(self):
+        glyphs_meta = [
+            {"data": "de-Latn", "tag": "dlng"},
+            {"data": "en-Latn", "tag": "dlng"},
+            {"data": "sr-Cyrl", "tag": "slng"},
+            {"data": "\x00\x00...", "tag": "appl"},
+        ]
+        self.font.customParameters["meta Table"] = glyphs_meta
+        ufo_meta = {
+            "dlng": ["de-Latn", "en-Latn"],
+            "slng": ["sr-Cyrl"],
+            "appl": "\x00\x00...",
+        }
+        self.set_custom_params()
+        self.assertEqual(self.ufo.lib["public.openTypeMeta"], ufo_meta)
+
+        font = glyphsLib.to_glyphs([self.ufo])
+        self.assertEqual(font.customParameters["meta Table"], glyphs_meta)
+
 
 class SetCustomParamsTestUfoLib2(SetCustomParamsTestBase, unittest.TestCase):
     ufo_module = ufoLib2
