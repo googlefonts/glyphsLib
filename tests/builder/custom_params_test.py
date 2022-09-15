@@ -37,9 +37,9 @@ from glyphsLib.builder.constants import (
     MASTER_CUSTOM_PARAM_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     GLYPHLIB_PREFIX,
+    UFO_FILENAME_KEY,
+    FULL_FILENAME_KEY,
 )
-from glyphsLib.builder.masters import UFO_FILENAME_KEY
-from glyphsLib.builder.instances import FULL_FILENAME_KEY
 from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter, GSGlyph, GSLayer
 from glyphsLib.types import parse_datetime
 

@@ -13,10 +13,8 @@
 # limitations under the License.
 
 
-from .constants import GLYPHS_PREFIX
+from .constants import HINTS_LIB_KEY
 from glyphsLib.types import Point
-
-LIB_KEY = GLYPHS_PREFIX + "hints"
 
 
 def to_ufo_hints(self, ufo_glyph, layer):
@@ -39,13 +37,13 @@ def to_ufo_hints(self, ufo_glyph, layer):
         hints.append(hint)
 
     if hints:
-        ufo_glyph.lib[LIB_KEY] = hints
+        ufo_glyph.lib[HINTS_LIB_KEY] = hints
 
 
 def to_glyphs_hints(self, ufo_glyph, layer):
-    if LIB_KEY not in ufo_glyph.lib:
+    if HINTS_LIB_KEY not in ufo_glyph.lib:
         return
-    for hint in ufo_glyph.lib[LIB_KEY]:
+    for hint in ufo_glyph.lib[HINTS_LIB_KEY]:
         hi = self.glyphs_module.GSHint()
         for attr in ["horizontal", "options", "stem", "type"]:
             setattr(hi, attr, hint[attr])

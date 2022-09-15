@@ -20,7 +20,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
 
-from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY
+from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -219,7 +219,7 @@ def to_ufo_smart_component_axes(self, ufo_glyph, glyph):
         }
 
     if glyph.smartComponentAxes:
-        ufo_glyph.lib[AXES_LIB_KEY] = [
+        ufo_glyph.lib[SMART_COMPONENT_AXES_LIB_KEY] = [
             _to_ufo_axis(a) for a in glyph.smartComponentAxes
         ]
 
@@ -234,7 +234,7 @@ def to_glyphs_smart_component_axes(self, ufo_glyph, glyph):
         res.topName = axis["topName"]
         return res
 
-    if AXES_LIB_KEY in ufo_glyph.lib:
+    if SMART_COMPONENT_AXES_LIB_KEY in ufo_glyph.lib:
         glyph.smartComponentAxes = [
-            _to_glyphs_axis(a) for a in ufo_glyph.lib[AXES_LIB_KEY]
+            _to_glyphs_axis(a) for a in ufo_glyph.lib[SMART_COMPONENT_AXES_LIB_KEY]
         ]

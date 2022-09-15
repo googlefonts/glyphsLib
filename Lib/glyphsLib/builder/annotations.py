@@ -13,10 +13,8 @@
 # limitations under the License.
 
 
-from .constants import GLYPHS_PREFIX
+from .constants import ANNOTATIONS_LIB_KEY
 from glyphsLib.types import Point
-
-LIB_KEY = GLYPHS_PREFIX + "annotations"
 
 
 def to_ufo_annotations(self, ufo_glyph, layer):
@@ -36,14 +34,14 @@ def to_ufo_annotations(self, ufo_glyph, layer):
         annotations.append(annot)
 
     if annotations:
-        ufo_glyph.lib[LIB_KEY] = annotations
+        ufo_glyph.lib[ANNOTATIONS_LIB_KEY] = annotations
 
 
 def to_glyphs_annotations(self, ufo_glyph, layer):
-    if LIB_KEY not in ufo_glyph.lib:
+    if ANNOTATIONS_LIB_KEY not in ufo_glyph.lib:
         return
 
-    for annot in ufo_glyph.lib[LIB_KEY]:
+    for annot in ufo_glyph.lib[ANNOTATIONS_LIB_KEY]:
         annotation = self.glyphs_module.GSAnnotation()
         for attr in ["angle", "position", "text", "type", "width"]:
             if attr in annot and annot[attr]:

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from glyphsLib.util import pairs
+
 
 def to_ufo_blue_values(self, ufo, master):
     """Set postscript blue values from Glyphs alignment zones."""
@@ -35,8 +37,8 @@ def to_glyphs_blue_values(self, ufo, master):
     """Sets the GSFontMaster alignmentZones from the postscript blue values."""
 
     zones = []
-    blue_values = _pairs(ufo.info.postscriptBlueValues or [])
-    other_blues = _pairs(ufo.info.postscriptOtherBlues or [])
+    blue_values = pairs(ufo.info.postscriptBlueValues or [])
+    other_blues = pairs(ufo.info.postscriptOtherBlues or [])
     for y1, y2 in blue_values:
         size = y2 - y1
         if y2 == 0:
@@ -51,7 +53,3 @@ def to_glyphs_blue_values(self, ufo, master):
         zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
 
     master.alignmentZones = sorted(zones, key=lambda zone: -zone.position)
-
-
-def _pairs(list):
-    return [list[i : i + 2] for i in range(0, len(list), 2)]

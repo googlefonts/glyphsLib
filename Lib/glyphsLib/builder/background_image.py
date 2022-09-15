@@ -13,13 +13,8 @@
 # limitations under the License.
 
 
-from .constants import GLYPHS_PREFIX
+from .constants import CROP_KEY, LOCKED_KEY, ALPHA_KEY
 from glyphsLib.types import Transform, Rect, Point, Size
-
-BACKGROUND_IMAGE_PREFIX = GLYPHS_PREFIX + "backgroundImage."
-CROP_KEY = BACKGROUND_IMAGE_PREFIX + "crop"
-LOCKED_KEY = BACKGROUND_IMAGE_PREFIX + "locked"
-ALPHA_KEY = BACKGROUND_IMAGE_PREFIX + "alpha"
 
 
 def to_ufo_background_image(self, ufo_glyph, layer):

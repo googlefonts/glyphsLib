@@ -16,27 +16,29 @@
 import os
 import logging
 
+from fontTools.varLib.models import piecewiseLinearMap
+
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
+from .constants import (
+    UFO_FILENAME_CUSTOM_PARAM,
+    EXPORT_KEY,
+    WIDTH_KEY,
+    WEIGHT_KEY,
+    FULL_FILENAME_KEY,
+    MANUAL_INTERPOLATION_KEY,
+    INSTANCE_INTERPOLATIONS_KEY,
+    CUSTOM_PARAMETERS_KEY,
+)
 from .names import build_stylemap_names
 from .axes import (
     get_axis_definitions,
     is_instance_active,
-    interp,
     WEIGHT_AXIS_DEF,
     WIDTH_AXIS_DEF,
     AxisDefinitionFactory,
 )
 from .custom_params import to_ufo_custom_params
-
-EXPORT_KEY = GLYPHS_PREFIX + "export"
-WIDTH_KEY = GLYPHS_PREFIX + "width"
-WEIGHT_KEY = GLYPHS_PREFIX + "weight"
-FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
-MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
-INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
-CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
 
 
 logger = logging.getLogger(__name__)
@@ -188,8 +190,8 @@ def to_glyphs_instances(self):  # noqa: C901
                     if axis.tag == axis_def.tag:
                         mapping = axis.map
                 if mapping:
-                    reverse_mapping = [(dl, ul) for ul, dl in mapping]
-                    user_loc = interp(reverse_mapping, design_loc)
+                    reverse_mapping = {dl: ul for ul, dl in mapping}
+                    user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
                 if user_loc is not None:
                     axis_def.set_user_loc(instance, user_loc)
 
@@ -303,8 +305,8 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
         if mapping:
             # Retrieve the user location (weightClass/widthClass)
             # by going through the axis mapping in reverse.
-            reverse_mapping = sorted({dl: ul for ul, dl in mapping}.items())
-            user_loc = interp(reverse_mapping, design_loc)
+            reverse_mapping = {dl: ul for ul, dl in mapping}
+            user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
         else:
             # no mapping means user space location is same as design space
             user_loc = design_loc

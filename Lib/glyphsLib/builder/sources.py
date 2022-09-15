@@ -17,17 +17,17 @@ import collections
 import logging
 import os
 
+from fontTools.varLib.models import piecewiseLinearMap
+
 import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
 
-from .masters import UFO_FILENAME_KEY
 from .axes import (
     get_axis_definitions,
     get_regular_master,
     font_uses_axis_locations,
-    interp,
 )
-from .constants import UFO_FILENAME_CUSTOM_PARAM
+from .constants import UFO_FILENAME_CUSTOM_PARAM, UFO_FILENAME_KEY
 
 
 logger = logging.getLogger(__name__)
@@ -233,6 +233,6 @@ def _to_glyphs_source(self, master):
                 if axis.tag == axis_def.tag:
                     mapping = axis.map
                     break
-            reverse_mapping = [(dl, ul) for ul, dl in mapping]
-            user_location = interp(reverse_mapping, design_location)
+            reverse_mapping = {dl: ul for ul, dl in mapping}
+            user_location = piecewiseLinearMap(design_location, reverse_mapping)
             axis_def.set_user_loc(master, user_location)

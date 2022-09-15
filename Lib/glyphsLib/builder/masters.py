@@ -16,16 +16,16 @@
 import os
 
 from .axes import font_uses_axis_locations, get_axis_definitions
-from .constants import GLYPHS_PREFIX, GLYPHLIB_PREFIX, UFO_FILENAME_CUSTOM_PARAM
+from .constants import (
+    GLYPHS_PREFIX,
+    MASTER_ID_LIB_KEY,
+    UFO_YEAR_KEY,
+    UFO_NOTE_KEY,
+    UFO_FILENAME_CUSTOM_PARAM,
+)
 
-MASTER_ID_LIB_KEY = GLYPHS_PREFIX + "fontMasterID"
-UFO_FILENAME_KEY = GLYPHLIB_PREFIX + "ufoFilename"
-UFO_YEAR_KEY = GLYPHLIB_PREFIX + "ufoYear"
-UFO_NOTE_KEY = GLYPHLIB_PREFIX + "ufoNote"
 
-
-def to_ufo_master_attributes(self, source, master):
-    ufo = source.font
+def to_ufo_master_attributes(self, ufo, master):
     ufo.info.ascender = master.ascender
     ufo.info.capHeight = master.capHeight
     ufo.info.descender = master.descender
