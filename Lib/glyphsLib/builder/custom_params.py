@@ -28,6 +28,7 @@ from .constants import (
     REVERSE_CODEPAGE_RANGES,
     PUBLIC_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
+    UFO2FT_META_TABLE_KEY,
 )
 from .features import replace_feature, replace_prefixes
 
@@ -525,6 +526,42 @@ register(
         ufo_name="openTypeGaspRangeRecords",
         value_to_ufo=to_ufo_gasp_table,
         value_to_glyphs=to_glyphs_gasp_table,
+    )
+)
+
+# convert Glyphs' meta Table to UFO openTypeMeta
+def to_ufo_meta_table(value):
+    meta = {}
+    # In:  {data = "de-Latn"; tag = dlng; }, {data = "sr-Cyrl"; tag = slng; }
+    # Out: { "dlng": [ "de-Latn" ], "slng": [ "sr-Cyrl" ] }
+    for entry in value:
+        tag, data = entry["tag"], entry["data"]
+        if tag in ("appl", "bild"):
+            meta[tag] = data
+        else:
+            meta.setdefault(tag, []).append(data)
+    return meta
+
+
+def to_glyphs_meta_table(value):
+    meta = []
+    for tag, data in value.items():
+        if isinstance(data, list):
+            for entry in data:
+                meta.append({"tag": tag, "data": entry})
+        else:
+            meta.append({"tag": tag, "data": data})
+    return meta
+
+
+register(
+    ParamHandler(
+        glyphs_name="meta Table",
+        ufo_name=UFO2FT_META_TABLE_KEY,
+        ufo_info=False,
+        ufo_prefix="",
+        value_to_ufo=to_ufo_meta_table,
+        value_to_glyphs=to_glyphs_meta_table,
     )
 )
 

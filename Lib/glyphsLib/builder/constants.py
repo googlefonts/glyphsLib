@@ -89,6 +89,7 @@ UFO2FT_COLOR_PALETTES_KEY = "com.github.googlei18n.ufo2ft.colorPalettes"
 UFO2FT_COLOR_LAYER_MAPPING_KEY = "com.github.googlei18n.ufo2ft.colorLayerMapping"
 UFO2FT_COLOR_LAYERS_KEY = "com.github.googlei18n.ufo2ft.colorLayers"
 
+UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 # ufo2ft KernFeatureWriter default to "skip" mode (i.e. do not write features
 # if they are already present), while Glyphs.app always adds its automatic
 # kerning to any user written kern lookups. So we need to pass custom "append"
