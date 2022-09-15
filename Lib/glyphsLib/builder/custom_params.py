@@ -15,6 +15,7 @@
 
 from collections import defaultdict
 import re
+import logging
 
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
@@ -71,6 +72,9 @@ going from Glyphs to UFOs.
 """
 
 CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter."
+
+
+logger = logging.getLogger(__name__)
 
 
 def identity(value):
@@ -537,6 +541,11 @@ def to_ufo_meta_table(value):
     # Out: { "dlng": [ "de-Latn" ], "slng": [ "sr-Cyrl" ] }
     for entry in value:
         tag, data = entry["tag"], entry["data"]
+        if tag in meta:
+            logger.warning(
+                f"Multiple '{tag}' tags in meta table; only the last one will be used"
+            )
+
         if tag in ("appl", "bild"):
             meta[tag] = data
         else:
