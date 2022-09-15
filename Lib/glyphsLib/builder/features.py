@@ -27,8 +27,8 @@ from .constants import (
     ANONYMOUS_FEATURE_PREFIX_NAME,
     ORIGINAL_FEATURE_CODE_KEY,
     ORIGINAL_CATEGORY_KEY,
-    _LANGUAGE_MAPPING,
-    _REVERSE_LANGUAGE_MAPPING,
+    LANGUAGE_MAPPING,
+    REVERSE_LANGUAGE_MAPPING,
 )
 from .tokens import TokenExpander, PassThruExpander
 
@@ -55,15 +55,15 @@ def to_ufo_master_features(self, ufo, master):
 
 
 def _to_name_langID(language):
-    if language not in _LANGUAGE_MAPPING:
+    if language not in LANGUAGE_MAPPING:
         raise ValueError(f"Unknown name language: {language}")
-    return _LANGUAGE_MAPPING[language]
+    return LANGUAGE_MAPPING[language]
 
 
 def _to_glyphs_language(langID):
-    if langID not in _REVERSE_LANGUAGE_MAPPING:
+    if langID not in REVERSE_LANGUAGE_MAPPING:
         raise ValueError(f"Unknown name langID: {langID}")
-    return _REVERSE_LANGUAGE_MAPPING[langID]
+    return REVERSE_LANGUAGE_MAPPING[langID]
 
 
 def _to_ufo_features(

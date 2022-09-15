@@ -187,7 +187,7 @@ WIDTH_CLASS_TO_VALUE = {
     9: 200,  # Ultra-expanded
 }
 
-_LANGUAGE_MAPPING = {
+LANGUAGE_MAPPING = {
     "dflt": None,
     "AFK": 0x0436,
     "ARA": 0x0C01,
@@ -275,4 +275,4 @@ _LANGUAGE_MAPPING = {
     "ZHT": 0x0404,
 }
 
-_REVERSE_LANGUAGE_MAPPING = {v: k for v, k in _LANGUAGE_MAPPING.items()}
+REVERSE_LANGUAGE_MAPPING = {v: k for v, k in LANGUAGE_MAPPING.items()}
