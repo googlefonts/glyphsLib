@@ -177,6 +177,18 @@ def to_designspace_axes(self):
                     )
                 mapping[userLoc] = designLoc
 
+            for instance in self.font.instances:
+                if is_instance_active(instance) or self.minimize_glyphs_diffs:
+                    designLoc = axis_def.get_design_loc(instance)
+                    userLoc = axis_def.get_user_loc(instance)
+                    if userLoc in mapping and mapping[userLoc] != designLoc:
+                        logger.warning(
+                            "Axis location (%s) was redefined by '%s'",
+                            userLoc,
+                            instance.name,
+                        )
+                    mapping[userLoc] = designLoc
+
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
