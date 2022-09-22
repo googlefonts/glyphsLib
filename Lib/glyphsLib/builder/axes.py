@@ -165,7 +165,7 @@ def to_designspace_axes(self):
                 continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
         elif font_uses_axis_locations(self.font):
-            # Build the mapping from the "Axis Location" of the masters
+            # Build the mapping from the "Axis Location" of the masters and instances
             # TODO: (jany) use Virtual Masters as well?
             mapping = {}
             for master in self.font.masters:
@@ -330,8 +330,8 @@ class AxisDefinition:
 
     def get_user_loc(self, master_or_instance):
         """Get the user location of a Glyphs master or instance.
-        Masters in Glyphs can have a user location in the "Axis Location"
-        custom parameter.
+        Masters and instances in Glyphs can have a user location in the
+        "Axis Location" custom parameter.
 
         The user location is what the user sees on the slider in his
         variable-font-enabled UI. For weight it is a value between 0 and 1000,
@@ -415,9 +415,8 @@ class AxisDefinition:
                         pass
             return
 
-        # For masters, set directly the custom parameter (old way)
-        # and also the Axis Location (new way).
-        # Only masters can have an 'Axis Location' parameter.
+        # Directly set the custom parameter (old way) and also the Axis Location
+        # (new way).
         if self.user_loc_param is not None:
             try:
                 class_ = user_loc_value_to_class(self.tag, value)
