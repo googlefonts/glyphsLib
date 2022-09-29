@@ -184,7 +184,9 @@ def to_designspace_axes(self):
             # a user location and a design location.
             instance_mapping = {}
             for instance in self.font.instances:
-                if is_instance_active(instance) or self.minimize_glyphs_diffs:
+                if (
+                    is_instance_active(instance) or self.minimize_glyphs_diffs
+                ) and instance.type != "variable":
                     designLoc = axis_def.get_design_loc(instance)
                     userLoc = axis_def.get_user_loc(instance)
                     if (
