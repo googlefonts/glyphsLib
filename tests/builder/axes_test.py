@@ -415,3 +415,17 @@ def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module
 
     assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
     assert doc_rt.axes[1].serialize() == doc.axes[1].serialize()
+
+
+def test_variable_instance(ufo_module):
+    """Glyphs 3 unexpectedly introduced a so-called "variable" instance which is a
+    pseudo-instance that holds various VF settings.
+    This messed with the instance_mapping creation as it would overwrite the designLoc
+    of a default instance of an axis back to 0.
+    """
+    source_path = os.path.join("tests", "data", "VariableInstance.glyphs")
+    font = GSFont(source_path)
+    doc = to_designspace(font)
+
+    assert doc.axes[0].map[2] == (400, 80)
+    assert doc.axes[0].default == 400
