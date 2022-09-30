@@ -3064,6 +3064,8 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3098,6 +3100,7 @@ class GSInstance(GSBase):
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
+        self.type = ""
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),

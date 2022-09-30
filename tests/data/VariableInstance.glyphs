@@ -1,0 +1,2492 @@
+{
+.appVersion = "3133";
+.formatVersion = 3;
+axes = (
+{
+name = weight;
+tag = wght;
+},
+{
+name = Slant;
+tag = slnt;
+}
+);
+classes = (
+{
+automatic = 1;
+code = "questiondown.cap endash.cap emdash.cap periodcentered.cap exclamdown.cap parenleft.cap parenright.cap bracketleft.cap bracketright.cap braceleft.cap braceright.cap";
+name = cap;
+},
+{
+automatic = 1;
+code = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z Agrave Aacute Acircumflex Atilde Adieresis Amacron Abreve Aring Aringacute Aogonek AE AEacute Cacute Ccircumflex Ccaron Cdotaccent Ccedilla Dcaron Dcroat Egrave Eacute Ecircumflex Ecaron Edieresis Emacron Ebreve Edotaccent Eogonek Gcircumflex Gbreve Gdotaccent Gcommaaccent Hcircumflex Hbar Igrave Iacute Icircumflex Itilde Idieresis Imacron Ibreve Idotaccent Iogonek Jcircumflex Kcommaaccent Lacute Lcaron Lcommaaccent Lslash Nacute Ncaron Ntilde Ncommaaccent Ograve Oacute Ocircumflex Otilde Odieresis Omacron Obreve Ohungarumlaut Oslash Oslashacute OE Racute Rcaron Rcommaaccent Sacute Scircumflex Scaron Scedilla Scommaaccent Tcaron Tcommaaccent Tbar Ugrave Uacute Ucircumflex Utilde Udieresis Umacron Ubreve Uring Uhungarumlaut Uogonek Wgrave Wacute Wcircumflex Wdieresis Ygrave Yacute Ycircumflex Ydieresis Zacute Zcaron Zdotaccent Eng Eth Thorn endash.cap emdash.cap periodcentered.cap parenleft.cap parenright.cap bracketleft.cap bracketright.cap braceleft.cap braceright.cap at.cap";
+name = caps;
+},
+{
+automatic = 1;
+code = "questiondown endash emdash periodcentered exclamdown parenleft parenright bracketleft bracketright braceleft braceright";
+name = cap_0;
+},
+{
+automatic = 1;
+code = "zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior";
+name = frac1;
+},
+{
+automatic = 1;
+code = "slash fraction perthousand onehalf onequarter threequarters threequarters zeroinferior oneinferior twoinferior threeinferior fourinferior fiveinferior sixinferior seveninferior eightinferior nineinferior";
+name = frac2;
+},
+{
+automatic = 1;
+code = "zero one two three four five six seven eight nine zero.pnum one.pnum two.pnum three.pnum four.pnum five.pnum six.pnum seven.pnum eight.pnum nine.pnum zero.dnom one.dnom two.dnom three.dnom four.dnom five.dnom six.dnom seven.dnom eight.dnom nine.dnom zero.numr one.numr two.numr three.numr four.numr five.numr six.numr seven.numr eight.numr nine.numr zeroinferior oneinferior twoinferior threeinferior fourinferior fiveinferior sixinferior seveninferior eightinferior nineinferior";
+name = frac3;
+},
+{
+automatic = 1;
+code = "zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior zerosuperior onesuperior twosuperior threesuperior foursuperior fivesuperior sixsuperior sevensuperior eightsuperior ninesuperior";
+name = frac4;
+}
+);
+customParameters = (
+{
+name = fsType;
+value = (
+);
+},
+{
+name = "Write lastChange";
+value = 0;
+},
+{
+name = "Use Line Breaks";
+value = 1;
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = "Variable Font Origin";
+value = "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC";
+}
+);
+date = "2022-03-11 10:33:29 +0000";
+familyName = Cairo;
+featurePrefixes = (
+{
+code = "languagesystem DFLT dflt;
+languagesystem arab dflt;
+languagesystem latn dflt;
+languagesystem latn ROM;
+languagesystem latn MOL;
+languagesystem arab URD;";
+name = Languagesystems;
+}
+);
+features = (
+{
+automatic = 1;
+code = "feature locl;
+feature subs;
+feature sinf;
+feature sups;
+feature numr;
+feature dnom;
+feature frac;
+feature ordn;
+feature init;
+feature medi;
+feature fina;
+";
+tag = aalt;
+},
+{
+automatic = 1;
+code = "lookup ccmp_arab_1 {
+	sub hamzaabove-ar damma-ar by hamzaaboveDamma-ar;
+	sub damma-ar hamzaabove-ar by hamzaaboveDamma-ar;
+	sub hamzaabove-ar dammatan-ar by hamzaaboveDammatan-ar;
+	sub dammatan-ar hamzaabove-ar by hamzaaboveDammatan-ar;
+	sub hamzaabove-ar fatha-ar by hamzaaboveFatha-ar;
+	sub fatha-ar hamzaabove-ar by hamzaaboveFatha-ar;
+	sub hamzaabove-ar fathatan-ar by hamzaaboveFathatan-ar;
+	sub fathatan-ar hamzaabove-ar by hamzaaboveFathatan-ar;
+	sub hamzaabove-ar sukun-ar by hamzaaboveSukun-ar;
+	sub sukun-ar hamzaabove-ar by hamzaaboveSukun-ar;
+	sub hamzabelow-ar kasra-ar by hamzabelowKasra-ar;
+	sub kasra-ar hamzabelow-ar by hamzabelowKasra-ar;
+	sub hamzabelow-ar kasratan-ar by hamzabelowKasratan-ar;
+	sub kasratan-ar hamzabelow-ar by hamzabelowKasratan-ar;
+	sub shadda-ar alefabove-ar by shaddaAlefabove-ar;
+	sub alefabove-ar shadda-ar by shaddaAlefabove-ar;
+	sub shadda-ar damma-ar by shaddaDamma-ar;
+	sub damma-ar shadda-ar by shaddaDamma-ar;
+	sub shadda-ar dammatan-ar by shaddaDammatan-ar;
+	sub dammatan-ar shadda-ar by shaddaDammatan-ar;
+	sub shadda-ar fatha-ar by shaddaFatha-ar;
+	sub fatha-ar shadda-ar by shaddaFatha-ar;
+	sub shadda-ar fathatan-ar by shaddaFathatan-ar;
+	sub fathatan-ar shadda-ar by shaddaFathatan-ar;
+	sub shadda-ar kasra-ar by shaddaKasra-ar;
+	sub kasra-ar shadda-ar by shaddaKasra-ar;
+	sub shadda-ar kasratan-ar by shaddaKasratan-ar;
+	sub kasratan-ar shadda-ar by shaddaKasratan-ar;
+} ccmp_arab_1;
+
+script arab;
+lookup ccmp_arab_1;
+";
+tag = ccmp;
+},
+{
+automatic = 1;
+code = "lookup locl_latn_0 {
+	script latn;
+	language ROM;
+	language MOL;
+	sub Scedilla by Scommaaccent;
+	sub scedilla by scommaaccent;
+	sub Tcedilla by Tcommaaccent;
+	sub tcedilla by tcommaaccent;
+} locl_latn_0;
+
+lookup locl_arab_0 {
+	script arab;
+	language URD;
+	sub four-persian by four-persian.urdu;
+	sub six-persian by six-ar;
+	sub seven-persian by seven-persian.urdu;
+} locl_arab_0;
+";
+tag = locl;
+},
+{
+automatic = 1;
+code = "sub zero by zeroinferior;
+sub one by oneinferior;
+sub two by twoinferior;
+sub three by threeinferior;
+sub four by fourinferior;
+sub five by fiveinferior;
+sub six by sixinferior;
+sub seven by seveninferior;
+sub eight by eightinferior;
+sub nine by nineinferior;
+";
+tag = subs;
+},
+{
+automatic = 1;
+code = "sub zero by zeroinferior;
+sub one by oneinferior;
+sub two by twoinferior;
+sub three by threeinferior;
+sub four by fourinferior;
+sub five by fiveinferior;
+sub six by sixinferior;
+sub seven by seveninferior;
+sub eight by eightinferior;
+sub nine by nineinferior;
+";
+tag = sinf;
+},
+{
+automatic = 1;
+code = "sub zero by zerosuperior;
+sub one by onesuperior;
+sub two by twosuperior;
+sub three by threesuperior;
+sub four by foursuperior;
+sub five by fivesuperior;
+sub six by sixsuperior;
+sub seven by sevensuperior;
+sub eight by eightsuperior;
+sub nine by ninesuperior;
+";
+tag = sups;
+},
+{
+automatic = 1;
+code = "sub zero by zero.numr;
+sub one by one.numr;
+sub two by two.numr;
+sub three by three.numr;
+sub four by four.numr;
+sub five by five.numr;
+sub six by six.numr;
+sub seven by seven.numr;
+sub eight by eight.numr;
+sub nine by nine.numr;
+";
+tag = numr;
+},
+{
+automatic = 1;
+code = "sub zero by zero.dnom;
+sub one by one.dnom;
+sub two by two.dnom;
+sub three by three.dnom;
+sub four by four.dnom;
+sub five by five.dnom;
+sub six by six.dnom;
+sub seven by seven.dnom;
+sub eight by eight.dnom;
+sub nine by nine.dnom;
+";
+tag = dnom;
+},
+{
+automatic = 1;
+code = "lookup FRAC {
+	sub slash by fraction;
+} FRAC;
+lookup UP {
+	sub [zero one two three four five six seven eight nine] by [zero.numr one.numr two.numr three.numr four.numr five.numr six.numr seven.numr eight.numr nine.numr];
+} UP;
+lookup DOWN {
+	sub fraction [zero.numr one.numr two.numr three.numr four.numr five.numr six.numr seven.numr eight.numr nine.numr]' by [zero.dnom one.dnom two.dnom three.dnom four.dnom five.dnom six.dnom seven.dnom eight.dnom nine.dnom];
+	sub [zero.dnom one.dnom two.dnom three.dnom four.dnom five.dnom six.dnom seven.dnom eight.dnom nine.dnom] [zero.numr one.numr two.numr three.numr four.numr five.numr six.numr seven.numr eight.numr nine.numr]' by [zero.dnom one.dnom two.dnom three.dnom four.dnom five.dnom six.dnom seven.dnom eight.dnom nine.dnom];
+} DOWN;
+";
+tag = frac;
+},
+{
+automatic = 1;
+code = "sub [zero one two three four five six seven eight nine] [A a]' by ordfeminine;
+sub [zero one two three four five six seven eight nine] [O o]' by ordmasculine;
+";
+tag = ordn;
+},
+{
+automatic = 1;
+code = "sub behDotless-ar by behDotless-ar.init;
+sub beh-ar by beh-ar.init;
+sub peh-ar by peh-ar.init;
+sub alefMaksura-ar by alefMaksura-ar.init;
+sub teh-ar by teh-ar.init;
+sub theh-ar by theh-ar.init;
+sub tteh-ar by tteh-ar.init;
+sub jeem-ar by jeem-ar.init;
+sub tcheh-ar by tcheh-ar.init;
+sub hah-ar by hah-ar.init;
+sub khah-ar by khah-ar.init;
+sub seen-ar by seen-ar.init;
+sub sheen-ar by sheen-ar.init;
+sub sad-ar by sad-ar.init;
+sub dad-ar by dad-ar.init;
+sub tah-ar by tah-ar.init;
+sub zah-ar by zah-ar.init;
+sub ain-ar by ain-ar.init;
+sub ghain-ar by ghain-ar.init;
+sub feh-ar by feh-ar.init;
+sub veh-ar by veh-ar.init;
+sub fehDotless-ar by fehDotless-ar.init;
+sub qaf-ar by qaf-ar.init;
+sub kaf-ar by kaf-ar.init;
+sub keheh-ar by keheh-ar.init;
+sub gaf-ar by gaf-ar.init;
+sub lam-ar by lam-ar.init;
+sub meem-ar by meem-ar.init;
+sub noon-ar by noon-ar.init;
+sub noonghunna-ar by noonghunna-ar.init;
+sub heh-ar by heh-ar.init;
+sub hehgoal-ar by hehgoal-ar.init;
+sub hehgoalHamzaabove-ar by hehgoalHamzaabove-ar.init;
+sub hehDoachashmee-ar by hehDoachashmee-ar.init;
+sub yeh-ar by yeh-ar.init;
+sub yehHamzaabove-ar by yehHamzaabove-ar.init;
+sub yeh-farsi by yeh-farsi.init;
+";
+tag = init;
+},
+{
+automatic = 1;
+code = "sub behDotless-ar by behDotless-ar.medi;
+sub beh-ar by beh-ar.medi;
+sub peh-ar by peh-ar.medi;
+sub alefMaksura-ar by alefMaksura-ar.medi;
+sub teh-ar by teh-ar.medi;
+sub theh-ar by theh-ar.medi;
+sub tteh-ar by tteh-ar.medi;
+sub jeem-ar by jeem-ar.medi;
+sub tcheh-ar by tcheh-ar.medi;
+sub hah-ar by hah-ar.medi;
+sub khah-ar by khah-ar.medi;
+sub seen-ar by seen-ar.medi;
+sub sheen-ar by sheen-ar.medi;
+sub sad-ar by sad-ar.medi;
+sub dad-ar by dad-ar.medi;
+sub tah-ar by tah-ar.medi;
+sub zah-ar by zah-ar.medi;
+sub ain-ar by ain-ar.medi;
+sub ghain-ar by ghain-ar.medi;
+sub feh-ar by feh-ar.medi;
+sub veh-ar by veh-ar.medi;
+sub fehDotless-ar by fehDotless-ar.medi;
+sub qaf-ar by qaf-ar.medi;
+sub kaf-ar by kaf-ar.medi;
+sub keheh-ar by keheh-ar.medi;
+sub gaf-ar by gaf-ar.medi;
+sub lam-ar by lam-ar.medi;
+sub meem-ar by meem-ar.medi;
+sub noon-ar by noon-ar.medi;
+sub noonghunna-ar by noonghunna-ar.medi;
+sub heh-ar by heh-ar.medi;
+sub hehgoal-ar by hehgoal-ar.medi;
+sub hehgoalHamzaabove-ar by hehgoalHamzaabove-ar.medi;
+sub hehDoachashmee-ar by hehDoachashmee-ar.medi;
+sub yeh-ar by yeh-ar.medi;
+sub yehHamzaabove-ar by yehHamzaabove-ar.medi;
+sub yeh-farsi by yeh-farsi.medi;
+";
+tag = medi;
+},
+{
+automatic = 1;
+code = "sub alef-ar by alef-ar.fina;
+sub alefHamzaabove-ar by alefHamzaabove-ar.fina;
+sub alefHamzabelow-ar by alefHamzabelow-ar.fina;
+sub alefMadda-ar by alefMadda-ar.fina;
+sub alefWasla-ar by alefWasla-ar.fina;
+sub behDotless-ar by behDotless-ar.fina;
+sub beh-ar by beh-ar.fina;
+sub peh-ar by peh-ar.fina;
+sub teh-ar by teh-ar.fina;
+sub theh-ar by theh-ar.fina;
+sub tteh-ar by tteh-ar.fina;
+sub jeem-ar by jeem-ar.fina;
+sub tcheh-ar by tcheh-ar.fina;
+sub hah-ar by hah-ar.fina;
+sub khah-ar by khah-ar.fina;
+sub dal-ar by dal-ar.fina;
+sub thal-ar by thal-ar.fina;
+sub ddal-ar by ddal-ar.fina;
+sub reh-ar by reh-ar.fina;
+sub zain-ar by zain-ar.fina;
+sub rreh-ar by rreh-ar.fina;
+sub jeh-ar by jeh-ar.fina;
+sub seen-ar by seen-ar.fina;
+sub sheen-ar by sheen-ar.fina;
+sub sad-ar by sad-ar.fina;
+sub dad-ar by dad-ar.fina;
+sub tah-ar by tah-ar.fina;
+sub zah-ar by zah-ar.fina;
+sub ain-ar by ain-ar.fina;
+sub ghain-ar by ghain-ar.fina;
+sub feh-ar by feh-ar.fina;
+sub veh-ar by veh-ar.fina;
+sub fehDotless-ar by fehDotless-ar.fina;
+sub qafDotless-ar by qafDotless-ar.fina;
+sub qaf-ar by qaf-ar.fina;
+sub kafDotless-ar by kafDotless-ar.fina;
+sub kaf-ar by kaf-ar.fina;
+sub keheh-ar by keheh-ar.fina;
+sub gaf-ar by gaf-ar.fina;
+sub lam-ar by lam-ar.fina;
+sub meem-ar by meem-ar.fina;
+sub noon-ar by noon-ar.fina;
+sub noonghunna-ar by noonghunna-ar.fina;
+sub heh-ar by heh-ar.fina;
+sub hehgoal-ar by hehgoal-ar.fina;
+sub hehgoalHamzaabove-ar by hehgoalHamzaabove-ar.fina;
+sub hehDoachashmee-ar by hehDoachashmee-ar.fina;
+sub tehMarbuta-ar by tehMarbuta-ar.fina;
+sub tehMarbutagoal-ar by tehMarbutagoal-ar.fina;
+sub waw-ar by waw-ar.fina;
+sub wawHamzaabove-ar by wawHamzaabove-ar.fina;
+sub alefMaksura-ar by alefMaksura-ar.fina;
+sub yeh-ar by yeh-ar.fina;
+sub yehHamzaabove-ar by yehHamzaabove-ar.fina;
+sub yeh-farsi by yeh-farsi.fina;
+sub yehbarree-ar by yehbarree-ar.fina;
+sub yehbarreeHamzaabove-ar by yehbarreeHamzaabove-ar.fina;
+sub lam_alef-ar by lam_alef-ar.fina;
+sub lam_alefHamzaabove-ar by lam_alefHamzaabove-ar.fina;
+sub lam_alefHamzabelow-ar by lam_alefHamzabelow-ar.fina;
+sub lam_alefMadda-ar by lam_alefMadda-ar.fina;
+sub lam_alefWasla-ar by lam_alefWasla-ar.fina;
+sub seen_reh-ar by seen_reh-ar.fina;
+sub seen_alefMaksura-ar by seen_alefMaksura-ar.fina;
+sub seen_yeh-ar by seen_yeh-ar.fina;
+sub seen_zain-ar by seen_zain-ar.fina;
+sub seen_noon-ar by seen_noon-ar.fina;
+sub seen_noonghunna-ar by seen_noonghunna-ar.fina;
+sub seen_yehHamzaabove-ar by seen_yehHamzaabove-ar.fina;
+sub sheen_reh-ar by sheen_reh-ar.fina;
+sub sheen_zain-ar by sheen_zain-ar.fina;
+sub sheen_noon-ar by sheen_noon-ar.fina;
+sub sheen_alefMaksura-ar by sheen_alefMaksura-ar.fina;
+sub sheen_yeh-ar by sheen_yeh-ar.fina;
+sub sheen_yehHamzaabove-ar by sheen_yehHamzaabove-ar.fina;
+sub sad_reh-ar by sad_reh-ar.fina;
+sub sad_zain-ar by sad_zain-ar.fina;
+sub sad_noon-ar by sad_noon-ar.fina;
+sub sad_noonghunna-ar by sad_noonghunna-ar.fina;
+sub sad_alefMaksura-ar by sad_alefMaksura-ar.fina;
+sub sad_yeh-ar by sad_yeh-ar.fina;
+sub sad_yehHamzaabove-ar by sad_yehHamzaabove-ar.fina;
+sub dad_reh-ar by dad_reh-ar.fina;
+sub dad_zain-ar by dad_zain-ar.fina;
+sub dad_noon-ar by dad_noon-ar.fina;
+sub dad_alefMaksura-ar by dad_alefMaksura-ar.fina;
+sub dad_yeh-ar by dad_yeh-ar.fina;
+sub dad_yehHamzaabove-ar by dad_yehHamzaabove-ar.fina;
+sub lam_alefMaksura-ar by lam_alefMaksura-ar.fina;
+sub lam_yeh-ar by lam_yeh-ar.fina;
+sub lam_yehHamzaabove-ar by lam_yehHamzaabove-ar.fina;
+";
+tag = fina;
+},
+{
+automatic = 1;
+code = "lookup dlig_RTL {
+lookupflag IgnoreMarks RightToLeft;
+	sub alefMaksura-ar.medi alefMaksura-ar.fina by alefMaksura_alefMaksura-ar.fina;
+	sub alefMaksura-ar.medi noon-ar.fina by alefMaksura_noon-ar.fina;
+	sub alefMaksura-ar.medi reh-ar.fina by alefMaksura_reh-ar.fina;
+	sub alefMaksura-ar.medi zain-ar.fina by alefMaksura_zain-ar.fina;
+	sub beh-ar.medi alefMaksura-ar.fina by beh_alefMaksura-ar.fina;
+	sub beh-ar.medi noon-ar.fina by beh_noon-ar.fina;
+	sub beh-ar.medi reh-ar.fina by beh_reh-ar.fina;
+	sub beh-ar.medi yeh-ar.fina by beh_yeh-ar.fina;
+	sub beh-ar.medi yehHamzaabove-ar.fina by beh_yehHamzaabove-ar.fina;
+	sub beh-ar.medi zain-ar.fina by beh_zain-ar.fina;
+	sub dad-ar.init alefMaksura-ar.fina by dad_alefMaksura-ar;
+	sub dad-ar.medi alefMaksura-ar.fina by dad_alefMaksura-ar.fina;
+	sub dad-ar.init noon-ar.fina by dad_noon-ar;
+	sub dad-ar.medi noon-ar.fina by dad_noon-ar.fina;
+	sub dad-ar.init reh-ar.fina by dad_reh-ar;
+	sub dad-ar.medi reh-ar.fina by dad_reh-ar.fina;
+	sub dad-ar.init yeh-ar.fina by dad_yeh-ar;
+	sub dad-ar.medi yeh-ar.fina by dad_yeh-ar.fina;
+	sub dad-ar.init yehHamzaabove-ar.fina by dad_yehHamzaabove-ar;
+	sub dad-ar.medi yehHamzaabove-ar.fina by dad_yehHamzaabove-ar.fina;
+	sub dad-ar.init zain-ar.fina by dad_zain-ar;
+	sub dad-ar.medi zain-ar.fina by dad_zain-ar.fina;
+	sub lam-ar.init alefMaksura-ar.fina by lam_alefMaksura-ar;
+	sub lam-ar.medi alefMaksura-ar.fina by lam_alefMaksura-ar.fina;
+	sub lam-ar.init yeh-ar.fina by lam_yeh-ar;
+	sub lam-ar.medi yeh-ar.fina by lam_yeh-ar.fina;
+	sub lam-ar.init yehHamzaabove-ar.fina by lam_yehHamzaabove-ar;
+	sub lam-ar.medi yehHamzaabove-ar.fina by lam_yehHamzaabove-ar.fina;
+	sub noon-ar.medi alefMaksura-ar.fina by noon_alefMaksura-ar.fina;
+	sub noon-ar.medi noon-ar.fina by noon_noon-ar.fina;
+	sub noon-ar.medi reh-ar.fina by noon_reh-ar.fina;
+	sub noon-ar.medi yeh-ar.fina by noon_yeh-ar.fina;
+	sub noon-ar.medi yehHamzaabove-ar.fina by noon_yehHamzaabove-ar.fina;
+	sub noon-ar.medi zain-ar.fina by noon_zain-ar.fina;
+	sub peh-ar.medi alefMaksura-ar.fina by peh_alefMaksura-ar.fina;
+	sub peh-ar.medi noon-ar.fina by peh_noon-ar.fina;
+	sub peh-ar.medi reh-ar.fina by peh_reh-ar.fina;
+	sub peh-ar.medi yeh-ar.fina by peh_yeh-ar.fina;
+	sub peh-ar.medi yehHamzaabove-ar.fina by peh_yehHamzaabove-ar.fina;
+	sub peh-ar.medi zain-ar.fina by peh_zain-ar.fina;
+	sub sad-ar.init alefMaksura-ar.fina by sad_alefMaksura-ar;
+	sub sad-ar.medi alefMaksura-ar.fina by sad_alefMaksura-ar.fina;
+	sub sad-ar.init noon-ar.fina by sad_noon-ar;
+	sub sad-ar.medi noon-ar.fina by sad_noon-ar.fina;
+	sub sad-ar.init noonghunna-ar.fina by sad_noonghunna-ar;
+	sub sad-ar.medi noonghunna-ar.fina by sad_noonghunna-ar.fina;
+	sub sad-ar.init reh-ar.fina by sad_reh-ar;
+	sub sad-ar.medi reh-ar.fina by sad_reh-ar.fina;
+	sub sad-ar.init yeh-ar.fina by sad_yeh-ar;
+	sub sad-ar.medi yeh-ar.fina by sad_yeh-ar.fina;
+	sub sad-ar.init yehHamzaabove-ar.fina by sad_yehHamzaabove-ar;
+	sub sad-ar.medi yehHamzaabove-ar.fina by sad_yehHamzaabove-ar.fina;
+	sub sad-ar.init zain-ar.fina by sad_zain-ar;
+	sub sad-ar.medi zain-ar.fina by sad_zain-ar.fina;
+	sub seen-ar.init alefMaksura-ar.fina by seen_alefMaksura-ar;
+	sub seen-ar.medi alefMaksura-ar.fina by seen_alefMaksura-ar.fina;
+	sub seen-ar.init noon-ar.fina by seen_noon-ar;
+	sub seen-ar.medi noon-ar.fina by seen_noon-ar.fina;
+	sub seen-ar.init noonghunna-ar.fina by seen_noonghunna-ar;
+	sub seen-ar.medi noonghunna-ar.fina by seen_noonghunna-ar.fina;
+	sub seen-ar.init reh-ar.fina by seen_reh-ar;
+	sub seen-ar.medi reh-ar.fina by seen_reh-ar.fina;
+	sub seen-ar.init yeh-ar.fina by seen_yeh-ar;
+	sub seen-ar.medi yeh-ar.fina by seen_yeh-ar.fina;
+	sub seen-ar.init yehHamzaabove-ar.fina by seen_yehHamzaabove-ar;
+	sub seen-ar.medi yehHamzaabove-ar.fina by seen_yehHamzaabove-ar.fina;
+	sub seen-ar.init zain-ar.fina by seen_zain-ar;
+	sub seen-ar.medi zain-ar.fina by seen_zain-ar.fina;
+	sub sheen-ar.init alefMaksura-ar.fina by sheen_alefMaksura-ar;
+	sub sheen-ar.medi alefMaksura-ar.fina by sheen_alefMaksura-ar.fina;
+	sub sheen-ar.init noon-ar.fina by sheen_noon-ar;
+	sub sheen-ar.medi noon-ar.fina by sheen_noon-ar.fina;
+	sub sheen-ar.init reh-ar.fina by sheen_reh-ar;
+	sub sheen-ar.medi reh-ar.fina by sheen_reh-ar.fina;
+	sub sheen-ar.init yeh-ar.fina by sheen_yeh-ar;
+	sub sheen-ar.medi yeh-ar.fina by sheen_yeh-ar.fina;
+	sub sheen-ar.init yehHamzaabove-ar.fina by sheen_yehHamzaabove-ar;
+	sub sheen-ar.medi yehHamzaabove-ar.fina by sheen_yehHamzaabove-ar.fina;
+	sub sheen-ar.init zain-ar.fina by sheen_zain-ar;
+	sub sheen-ar.medi zain-ar.fina by sheen_zain-ar.fina;
+	sub teh-ar.medi alefMaksura-ar.fina by teh_alefMaksura-ar.fina;
+	sub teh-ar.medi noon-ar.fina by teh_noon-ar.fina;
+	sub teh-ar.medi reh-ar.fina by teh_reh-ar.fina;
+	sub teh-ar.medi yeh-ar.fina by teh_yeh-ar.fina;
+	sub teh-ar.medi yehHamzaabove-ar.fina by teh_yehHamzaabove-ar.fina;
+	sub teh-ar.medi zain-ar.fina by teh_zain-ar.fina;
+	sub theh-ar.medi alefMaksura-ar.fina by theh_alefMaksura-ar.fina;
+	sub theh-ar.medi noon-ar.fina by theh_noon-ar.fina;
+	sub theh-ar.medi reh-ar.fina by theh_reh-ar.fina;
+	sub theh-ar.medi yeh-ar.fina by theh_yeh-ar.fina;
+	sub theh-ar.medi yehHamzaabove-ar.fina by theh_yehHamzaabove-ar.fina;
+	sub theh-ar.medi zain-ar.fina by theh_zain-ar.fina;
+	sub yehHamzaabove-ar.medi alefMaksura-ar.fina by yehHamzaabove_alefMaksura-ar.fina;
+	sub yehHamzaabove-ar.medi noon-ar.fina by yehHamzaabove_noon-ar.fina;
+	sub yehHamzaabove-ar.medi reh-ar.fina by yehHamzaabove_reh-ar.fina;
+	sub yehHamzaabove-ar.medi yeh-ar.fina by yehHamzaabove_yeh-ar.fina;
+	sub yehHamzaabove-ar.medi yehHamzaabove-ar.fina by yehHamzaabove_yehHamzaabove-ar.fina;
+	sub yehHamzaabove-ar.medi zain-ar.fina by yehHamzaabove_zain-ar.fina;
+	sub yeh-ar.medi noon-ar.fina by yeh_noon-ar.fina;
+	sub yeh-ar.medi reh-ar.fina by yeh_reh-ar.fina;
+	sub yeh-ar.medi yeh-ar.fina by yeh_yeh-ar.fina;
+	sub yeh-ar.medi zain-ar.fina by yeh_zain-ar.fina;
+	sub alef-ar lam-ar.init lam-ar.medi heh-ar.fina by allah-ar;
+} dlig_RTL;
+";
+tag = dlig;
+},
+{
+code = "sub alef-ar lam-ar.init lam-ar.medi heh-ar.fina by allah-ar.tashkeel;
+
+lookupflag IgnoreMarks;
+    sub alef-ar lam-ar.init lam-ar.medi heh-ar.fina by allah-ar;
+	sub lam-ar.init alef-ar.fina by lam_alef-ar;
+	sub lam-ar.medi alef-ar.fina by lam_alef-ar.fina;
+	sub lam-ar.init alefHamzaabove-ar.fina by lam_alefHamzaabove-ar;
+	sub lam-ar.medi alefHamzaabove-ar.fina by lam_alefHamzaabove-ar.fina;
+	sub lam-ar.init alefHamzabelow-ar.fina by lam_alefHamzabelow-ar;
+	sub lam-ar.medi alefHamzabelow-ar.fina by lam_alefHamzabelow-ar.fina;
+	sub lam-ar.init alefMadda-ar.fina by lam_alefMadda-ar;
+	sub lam-ar.medi alefMadda-ar.fina by lam_alefMadda-ar.fina;
+	sub lam-ar.init alefWasla-ar.fina by lam_alefWasla-ar;
+	sub lam-ar.medi alefWasla-ar.fina by lam_alefWasla-ar.fina;
+	sub lam-ar.init alefMaksura-ar.fina by lam_alefMaksura-ar;
+	sub lam-ar.medi alefMaksura-ar.fina by lam_alefMaksura-ar.fina;
+	sub beh-ar.medi reh-ar.fina by beh_reh-ar.fina;
+	sub beh-ar.medi zain-ar.fina by beh_zain-ar.fina;
+	sub beh-ar.medi noon-ar.fina by beh_noon-ar.fina;
+	sub beh-ar.medi alefMaksura-ar.fina by beh_alefMaksura-ar.fina;
+	sub beh-ar.medi yeh-ar.fina by beh_yeh-ar.fina;
+	sub beh-ar.medi yehHamzaabove-ar.fina by beh_yehHamzaabove-ar.fina;
+	sub peh-ar.medi reh-ar.fina by peh_reh-ar.fina;
+	sub peh-ar.medi zain-ar.fina by peh_zain-ar.fina;
+	sub peh-ar.medi noon-ar.fina by peh_noon-ar.fina;
+	sub peh-ar.medi alefMaksura-ar.fina by peh_alefMaksura-ar.fina;
+	sub peh-ar.medi yeh-ar.fina by peh_yeh-ar.fina;
+	sub peh-ar.medi yehHamzaabove-ar.fina by peh_yehHamzaabove-ar.fina;
+	sub teh-ar.medi reh-ar.fina by teh_reh-ar.fina;
+	sub teh-ar.medi zain-ar.fina by teh_zain-ar.fina;
+	sub teh-ar.medi noon-ar.fina by teh_noon-ar.fina;
+	sub teh-ar.medi alefMaksura-ar.fina by teh_alefMaksura-ar.fina;
+	sub teh-ar.medi yeh-ar.fina by teh_yeh-ar.fina;
+	sub teh-ar.medi yehHamzaabove-ar.fina by teh_yehHamzaabove-ar.fina;
+	sub theh-ar.medi reh-ar.fina by theh_reh-ar.fina;
+	sub theh-ar.medi zain-ar.fina by theh_zain-ar.fina;
+	sub theh-ar.medi noon-ar.fina by theh_noon-ar.fina;
+	sub theh-ar.medi alefMaksura-ar.fina by theh_alefMaksura-ar.fina;
+	sub theh-ar.medi yeh-ar.fina by theh_yeh-ar.fina;
+	sub theh-ar.medi yehHamzaabove-ar.fina by theh_yehHamzaabove-ar.fina;
+	sub seen-ar.init reh-ar.fina by seen_reh-ar;
+	sub seen-ar.medi reh-ar.fina by seen_reh-ar.fina;
+	sub seen-ar.init alefMaksura-ar.fina by seen_alefMaksura-ar;
+	sub seen-ar.medi alefMaksura-ar.fina by seen_alefMaksura-ar.fina;
+	sub seen-ar.init yeh-ar.fina by seen_yeh-ar;
+	sub seen-ar.medi yeh-ar.fina by seen_yeh-ar.fina;
+	sub seen-ar.init zain-ar.fina by seen_zain-ar;
+	sub seen-ar.medi zain-ar.fina by seen_zain-ar.fina;
+	sub seen-ar.init yehHamzaabove-ar.fina by seen_yehHamzaabove-ar;
+	sub seen-ar.medi yehHamzaabove-ar.fina by seen_yehHamzaabove-ar.fina;
+	sub sheen-ar.init reh-ar.fina by sheen_reh-ar;
+	sub sheen-ar.medi reh-ar.fina by sheen_reh-ar.fina;
+	sub sheen-ar.init zain-ar.fina by sheen_zain-ar;
+	sub sheen-ar.medi zain-ar.fina by sheen_zain-ar.fina;
+	sub sheen-ar.init alefMaksura-ar.fina by sheen_alefMaksura-ar;
+	sub sheen-ar.medi alefMaksura-ar.fina by sheen_alefMaksura-ar.fina;
+	sub sheen-ar.init yeh-ar.fina by sheen_yeh-ar;
+	sub sheen-ar.medi yeh-ar.fina by sheen_yeh-ar.fina;
+	sub sheen-ar.init yehHamzaabove-ar.fina by sheen_yehHamzaabove-ar;
+	sub sheen-ar.medi yehHamzaabove-ar.fina by sheen_yehHamzaabove-ar.fina;
+	sub sad-ar.init reh-ar.fina by sad_reh-ar;
+	sub sad-ar.medi reh-ar.fina by sad_reh-ar.fina;
+	sub sad-ar.init zain-ar.fina by sad_zain-ar;
+	sub sad-ar.medi zain-ar.fina by sad_zain-ar.fina;
+	sub sad-ar.init alefMaksura-ar.fina by sad_alefMaksura-ar;
+	sub sad-ar.medi alefMaksura-ar.fina by sad_alefMaksura-ar.fina;
+	sub sad-ar.init yeh-ar.fina by sad_yeh-ar;
+	sub sad-ar.medi yeh-ar.fina by sad_yeh-ar.fina;
+	sub sad-ar.init yehHamzaabove-ar.fina by sad_yehHamzaabove-ar;
+	sub sad-ar.medi yehHamzaabove-ar.fina by sad_yehHamzaabove-ar.fina;
+	sub dad-ar.init reh-ar.fina by dad_reh-ar;
+	sub dad-ar.medi reh-ar.fina by dad_reh-ar.fina;
+	sub dad-ar.init zain-ar.fina by dad_zain-ar;
+	sub dad-ar.medi zain-ar.fina by dad_zain-ar.fina;
+	sub dad-ar.init alefMaksura-ar.fina by dad_alefMaksura-ar;
+	sub dad-ar.medi alefMaksura-ar.fina by dad_alefMaksura-ar.fina;
+	sub dad-ar.init yeh-ar.fina by dad_yeh-ar;
+	sub dad-ar.medi yeh-ar.fina by dad_yeh-ar.fina;
+	sub dad-ar.init yehHamzaabove-ar.fina by dad_yehHamzaabove-ar;
+	sub dad-ar.medi yehHamzaabove-ar.fina by dad_yehHamzaabove-ar.fina;
+	sub lam-ar.init alefMaksura-ar.fina by lam_alefMaksura-ar;
+	sub lam-ar.medi alefMaksura-ar.fina by lam_alefMaksura-ar.fina;
+	sub lam-ar.init yeh-ar.fina by lam_yeh-ar;
+	sub lam-ar.medi yeh-ar.fina by lam_yeh-ar.fina;
+	sub lam-ar.init yehHamzaabove-ar.fina by lam_yehHamzaabove-ar;
+	sub lam-ar.medi yehHamzaabove-ar.fina by lam_yehHamzaabove-ar.fina;
+	sub noon-ar.medi reh-ar.fina by noon_reh-ar.fina;
+	sub noon-ar.medi zain-ar.fina by noon_zain-ar.fina;
+	sub noon-ar.medi noon-ar.fina by noon_noon-ar.fina;
+	sub noon-ar.medi alefMaksura-ar.fina by noon_alefMaksura-ar.fina;
+	sub noon-ar.medi yeh-ar.fina by noon_yeh-ar.fina;
+	sub noon-ar.medi yehHamzaabove-ar.fina by noon_yehHamzaabove-ar.fina;
+	sub alefMaksura-ar reh-ar.fina by alefMaksura_reh-ar.fina;
+	sub alefMaksura-ar zain-ar.fina by alefMaksura_zain-ar.fina;
+	sub alefMaksura-ar noon-ar.fina by alefMaksura_noon-ar.fina;
+	sub alefMaksura-ar alefMaksura-ar.fina by alefMaksura_alefMaksura-ar.fina;
+	sub yeh-ar.medi reh-ar.fina by yeh_reh-ar.fina;
+	sub yeh-ar.medi zain-ar.fina by yeh_zain-ar.fina;
+	sub yeh-ar.medi noon-ar.fina by yeh_noon-ar.fina;
+	sub yeh-ar.medi yeh-ar.fina by yeh_yeh-ar.fina;
+	sub yehHamzaabove-ar.medi reh-ar.fina by yehHamzaabove_reh-ar.fina;
+	sub yehHamzaabove-ar.medi zain-ar.fina by yehHamzaabove_zain-ar.fina;
+	sub yehHamzaabove-ar.medi noon-ar.fina by yehHamzaabove_noon-ar.fina;
+	sub yehHamzaabove-ar.medi alefMaksura-ar.fina by yehHamzaabove_alefMaksura-ar.fina;
+	sub yehHamzaabove-ar.medi yeh-ar.fina by yehHamzaabove_yeh-ar.fina;
+	sub yehHamzaabove-ar.medi yehHamzaabove-ar.fina by yehHamzaabove_yehHamzaabove-ar.fina;
+	sub alef-ar lam-ar.init lam-ar.medi heh-ar.fina by allah-ar;
+	sub seen-ar.init noonghunna-ar.fina by seen_noonghunna-ar;
+	sub seen-ar.medi noonghunna-ar.fina by seen_noonghunna-ar.fina;
+    sub seen-ar.init noon-ar.fina by seen_noon-ar;
+	sub seen-ar.medi noon-ar.fina by seen_noon-ar.fina;
+    sub sheen-ar.init noon-ar.fina by sheen_noon-ar;
+	sub sheen-ar.medi noon-ar.fina by sheen_noon-ar.fina;
+	sub sad-ar.init noonghunna-ar.fina by sad_noonghunna-ar;
+	sub sad-ar.medi noonghunna-ar.fina by sad_noonghunna-ar.fina;
+	sub sad-ar.init noon-ar.fina by sad_noon-ar;
+	sub sad-ar.medi noon-ar.fina by sad_noon-ar.fina;
+	sub dad-ar.init noon-ar.fina by dad_noon-ar;
+	sub dad-ar.medi noon-ar.fina by dad_noon-ar.fina;
+
+";
+tag = rlig;
+}
+);
+fontMaster = (
+{
+axesValues = (
+36,
+0
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+iconName = Light;
+id = "459CA063-FA7D-4205-A795-7B6CE244EAAB";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+}
+);
+name = ExtraLight;
+stemValues = (
+32,
+32,
+34,
+34,
+35,
+37,
+36,
+38
+);
+userData = {
+GSOffsetHorizontal = 10;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 10;
+};
+},
+{
+axesValues = (
+80,
+0
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+id = "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+}
+);
+name = Regular;
+stemValues = (
+67,
+67,
+71,
+71,
+79,
+80,
+80,
+83
+);
+userData = {
+GSOffsetHorizontal = 18;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 18;
+};
+},
+{
+axesValues = (
+232,
+0
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 683;
+size = "-13";
+},
+{
+pos = 505;
+size = 13;
+}
+);
+}
+);
+iconName = Bold;
+id = "EA657207-4E15-4023-BA2A-6FA5407A60CD";
+metricValues = (
+{
+over = 13;
+pos = 1240;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 19;
+pos = 500;
+},
+{
+over = -13;
+},
+{
+over = -25;
+pos = -520;
+},
+{
+}
+);
+name = ExtraBlack;
+stemValues = (
+178,
+181,
+189,
+188,
+224,
+226,
+232,
+234
+);
+userData = {
+GSOffsetHorizontal = 112;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 0;
+GSOffsetVertical = 94;
+};
+},
+{
+axesValues = (
+36,
+-11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+iconName = Light;
+id = "0474999B-FB68-4D9A-82B1-2286F2372C1D";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+pos = 11;
+}
+);
+name = ExtraLightSlantRight;
+stemValues = (
+32,
+32,
+34,
+34,
+35,
+37,
+36,
+38
+);
+userData = {
+GSOffsetHorizontal = 10;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 10;
+};
+},
+{
+axesValues = (
+80,
+-11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+id = "3B241295-E7D1-482F-A49F-5B690F967CBA";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+pos = 11;
+}
+);
+name = RegularSlantRight;
+stemValues = (
+67,
+67,
+71,
+71,
+79,
+80,
+80,
+83
+);
+userData = {
+GSOffsetHorizontal = 18;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 18;
+};
+},
+{
+axesValues = (
+232,
+-11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 683;
+size = "-13";
+},
+{
+pos = 505;
+size = 13;
+}
+);
+}
+);
+id = "0DA49D7F-B466-4A74-9166-6D7870CD51D2";
+metricValues = (
+{
+over = 13;
+pos = 1240;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 19;
+pos = 500;
+},
+{
+over = -13;
+},
+{
+over = -25;
+pos = -520;
+},
+{
+pos = 11;
+}
+);
+name = ExtraBlackSlantRight;
+stemValues = (
+178,
+181,
+189,
+188,
+224,
+226,
+232,
+234
+);
+userData = {
+GSOffsetHorizontal = 112;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 0;
+GSOffsetVertical = 94;
+};
+},
+{
+axesValues = (
+36,
+11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+iconName = Light;
+id = "9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+pos = -11;
+}
+);
+name = ExtraLightSlantLeft;
+stemValues = (
+32,
+32,
+34,
+34,
+35,
+37,
+36,
+38
+);
+userData = {
+GSOffsetHorizontal = 10;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 10;
+};
+},
+{
+axesValues = (
+80,
+11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 660;
+size = 9;
+}
+);
+}
+);
+id = "FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED";
+metricValues = (
+{
+over = 9;
+pos = 1240;
+},
+{
+over = 9;
+pos = 700;
+},
+{
+over = 9;
+pos = 500;
+},
+{
+over = -9;
+},
+{
+over = -9;
+pos = -520;
+},
+{
+pos = -11;
+}
+);
+name = RegularSlantLeft;
+stemValues = (
+67,
+67,
+71,
+71,
+79,
+80,
+80,
+83
+);
+userData = {
+GSOffsetHorizontal = 18;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 1;
+GSOffsetVertical = 18;
+};
+},
+{
+axesValues = (
+232,
+11
+);
+customParameters = (
+{
+name = hheaAscender;
+value = 1303;
+},
+{
+name = hheaDescender;
+value = -571;
+},
+{
+name = hheaLineGap;
+value = 0;
+},
+{
+name = typoAscender;
+value = 1303;
+},
+{
+name = typoDescender;
+value = -571;
+},
+{
+name = typoLineGap;
+value = 0;
+},
+{
+name = winAscent;
+value = 1312;
+},
+{
+name = winDescent;
+value = 571;
+},
+{
+name = "Master Icon Glyph Name";
+value = "ain-ar.medi";
+},
+{
+name = "Color Palettes";
+value = (
+(
+(0,255),
+(229,58,53,255),
+(135,38,162,255),
+(255,171,1,255),
+(114,191,128,255)
+)
+);
+},
+{
+name = "Alignment Zones";
+value = (
+{
+pos = 683;
+size = "-13";
+},
+{
+pos = 505;
+size = 13;
+}
+);
+}
+);
+id = "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45";
+metricValues = (
+{
+over = 13;
+pos = 1240;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 19;
+pos = 500;
+},
+{
+over = -13;
+},
+{
+over = -25;
+pos = -520;
+},
+{
+pos = -11;
+}
+);
+name = ExtraBlackSlantLeft;
+stemValues = (
+178,
+181,
+189,
+188,
+224,
+226,
+232,
+234
+);
+userData = {
+GSOffsetHorizontal = 112;
+GSOffsetMakeStroke = 1;
+GSOffsetPosition = 0;
+GSOffsetVertical = 94;
+};
+}
+);
+glyphs = (
+);
+instances = (
+{
+axesValues = (
+36,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 1;
+};
+name = ExtraLight;
+weightClass = 200;
+},
+{
+axesValues = (
+50,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 0.68182;
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.31818;
+};
+name = Light;
+weightClass = 300;
+},
+{
+axesValues = (
+80,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 1;
+};
+name = Regular;
+},
+{
+axesValues = (
+88,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.94737;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.05263;
+};
+name = Medium;
+weightClass = 500;
+},
+{
+axesValues = (
+96,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.89474;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.10526;
+};
+name = SemiBold;
+weightClass = 600;
+},
+{
+axesValues = (
+138,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.61842;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.38158;
+};
+isBold = 1;
+name = Bold;
+weightClass = 700;
+},
+{
+axesValues = (
+158,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.48684;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.51316;
+};
+name = ExtraBold;
+weightClass = 800;
+},
+{
+axesValues = (
+178,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.35526;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.64474;
+};
+name = Black;
+weightClass = 900;
+},
+{
+axesValues = (
+232,
+0
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = 1;
+};
+name = ExtraBlack;
+weightClass = 1000;
+},
+{
+axesValues = (
+36,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0474999B-FB68-4D9A-82B1-2286F2372C1D" = 1;
+};
+name = "ExtraLight Slant Right";
+weightClass = 200;
+},
+{
+axesValues = (
+50,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0474999B-FB68-4D9A-82B1-2286F2372C1D" = 0.68182;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.31818;
+};
+name = "Light Slant Right";
+weightClass = 300;
+},
+{
+axesValues = (
+80,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 1;
+};
+name = "Slant Right";
+},
+{
+axesValues = (
+88,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.05263;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.94737;
+};
+name = "Medium Slant Right";
+weightClass = 500;
+},
+{
+axesValues = (
+96,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.10526;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.89474;
+};
+name = "SemiBold Slant Right";
+weightClass = 600;
+},
+{
+axesValues = (
+138,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.38158;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.61842;
+};
+isBold = 1;
+name = "Bold Slant Right";
+weightClass = 700;
+},
+{
+axesValues = (
+158,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.51316;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.48684;
+};
+name = "ExtraBold Slant Right";
+weightClass = 800;
+},
+{
+axesValues = (
+178,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.64474;
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.35526;
+};
+name = "Black Slant Right";
+weightClass = 900;
+},
+{
+axesValues = (
+232,
+-11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 1;
+};
+name = "ExtraBlack Slant Right";
+weightClass = 1000;
+},
+{
+axesValues = (
+36,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7" = 1;
+};
+name = "ExtraLight Slant Left";
+weightClass = 200;
+},
+{
+axesValues = (
+50,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7" = 0.68182;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.31818;
+};
+name = "Light Slant Left";
+weightClass = 300;
+},
+{
+axesValues = (
+80,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 1;
+};
+name = "Slant Left";
+},
+{
+axesValues = (
+88,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.05263;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.94737;
+};
+name = "Medium Slant Left";
+weightClass = 500;
+},
+{
+axesValues = (
+96,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.10526;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.89474;
+};
+name = "SemiBold Slant Left";
+weightClass = 600;
+},
+{
+axesValues = (
+138,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.38158;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.61842;
+};
+isBold = 1;
+name = "Bold Slant Left";
+weightClass = 700;
+},
+{
+axesValues = (
+158,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.51316;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.48684;
+};
+name = "ExtraBold Slant Left";
+weightClass = 800;
+},
+{
+axesValues = (
+178,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.64474;
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.35526;
+};
+name = "Black Slant Left";
+weightClass = 900;
+},
+{
+axesValues = (
+232,
+11
+);
+customParameters = (
+{
+name = "Rename Glyphs";
+value = (
+"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
+"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
+);
+},
+{
+name = "Export COLR Table";
+value = 0;
+}
+);
+instanceInterpolations = {
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 1;
+};
+name = "ExtraBlack Slant Left";
+weightClass = 1000;
+},
+{
+axesValues = (
+0,
+0
+);
+customParameters = (
+{
+name = "Variable Font Origin";
+value = "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC";
+}
+);
+instanceInterpolations = {
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 0.59184;
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.76316;
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = -0.35499;
+};
+name = Regular;
+type = variable;
+}
+);
+kerningRTL = {
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = {
+};
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = {
+};
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = {
+};
+"0474999B-FB68-4D9A-82B1-2286F2372C1D" = {
+};
+"3B241295-E7D1-482F-A49F-5B690F967CBA" = {
+};
+"0DA49D7F-B466-4A74-9166-6D7870CD51D2" = {
+};
+"9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7" = {
+};
+"FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = {
+};
+"0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = {
+};
+};
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+properties = (
+{
+key = copyrights;
+values = (
+{
+language = dflt;
+value = "Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo)";
+}
+);
+},
+{
+key = designers;
+values = (
+{
+language = dflt;
+value = "Mohamed Gaber, Accademia di Belle Arti di Urbino";
+}
+);
+},
+{
+key = designerURL;
+value = "https://gaber.design";
+},
+{
+key = manufacturers;
+values = (
+{
+language = dflt;
+value = "Kief Type Foundry, Accademia di Belle Arti di Urbino";
+}
+);
+},
+{
+key = manufacturerURL;
+value = "https://gaber.design";
+},
+{
+key = licenses;
+values = (
+{
+language = dflt;
+value = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL";
+}
+);
+},
+{
+key = licenseURL;
+value = "http://scripts.sil.org/OFL";
+},
+{
+key = vendorID;
+value = "1KTF";
+}
+);
+settings = {
+disablesNiceNames = 1;
+keyboardIncrement = 2;
+};
+stems = (
+{
+horizontal = 1;
+name = hStem0;
+},
+{
+horizontal = 1;
+name = hStem1;
+},
+{
+horizontal = 1;
+name = hStem2;
+},
+{
+horizontal = 1;
+name = hStem3;
+},
+{
+name = vStem0;
+},
+{
+name = vStem1;
+},
+{
+name = vStem2;
+},
+{
+name = vStem3;
+}
+);
+unitsPerEm = 1000;
+userData = {
+GSDimensionPlugin.Dimensions = {
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = {
+arAlef = "35";
+arBar = "34";
+};
+"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = {
+arAlef = "77";
+arBar = "71";
+};
+"EA657207-4E15-4023-BA2A-6FA5407A60CD" = {
+arAlef = "224";
+arBar = "188";
+};
+};
+LWPluginVersion = "1429";
+};
+versionMajor = 3;
+versionMinor = 120;
+}
