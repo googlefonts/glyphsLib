@@ -418,7 +418,7 @@ def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module
 
 
 def test_variable_instance(ufo_module):
-    """Glyphs 3 unexpectedly introduced a so-called "variable" instance which is a
+    """Glyphs 3 introduced a so-called "variable" instance which is a
     pseudo-instance that holds various VF settings.
     This messed with the instance_mapping creation as it would overwrite the designLoc
     of a default instance of an axis back to 0.
