@@ -3300,6 +3300,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
+        {"plist_name": "type", "converter": bool},
     ]
 )
 
