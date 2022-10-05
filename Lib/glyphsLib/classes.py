@@ -141,6 +141,9 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+INSTANCETYPESINGLE = 0
+INSTANCETYPEVARIABLE = 1
+
 TAG = -2
 TOPGHOST = -1
 STEM = 0
@@ -3061,13 +3064,13 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
+        if writer.format_version > 2 and self.type == INSTANCETYPEVARIABLE:
+            writer.writeValue("variable", "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3083,6 +3086,7 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
+        "type": INSTANCETYPESINGLE,
     }
 
     def __init__(self):
@@ -3102,7 +3106,7 @@ class GSInstance(GSBase):
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
-        self.type = ""
+        self.type = self._defaultsForName["type"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
