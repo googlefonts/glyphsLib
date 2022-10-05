@@ -164,8 +164,8 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         (a.name, a.minimum, a.default, a.maximum, a.map) for a in designspace.axes
     ]
     assert axes_order == [
-        ("Width", 75, 100, 100, [(75, 50.0), (100, 100.0)]),
-        ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
+        ("Width", 75, 100, 100, [(75, 50), (87.5, 75), (100, 100)]),
+        ("Weight", 100, 100, 700, [(100, 100), (400, 500), (700, 1000)]),
     ]
 
     source_order = [(s.filename, s.layerName, s.name) for s in designspace.sources]
