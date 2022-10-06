@@ -165,12 +165,16 @@ def to_designspace_axes(self):
                 continue
         # See https://github.com/googlefonts/glyphsLib/issues/280
         elif font_uses_axis_locations(self.font):
-            # Build the mapping from the "Axis Location" of the masters and instances
+            # If all masters have an "Axis Location" custom parameter, only the values
+            # from this parameter will be used to build the mapping of the masters and instances
             # TODO: (jany) use Virtual Masters as well?
+            #       (jenskutilek) virtual masters can't have an Axis Location parameter.
             mapping = {}
             for master in self.font.masters:
                 designLoc = axis_def.get_design_loc(master)
-                userLoc = axis_def.get_user_loc(master)
+                userLoc = axis_def.get_user_loc_from_axis_location_cp(master)
+                if userLoc is None:
+                    continue
                 if userLoc in mapping and mapping[userLoc] != designLoc:
                     logger.warning(
                         "Axis location (%s) was redefined by '%s'", userLoc, master.name
@@ -180,7 +184,9 @@ def to_designspace_axes(self):
             for instance in self.font.instances:
                 if is_instance_active(instance) or self.minimize_glyphs_diffs:
                     designLoc = axis_def.get_design_loc(instance)
-                    userLoc = axis_def.get_user_loc(instance)
+                    userLoc = axis_def.get_user_loc_from_axis_location_cp(instance)
+                    if userLoc is None:
+                        continue
                     if userLoc in mapping and mapping[userLoc] != designLoc:
                         logger.warning(
                             "Axis location (%s) was redefined by '%s'",
@@ -372,6 +378,13 @@ class AxisDefinition:
             if class_ is not None:
                 user_loc = class_to_value(self.tag, class_)
 
+        axis_location = self.get_user_loc_from_axis_location_cp(master_or_instance)
+        if axis_location is not None:
+            user_loc = axis_location
+
+        return user_loc
+    
+    def get_user_loc_from_axis_location_cp(self, master_or_instance):
         # Masters have a customParameter that specifies a user location
         # along custom axes. If this is present it takes precedence over
         # everything else.
@@ -379,11 +392,9 @@ class AxisDefinition:
         try:
             for location in loc_param:
                 if location.get("Axis") == self.name:
-                    user_loc = int(location["Location"])
+                    return int(location["Location"])
         except (TypeError, KeyError):
             pass
-
-        return user_loc
 
     def set_user_loc(self, master_or_instance, value):
         """Set the user location of a Glyphs master or instance."""
