@@ -242,6 +242,10 @@ WIDTH_CODES = {
 }
 
 
+def instance_type_converter(value):
+    return {"variable": INSTANCETYPEVARIABLE}.get(value, INSTANCETYPESINGLE)
+
+
 class OnlyInGlyphsAppError(NotImplementedError):
     def __init__(self):
         NotImplementedError.__init__(
@@ -3301,7 +3305,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
-        {"plist_name": "type", "converter": bool},
+        {"plist_name": "type", "converter": instance_type_converter},
     ]
 )
 
