@@ -141,6 +141,7 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+# Instance types; normal instance or variable font setting pseudo-instance
 INSTANCETYPESINGLE = 0
 INSTANCETYPEVARIABLE = 1
 
