@@ -383,7 +383,7 @@ class AxisDefinition:
             user_loc = axis_location
 
         return user_loc
-    
+
     def get_user_loc_from_axis_location_cp(self, master_or_instance):
         # Masters have a customParameter that specifies a user location
         # along custom axes. If this is present it takes precedence over
