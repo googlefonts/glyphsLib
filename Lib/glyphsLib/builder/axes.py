@@ -201,9 +201,6 @@ def to_designspace_axes(self):
             for master in self.font.masters:
                 designLoc = axis_def.get_design_loc(master)
                 userLoc = axis_def.get_user_loc(master)
-                if userLoc is None:
-                    # May happen if the custom parameter is disabled
-                    continue
                 if userLoc in mapping and mapping[userLoc] != designLoc:
                     logger.warning(
                         f"Axis {axis_def.tag}: Master '{master.name}' redefines "
