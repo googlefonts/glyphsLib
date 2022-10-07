@@ -20,6 +20,7 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from enum import IntEnum
 from io import StringIO
 
 import openstep_plist
@@ -141,9 +142,12 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+
 # Instance types; normal instance or variable font setting pseudo-instance
-INSTANCETYPESINGLE = 0
-INSTANCETYPEVARIABLE = 1
+class InstanceType(IntEnum):
+    SINGLE = 0
+    VARIABLE = 1
+
 
 TAG = -2
 TOPGHOST = -1
@@ -242,8 +246,9 @@ WIDTH_CODES = {
 }
 
 
-def instance_type_converter(value):
-    return {"variable": INSTANCETYPEVARIABLE}.get(value, INSTANCETYPESINGLE)
+def instance_type(value):
+    # Convert the instance type from the plist ("variable") into the integer constant
+    return getattr(InstanceType, value.upper())
 
 
 class OnlyInGlyphsAppError(NotImplementedError):
@@ -3069,8 +3074,8 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
-        if writer.format_version > 2 and self.type == INSTANCETYPEVARIABLE:
-            writer.writeValue("variable", "type")
+        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
+            writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
@@ -3091,7 +3096,7 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
-        "type": INSTANCETYPESINGLE,
+        "type": InstanceType.SINGLE,
     }
 
     def __init__(self):
@@ -3305,7 +3310,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
-        {"plist_name": "type", "converter": instance_type_converter},
+        {"plist_name": "type", "converter": instance_type},
     ]
 )
 
