@@ -18,7 +18,7 @@ import logging
 from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib import classes
-from glyphsLib.classes import GSInstance, InstanceType, WEIGHT_CODES, WIDTH_CODES
+from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
 
 logger = logging.getLogger(__name__)
@@ -130,9 +130,9 @@ def update_mapping_from_instances(
 ):
     # Collect the axis mappings from instances and update the mapping dict.
     for instance in instances:
-        if (
-            is_instance_active(instance) or minimize_glyphs_diffs
-        ) and instance.type != InstanceType.VARIABLE:
+        if instance.type == InstanceType.VARIABLE:
+            continue
+        if is_instance_active(instance) or minimize_glyphs_diffs:
             designLoc = axis_def.get_design_loc(instance)
             if cp_only:
                 # Only use the Axis Location custom parameter for the user location
@@ -414,7 +414,7 @@ class AxisDefinition:
 
     def set_user_loc(self, master_or_instance, value):
         """Set the user location of a Glyphs master or instance."""
-        if isinstance(master_or_instance, GSInstance):
+        if isinstance(master_or_instance, classes.GSInstance):
             # The following code is only valid for instances.
             # Masters also the keys `weight` and `width` but they should not be
             # used, they are deprecated and should only be used to store
