@@ -403,9 +403,9 @@ class AxisDefinition:
         return user_loc
 
     def get_user_loc_from_axis_location_cp(self, master_or_instance):
-        # Masters have a customParameter that specifies a user location
-        # along custom axes. If this is present it takes precedence over
-        # everything else.
+        # Masters and instances have a customParameter that specifies a user location
+        # along custom axes. If this is present it takes precedence over everything
+        # else.
         loc_param = master_or_instance.customParameters["Axis Location"]
         try:
             for location in loc_param:
