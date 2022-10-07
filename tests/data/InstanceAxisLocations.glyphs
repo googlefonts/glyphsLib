@@ -8,6 +8,10 @@ axes = (
 {
 name = Weight;
 tag = wght;
+},
+{
+name = Width;
+tag = wdth;
 }
 );
 customParameters = (
@@ -49,7 +53,8 @@ familyName = Sudo;
 fontMaster = (
 {
 axesValues = (
-400
+72,
+448
 );
 customParameters = (
 {
@@ -58,6 +63,10 @@ value = (
 {
 Axis = Weight;
 Location = 400;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -199,7 +208,8 @@ visible = 1;
 },
 {
 axesValues = (
-700
+112,
+448
 );
 customParameters = (
 {
@@ -208,6 +218,10 @@ value = (
 {
 Axis = Weight;
 Location = 700;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -318,7 +332,8 @@ stemValues = (
 },
 {
 axesValues = (
-200
+48,
+448
 );
 customParameters = (
 {
@@ -327,6 +342,10 @@ value = (
 {
 Axis = Weight;
 Location = 200;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -433,6 +452,160 @@ userData = {
 GSOffsetHorizontal = -10;
 GSOffsetKeepCompatible = 1;
 GSOffsetVertical = -10;
+};
+},
+{
+axesValues = (
+112,
+224
+);
+customParameters = (
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 400;
+},
+{
+Axis = Width;
+Location = 50;
+}
+);
+},
+{
+name = TTFStems;
+value = (
+{
+horizontal = 1;
+name = "hStem:0";
+width = 64;
+},
+{
+horizontal = 0;
+name = "vStem:1";
+width = 72;
+},
+{
+horizontal = 0;
+name = "vStem:2";
+width = 64;
+},
+{
+horizontal = 1;
+name = "hStem:3";
+width = 56;
+}
+);
+},
+{
+name = TTFZones;
+value = (
+{
+name = capHeight;
+pos = 640;
+size = 14;
+},
+{
+name = Figures;
+pos = 576;
+size = 16;
+},
+{
+name = xHeight;
+options = "{
+delta = {
+\"{200, 0, 0, 0, 0, 0}\" = {
+\"11\" = \"8\";
+};
+\"{317, 0, 0, 0, 0, 0}\" = {
+\"11\" = \"8\";
+};
+\"{400, 0, 0, 0, 0, 0}\" = {
+\"11\" = \"8\";
+};
+\"{550, 0, 0, 0, 0, 0}\" = {
+\"11\" = \"8\";
+};
+\"{700, 0, 0, 0, 0, 0}\" = {
+\"11\" = \"8\";
+};
+};
+}";
+pos = 448;
+size = 14;
+},
+{
+name = baseline;
+pos = 0;
+size = -20;
+},
+{
+name = descender;
+pos = -192;
+size = -14;
+},
+{
+name = sups;
+options = "{
+alignToZone = capHeight;
+}";
+pos = 320;
+size = -14;
+}
+);
+}
+);
+guides = (
+{
+angle = 180;
+pos = (224,-192);
+},
+{
+pos = (224,832);
+},
+{
+pos = (224,896);
+}
+);
+id = "EFBF456D-0BC6-4425-B52F-D5D6FA2B216B";
+metricValues = (
+{
+pos = 832;
+},
+{
+over = 14;
+pos = 640;
+},
+{
+over = 14;
+pos = 448;
+},
+{
+over = -20;
+},
+{
+over = -9;
+pos = -192;
+},
+{
+},
+{
+over = 16;
+pos = 576;
+}
+);
+name = "Cond Regular";
+stemValues = (
+64,
+72,
+64,
+56
+);
+userData = {
+GSOffsetHorizontal = 34;
+GSOffsetMakeStroke = 1;
+GSOffsetVertical = 32;
 };
 }
 );
@@ -577,6 +750,52 @@ nodes = (
 }
 );
 width = 448;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (112,0);
+},
+{
+name = bottomAttach;
+pos = (192,0);
+},
+{
+name = top;
+pos = (112,640);
+}
+);
+layerId = "EFBF456D-0BC6-4425-B52F-D5D6FA2B216B";
+shapes = (
+{
+closed = 1;
+nodes = (
+(86,256,l),
+(117,256,o),
+(156,320,o),
+(180,320,c),
+(180,384,l),
+(156,384,o),
+(117,320,o),
+(86,320,c)
+);
+},
+{
+closed = 1;
+nodes = (
+(102,576,l),
+(182,576,l),
+(182,640,l),
+(30,640,l),
+(30,0,l),
+(192,0,l),
+(192,64,l),
+(102,64,l)
+);
+}
+);
+width = 224;
 }
 );
 unicode = 69;
@@ -585,7 +804,8 @@ unicode = 69;
 instances = (
 {
 axesValues = (
-400
+400,
+0
 );
 customParameters = (
 {
@@ -594,7 +814,9 @@ value = 1;
 }
 );
 instanceInterpolations = {
-"95FB0C11-C828-4064-8966-34220AA4D426" = 1;
+"92967D72-867E-4A8B-929F-F44D834DD4C9" = -8.2;
+"95FB0C11-C828-4064-8966-34220AA4D426" = 7.2;
+"EFBF456D-0BC6-4425-B52F-D5D6FA2B216B" = 2;
 };
 name = Regular;
 properties = (
@@ -612,7 +834,8 @@ type = variable;
 },
 {
 axesValues = (
-200
+48,
+448
 );
 customParameters = (
 {
@@ -621,6 +844,10 @@ value = (
 {
 Axis = Weight;
 Location = 200;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -637,7 +864,8 @@ weightClass = 200;
 },
 {
 axesValues = (
-316.667
+62,
+448
 );
 customParameters = (
 {
@@ -646,6 +874,10 @@ value = (
 {
 Axis = Weight;
 Location = 300;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -664,7 +896,8 @@ weightClass = 300;
 },
 {
 axesValues = (
-400
+72,
+448
 );
 customParameters = (
 {
@@ -673,6 +906,10 @@ value = (
 {
 Axis = Weight;
 Location = 400;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -688,7 +925,8 @@ name = Regular;
 },
 {
 axesValues = (
-550
+88,
+448
 );
 customParameters = (
 {
@@ -697,6 +935,10 @@ value = (
 {
 Axis = Weight;
 Location = 600;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -706,8 +948,8 @@ value = wght;
 }
 );
 instanceInterpolations = {
-"92967D72-867E-4A8B-929F-F44D834DD4C9" = 0.5;
-"95FB0C11-C828-4064-8966-34220AA4D426" = 0.5;
+"92967D72-867E-4A8B-929F-F44D834DD4C9" = 0.4;
+"95FB0C11-C828-4064-8966-34220AA4D426" = 0.6;
 };
 name = Medium;
 visible = 0;
@@ -715,7 +957,8 @@ weightClass = 500;
 },
 {
 axesValues = (
-700
+112,
+448
 );
 customParameters = (
 {
@@ -724,6 +967,10 @@ value = (
 {
 Axis = Weight;
 Location = 700;
+},
+{
+Axis = Width;
+Location = 100;
 }
 );
 },
@@ -739,6 +986,71 @@ isBold = 1;
 name = Bold;
 visible = 0;
 weightClass = 700;
+},
+{
+axesValues = (
+72,
+224
+);
+customParameters = (
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 400;
+},
+{
+Axis = Width;
+Location = 50;
+}
+);
+},
+{
+name = "Elidable STAT Axis Value Name";
+value = wght;
+}
+);
+instanceInterpolations = {
+"7DDCEF54-C770-4FAD-B154-EE8058BAA7E5" = 5.125;
+"92967D72-867E-4A8B-929F-F44D834DD4C9" = -5.125;
+"EFBF456D-0BC6-4425-B52F-D5D6FA2B216B" = 1;
+};
+name = "Cd Regular";
+widthClass = 3;
+},
+{
+axesValues = (
+72,
+384
+);
+customParameters = (
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 400;
+},
+{
+Axis = Width;
+Location = 70;
+}
+);
+},
+{
+name = "Elidable STAT Axis Value Name";
+value = wght;
+}
+);
+instanceInterpolations = {
+"7DDCEF54-C770-4FAD-B154-EE8058BAA7E5" = 1.93849;
+"92967D72-867E-4A8B-929F-F44D834DD4C9" = -1.17976;
+"95FB0C11-C828-4064-8966-34220AA4D426" = -0.04444;
+"EFBF456D-0BC6-4425-B52F-D5D6FA2B216B" = 0.28571;
+};
+name = "SCd Regular";
+widthClass = 3;
 }
 );
 metrics = (
