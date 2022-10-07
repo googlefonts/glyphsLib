@@ -20,6 +20,7 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from enum import IntEnum
 from io import StringIO
 
 import openstep_plist
@@ -141,6 +142,13 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+
+# Instance types; normal instance or variable font setting pseudo-instance
+class InstanceType(IntEnum):
+    SINGLE = 0
+    VARIABLE = 1
+
+
 TAG = -2
 TOPGHOST = -1
 STEM = 0
@@ -236,6 +244,11 @@ WIDTH_CODES = {
     "Extra Expanded": 8,
     "Ultra Expanded": 9,
 }
+
+
+def instance_type(value):
+    # Convert the instance type from the plist ("variable") into the integer constant
+    return getattr(InstanceType, value.upper())
 
 
 class OnlyInGlyphsAppError(NotImplementedError):
@@ -3061,13 +3074,13 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
+        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
+            writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3083,6 +3096,7 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
+        "type": InstanceType.SINGLE,
     }
 
     def __init__(self):
@@ -3102,7 +3116,7 @@ class GSInstance(GSBase):
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
-        self.type = ""
+        self.type = self._defaultsForName["type"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -3296,6 +3310,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
+        {"plist_name": "type", "converter": instance_type},
     ]
 )
 
