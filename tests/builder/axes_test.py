@@ -425,7 +425,9 @@ def test_variable_instance(ufo_module):
     """
     source_path = os.path.join("tests", "data", "VariableInstance.glyphs")
     font = GSFont(source_path)
+    assert len(font.instances) == 28
     doc = to_designspace(font)
 
     assert doc.axes[0].map[2] == (400, 80)
     assert doc.axes[0].default == 400
+    assert len(doc.instances) == 27
