@@ -18,7 +18,7 @@ import logging
 from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib import classes
-from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES
+from glyphsLib.classes import InstanceType, WEIGHT_CODES, WIDTH_CODES
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
 
 logger = logging.getLogger(__name__)
@@ -202,7 +202,9 @@ def to_designspace_axes(self):
             # a user location and a design location.
             instance_mapping = {}
             for instance in self.font.instances:
-                if is_instance_active(instance) or self.minimize_glyphs_diffs:
+                if (
+                    is_instance_active(instance) or self.minimize_glyphs_diffs
+                ) and instance.type != InstanceType.VARIABLE:
                     designLoc = axis_def.get_design_loc(instance)
                     userLoc = axis_def.get_user_loc(instance)
                     if (
