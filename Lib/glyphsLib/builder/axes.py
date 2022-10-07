@@ -214,7 +214,8 @@ def to_designspace_axes(self):
                 self.font.instances,
                 axis_def,
                 minimize_glyphs_diffs=self.minimize_glyphs_diffs,
-                # Glyphs doesn't deduce instance mappings if font uses axis locations
+                # Glyphs doesn't deduce instance mappings if font uses axis locations.
+                # Use only the custom parameter if present.
                 cp_only=True,
             )
 
