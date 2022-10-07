@@ -704,6 +704,11 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.name, "jeh_ain-ar.fina")
         self.assertEqual(info.direction, GSRTL)
 
+        info = get_glyph("lam_alef-ar.short")
+        self.assertEqual(info.script, "arabic")
+        self.assertEqual(info.subCategory, "Ligature")
+        self.assertEqual(info.direction, GSRTL)
+
         """
         TODO:
         info = get_glyph("kaf_yeh-farsi.fina")
