@@ -125,6 +125,33 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     )[0]
 
 
+def update_mapping_from_instances(
+    mapping, instances, axis_def, minimize_glyphs_diffs, cp_only=False
+):
+    # Collect the axis mappings from instances and update the mapping dict.
+    for instance in instances:
+        if (
+            is_instance_active(instance) or minimize_glyphs_diffs
+        ) and instance.type != InstanceType.VARIABLE:
+            designLoc = axis_def.get_design_loc(instance)
+            if cp_only:
+                # Only use the Axis Location custom parameter for the user location
+                userLoc = axis_def.get_user_loc_from_axis_location_cp(instance)
+            else:
+                # Use all heuristics to derive a user location
+                userLoc = axis_def.get_user_loc(instance)
+            if userLoc is None:
+                # May happen if the custom parameter is disabled
+                continue
+            if userLoc in mapping and mapping[userLoc] != designLoc:
+                logger.warning(
+                    f"Axis {axis_def.tag}: Instance '{instance.name}' redefines "
+                    f"the mapping for user location {userLoc} "
+                    f"from {mapping[userLoc]} to {designLoc}"
+                )
+            mapping[userLoc] = designLoc
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -174,26 +201,23 @@ def to_designspace_axes(self):
                 designLoc = axis_def.get_design_loc(master)
                 userLoc = axis_def.get_user_loc_from_axis_location_cp(master)
                 if userLoc is None:
+                    # May happen if the custom parameter is disabled
                     continue
                 if userLoc in mapping and mapping[userLoc] != designLoc:
                     logger.warning(
-                        "Axis location (%s) was redefined by '%s'", userLoc, master.name
+                        f"Axis {axis_def.tag}: Master '{master.name}' redefines "
+                        f"the mapping for user location {userLoc} "
+                        f"from {mapping[userLoc]} to {designLoc}"
                     )
                 mapping[userLoc] = designLoc
 
-            for instance in self.font.instances:
-                if is_instance_active(instance) or self.minimize_glyphs_diffs:
-                    designLoc = axis_def.get_design_loc(instance)
-                    userLoc = axis_def.get_user_loc_from_axis_location_cp(instance)
-                    if userLoc is None:
-                        continue
-                    if userLoc in mapping and mapping[userLoc] != designLoc:
-                        logger.warning(
-                            "Axis location (%s) was redefined by '%s'",
-                            userLoc,
-                            instance.name,
-                        )
-                    mapping[userLoc] = designLoc
+            update_mapping_from_instances(
+                mapping,
+                self.font.instances,
+                axis_def,
+                minimize_glyphs_diffs=self.minimize_glyphs_diffs,
+                cp_only=True,
+            )
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
@@ -201,22 +225,12 @@ def to_designspace_axes(self):
             # Build the mapping from the instances because they have both
             # a user location and a design location.
             instance_mapping = {}
-            for instance in self.font.instances:
-                if (
-                    is_instance_active(instance) or self.minimize_glyphs_diffs
-                ) and instance.type != InstanceType.VARIABLE:
-                    designLoc = axis_def.get_design_loc(instance)
-                    userLoc = axis_def.get_user_loc(instance)
-                    if (
-                        userLoc in instance_mapping
-                        and instance_mapping[userLoc] != designLoc
-                    ):
-                        logger.warning(
-                            "Instance user-space location (%s) redefined by " "'%s'",
-                            userLoc,
-                            instance.name,
-                        )
-                    instance_mapping[userLoc] = designLoc
+            update_mapping_from_instances(
+                instance_mapping,
+                self.font.instances,
+                axis_def,
+                minimize_glyphs_diffs=self.minimize_glyphs_diffs,
+            )
 
             master_mapping = {}
             for master in self.font.masters:
