@@ -1,5 +1,5 @@
 {
-.appVersion = "3133";
+.appVersion = "3139";
 .formatVersion = 3;
 axes = (
 {
@@ -13,21 +13,8 @@ tag = slnt;
 );
 customParameters = (
 {
-name = fsType;
-value = (
-);
-},
-{
 name = "Write lastChange";
 value = 0;
-},
-{
-name = "Use Line Breaks";
-value = 1;
-},
-{
-name = "Use Typo Metrics";
-value = 1;
 },
 {
 name = "Variable Font Origin";
@@ -41,65 +28,6 @@ fontMaster = (
 axesValues = (
 36,
 0
-);
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
 );
 iconName = Light;
 id = "459CA063-FA7D-4205-A795-7B6CE244EAAB";
@@ -149,65 +77,6 @@ axesValues = (
 80,
 0
 );
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
-);
 id = "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC";
 metricValues = (
 {
@@ -254,69 +123,6 @@ GSOffsetVertical = 18;
 axesValues = (
 232,
 0
-);
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 683;
-size = "-13";
-},
-{
-pos = 505;
-size = 13;
-}
-);
-}
 );
 iconName = Bold;
 id = "EA657207-4E15-4023-BA2A-6FA5407A60CD";
@@ -365,65 +171,6 @@ GSOffsetVertical = 94;
 axesValues = (
 36,
 -11
-);
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
 );
 iconName = Light;
 id = "0474999B-FB68-4D9A-82B1-2286F2372C1D";
@@ -474,65 +221,6 @@ axesValues = (
 80,
 -11
 );
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
-);
 id = "3B241295-E7D1-482F-A49F-5B690F967CBA";
 metricValues = (
 {
@@ -581,69 +269,6 @@ axesValues = (
 232,
 -11
 );
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 683;
-size = "-13";
-},
-{
-pos = 505;
-size = 13;
-}
-);
-}
-);
 id = "0DA49D7F-B466-4A74-9166-6D7870CD51D2";
 metricValues = (
 {
@@ -691,65 +316,6 @@ GSOffsetVertical = 94;
 axesValues = (
 36,
 11
-);
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
 );
 iconName = Light;
 id = "9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7";
@@ -800,65 +366,6 @@ axesValues = (
 80,
 11
 );
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 660;
-size = 9;
-}
-);
-}
-);
 id = "FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED";
 metricValues = (
 {
@@ -906,69 +413,6 @@ GSOffsetVertical = 18;
 axesValues = (
 232,
 11
-);
-customParameters = (
-{
-name = hheaAscender;
-value = 1303;
-},
-{
-name = hheaDescender;
-value = -571;
-},
-{
-name = hheaLineGap;
-value = 0;
-},
-{
-name = typoAscender;
-value = 1303;
-},
-{
-name = typoDescender;
-value = -571;
-},
-{
-name = typoLineGap;
-value = 0;
-},
-{
-name = winAscent;
-value = 1312;
-},
-{
-name = winDescent;
-value = 571;
-},
-{
-name = "Master Icon Glyph Name";
-value = "ain-ar.medi";
-},
-{
-name = "Color Palettes";
-value = (
-(
-(0,255),
-(229,58,53,255),
-(135,38,162,255),
-(255,171,1,255),
-(114,191,128,255)
-)
-);
-},
-{
-name = "Alignment Zones";
-value = (
-{
-pos = 683;
-size = "-13";
-},
-{
-pos = 505;
-size = 13;
-}
-);
-}
 );
 id = "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45";
 metricValues = (
@@ -1022,19 +466,6 @@ axesValues = (
 36,
 0
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "459CA063-FA7D-4205-A795-7B6CE244EAAB" = 1;
 };
@@ -1045,19 +476,6 @@ weightClass = 200;
 axesValues = (
 50,
 0
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "459CA063-FA7D-4205-A795-7B6CE244EAAB" = 0.68182;
@@ -1071,19 +489,6 @@ axesValues = (
 80,
 0
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 1;
 };
@@ -1093,19 +498,6 @@ name = Regular;
 axesValues = (
 88,
 0
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.94737;
@@ -1119,19 +511,6 @@ axesValues = (
 96,
 0
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.89474;
 "EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.10526;
@@ -1143,19 +522,6 @@ weightClass = 600;
 axesValues = (
 138,
 0
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.61842;
@@ -1170,19 +536,6 @@ axesValues = (
 158,
 0
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.48684;
 "EA657207-4E15-4023-BA2A-6FA5407A60CD" = 0.51316;
@@ -1194,19 +547,6 @@ weightClass = 800;
 axesValues = (
 178,
 0
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.35526;
@@ -1220,19 +560,6 @@ axesValues = (
 232,
 0
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "EA657207-4E15-4023-BA2A-6FA5407A60CD" = 1;
 };
@@ -1244,19 +571,6 @@ axesValues = (
 36,
 -11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0474999B-FB68-4D9A-82B1-2286F2372C1D" = 1;
 };
@@ -1267,19 +581,6 @@ weightClass = 200;
 axesValues = (
 50,
 -11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0474999B-FB68-4D9A-82B1-2286F2372C1D" = 0.68182;
@@ -1293,19 +594,6 @@ axesValues = (
 80,
 -11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "3B241295-E7D1-482F-A49F-5B690F967CBA" = 1;
 };
@@ -1315,19 +603,6 @@ name = "Slant Right";
 axesValues = (
 88,
 -11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.05263;
@@ -1341,19 +616,6 @@ axesValues = (
 96,
 -11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.10526;
 "3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.89474;
@@ -1365,19 +627,6 @@ weightClass = 600;
 axesValues = (
 138,
 -11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.38158;
@@ -1392,19 +641,6 @@ axesValues = (
 158,
 -11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.51316;
 "3B241295-E7D1-482F-A49F-5B690F967CBA" = 0.48684;
@@ -1416,19 +652,6 @@ weightClass = 800;
 axesValues = (
 178,
 -11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 0.64474;
@@ -1442,19 +665,6 @@ axesValues = (
 232,
 -11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0DA49D7F-B466-4A74-9166-6D7870CD51D2" = 1;
 };
@@ -1466,19 +676,6 @@ axesValues = (
 36,
 11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7" = 1;
 };
@@ -1489,19 +686,6 @@ weightClass = 200;
 axesValues = (
 50,
 11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "9F9B1D74-FF57-4B2A-AEB5-D743B154EFB7" = 0.68182;
@@ -1515,19 +699,6 @@ axesValues = (
 80,
 11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 1;
 };
@@ -1537,19 +708,6 @@ name = "Slant Left";
 axesValues = (
 88,
 11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.05263;
@@ -1563,19 +721,6 @@ axesValues = (
 96,
 11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.10526;
 "FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.89474;
@@ -1587,19 +732,6 @@ weightClass = 600;
 axesValues = (
 138,
 11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.38158;
@@ -1614,19 +746,6 @@ axesValues = (
 158,
 11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.51316;
 "FB927515-0B4B-4E0F-9AFE-1C9AB9ADFFED" = 0.48684;
@@ -1638,19 +757,6 @@ weightClass = 800;
 axesValues = (
 178,
 11
-);
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
 );
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 0.64474;
@@ -1664,19 +770,6 @@ axesValues = (
 232,
 11
 );
-customParameters = (
-{
-name = "Rename Glyphs";
-value = (
-"alefMaksura_alefMaksuraar.fina.alt=aamksr.fina.alt",
-"yehHamzaabove_yehHamzaabovear.fina=yha_yha.fina"
-);
-},
-{
-name = "Export COLR Table";
-value = 0;
-}
-);
 instanceInterpolations = {
 "0E0E1207-0B3B-41BA-8E0C-9BB926F33A45" = 1;
 };
@@ -1688,16 +781,8 @@ axesValues = (
 0,
 0
 );
-customParameters = (
-{
-name = "Variable Font Origin";
-value = "5E4DD32C-6BC9-4010-93B4-D8C61BED16DC";
-}
-);
 instanceInterpolations = {
-"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 0.59184;
-"5E4DD32C-6BC9-4010-93B4-D8C61BED16DC" = 0.76316;
-"EA657207-4E15-4023-BA2A-6FA5407A60CD" = -0.35499;
+"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 1;
 };
 name = Regular;
 type = variable;
