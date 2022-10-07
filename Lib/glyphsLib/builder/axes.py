@@ -193,7 +193,8 @@ def to_designspace_axes(self):
         # See https://github.com/googlefonts/glyphsLib/issues/280
         elif font_uses_axis_locations(self.font):
             # If all masters have an "Axis Location" custom parameter, only the values
-            # from this parameter will be used to build the mapping of the masters and instances
+            # from this parameter will be used to build the mapping of the masters and
+            # instances
             # TODO: (jany) use Virtual Masters as well?
             #       (jenskutilek) virtual masters can't have an Axis Location parameter.
             mapping = {}
