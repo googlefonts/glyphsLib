@@ -237,8 +237,8 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     if info is None:
         info = _lookup_info(glyph_name, data)
 
-    # Look up by unicode
     if not info:
+        # try to lookup up by unicode
         if unicodes is None and len(glyph_name) == 1:
             unicodes = ["%.4X" % ord(glyph_name)]
             debug("__unicodes 0", unicodes)
@@ -248,6 +248,7 @@ def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
                 if info:
                     break
         else:
+            # try to parse the name
             info, cutSuffix = _construct_info(glyph_name, data, cutSuffix)
 
     # production_name = info.production
