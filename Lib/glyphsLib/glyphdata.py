@@ -208,17 +208,21 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     return _get_glyph(glyph_name, data, unicodes)[0] or GlyphInfo(glyph_name)
 
 
+def _load_data_files():
+    global GLYPHDATA
+    if GLYPHDATA is None:
+        from importlib.resources import open_binary
+
+        with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
+            with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
+                GLYPHDATA = GlyphData.from_files(f1, f2)
+    return GLYPHDATA
+
+
 def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
     # Read data on first use.
     if data is None:
-        global GLYPHDATA
-        if GLYPHDATA is None:
-            from importlib.resources import open_binary
-
-            with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
-                with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
-                    GLYPHDATA = GlyphData.from_files(f1, f2)
-        data = GLYPHDATA
+        data = _load_data_files()
 
     info = None
     # Look up data by full glyph name first.
