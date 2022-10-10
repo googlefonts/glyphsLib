@@ -588,7 +588,7 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
                     base_names_infos[idx - 1] = halfform_info
                     base_names_infos[idx] = None
                     continue
-    if None in base_names_infos:
+    while None in base_names_infos:
         base_names_infos.remove(None)
     if len(base_names_infos) == 0:
         return None
@@ -599,13 +599,12 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
     name_parts = []
     lang_suffix = None
     for info in base_names_infos:
-        if info is not None:
-            part_name = info.name
-            if "-" in part_name:
-                part_name, _lang_suffix = part_name.rsplit("-", 1)
-                if _lang_suffix is not None and len(_lang_suffix) > 0:
-                    lang_suffix = _lang_suffix
-            name_parts.append(part_name)
+        part_name = info.name
+        if "-" in part_name:
+            part_name, _lang_suffix = part_name.rsplit("-", 1)
+            if _lang_suffix is not None and len(_lang_suffix) > 0:
+                lang_suffix = _lang_suffix
+        name_parts.append(part_name)
     debug("__5a", name_parts)
 
     base_info = first_info.copy()
