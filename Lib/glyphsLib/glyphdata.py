@@ -358,7 +358,7 @@ def _is_unicode_u_value(name):
     )
 
 
-def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
+def _construct_info(glyph_name, data, cutSuffix=None):
     """Derive (sub)category of a glyph name."""
     # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
     # construction helpers without a category.
@@ -550,7 +550,7 @@ def _translate_category(glyph_name, unicode_category):
     return glyphs_category
 
 
-def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
+def _construct_liga_info_names_(base_names, data, cutSuffix=None):
 
     debug("__4a", base_names, cutSuffix)
     base_names_infos = []
