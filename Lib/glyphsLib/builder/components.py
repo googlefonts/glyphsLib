@@ -20,6 +20,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
 
+from .smart_components import to_ufo_smart_component
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,13 @@ def to_ufo_components(self, ufo_glyph, layer):
 
     pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
-        pen.addComponent(component.name, component.transform)
+        if component.smartComponentValues:
+            logger.warning(
+                f"Glyph '{ufo_glyph.name}': Decomposing smart component {component.name}"
+            )
+            to_ufo_smart_component(self, component, pen)
+        else:
+            pen.addComponent(component.name, component.transform)
 
         if not (component.anchor or component.alignment):
             continue
@@ -136,7 +143,6 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
                 f"'{component.name}' points to a non-existent glyph."
             ) from e
     rpen.replay(ufo_glyph.getPen())
-
 
 def to_glyphs_components(self, ufo_glyph, layer):
     for comp in ufo_glyph.components:
