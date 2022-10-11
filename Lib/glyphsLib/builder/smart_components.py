@@ -1,7 +1,9 @@
-import copy
+import pickle
 
 from fontTools.varLib.models import VariationModel, normalizeValue
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+
+from glyphsLib.classes import GSLayer
 
 AXIS_MIN = 1
 AXIS_MAX = 2
@@ -76,6 +78,10 @@ def to_ufo_smart_component(self, layer, component, pen):
         normalized_location, delta_coordinates
     )
     new_coords = coordinates[0] + interpolated_deltas
-    new_layer = copy.deepcopy(masters[0])
+    new_layer = GSLayer()
+    new_layer._shapes = pickle.loads(pickle.dumps(masters[0]._shapes))
     set_coordinates(new_layer, new_coords)
+    if component.transform:
+        for p in new_layer.paths:
+            p.applyTransform(component.transform)
     new_layer.drawPoints(pen)
