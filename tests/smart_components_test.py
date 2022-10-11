@@ -171,8 +171,7 @@ def test_smart_component_regular(values, expected, smart_font):
 def get_rectangle_data(ufo, glyph_name="a", component_index=0):
     """Retrieve the results of the smart component interpolation."""
     a = ufo[glyph_name]
-    rectangle = ufo[a.components[component_index].baseGlyph]
-    contour = rectangle[0]
+    contour = a[0]
     left = min(node.x for node in contour)
     right = max(node.x for node in contour)
     top = max(node.y for node in contour)
