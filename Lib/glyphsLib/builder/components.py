@@ -62,7 +62,7 @@ def to_ufo_components(self, ufo_glyph, layer):
 
     pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
-        if component.smartComponentValues:
+        if component.smartComponentValues and component.component.smartComponentAxes:
             logger.warning(
                 f"Glyph '{ufo_glyph.name}': Decomposing smart component {component.name}"
             )
