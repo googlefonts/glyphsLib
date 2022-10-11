@@ -66,7 +66,7 @@ def to_ufo_components(self, ufo_glyph, layer):
             logger.warning(
                 f"Glyph '{ufo_glyph.name}': Decomposing smart component {component.name}"
             )
-            to_ufo_smart_component(self, component, pen)
+            to_ufo_smart_component(self, layer, component, pen)
         else:
             pen.addComponent(component.name, component.transform)
 

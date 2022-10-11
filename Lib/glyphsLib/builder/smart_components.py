@@ -24,11 +24,10 @@ def normalized_location(layer, base_layer):
     return loc
 
 
-def variation_model(glyph):
+def variation_model(glyph, smart_layers):
     if not glyph.smartComponentAxes:
         return None
 
-    smart_layers = [l for l in glyph.layers if l.smartComponentPoleMapping]
     master_locations = [normalized_location(l, smart_layers[0]) for l in smart_layers]
     axis_order = [ax.name for ax in glyph.smartComponentAxes]
     return VariationModel(master_locations, axisOrder=axis_order)
@@ -51,10 +50,15 @@ def set_coordinates(layer, coords):
             counter += 1
 
 
-def to_ufo_smart_component(self, component, pen):
+def to_ufo_smart_component(self, layer, component, pen):
     root = component.component
-    model = variation_model(root)
     masters = [l for l in root.layers if l.smartComponentPoleMapping]
+    if layer.associatedMasterId:
+        # Filter by those smart components which are in the same master
+        masters = [
+            l for l in masters if l.associatedMasterId == layer.associatedMasterId
+        ]
+    model = variation_model(root, masters)
     coordinates = [get_coordinates(l) for l in masters]
     delta_coordinates = [c - coordinates[0] for c in coordinates]
     axes_tuples = {}
