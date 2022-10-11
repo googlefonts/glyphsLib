@@ -64,7 +64,8 @@ def to_ufo_components(self, ufo_glyph, layer):
     for index, component in enumerate(layer.components):
         if component.smartComponentValues and component.component.smartComponentAxes:
             logger.warning(
-                f"Glyph '{ufo_glyph.name}': Decomposing smart component {component.name}"
+                f"Glyph '{ufo_glyph.name}': Decomposing smart "
+                f"component {component.name}"
             )
             to_ufo_smart_component(self, layer, component, pen)
         else:
@@ -143,6 +144,7 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
                 f"'{component.name}' points to a non-existent glyph."
             ) from e
     rpen.replay(ufo_glyph.getPen())
+
 
 def to_glyphs_components(self, ufo_glyph, layer):
     for comp in ufo_glyph.components:

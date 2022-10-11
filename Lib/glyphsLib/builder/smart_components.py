@@ -1,6 +1,6 @@
 import copy
 
-from fontTools.varLib.models import VariationModel, normalizeValue, supportScalar
+from fontTools.varLib.models import VariationModel, normalizeValue
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
 AXIS_MIN = 1
