@@ -31,6 +31,7 @@ from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
 from glyphsLib.classes import GSLayer
 
+
 # smartComponentPoleMapping returns 1 for bottom of axis and 2 for top.
 class Pole(IntEnum):
     MIN = 1
