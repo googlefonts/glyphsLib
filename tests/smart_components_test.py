@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function, division, absolute_import, unicode_literals
-
 import pytest
 
 from glyphsLib import to_ufos
@@ -138,10 +136,6 @@ def rectangle_path(x, y, w, h):
     return path
 
 
-def test_dump_smart_font(smart_font, tmpdir):
-    smart_font.save("smart.glyphs")
-
-
 @pytest.mark.parametrize(
     "values,expected",
     [
@@ -168,7 +162,7 @@ def test_smart_component_regular(values, expected, smart_font):
     assert get_rectangle_data(ufo) == expected
 
 
-def get_rectangle_data(ufo, glyph_name="a", component_index=0):
+def get_rectangle_data(ufo, glyph_name="a"):
     """Retrieve the results of the smart component interpolation."""
     a = ufo[glyph_name]
     contour = a[0]
