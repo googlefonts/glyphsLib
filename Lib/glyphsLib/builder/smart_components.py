@@ -21,6 +21,7 @@ OpenType interpolation model to adjust the node positions.
 """
 
 from enum import IntEnum
+
 # We're going to use pickle/unpickle to copy the node objects because
 # it's considerably faster than copy.deepcopy
 import pickle
@@ -34,6 +35,7 @@ from glyphsLib.classes import GSLayer
 class Pole(IntEnum):
     MIN = 1
     MAX = 2
+
 
 # This normalizes the location of a "master" (additional smart component
 # layer). Because these are defined to be at the "poles", this is always
@@ -64,6 +66,8 @@ def variation_model(glyph, smart_layers):
     return VariationModel(master_locations, axisOrder=axis_order, extrapolate=True)
 
 
+# Two slightly horrible functions for turning a GSLayer into a
+# GlyphCoordinates object and back again.
 def get_coordinates(layer):
     gc = GlyphCoordinates([])
     for path in layer.paths:
@@ -82,15 +86,27 @@ def set_coordinates(layer, coords):
 
 
 def to_ufo_smart_component(self, layer, component, pen):
+    # Find the GSGlyph that is being used as a component by this GSComponent
     root = component.component
+
     masters = [l for l in root.layers if l.smartComponentPoleMapping]
     if layer.associatedMasterId:
-        # Filter by those smart components which are in the same master
+        # Each master in the font can have its own set of smart component
+        # "master layers", so we need to filter by those smart components
+        # which are in the same font master as the current one
         masters = [
             l for l in masters if l.associatedMasterId == layer.associatedMasterId
         ]
+    if not masters:
+        raise ValueError(
+            "Could not find any masters for the smart component %s used in %s"
+            % (root.name, layer.name)
+        )
     model = variation_model(root, masters)
-    coordinates = [get_coordinates(l) for l in masters]
+
+    # Determine the normalized location of the interpolant within the
+    # mini-designspace, remembering that we have to work out where the
+    # default value is by looking at the first "master"
     axes_tuples = {}
     for ax in root.smartComponentAxes:
         if masters[0].smartComponentPoleMapping[ax.name] == Pole.MIN:
@@ -102,13 +118,21 @@ def to_ufo_smart_component(self, layer, component, pen):
         name: normalizeValue(value, axes_tuples[name])
         for name, value in component.smartComponentValues.items()
     }
-    new_coords = model.interpolateFromMasters(
-        normalized_location, coordinates
-    )
+
+    coordinates = [get_coordinates(l) for l in masters]
+    new_coords = model.interpolateFromMasters(normalized_location, coordinates)
+
+    # Decompose by creating a new layer, copying its shapes and applying
+    # the new coordinates
     new_layer = GSLayer()
     new_layer._shapes = pickle.loads(pickle.dumps(masters[0]._shapes))
     set_coordinates(new_layer, new_coords)
+
+    # Don't forget that the GSComponent might also be transformed, so
+    # we need to apply that transformation to the new layer as well
     if component.transform:
         for p in new_layer.paths:
             p.applyTransform(component.transform)
+
+    # And we are done
     new_layer.drawPoints(pen)
