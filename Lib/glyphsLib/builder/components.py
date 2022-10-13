@@ -62,6 +62,10 @@ def to_ufo_components(self, ufo_glyph, layer):
 
     pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
+        # XXX We may also want to test here if we're compiling a font (and decompose
+        # if so) or changing the representation format (in which case we leave it
+        # as a component and save the smart component values).
+        # See https://github.com/googlefonts/glyphsLib/pull/822
         if component.smartComponentValues and component.component.smartComponentAxes:
             to_ufo_smart_component(self, layer, component, pen)
         else:
