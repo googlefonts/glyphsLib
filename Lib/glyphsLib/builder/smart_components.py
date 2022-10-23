@@ -116,10 +116,9 @@ def to_ufo_smart_component(self, layer, component, pen):
             defaultValue = ax.topValue
         axes_tuples[ax.name] = (ax.bottomValue, defaultValue, ax.topValue)
     normalized_location = {
-        name: normalizeValue(value, axes_tuples[name])
+        name: normalizeValue(value, axes_tuples[name], extrapolate=True)
         for name, value in component.smartComponentValues.items()
     }
-
     coordinates = [get_coordinates(l) for l in masters]
     new_coords = model.interpolateFromMasters(normalized_location, coordinates)
 

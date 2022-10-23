@@ -150,6 +150,8 @@ def rectangle_path(x, y, w, h):
         ({"Width": 1, "Height": 500, "Shift": -100}, (0, 0, 500, 500)),
         # Some points in the middle
         ({"Width": 0.5, "Height": 300, "Shift": -50}, (50, 50, 300, 300)),
+        # Extrapolation
+        ({"Width": 0, "Height": 800, "Shift": 0}, (100, 100, 100, 800)),
     ],
 )
 def test_smart_component_regular(values, expected, smart_font):
