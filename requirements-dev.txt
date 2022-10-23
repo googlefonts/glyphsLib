@@ -42,11 +42,9 @@ fonttools[ufo,unicode]==4.38.0
     #   ufo2ft
 fs==2.4.15
     # via fonttools
-importlib-metadata==4.2.0
-    # via pytest-randomly
 iniconfig==1.1.1
     # via pytest
-lxml==4.8.0
+lxml==4.9.1
     # via xmldiff
 mccabe==0.6.1
     # via flake8
@@ -96,8 +94,6 @@ tomli==2.0.1
     # via
     #   black
     #   pytest
-typing-extensions==4.2.0
-    # via black
 ufo2ft==2.27.0
     # via -r requirements-dev.in
 ufonormalizer==0.6.1
@@ -106,8 +102,6 @@ unicodedata2==14.0.0
     # via fonttools
 xmldiff==2.4
     # via -r requirements-dev.in
-zipp==3.8.0
-    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
