@@ -3773,15 +3773,15 @@ class GSLayer(GSBase):
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
     def _bracket_info(self, axes):
-        # Returns a region expressed as a list of (axis_name, min, max)
-        # tuples, once the axes have been computed
+        # Returns a region expressed as a {axis_tag: (min, max)} box
+        # (dictionary), once the axes have been computed
         if not self._is_bracket_layer():
-            return []
+            return {}
 
         if self.parent.parent.format_version > 2:
             # Glyphs 3
             rules = self.attributes["axisRules"]
-            info = []
+            info = {}
             for axis,rule in zip(axes, self.attributes["axisRules"]):
                 if "min" not in rule and "max" not in rule:
                     continue
@@ -3793,7 +3793,7 @@ class GSLayer(GSBase):
                 if axis_max == axis.minimum and axis_max == axis.maximum:
                     # It's full range, ignore it.
                     continue
-                info.append((axis.tag, axis_min, axis_max))
+                info[axis.tag] = (axis_min, axis_max)
             return info
 
         # Glyphs 2
@@ -3803,9 +3803,9 @@ class GSLayer(GSBase):
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return [(axis.tag, designspace_min, bracket_crossover)]
+            return {axis.tag: (designspace_min, bracket_crossover)}
         else:
-            return [(axis.tag, bracket_crossover, designspace_max)]
+            return {axis.tag: (bracket_crossover, designspace_max)}
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:
