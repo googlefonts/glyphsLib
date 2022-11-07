@@ -22,10 +22,6 @@ OpenType interpolation model to adjust the node positions.
 
 from enum import IntEnum
 
-# We're going to use pickle/unpickle to copy the node objects because
-# it's considerably faster than copy.deepcopy
-import pickle
-
 from fontTools.varLib.models import VariationModel, normalizeValue
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
