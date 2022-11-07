@@ -22,7 +22,7 @@ OpenType interpolation model to adjust the node positions.
 
 from enum import IntEnum
 
-from fontTools.varLib.models import VariationModel, normalizeValue
+from fontTools.varLib.models import VariationModel, normalizeValue, VariationModelError
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
 from glyphsLib.classes import GSLayer
@@ -57,10 +57,20 @@ def normalized_location(layer, base_layer):
     return loc
 
 
-def variation_model(glyph, smart_layers):
+def variation_model(glyph, smart_layers, layer):
     master_locations = [normalized_location(l, smart_layers[0]) for l in smart_layers]
     axis_order = [ax.name for ax in glyph.smartComponentAxes]
-    return VariationModel(master_locations, axisOrder=axis_order, extrapolate=True)
+    try:
+        model = VariationModel(master_locations, axisOrder=axis_order, extrapolate=True)
+    except VariationModelError as e:
+        locations = "Locations were:\n"
+        for smart_layer, master_location in zip(smart_layers, master_locations):
+            locations += f"  {smart_layer.name} = {master_location}\n"
+        raise ValueError(
+            "Could not generate smart component model for %s used in %s.\n%s"
+            % (glyph.name, layer, locations)
+        ) from e
+    return model
 
 
 # Two slightly horrible functions for turning a GSLayer into a
@@ -99,7 +109,8 @@ def to_ufo_smart_component(self, layer, component, pen):
             "Could not find any masters for the smart component %s used in %s"
             % (root.name, layer.name)
         )
-    model = variation_model(root, masters)
+
+    model = variation_model(root, masters, layer)
 
     # Determine the normalized location of the interpolant within the
     # mini-designspace, remembering that we have to work out where the
