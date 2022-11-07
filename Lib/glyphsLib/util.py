@@ -134,10 +134,6 @@ def freezedict(dct):
     return frozenset(dct.items())
 
 
-def unfreezedict(frozen):
-    return dict(list(frozen))
-
-
 class LoggerMixin:
 
     _logger = None

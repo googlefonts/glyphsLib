@@ -85,7 +85,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         glyph = font.glyphs[glyph_name]
         for frozenbox, bracket_layers in glyph_bracket_layers.items():
-            box = util.unfreezedict(frozenbox)
+            box = dict(frozenbox)
             for missing_master_layer_id in master_ids.difference(
                 bl.associatedMasterId for bl in bracket_layers
             ):
@@ -97,7 +97,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
 
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         for frozenbox, layers in glyph_bracket_layers.items():
-            box = util.unfreezedict(frozenbox)
+            box = dict(frozenbox)
             for layer in layers:
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
