@@ -1893,6 +1893,14 @@ class GSNode(GSBase):
         if name is not None:
             self.name = name
 
+    def clone(self):
+        """Clones the node (does not clone attributes)"""
+        return GSNode(
+            position=(self._position.x, self._position.y),
+            type=self.type,
+            smooth=self.smooth,
+        )
+
     def __repr__(self):
         content = self.type
         if self.smooth:
@@ -2129,6 +2137,13 @@ class GSPath(GSBase):
         self.closed = self._defaultsForName["closed"]
         self._nodes = []
         self.attributes = {}
+
+    def clone(self):
+        """Clones the path (Does not clone attributes)"""
+        cloned = GSPath()
+        cloned.closed = self.closed
+        cloned.nodes = [node.clone() for node in self.nodes]
+        return cloned
 
     @property
     def parent(self):
@@ -2497,6 +2512,9 @@ class GSComponent(GSBase):
                 self.transform = copy.deepcopy(self._defaultsForName["transform"])
         else:
             self.transform = transform
+
+    def clone(self):
+        return GSComponent(self.name, transform=copy.deepcopy(self.transform))
 
     def __repr__(self):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
