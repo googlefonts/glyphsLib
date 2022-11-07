@@ -45,6 +45,7 @@ from glyphsLib.types import (
     parse_float_or_int,
     readIntlist,
 )
+from glyphsLib.util import designspace_min_max
 from glyphsLib.writer import Writer
 
 logger = logging.getLogger(__name__)
@@ -3771,26 +3772,40 @@ class GSLayer(GSBase):
             return "axisRules" in self.attributes  # Glyphs 3
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
-    def _bracket_info(self):
+    def _bracket_info(self, axes):
+        # Returns a region expressed as a list of (axis_name, min, max)
+        # tuples, once the axes have been computed
         if not self._is_bracket_layer():
-            return None
+            return []
 
         if self.parent.parent.format_version > 2:
             # Glyphs 3
             rules = self.attributes["axisRules"]
-            if any(rules[1:]):
-                raise ValueError("Alternate rules on non-first axis not yet supported")
-            return 0, rules[0].get("min"), rules[0].get("max")
+            info = []
+            for axis,rule in zip(axes, self.attributes["axisRules"]):
+                if "min" not in rule and "max" not in rule:
+                    continue
+                # Rules are expressed in designspace coordinates,
+                # so map appropriately.
+                designspace_min, designspace_max = designspace_min_max(axis)
+                axis_min = rule.get("min", designspace_min)
+                axis_max = rule.get("max", designspace_max)
+                if axis_max == axis.minimum and axis_max == axis.maximum:
+                    # It's full range, ignore it.
+                    continue
+                info.append((axis.tag, axis_min, axis_max))
+            return info
 
         # Glyphs 2
         m = re.match(self.BRACKET_LAYER_RE, self.name)
-        axis_index = 0  # For glyphs 2
+        axis = axes[0]  # For glyphs 2
+        designspace_min, designspace_max = designspace_min_max(axis)
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return axis_index, None, bracket_crossover
+            return [(axis.tag, designspace_min, bracket_crossover)]
         else:
-            return axis_index, bracket_crossover, None
+            return [(axis.tag, bracket_crossover, designspace_max)]
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:

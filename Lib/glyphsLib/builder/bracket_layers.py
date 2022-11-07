@@ -135,9 +135,15 @@ def to_designspace_bracket_layers(self):
 def validate_bracket_info(
     self, layer, bracket_axis, bracket_axis_min, bracket_axis_max
 ):
-    bracket_axis_id, bracket_min, bracket_max = layer._bracket_info()
+    info = layer._bracket_info(self.designspace.axes)
+    if len(info) > 1:
+        raise ValueError("For now, bracket layers can only apply to a single axis")
 
-    if bracket_axis_id != 0:
+    bracket_tag, bracket_min, bracket_max = info[0]
+
+    bracket_axis_id = 0
+
+    if bracket_tag != bracket_axis.tag:
         raise ValueError("For now, bracket layers can only apply to the first axis")
 
     # Convert [500<wght<(max)] to [500<wght], etc.

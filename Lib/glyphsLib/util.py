@@ -143,6 +143,14 @@ class LoggerMixin:
         return self._logger
 
 
+def designspace_min_max(axis):
+    """Return the minimum/maximum of an axis in designspace coordinates"""
+    if not axis.map:
+        return axis.minimum, axis.maximum
+    designspace_scale = [design_location for _, design_location in axis.map]
+    return min(designspace_scale), max(designspace_scale)
+
+
 class PeekableIterator:
     """Helper class to iterate and peek over a list."""
 
