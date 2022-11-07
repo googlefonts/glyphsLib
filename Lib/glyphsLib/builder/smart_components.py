@@ -119,12 +119,14 @@ def to_ufo_smart_component(self, layer, component, pen):
     try:
         new_coords = model.interpolateFromMasters(normalized_location, coordinates)
     except Exception as e:
-        raise ValueError("Could not interpolate smart component %s used in %s" % (root.name, layer)) from e
+        raise ValueError(
+            "Could not interpolate smart component %s used in %s" % (root.name, layer)
+        ) from e
 
     # Decompose by creating a new layer, copying its shapes and applying
     # the new coordinates
     new_layer = GSLayer()
-    new_layer._shapes = [ shape.clone() for shape in masters[0]._shapes]
+    new_layer._shapes = [shape.clone() for shape in masters[0]._shapes]
     set_coordinates(new_layer, new_coords)
 
     # Don't forget that the GSComponent might also be transformed, so
