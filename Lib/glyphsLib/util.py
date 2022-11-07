@@ -130,6 +130,14 @@ def pairs(list):
     return [list[i : i + 2] for i in range(0, len(list), 2)]
 
 
+def freezedict(dct):
+    return frozenset(dct.items())
+
+
+def unfreezedict(frozen):
+    return dict(list(frozen))
+
+
 class LoggerMixin:
 
     _logger = None
