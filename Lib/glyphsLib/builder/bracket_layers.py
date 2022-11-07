@@ -4,11 +4,11 @@ from typing import Any
 
 from fontTools import designspaceLib
 from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
+from fontTools.varLib.featureVars import overlayFeatureVariations
 
 from glyphsLib import util
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
-    REVERSE_BRACKET_LABEL,
     GLYPHLIB_PREFIX,
 )
 
@@ -16,99 +16,43 @@ from .constants import (
 def to_designspace_bracket_layers(self):
     """Extract bracket layers in a GSGlyph into free-standing UFO glyphs with
     Designspace substitution rules.
-
-    As of Glyphs.app 2.6, only single axis bracket layers are supported, we
-    assume the axis to be the first axis in the Designspace. Bracket layer
-    backgrounds are not round-tripped.
-
-    A glyph can have more than one bracket layer but Designspace
-    rule/OpenType variation condition sets apply all substitutions in a rule
-    in a range, so we have to potentially sort bracket layers into rule
-    buckets. Example: if a glyph "x" has two bracket layers [300] and [600]
-    and glyph "a" has bracket layer [300] and the bracket axis tops out at
-    1000, we need the following Designspace rules:
-
-    - BRACKET.300.600  # min 300, max 600 on the bracket axis.
-      - x -> x.BRACKET.300
-    - BRACKET.600.1000
-      - x -> x.BRACKET.600
-    - BRACKET.300.1000
-      - a -> a.BRACKET.300
     """
     if not self._designspace.axes:
         raise ValueError(
             "Cannot apply bracket layers unless at least one axis is defined."
         )
-    bracket_axis = self._designspace.axes[0]
 
-    # Determine the axis scale in design space because crossovers/locations are
-    # in design space (axis.default/minimum/maximum may be user space).
-    bracket_axis_min, bracket_axis_max = util.designspace_min_max(bracket_axis)
-
-    # Organize all bracket layers by glyph name and crossover value, so later we
-    # can go through the layers by location and copy them to free-standing glyphs
+    # At this stage we will naively emit a designspace rule for every layer.
     bracket_layer_map = defaultdict(partial(defaultdict, list))
+    rules = []
+    tag_to_name = {axis.tag: axis.name for axis in self._designspace.axes}
     for layer in self.bracket_layers:
-        bracket_axis_id, bracket_min, bracket_max = validate_bracket_info(
-            self, layer, bracket_axis, bracket_axis_min, bracket_axis_max
-        )
-        if bracket_min is None and bracket_max is None:
-            continue
+        box_with_tag = layer._bracket_info(self._designspace.axes)
         glyph_name = layer.parent.name
-        bracket_layer_map[glyph_name][(bracket_min, bracket_max)].append(layer)
-
-    # Sort crossovers into rule buckets, one for regular bracket layers (in which
-    # the location represents the min value) and one for 'reverse' bracket layers
-    # (in which the location is the max value).
-    max_rule_bucket = defaultdict(list)
-    min_rule_bucket = defaultdict(list)
-    for glyph_name, glyph_bracket_layers in sorted(bracket_layer_map.items()):
-        min_crossovers = set()
-        max_crossovers = set()
-        for bracket_min, bracket_max in glyph_bracket_layers.keys():
-            if bracket_min is not None:
-                min_crossovers.add(bracket_min)
-            elif bracket_max is not None:
-                max_crossovers.add(bracket_max)
-        # reverse and non-reverse bracket layers with overlapping ranges are
-        # tricky to implement as DS rules. They are relatively unlikely, and
-        # can usually be rewritten so that they do not overlap. For laziness/
-        # simplicity, where we simply warn that output may not be as expected.
-        invalid_locs = [
-            (mx, mn)
-            for mx, mn in zip(sorted(max_crossovers), sorted(min_crossovers))
-            if mx > mn
-        ]
-        if invalid_locs:
-            self.logger.warning(
-                "Bracket layers for glyph '%s' have overlapping ranges: %s",
-                glyph_name,
-                ", ".join("]{}] > [{}]".format(*values) for values in invalid_locs),
+        # It'd be nice to use tag for both glyph names and designspace
+        # rules, but given designspace refers to axes by name, our hand
+        # is forced. (We don't use axis names in glyph names because they
+        # might have spaces in them.)
+        box_with_name = {tag_to_name[k]: v for k, v in box_with_tag.items()}
+        bracket_layer_map[glyph_name][util.freezedict(box_with_tag)].append(layer)
+        rules.append(
+            (
+                [box_with_name],
+                {glyph_name: _bracket_glyph_name(glyph_name, box_with_tag)},
             )
-        max_crossovers = list(sorted(max_crossovers))
-        if bracket_axis_min not in max_crossovers:
-            max_crossovers = [bracket_axis_min] + max_crossovers
-        for crossover_min, crossover_max in util.pairwise(max_crossovers):
-            max_rule_bucket[(int(crossover_min), int(crossover_max))].append(glyph_name)
-        min_crossovers = list(sorted(min_crossovers))
-        if bracket_axis_max not in min_crossovers:
-            min_crossovers = min_crossovers + [bracket_axis_max]
-        for crossover_min, crossover_max in util.pairwise(min_crossovers):
-            min_rule_bucket[(int(crossover_min), int(crossover_max))].append(glyph_name)
+        )
 
-    # Generate rules for the bracket layers.
-    for reverse, rule_bucket in ((True, max_rule_bucket), (False, min_rule_bucket)):
-        for (axis_range_min, axis_range_max), glyph_names in sorted(
-            rule_bucket.items()
-        ):
-            rule = _make_designspace_rule(
-                glyph_names,
-                bracket_axis.name,
-                axis_range_min,
-                axis_range_max,
-                reverse,
-            )
-            self._designspace.addRule(rule)
+    # overlayFeatureVariations does exactly what we need in terms of
+    # splitting rules into non-overlapping boxes and consolidating
+    # multiple substitutions into a single rule.
+    for rule in overlayFeatureVariations(rules):
+        box, mappings = rule
+        # Reduce the mappings to a single mapping
+        mapping = {}
+        for this_mapping in mappings:
+            mapping.update(this_mapping)
+
+        self._designspace.addRule(_make_designspace_rule(box, mapping))
 
     # Set feature for rules
     feat = self.font.customParameters["Feature for Feature Variations"]
@@ -126,52 +70,6 @@ def to_designspace_bracket_layers(self):
         self.regenerate_gdef()
 
 
-def validate_bracket_info(
-    self, layer, bracket_axis, bracket_axis_min, bracket_axis_max
-):
-    info = layer._bracket_info(self.designspace.axes)
-    if len(info) > 1:
-        raise ValueError("For now, bracket layers can only apply to a single axis")
-
-    bracket_tag, bracket_min, bracket_max = info[0]
-
-    bracket_axis_id = 0
-
-    if bracket_tag != bracket_axis.tag:
-        raise ValueError("For now, bracket layers can only apply to the first axis")
-
-    # Convert [500<wght<(max)] to [500<wght], etc.
-    if bracket_min == bracket_axis_min:
-        bracket_min = None
-    if bracket_max == bracket_axis_max:
-        bracket_max = None
-
-    if bracket_min is not None and bracket_max is not None:
-        raise ValueError("Alternate rules with min and max range not yet supported")
-
-    glyph_name = layer.parent.name
-
-    if (
-        bracket_min is not None
-        and not bracket_axis_min <= bracket_min <= bracket_axis_max
-    ) or (
-        bracket_max is not None
-        and not bracket_axis_min <= bracket_max <= bracket_axis_max
-    ):
-        raise ValueError(
-            "Glyph {glyph_name}: Bracket layer {layer_name} must be within the "
-            "design space bounds of the {bracket_axis_name} axis: minimum "
-            "{bracket_axis_minimum}, maximum {bracket_axis_maximum}.".format(
-                glyph_name=glyph_name,
-                layer_name=layer.name,
-                bracket_axis_name=bracket_axis.name,
-                bracket_axis_minimum=bracket_axis_min,
-                bracket_axis_maximum=bracket_axis_max,
-            )
-        )
-    return bracket_axis_id, bracket_min, bracket_max
-
-
 def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
     font = self.font
     master_ids = {m.id for m in font.masters}
@@ -186,11 +84,8 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
 
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         glyph = font.glyphs[glyph_name]
-        for (
-            (bracket_min, bracket_max),
-            bracket_layers,
-        ) in glyph_bracket_layers.items():
-
+        for frozenbox, bracket_layers in glyph_bracket_layers.items():
+            box = util.unfreezedict(frozenbox)
             for missing_master_layer_id in master_ids.difference(
                 bl.associatedMasterId for bl in bracket_layers
             ):
@@ -198,29 +93,16 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 bracket_layers.append(master_layer)
                 implicit_bracket_layers.add(id(master_layer))
 
-            if bracket_max is None:
-                reverse = False
-                location = bracket_min
-            else:
-                reverse = True
-                location = bracket_max
-
-            bracket_glyphs.add(_bracket_glyph_name(glyph_name, reverse, location))
+            bracket_glyphs.add(_bracket_glyph_name(glyph_name, box))
 
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
-        for (bracket_min, bracket_max), layers in glyph_bracket_layers.items():
-            if bracket_max is None:
-                reverse = False
-                location = bracket_min
-            else:
-                reverse = True
-                location = bracket_max
-
+        for frozenbox, layers in glyph_bracket_layers.items():
+            box = util.unfreezedict(frozenbox)
             for layer in layers:
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
                 ufo_layer = ufo_font.layers.defaultLayer
-                ufo_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
+                ufo_glyph_name = _bracket_glyph_name(glyph_name, box)
                 ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []  # Avoid cmap interference
@@ -232,9 +114,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 )
                 # swap components if base glyph contains matching bracket layers.
                 for comp in ufo_glyph.components:
-                    bracket_comp_name = _bracket_glyph_name(
-                        comp.baseGlyph, reverse, location
-                    )
+                    bracket_comp_name = _bracket_glyph_name(comp.baseGlyph, box)
                     if bracket_comp_name in bracket_glyphs:
                         comp.baseGlyph = bracket_comp_name
                 # Update kerning groups and pairs, bracket glyphs inherit the
@@ -242,25 +122,26 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 _expand_kerning_to_brackets(glyph_name, ufo_glyph_name, ufo_font)
 
 
-def _bracket_glyph_name(glyph_name, reverse, location):
-    return BRACKET_GLYPH_TEMPLATE.format(
-        glyph_name=glyph_name,
-        rev=REVERSE_BRACKET_LABEL if reverse else "",
-        location=location,
+def _bracket_glyph_name(glyph_name, box):
+    description = ".".join(
+        f"{tag}_{min}_{max}" for tag, (min, max) in sorted(box.items())
     )
+    return BRACKET_GLYPH_TEMPLATE.format(glyph_name=glyph_name, description=description)
 
 
-def _make_designspace_rule(glyph_names, axis_name, range_min, range_max, reverse=False):
-    rule_name = f"BRACKET.{range_min}.{range_max}"
+def _make_designspace_rule(box, mapping):
+    description = ".".join(
+        f"{name}_{min}_{max}" for name, (min, max) in sorted(box.items())
+    )
     rule = designspaceLib.RuleDescriptor()
-    rule.name = rule_name
+    rule.name = f"BRACKET." + description
     rule.conditionSets.append(
-        [{"name": axis_name, "minimum": range_min, "maximum": range_max}]
+        [
+            {"name": axis_name, "minimum": range_min, "maximum": range_max}
+            for axis_name, (range_min, range_max) in box.items()
+        ]
     )
-    location = range_max if reverse else range_min
-    for glyph_name in glyph_names:
-        sub_glyph_name = _bracket_glyph_name(glyph_name, reverse, location)
-        rule.subs.append((glyph_name, sub_glyph_name))
+    rule.subs = list(mapping.items())
     return rule
 
 
