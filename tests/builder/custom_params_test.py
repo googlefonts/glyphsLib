@@ -479,6 +479,75 @@ class SetCustomParamsTestBase(object):
         font = glyphsLib.to_glyphs([self.ufo])
         self.assertEqual(font.customParameters["meta Table"], glyphs_meta)
 
+    def test_name_table_entry(self):
+        self.font.customParameters.append(
+            GSCustomParameter("Name Table Entry", "1024; FOO; BAZ")
+        )
+        self.font.customParameters.append(
+            GSCustomParameter("Name Table Entry", "2048 1; FOO")
+        )
+        self.font.customParameters.append(
+            GSCustomParameter("Name Table Entry", "4096 1 2; FOO")
+        )
+        self.font.customParameters.append(
+            GSCustomParameter("Name Table Entry", "8192 1 2 3; FOO")
+        )
+        self.font.customParameters.append(
+            GSCustomParameter("Name Table Entry", "0x4000 074; BAZ")
+        )
+
+        self.set_custom_params()
+
+        ufo_records = [
+            {
+                "nameID": 1024,
+                "platformID": 3,
+                "encodingID": 1,
+                "languageID": 0x49,
+                "string": "FOO; BAZ",
+            },
+            {
+                "nameID": 2048,
+                "platformID": 1,
+                "encodingID": 1,
+                "languageID": 0x49,
+                "string": "FOO",
+            },
+            {
+                "nameID": 4096,
+                "platformID": 1,
+                "encodingID": 2,
+                "languageID": 0x49,
+                "string": "FOO",
+            },
+            {
+                "nameID": 8192,
+                "platformID": 1,
+                "encodingID": 2,
+                "languageID": 3,
+                "string": "FOO",
+            },
+            {
+                "nameID": 16384,
+                "platformID": 60,
+                "encodingID": 1,
+                "languageID": 0x49,
+                "string": "BAZ",
+            },
+        ]
+
+        self.assertEqual(
+            [dict(r) for r in self.ufo.info.openTypeNameRecords], ufo_records
+        )
+
+        font = glyphsLib.to_glyphs([self.ufo])
+
+        self.assertEqual(font.customParameters[0].value, "1024 3 1 73; FOO; BAZ")
+        self.assertEqual(font.customParameters[1].value, "2048 1 1 73; FOO")
+        self.assertEqual(font.customParameters[2].value, "4096 1 2 73; FOO")
+        self.assertEqual(font.customParameters[3].value, "8192 1 2 3; FOO")
+        self.assertEqual(font.customParameters[4].value, "16384 60 1 73; BAZ")
+
 
 class SetCustomParamsTestUfoLib2(SetCustomParamsTestBase, unittest.TestCase):
     ufo_module = ufoLib2

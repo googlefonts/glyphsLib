@@ -601,23 +601,98 @@ register(
     )
 )
 
-# TODO: (jany) look at
-# https://forum.glyphsapp.com/t/name-table-entry-win-id4/3811/10
-# Use Name Table Entry for the next param
+
+class NameRecordParamHandler(AbstractParamHandler):
+    def to_entry(self, record):
+        identifiers = [
+            record["nameID"],
+            record["platformID"],
+            record["encodingID"],
+            record["languageID"],
+        ]
+        encoding = " ".join(map(str, identifiers))
+        string = record["string"]
+
+        return f"{encoding}; {string}"
+
+    def parse_decimal(self, string):
+        # In Python octal strings must start with a prefix. Glyphs
+        # uses AFDKO decimal number specification which allows
+        # octals starting with "0".
+        if string.startswith("0x"):
+            return int(string, 16)
+        elif string.startswith("0"):
+            return int(string, 8)
+        else:
+            return int(string, 10)
+
+    # See the Glyphs manual for the Name Table Entry format:
+    # https://glyphsapp.com/media/pages/learn/3ec528a11c-1634835554/glyphs-3-handbook.pdf
+    def to_record(self, entry):
+        # Split only on the first semicolon occurance. Glyphs doesn't
+        # have any special escaping, so anything after the first
+        # semicolon is treated as part of the name table entry.
+        parts = entry.split(";", 1)
+
+        if len(parts) != 2:
+            logger.warning(f"Invalid Name Table Entry '{entry}' ignored.")
+        else:
+            identifiers = parts[0].split(" ")
+            # Strip whitespace. This behaviour is undefined, but
+            # it seems sensible to remove leading and trailing spaces.
+            string = parts[1].strip()
+
+            try:
+                name_id = self.parse_decimal(identifiers[0])
+                platform_id = 3  # Unicode
+                encoding_id = 1  # Unicode
+                language_id = 0x49  # Windows English
+
+                if len(identifiers) >= 2:
+                    platform_id = self.parse_decimal(identifiers[1])
+
+                if len(identifiers) >= 3:
+                    encoding_id = self.parse_decimal(identifiers[2])
+
+                if len(identifiers) >= 4:
+                    language_id = self.parse_decimal(identifiers[3])
+
+                return {
+                    "nameID": name_id,
+                    "platformID": platform_id,
+                    "encodingID": encoding_id,
+                    "languageID": language_id,
+                    "string": string,
+                }
+            except ValueError:
+                logger.warning(f"Invalid name table identifiers '{parts[0]}'.")
+
+    def to_glyphs(self, glyphs, ufo):
+        if glyphs.is_font():
+            records = ufo.get_info_value("openTypeNameRecords")
+            if records:
+                entries = [self.to_entry(record) for record in records]
+
+                glyphs.set_custom_values("Name Table Entry", entries)
+
+    def to_ufo(self, builder, glyphs, ufo):
+        if glyphs.is_font():
+            entries = glyphs.get_custom_values("Name Table Entry")
+
+            if entries:
+                records = []
+
+                for entry in entries:
+                    record = self.to_record(entry)
+
+                    if record is not None:
+                        records.append(record)
+
+                ufo.set_info_value("openTypeNameRecords", records)
 
 
-def to_glyphs_opentype_name_records(value):
-    # In ufoLib2, font.info.openTypeNameRecords is a list of NameRecord objects,
-    # while in defcon it is a list of dicts; reduce both to dicts.
-    return [dict(r) for r in value]
+register(NameRecordParamHandler())
 
-
-register(
-    ParamHandler(
-        glyphs_name="openTypeNameRecords",
-        value_to_glyphs=to_glyphs_opentype_name_records,
-    )
-)
 
 register(ParamHandler(glyphs_name="Disable Last Change", ufo_name="disablesLastChange"))
 

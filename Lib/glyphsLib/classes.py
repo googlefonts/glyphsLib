@@ -1074,6 +1074,8 @@ class CustomParametersProxy(Proxy):
     def _get_parameter_by_key(self, key):
         if key == "Axes" and isinstance(self._owner, GSFont):
             return self._owner._get_custom_parameter_from_axes()
+        if key == "Name Table Entry":
+            return None
         for customParameter in self._owner._customParameters:
             if customParameter.name == key:
                 return customParameter
