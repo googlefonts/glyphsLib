@@ -120,7 +120,10 @@ def to_ufo_smart_component(self, layer, component, pen):
         for name, value in component.smartComponentValues.items()
     }
     coordinates = [get_coordinates(l) for l in masters]
-    new_coords = model.interpolateFromMasters(normalized_location, coordinates)
+    try:
+        new_coords = model.interpolateFromMasters(normalized_location, coordinates)
+    except Exception as e:
+        raise ValueError("Could not interpolate smart component %s used in %s" % (root.name, layer)) from e
 
     # Decompose by creating a new layer, copying its shapes and applying
     # the new coordinates
