@@ -35,7 +35,7 @@ BRACKET_GLYPH_TEMPLATE = "{glyph_name}.BRACKET.{description}"
 BRACKET_GLYPH_RE = re.compile(
     r"(?P<glyph_name>.+)\.BRACKET.(?P<box>.*)$"
 )
-BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\.BRACKET\..*)$")
 
 MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
 FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
