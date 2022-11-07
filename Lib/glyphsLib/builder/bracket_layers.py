@@ -43,13 +43,7 @@ def to_designspace_bracket_layers(self):
 
     # Determine the axis scale in design space because crossovers/locations are
     # in design space (axis.default/minimum/maximum may be user space).
-    if bracket_axis.map:
-        axis_scale = [design_location for _, design_location in bracket_axis.map]
-        bracket_axis_min = min(axis_scale)
-        bracket_axis_max = max(axis_scale)
-    else:  # No mapping means user and design space are the same.
-        bracket_axis_min = bracket_axis.minimum
-        bracket_axis_max = bracket_axis.maximum
+    bracket_axis_min, bracket_axis_max = util.designspace_min_max(bracket_axis)
 
     # Organize all bracket layers by glyph name and crossover value, so later we
     # can go through the layers by location and copy them to free-standing glyphs
