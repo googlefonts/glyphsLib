@@ -134,7 +134,7 @@ def _make_designspace_rule(box, mapping):
         f"{name}_{min}_{max}" for name, (min, max) in sorted(box.items())
     )
     rule = designspaceLib.RuleDescriptor()
-    rule.name = f"BRACKET." + description
+    rule.name = "BRACKET." + description
     rule.conditionSets.append(
         [
             {"name": axis_name, "minimum": range_min, "maximum": range_max}

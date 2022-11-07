@@ -377,7 +377,10 @@ def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
         ufo = source.font
         assert "B.BRACKET.wght_600_700" in ufo
         assert ufo["B"].components[0].baseGlyph == "A"
-        assert ufo["B.BRACKET.wght_600_700"].components[0].baseGlyph == "A.BRACKET.wght_600_700"
+        assert (
+            ufo["B.BRACKET.wght_600_700"].components[0].baseGlyph
+            == "A.BRACKET.wght_600_700"
+        )
 
     font_rt = to_glyphs(designspace)
 
@@ -408,7 +411,7 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
     assert designspace.rules[1].subs == [
         ("D", "D.BRACKET.wght_400_600"),
         ("E", "E.BRACKET.wght_400_570"),
-        ("F", "F.BRACKET.wght_400_630")
+        ("F", "F.BRACKET.wght_400_630"),
     ]
 
     for source in designspace.sources:
@@ -518,16 +521,20 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module)
     axes = designspace.axes
     info = font.glyphs["v"].layers[8]._bracket_info(axes)
-    assert info == {'opsz': (5, 410), 'wdth': (50, 75), 'wght': (690, 900)}
+    assert info == {"opsz": (5, 410), "wdth": (50, 75), "wght": (690, 900)}
 
     for source in designspace.sources:
         assert "v.BRACKET.opsz_5_410.wdth_50_75.wght_690_900" in source.font
 
-    assert designspace.rules[0].name == "BRACKET.Optical size_5_410.Weight_690_900.Width_50_75"
+    assert (
+        designspace.rules[0].name
+        == "BRACKET.Optical size_5_410.Weight_690_900.Width_50_75"
+    )
     assert designspace.rules[0].conditionSets == [
-        [dict(name="Optical size", minimum=5, maximum=410),
-         dict(name="Width", minimum=50, maximum=75),
-         dict(name="Weight", minimum=690, maximum=900),
+        [
+            dict(name="Optical size", minimum=5, maximum=410),
+            dict(name="Width", minimum=50, maximum=75),
+            dict(name="Weight", minimum=690, maximum=900),
         ]
     ]
     assert designspace.rules[0].subs == [

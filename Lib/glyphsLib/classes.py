@@ -3780,9 +3780,8 @@ class GSLayer(GSBase):
 
         if self.parent.parent.format_version > 2:
             # Glyphs 3
-            rules = self.attributes["axisRules"]
             info = {}
-            for axis,rule in zip(axes, self.attributes["axisRules"]):
+            for axis, rule in zip(axes, self.attributes["axisRules"]):
                 if "min" not in rule and "max" not in rule:
                     continue
                 # Rules are expressed in designspace coordinates,
