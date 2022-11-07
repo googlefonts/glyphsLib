@@ -510,3 +510,26 @@ def test_designspace_generation_bracket_other_roundtrip(datadir, ufo_module):
 
     font_rt = to_glyphs(designspace)
     assert font_rt.customParameters["Feature for Feature Variations"] == "calt"
+
+
+def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
+    with open(str(datadir.join("Playfair-v.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font, ufo_module=ufo_module)
+    axes = designspace.axes
+    info = font.glyphs["v"].layers[8]._bracket_info(axes)
+    assert info == {'opsz': (5, 410), 'wdth': (50, 75), 'wght': (690, 900)}
+
+    for source in designspace.sources:
+        assert "v.BRACKET.opsz_5_410.wdth_50_75.wght_690_900" in source.font
+
+    assert designspace.rules[0].name == "BRACKET.Optical size_5_410.Weight_690_900.Width_50_75"
+    assert designspace.rules[0].conditionSets == [
+        [dict(name="Optical size", minimum=5, maximum=410),
+         dict(name="Width", minimum=50, maximum=75),
+         dict(name="Weight", minimum=690, maximum=900),
+        ]
+    ]
+    assert designspace.rules[0].subs == [
+        ("v", "v.BRACKET.opsz_5_410.wdth_50_75.wght_690_900"),
+    ]
