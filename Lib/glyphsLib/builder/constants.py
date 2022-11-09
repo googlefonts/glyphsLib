@@ -31,14 +31,9 @@ CROP_KEY = BACKGROUND_IMAGE_PREFIX + "crop"
 LOCKED_KEY = BACKGROUND_IMAGE_PREFIX + "locked"
 ALPHA_KEY = BACKGROUND_IMAGE_PREFIX + "alpha"
 
-BRACKET_GLYPH_TEMPLATE = "{glyph_name}.{rev}BRACKET.{location}"
-REVERSE_BRACKET_LABEL = "REV_"
-BRACKET_GLYPH_RE = re.compile(
-    r"(?P<glyph_name>.+)\.(?P<rev>{})?BRACKET\.(?P<location>\d+)$".format(
-        REVERSE_BRACKET_LABEL
-    )
-)
-BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\..*BRACKET\.\d+)$")
+BRACKET_GLYPH_TEMPLATE = "{glyph_name}.BRACKET.{description}"
+BRACKET_GLYPH_RE = re.compile(r"(?P<glyph_name>.+)\.BRACKET.(?P<box>.*)$")
+BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\.BRACKET\..*)$")
 
 MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
 FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
