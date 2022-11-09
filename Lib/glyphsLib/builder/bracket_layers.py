@@ -45,8 +45,7 @@ def to_designspace_bracket_layers(self):
     # overlayFeatureVariations does exactly what we need in terms of
     # splitting rules into non-overlapping boxes and consolidating
     # multiple substitutions into a single rule.
-    for rule in overlayFeatureVariations(rules):
-        box, mappings = rule
+    for box, mappings in overlayFeatureVariations(rules):
         # Reduce the mappings to a single mapping
         mapping = {}
         for this_mapping in mappings:
