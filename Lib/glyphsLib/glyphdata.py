@@ -581,8 +581,86 @@ def _construct_liga_info_name_(base_name, data, cutSuffix):
     return None, cutSuffix
 
 
-def _construct_liga_info_names_(base_names, data, cutSuffix=None):
-    debug("__4a", base_names, cutSuffix)
+def _applySimpleIndicShaping(base_infos, data : GlyphData):
+    for idx in range(len(base_infos)):
+        info = base_infos[idx]
+        if "halant-" in info.name:
+            if idx + 1 < len(base_infos):
+                next_info = base_infos[idx + 1]
+                if next_info.name.startswith("ra-"):
+                    base_infos[idx] = None
+                    rakar_name = next_info.name.replace("ra-", "rakar-")
+                    rakar_info, _ = _get_glyph(rakar_name, data)
+                    base_infos[idx + 1] = rakar_info
+                    continue
+            if idx > 0:
+                replaceIdx = idx - 1
+                previous_info = base_infos[replaceIdx]
+                if previous_info.name.startswith("rakar-") and replaceIdx > 0:
+                    replaceIdx -= 1
+                    previous_info = base_infos[replaceIdx]
+                    if previous_info is None and idx > 0:
+                        replaceIdx -= 1
+                        previous_info = base_infos[replaceIdx]
+                if previous_info.category != "Halfform" and "a-" in previous_info.name:
+                    halfform_name = previous_info.name.replace("a-", "-")
+                    halfform_info, _ = _get_glyph(halfform_name, data)
+                    base_infos[replaceIdx] = halfform_info
+                    base_infos[idx] = None
+                    continue
+
+
+def _baseinfo_from_infos(base_infos, cutSuffix, data):
+    first_info = None
+    if cutSuffix and len(cutSuffix) > 0:
+        # when base_name + suffix are in the glyph data
+        first_info = _lookup_info(base_infos[0].name + cutSuffix, data)
+        # assert first_info is None or base_names[0] == base_infos[0].name
+    if first_info is None:
+        first_info = base_infos[0]
+
+    name_parts = []
+    lang_suffix = None
+    for info in base_infos:
+        part_name = info.name
+        if "-" in part_name:
+            part_name, _lang_suffix = part_name.rsplit("-", 1)
+            if _lang_suffix is not None and len(_lang_suffix) > 0:
+                lang_suffix = _lang_suffix
+        name_parts.append(part_name)
+
+    base_info = first_info.copy()
+    # If the first part is a Letter...
+    if first_info.category == "Letter" or first_info.category == "Number":
+        # ... and the rest are only marks or separators or don't exist, the
+        # sub_category is that of the first part ...
+        numberOfLetters = 0
+        numberOfHalfforms = 0
+        for componentInfo in base_infos:
+            cat = componentInfo.category
+            if componentInfo is not None:
+                if cat != "Mark" and cat != "Separator":
+                    numberOfLetters += 1
+                if componentInfo.subCategory == "Halfform":
+                    numberOfHalfforms += 1
+        # debug("__num", numberOfLetters, numberOfHalfforms)
+        if numberOfLetters - numberOfHalfforms > 1:
+            base_info.subCategory = "Ligature"
+        elif numberOfHalfforms > 0:
+            base_info.subCategory = "Conjunct"
+        elif base_info.script not in ("latin", "cyrillic", "greek"):
+            base_info.subCategory = "Composition"
+    elif first_info.category != "Mark":
+        base_info.subCategory = "Ligature"
+    base_info.name = _construct_join_names(name_parts)
+    if lang_suffix is not None and len(lang_suffix) > 0:
+        base_info.name += "-" + lang_suffix
+    base_info.production = _construct_production_infos(base_infos)
+    base_info.unicodes = None
+    return base_info
+
+
+def _suffix_parts(base_names, cutSuffix):
     suffix_parts = None
     if cutSuffix is not None and "_" in cutSuffix:
         if "." in cutSuffix[1:]:
@@ -597,9 +675,15 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
             cutSuffix = remaining_suffix
         else:
             suffix_parts = None
+    return suffix_parts, cutSuffix
 
-    base_names_infos = []
-    base_names_suffixes = []
+
+def _base_info_suffixes(base_names, cutSuffix, data):
+
+    suffix_parts, cutSuffix = _suffix_parts(base_names, cutSuffix)
+
+    base_infos = []
+    base_suffixes = []
     hasSuffix = False
     idx = 0
     for name in base_names:
@@ -620,105 +704,41 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
             info = GlyphInfo(name)
 
         debug("__4d", name, info)
-        base_names_infos.append(info.copy())
+        base_infos.append(info.copy())
         if needSuffix is not None and len(needSuffix) > 1 and needSuffix[0] == ".":
             needSuffix = needSuffix[1:]
-        base_names_suffixes.append(needSuffix or "")
+        base_suffixes.append(needSuffix or "")
         if needSuffix:
             hasSuffix = True
         idx += 1
     if not hasSuffix:
-        base_names_suffixes = []
+        base_suffixes = []
     if cutSuffix is not None and len(cutSuffix) > 0:
-        base_names_suffixes.append(cutSuffix)
-    for idx in range(len(base_names_infos)):
-        info = base_names_infos[idx]
-        if "halant-" in info.name:
-            if idx + 1 < len(base_names_infos):
-                next_info = base_names_infos[idx + 1]
-                if next_info.name.startswith("ra-"):
-                    base_names_infos[idx] = None
-                    rakar_name = next_info.name.replace("ra-", "rakar-")
-                    rakar_info, _ = _get_glyph(rakar_name, data)
-                    base_names_infos[idx + 1] = rakar_info
-                    continue
-            if idx > 0:
-                replaceIdx = idx - 1
-                previous_info = base_names_infos[replaceIdx]
-                if previous_info.name.startswith("rakar-") and replaceIdx > 0:
-                    replaceIdx -= 1
-                    previous_info = base_names_infos[replaceIdx]
-                    if previous_info is None and idx > 0:
-                        replaceIdx -= 1
-                        previous_info = base_names_infos[replaceIdx]
-                if previous_info.category != "Halfform" and "a-" in previous_info.name:
-                    halfform_name = previous_info.name.replace("a-", "-")
-                    halfform_info, _ = _get_glyph(halfform_name, data)
-                    base_names_infos[replaceIdx] = halfform_info
-                    base_names_infos[idx] = None
-                    continue
+        base_suffixes.append(cutSuffix)
 
-    while None in base_names_infos:
-        base_names_infos.remove(None)
-    if len(base_names_infos) == 0:
+    return base_infos, base_suffixes
+
+
+def _construct_liga_info_names_(base_names, data, cutSuffix=None):
+    debug("__4a", base_names, cutSuffix)
+   
+    base_infos, base_suffixes = _base_info_suffixes(base_names, cutSuffix, data)
+
+    _applySimpleIndicShaping(base_infos, data)
+
+    while None in base_infos:
+        base_infos.remove(None)
+    if len(base_infos) == 0:
         return None
-    first_info = None
-    if cutSuffix and len(cutSuffix) > 0:
-        # when base_name + suffix are in the glyph data
-        first_info = _lookup_info(base_names[0] + cutSuffix, data)
-    if first_info is None:
-        first_info = base_names_infos[0]
-    debug("__4b", base_names_infos)
-    debug("__4b_suffixes", base_names_suffixes)
-    debug("__4b first_info", first_info)
-    name_parts = []
-    lang_suffix = None
-    for info in base_names_infos:
-        part_name = info.name
-        if "-" in part_name:
-            part_name, _lang_suffix = part_name.rsplit("-", 1)
-            if _lang_suffix is not None and len(_lang_suffix) > 0:
-                lang_suffix = _lang_suffix
-        name_parts.append(part_name)
-    debug("__5a", name_parts)
 
-    base_info = first_info.copy()
-    # If the first part is a Letter...
-    if first_info.category == "Letter" or first_info.category == "Number":
-        # ... and the rest are only marks or separators or don't exist, the
-        # sub_category is that of the first part ...
-        numberOfLetters = 0
-        numberOfHalfforms = 0
-        for componentInfo in base_names_infos:
-            if componentInfo is not None:
-                if (
-                    componentInfo.category != "Mark"
-                    and componentInfo.category != "Separator"
-                ):
-                    numberOfLetters += 1
-                if componentInfo.subCategory == "Halfform":
-                    numberOfHalfforms += 1
-        # debug("__num", numberOfLetters, numberOfHalfforms)
-        if numberOfLetters - numberOfHalfforms > 1:
-            base_info.subCategory = "Ligature"
-        elif numberOfHalfforms > 0:
-            base_info.subCategory = "Conjunct"
-        elif base_info.script not in ("latin", "cyrillic", "greek"):
-            base_info.subCategory = "Composition"
-    elif first_info.category != "Mark":
-        base_info.subCategory = "Ligature"
-    base_info.name = _construct_join_names(name_parts)
-    if lang_suffix is not None and len(lang_suffix) > 0:
-        base_info.name += "-" + lang_suffix
-    base_info.production = _construct_production_infos(base_names_infos)
-    base_info.unicodes = None
-    debug("__6", base_info, base_names_suffixes)
-    base_suffixes = "_".join(base_names_suffixes)
-    if len(base_suffixes) > 0 and base_suffixes[0] != '.':
-        base_suffixes = "." + base_suffixes
-    if len(base_suffixes) < len(base_names_suffixes):  # all base_names_suffixes are empty
-        base_suffixes = None
-    return base_info, base_suffixes
+    base_info = _baseinfo_from_infos(base_infos, cutSuffix, data)
+
+    base_suffix = "_".join(base_suffixes)
+    if len(base_suffix) > 0 and base_suffix[0] != '.':
+        base_suffix = "." + base_suffix
+    if len(base_suffix) < len(base_suffixes):  # all base_suffixes are empty
+        base_suffix = None
+    return base_info, base_suffix
 
 
 def _construct_production_infos(infos, data=None):

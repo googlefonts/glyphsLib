@@ -408,7 +408,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "uni0306_aaa.case")
 
         info = get_glyph("a_parallel.circled")
-        # self.assertEqual(info.name, "a_parallel.circled")
+        self.assertEqual(info.name, "a_parallel.circled")
         self.assertEqual(info.production, "uni00612225.circled")
 
         info = get_glyph("a_parallel._circled")
