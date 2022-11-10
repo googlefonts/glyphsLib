@@ -721,7 +721,7 @@ def _base_info_suffixes(base_names, cutSuffix, data):
 
 def _construct_liga_info_names_(base_names, data, cutSuffix=None):
     debug("__4a", base_names, cutSuffix)
-   
+
     base_infos, base_suffixes = _base_info_suffixes(base_names, cutSuffix, data)
 
     _applySimpleIndicShaping(base_infos, data)
