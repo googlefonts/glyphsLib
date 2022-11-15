@@ -919,7 +919,9 @@ class GlyphDataTest(unittest.TestCase):
 
         # brevecomb_Dboldscript-math.f.r
         info = get_glyph("brevecomb_Dboldscript-math.f.r")
-        self.assertEqual(info.production, "uni0306_u1D4D3.f.r")  # G3: uni0306_u1D4D3.f.r
+        self.assertEqual(
+            info.production, "uni0306_u1D4D3.f.r"
+        )  # G3: uni0306_u1D4D3.f.r
 
         info = get_glyph("Dboldscript-math_Dboldscript-math")
         self.assertEqual(info.production, "u1D4D3_u1D4D3")
@@ -939,7 +941,9 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "u1D4D3_a_uniA733")
 
         info = get_glyph("Dboldscript-math_a_aaa")
-        self.assertEqual(info.production, "u1D4D3_a_aaa")  # Dboldscriptmath_a_aaa G3: u1D4D3_a_aaa
+        self.assertEqual(
+            info.production, "u1D4D3_a_aaa"
+        )  # Dboldscriptmath_a_aaa G3: u1D4D3_a_aaa
 
         # brevecomb_Dboldscript-math
         info = get_glyph("brevecomb_Dboldscript-math")
@@ -957,7 +961,9 @@ class GlyphDataTest(unittest.TestCase):
 
         # a_i.loclTRK_a
         info = get_glyph("a_idotaccent_a")
-        self.assertEqual(info.production, "a_i_a.loclTRK")  # a_idotaccent_a G3: a_i_a.loclTRK
+        self.assertEqual(
+            info.production, "a_i_a.loclTRK"
+        )  # a_idotaccent_a G3: a_i_a.loclTRK
 
         info = get_glyph("a_a_acutecomb")
         self.assertEqual(info.production, "a_a_acutecomb")
