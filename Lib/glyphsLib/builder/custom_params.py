@@ -996,6 +996,37 @@ class ReencodeGlyphsParamHandler(AbstractParamHandler):
 register(ReencodeGlyphsParamHandler())
 
 
+class RenameGlyphsParamHandler(AbstractParamHandler):
+    """The "Rename Glyphs" custom parameter contains a list of
+    'glyphname=glyphname' strings: e.g., ["a=b", "b=a"].
+    It only applies to specific instance (not to master or globally).
+
+    The glyph data is swapped, but the unicode assignments remain the
+    same.
+    """
+
+    def to_ufo(self, builder, glyphs, ufo):
+        rename_list = glyphs.get_custom_value("Rename Glyphs")
+        if not rename_list:
+            return
+        ufo = ufo._owner
+        for entry in rename_list:
+            oldname, newname = entry.split("=")
+            ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
+            ufo[newname].unicodes, ufo[oldname].unicodes = (
+                ufo[oldname].unicodes,
+                ufo[newname].unicodes,
+            )
+
+    def to_glyphs(self, glyphs, ufo):
+        # The 'Reencode Glyphs' parameter only applies to instances, which
+        # are not meant to be roundtripped. No need to handle it here.
+        pass
+
+
+register(RenameGlyphsParamHandler())
+
+
 def to_ufo_custom_params(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
     glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
