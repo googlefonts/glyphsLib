@@ -1,5 +1,6 @@
 import glyphsLib
-from glyphsLib.classes import GSFont, GSFontMaster
+import pytest
+from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone
 
 
 def test_metrics():
@@ -31,10 +32,51 @@ def test_glyphs3_alignment_zones(datadir):
     assert master.alignmentZones != []
 
     # As per classes_tests::GSAlignmentZoneFromFileTest
-    for i, zone in enumerate([(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]):
-        pos, size = zone
+    zones = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]
+    for i, (pos, size) in enumerate(zones):
         assert master.alignmentZones[i].position == pos
         assert master.alignmentZones[i].size == size
+
+    assert len(master.alignmentZones) == 5
+
+    # alignmentZones can be set as tuples or instances
+    master.alignmentZones = [GSAlignmentZone(800, 10), GSAlignmentZone(0, -10)]
+
+    assert master.alignmentZones[-2].position == 800
+    assert master.alignmentZones[-2].size == 10
+
+    assert master.alignmentZones[-1].position == 0
+    assert master.alignmentZones[-1].size == -10
+
+    assert len(master.alignmentZones) == 2
+
+    # Duplicates should get added only once
+    master.alignmentZones = [(0, -10), (0, -10)]
+    assert len(master.alignmentZones) == 1
+
+    # Let it be emptyable
+    master.alignmentZones = []
+    assert len(master.alignmentZones) == 0
+
+    # Non-list values not allowed
+    with pytest.raises(ValueError):
+        master.alignmentZones = (800, 10)
+
+    with pytest.raises(ValueError):
+        master.alignmentZones = 800
+
+    with pytest.raises(ValueError):
+        master.alignmentZones = "800"
+
+    # Only tuples and GSAlignmentZone allowed inside
+    with pytest.raises(ValueError):
+        master.alignmentZones = [False, True]
+
+    with pytest.raises(ValueError):
+        master.alignmentZones = [[0, -10], [800, 10]]
+
+    with pytest.raises(ValueError):
+        master.alignmentZones = ["", ""]
 
 
 def test_glyphs3_stems(datadir):

@@ -1445,6 +1445,8 @@ class GSAlignmentZone(GSBase):
         )
 
     def __lt__(self, other):
+        if not hasattr(other, "position") or not hasattr(other, "size"):
+            return False
         return (self.position, self.size) < (other.position, other.size)
 
     def __eq__(self, other):
@@ -1760,8 +1762,8 @@ class GSFontMaster(GSBase):
 
     @property
     def alignmentZones(self):
-        # If there are values that are parsed from file format 2 or explicitly
-        # set return those
+        # If there are values that are parsed from file format 2 or which are
+        # explicitly set return those
         if self._alignmentZones is not None:
             return self._alignmentZones
 
@@ -1786,12 +1788,21 @@ class GSFontMaster(GSBase):
         return zones
 
     @alignmentZones.setter
-    def alignmentZones(self, value):
-        assert type(value) == list
+    def alignmentZones(self, entries):
+        if type(entries) is not list:
+            raise ValueError(
+                "alignmentZones expected as list, got %s (%s)"
+                % (entries, type(entries))
+            )
         zones = []
-        for val in value:
-            if val not in zones and val is not False:
-                zones.append(val)
+        for zone in entries:
+            if type(zone) is not tuple and type(zone) is not GSAlignmentZone:
+                raise ValueError(
+                    "alignmentZones values expected as tuples of (pos, size) "
+                    "or GSAligmentZone, got: %s (%s)" % (zone, type(zone))
+                )
+            if zone not in zones:
+                zones.append(zone)
         self._alignmentZones = zones
 
     @property
