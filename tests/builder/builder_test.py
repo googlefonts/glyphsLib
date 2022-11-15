@@ -2261,8 +2261,8 @@ def test_load_kerning_bracket(ufo_module):
 
     ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
     bracketed_groups = {
-        "public.kern2.foo": ["a", "a.BRACKET.300"],
-        "public.kern1.foo": ["x", "x.BRACKET.300", "x.BRACKET.600"],
+        "public.kern2.foo": ["a", "a.BRACKET.wght_300_1000"],
+        "public.kern1.foo": ["x", "x.BRACKET.wght_300_1000", "x.BRACKET.wght_600_1000"],
     }
     assert ds.sources[0].font.groups == bracketed_groups
     assert ds.sources[1].font.groups == bracketed_groups
@@ -2271,11 +2271,11 @@ def test_load_kerning_bracket(ufo_module):
     assert ds.sources[0].font.kerning == {
         ("public.kern1.foo", "public.kern2.foo"): -200,
         ("a", "x"): -100,
-        ("a.BRACKET.300", "x"): -100,
-        ("a", "x.BRACKET.300"): -100,
-        ("a.BRACKET.300", "x.BRACKET.300"): -100,
-        ("a", "x.BRACKET.600"): -100,
-        ("a.BRACKET.300", "x.BRACKET.600"): -100,
+        ("a.BRACKET.wght_300_1000", "x"): -100,
+        ("a", "x.BRACKET.wght_300_1000"): -100,
+        ("a.BRACKET.wght_300_1000", "x.BRACKET.wght_300_1000"): -100,
+        ("a", "x.BRACKET.wght_600_1000"): -100,
+        ("a.BRACKET.wght_300_1000", "x.BRACKET.wght_600_1000"): -100,
     }
     assert ds.sources[1].font.kerning == {}
     assert ds.sources[2].font.kerning == {
@@ -2294,8 +2294,8 @@ def test_load_kerning_bracket(ufo_module):
 
     ds2 = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
     bracketed_groups = {
-        "public.kern2.foo": ["a", "a.BRACKET.300"],
-        "public.kern1.foo": ["x", "x.BRACKET.300", "x.BRACKET.600"],
+        "public.kern2.foo": ["a", "a.BRACKET.wght_300_1000"],
+        "public.kern1.foo": ["x", "x.BRACKET.wght_300_1000", "x.BRACKET.wght_600_1000"],
     }
     assert ds2.sources[0].font.groups == bracketed_groups
     assert ds2.sources[1].font.groups == bracketed_groups
@@ -2304,11 +2304,11 @@ def test_load_kerning_bracket(ufo_module):
     assert ds2.sources[0].font.kerning == {
         ("public.kern1.foo", "public.kern2.foo"): -200,
         ("a", "x"): -100,
-        ("a.BRACKET.300", "x"): -100,
-        ("a", "x.BRACKET.300"): -100,
-        ("a.BRACKET.300", "x.BRACKET.300"): -100,
-        ("a", "x.BRACKET.600"): -100,
-        ("a.BRACKET.300", "x.BRACKET.600"): -100,
+        ("a.BRACKET.wght_300_1000", "x"): -100,
+        ("a", "x.BRACKET.wght_300_1000"): -100,
+        ("a.BRACKET.wght_300_1000", "x.BRACKET.wght_300_1000"): -100,
+        ("a", "x.BRACKET.wght_600_1000"): -100,
+        ("a.BRACKET.wght_300_1000", "x.BRACKET.wght_600_1000"): -100,
     }
     assert ds2.sources[1].font.kerning == {}
     assert ds2.sources[2].font.kerning == {

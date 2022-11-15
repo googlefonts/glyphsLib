@@ -130,6 +130,10 @@ def pairs(list):
     return [list[i : i + 2] for i in range(0, len(list), 2)]
 
 
+def freezedict(dct):
+    return frozenset(dct.items())
+
+
 class LoggerMixin:
 
     _logger = None
@@ -141,6 +145,14 @@ class LoggerMixin:
                 ".".join([self.__class__.__module__, self.__class__.__name__])
             )
         return self._logger
+
+
+def designspace_min_max(axis):
+    """Return the minimum/maximum of an axis in designspace coordinates"""
+    if not axis.map:
+        return axis.minimum, axis.maximum
+    designspace_scale = [design_location for _, design_location in axis.map]
+    return min(designspace_scale), max(designspace_scale)
 
 
 class PeekableIterator:

@@ -23,12 +23,11 @@ tripping.
 
 import re
 import os
-from fontTools import unicodedata
-
+from typing import Tuple
 import xml.etree.ElementTree
 
+from fontTools import unicodedata
 import fontTools.agl
-
 
 __all__ = [
     "get_glyph",
@@ -38,6 +37,10 @@ __all__ = [
     "GSLowercase",
     "GSSmallcaps",
     "GSMinor",
+    "GSBIDI",
+    "GSLTR",
+    "GSRTL",
+    "GSVertical",
 ]
 
 GSNoCase = None  # 0
@@ -73,14 +76,14 @@ class GlyphInfo:
     def __init__(
         self,
         name,
-        production=None,
-        unicodes=None,
-        category=None,
-        subCategory=None,
-        case=None,
-        script=None,
-        direction=GSLTR,
-        description=None,
+        production : str = None,
+        unicodes : list = None,
+        category : str = None,
+        subCategory : str = None,
+        case : str = None,
+        script : str = None,
+        direction : str = GSLTR,
+        description : str = None,
     ):
         self.name = name
         self._production = production
@@ -197,59 +200,57 @@ class GlyphData:
         )
 
 
-def get_glyph(glyph_name, data=None, unicodes=None):
+def get_glyph(glyph_name: str, data: GlyphData = None, unicodes: list = None) -> GlyphInfo:
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
     The information is derived from an included copy of GlyphData.xml
     and GlyphData_Ideographs.xml, going by the glyph name or unicode fallback.
     """
-
+    # Read data on first use.
+    if data is None:
+        data = _load_data_files()
     return _get_glyph(glyph_name, data, unicodes)[0] or GlyphInfo(glyph_name)
 
 
-def _get_glyph(glyph_name, data=None, unicodes=None, cutSuffix=None):
-    # Read data on first use.
-    if data is None:
-        global GLYPHDATA
-        if GLYPHDATA is None:
-            from importlib.resources import open_binary
+def _load_data_files():
+    global GLYPHDATA
+    if GLYPHDATA is None:
+        from importlib.resources import open_binary
 
-            with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
-                with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
-                    GLYPHDATA = GlyphData.from_files(f1, f2)
-        data = GLYPHDATA
+        with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
+            with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
+                GLYPHDATA = GlyphData.from_files(f1, f2)
+    return GLYPHDATA
+
+
+def _get_glyph(glyph_name : str, data : GlyphData, unicodes : str = None, cutSuffix : str = None) -> Tuple[GlyphInfo, str]:
 
     info = None
-    # Look up data by full glyph name first.
+
     debug("__get", glyph_name, cutSuffix)
 
+    # Look up data by full glyph name first.
     if cutSuffix is not None:
         info = _lookup_info(glyph_name + cutSuffix, data)
         if info is not None:
-            cutSuffix = (
-                None  # the info has the suffix, we should not add it again later
-            )
-    if info is None:
-        info = _lookup_info(glyph_name, data)
+            return info, None
+    info = _lookup_info(glyph_name, data)
+    if info is not None:
+        return info, cutSuffix
 
-    # Look up by unicode
-    if not info:
-        if unicodes is None and len(glyph_name) == 1:
-            unicodes = ["%.4X" % ord(glyph_name)]
-            debug("__unicodes 0", unicodes)
-        if unicodes is not None:
-            for uni in unicodes:
-                info = _lookup_info_by_unicode(uni, data)
-                if info:
-                    break
-        else:
-            info, cutSuffix = _construct_info(glyph_name, data, cutSuffix)
+    # try to lookup up by unicode
+    if unicodes is None and len(glyph_name) == 1:
+        unicodes = ["%.4X" % ord(glyph_name)]
+        debug("__unicodes 0", unicodes)
+    if unicodes is not None:
+        for uni in unicodes:
+            info = _lookup_info_by_unicode(uni, data)
+            return info, cutSuffix
 
-    # production_name = info.production
-    # if info.production is None:
-    #     production_name = _construct_production_name(glyph_name, data=data)
-    debug("__get >", info)
+    # try to parse the name
+    info, cutSuffix = _construct_info(glyph_name, data, cutSuffix)
+
     return info, cutSuffix or ""
 
 
@@ -353,102 +354,68 @@ def _is_unicode_u_value(name):
     )
 
 
-def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
-    """Derive (sub)category of a glyph name."""
-    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
-    # construction helpers without a category.
-    debug("__glyph_name", glyph_name, cutSuffix)
-    if glyph_name.startswith("_"):
-        info = GlyphInfo(glyph_name)
-        if (
-            glyph_name.startswith("_corner.")
-            or glyph_name.startswith("_segment.")
-            or glyph_name.startswith("_brush.")
-            or glyph_name.startswith("_cap.abc")
-        ):
-            info.category = "Corner"
-        if "-" in glyph_name:
-            _, langSuffix = glyph_name.rsplit("-", 1)
-            info.script = (
-                langSuffix  # TODO: add proper mapping from lang tags to script
-            )
-        return info, cutSuffix
+def _underscoreGlyphInfo(glyph_name):
+    info = GlyphInfo(glyph_name)
+    if (
+        glyph_name.startswith("_corner.")
+        or glyph_name.startswith("_segment.")
+        or glyph_name.startswith("_brush.")
+        or glyph_name.startswith("_cap.abc")
+    ):
+        info.category = "Corner"
+    if "-" in glyph_name:
+        _, langSuffix = glyph_name.rsplit("-", 1)
+        info.script = (
+            langSuffix  # TODO: add proper mapping from lang tags to script
+        )
+    return info
 
-    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
-    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
-    # the same category as its base glyph.
-    suffix = ""
-    base_info = None
-    base_name = glyph_name
-    base_name, lastSuffix = os.path.splitext(base_name)
-    debug("__0", base_name, lastSuffix, len(lastSuffix))
 
-    while len(lastSuffix) > 0:
-        debug("__1", base_name, lastSuffix, suffix)
-        suffix += lastSuffix
-        base_info, suffix = _get_glyph(base_name, data, cutSuffix=suffix)
-        debug("__base_name1", base_name, base_info)
-        if base_info is not None:
-            break
-        base_name, lastSuffix = os.path.splitext(base_name)
+# this means suffixes that are not separated by a '.'
+def _infoWithKnownSuffix(base_name : str, data : GlyphData) -> GlyphInfo:
+    knownSuffixes = ["superior", "inferior"]
+    for knownSuffix in knownSuffixes:
 
-    debug("__lastSuffix ({}), ({}), ({})".format(lastSuffix, suffix, cutSuffix))
-    if base_info is None:
-        knownSuffixes = ["superior", "inferior"]
-        for knownSuffix in knownSuffixes:
-            if base_name.endswith(knownSuffix):
-                base_name = base_name[: -len(knownSuffix)]
-                debug("__base_name2", base_name)
-                base_info, _ = _get_glyph(base_name)
-                if base_info:
-                    base_info = base_info.copy()
-                    base_info.case = GSMinor
-                    if base_info.production:
-                        base_info.production += knownSuffix
-                    base_info.name += knownSuffix
-                    base_info.unicodes = None
-                    return base_info, cutSuffix
+        if not base_name.endswith(knownSuffix):
+            continue
 
-    if base_info:
-        if len(suffix) > 0:
-            debug("__base_info suffix", suffix, cutSuffix, base_info)
+        base_name = base_name[: -len(knownSuffix)]
+        base_info, _ = _get_glyph(base_name, data)
+        if base_info:
             base_info = base_info.copy()
-            base_info.name += suffix
-            production = base_info._production
-            if production is not None:
-                debug("__add prod suffix:", production, suffix)
-                production += suffix
-                base_info.production = production
+            base_info.case = GSMinor
+            if base_info.production:
+                base_info.production += knownSuffix
+            base_info.name += knownSuffix
             base_info.unicodes = None
+            return base_info
+    return None
 
-            if suffix == ".case":
-                base_info.case = GSUppercase
-            elif suffix in (".sc", ".smcp", ".c2sc"):
-                base_info.case = GSSmallcaps
-            elif suffix in (".subs", ".sups", ".sinf"):
-                base_info.case = GSMinor
-        return base_info, cutSuffix
 
-    # Detect ligatures.
-    if "_" in base_name:
-        base_names = base_name.split("_")
-        # The last name has a suffix, add it to all the names.
-        if "-" in base_names[-1]:
-            _, s = base_names[-1].rsplit("-", 1)
-            base_names = [
-                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
-            ]
-        debug("__3", base_names, suffix, cutSuffix)
+def _applySuffix(base_info, suffix):
+    if suffix is None or len(suffix) == 0:
+        return base_info
 
-        base_info, suffixes = _construct_liga_info_names_(base_names, data, cutSuffix)
-        debug("__A", glyph_name, base_info)
-        if base_info is not None:
-            if cutSuffix is not None and base_info.name.endswith(cutSuffix):
-                glyph_name += cutSuffix
-                cutSuffix = ""
-            base_info.name = glyph_name
-            return base_info, cutSuffix
+    debug("__base_info suffix", suffix, base_info)
+    base_info = base_info.copy()
+    base_info.name += suffix
+    production = base_info._production
+    if production is not None:
+        debug("__add prod suffix:", production, suffix)
+        production += suffix
+        base_info.production = production
+    base_info.unicodes = None
 
+    if suffix == ".case":
+        base_info.case = GSUppercase
+    elif suffix in (".sc", ".smcp", ".c2sc"):
+        base_info.case = GSSmallcaps
+    elif suffix in (".subs", ".sups", ".sinf"):
+        base_info.case = GSMinor
+    return base_info
+
+
+def _construct_liga_info_uniname_(base_name, glyph_name, data, cutSuffix):
     if _is_unicode_uni_value(base_name):
         base_names = []
         for i in range(3, len(base_name), 4):
@@ -475,26 +442,76 @@ def _construct_info(glyph_name, data, cutSuffix=None):  # noqa: C901
             base_info.name = glyph_name
             return base_info, cutSuffix
 
-    # TODO: Cover more cases. E.g. "one_one" -> ("Number", "Ligature") but
-    # "one_onee" -> ("Number", "Composition").
+    return None, cutSuffix
 
+
+def _construct_info_from_agl_(base_name):
     # Still nothing? Maybe we're looking at something like "uni1234.alt", try
     # using fontTools' AGL module to convert the base name to something meaningful.
     # Corner case: when looking at ligatures, names that don't exist in the AGLFN
     # are skipped, so len("acutecomb_o") == 2 but len("dotaccentcomb_o") == 1.
     character = fontTools.agl.toUnicode(base_name)
-    debug("__char", character)
-    if character:
-        category, sub_category, case = _translate_category(
-            glyph_name, unicodedata.category(character[0])
-        )
-        name = fontTools.agl.UV2AGL.get(ord(character[0]))
-        if name is None:
-            name = glyph_name
-        return (
-            GlyphInfo(name, category=category, subCategory=sub_category, case=case),
-            cutSuffix,
-        )
+    debug("__char", base_name)
+    if character is None or len(character) == 0:
+        return None
+
+    category, sub_category, case = _translate_category(
+        base_name, unicodedata.category(character[0])
+    )
+    name = fontTools.agl.UV2AGL.get(ord(character[0]))
+    if name is None:
+        name = base_name
+    return GlyphInfo(name, category=category, subCategory=sub_category, case=case)
+
+
+def _construct_info(glyph_name : str, data : GlyphData, cutSuffix : str = None) -> Tuple[GlyphInfo, str]:
+    """Derive info of a glyph name."""
+    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
+    # construction helpers without a category.
+    debug("__glyph_name", glyph_name, cutSuffix)
+    if glyph_name.startswith("_"):
+        return _underscoreGlyphInfo(glyph_name), cutSuffix
+
+    # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
+    # ".alt" and try a second lookup with just the base name. A variant is hopefully in
+    # the same category as its base glyph.
+    suffix = ""
+    base_info = None
+    base_name = glyph_name
+    base_name, lastSuffix = os.path.splitext(base_name)
+
+    while len(lastSuffix) > 0:
+        suffix += lastSuffix
+        base_info, suffix = _get_glyph(base_name, data, cutSuffix=suffix)
+        if base_info is not None:
+            break
+        base_name, lastSuffix = os.path.splitext(base_name)
+
+    debug("__lastSuffix ({}), ({}), ({})".format(lastSuffix, suffix, cutSuffix))
+    if base_info is None:
+        base_info = _infoWithKnownSuffix(base_name, data)
+        if base_info:
+            return base_info, cutSuffix
+
+    if base_info:
+        base_info = _applySuffix(base_info, suffix)
+        return base_info, cutSuffix
+
+    # Detect ligatures.
+    base_info, cutSuffix = _construct_liga_info_name_(base_name, data, cutSuffix)
+    if base_info is not None:
+        return base_info, cutSuffix
+
+    base_info, cutSuffix = _construct_liga_info_uniname_(base_name, glyph_name, data, cutSuffix)
+    if base_info is not None:
+        return base_info, cutSuffix
+
+    # TODO: Cover more cases. E.g. "one_one" -> ("Number", "Ligature") but
+    # "one_onee" -> ("Number", "Composition").
+
+    base_info = _construct_info_from_agl_(base_name)
+    if base_info is not None:
+        return base_info, cutSuffix
 
     return None, None  # GlyphInfo(glyph_name)
 
@@ -545,64 +562,72 @@ def _translate_category(glyph_name, unicode_category):
     return glyphs_category
 
 
-def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
+def _construct_liga_info_name_(base_name, data, cutSuffix):
+    if "_" in base_name:
+        base_names = base_name.split("_")
+        # The last name has a suffix, add it to all the names.
+        if "-" in base_names[-1]:
+            _, s = base_names[-1].rsplit("-", 1)
+            base_names = [
+                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
+            ]
+        base_info, suffixes = _construct_liga_info_names_(base_names, data, cutSuffix)
 
-    debug("__4a", base_names, cutSuffix)
-    base_names_infos = []
-    base_names_suffixes = []
-    for name in base_names:
-        info, needSuffix = _get_glyph(name, data, cutSuffix=cutSuffix)
-        debug("__4c", name, info)
-        if info is None and "-" in name:  # for "a_Dboldscript-math"
-            shortName, _ = name.rsplit("-", 1)
-            info, needSuffix = _get_glyph(shortName, data, cutSuffix=cutSuffix)
-            if info:
-                name = shortName
-        if info is None:
-            info = GlyphInfo(name)
+        if base_info is not None:
+            # if cutSuffix is not None and base_info.name.endswith(cutSuffix):
+            #    glyph_name += cutSuffix
+            #    cutSuffix = ""
+            return base_info, suffixes
+    return None, cutSuffix
 
-        debug("__4d", name, info)
-        base_names_infos.append(info.copy())
-        base_names_suffixes.append(needSuffix)
 
-    for idx in range(len(base_names_infos)):
-        info = base_names_infos[idx]
+def _applySimpleIndicShaping(base_infos, data : GlyphData):
+    for idx in range(len(base_infos)):
+        info = base_infos[idx]
         if "halant-" in info.name:
-            if idx + 1 < len(base_names_infos):
-                next_info = base_names_infos[idx + 1]
+            if idx + 1 < len(base_infos):
+                next_info = base_infos[idx + 1]
                 if next_info.name.startswith("ra-"):
-                    base_names_infos[idx] = None
+                    base_infos[idx] = None
                     rakar_name = next_info.name.replace("ra-", "rakar-")
                     rakar_info, _ = _get_glyph(rakar_name, data)
-                    base_names_infos[idx + 1] = rakar_info
+                    base_infos[idx + 1] = rakar_info
                     continue
             if idx > 0:
-                previous_info = base_names_infos[idx - 1]
+                replaceIdx = idx - 1
+                previous_info = base_infos[replaceIdx]
+                if previous_info.name.startswith("rakar-") and replaceIdx > 0:
+                    replaceIdx -= 1
+                    previous_info = base_infos[replaceIdx]
+                    if previous_info is None and idx > 0:
+                        replaceIdx -= 1
+                        previous_info = base_infos[replaceIdx]
                 if previous_info.category != "Halfform" and "a-" in previous_info.name:
                     halfform_name = previous_info.name.replace("a-", "-")
                     halfform_info, _ = _get_glyph(halfform_name, data)
-                    base_names_infos[idx - 1] = halfform_info
-                    base_names_infos[idx] = None
+                    base_infos[replaceIdx] = halfform_info
+                    base_infos[idx] = None
                     continue
-    if None in base_names_infos:
-        base_names_infos.remove(None)
-    if len(base_names_infos) == 0:
-        return None
-    first_info = base_names_infos[0]
-    debug("__4b", base_names_infos)
-    debug("__4b_suffixes", base_names_suffixes)
-    debug("__4b first_info", first_info)
+
+
+def _baseinfo_from_infos(base_infos, cutSuffix, data):
+    first_info = None
+    if cutSuffix and len(cutSuffix) > 0:
+        # when base_name + suffix are in the glyph data
+        first_info = _lookup_info(base_infos[0].name + cutSuffix, data)
+        # assert first_info is None or base_names[0] == base_infos[0].name
+    if first_info is None:
+        first_info = base_infos[0]
+
     name_parts = []
     lang_suffix = None
-    for info in base_names_infos:
-        if info is not None:
-            part_name = info.name
-            if "-" in part_name:
-                part_name, _lang_suffix = part_name.rsplit("-", 1)
-                if _lang_suffix is not None and len(_lang_suffix) > 0:
-                    lang_suffix = _lang_suffix
-            name_parts.append(part_name)
-    debug("__5a", name_parts)
+    for info in base_infos:
+        part_name = info.name
+        if "-" in part_name:
+            part_name, _lang_suffix = part_name.rsplit("-", 1)
+            if _lang_suffix is not None and len(_lang_suffix) > 0:
+                lang_suffix = _lang_suffix
+        name_parts.append(part_name)
 
     base_info = first_info.copy()
     # If the first part is a Letter...
@@ -611,12 +636,10 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
         # sub_category is that of the first part ...
         numberOfLetters = 0
         numberOfHalfforms = 0
-        for componentInfo in base_names_infos:
+        for componentInfo in base_infos:
+            cat = componentInfo.category
             if componentInfo is not None:
-                if (
-                    componentInfo.category != "Mark"
-                    and componentInfo.category != "Separator"
-                ):
+                if cat != "Mark" and cat != "Separator":
                     numberOfLetters += 1
                 if componentInfo.subCategory == "Halfform":
                     numberOfHalfforms += 1
@@ -632,10 +655,90 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):  # noqa: C901
     base_info.name = _construct_join_names(name_parts)
     if lang_suffix is not None and len(lang_suffix) > 0:
         base_info.name += "-" + lang_suffix
-    base_info.production = _construct_production_infos(base_names_infos)
+    base_info.production = _construct_production_infos(base_infos)
     base_info.unicodes = None
-    debug("__6", base_info, base_names_suffixes)
-    return base_info, base_names_suffixes
+    return base_info
+
+
+def _suffix_parts(base_names, cutSuffix):
+    suffix_parts = None
+    if cutSuffix is not None and "_" in cutSuffix:
+        if "." in cutSuffix[1:]:
+            dot_index = cutSuffix[1:].find(".")
+            first_suffix = cutSuffix[1:dot_index]
+            remaining_suffix = cutSuffix[dot_index:]
+        else:
+            first_suffix = cutSuffix[1:]
+            remaining_suffix = None
+        suffix_parts = first_suffix.split("_")
+        if len(suffix_parts) == len(base_names):
+            cutSuffix = remaining_suffix
+        else:
+            suffix_parts = None
+    return suffix_parts, cutSuffix
+
+
+def _base_info_suffixes(base_names, cutSuffix, data):
+
+    suffix_parts, cutSuffix = _suffix_parts(base_names, cutSuffix)
+
+    base_infos = []
+    base_suffixes = []
+    hasSuffix = False
+    idx = 0
+    for name in base_names:
+        if suffix_parts is not None:
+            part_suffix = suffix_parts[idx]
+            if len(part_suffix) > 0:
+                part_suffix = "." + part_suffix
+        else:
+            part_suffix = None
+        info, needSuffix = _get_glyph(name, data, cutSuffix=part_suffix)
+        debug("__4c", name, info)
+        if info is None and "-" in name:  # for "a_Dboldscript-math"
+            shortName, _ = name.rsplit("-", 1)
+            info, needSuffix = _get_glyph(shortName, data, cutSuffix=part_suffix)
+            if info:
+                name = shortName
+        if info is None:
+            info = GlyphInfo(name)
+
+        debug("__4d", name, info)
+        base_infos.append(info.copy())
+        if needSuffix is not None and len(needSuffix) > 1 and needSuffix[0] == ".":
+            needSuffix = needSuffix[1:]
+        base_suffixes.append(needSuffix or "")
+        if needSuffix:
+            hasSuffix = True
+        idx += 1
+    if not hasSuffix:
+        base_suffixes = []
+    if cutSuffix is not None and len(cutSuffix) > 0:
+        base_suffixes.append(cutSuffix)
+
+    return base_infos, base_suffixes
+
+
+def _construct_liga_info_names_(base_names, data, cutSuffix=None):
+    debug("__4a", base_names, cutSuffix)
+
+    base_infos, base_suffixes = _base_info_suffixes(base_names, cutSuffix, data)
+
+    _applySimpleIndicShaping(base_infos, data)
+
+    while None in base_infos:
+        base_infos.remove(None)
+    if len(base_infos) == 0:
+        return None
+
+    base_info = _baseinfo_from_infos(base_infos, cutSuffix, data)
+
+    base_suffix = "_".join(base_suffixes)
+    if len(base_suffix) > 0 and base_suffix[0] != '.':
+        base_suffix = "." + base_suffix
+    if len(base_suffix) < len(base_suffixes):  # all base_suffixes are empty
+        base_suffix = None
+    return base_info, base_suffix
 
 
 def _construct_production_infos(infos, data=None):
@@ -739,27 +842,31 @@ def _construct_join_names(names):
     if len(names) == len(uni_names) and (has_uni_value or has_u_value):
         debug("__YY4", uni_names)
         if not has_u_value:
-            final_production_name = "uni" + "".join(uni_names)
+            final_name = "uni" + "".join(uni_names)
         else:
-            final_production_name = "u"
+            final_name = "u"
             for uni in uni_names:
                 if len(uni) == 4:
-                    final_production_name += "0" + uni
+                    final_name += "0" + uni
                 else:
-                    final_production_name += uni
+                    final_name += uni
     else:
         debug("__YY5", names)
-        final_production_name = "_".join(names)
-        replace_parts = [
-            [
-                "ra_halant",
-                "rakar",
-            ],  # TODO: this should not be done for malayalam and kannada
-            ["a_halant", ""],  # TODO: this should not be done for kannada
-        ]
-        for replace_part in replace_parts:
-            final_production_name = final_production_name.replace(
-                replace_part[0], replace_part[1]
-            )
-    debug("__YY6", final_production_name)
-    return _agl_compliant_name(final_production_name)
+        suffixes = []
+        base_names = []
+        # ["a", "parallel.circled"] > "a_parallel._circled" (base name and suffix have the same number of underscores)
+        for name in names:
+            if "." in name:
+                parts = name.split(".", 1)
+                base_names.append(parts[0])
+                suffixes.append(parts[1])
+            else:
+                base_names.append(name)
+                suffixes.append("")
+
+        final_name = "_".join(base_names)
+        final_suffix = "_".join(suffixes)
+        if len(final_suffix) >= len(suffixes):
+            final_name += "." + final_suffix
+    debug("__YY6", final_name)
+    return _agl_compliant_name(final_name)

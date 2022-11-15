@@ -509,11 +509,13 @@ class GlyphsBuilder(LoggerMixin):
                 if not m:
                     continue
                 bracket_glyph = source.font[glyph_name]
-                base_glyph, reverse, threshold = m.groups()
+                base_glyph, location = m.groups()
                 layer_name = bracket_glyph.lib.get(
-                    GLYPHLIB_PREFIX + "_originalLayerName",
-                    "{}{}]".format("]" if reverse else "[", threshold),
+                    GLYPHLIB_PREFIX + "_originalLayerName"
                 )
+                if layer_name is None:
+                    # Determine layer name from location
+                    raise NotImplementedError
                 # _originalLayerName is an empty string for 'implicit' bracket layers;
                 # we don't import these since they were copies of master layers.
                 if layer_name:

@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import unittest
 import os
 import xml
+import unittest
 
 from glyphsLib.glyphdata import (
     GSLTR,
@@ -32,6 +31,7 @@ from glyphsLib.glyphdata import get_glyph
 class GlyphDataTest(unittest.TestCase):
     def test_infoFromName(self):
         # all the test from Glyphsapp
+
         info = get_glyph("sad-ar.medi.liga")
         self.assertEqual(info.name, "sad-ar.medi.liga")
         self.assertIsNone(info.unicodes)
@@ -53,10 +53,6 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.name, "a_voicedcomb-kana-hira")
         self.assertEqual(info.production, "uni30423099")
         """
-
-        info = get_glyph("歷.1")
-        self.assertEqual(info.name, "uni6B77.1")
-        self.assertEqual(info.production, "uni6B77.1")
 
         info = get_glyph("A")
         self.assertEqual(info.name, "A")
@@ -107,6 +103,7 @@ class GlyphDataTest(unittest.TestCase):
         """
 
         info = get_glyph("k_ta-deva.ss01")
+        self.assertEqual(info.name, "k_ta-deva.ss01")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.subCategory, "Conjunct")
         self.assertEqual(info.production, "uni0915094D0924.ss01")
@@ -126,6 +123,7 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph(".notdef")
         self.assertEqual(info.name, ".notdef")
         self.assertEqual(info.category, "Separator")
+        self.assertIsNone(info.subCategory)
         self.assertIsNone(info.unicodes)
 
         info = get_glyph(".null")
@@ -162,7 +160,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.category, "Letter")
 
         info = get_glyph("ii_ia-cy.fina")
-        self.assertEqual(info.name, "ii_ia-cy.fina")  # ii_ya-cy.fina
+        self.assertEqual(info.name, "ii_ya-cy.fina")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.production, "uni0438044F.fina")
 
@@ -224,27 +222,6 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "f_j.ss01_ss02")
         """
 
-        info = get_glyph("brevecomb")
-        self.assertEqual(info.case, GSLowercase)
-        self.assertEqual(info.category, "Mark")
-        self.assertEqual(info.subCategory, "Nonspacing")
-
-        info = get_glyph("brevecomb.case")
-        self.assertEqual(info.case, GSUppercase)
-        self.assertEqual(info.category, "Mark")
-        self.assertEqual(info.subCategory, "Nonspacing")
-
-        info = get_glyph("dieresiscomb_acutecomb.case")
-        self.assertIsNone(info.unicodes)
-        self.assertEqual(info.case, GSUppercase)
-        self.assertEqual(info.category, "Mark")
-        self.assertEqual(info.subCategory, "Nonspacing")
-
-        info = get_glyph("wigglylinebelowcomb.alt")
-        self.assertIsNone(info.unicodes)
-        self.assertEqual(info.category, "Mark")
-        self.assertEqual(info.subCategory, "Nonspacing")
-
         info = get_glyph("two")
         self.assertEqual(info.name, "two")
         self.assertEqual(info.category, "Number")
@@ -283,9 +260,12 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.script, "khmer")
         self.assertEqual(info.production, "uni17D2179B")
 
+        """
+        TODO:
         info = get_glyph("lo_uaMark-khmer.below_")
         self.assertEqual(info.name, "lo_uaMark-khmer.below_")
         self.assertEqual(info.script, "khmer")
+        """
 
         """
         TODO: this is similar to the "f_j.ss01_ss02". The "below" belongs
@@ -329,7 +309,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "uni0C950CCD0CB70CBF")
 
         info = get_glyph("d_dh_r_ya-deva")
-        self.assertEqual(info.name, "d_dh_r_ya-deva")  # d_dh_rakar_ya-deva
+        self.assertEqual(info.name, "d_dh_rakar_ya-deva")
         self.assertEqual(info.subCategory, "Conjunct")
         self.assertEqual(info.production, "uni0926094D0927094D0930094D092F")
 
@@ -345,6 +325,17 @@ class GlyphDataTest(unittest.TestCase):
 
         info = get_glyph("one.sinf")
         self.assertEqual(info.case, GSMinor)
+
+        info = get_glyph("one.subs")
+        self.assertEqual(info.case, GSMinor)
+
+        info = get_glyph("one.foo")
+        self.assertEqual(info.category, "Number")
+        self.assertEqual(info.subCategory, "Decimal Digit")
+
+        info = get_glyph("one_two.foo")
+        self.assertEqual(info.category, "Number")
+        self.assertEqual(info.subCategory, "Ligature")
 
         info = get_glyph("a_idotaccent_a")
         self.assertEqual(info.production, "a_i_a.loclTRK")
@@ -367,37 +358,62 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.subCategory, "Nonspacing")
         self.assertEqual(info.case, GSSmallcaps)
 
+        info = get_glyph("brevecomb")
+        self.assertEqual(info.case, GSLowercase)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+        self.assertEqual(info.unicodes, "0306")
+        self.assertEqual(info.production, "uni0306")
+
         info = get_glyph("brevecomb.case")
+        self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.category, "Mark")
         self.assertEqual(info.subCategory, "Nonspacing")
         self.assertEqual(info.production, "uni0306.case")
+        self.assertIsNone(info.unicodes)
+
+        info = get_glyph("dieresiscomb_acutecomb.case")
+        self.assertIsNone(info.unicodes)
+        self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("wigglylinebelowcomb.alt")
+        self.assertIsNone(info.unicodes)
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
 
         info = get_glyph("brevecomb_acutecomb")
         self.assertEqual(info.subCategory, "Nonspacing")
+        self.assertEqual(info.production, "uni03060301")
+        self.assertIsNone(info.unicodes)
 
         info = get_glyph("brevecomb_acutecomb.case")
+        self.assertEqual(info.category, "Mark")
         self.assertEqual(info.subCategory, "Nonspacing")
         self.assertEqual(info.production, "uni03060301.case")
+        self.assertIsNone(info.unicodes)
+
+        info = get_glyph("brevecomb_a_a_a")
+        self.assertEqual(info.subCategory, "Nonspacing")
+        self.assertEqual(info.production, "uni0306006100610061")
+
+        info = get_glyph("brevecomb_a_a_a.case")
+        self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.subCategory, "Nonspacing")
+        self.assertEqual(info.production, "uni0306006100610061.case")
+
+        info = get_glyph("brevecomb_aaa.case")
+        self.assertEqual(info.case, GSUppercase)
+        self.assertEqual(info.production, "uni0306_aaa.case")
 
         info = get_glyph("a_parallel.circled")
         self.assertEqual(info.name, "a_parallel.circled")
-        """
-        TODO:
         self.assertEqual(info.production, "uni00612225.circled")
-        """
 
         info = get_glyph("a_parallel._circled")
         self.assertEqual(info.name, "a_parallel._circled")
-        """
-        TODO:
         self.assertEqual(info.production, "uni006129B7")
-        """
-
-        info = get_glyph("Dboldscript-math")
-        self.assertEqual(info.production, "u1D4D3")
-
-        info = get_glyph("a_Dboldscript-math")
-        self.assertEqual(info.name, "a_Dboldscript-math")
-        self.assertEqual(info.production, "a_u1D4D3")
 
         info = get_glyph("uni51CB.jp78")
         self.assertEqual(info.name, "uni51CB.jp78")
@@ -448,9 +464,6 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.category, "Number")
         self.assertEqual(info.subCategory, "Decimal Digit")
 
-        info = get_glyph("one.subs")
-        self.assertEqual(info.case, GSMinor)
-
         info = get_glyph("a.subs")
         self.assertEqual(info.case, GSMinor)
 
@@ -497,10 +510,12 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph("ka_ssa-kannada.below")
         self.assertEqual(info.category, "Mark")
         self.assertEqual(info.subCategory, "Spacing")
-        """
-        TODO:
-        self.assertEqual(info.production, "uni0CCD0C950CCD0CB7")
-        """
+        self.assertEqual(info.production, "uni0C950CB7.below")  # uni0CCD0C950CCD0CB7
+
+        info = get_glyph("ka_ssa-kannada.below_below")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Spacing")
+        self.assertEqual(info.production, "uni0CCD0C950CCD0CB7")  # uni0CCD0C950CCD0CB7
 
         info = get_glyph("i.latn_TRK.pcap")
         self.assertEqual(info.name, "i.latn_TRK.pcap")
@@ -562,7 +577,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.subCategory, "Ligature")
 
         info = get_glyph("ka_r-deva")
-        self.assertEqual(info.name, "ka_r-deva")  # "ka_rakar-deva"
+        self.assertEqual(info.name, "ka_rakar-deva")
         self.assertEqual(info.production, "uni0915094D0930")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.subCategory, "Composition")
@@ -597,11 +612,13 @@ class GlyphDataTest(unittest.TestCase):
 
         info = get_glyph("uni0915094D")
         self.assertEqual(info.name, "k-deva")
+
         info = get_glyph("uni0915094D0930")
-        self.assertEqual(info.name, "ka_rakar-deva")  # ka_rakar-deva
+        self.assertEqual(info.name, "ka_rakar-deva")
         self.assertEqual(info.production, "uni0915094D0930")
 
         info = get_glyph("h_na-deva")
+        self.assertEqual(info.production, "uni0939094D0928")
         self.assertEqual(info.script, "devanagari")
 
         info = get_glyph("reph-deva.imatra")
@@ -797,13 +814,11 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.production, "uni25CC1C2D")
 
         info = get_glyph("uni25CC_ran-lepcha")
-        self.assertEqual(info.name, "uni25CC_ran-lepcha")  # dottedCircle_ran-lepcha
+        self.assertEqual(info.name, "dottedCircle_ran-lepcha")
         self.assertEqual(info.production, "uni25CC1C36")
 
         info = get_glyph("uni25CC_ran-lepcha.ss01")
-        self.assertEqual(
-            info.name, "uni25CC_ran-lepcha.ss01"
-        )  # dottedCircle_ran-lepcha.ss01
+        self.assertEqual(info.name, "dottedCircle_ran-lepcha.ss01")
         self.assertEqual(info.production, "uni25CC1C36.ss01")
 
         info = get_glyph("Atilde")
@@ -818,7 +833,7 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(info.name, "Atilde.ss01")
 
         info = get_glyph("uni00C300C3.ss01")
-        self.assertEqual(info.name, "Atilde_Atilde.ss01")  # Atilde_Atilde.ss01
+        self.assertEqual(info.name, "Atilde_Atilde.ss01")
         self.assertEqual(info.production, "Atilde_Atilde.ss01")
 
         info = get_glyph("t.initlo_t")
@@ -843,149 +858,249 @@ class GlyphDataTest(unittest.TestCase):
         info = get_glyph("t_e_s_t.alt")
         self.assertEqual(info.subCategory, "Ligature")
 
-    def test_production_name(self):
-        # Our behavior differs from Glyphs, Glyphs 2.5.2 responses are in comments.
-        def prod(n):
-            g = get_glyph(n)
-            return g.production
+        # old 'prodution' tests
 
-        self.assertEqual(prod(".notdef"), ".notdef")
-        self.assertEqual(prod("eacute"), "eacute")
-        self.assertEqual(prod("Abreveacute"), "uni1EAE")
-        self.assertEqual(prod("C-fraktur"), "uni212D")
-        self.assertEqual(prod("Dboldscript-math"), "u1D4D3")
-        self.assertEqual(prod("fi"), "fi")
-        self.assertEqual(prod("s_t"), "s_t")
-        self.assertEqual(prod("Gcommaaccent"), "uni0122")
-        self.assertEqual(prod("o_f_f_i.foo"), "o_f_f_i.foo")
-        self.assertEqual(
-            prod("ain_alefMaksura-ar.fina"), "uni06390649.fina"
-        )  # G2: uniFD13, G3: uni06390649.fina
-        self.assertEqual(prod("brevecomb"), "uni0306")
-        self.assertEqual(prod("brevecomb.case"), "uni0306.case")
-        self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
-        self.assertEqual(prod("brevecomb_acutecomb.case"), "uni03060301.case")
-        self.assertEqual(prod("brevecomb_a_a_a"), "uni0306006100610061")
-        self.assertEqual(prod("brevecomb_a_a_a.case"), "uni0306006100610061.case")
-        self.assertEqual(
-            prod("brevecomb_aaa.case"), "uni0306_aaa.case"
-        )  # brevecomb_aaa.case, Glyphs 3: uni0306_aaa.case
+        info = get_glyph(".notdef")
+        self.assertIsNone(info.unicodes)
+        self.assertEqual(info.production, ".notdef")
 
-        # brevecomb_Dboldscript-math
-        self.assertEqual(
-            prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3"
-        )  # G3: uni0306_u1D4D3
+        info = get_glyph("eacute")
+        self.assertEqual(info.production, "eacute")
+        self.assertEqual(info.unicodes, "00E9")
+        self.assertEqual(info.category, "Letter")
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("Abreveacute")
+        self.assertEqual(info.production, "uni1EAE")
+        self.assertEqual(info.unicodes, "1EAE")
+        self.assertEqual(info.category, "Letter")
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("C-fraktur")
+        self.assertEqual(info.production, "uni212D")
+        self.assertEqual(info.unicodes, "212D")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, None)
+
+        info = get_glyph("fi")
+        self.assertEqual(info.production, "fi")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+        self.assertEqual(info.unicodes, "FB01")
+
+        info = get_glyph("fi.alt")
+        self.assertEqual(info.production, "fi.alt")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+        self.assertIsNone(info.unicodes)
+
+        info = get_glyph("s_t")
+        self.assertEqual(info.production, "s_t")
+        self.assertIsNone(info.unicodes)
+
+        info = get_glyph("Gcommaaccent")
+        self.assertEqual(info.production, "uni0122")
+        self.assertEqual(info.unicodes, "0122")
+
+        # G2: uniFD13, G3: uni06390649.fina
+        info = get_glyph("ain_alefMaksura-ar.fina")
+        self.assertEqual(info.production, "uni06390649.fina")
+
+        info = get_glyph("Dboldscript-math")
+        self.assertEqual(info.production, "u1D4D3")
+        self.assertEqual(info.unicodes, "1D4D3")
+
+        info = get_glyph("a_Dboldscript-math")
+        self.assertEqual(info.name, "a_Dboldscript-math")
+        self.assertEqual(info.production, "a_u1D4D3")
+
+        info = get_glyph("brevecomb_Dboldscript-math")
+        self.assertEqual(info.production, "uni0306_u1D4D3")
 
         # brevecomb_Dboldscript-math.f.r
-        self.assertEqual(
-            prod("brevecomb_Dboldscript-math.f.r"), "uni0306_u1D4D3.f.r"
-        )  # G3: uni0306_u1D4D3.f.r
+        info = get_glyph("brevecomb_Dboldscript-math.f.r")
+        self.assertEqual(info.production, "uni0306_u1D4D3.f.r")  # G3: uni0306_u1D4D3.f.r
 
-        self.assertEqual(prod("Dboldscript-math_Dboldscript-math"), "u1D4D3_u1D4D3")
-        self.assertEqual(prod("Dboldscript-math_Dboldscript-math.f"), "u1D4D3_u1D4D3.f")
-        self.assertEqual(prod("Dboldscript-math_a"), "u1D4D3_a")
+        info = get_glyph("Dboldscript-math_Dboldscript-math")
+        self.assertEqual(info.production, "u1D4D3_u1D4D3")
+
+        info = get_glyph("Dboldscript-math_Dboldscript-math.f")
+        self.assertEqual(info.production, "u1D4D3_u1D4D3.f")
+
+        info = get_glyph("Dboldscript-math_a")
+        self.assertEqual(info.production, "u1D4D3_a")
 
         # a_Dboldscript-math
-        self.assertEqual(prod("a_Dboldscript-math"), "a_u1D4D3")
+        info = get_glyph("a_Dboldscript-math")
+        self.assertEqual(info.production, "a_u1D4D3")
 
         # Dboldscript-math_a_aa
-        self.assertEqual(prod("Dboldscript-math_a_aa"), "u1D4D3_a_uniA733")
+        info = get_glyph("Dboldscript-math_a_aa")
+        self.assertEqual(info.production, "u1D4D3_a_uniA733")
 
-        self.assertEqual(
-            prod("Dboldscript-math_a_aaa"), "u1D4D3_a_aaa"
-        )  # Dboldscriptmath_a_aaa G3: u1D4D3_a_aaa
+        info = get_glyph("Dboldscript-math_a_aaa")
+        self.assertEqual(info.production, "u1D4D3_a_aaa")  # Dboldscriptmath_a_aaa G3: u1D4D3_a_aaa
 
         # brevecomb_Dboldscript-math
-        self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
+        info = get_glyph("brevecomb_Dboldscript-math")
+        self.assertEqual(info.production, "uni0306_u1D4D3")
 
         # Dboldscript-math_brevecomb
-        self.assertEqual(prod("Dboldscript-math_brevecomb"), "u1D4D3_uni0306")
+        info = get_glyph("Dboldscript-math_brevecomb")
+        self.assertEqual(info.production, "u1D4D3_uni0306")
 
-        self.assertEqual(prod("idotaccent"), "i.loclTRK")
-        self.assertEqual(prod("a_idotaccent"), "a_i.loclTRK")
+        info = get_glyph("idotaccent")
+        self.assertEqual(info.production, "i.loclTRK")
+
+        info = get_glyph("a_idotaccent")
+        self.assertEqual(info.production, "a_i.loclTRK")
 
         # a_i.loclTRK_a
-        self.assertEqual(
-            prod("a_idotaccent_a"), "a_i_a.loclTRK"
-        )  # a_idotaccent_a G3: a_i_a.loclTRK
+        info = get_glyph("a_idotaccent_a")
+        self.assertEqual(info.production, "a_i_a.loclTRK")  # a_idotaccent_a G3: a_i_a.loclTRK
 
-        self.assertEqual(prod("a_a_acutecomb"), "a_a_acutecomb")
-        self.assertEqual(prod("a_a_dieresiscomb"), "uni006100610308")
-        self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
-        self.assertEqual(prod("vaphalaa-malayalam"), "uni0D030D35.1")
-        self.assertEqual(prod("onethird"), "uni2153")
-        self.assertEqual(prod("Jacute"), "uni004A0301")
+        info = get_glyph("a_a_acutecomb")
+        self.assertEqual(info.production, "a_a_acutecomb")
 
-    def test_unicode(self):
-        def uni(n):
-            return get_glyph(n).unicodes
+        info = get_glyph("a_a_dieresiscomb")
+        self.assertEqual(info.production, "uni006100610308")
 
-        self.assertIsNone(uni(".notdef"))
-        self.assertEqual(uni("eacute"), "00E9")
-        self.assertEqual(uni("Abreveacute"), "1EAE")
-        self.assertEqual(uni("C-fraktur"), "212D")
-        self.assertEqual(uni("Dboldscript-math"), "1D4D3")
-        self.assertEqual(uni("fi"), "FB01")
-        self.assertEqual(uni("Gcommaaccent"), "0122")
-        self.assertIsNone(uni("s_t"))
-        self.assertIsNone(uni("o_f_f_i.foo"))
-        self.assertEqual(uni("brevecomb"), "0306")
-        self.assertIsNone(uni("brevecomb.case"))
-        self.assertIsNone(uni("brevecomb_acutecomb"))
-        self.assertIsNone(uni("brevecomb_acutecomb.case"))
+        info = get_glyph("vaphalaa-malayalam")
+        self.assertEqual(info.production, "uni0D030D35.1")
+
+        info = get_glyph("onethird")
+        self.assertEqual(info.production, "uni2153")
+
+        info = get_glyph("Jacute")
+        self.assertEqual(info.production, "uni004A0301")
+
+    def test_infoFromChar(self):
+
+        info = get_glyph("ä")
+        self.assertEqual(info.name, "adieresis")
+        self.assertEqual(info.production, "adieresis")
+
+        info = get_glyph("歷")
+        self.assertEqual(info.name, "uni6B77")
+        self.assertEqual(info.production, "uni6B77")
+
+        info = get_glyph("歷.1")
+        self.assertEqual(info.name, "uni6B77.1")
+        self.assertEqual(info.production, "uni6B77.1")
 
     def test_category(self):
-        def cat(n):
-            return get_glyph(n).category, get_glyph(n).subCategory
 
-        self.assertEqual(cat(".notdef"), ("Separator", None))
-        self.assertEqual(cat("uni000D"), ("Separator", None))
-        self.assertEqual(cat("boxHeavyUp"), ("Symbol", "Geometry"))
-        self.assertEqual(cat("eacute"), ("Letter", "Lowercase"))
-        self.assertEqual(cat("Abreveacute"), ("Letter", "Uppercase"))
-        self.assertEqual(cat("C-fraktur"), ("Letter", "Uppercase"))
-        self.assertEqual(cat("fi"), ("Letter", "Ligature"))
-        self.assertEqual(cat("fi.alt"), ("Letter", "Ligature"))
-        self.assertEqual(cat("hib-ko"), ("Letter", "Syllable"))
-        self.assertEqual(cat("one.foo"), ("Number", "Decimal Digit"))
-        self.assertEqual(cat("one_two.foo"), ("Number", "Ligature"))
-        self.assertEqual(cat("o_f_f_i"), ("Letter", "Ligature"))
-        self.assertEqual(cat("o_f_f_i.foo"), ("Letter", "Ligature"))
-        self.assertEqual(cat("ain_alefMaksura-ar.fina"), ("Letter", "Ligature"))
-        self.assertEqual(cat("brevecomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("brevecomb.case"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("brevecomb_acutecomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("brevecomb_acutecomb.case"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("caroncomb_dotaccentcomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("dieresiscomb_caroncomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("dieresiscomb_macroncomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("dotaccentcomb_macroncomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("macroncomb_dieresiscomb"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("dotaccentcomb_o"), ("Mark", "Nonspacing"))
-        self.assertEqual(cat("macronlowmod_O"), ("Mark", "Modifier"))
-        self.assertEqual(cat("O_o"), ("Letter", "Ligature"))
-        self.assertEqual(cat("O_dotaccentcomb_o"), ("Letter", "Ligature"))
-        self.assertEqual(cat("O_dotaccentcomb"), ("Letter", "Uppercase"))
-        self.assertEqual(cat("O_period"), ("Letter", "Ligature"))
-        self.assertEqual(cat("O_nbspace"), ("Letter", "Uppercase"))
-        self.assertEqual(cat("_a"), (None, None))
-        self.assertEqual(cat("_aaa"), (None, None))
-        self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
-        self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
+        info = get_glyph("uni000D")
+        self.assertEqual(info.name, "CR")
+        self.assertEqual(info.production, "CR")
+        self.assertEqual(info.category, "Separator")
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("boxHeavyUp")
+        self.assertEqual(info.category, "Symbol")
+        self.assertEqual(info.subCategory, "Geometry")
+
+        info = get_glyph("hib-ko")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Syllable")
+
+        info = get_glyph("o_f_f_i")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("o_f_f_i.foo")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+        self.assertIsNone(info.unicodes)
+        self.assertEqual(info.production, "o_f_f_i.foo")
+
+        info = get_glyph("ain_alefMaksura-ar.fina")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("brevecomb.case")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("brevecomb_acutecomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("caroncomb_dotaccentcomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("dieresiscomb_caroncomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("dieresiscomb_macroncomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("dotaccentcomb_macroncomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("macroncomb_dieresiscomb")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("dotaccentcomb_o")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
+
+        info = get_glyph("macronlowmod_O")
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Modifier")
+
+        info = get_glyph("O_o")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("O_dotaccentcomb_o")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("O_dotaccentcomb")
+        self.assertEqual(info.category, "Letter")
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("O_period")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("O_nbspace")
+        self.assertEqual(info.category, "Letter")
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("_a")
+        self.assertEqual(info.category, None)
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("_aaa")
+        self.assertEqual(info.category, None)
+        self.assertIsNone(info.subCategory)
+
+        info = get_glyph("dal_alef-ar")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
+
+        info = get_glyph("dal_lam-ar.dlig")
+        self.assertEqual(info.category, "Letter")
+        self.assertEqual(info.subCategory, "Ligature")
 
     def test_category_buy_unicode(self):
-        def cat(n, u):
-            return (
-                get_glyph(n, unicodes=u).category,
-                get_glyph(n, unicodes=u).subCategory,
-            )
-
         # "SignU.bn" is a non-standard name not defined in GlyphData.xml
-        self.assertEqual(cat("SignU.bn", ["09C1"]), ("Mark", "Nonspacing"))
+        info = get_glyph("SignU.bn", unicodes=["09C1"])
+        self.assertEqual(info.category, "Mark")
+        self.assertEqual(info.subCategory, "Nonspacing")
 
     def test_bug232(self):
         # https://github.com/googlefonts/glyphsLib/issues/232
-        u, g = get_glyph("uni07F0"), get_glyph("longlowtonecomb-nko")
+        u = get_glyph("uni07F0")
+        g = get_glyph("longlowtonecomb-nko")
+        self.assertEqual((u.category, g.category), ("Mark", "Mark"))
         self.assertEqual((u.category, g.category), ("Mark", "Mark"))
         self.assertEqual((u.subCategory, g.subCategory), ("Nonspacing", "Nonspacing"))
         self.assertEqual((u.production, g.production), ("uni07F0", "uni07F0"))

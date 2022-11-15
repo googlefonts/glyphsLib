@@ -20,6 +20,7 @@ import os
 import re
 import uuid
 from collections import OrderedDict
+from enum import IntEnum
 from io import StringIO
 
 import openstep_plist
@@ -44,6 +45,7 @@ from glyphsLib.types import (
     parse_float_or_int,
     readIntlist,
 )
+from glyphsLib.util import designspace_min_max
 from glyphsLib.writer import Writer
 
 logger = logging.getLogger(__name__)
@@ -141,6 +143,13 @@ CURVE = "curve"
 OFFCURVE = "offcurve"
 QCURVE = "qcurve"
 
+
+# Instance types; normal instance or variable font setting pseudo-instance
+class InstanceType(IntEnum):
+    SINGLE = 0
+    VARIABLE = 1
+
+
 TAG = -2
 TOPGHOST = -1
 STEM = 0
@@ -236,6 +245,11 @@ WIDTH_CODES = {
     "Extra Expanded": 8,
     "Ultra Expanded": 9,
 }
+
+
+def instance_type(value):
+    # Convert the instance type from the plist ("variable") into the integer constant
+    return getattr(InstanceType, value.upper())
 
 
 class OnlyInGlyphsAppError(NotImplementedError):
@@ -1061,6 +1075,8 @@ class CustomParametersProxy(Proxy):
     def _get_parameter_by_key(self, key):
         if key == "Axes" and isinstance(self._owner, GSFont):
             return self._owner._get_custom_parameter_from_axes()
+        if key == "Name Table Entry":
+            return None
         for customParameter in self._owner._customParameters:
             if customParameter.name == key:
                 return customParameter
@@ -1524,8 +1540,10 @@ class GSFontMaster(GSBase):
         if writer.format_version == 3:
             writer.writeKeyValue("metricValues", self.metrics)
 
-        if (self._name and self._name != self.name) or writer.format_version == 3:
-            writer.writeKeyValue("name", self._name or "Regular")
+        if self._name and self._name != self.name:
+            writer.writeKeyValue("name", self._name)
+        elif writer.format_version == 3:
+            writer.writeKeyValue("name", self.name)
 
         if writer.format_version == 3:
             writer.writeObjectKeyValue(
@@ -1878,6 +1896,14 @@ class GSNode(GSBase):
         if name is not None:
             self.name = name
 
+    def clone(self):
+        """Clones the node (does not clone attributes)"""
+        return GSNode(
+            position=(self._position.x, self._position.y),
+            type=self.type,
+            smooth=self.smooth,
+        )
+
     def __repr__(self):
         content = self.type
         if self.smooth:
@@ -2114,6 +2140,13 @@ class GSPath(GSBase):
         self.closed = self._defaultsForName["closed"]
         self._nodes = []
         self.attributes = {}
+
+    def clone(self):
+        """Clones the path (Does not clone attributes)"""
+        cloned = GSPath()
+        cloned.closed = self.closed
+        cloned.nodes = [node.clone() for node in self.nodes]
+        return cloned
 
     @property
     def parent(self):
@@ -2482,6 +2515,9 @@ class GSComponent(GSBase):
                 self.transform = copy.deepcopy(self._defaultsForName["transform"])
         else:
             self.transform = transform
+
+    def clone(self):
+        return GSComponent(self.name, transform=copy.deepcopy(self.transform))
 
     def __repr__(self):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
@@ -3059,13 +3095,13 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
+        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
+            writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3081,6 +3117,7 @@ class GSInstance(GSBase):
         "weightClass": "Regular",
         "widthClass": "Medium (normal)",
         "instanceInterpolations": {},
+        "type": InstanceType.SINGLE,
     }
 
     def __init__(self):
@@ -3100,7 +3137,7 @@ class GSInstance(GSBase):
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
-        self.type = ""
+        self.type = self._defaultsForName["type"]
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -3294,6 +3331,7 @@ GSInstance._add_parsers(
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
         {"plist_name": "properties", "type": GSFontInfoValue},
+        {"plist_name": "type", "converter": instance_type},
     ]
 )
 
@@ -3754,26 +3792,39 @@ class GSLayer(GSBase):
             return "axisRules" in self.attributes  # Glyphs 3
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
-    def _bracket_info(self):
+    def _bracket_info(self, axes):
+        # Returns a region expressed as a {axis_tag: (min, max)} box
+        # (dictionary), once the axes have been computed
         if not self._is_bracket_layer():
-            return None
+            return {}
 
         if self.parent.parent.format_version > 2:
             # Glyphs 3
-            rules = self.attributes["axisRules"]
-            if any(rules[1:]):
-                raise ValueError("Alternate rules on non-first axis not yet supported")
-            return 0, rules[0].get("min"), rules[0].get("max")
+            info = {}
+            for axis, rule in zip(axes, self.attributes["axisRules"]):
+                if "min" not in rule and "max" not in rule:
+                    continue
+                # Rules are expressed in designspace coordinates,
+                # so map appropriately.
+                designspace_min, designspace_max = designspace_min_max(axis)
+                axis_min = rule.get("min", designspace_min)
+                axis_max = rule.get("max", designspace_max)
+                if axis_max == axis.minimum and axis_max == axis.maximum:
+                    # It's full range, ignore it.
+                    continue
+                info[axis.tag] = (axis_min, axis_max)
+            return info
 
         # Glyphs 2
         m = re.match(self.BRACKET_LAYER_RE, self.name)
-        axis_index = 0  # For glyphs 2
+        axis = axes[0]  # For glyphs 2
+        designspace_min, designspace_max = designspace_min_max(axis)
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return axis_index, None, bracket_crossover
+            return {axis.tag: (designspace_min, bracket_crossover)}
         else:
-            return axis_index, bracket_crossover, None
+            return {axis.tag: (bracket_crossover, designspace_max)}
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:
