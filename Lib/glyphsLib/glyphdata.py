@@ -76,14 +76,14 @@ class GlyphInfo:
     def __init__(
         self,
         name,
-        production : str = None,
-        unicodes : list = None,
-        category : str = None,
-        subCategory : str = None,
-        case : str = None,
-        script : str = None,
-        direction : str = GSLTR,
-        description : str = None,
+        production: str = None,
+        unicodes: list = None,
+        category: str = None,
+        subCategory: str = None,
+        case: str = None,
+        script: str = None,
+        direction: str = GSLTR,
+        description: str = None,
     ):
         self.name = name
         self._production = production
@@ -200,7 +200,9 @@ class GlyphData:
         )
 
 
-def get_glyph(glyph_name: str, data: GlyphData = None, unicodes: list = None) -> GlyphInfo:
+def get_glyph(
+    glyph_name: str, data: GlyphData = None, unicodes: list = None
+) -> GlyphInfo:
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
@@ -224,7 +226,9 @@ def _load_data_files():
     return GLYPHDATA
 
 
-def _get_glyph(glyph_name : str, data : GlyphData, unicodes : str = None, cutSuffix : str = None) -> Tuple[GlyphInfo, str]:
+def _get_glyph(
+    glyph_name: str, data: GlyphData, unicodes: str = None, cutSuffix: str = None
+) -> Tuple[GlyphInfo, str]:
 
     info = None
 
@@ -365,14 +369,12 @@ def _underscoreGlyphInfo(glyph_name):
         info.category = "Corner"
     if "-" in glyph_name:
         _, langSuffix = glyph_name.rsplit("-", 1)
-        info.script = (
-            langSuffix  # TODO: add proper mapping from lang tags to script
-        )
+        info.script = langSuffix  # TODO: add proper mapping from lang tags to script
     return info
 
 
 # this means suffixes that are not separated by a '.'
-def _infoWithKnownSuffix(base_name : str, data : GlyphData) -> GlyphInfo:
+def _infoWithKnownSuffix(base_name: str, data: GlyphData) -> GlyphInfo:
     knownSuffixes = ["superior", "inferior"]
     for knownSuffix in knownSuffixes:
 
@@ -464,7 +466,9 @@ def _construct_info_from_agl_(base_name):
     return GlyphInfo(name, category=category, subCategory=sub_category, case=case)
 
 
-def _construct_info(glyph_name : str, data : GlyphData, cutSuffix : str = None) -> Tuple[GlyphInfo, str]:
+def _construct_info(
+    glyph_name: str, data: GlyphData, cutSuffix: str = None
+) -> Tuple[GlyphInfo, str]:
     """Derive info of a glyph name."""
     # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
     # construction helpers without a category.
@@ -502,7 +506,9 @@ def _construct_info(glyph_name : str, data : GlyphData, cutSuffix : str = None) 
     if base_info is not None:
         return base_info, cutSuffix
 
-    base_info, cutSuffix = _construct_liga_info_uniname_(base_name, glyph_name, data, cutSuffix)
+    base_info, cutSuffix = _construct_liga_info_uniname_(
+        base_name, glyph_name, data, cutSuffix
+    )
     if base_info is not None:
         return base_info, cutSuffix
 
@@ -581,7 +587,7 @@ def _construct_liga_info_name_(base_name, data, cutSuffix):
     return None, cutSuffix
 
 
-def _applySimpleIndicShaping(base_infos, data : GlyphData):
+def _applySimpleIndicShaping(base_infos, data: GlyphData):
     for idx in range(len(base_infos)):
         info = base_infos[idx]
         if "halant-" in info.name:
@@ -734,7 +740,7 @@ def _construct_liga_info_names_(base_names, data, cutSuffix=None):
     base_info = _baseinfo_from_infos(base_infos, cutSuffix, data)
 
     base_suffix = "_".join(base_suffixes)
-    if len(base_suffix) > 0 and base_suffix[0] != '.':
+    if len(base_suffix) > 0 and base_suffix[0] != ".":
         base_suffix = "." + base_suffix
     if len(base_suffix) < len(base_suffixes):  # all base_suffixes are empty
         base_suffix = None
