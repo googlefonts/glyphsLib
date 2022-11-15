@@ -145,3 +145,29 @@ def test_glyphs3_instance_filtering():
 
     doc = glyphsLib.to_designspace(font, family_name="MyFamily 12pt")
     assert len(doc.instances) == 2
+
+
+def test_rename_glyphs(tmpdir):
+    font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
+    instance_dir = tmpdir.ensure_dir("instance_ufo")
+    designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
+    path = str(tmpdir / (font.familyName + ".designspace"))
+    write_designspace_and_UFOs(designspace, path)
+
+    ufo_path = tmpdir / "RenameGlyphsTest-Regular.ufo"
+    ufo_path.copy(instance_dir.ensure_dir("RenameGlyphsTest-Straight.ufo"))
+    ufo_path.copy(instance_dir.ensure_dir("RenameGlyphsTest-Swapped.ufo"))
+
+    ufos = apply_instance_data(designspace.path)
+
+    assert len(ufos) == 2
+
+    assert len(ufos[0]["a"][0]) == 4  # Square
+    assert len(ufos[0]["b"][0]) == 12  # Circle
+    assert ufos[0]["a"].unicode == 0x0061
+    assert ufos[0]["b"].unicode == 0x0062
+
+    assert len(ufos[1]["a"][0]) == 12  # Circle
+    assert len(ufos[1]["b"][0]) == 4  # Square
+    assert ufos[0]["a"].unicode == 0x0061
+    assert ufos[0]["b"].unicode == 0x0062
