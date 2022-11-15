@@ -860,7 +860,8 @@ def _construct_join_names(names):
         debug("__YY5", names)
         suffixes = []
         base_names = []
-        # ["a", "parallel.circled"] > "a_parallel._circled" (base name and suffix have the same number of underscores)
+        # ["a", "parallel.circled"] > "a_parallel._circled"
+        # (base name and suffix have the same number of underscores)
         for name in names:
             if "." in name:
                 parts = name.split(".", 1)
