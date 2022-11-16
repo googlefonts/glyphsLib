@@ -1,0 +1,222 @@
+{
+.appVersion = "3109";
+.formatVersion = 3;
+DisplayStrings = (
+"/_corner.one  ab",
+b,
+"a/a.expectation b/b.expectation",
+a
+);
+date = "2022-11-14 14:19:00 +0000";
+familyName = "Corner Component Alignment Test";
+fontMaster = (
+{
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = -16;
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = a;
+lastChange = "2022-11-16 15:28:12 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,400,l),
+(100,400,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 97;
+},
+{
+glyphname = b;
+lastChange = "2022-11-16 13:52:55 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,100,l),
+(414,100,l),
+(100,300,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 98;
+},
+{
+glyphname = a.expectation;
+lastChange = "2022-11-16 15:41:41 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,163,l),
+(30,110,l),
+(60,70,l),
+(120,115,l),
+(500,400,l),
+(100,400,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = b.expectation;
+lastChange = "2022-11-16 15:41:37 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(175,150,l),
+(150,150,l),
+(150,100,l),
+(225,100,l),
+(414,100,l),
+(100,300,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 32;
+},
+{
+glyphname = _corner.one;
+lastChange = "2022-11-16 15:06:16 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,50,l),
+(-50,50,l),
+(-50,0,l),
+(25,0,l)
+);
+}
+);
+width = 25;
+}
+);
+},
+{
+glyphname = _corner.two;
+lastChange = "2022-11-14 14:38:32 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(20,50,l),
+(-14,50,o),
+(-87,50,o),
+(-87,0,c),
+(-21,0,l)
+);
+}
+);
+width = 20;
+}
+);
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
