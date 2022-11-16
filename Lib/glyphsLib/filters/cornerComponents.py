@@ -215,10 +215,16 @@ class CornerComponentsFilter(BaseFilter):
                 )
                 continue
 
+            corner_path = copy.deepcopy(layer[0])
+            if "scale" in glyphs_cc:
+                scaling = Affine.scale(*glyphs_cc["scale"])
+                for pt in corner_path:
+                    pt.x, pt.y = scaling * (pt.x, pt.y)
+
             cc = CornerComponentApplier(
                 name=glyph.name,
                 alignment=Alignment(glyphs_cc.get("options", 0)),
-                corner_path=copy.deepcopy(layer[0]),
+                corner_path=corner_path,
                 target_node_ix=(node_idx + 1) % len(glyph[path_idx]),
                 path=glyph[path_idx],
             )

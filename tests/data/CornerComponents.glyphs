@@ -2,10 +2,10 @@
 .appVersion = "3109";
 .formatVersion = 3;
 DisplayStrings = (
-"/_corner.one  ab",
-b,
-"a/a.expectation b/b.expectation",
-a
+"/_corner.one  ",
+"",
+"/simple_angled/simple_angled.expectation/simple_angleinstroke/scale.expectation/simple_angleinstroke.expectation/simple_angleinstroke.expectation",
+""
 );
 date = "2022-11-14 14:19:00 +0000";
 familyName = "Corner Component Alignment Test";
@@ -40,108 +40,6 @@ name = Regular;
 }
 );
 glyphs = (
-{
-glyphname = a;
-lastChange = "2022-11-16 15:28:12 +0000";
-layers = (
-{
-hints = (
-{
-name = _corner.one;
-origin = (0,0);
-type = Corner;
-}
-);
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(100,100,l),
-(500,400,l),
-(100,400,l)
-);
-}
-);
-width = 600;
-}
-);
-unicode = 97;
-},
-{
-glyphname = b;
-lastChange = "2022-11-16 13:52:55 +0000";
-layers = (
-{
-hints = (
-{
-name = _corner.one;
-origin = (0,0);
-type = Corner;
-}
-);
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(200,100,l),
-(414,100,l),
-(100,300,l)
-);
-}
-);
-width = 600;
-}
-);
-unicode = 98;
-},
-{
-glyphname = a.expectation;
-lastChange = "2022-11-16 15:41:41 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(100,163,l),
-(30,110,l),
-(60,70,l),
-(120,115,l),
-(500,400,l),
-(100,400,l)
-);
-}
-);
-width = 600;
-}
-);
-},
-{
-glyphname = b.expectation;
-lastChange = "2022-11-16 15:41:37 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(175,150,l),
-(150,150,l),
-(150,100,l),
-(225,100,l),
-(414,100,l),
-(100,300,l)
-);
-}
-);
-width = 600;
-}
-);
-},
 {
 glyphname = space;
 layers = (
@@ -192,6 +90,159 @@ nodes = (
 }
 );
 width = 20;
+}
+);
+},
+{
+glyphname = scale;
+lastChange = "2022-11-16 16:10:06 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,0);
+scale = (1.2,1.5);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(38,86,l),
+(302,86,l),
+(412,500,l),
+(148,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = simple_angled;
+lastChange = "2022-11-16 16:11:01 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,400,l),
+(100,400,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = simple_angleinstroke;
+lastChange = "2022-11-16 16:11:33 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,100,l),
+(414,100,l),
+(100,300,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = scale.expectation;
+lastChange = "2022-11-16 16:13:48 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(58,161,l),
+(-22,161,l),
+(-22,86,l),
+(68,86,l),
+(302,86,l),
+(412,500,l),
+(148,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = simple_angled.expectation;
+lastChange = "2022-11-16 16:11:06 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,163,l),
+(30,110,l),
+(60,70,l),
+(120,115,l),
+(500,400,l),
+(100,400,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = simple_angleinstroke.expectation;
+lastChange = "2022-11-16 16:11:42 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(175,150,l),
+(150,150,l),
+(150,100,l),
+(225,100,l),
+(414,100,l),
+(100,300,l)
+);
+}
+);
+width = 600;
 }
 );
 }
