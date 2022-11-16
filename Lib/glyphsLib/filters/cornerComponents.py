@@ -4,7 +4,13 @@ from enum import IntEnum
 import logging
 import math
 
-from fontTools.misc.bezierTools import _alignment_transformation, calcCubicParameters, solveCubic, cubicPointAtT, linePointAtT,_line_t_of_pt
+from fontTools.misc.bezierTools import (
+    _alignment_transformation,
+    calcCubicParameters,
+    solveCubic,
+    cubicPointAtT,
+    linePointAtT,
+)
 from fontTools.misc.roundTools import otRound
 from ufo2ft.filters import BaseFilter
 
@@ -27,6 +33,7 @@ logger = logging.getLogger(__name__)
 # Divides curve at top of the corner
 # It's only the first and last segments of the corner component that
 # are fitted to the curve
+
 
 def otRoundNode(node):
     node.x, node.y = otRound(node.x), otRound(node.y)
@@ -104,23 +111,30 @@ class CornerComponentApplier:
 
     @property
     def last_seg(self):
-        return get_previous_segment(self.corner_path, len(self.corner_path)-1)
+        return get_previous_segment(self.corner_path, len(self.corner_path) - 1)
 
     def apply(self):
         if self.corner_path[0].x != self.origin[0]:
-             raise ValueError("Can't deal with offset instrokes yet; start corner components on axis")
+            raise ValueError(
+                "Can't deal with offset instrokes yet; start corner components on axis"
+            )
         if self.corner_path[-1].y != self.origin[1]:
-             raise ValueError("Can't deal with offset outstrokes yet; end corner components on axis")
+            raise ValueError(
+                "Can't deal with offset outstrokes yet; end corner components on axis"
+            )
         if len(self.instroke) != 2:
-             raise ValueError("Can't deal with curved instrokes yet")
+            raise ValueError("Can't deal with curved instrokes yet")
         self.align_my_path_to_main_path()
 
         # Find start point of intersection
-        first_seg_as_tuples = [ (pt.x, pt.y) for pt in self.first_seg ]
-        instroke_as_tuples = [ (pt.x, pt.y) for pt in self.instroke ]
-        aligned_curve = apply_fonttools_transform(_alignment_transformation(list(reversed(instroke_as_tuples))), self.first_seg)
+        first_seg_as_tuples = [(pt.x, pt.y) for pt in self.first_seg]
+        instroke_as_tuples = [(pt.x, pt.y) for pt in self.instroke]
+        aligned_curve = apply_fonttools_transform(
+            _alignment_transformation(list(reversed(instroke_as_tuples))),
+            self.first_seg,
+        )
         if len(aligned_curve) == 4:
-            a, b, c, d = calcCubicParameters(*[ (pt.x, pt.y) for pt in aligned_curve ])
+            a, b, c, d = calcCubicParameters(*[(pt.x, pt.y) for pt in aligned_curve])
             intersections = solveCubic(a[1], b[1], c[1], d[1])
             intersection = cubicPointAtT(*first_seg_as_tuples, intersections[0])
         elif not math.isclose(aligned_curve[0].y, aligned_curve[1].y):
@@ -128,12 +142,14 @@ class CornerComponentApplier:
             intersection = linePointAtT(*first_seg_as_tuples, t)
 
         # Split the instroke at the intersection, fix up, and paste it in.
-        self.path[self.target_node_ix].x, self.path[self.target_node_ix].y = otRound(intersection[0]), otRound(intersection[1])
-        self.path[self.target_node_ix+1:self.target_node_ix+1] = [otRoundNode(node) for node in self.corner_path[1:]]
+        self.path[self.target_node_ix].x, self.path[self.target_node_ix].y = otRound(
+            intersection[0]
+        ), otRound(intersection[1])
+        self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
+            otRoundNode(node) for node in self.corner_path[1:]
+        ]
 
         # Fix up outstroke
-
-
 
     def align_my_path_to_main_path(self):
         # First align myself to the "origin" anchor.
@@ -167,7 +183,7 @@ class CornerComponentApplier:
 
 class CornerComponentsFilter(BaseFilter):
     def filter(self, glyph):
-        if not len(glyph) or not HINTS_LIB_KEY in glyph.lib:
+        if not len(glyph) or HINTS_LIB_KEY not in glyph.lib:
             return False
 
         corner_components = [
@@ -181,7 +197,16 @@ class CornerComponentsFilter(BaseFilter):
 
         for glyphs_cc in corner_components:
             path_idx, node_idx = glyphs_cc["origin"]
-            layer = self.context.glyphSet[glyphs_cc["name"]]
+            # We use font, not .glyphSet here because corner components
+            # aren't normally exported
+            if glyphs_cc["name"] not in self.context.font:
+                logger.warn(
+                    "Corner component %s in %s not found",
+                    glyphs_cc["name"],
+                    glyph.name,
+                )
+                continue
+            layer = self.context.font[glyphs_cc["name"]]
             if len(layer) > 1:
                 logger.warn(
                     "Corner components of more than one path (%s in %s) not supported",
@@ -195,7 +220,7 @@ class CornerComponentsFilter(BaseFilter):
                 alignment=Alignment(glyphs_cc.get("options", 0)),
                 corner_path=copy.deepcopy(layer[0]),
                 target_node_ix=(node_idx + 1) % len(glyph[path_idx]),
-                path = glyph[path_idx]
+                path=glyph[path_idx],
             )
             cc.apply()
 

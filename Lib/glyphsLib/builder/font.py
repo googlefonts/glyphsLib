@@ -42,7 +42,11 @@ def to_ufo_font_attributes(self, family_name):
 
         if has_any_corner_components(font, master):
             ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-                {"namespace": "glyphsLib.filters", "name": "cornerComponents", "pre": True}
+                {
+                    "namespace": "glyphsLib.filters",
+                    "name": "cornerComponents",
+                    "pre": True,
+                }
             )
 
         ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
@@ -180,7 +184,11 @@ def _original_master_order(source):
 def has_any_corner_components(font, master):
     for glyph in font.glyphs:
         for layer in glyph.layers:
-            if layer.layerId != master.id or layer.associatedMasterId != master.id or not layer.hints:
+            if (
+                layer.layerId != master.id
+                or layer.associatedMasterId != master.id
+                or not layer.hints
+            ):
                 continue
             if any(h.type.upper() == "CORNER" for h in layer.hints):
                 return True
