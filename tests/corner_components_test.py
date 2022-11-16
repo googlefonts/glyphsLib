@@ -1,19 +1,22 @@
 import glyphsLib
 from glyphsLib.filters.cornerComponents import CornerComponentsFilter
+import py
+import pytest
 
 
-def test_corner_components(datadir):
-    ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]
-    philter = CornerComponentsFilter()
+datadir = py.path.local(py.path.local(__file__).dirname).join("data")
 
-    assert philter(ufo)
+ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]
+CornerComponentsFilter()(ufo)
 
-    for glyph in ufo.keys():
-        if not glyph.endswith(".expectation"):
-            continue
-        expectation = ufo[glyph]
-        test_glyph = ufo[glyph[:-12]]
-        for test_contour, expectation_contour in zip(
-            test_glyph.contours, expectation.contours
-        ):
-            assert test_contour == expectation_contour, glyph
+test_glyphs = [glyph[:-12] for glyph in ufo.keys() if glyph.endswith(".expectation")]
+
+
+@pytest.mark.parametrize("glyph", test_glyphs)
+def test_corner_components(glyph):
+    test_glyph = ufo[glyph]
+    expectation = ufo[glyph + ".expectation"]
+    for test_contour, expectation_contour in zip(
+        test_glyph.contours, expectation.contours
+    ):
+        assert test_contour == expectation_contour, glyph

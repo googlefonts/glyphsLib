@@ -10,6 +10,7 @@ from fontTools.misc.bezierTools import (
     solveCubic,
     cubicPointAtT,
     linePointAtT,
+    splitCubic,
 )
 from fontTools.misc.roundTools import otRound
 from ufo2ft.filters import BaseFilter
@@ -122,29 +123,54 @@ class CornerComponentApplier:
             raise ValueError(
                 "Can't deal with offset outstrokes yet; end corner components on axis"
             )
-        if len(self.instroke) != 2:
-            raise ValueError("Can't deal with curved instrokes yet")
         self.align_my_path_to_main_path()
 
-        # Find start point of intersection
-        first_seg_as_tuples = [(pt.x, pt.y) for pt in self.first_seg]
-        instroke_as_tuples = [(pt.x, pt.y) for pt in self.instroke]
+        # Find intersection between instroke and extended first_seg
+        # Because this is potentially unbounded we can't use the stuff in
+        # fontTools. If the first segment in the corner component is
+        # a curve, we treat it as a line between the first node and first
+        # offcurve
+        first_seg_as_tuples = tuple((pt.x, pt.y) for pt in self.first_seg[0:2])
+        instroke_as_tuples = tuple((pt.x, pt.y) for pt in self.instroke)
         aligned_curve = apply_fonttools_transform(
-            _alignment_transformation(list(reversed(instroke_as_tuples))),
-            self.first_seg,
+            _alignment_transformation(first_seg_as_tuples),
+            self.instroke,
         )
+
         if len(aligned_curve) == 4:
             a, b, c, d = calcCubicParameters(*[(pt.x, pt.y) for pt in aligned_curve])
             intersections = solveCubic(a[1], b[1], c[1], d[1])
-            intersection = cubicPointAtT(*first_seg_as_tuples, intersections[0])
+            intersection = cubicPointAtT(*instroke_as_tuples, intersections[0])
         elif not math.isclose(aligned_curve[0].y, aligned_curve[1].y):
             t = aligned_curve[0].y / (aligned_curve[0].y - aligned_curve[1].y)
-            intersection = linePointAtT(*first_seg_as_tuples, t)
+            intersection = linePointAtT(*instroke_as_tuples, t)
 
         # Split the instroke at the intersection, fix up, and paste it in.
-        self.path[self.target_node_ix].x, self.path[self.target_node_ix].y = otRound(
-            intersection[0]
-        ), otRound(intersection[1])
+        if len(instroke_as_tuples) == 2:
+            # Splitting a line is easy...
+            (
+                self.path[self.target_node_ix].x,
+                self.path[self.target_node_ix].y,
+            ) = otRound(intersection[0]), otRound(intersection[1])
+        else:
+            # There's a horrible edge case here where the curve wraps around and
+            # the ray hits twice, but I'm not worrying about it.
+            new_cubics_1 = splitCubic(*instroke_as_tuples, intersection[0], False)[0]
+            new_cubics_2 = splitCubic(*instroke_as_tuples, intersection[1], True)[0]
+            # Choose the one closest to the intersection point
+            d1 = (new_cubics_1[-1][0] - intersection[0]) ** 2 + (
+                new_cubics_1[-1][1] - intersection[1]
+            ) ** 2
+            d2 = (new_cubics_2[-1][0] - intersection[0]) ** 2 + (
+                new_cubics_2[-1][1] - intersection[1]
+            ) ** 2
+            if d1 < d2:
+                new_cubic = new_cubics_1
+            else:
+                new_cubic = new_cubics_2
+
+            for new_pt, old in zip(new_cubic, self.instroke):
+                old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
