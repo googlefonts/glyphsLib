@@ -56,18 +56,21 @@ class GlyphDataTest(unittest.TestCase):
 
         info = get_glyph("A")
         self.assertEqual(info.name, "A")
+        self.assertEqual(info.production, "A")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.case, GSUppercase)
         self.assertEqual(info.script, "latin")
 
         info = get_glyph("uni0041")
         self.assertEqual(info.name, "A")
+        self.assertEqual(info.production, "A")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.case, GSUppercase)
         self.assertEqual(info.script, "latin")
 
         info = get_glyph("uni0041.01")
         self.assertEqual(info.name, "A.01")
+        self.assertEqual(info.production, "A.01")
         self.assertEqual(info.category, "Letter")
         self.assertEqual(info.case, GSUppercase)
         self.assertEqual(info.script, "latin")
