@@ -74,8 +74,8 @@ def apply_fonttools_transform(transform, seg):
 
 class Alignment(IntEnum):
     LEFT = 0
-    MIDDLE = 1
-    RIGHT = 2
+    RIGHT = 1
+    MIDDLE = 2
     UNUSED = 3
     UNALIGNED = 4
 
@@ -85,7 +85,8 @@ class Alignment(IntEnum):
 # manner.
 @dataclass
 class CornerComponentApplier:
-    name: str  # For debugging
+    corner_name: str
+    glyph_name: str
     alignment: Alignment
     path: object
     corner_path: object
@@ -93,6 +94,13 @@ class CornerComponentApplier:
     origin: (int, int) = (0, 0)
     left_x: int = 0
     right_x: int = 0
+
+    def fail(self, msg, hard=True):
+        full_msg = f"{msg} (corner {self.corner_name} in {self.glyph_name})"
+        if hard:
+            raise ValueError(full_msg)
+        else:
+            logger.error(full_msg)
 
     @property
     def target_node(self):
@@ -116,16 +124,77 @@ class CornerComponentApplier:
 
     def apply(self):
         if self.corner_path[0].x != self.origin[0]:
-            raise ValueError(
+            self.fail(
                 "Can't deal with offset instrokes yet; start corner components on axis"
             )
         if self.corner_path[-1].y != self.origin[1]:
-            raise ValueError(
+            self.fail(
                 "Can't deal with offset outstrokes yet; end corner components on axis"
             )
         self.align_my_path_to_main_path()
 
-        # Find intersection between instroke and extended first_seg
+        # Deal with instroke/firstseg
+        intersection = self.find_instroke_intersection_point()
+        self.split_instroke(intersection)
+        # The instroke of the corner path now needs stretching to fit...
+        if len(self.first_seg) == 4:
+            self.stretch_first_seg_to_fit(intersection)
+
+        # Deal with outstroke/lastseg
+
+        # Paste corner path into host
+        self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
+            otRoundNode(node) for node in self.corner_path[1:]
+        ]
+
+    def align_my_path_to_main_path(self):
+        # First align myself to the "origin" anchor.
+        for pt in self.corner_path:
+            pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
+
+        # Work out my rotation
+        if self.alignment == Alignment.LEFT:
+            outstroke = self.outstroke
+            if len(outstroke) == 4:
+                self.fail(
+                    "Can't reliably compute rotation angle to fit corner to a curved outstroke",
+                    hard=False,
+                )
+            outstroke_angle = math.atan2(
+                outstroke[1].y - outstroke[0].y, outstroke[1].x - outstroke[0].x
+            )
+            rot = Affine.rotation(math.degrees(outstroke_angle))
+            # Rotate the whole path around the origin
+            for pt in self.corner_path:
+                pt.x, pt.y = rot * (pt.x, pt.y)
+
+        elif self.alignment == Alignment.RIGHT:
+            instroke = self.instroke
+            if len(instroke) == 4:
+                self.fail(
+                    "Can't reliably compute rotation angle to fit corner to a curved instroke",
+                    hard=False,
+                )
+            instroke_angle = math.atan2(
+                instroke[1].y - instroke[0].y, instroke[1].x - instroke[0].x
+            )
+            rot = Affine.rotation(math.degrees(instroke_angle))
+            # Rotate the whole path around the origin
+            for pt in self.corner_path:
+                pt.x, pt.y = rot * (pt.x, pt.y)
+        elif self.alignment == Alignment.MIDDLE:
+            self.fail("Middle alignment not yet implemented")
+        elif self.alignment == Alignment.UNUSED:
+            pass
+        elif self.alignment == Alignment.UNALIGNED:
+            pass  # right?
+
+        # Now position our path onto the point.
+        for pt in self.corner_path:
+            pt.x, pt.y = pt.x + self.target_node.x, pt.y + self.target_node.y
+
+    def find_instroke_intersection_point(self):
+        # Find intersection between instroke and (extended) first_seg
         # Because this is potentially unbounded we can't use the stuff in
         # fontTools. If the first segment in the corner component is
         # a curve, we treat it as a line between the first node and first
@@ -144,9 +213,14 @@ class CornerComponentApplier:
         elif not math.isclose(aligned_curve[0].y, aligned_curve[1].y):
             t = aligned_curve[0].y / (aligned_curve[0].y - aligned_curve[1].y)
             intersection = linePointAtT(*instroke_as_tuples, t)
+        else:
+            self.fail("Something went wrong finding the intersection")
 
+        return intersection
+
+    def split_instroke(self, intersection):
         # Split the instroke at the intersection, fix up, and paste it in.
-        if len(instroke_as_tuples) == 2:
+        if len(self.instroke) == 2:
             # Splitting a line is easy...
             (
                 self.path[self.target_node_ix].x,
@@ -155,6 +229,7 @@ class CornerComponentApplier:
         else:
             # There's a horrible edge case here where the curve wraps around and
             # the ray hits twice, but I'm not worrying about it.
+            instroke_as_tuples = tuple((pt.x, pt.y) for pt in self.instroke)
             new_cubics_1 = splitCubic(*instroke_as_tuples, intersection[0], False)[0]
             new_cubics_2 = splitCubic(*instroke_as_tuples, intersection[1], True)[0]
             # Choose the one closest to the intersection point
@@ -171,40 +246,14 @@ class CornerComponentApplier:
 
             for new_pt, old in zip(new_cubic, self.instroke):
                 old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
-        self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
-            otRoundNode(node) for node in self.corner_path[1:]
-        ]
 
-        # Fix up outstroke
-
-    def align_my_path_to_main_path(self):
-        # First align myself to the "origin" anchor.
-        for pt in self.corner_path:
-            pt.x, pt.y = pt.x - self.origin[0], pt.y + self.origin[1]
-
-        # Work out my rotation
-        if self.alignment == Alignment.LEFT:
-            outstroke = self.outstroke
-            outstroke_angle = math.atan2(
-                outstroke[1].y - outstroke[0].y, outstroke[1].x - outstroke[0].x
-            )
-            rot = Affine.rotation(math.degrees(outstroke_angle))
-            # Rotate the whole path around the origin
-            for pt in self.corner_path:
-                pt.x, pt.y = rot * (pt.x, pt.y)
-
-        elif self.alignment == Alignment.MIDDLE:
-            raise NotImplementedError
-        elif self.alignment == Alignment.RIGHT:
-            raise NotImplementedError
-        elif self.alignment == Alignment.UNUSED:
-            raise NotImplementedError
-        elif self.alignment == Alignment.UNALIGNED:
-            pass  # right?
-
-        # Now position our path onto the point.
-        for pt in self.corner_path:
-            pt.x, pt.y = pt.x + self.target_node.x, pt.y + self.target_node.y
+    def stretch_first_seg_to_fit(self, intersection):
+        delta = (
+            intersection[0] - self.first_seg[0].x,
+            intersection[1] - self.first_seg[0].y,
+        )
+        self.first_seg[1].x += delta[0]
+        self.first_seg[1].y += delta[1]
 
 
 class CornerComponentsFilter(BaseFilter):
@@ -240,6 +289,11 @@ class CornerComponentsFilter(BaseFilter):
                     glyph.name,
                 )
                 continue
+            cc_anchor_dict = {anchor.name: anchor for anchor in layer.anchors}
+            if "origin" in cc_anchor_dict:
+                cc_origin = cc_anchor_dict["origin"].x, cc_anchor_dict["origin"].y
+            else:
+                cc_origin = (0, 0)
 
             corner_path = copy.deepcopy(layer[0])
             if "scale" in glyphs_cc:
@@ -248,11 +302,13 @@ class CornerComponentsFilter(BaseFilter):
                     pt.x, pt.y = scaling * (pt.x, pt.y)
 
             cc = CornerComponentApplier(
-                name=glyph.name,
+                glyph_name=glyph.name,
+                corner_name=glyphs_cc["name"],
                 alignment=Alignment(glyphs_cc.get("options", 0)),
                 corner_path=corner_path,
                 target_node_ix=(node_idx + 1) % len(glyph[path_idx]),
                 path=glyph[path_idx],
+                origin=cc_origin,
             )
             cc.apply()
 
