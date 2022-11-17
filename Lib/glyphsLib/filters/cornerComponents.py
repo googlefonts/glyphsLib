@@ -84,6 +84,8 @@ def closest_point_on_segment(seg, pt):
     a_to_b = (b[0] - a[0], b[1] - a[1])
     a_to_pt = (pt[0] - a[0], pt[1] - a[1])
     mag = a_to_b[0] ** 2 + a_to_b[1] ** 2
+    if mag == 0:
+        return a
     atp_dot_atb = a_to_pt[0] * a_to_b[0] + a_to_pt[1] * a_to_b[1]
     t = atp_dot_atb / mag
     return (a[0] + a_to_b[0] * t, a[1] + a_to_b[1] * t)
@@ -107,8 +109,9 @@ class CornerComponentApplier:
     alignment: Alignment
     path: object
     corner_path: object
-    target_node_ix: int
     flipped: bool
+    target_node: object
+    target_node_ix: int = None
     origin: (int, int) = (0, 0)
     left_x: int = 0
     right_x: int = 0
@@ -119,10 +122,6 @@ class CornerComponentApplier:
             raise ValueError(full_msg)
         else:
             logger.error(full_msg)
-
-    @property
-    def target_node(self):
-        return self.path[self.target_node_ix]
 
     @property
     def instroke(self):
@@ -145,6 +144,13 @@ class CornerComponentApplier:
         return get_previous_segment(self.corner_path, len(self.corner_path) - 1)
 
     def apply(self):
+        # Find our selves in this path
+        for ix, node in enumerate(self.path):
+            if node == self.target_node:
+                self.target_node_ix = ix
+        if self.target_node_ix is None:
+            self.fail("Lost track of where the corner should be applied")
+
         if self.corner_path[0].x != self.origin[0]:
             self.fail(
                 "Can't deal with offset instrokes yet; start corner components on axis"
@@ -260,9 +266,11 @@ class CornerComponentApplier:
         elif not math.isclose(aligned_curve[0].y, aligned_curve[1].y):
             t = aligned_curve[0].y / (aligned_curve[0].y - aligned_curve[1].y)
             intersection = linePointAtT(*stroke_as_tuples, t)
-        else:
+        elif not math.isclose(aligned_curve[0].x, aligned_curve[1].x):
             t = aligned_curve[0].x / (aligned_curve[0].x - aligned_curve[1].x)
             intersection = linePointAtT(*stroke_as_tuples, t)
+        else:
+            self.fail("Couldn't solve for intersection")
 
         return intersection
 
@@ -360,6 +368,8 @@ class CornerComponentsFilter(BaseFilter):
         if not corner_components:
             return False
 
+        todo_list = []
+
         for glyphs_cc in corner_components:
             path_idx, node_idx = glyphs_cc["origin"]
             # We use font, not .glyphSet here because corner components
@@ -399,11 +409,16 @@ class CornerComponentsFilter(BaseFilter):
                 corner_name=glyphs_cc["name"],
                 alignment=Alignment(glyphs_cc.get("options", 0)),
                 corner_path=corner_path,
-                target_node_ix=(node_idx + 1) % len(glyph[path_idx]),
                 path=glyph[path_idx],
                 origin=cc_origin,
                 flipped=flipped,
+                # We pass in the current starting node, because its
+                # position may change if we apply more than one corner.
+                target_node=glyph[path_idx][(node_idx + 1) % len(glyph[path_idx])],
             )
+            todo_list.append(cc)
+
+        for cc in todo_list:
             cc.apply()
 
         return True

@@ -4,7 +4,8 @@
 DisplayStrings = (
 "/_corner.two/_corner.four/_corner.slab/an_flippy/an_flippy.expectation",
 "/an_flippy",
-"/ao_firstnode/ao_firstnode.expectation"
+"/ao_firstnode/ao_firstnode.expectation",
+"/ap_twoofthem"
 );
 customParameters = (
 {
@@ -1116,6 +1117,67 @@ nodes = (
 }
 );
 width = 600;
+}
+);
+},
+{
+glyphname = ap_twoofthem;
+lastChange = "2022-11-17 22:32:10 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.slab;
+origin = (0,0);
+type = Corner;
+},
+{
+name = _corner.slab;
+origin = (0,1);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(148,0,l),
+(283,0,l),
+(283,504,l),
+(148,504,l)
+);
+}
+);
+width = 933;
+}
+);
+},
+{
+glyphname = ap_twoofthem.expectation;
+lastChange = "2022-11-17 22:31:39 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(148,27,l),
+(52,27,l),
+(52,0,l),
+(157,0,l),
+(274,0,l),
+(379,0,l),
+(379,27,l),
+(283,27,l),
+(283,504,l),
+(148,504,l)
+);
+}
+);
+width = 933;
 }
 );
 }
