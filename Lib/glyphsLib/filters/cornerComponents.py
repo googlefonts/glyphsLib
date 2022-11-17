@@ -12,8 +12,10 @@ from fontTools.misc.bezierTools import (
     linePointAtT,
     splitCubic,
 )
+from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.misc.roundTools import otRound
 from ufo2ft.filters import BaseFilter
+from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY
 from glyphsLib.affine import Affine
@@ -72,6 +74,21 @@ def apply_fonttools_transform(transform, seg):
     return newseg
 
 
+def closest_point_on_segment(seg, pt):
+    # Everything here is a tuple
+    if len(seg) == 4:
+        # Cheat, closest point on a bezier is a nightmare
+        seg = seg[0:2]
+    # Closest point on line
+    a, b = seg
+    a_to_b = (b[0] - a[0], b[1] - a[1])
+    a_to_pt = (pt[0] - a[0], pt[1] - a[1])
+    mag = a_to_b[0] ** 2 + a_to_b[1] ** 2
+    atp_dot_atb = a_to_pt[0] * a_to_b[0] + a_to_pt[1] * a_to_b[1]
+    t = atp_dot_atb / mag
+    return (a[0] + a_to_b[0] * t, a[1] + a_to_b[1] * t)
+
+
 class Alignment(IntEnum):
     LEFT = 0
     RIGHT = 1
@@ -91,6 +108,7 @@ class CornerComponentApplier:
     path: object
     corner_path: object
     target_node_ix: int
+    flipped: bool
     origin: (int, int) = (0, 0)
     left_x: int = 0
     right_x: int = 0
@@ -115,6 +133,10 @@ class CornerComponentApplier:
         return get_next_segment(self.path, self.target_node_ix)
 
     @property
+    def outstroke_as_tuples(self):
+        return tuple((pt.x, pt.y) for pt in self.outstroke)
+
+    @property
     def first_seg(self):
         return get_next_segment(self.corner_path, 0)
 
@@ -134,18 +156,21 @@ class CornerComponentApplier:
         self.align_my_path_to_main_path()
 
         # Deal with instroke/firstseg
-        intersection = self.find_instroke_intersection_point()
-        self.split_instroke(intersection)
-        # The instroke of the corner path now needs stretching to fit...
+        intersection1 = self.find_instroke_intersection_point()
+        intersection2 = (self.corner_path[-1].x, self.corner_path[-1].y)
+
+        original_outstroke = self.outstroke_as_tuples
+
+        self.split_instroke(intersection1)
+        # The instroke of the corner path may need stretching to fit...
         if len(self.first_seg) == 4:
-            self.stretch_first_seg_to_fit(intersection)
+            self.stretch_first_seg_to_fit(intersection1)
 
-        # Deal with outstroke/lastseg
-
-        # Paste corner path into host
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
+
+        self.fixup_outstroke(original_outstroke, intersection2)
 
     def align_my_path_to_main_path(self):
         # First align myself to the "origin" anchor.
@@ -153,41 +178,49 @@ class CornerComponentApplier:
             pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
 
         # Work out my rotation
-        if self.alignment == Alignment.LEFT:
-            outstroke = self.outstroke
-            if len(outstroke) == 4:
+        outstroke_angle = math.atan2(
+            self.outstroke[1].y - self.outstroke[0].y,
+            self.outstroke[1].x - self.outstroke[0].x,
+        )
+        instroke_angle = (
+            math.atan2(
+                self.instroke[1].y - self.instroke[0].y,
+                self.instroke[1].x - self.instroke[0].x,
+            )
+            + math.radians(90)
+        )
+
+        if (
+            self.alignment == Alignment.RIGHT and self.flipped
+        ) or self.alignment == Alignment.LEFT:
+            if len(self.outstroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved outstroke",
                     hard=False,
                 )
-            outstroke_angle = math.atan2(
-                outstroke[1].y - outstroke[0].y, outstroke[1].x - outstroke[0].x
-            )
-            rot = Affine.rotation(math.degrees(outstroke_angle))
-            # Rotate the whole path around the origin
-            for pt in self.corner_path:
-                pt.x, pt.y = rot * (pt.x, pt.y)
-
-        elif self.alignment == Alignment.RIGHT:
-            instroke = self.instroke
-            if len(instroke) == 4:
+            angle = outstroke_angle
+        elif (
+            self.alignment == Alignment.LEFT and self.flipped
+        ) or self.alignment == Alignment.RIGHT:
+            if len(self.instroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved instroke",
                     hard=False,
                 )
-            instroke_angle = math.atan2(
-                instroke[1].y - instroke[0].y, instroke[1].x - instroke[0].x
-            )
-            rot = Affine.rotation(math.degrees(instroke_angle))
-            # Rotate the whole path around the origin
-            for pt in self.corner_path:
-                pt.x, pt.y = rot * (pt.x, pt.y)
+            angle = instroke_angle
         elif self.alignment == Alignment.MIDDLE:
-            self.fail("Middle alignment not yet implemented")
-        elif self.alignment == Alignment.UNUSED:
-            pass
-        elif self.alignment == Alignment.UNALIGNED:
-            pass  # right?
+            angle = (instroke_angle + outstroke_angle) / 2
+        else:
+            angle = 0
+
+        if self.flipped:
+            angle -= math.radians(90)
+            self.reverse_corner_path()
+
+        rot = Affine.rotation(math.degrees(angle))
+        # Rotate the whole path around the origin
+        for pt in self.corner_path:
+            pt.x, pt.y = rot * (pt.x, pt.y)
 
         # Now position our path onto the point.
         for pt in self.corner_path:
@@ -205,21 +238,36 @@ class CornerComponentApplier:
             _alignment_transformation(first_seg_as_tuples),
             self.instroke,
         )
+        return self.solve_intersection(aligned_curve, instroke_as_tuples)
 
+    def find_outstroke_intersection_point(self):
+        # Same but for the outstroke...
+        last_seg_as_tuples = tuple(
+            reversed(list((pt.x, pt.y) for pt in self.last_seg[0:2]))
+        )
+        outstroke_as_tuples = tuple((pt.x, pt.y) for pt in self.outstroke)
+        aligned_curve = apply_fonttools_transform(
+            _alignment_transformation(last_seg_as_tuples),
+            self.outstroke,
+        )
+        return self.solve_intersection(aligned_curve, outstroke_as_tuples)
+
+    def solve_intersection(self, aligned_curve, stroke_as_tuples):
         if len(aligned_curve) == 4:
             a, b, c, d = calcCubicParameters(*[(pt.x, pt.y) for pt in aligned_curve])
             intersections = solveCubic(a[1], b[1], c[1], d[1])
-            intersection = cubicPointAtT(*instroke_as_tuples, intersections[0])
+            intersection = cubicPointAtT(*stroke_as_tuples, intersections[0])
         elif not math.isclose(aligned_curve[0].y, aligned_curve[1].y):
             t = aligned_curve[0].y / (aligned_curve[0].y - aligned_curve[1].y)
-            intersection = linePointAtT(*instroke_as_tuples, t)
+            intersection = linePointAtT(*stroke_as_tuples, t)
         else:
-            self.fail("Something went wrong finding the intersection")
+            t = aligned_curve[0].x / (aligned_curve[0].x - aligned_curve[1].x)
+            intersection = linePointAtT(*stroke_as_tuples, t)
 
         return intersection
 
     def split_instroke(self, intersection):
-        # Split the instroke at the intersection, fix up, and paste it in.
+        # Split the instroke at the intersection.
         if len(self.instroke) == 2:
             # Splitting a line is easy...
             (
@@ -247,6 +295,43 @@ class CornerComponentApplier:
             for new_pt, old in zip(new_cubic, self.instroke):
                 old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
 
+    def fixup_outstroke(self, original_outstroke, intersection):
+        # Split the outstroke at the nearest point to the intersection.
+        # The outstroke has moved now, since we have inserted the path
+        outstroke = get_previous_segment(
+            self.path, (self.target_node_ix + len(self.corner_path)) % len(self.path)
+        )
+        intersection = closest_point_on_segment(original_outstroke, intersection)
+
+        if len(outstroke) == 2:
+            # Splitting a line is easy...
+            (outstroke[0].x, outstroke[0].y) = otRound(intersection[0]), otRound(
+                intersection[1]
+            )
+        else:
+            # There's a horrible edge case here where the curve wraps around and
+            # the ray hits twice, but I'm not worrying about it.
+            new_cubics_1 = splitCubic(
+                *self.outstroke_as_tuples, intersection[0], False
+            )[0]
+            new_cubics_2 = splitCubic(*self.outstroke_as_tuples, intersection[1], True)[
+                0
+            ]
+            # Choose the one closest to the intersection point
+            d1 = (new_cubics_1[-1][0] - intersection[0]) ** 2 + (
+                new_cubics_1[-1][1] - intersection[1]
+            ) ** 2
+            d2 = (new_cubics_2[-1][0] - intersection[0]) ** 2 + (
+                new_cubics_2[-1][1] - intersection[1]
+            ) ** 2
+            if d1 < d2:
+                new_cubic = new_cubics_1
+            else:
+                new_cubic = new_cubics_2
+
+            for new_pt, old in zip(new_cubic, outstroke):
+                old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
+
     def stretch_first_seg_to_fit(self, intersection):
         delta = (
             intersection[0] - self.first_seg[0].x,
@@ -254,6 +339,11 @@ class CornerComponentApplier:
         )
         self.first_seg[1].x += delta[0]
         self.first_seg[1].y += delta[1]
+
+    def reverse_corner_path(self):
+        new_glyph = Glyph()
+        self.corner_path.draw(ReverseContourPen(new_glyph.getPen()))
+        self.corner_path[:] = new_glyph[0]
 
 
 class CornerComponentsFilter(BaseFilter):
@@ -296,7 +386,10 @@ class CornerComponentsFilter(BaseFilter):
                 cc_origin = (0, 0)
 
             corner_path = copy.deepcopy(layer[0])
+            flipped = False
             if "scale" in glyphs_cc:
+                flipped = (glyphs_cc["scale"][0] * glyphs_cc["scale"][1]) < 0
+                # scaling = Affine.scale(*[abs(x) for x in glyphs_cc["scale"]])
                 scaling = Affine.scale(*glyphs_cc["scale"])
                 for pt in corner_path:
                     pt.x, pt.y = scaling * (pt.x, pt.y)
@@ -309,6 +402,7 @@ class CornerComponentsFilter(BaseFilter):
                 target_node_ix=(node_idx + 1) % len(glyph[path_idx]),
                 path=glyph[path_idx],
                 origin=cc_origin,
+                flipped=flipped,
             )
             cc.apply()
 
