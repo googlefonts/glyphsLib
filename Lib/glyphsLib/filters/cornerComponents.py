@@ -11,6 +11,7 @@ from fontTools.misc.bezierTools import (
     cubicPointAtT,
     linePointAtT,
     splitCubic,
+    segmentSegmentIntersections,
 )
 from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.misc.roundTools import otRound
@@ -143,6 +144,10 @@ class CornerComponentApplier:
     def last_seg(self):
         return get_previous_segment(self.corner_path, len(self.corner_path) - 1)
 
+    @property
+    def last_seg_as_tuples(self):
+        return tuple((pt.x, pt.y) for pt in self.last_seg)
+
     def apply(self):
         # Find our selves in this path
         for ix, node in enumerate(self.path):
@@ -163,8 +168,7 @@ class CornerComponentApplier:
 
         # Deal with instroke/firstseg
         intersection1 = self.find_instroke_intersection_point()
-        intersection2 = (self.corner_path[-1].x, self.corner_path[-1].y)
-
+        intersection2 = self.find_outstroke_intersection_point()
         original_outstroke = self.outstroke_as_tuples
 
         self.split_instroke(intersection1)
@@ -175,7 +179,6 @@ class CornerComponentApplier:
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
-
         self.fixup_outstroke(original_outstroke, intersection2)
 
     def align_my_path_to_main_path(self):
@@ -196,18 +199,17 @@ class CornerComponentApplier:
             + math.radians(90)
         )
 
-        if (
-            self.alignment == Alignment.RIGHT and self.flipped
-        ) or self.alignment == Alignment.LEFT:
+        if self.flipped:
+            self.reverse_corner_path()
+
+        if self.alignment == Alignment.LEFT:
             if len(self.outstroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved outstroke",
                     hard=False,
                 )
             angle = outstroke_angle
-        elif (
-            self.alignment == Alignment.LEFT and self.flipped
-        ) or self.alignment == Alignment.RIGHT:
+        elif self.alignment == Alignment.RIGHT:
             if len(self.instroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved instroke",
@@ -221,7 +223,6 @@ class CornerComponentApplier:
 
         if self.flipped:
             angle -= math.radians(90)
-            self.reverse_corner_path()
 
         rot = Affine.rotation(math.degrees(angle))
         # Rotate the whole path around the origin
@@ -247,16 +248,19 @@ class CornerComponentApplier:
         return self.solve_intersection(aligned_curve, instroke_as_tuples)
 
     def find_outstroke_intersection_point(self):
-        # Same but for the outstroke...
-        last_seg_as_tuples = tuple(
-            reversed(list((pt.x, pt.y) for pt in self.last_seg[0:2]))
+        if self.flipped:
+            # Project it
+            aligned_curve = apply_fonttools_transform(
+                _alignment_transformation(self.last_seg_as_tuples),
+                self.outstroke,
+            )
+            return self.solve_intersection(aligned_curve, self.outstroke_as_tuples)
+
+        # Bend it
+        return closest_point_on_segment(
+            self.outstroke_as_tuples,
+            (self.corner_path[-1].x, self.corner_path[-1].y),
         )
-        outstroke_as_tuples = tuple((pt.x, pt.y) for pt in self.outstroke)
-        aligned_curve = apply_fonttools_transform(
-            _alignment_transformation(last_seg_as_tuples),
-            self.outstroke,
-        )
-        return self.solve_intersection(aligned_curve, outstroke_as_tuples)
 
     def solve_intersection(self, aligned_curve, stroke_as_tuples):
         if len(aligned_curve) == 4:
@@ -309,7 +313,6 @@ class CornerComponentApplier:
         outstroke = get_previous_segment(
             self.path, (self.target_node_ix + len(self.corner_path)) % len(self.path)
         )
-        intersection = closest_point_on_segment(original_outstroke, intersection)
 
         if len(outstroke) == 2:
             # Splitting a line is easy...

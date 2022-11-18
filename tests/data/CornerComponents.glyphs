@@ -5,7 +5,8 @@ DisplayStrings = (
 "/_corner.two/_corner.four/_corner.slab/an_flippy/an_flippy.expectation",
 "/an_flippy",
 "/ao_firstnode/ao_firstnode.expectation",
-"/ap_twoofthem"
+"/ap_twoofthem",
+"/_corner.one/aq_rightleg.expectation"
 );
 customParameters = (
 {
@@ -981,7 +982,7 @@ width = 600;
 },
 {
 glyphname = am_middle.expectation;
-lastChange = "2022-11-17 13:07:56 +0000";
+lastChange = "2022-11-18 12:33:25 +0000";
 layers = (
 {
 layerId = m01;
@@ -1155,6 +1156,66 @@ width = 933;
 );
 },
 {
+glyphname = aq_rightleg;
+lastChange = "2022-11-18 12:02:28 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.slab;
+options = 1;
+origin = (0,1);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(88,0,l),
+(188,0,l),
+(284,500,l),
+(184,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = ar_leftleg;
+lastChange = "2022-11-18 12:17:17 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.slab;
+options = 1;
+origin = (0,1);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(433,0,l),
+(483,0,l),
+(110,381,l),
+(84,359,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
 glyphname = ap_twoofthem.expectation;
 lastChange = "2022-11-17 22:31:39 +0000";
 layers = (
@@ -1178,6 +1239,54 @@ nodes = (
 }
 );
 width = 933;
+}
+);
+},
+{
+glyphname = aq_rightleg.expectation;
+lastChange = "2022-11-18 12:45:53 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(88,0,l),
+(179,0,l),
+(284,0,l),
+(284,27,l),
+(193,27,l),
+(284,500,l),
+(184,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = ar_leftleg.expectation;
+lastChange = "2022-11-18 12:13:40 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(433,0,l),
+(474,0,l),
+(579,0,l),
+(579,27,l),
+(457,27,l),
+(110,381,l),
+(84,359,l)
+);
+}
+);
+width = 600;
 }
 );
 }
