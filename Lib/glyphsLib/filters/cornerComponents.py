@@ -108,12 +108,14 @@ class CornerComponentApplier:
     corner_name: str
     glyph_name: str
     alignment: Alignment
-    path: object
+    glyph: object
+    path_index: int
     corner_path: object
-    flipped: bool
+    other_paths: list
     target_node: object
     target_node_ix: int = None
     origin: (int, int) = (0, 0)
+    scale: (int, int) = None
     left_x: int = 0
     right_x: int = 0
 
@@ -149,6 +151,7 @@ class CornerComponentApplier:
         return tuple((pt.x, pt.y) for pt in self.last_seg)
 
     def apply(self):
+        self.path = self.glyph[self.path_index]
         # Find our selves in this path
         for ix, node in enumerate(self.path):
             if node == self.target_node:
@@ -164,6 +167,13 @@ class CornerComponentApplier:
             self.fail(
                 "Can't deal with offset outstrokes yet; end corner components on axis"
             )
+
+        # Determine scale
+        self.flipped = False
+        if self.scale is not None:
+            self.flipped = (self.scale[0] * self.scale[1]) < 0
+            self.scale_paths()
+
         self.align_my_path_to_main_path()
 
         # Deal with instroke/firstseg
@@ -180,6 +190,13 @@ class CornerComponentApplier:
             otRoundNode(node) for node in self.corner_path[1:]
         ]
         self.fixup_outstroke(original_outstroke, intersection2)
+        self.insert_other_paths()
+
+    def scale_paths(self):
+        scaling = Affine.scale(*self.scale)
+        for path in [self.corner_path] + self.other_paths:
+            for pt in path:
+                pt.x, pt.y = scaling * (pt.x, pt.y)
 
     def align_my_path_to_main_path(self):
         # First align myself to the "origin" anchor.
@@ -225,13 +242,12 @@ class CornerComponentApplier:
             angle -= math.radians(90)
 
         rot = Affine.rotation(math.degrees(angle))
-        # Rotate the whole path around the origin
-        for pt in self.corner_path:
-            pt.x, pt.y = rot * (pt.x, pt.y)
+        translation = Affine.translation(self.target_node.x, self.target_node.y)
 
-        # Now position our path onto the point.
-        for pt in self.corner_path:
-            pt.x, pt.y = pt.x + self.target_node.x, pt.y + self.target_node.y
+        # Rotate the paths around the origin
+        for path in [self.corner_path] + self.other_paths:
+            for pt in path:
+                pt.x, pt.y = (translation * rot) * (pt.x, pt.y)
 
     def find_instroke_intersection_point(self):
         # Find intersection between instroke and (extended) first_seg
@@ -356,6 +372,12 @@ class CornerComponentApplier:
         self.corner_path.draw(ReverseContourPen(new_glyph.getPen()))
         self.corner_path[:] = new_glyph[0]
 
+    def insert_other_paths(self):
+        for path in self.other_paths:
+            for node in path:
+                otRoundNode(node)
+            self.glyph.contours.append(path)
+
 
 class CornerComponentsFilter(BaseFilter):
     def filter(self, glyph):
@@ -385,13 +407,6 @@ class CornerComponentsFilter(BaseFilter):
                 )
                 continue
             layer = self.context.font[glyphs_cc["name"]]
-            if len(layer) > 1:
-                logger.warn(
-                    "Corner components of more than one path (%s in %s) not supported",
-                    glyphs_cc["name"],
-                    glyph.name,
-                )
-                continue
             cc_anchor_dict = {anchor.name: anchor for anchor in layer.anchors}
             if "origin" in cc_anchor_dict:
                 cc_origin = cc_anchor_dict["origin"].x, cc_anchor_dict["origin"].y
@@ -399,22 +414,18 @@ class CornerComponentsFilter(BaseFilter):
                 cc_origin = (0, 0)
 
             corner_path = copy.deepcopy(layer[0])
-            flipped = False
-            if "scale" in glyphs_cc:
-                flipped = (glyphs_cc["scale"][0] * glyphs_cc["scale"][1]) < 0
-                # scaling = Affine.scale(*[abs(x) for x in glyphs_cc["scale"]])
-                scaling = Affine.scale(*glyphs_cc["scale"])
-                for pt in corner_path:
-                    pt.x, pt.y = scaling * (pt.x, pt.y)
+            other_paths = [copy.deepcopy(path) for path in layer[1:]]
 
             cc = CornerComponentApplier(
                 glyph_name=glyph.name,
                 corner_name=glyphs_cc["name"],
                 alignment=Alignment(glyphs_cc.get("options", 0)),
+                scale=glyphs_cc.get("scale"),
                 corner_path=corner_path,
-                path=glyph[path_idx],
+                other_paths=other_paths,
+                path_index=path_idx,
+                glyph=glyph,
                 origin=cc_origin,
-                flipped=flipped,
                 # We pass in the current starting node, because its
                 # position may change if we apply more than one corner.
                 target_node=glyph[path_idx][(node_idx + 1) % len(glyph[path_idx])],

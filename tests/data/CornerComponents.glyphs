@@ -2,11 +2,11 @@
 .appVersion = "3109";
 .formatVersion = 3;
 DisplayStrings = (
-"/_corner.two/_corner.four/_corner.slab/an_flippy/an_flippy.expectation",
+"/_corner.two/_corner.four/_corner.slab/an_flippy/_corner.pretty/as_closedpaths/as_closedpaths.expectation/an_flippy.expectation",
 "/an_flippy",
 "/ao_firstnode/ao_firstnode.expectation",
-"/ap_twoofthem",
-"/_corner.one/aq_rightleg.expectation"
+"/ak_right_slanted/am_middle",
+"/ar_leftleg"
 );
 customParameters = (
 {
@@ -81,6 +81,11 @@ over = -16;
 }
 );
 name = Regular;
+userData = {
+GSOffsetHorizontal = 5;
+GSOffsetMakeStroke = 1;
+GSOffsetVertical = 5;
+};
 }
 );
 glyphs = (
@@ -1122,6 +1127,67 @@ width = 600;
 );
 },
 {
+export = 0;
+glyphname = _corner.pretty;
+lastChange = "2022-11-18 13:48:51 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,27,l),
+(-39,65,o),
+(-124,11,o),
+(-145,-52,c),
+(-105,-77,o),
+(-55,-86,o),
+(9,0,c)
+);
+},
+{
+closed = 1;
+nodes = (
+(-108,-51,o),
+(-118,-41,o),
+(-118,-29,cs),
+(-118,-18,o),
+(-108,-8,o),
+(-97,-8,cs),
+(-85,-8,o),
+(-75,-18,o),
+(-75,-29,cs),
+(-75,-41,o),
+(-85,-51,o),
+(-97,-51,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(-51,-102,o),
+(-113,-94,o),
+(-165,-63,c),
+(-136,19,o),
+(-29,85,o),
+(19,37,c),
+(27,45,l),
+(-30,100,o),
+(-150,22,o),
+(-177,-67,c),
+(-122,-102,o),
+(-51,-118,o),
+(39,2,c),
+(31,8,l)
+);
+}
+);
+width = 200;
+}
+);
+},
+{
 glyphname = ap_twoofthem;
 lastChange = "2022-11-17 22:32:10 +0000";
 layers = (
@@ -1216,6 +1282,39 @@ width = 600;
 );
 },
 {
+glyphname = as_closedpaths;
+lastChange = "2022-11-18 14:17:51 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.pretty;
+origin = (0,0);
+type = Corner;
+},
+{
+name = _corner.pretty;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(152,1,l),
+(452,1,l),
+(452,501,l),
+(152,501,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
 glyphname = ap_twoofthem.expectation;
 lastChange = "2022-11-17 22:31:39 +0000";
 layers = (
@@ -1283,6 +1382,111 @@ nodes = (
 (457,27,l),
 (110,381,l),
 (84,359,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = as_closedpaths.expectation;
+lastChange = "2022-11-18 14:36:29 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(152,28,l),
+(113,66,o),
+(28,12,o),
+(7,-51,c),
+(47,-76,o),
+(97,-85,o),
+(161,1,c),
+(452,1,l),
+(452,474,l),
+(491,436,o),
+(576,490,o),
+(597,553,c),
+(557,578,o),
+(507,587,o),
+(443,501,c),
+(152,501,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(44,-50,o),
+(34,-40,o),
+(34,-28,cs),
+(34,-17,o),
+(44,-7,o),
+(55,-7,cs),
+(67,-7,o),
+(77,-17,o),
+(77,-28,cs),
+(77,-40,o),
+(67,-50,o),
+(55,-50,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(101,-101,o),
+(39,-93,o),
+(-13,-62,c),
+(16,20,o),
+(123,86,o),
+(171,38,c),
+(179,46,l),
+(122,101,o),
+(2,23,o),
+(-25,-66,c),
+(30,-101,o),
+(101,-117,o),
+(191,3,c),
+(183,9,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(560,552,o),
+(570,542,o),
+(570,530,cs),
+(570,519,o),
+(560,509,o),
+(549,509,cs),
+(537,509,o),
+(527,519,o),
+(527,530,cs),
+(527,542,o),
+(537,552,o),
+(549,552,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(503,603,o),
+(565,595,o),
+(617,564,c),
+(588,482,o),
+(481,416,o),
+(433,464,c),
+(425,456,l),
+(482,401,o),
+(602,479,o),
+(629,568,c),
+(574,603,o),
+(503,619,o),
+(413,499,c),
+(421,493,l)
 );
 }
 );

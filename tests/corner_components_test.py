@@ -17,7 +17,8 @@ def test_corner_components(glyph):
     assert philter(ufo)
     test_glyph = ufo[glyph]
     expectation = ufo[glyph + ".expectation"]
+    assert len(test_glyph) == len(expectation)
     for test_contour, expectation_contour in zip(
-        test_glyph.contours, expectation.contours
+        expectation.contours, test_glyph.contours
     ):
         assert test_contour == expectation_contour, glyph
