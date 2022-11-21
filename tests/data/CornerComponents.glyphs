@@ -6,7 +6,8 @@ DisplayStrings = (
 "/an_flippy",
 "/ao_firstnode/ao_firstnode.expectation",
 "/ak_right_slanted/am_middle",
-"/ar_leftleg"
+"/ar_leftleg",
+"/at_unaligned_lastseg.expectation/ai_curved_outstroke/at_unaligned_lastseg"
 );
 customParameters = (
 {
@@ -16,6 +17,8 @@ _corner.one,
 _corner.two,
 _corner.three,
 _corner.four,
+_corner.five,
+_corner.pretty,
 _corner.slab,
 aa_simple_angleinstroke,
 aa_simple_angleinstroke.expectation,
@@ -47,6 +50,18 @@ am_middle,
 am_middle.expectation,
 an_flippy,
 an_flippy.expectation,
+ao_firstnode,
+ao_firstnode.expectation,
+ap_twoofthem,
+ap_twoofthem.expectation,
+aq_rightleg,
+aq_rightleg.expectation,
+ar_leftleg,
+ar_leftleg.expectation,
+as_closedpaths,
+as_closedpaths.expectation,
+at_unaligned_lastseg,
+at_unaligned_lastseg.expectation,
 space
 );
 }
@@ -181,6 +196,89 @@ nodes = (
 (-30,502,l),
 (3,474,l),
 (50,500,l)
+);
+}
+);
+width = 200;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.five;
+lastChange = "2022-11-21 09:59:10 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,24,l),
+(-84,24,l),
+(-84,-34,l),
+(58,-34,l)
+);
+}
+);
+width = 200;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.pretty;
+lastChange = "2022-11-18 13:48:51 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,27,l),
+(-39,65,o),
+(-124,11,o),
+(-145,-52,c),
+(-105,-77,o),
+(-55,-86,o),
+(9,0,c)
+);
+},
+{
+closed = 1;
+nodes = (
+(-108,-51,o),
+(-118,-41,o),
+(-118,-29,cs),
+(-118,-18,o),
+(-108,-8,o),
+(-97,-8,cs),
+(-85,-8,o),
+(-75,-18,o),
+(-75,-29,cs),
+(-75,-41,o),
+(-85,-51,o),
+(-97,-51,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(-51,-102,o),
+(-113,-94,o),
+(-165,-63,c),
+(-136,19,o),
+(-29,85,o),
+(19,37,c),
+(27,45,l),
+(-30,100,o),
+(-150,22,o),
+(-177,-67,c),
+(-122,-102,o),
+(-51,-118,o),
+(39,2,c),
+(31,8,l)
 );
 }
 );
@@ -739,7 +837,7 @@ width = 600;
 },
 {
 glyphname = ai_curved_outstroke;
-lastChange = "2022-11-17 10:11:27 +0000";
+lastChange = "2022-11-21 10:03:09 +0000";
 layers = (
 {
 hints = (
@@ -1064,16 +1162,6 @@ width = 600;
 );
 },
 {
-glyphname = space;
-layers = (
-{
-layerId = m01;
-width = 200;
-}
-);
-unicode = 32;
-},
-{
 glyphname = ao_firstnode;
 lastChange = "2022-11-17 15:12:47 +0000";
 layers = (
@@ -1127,67 +1215,6 @@ width = 600;
 );
 },
 {
-export = 0;
-glyphname = _corner.pretty;
-lastChange = "2022-11-18 13:48:51 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 0;
-nodes = (
-(0,27,l),
-(-39,65,o),
-(-124,11,o),
-(-145,-52,c),
-(-105,-77,o),
-(-55,-86,o),
-(9,0,c)
-);
-},
-{
-closed = 1;
-nodes = (
-(-108,-51,o),
-(-118,-41,o),
-(-118,-29,cs),
-(-118,-18,o),
-(-108,-8,o),
-(-97,-8,cs),
-(-85,-8,o),
-(-75,-18,o),
-(-75,-29,cs),
-(-75,-41,o),
-(-85,-51,o),
-(-97,-51,cs)
-);
-},
-{
-closed = 1;
-nodes = (
-(-51,-102,o),
-(-113,-94,o),
-(-165,-63,c),
-(-136,19,o),
-(-29,85,o),
-(19,37,c),
-(27,45,l),
-(-30,100,o),
-(-150,22,o),
-(-177,-67,c),
-(-122,-102,o),
-(-51,-118,o),
-(39,2,c),
-(31,8,l)
-);
-}
-);
-width = 200;
-}
-);
-},
-{
 glyphname = ap_twoofthem;
 lastChange = "2022-11-17 22:32:10 +0000";
 layers = (
@@ -1212,6 +1239,33 @@ closed = 1;
 nodes = (
 (148,0,l),
 (283,0,l),
+(283,504,l),
+(148,504,l)
+);
+}
+);
+width = 933;
+}
+);
+},
+{
+glyphname = ap_twoofthem.expectation;
+lastChange = "2022-11-17 22:31:39 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(148,27,l),
+(52,27,l),
+(52,0,l),
+(157,0,l),
+(274,0,l),
+(379,0,l),
+(379,27,l),
+(283,27,l),
 (283,504,l),
 (148,504,l)
 );
@@ -1252,6 +1306,30 @@ width = 600;
 );
 },
 {
+glyphname = aq_rightleg.expectation;
+lastChange = "2022-11-18 12:45:53 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(88,0,l),
+(179,0,l),
+(284,0,l),
+(284,27,l),
+(193,27,l),
+(284,500,l),
+(184,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
 glyphname = ar_leftleg;
 lastChange = "2022-11-18 12:17:17 +0000";
 layers = (
@@ -1272,6 +1350,30 @@ closed = 1;
 nodes = (
 (433,0,l),
 (483,0,l),
+(110,381,l),
+(84,359,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = ar_leftleg.expectation;
+lastChange = "2022-11-18 12:13:40 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(433,0,l),
+(474,0,l),
+(579,0,l),
+(579,27,l),
+(457,27,l),
 (110,381,l),
 (84,359,l)
 );
@@ -1315,83 +1417,8 @@ width = 600;
 );
 },
 {
-glyphname = ap_twoofthem.expectation;
-lastChange = "2022-11-17 22:31:39 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(148,27,l),
-(52,27,l),
-(52,0,l),
-(157,0,l),
-(274,0,l),
-(379,0,l),
-(379,27,l),
-(283,27,l),
-(283,504,l),
-(148,504,l)
-);
-}
-);
-width = 933;
-}
-);
-},
-{
-glyphname = aq_rightleg.expectation;
-lastChange = "2022-11-18 12:45:53 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(88,0,l),
-(179,0,l),
-(284,0,l),
-(284,27,l),
-(193,27,l),
-(284,500,l),
-(184,500,l)
-);
-}
-);
-width = 600;
-}
-);
-},
-{
-glyphname = ar_leftleg.expectation;
-lastChange = "2022-11-18 12:13:40 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(433,0,l),
-(474,0,l),
-(579,0,l),
-(579,27,l),
-(457,27,l),
-(110,381,l),
-(84,359,l)
-);
-}
-);
-width = 600;
-}
-);
-},
-{
 glyphname = as_closedpaths.expectation;
-lastChange = "2022-11-18 14:36:29 +0000";
+lastChange = "2022-11-18 14:37:09 +0000";
 layers = (
 {
 layerId = m01;
@@ -1493,6 +1520,68 @@ nodes = (
 width = 600;
 }
 );
+},
+{
+glyphname = at_unaligned_lastseg;
+lastChange = "2022-11-18 14:46:55 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.five;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(96,0,l),
+(396,0,l),
+(396,500,l),
+(96,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = at_unaligned_lastseg.expectation;
+lastChange = "2022-11-18 14:49:32 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(96,28,l),
+(11,-22,l),
+(41,-72,l),
+(163,0,l),
+(396,0,l),
+(396,500,l),
+(96,500,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 32;
 }
 );
 metrics = (

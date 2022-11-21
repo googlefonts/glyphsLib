@@ -163,10 +163,6 @@ class CornerComponentApplier:
             self.fail(
                 "Can't deal with offset instrokes yet; start corner components on axis"
             )
-        if self.corner_path[-1].y != self.origin[1]:
-            self.fail(
-                "Can't deal with offset outstrokes yet; end corner components on axis"
-            )
 
         # Determine scale
         self.flipped = False
@@ -203,7 +199,14 @@ class CornerComponentApplier:
         for pt in self.corner_path:
             pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
 
-        # Work out my rotation
+        # Work out my rotation (1): Rotation occurring due to corner paths
+        angle = math.atan2(-self.corner_path[-1].y, self.corner_path[-1].x)
+
+        if self.flipped:
+            self.reverse_corner_path()
+            angle += math.radians(90)
+
+        # Work out my rotation (2): Rotation occurring due to host paths
         outstroke_angle = math.atan2(
             self.outstroke[1].y - self.outstroke[0].y,
             self.outstroke[1].x - self.outstroke[0].x,
@@ -216,30 +219,24 @@ class CornerComponentApplier:
             + math.radians(90)
         )
 
-        if self.flipped:
-            self.reverse_corner_path()
-
         if self.alignment == Alignment.LEFT:
             if len(self.outstroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved outstroke",
                     hard=False,
                 )
-            angle = outstroke_angle
+            angle += outstroke_angle
         elif self.alignment == Alignment.RIGHT:
             if len(self.instroke) == 4:
                 self.fail(
                     "Can't reliably compute rotation angle to fit corner to a curved instroke",
                     hard=False,
                 )
-            angle = instroke_angle
+            angle += instroke_angle
         elif self.alignment == Alignment.MIDDLE:
-            angle = (instroke_angle + outstroke_angle) / 2
-        else:
-            angle = 0
-
-        if self.flipped:
-            angle -= math.radians(90)
+            angle += (instroke_angle + outstroke_angle) / 2
+        else:  # Unaligned, do nothing
+            pass
 
         rot = Affine.rotation(math.degrees(angle))
         translation = Affine.translation(self.target_node.x, self.target_node.y)
