@@ -115,6 +115,8 @@ class CornerComponentApplier:
     target_node: object
     target_node_ix: int = None
     origin: (int, int) = (0, 0)
+    effective_start: (int, int) = None
+    effective_end: (int, int) = None
     scale: (int, int) = None
     left_x: int = 0
     right_x: int = 0
@@ -164,6 +166,8 @@ class CornerComponentApplier:
                 "Can't deal with offset instrokes yet; start corner components on axis"
             )
 
+        self.determine_start_and_end_vectors()
+
         # Determine scale
         self.flipped = False
         if self.scale is not None:
@@ -187,6 +191,26 @@ class CornerComponentApplier:
         ]
         self.fixup_outstroke(original_outstroke, intersection2)
         self.insert_other_paths()
+
+    def determine_start_and_end_vectors(self):
+        # Left and right anchors provide an additional offset, depending
+        # on their relationship with the start/end of the first/last points
+        # of the corner curve
+        if not self.effective_start:
+            self.effective_start = (0, 0)
+        else:
+            self.effective_start = (
+                self.corner_path[0].x - self.effective_start[0],
+                self.corner_path[0].y - self.effective_start[1],
+            )
+
+        if not self.effective_end:
+            self.effective_end = (0, 0)
+        else:
+            self.effective_end = (
+                self.corner_path[-1].x - self.effective_end[0],
+                self.corner_path[-1].y - self.effective_end[1],
+            )
 
     def scale_paths(self):
         scaling = Affine.scale(*self.scale)
@@ -239,7 +263,9 @@ class CornerComponentApplier:
             pass
 
         rot = Affine.rotation(math.degrees(angle))
-        translation = Affine.translation(self.target_node.x, self.target_node.y)
+        translation = Affine.translation(
+            self.target_node.x + self.effective_start[0], self.target_node.y
+        )
 
         # Rotate the paths around the origin
         for path in [self.corner_path] + self.other_paths:
@@ -258,7 +284,13 @@ class CornerComponentApplier:
             _alignment_transformation(first_seg_as_tuples),
             self.instroke,
         )
-        return self.solve_intersection(aligned_curve, instroke_as_tuples)
+        intersection = self.solve_intersection(aligned_curve, instroke_as_tuples)
+        intersection = (
+            intersection[0] + self.effective_start[0],
+            intersection[1],
+        )
+        vector = math.atan2(self.effective_start[1], self.effective_start[0])
+        return intersection
 
     def find_outstroke_intersection_point(self):
         if self.flipped:
@@ -410,6 +442,16 @@ class CornerComponentsFilter(BaseFilter):
             else:
                 cc_origin = (0, 0)
 
+            if "left" in cc_anchor_dict:
+                cc_left = cc_anchor_dict["left"].x, cc_anchor_dict["left"].y
+            else:
+                cc_left = None
+
+            if "right" in cc_anchor_dict:
+                cc_right = cc_anchor_dict["right"].x, cc_anchor_dict["right"].y
+            else:
+                cc_right = None
+
             corner_path = copy.deepcopy(layer[0])
             other_paths = [copy.deepcopy(path) for path in layer[1:]]
 
@@ -423,6 +465,8 @@ class CornerComponentsFilter(BaseFilter):
                 path_index=path_idx,
                 glyph=glyph,
                 origin=cc_origin,
+                effective_start=cc_left,
+                effective_end=cc_right,
                 # We pass in the current starting node, because its
                 # position may change if we apply more than one corner.
                 target_node=glyph[path_idx][(node_idx + 1) % len(glyph[path_idx])],
