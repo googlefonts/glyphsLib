@@ -22,6 +22,14 @@ from glyphsLib.builder.constants import HINTS_LIB_KEY
 from glyphsLib.affine import Affine
 
 
+try:
+    from math import dist
+except ImportError:
+
+    def dist(p1, p2):
+        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -98,7 +106,7 @@ def closest_point_on_cubic(bez, pt, start=0.0, end=1.0, iterations=5, slices=5):
     best_pt = pt
     while t < end:
         this_pt = cubicPointAtT(*bez, t)
-        current_distance = math.dist(this_pt, pt)
+        current_distance = dist(this_pt, pt)
         if current_distance <= best_dist:
             best_dist = current_distance
             best = t
@@ -166,7 +174,7 @@ def split_cubic_at_point(seg, point, inward=True):
     else:
         new_cubic_1 = splitCubic(*seg, point[0], False)[-1]
         new_cubic_2 = splitCubic(*seg, point[1], True)[-1]
-    if math.dist(new_cubic_1[-1], point) < math.dist(new_cubic_2[-1], point):
+    if dist(new_cubic_1[-1], point) < dist(new_cubic_2[-1], point):
         return new_cubic_1
     else:
         return new_cubic_2
