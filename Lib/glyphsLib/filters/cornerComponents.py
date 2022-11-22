@@ -297,7 +297,8 @@ class CornerComponentApplier:
                 self.corner_path[0].y - self.effective_start[1],
             )
             self.fail(
-                "left and right anchors to corner components are not currently supported",
+                "left and right anchors to corner components are"
+                " not currently supported",
                 hard=False,
             )
 
@@ -309,7 +310,8 @@ class CornerComponentApplier:
                 self.corner_path[-1].y - self.effective_end[1],
             )
             self.fail(
-                "left and right anchors to corner components are not currently supported",
+                "left and right anchors to corner components are"
+                " not currently supported",
                 hard=False,
             )
 
