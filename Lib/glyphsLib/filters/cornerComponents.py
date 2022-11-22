@@ -230,7 +230,8 @@ class CornerComponentApplier:
 
         if self.corner_path[0].x != self.origin[0]:
             self.fail(
-                "Can't deal with offset instrokes yet; start corner components on axis"
+                "Can't deal with offset instrokes yet; start corner components on axis",
+                hard=False,
             )
 
         # This is for handling the left and right anchors and doesn't
@@ -295,6 +296,10 @@ class CornerComponentApplier:
                 self.corner_path[0].x - self.effective_start[0],
                 self.corner_path[0].y - self.effective_start[1],
             )
+            self.fail(
+                "left and right anchors to corner components are not currently supported",
+                hard=False,
+            )
 
         if not self.effective_end:
             self.effective_end = (0, 0)
@@ -302,6 +307,10 @@ class CornerComponentApplier:
             self.effective_end = (
                 self.corner_path[-1].x - self.effective_end[0],
                 self.corner_path[-1].y - self.effective_end[1],
+            )
+            self.fail(
+                "left and right anchors to corner components are not currently supported",
+                hard=False,
             )
 
     def scale_paths(self):
