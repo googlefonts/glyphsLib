@@ -2,14 +2,7 @@
 .appVersion = "3109";
 .formatVersion = 3;
 DisplayStrings = (
-"",
-"",
-"",
-"",
-"",
-"",
-"",
-"/_corner.six/au_left_anchoronpath/au_left_anchoronpath.expectation/av_left_anchoroffpath.expectation"
+"/_corner.seven/al_unaligned/ai_curved_outstroke/ai_curved_outstroke.expectation"
 );
 customParameters = (
 {
@@ -109,7 +102,7 @@ glyphs = (
 {
 export = 0;
 glyphname = _corner.one;
-lastChange = "2022-11-17 14:20:25 +0000";
+lastChange = "2022-11-22 09:48:36 +0000";
 layers = (
 {
 layerId = m01;
@@ -482,12 +475,12 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ad_curved_instroke;
-lastChange = "2022-11-17 09:18:59 +0000";
+lastChange = "2022-11-21 20:48:47 +0000";
 layers = (
 {
 anchors = (
 {
-name = "new anchor";
+name = intersection;
 pos = (134,188);
 }
 );
@@ -548,7 +541,7 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ae_curved_corner_firstseg;
-lastChange = "2022-11-17 09:18:35 +0000";
+lastChange = "2022-11-21 21:52:20 +0000";
 layers = (
 {
 hints = (
@@ -605,9 +598,15 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = af_curved_corner_firstseg_slanted;
-lastChange = "2022-11-17 09:24:04 +0000";
+lastChange = "2022-11-21 22:02:07 +0000";
 layers = (
 {
+anchors = (
+{
+name = intersection;
+pos = (113,50);
+}
+);
 hints = (
 {
 name = _corner.two;
@@ -630,13 +629,13 @@ nodes = (
 width = 600;
 }
 );
-production = ae_curved_corner_firstseg_slanted;
+production = af_curved_corner_firstseg_slanted;
 subCategory = Other;
 },
 {
 category = Letter;
 glyphname = af_curved_corner_firstseg_slanted.expectation;
-lastChange = "2022-11-17 09:25:23 +0000";
+lastChange = "2022-11-21 21:16:15 +0000";
 layers = (
 {
 layerId = m01;
@@ -658,7 +657,7 @@ nodes = (
 width = 600;
 }
 );
-production = ae_curved_corner_firstseg_slanted.001;
+production = af_curved_corner_firstseg_slanted.expectation;
 subCategory = Other;
 },
 {
@@ -839,9 +838,15 @@ width = 600;
 },
 {
 glyphname = ai_curved_outstroke;
-lastChange = "2022-11-21 10:03:09 +0000";
+lastChange = "2022-11-22 12:46:24 +0000";
 layers = (
 {
+anchors = (
+{
+name = foo;
+pos = (531,270);
+}
+);
 hints = (
 {
 name = _corner.one;
@@ -854,11 +859,11 @@ shapes = (
 {
 closed = 1;
 nodes = (
-(100,100,l),
-(148,100,o),
-(500,302,o),
-(500,400,c),
-(100,400,l)
+(550,252,l),
+(526,294,o),
+(175,497,o),
+(90,448,c),
+(290,102,l)
 );
 }
 );
@@ -868,22 +873,39 @@ width = 600;
 },
 {
 glyphname = ai_curved_outstroke.expectation;
-lastChange = "2022-11-17 09:51:17 +0000";
+lastChange = "2022-11-22 13:21:43 +0000";
 layers = (
 {
+background = {
+shapes = (
+{
+closed = 1;
+nodes = (
+(505,226,l),
+(550,181,l),
+(585,217,l),
+(532,270,l),
+(455,333,o),
+(166,492,o),
+(90,448,c),
+(290,102,l)
+);
+}
+);
+};
 layerId = m01;
 shapes = (
 {
 closed = 1;
 nodes = (
-(100,153,l),
-(68,163,l),
-(52,115,l),
-(124,92,l),
-(240,71,o),
-(500,214,o),
-(500,400,c),
-(100,400,l)
+(505,226,l),
+(550,181,l),
+(585,217,l),
+(532,270,l),
+(455,334,o),
+(166,492,o),
+(90,448,c),
+(290,102,l)
 );
 }
 );
@@ -893,7 +915,7 @@ width = 600;
 },
 {
 glyphname = aj_right_alignment;
-lastChange = "2022-11-17 11:02:52 +0000";
+lastChange = "2022-11-22 10:27:50 +0000";
 layers = (
 {
 hints = (
@@ -946,9 +968,15 @@ width = 600;
 },
 {
 glyphname = ak_right_slanted;
-lastChange = "2022-11-17 12:42:13 +0000";
+lastChange = "2022-11-22 12:28:56 +0000";
 layers = (
 {
+anchors = (
+{
+name = "out anchor";
+pos = (212,40);
+}
+);
 hints = (
 {
 name = _corner.one;
@@ -1111,7 +1139,7 @@ width = 600;
 },
 {
 glyphname = an_flippy;
-lastChange = "2022-11-17 14:39:00 +0000";
+lastChange = "2022-11-22 10:11:53 +0000";
 layers = (
 {
 hints = (
@@ -1218,17 +1246,18 @@ width = 600;
 },
 {
 glyphname = ap_twoofthem;
-lastChange = "2022-11-17 22:32:10 +0000";
+lastChange = "2022-11-22 12:13:37 +0000";
 layers = (
 {
 hints = (
 {
-name = _corner.slab;
+name = _corner.two;
 origin = (0,0);
 type = Corner;
 },
 {
-name = _corner.slab;
+name = _corner.two;
+options = 1;
 origin = (0,1);
 scale = (-1,1);
 type = Corner;
@@ -1240,9 +1269,9 @@ shapes = (
 closed = 1;
 nodes = (
 (148,0,l),
-(283,0,l),
-(283,504,l),
-(148,504,l)
+(283,50,l),
+(283,500,l),
+(148,450,l)
 );
 }
 );
@@ -1252,24 +1281,47 @@ width = 933;
 },
 {
 glyphname = ap_twoofthem.expectation;
-lastChange = "2022-11-17 22:31:39 +0000";
+lastChange = "2022-11-22 12:56:14 +0000";
 layers = (
 {
+background = {
+shapes = (
+{
+closed = 1;
+nodes = (
+(148,53,l),
+(116,42,o),
+(49,17,o),
+(66,-30,c),
+(168,7,l),
+(263,43,l),
+(364,80,l),
+(347,127,o),
+(315,115,o),
+(283,103,c),
+(283,500,l),
+(148,450,l)
+);
+}
+);
+};
 layerId = m01;
 shapes = (
 {
 closed = 1;
 nodes = (
-(148,27,l),
-(52,27,l),
-(52,0,l),
-(157,0,l),
-(274,0,l),
-(379,0,l),
-(379,27,l),
-(283,27,l),
-(283,504,l),
-(148,504,l)
+(148,53,l),
+(116,42,o),
+(49,17,o),
+(66,-30,c),
+(168,7,l),
+(263,43,l),
+(364,80,l),
+(347,127,o),
+(297,109,o),
+(283,103,c),
+(283,500,l),
+(148,450,l)
 );
 }
 );
@@ -1279,7 +1331,7 @@ width = 933;
 },
 {
 glyphname = aq_rightleg;
-lastChange = "2022-11-18 12:02:28 +0000";
+lastChange = "2022-11-22 10:40:46 +0000";
 layers = (
 {
 hints = (
@@ -1587,9 +1639,15 @@ unicode = 32;
 },
 {
 glyphname = au_left_anchoronpath;
-lastChange = "2022-11-21 11:56:50 +0000";
+lastChange = "2022-11-22 12:59:37 +0000";
 layers = (
 {
+anchors = (
+{
+name = "new anchor";
+pos = (170,150);
+}
+);
 hints = (
 {
 name = _corner.six;
@@ -1602,10 +1660,10 @@ shapes = (
 {
 closed = 1;
 nodes = (
-(99,0,l),
-(399,0,l),
-(470,500,l),
-(170,500,l)
+(244,-40,l),
+(503,110,l),
+(315,579,l),
+(55,429,l)
 );
 }
 );
@@ -1643,7 +1701,7 @@ width = 600;
 },
 {
 glyphname = au_left_anchoronpath.expectation;
-lastChange = "2022-11-21 12:05:40 +0000";
+lastChange = "2022-11-22 12:59:46 +0000";
 layers = (
 {
 layerId = m01;
@@ -1651,13 +1709,13 @@ shapes = (
 {
 closed = 1;
 nodes = (
-(170,150,l),
-(20,150,l),
-(20,0,l),
-(195,0,l),
-(399,0,l),
-(470,500,l),
-(170,500,l)
+(231,126,l),
+(101,50,l),
+(176,-79,l),
+(327,8,l),
+(503,110,l),
+(315,579,l),
+(55,429,l)
 );
 }
 );
@@ -1667,7 +1725,7 @@ width = 600;
 },
 {
 glyphname = av_left_anchoroffpath.expectation;
-lastChange = "2022-11-21 11:15:12 +0000";
+lastChange = "2022-11-21 22:03:14 +0000";
 layers = (
 {
 layerId = m01;
@@ -1675,13 +1733,13 @@ shapes = (
 {
 closed = 1;
 nodes = (
-(179,150,l),
-(0,150,l),
-(0,0,l),
-(175,0,l),
+(130,150,l),
+(-30,150,l),
+(-30,0,l),
+(145,0,l),
 (400,0,l),
-(400,500,l),
-(100,500,l)
+(500,500,l),
+(200,500,l)
 );
 }
 );
@@ -1692,7 +1750,7 @@ width = 600;
 {
 export = 0;
 glyphname = _corner.seven;
-lastChange = "2022-11-21 11:37:05 +0000";
+lastChange = "2022-11-22 12:06:08 +0000";
 layers = (
 {
 anchors = (
@@ -1720,7 +1778,7 @@ width = 200;
 {
 export = 0;
 glyphname = _corner.six;
-lastChange = "2022-11-21 12:03:52 +0000";
+lastChange = "2022-11-22 11:53:42 +0000";
 layers = (
 {
 anchors = (
@@ -1742,6 +1800,60 @@ nodes = (
 }
 );
 width = 200;
+}
+);
+},
+{
+glyphname = ax_curved_instroke2;
+lastChange = "2022-11-21 22:09:49 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(372,469,o),
+(106,256,o),
+(106,128,c),
+(382,0,l),
+(501,469,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = ax_curved_instroke2.expectation;
+lastChange = "2022-11-21 22:11:23 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(388,469,o),
+(169,305,o),
+(117,178,c),
+(82,194,l),
+(61,149,l),
+(129,117,l),
+(382,0,l),
+(501,469,l)
+);
+}
+);
+width = 600;
 }
 );
 }
