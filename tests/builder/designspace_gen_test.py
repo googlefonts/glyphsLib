@@ -518,6 +518,13 @@ def test_designspace_generation_bracket_other_roundtrip(datadir, ufo_module):
 def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
     with open(str(datadir.join("Playfair-v.glyphs")), encoding="utf-8") as f:
         font = glyphsLib.load(f)
+
+    # Remove names of bracket layers, make sure the layers get
+    # copied anyway
+    for l in font.glyphs["v"].layers:
+        if l._is_bracket_layer():
+            l.name = ""
+
     designspace = to_designspace(font, ufo_module=ufo_module)
     axes = designspace.axes
     info = font.glyphs["v"].layers[8]._bracket_info(axes)
