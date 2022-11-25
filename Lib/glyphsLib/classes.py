@@ -3809,6 +3809,10 @@ class GSLayer(GSBase):
                 designspace_min, designspace_max = designspace_min_max(axis)
                 axis_min = rule.get("min", designspace_min)
                 axis_max = rule.get("max", designspace_max)
+                if isinstance(axis_min, str):
+                    axis_min = float(axis_min)
+                if isinstance(axis_max, str):
+                    axis_max = float(axis_max)
                 if axis_max == axis.minimum and axis_max == axis.maximum:
                     # It's full range, ignore it.
                     continue
