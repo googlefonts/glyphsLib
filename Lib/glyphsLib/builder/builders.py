@@ -283,7 +283,7 @@ class UFOBuilder(LoggerMixin):
                     )
                 continue
 
-            if not layer.name:
+            if not layer.name and not layer._is_bracket_layer():
                 # Empty layer names are invalid according to the UFO spec.
                 if self.minimize_glyphs_diffs:
                     self.logger.warning(
