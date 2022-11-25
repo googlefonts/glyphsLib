@@ -246,6 +246,11 @@ class CornerComponentApplier:
         # quite work yet
         self.determine_start_and_end_vectors()
 
+        # Align all paths to the "origin" anchor.
+        for path in [self.corner_path] + self.other_paths:
+            for pt in path:
+                pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
+
         # Apply scaling. We are considered "flipped" if one or other
         # of the scale factors is negative, but not both. Being flipped
         # means that the corner path gets applied backwards.
@@ -330,10 +335,6 @@ class CornerComponentApplier:
                 pt.x, pt.y = scaling * (pt.x, pt.y)
 
     def align_my_path_to_main_path(self):
-        # First align myself to the "origin" anchor.
-        for pt in self.corner_path:
-            pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
-
         # Work out my rotation (1): Rotation occurring due to corner paths
         angle = math.atan2(-self.corner_path[-1].y, self.corner_path[-1].x)
 
