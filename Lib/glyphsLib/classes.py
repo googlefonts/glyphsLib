@@ -3666,11 +3666,14 @@ class GSLayer(GSBase):
     def smartComponentPoleMapping(self):
         if "PartSelection" not in self.userData:
             self.userData["PartSelection"] = {}
+        if self.partSelection:
+            return self.partSelection
         return self.userData["PartSelection"]
 
     @smartComponentPoleMapping.setter
     def smartComponentPoleMapping(self, value):
         self.userData["PartSelection"] = value
+        self.partSelection = value
 
     @property
     def bounds(self):
