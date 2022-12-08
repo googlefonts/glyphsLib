@@ -47,7 +47,7 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
             if direction == "LTR":
                 left = "public.kern1.%s" % match.group(1)
             elif direction == "RTL":
-                left = "public.kern2.%s.RTL" % match.group(1)
+                left = "public.kern1.%s.RTL" % match.group(1)
             if left not in ufo.groups:
                 self.logger.warning(warning_msg % left)
         for right, kerning_val in pairs.items():
@@ -60,7 +60,7 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
                 if direction == "LTR":
                     right = "public.kern2.%s" % match.group(1)
                 elif direction == "RTL":
-                    right = "public.kern1.%s.RTL" % match.group(1)
+                    right = "public.kern2.%s.RTL" % match.group(1)
                 if right not in ufo.groups:
                     self.logger.warning(warning_msg % right)
             ufo.kerning[left, right] = kerning_val
