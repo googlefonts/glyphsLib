@@ -33,6 +33,7 @@ def test_glyphs2_rtl_kerning(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module)
     ufos = [source.font for source in designspace.sources]
     print(file, ufos[0].groups)
+    assert ufos[0].groups["public.kern1.reh-ar"] == ["reh-ar"]
     assert ufos[0].groups["public.kern2.hah-ar.init"] == ["hah-ar.init"]
     assert ufos[0].groups["public.kern2.hah-ar.init.swsh"] == ["hah-ar.init.swsh"]
     assert (
