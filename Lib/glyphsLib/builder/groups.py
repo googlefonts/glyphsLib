@@ -140,7 +140,6 @@ def _to_glyphs_kerning_group(self, name, glyphs):
     for glyph_name in glyphs:
         glyph = self.font.glyphs[glyph_name]
         if glyph:
-            print(glyph, _glyph_kerning_attr(glyph, side), group_name)
             setattr(glyph, _glyph_kerning_attr(glyph, side), group_name)
 
 
