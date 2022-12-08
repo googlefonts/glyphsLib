@@ -1,0 +1,183 @@
+{
+.appVersion = "1352";
+DisplayStrings = (
+"/alef-hb/bet-hb",
+"/reh-ar/hah-ar.init.swsh/hah-ar.init"
+);
+date = "2022-02-09 20:07:11 +0000";
+familyName = "RTL kerning";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = m01;
+xHeight = 500;
+}
+);
+glyphs = (
+{
+glyphname = A;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 0041;
+},
+{
+glyphname = B;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 0042;
+},
+{
+glyphname = C;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 0043;
+},
+{
+glyphname = "hah-ar.init";
+lastChange = "2022-02-21 17:09:37 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+leftKerningGroup = "hah-ar.init";
+unicode = FEA3;
+},
+{
+glyphname = "hah-ar.init.swsh";
+lastChange = "2022-02-21 17:25:40 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+leftKerningGroup = "hah-ar.init.swsh";
+},
+{
+glyphname = "reh-ar";
+lastChange = "2022-02-21 17:09:13 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+rightKerningGroup = "reh-ar";
+unicode = 0631;
+},
+{
+glyphname = "alef-hb";
+lastChange = "2022-02-21 11:17:22 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+rightKerningGroup = leftAlef;
+unicode = 05D0;
+},
+{
+glyphname = "bet-hb";
+lastChange = "2022-02-21 11:17:26 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+leftKerningGroup = rightBet;
+unicode = 05D1;
+},
+{
+glyphname = "he-hb";
+lastChange = "2022-02-17 09:36:21 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 05D4;
+},
+{
+glyphname = "one-ar";
+lastChange = "2022-02-21 14:41:56 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+leftKerningGroup = "left-one-ar";
+unicode = 0661;
+},
+{
+glyphname = "one-ar.wide.ss16.calt";
+lastChange = "2022-02-21 14:59:56 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+leftKerningGroup = "left-one-ar";
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 0020;
+}
+);
+instances = (
+{
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+}
+);
+kerning = {
+m01 = {
+"@MMK_L_leftAlef" = {
+"@MMK_R_rightBet" = -20;
+"he-hb" = 4;
+};
+"@MMK_L_leftBet" = {
+"@MMK_R_rightAlef" = 20;
+};
+"@MMK_L_reh-ar" = {
+"@MMK_R_hah-ar.init" = -50;
+"@MMK_R_hah-ar.init.swsh" = -50;
+};
+"he-hb" = {
+"@MMK_R_rightAlef" = -2;
+"he-hb" = -21;
+};
+};
+};
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

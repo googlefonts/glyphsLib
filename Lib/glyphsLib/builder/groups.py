@@ -71,13 +71,19 @@ def to_ufo_groups(self):
                     recovered.add((glyph_name, int(side)))
 
     # Read modified grouping values
+    sides = [1, 2]
     for glyph in self.font.glyphs.values():
-        for side in 1, 2:
+        for i, side in enumerate(sides):
+            other_side = sides[len(sides) - 1 - i]
             if (glyph.name, side) not in recovered:
                 attr = _glyph_kerning_attr(glyph, side)
-                group = getattr(glyph, attr)
-                if group:
-                    group = f"public.kern{side}.{group}"
+                glyph_group = getattr(glyph, attr)
+                if glyph_group:
+                    # Traditional group
+                    group = f"public.kern{side}.{glyph_group}"
+                    groups[group].append(glyph.name)
+                    # Additional RTL group
+                    group = f"public.kern{other_side}.{glyph_group}.RTL"
                     groups[group].append(glyph.name)
 
     # Update all UFOs with the same info
@@ -134,6 +140,7 @@ def _to_glyphs_kerning_group(self, name, glyphs):
     for glyph_name in glyphs:
         glyph = self.font.glyphs[glyph_name]
         if glyph:
+            print(glyph, _glyph_kerning_attr(glyph, side), group_name)
             setattr(glyph, _glyph_kerning_attr(glyph, side), group_name)
 
 
