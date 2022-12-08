@@ -38,10 +38,11 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     warning_msg = "Non-existent glyph class %s found in kerning rules."
 
     for left, pairs in kerning_data.items():
-        if direction == "LTR":
-            match = re.match(r"@MMK_L_(.+)", left)
-        elif direction == "RTL":
-            match = re.match(r"@MMK_R_(.+)", left)
+        match = re.match(r"@MMK_L_(.+)", left)
+        # if direction == "LTR":
+        #     match = re.match(r"@MMK_L_(.+)", left)
+        # elif direction == "RTL":
+        #     match = re.match(r"@MMK_R_(.+)", left)
         left_is_class = bool(match)
         if left_is_class:
             if direction == "LTR":
@@ -51,10 +52,11 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
             if left not in ufo.groups:
                 self.logger.warning(warning_msg % left)
         for right, kerning_val in pairs.items():
-            if direction == "LTR":
-                match = re.match(r"@MMK_R_(.+)", right)
-            elif direction == "RTL":
-                match = re.match(r"@MMK_L_(.+)", right)
+            match = re.match(r"@MMK_R_(.+)", right)
+            # if direction == "LTR":
+            #     match = re.match(r"@MMK_R_(.+)", right)
+            # elif direction == "RTL":
+            #     match = re.match(r"@MMK_L_(.+)", right)
             right_is_class = bool(match)
             if right_is_class:
                 if direction == "LTR":
