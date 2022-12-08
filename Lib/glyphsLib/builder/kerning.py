@@ -21,15 +21,28 @@ from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
 def to_ufo_kerning(self):
     for master in self.font.masters:
         master_id = master.id
+        ufo = self._sources[master_id].font
         kerning_source = master.metricsSource  # Maybe be a linked master
         if kerning_source is None:
             kerning_source = master
         if kerning_source.id in self.font.kerningLTR:
             kerning = self.font.kerningLTR[kerning_source.id]
-            _to_ufo_kerning(self, self._sources[master_id].font, kerning)
+            _to_ufo_kerning(self, ufo, kerning)
         if kerning_source.id in self.font.kerningRTL:
             kerning = self.font.kerningRTL[kerning_source.id]
-            _to_ufo_kerning(self, self._sources[master_id].font, kerning, "RTL")
+            _to_ufo_kerning(self, ufo, kerning, "RTL")
+
+        # Prune kerning groups that are not used in kerning rules
+        used_groups = []
+        for first, second in ufo.kerning:
+            if first.startswith("public.kern"):
+                used_groups.append(first)
+            if second.startswith("public.kern"):
+                used_groups.append(second)
+
+        for group in list(ufo.groups.keys()):
+            if group.startswith("public.kern") and group not in used_groups:
+                del ufo.groups[group]
 
 
 def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
