@@ -35,7 +35,8 @@ def to_ufo_kerning(self):
 def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     """Add .glyphs kerning to an UFO."""
 
-    warning_msg = "Non-existent glyph class %s found in kerning rules."
+    class_missing_msg = "Non-existent glyph class %s found in kerning rules."
+    overwriting_kerning_msg = "Overwriting kerning value for %s."
 
     for left, pairs in kerning_data.items():
         if direction == "LTR":
@@ -49,7 +50,7 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
             elif direction == "RTL":
                 left = "public.kern1.%s.RTL" % match.group(1)
             if left not in ufo.groups:
-                self.logger.warning(warning_msg % left)
+                self.logger.warning(class_missing_msg % left)
         for right, kerning_val in pairs.items():
             if direction == "LTR":
                 match = re.match(r"@MMK_R_(.+)", right)
@@ -62,7 +63,10 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
                 elif direction == "RTL":
                     right = "public.kern2.%s.RTL" % match.group(1)
                 if right not in ufo.groups:
-                    self.logger.warning(warning_msg % right)
+                    self.logger.warning(class_missing_msg % right)
+
+            if [left, right] in ufo.kerning:
+                self.logger.warning(overwriting_kerning_msg % [left, right])
             ufo.kerning[left, right] = kerning_val
 
 
