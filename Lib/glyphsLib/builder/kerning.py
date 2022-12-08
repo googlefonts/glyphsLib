@@ -65,7 +65,7 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
                 if right not in ufo.groups:
                     self.logger.warning(class_missing_msg % right)
 
-            if [left, right] in ufo.kerning:
+            if left in ufo.kerning and right in ufo.kerning[left]:
                 self.logger.warning(overwriting_kerning_msg % [left, right])
             ufo.kerning[left, right] = kerning_val
 
