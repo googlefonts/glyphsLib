@@ -59,23 +59,23 @@ def test_glyphs3_alignment_zones(datadir):
     assert len(master.alignmentZones) == 0
 
     # Non-list values not allowed
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = (800, 10)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = 800
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = "800"
 
     # Only tuples and GSAlignmentZone allowed inside
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = [False, True]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = [[0, -10], [800, 10]]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         master.alignmentZones = ["", ""]
 
 

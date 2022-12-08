@@ -1445,13 +1445,13 @@ class GSAlignmentZone(GSBase):
         )
 
     def __lt__(self, other):
-        if not hasattr(other, "position") or not hasattr(other, "size"):
-            return False
+        if not isinstance(other, GSAlignmentZone):
+            return NotImplemented
         return (self.position, self.size) < (other.position, other.size)
 
     def __eq__(self, other):
-        if not hasattr(other, "position") or not hasattr(other, "size"):
-            return False
+        if not isinstance(other, GSAlignmentZone):
+            return NotImplemented
         return (self.position, self.size) == (other.position, other.size)
 
     def plistValue(self, format_version=2):
@@ -1789,15 +1789,15 @@ class GSFontMaster(GSBase):
 
     @alignmentZones.setter
     def alignmentZones(self, entries):
-        if type(entries) is not list:
-            raise ValueError(
+        if not isinstance(entries, tuple) and not isinstance(entries, list):
+            raise TypeError(
                 "alignmentZones expected as list, got %s (%s)"
                 % (entries, type(entries))
             )
         zones = []
         for zone in entries:
-            if type(zone) is not tuple and type(zone) is not GSAlignmentZone:
-                raise ValueError(
+            if not isinstance(zone, tuple) and not isinstance(zone, GSAlignmentZone):
+                raise TypeError(
                     "alignmentZones values expected as tuples of (pos, size) "
                     "or GSAligmentZone, got: %s (%s)" % (zone, type(zone))
                 )
