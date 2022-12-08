@@ -58,3 +58,5 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
         ]
         == -50
     )
+
+    assert ufos[0].kerning[("he-hb", "he-hb")] == -21
