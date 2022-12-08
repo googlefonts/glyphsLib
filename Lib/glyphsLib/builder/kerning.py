@@ -38,36 +38,38 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     class_missing_msg = "Non-existent glyph class %s found in kerning rules."
     overwriting_kerning_msg = "Overwriting kerning value for %s."
 
-    for left, pairs in kerning_data.items():
-        if direction == "LTR":
-            match = re.match(r"@MMK_L_(.+)", left)
-        elif direction == "RTL":
-            match = re.match(r"@MMK_R_(.+)", left)
-        left_is_class = bool(match)
-        if left_is_class:
-            if direction == "LTR":
-                left = "public.kern1.%s" % match.group(1)
-            elif direction == "RTL":
-                left = "public.kern1.%s.RTL" % match.group(1)
-            if left not in ufo.groups:
-                self.logger.warning(class_missing_msg % left)
-        for right, kerning_val in pairs.items():
-            if direction == "LTR":
-                match = re.match(r"@MMK_R_(.+)", right)
-            elif direction == "RTL":
-                match = re.match(r"@MMK_L_(.+)", right)
-            right_is_class = bool(match)
-            if right_is_class:
-                if direction == "LTR":
-                    right = "public.kern2.%s" % match.group(1)
-                elif direction == "RTL":
-                    right = "public.kern2.%s.RTL" % match.group(1)
-                if right not in ufo.groups:
-                    self.logger.warning(class_missing_msg % right)
+    for first, pairs in kerning_data.items():
+        first, is_class = _ufo_class_name(first, direction, 1)
+        if is_class and first not in ufo.groups:
+            self.logger.warning(class_missing_msg, first)
 
-            if left in ufo.kerning and right in ufo.kerning[left]:
-                self.logger.warning(overwriting_kerning_msg % [left, right])
-            ufo.kerning[left, right] = kerning_val
+        for second, kerning_val in pairs.items():
+            second, is_class = _ufo_class_name(second, direction, 2)
+            if is_class and second not in ufo.groups:
+                self.logger.warning(class_missing_msg, second)
+
+            if (first, second) in ufo.kerning:
+                self.logger.warning(overwriting_kerning_msg, first, second)
+            ufo.kerning[first, second] = kerning_val
+
+
+def _ufo_class_name(name, direction, order):
+    """Return the UFO class name for a .glyphs class name."""
+    if order == 1:
+        side = "L" if direction == "LTR" else "R"
+    else:
+        assert order == 2
+        side = "R" if direction == "LTR" else "L"
+
+    match = re.match(rf"@MMK_{side}_(.+)", name)
+
+    name_is_class = bool(match)
+    if name_is_class:
+        name = f"public.kern{order}.{match.group(1)}"
+        if direction == "RTL":
+            name += ".RTL"
+
+    return name, name_is_class
 
 
 def to_glyphs_kerning(self):
