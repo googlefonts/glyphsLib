@@ -51,14 +51,14 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     for first, pairs in kerning_data.items():
         first, is_class = _ufo_class_name(first, direction, 1)
         if is_class:
-            used_groups | {first}
+            used_groups |= {first}
         if is_class and first not in ufo.groups:
             self.logger.warning(class_missing_msg, first)
 
         for second, kerning_val in pairs.items():
             second, is_class = _ufo_class_name(second, direction, 2)
             if is_class:
-                used_groups | {second}
+                used_groups |= {second}
             if is_class and second not in ufo.groups:
                 self.logger.warning(class_missing_msg, second)
 
