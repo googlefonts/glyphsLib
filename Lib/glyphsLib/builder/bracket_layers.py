@@ -1,6 +1,7 @@
 from collections import defaultdict
 from functools import partial
 from typing import Any
+import copy
 
 from fontTools import designspaceLib
 from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
@@ -22,6 +23,8 @@ def to_designspace_bracket_layers(self):
             "Cannot apply bracket layers unless at least one axis is defined."
         )
 
+    find_component_use(self)
+
     # At this stage we will naively emit a designspace rule for every layer.
     bracket_layer_map = defaultdict(partial(defaultdict, list))
     rules = []
@@ -38,7 +41,7 @@ def to_designspace_bracket_layers(self):
         rules.append(
             (
                 [box_with_name],
-                {glyph_name: _bracket_glyph_name(glyph_name, box_with_tag)},
+                {glyph_name: _bracket_glyph_name(self, glyph_name, box_with_tag)},
             )
         )
 
@@ -92,7 +95,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 bracket_layers.append(master_layer)
                 implicit_bracket_layers.add(id(master_layer))
 
-            bracket_glyphs.add(_bracket_glyph_name(glyph_name, box))
+            bracket_glyphs.add(_bracket_glyph_name(self, glyph_name, box))
 
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         for frozenbox, layers in glyph_bracket_layers.items():
@@ -101,7 +104,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
                 ufo_layer = ufo_font.layers.defaultLayer
-                ufo_glyph_name = _bracket_glyph_name(glyph_name, box)
+                ufo_glyph_name = _bracket_glyph_name(self, glyph_name, box)
                 ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []  # Avoid cmap interference
@@ -113,7 +116,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 )
                 # swap components if base glyph contains matching bracket layers.
                 for comp in ufo_glyph.components:
-                    bracket_comp_name = _bracket_glyph_name(comp.baseGlyph, box)
+                    bracket_comp_name = _bracket_glyph_name(self, comp.baseGlyph, box)
                     if bracket_comp_name in bracket_glyphs:
                         comp.baseGlyph = bracket_comp_name
                 # Update kerning groups and pairs, bracket glyphs inherit the
@@ -121,10 +124,10 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 _expand_kerning_to_brackets(glyph_name, ufo_glyph_name, ufo_font)
 
 
-def _bracket_glyph_name(glyph_name, box):
-    description = ".".join(
-        f"{tag}_{min}_{max}" for tag, (min, max) in sorted(box.items())
-    )
+def _bracket_glyph_name(self, glyph_name, box):
+    if box not in self.alternate_names_map[glyph_name]:
+        self.alternate_names_map[glyph_name].append(box)
+    description = "varAlt%02i" % (1 + self.alternate_names_map[glyph_name].index(box))
     return BRACKET_GLYPH_TEMPLATE.format(glyph_name=glyph_name, description=description)
 
 
@@ -167,3 +170,113 @@ def _expand_kerning_to_brackets(
         elif second_match:
             bracket_kerning[(first, ufo_glyph_name)] = value
     ufo_font.kerning.update(bracket_kerning)
+
+
+def find_component_use(self):
+    """If a glyph uses a component which has alternate layers, that
+    glyph also must have the same alternate layers or else it will not
+    correctly swap. We copy the layer locations from the component into
+    the glyph which uses it."""
+    # First let's put all the layers in a sensible order so we can
+    # query them efficiently
+    master_layers = defaultdict(dict)
+    alternate_layers = defaultdict(lambda: defaultdict(list))
+    master_ids = set(master.id for master in self.font.masters)
+
+    for glyph in self.font.glyphs:
+        for layer in glyph.layers:
+            if layer.layerId in master_ids:
+                master_layers[layer.layerId][glyph.name] = layer
+            elif layer.associatedMasterId in master_ids:
+                alternate_layers[layer.associatedMasterId][glyph.name].append(layer)
+
+    # Now let's find those which have a problem: they use components,
+    # the components have some alternate layers, but the layer doesn't
+    # have the same.
+    # Because of the possibility of deeply nested components, we need
+    # to keep doing this, bubbling up fixes until there's nothing left
+    # to do.
+    while True:
+        problematic_glyphs = defaultdict(set)
+        for master, layers in master_layers.items():
+            for glyph_name, layer in layers.items():
+                my_bracket_layers = [
+                    layer._bracket_info(self._designspace.axes)
+                    for layer in alternate_layers[master][glyph_name]
+                ]
+                for comp in layer.components:
+                    # Check our alternate layer set-up agrees with theirs
+                    components_bracket_layers = [
+                        layer._bracket_info(self._designspace.axes)
+                        for layer in alternate_layers[master][comp.name]
+                    ]
+                    if my_bracket_layers != components_bracket_layers:
+                        # Find what we need to add, and make them hashable
+                        they_have = set(
+                            tuple(x.items()) for x in components_bracket_layers
+                        )
+                        i_have = set(tuple(x.items()) for x in my_bracket_layers)
+                        needed = they_have - i_have
+                        if needed:
+                            problematic_glyphs[(glyph_name, master)] |= needed
+
+        if not problematic_glyphs:
+            break
+
+        # And now, fix the problem.
+        for (glyph_name, master), needed_brackets in problematic_glyphs.items():
+            my_bracket_layers = [
+                layer._bracket_info(self._designspace.axes)
+                for layer in alternate_layers[master][glyph_name]
+            ]
+            if my_bracket_layers:
+                # We have some bracket layers, but they're not the ones we
+                # expect. Do the wrong thing, because doing the right thing
+                # requires major investment.
+                master_name = self.font.masters[master].name
+                self.logger.warning(
+                    f"Glyph {glyph_name} in master {master_name} has different "
+                    "alternate layers to components that it uses. We don't "
+                    "currently support this case, so some alternate layers will "
+                    "not be applied. Consider fixing the source instead."
+                )
+            # Just copy the master layer for each thing we need.
+            for box in needed_brackets:
+                new_layer = synthesize_bracket_layer(
+                    master_layers[master][glyph_name], dict(box), self._designspace.axes
+                )
+                self.font.glyphs[glyph_name].layers.append(new_layer)
+                self.bracket_layers.append(new_layer)
+                alternate_layers[master][glyph_name].append(new_layer)
+
+
+def synthesize_bracket_layer(old_layer, box, axes):
+    new_layer = copy.copy(old_layer)  # We don't need a deep copy of everything
+    new_layer.layerId = ""
+    new_layer.associatedMasterId = old_layer.layerId
+
+    if new_layer.parent.parent.format_version == 2:
+        axis, (bottom, top) = next(iter(box.items()))
+        designspace_min, designspace_max = util.designspace_min_max(axes[0])
+        if designspace_min == bottom:
+            new_layer.name = old_layer.name + f" ]{top}]"
+        else:
+            new_layer.name = old_layer.name + f"[{bottom}]"
+    else:
+        new_layer.attributes = dict(
+            new_layer.attributes
+        )  # But we do need our own version of this
+        new_layer.attributes["axisRules"] = []
+        for axis in axes:
+            if axis.tag in box:
+                new_layer.attributes["axisRules"].append(
+                    {
+                        "min": box[axis.tag][0],
+                        "max": box[axis.tag][1],
+                    }
+                )
+            else:
+                new_layer.attributes["axisRules"].append({})
+
+    assert new_layer._bracket_info(axes) == box
+    return new_layer

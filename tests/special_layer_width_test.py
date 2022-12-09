@@ -40,5 +40,5 @@ def test_substitution_layer_width():
     masters, instances = load_to_ufos(glyphs_file_path(), include_instances=True)
     assert masters[0]["B"].width == 500
     assert masters[1]["B"].width == 600
-    assert masters[0]["B.BRACKET.wght_40_100"].width == 510
-    assert masters[1]["B.BRACKET.wght_40_100"].width == 610
+    assert masters[0]["B.BRACKET.varAlt01"].width == 510
+    assert masters[1]["B.BRACKET.varAlt01"].width == 610

@@ -242,8 +242,8 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
         [dict(name="Weight", minimum=600, maximum=1000)]
     ]
     assert sorted(designspace.rules[0].subs) == [
-        ("a", "a.BRACKET.wght_300_1000"),
-        ("x", "x.BRACKET.wght_600_1000"),
+        ("a", "a.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt02"),
     ]
 
     assert designspace.rules[1].name == "BRACKET.Weight_300_600"
@@ -251,8 +251,8 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
         [dict(name="Weight", minimum=300, maximum=600)]
     ]
     assert sorted(designspace.rules[1].subs) == [
-        ("a", "a.BRACKET.wght_300_1000"),
-        ("x", "x.BRACKET.wght_300_1000"),
+        ("a", "a.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt01"),
     ]
 
     for source in designspace.sources:
@@ -260,9 +260,9 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
         assert "Something [300]" not in source.font.layers
         assert "[600]" not in source.font.layers
         assert "Other [600]" not in source.font.layers
-        g1 = source.font["x.BRACKET.wght_300_1000"]
+        g1 = source.font["x.BRACKET.varAlt01"]
         assert not g1.unicodes
-        g2 = source.font["x.BRACKET.wght_600_1000"]
+        g2 = source.font["x.BRACKET.varAlt02"]
         assert not g2.unicodes
 
     font_rt = to_glyphs(designspace)
@@ -298,7 +298,7 @@ def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
 
     assert designspace.findDefault().font.lib["public.postscriptNames"] == {
         "a-cy": "uni0430",
-        "a-cy.BRACKET.opsz_18_20": "uni0430.BRACKET.opsz_18_20",
+        "a-cy.BRACKET.varAlt01": "uni0430.BRACKET.varAlt01",
         "a-cy.alt": "uni0430.alt",
     }
 
@@ -307,7 +307,7 @@ def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
 
     assert designspace_rt.findDefault().font.lib["public.postscriptNames"] == {
         "a-cy": "uni0430",
-        "a-cy.BRACKET.opsz_18_20": "uni0430.BRACKET.opsz_18_20",
+        "a-cy.BRACKET.varAlt01": "uni0430.BRACKET.varAlt01",
         "a-cy.alt": "uni0430.alt",
     }
 
@@ -316,7 +316,7 @@ def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
 
     assert designspace_rt2.findDefault().font.lib["public.postscriptNames"] == {
         "a-cy": "uni0430",
-        "a-cy.BRACKET.opsz_18_20": "uni0430.BRACKET.opsz_18_20",
+        "a-cy.BRACKET.varAlt01": "uni0430.BRACKET.varAlt01",
         "a-cy.alt": "uni0430.alt",
     }
 
@@ -353,14 +353,14 @@ def test_designspace_generation_bracket_unbalanced_brackets(datadir, ufo_module)
     designspace = to_designspace(font, ufo_module=ufo_module)
 
     for source in designspace.sources:
-        assert "C.BRACKET.wght_600_700" in source.font
+        assert "C.BRACKET.varAlt01" in source.font
 
     font_rt = to_glyphs(designspace)
 
     assert "C" in font_rt.glyphs
 
     assert {l.name for l in font_rt.glyphs["C"].layers} == layer_names
-    assert "C.BRACKET.wght_600_700" not in font_rt.glyphs
+    assert "C.BRACKET.varAlt01" not in font_rt.glyphs
 
 
 def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
@@ -375,12 +375,12 @@ def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
 
     for source in designspace.sources:
         ufo = source.font
-        assert "B.BRACKET.wght_600_700" in ufo
+        assert "B.BRACKET.varAlt01" in ufo
         assert ufo["B"].components[0].baseGlyph == "A"
-        assert (
-            ufo["B.BRACKET.wght_600_700"].components[0].baseGlyph
-            == "A.BRACKET.wght_600_700"
-        )
+        assert ufo["B.BRACKET.varAlt01"].components[0].baseGlyph == "A.BRACKET.varAlt01"
+        # G has no alternate layers, but it uses a component
+        # which does, so it too must develop some.
+        assert "G.BRACKET.varAlt01" in ufo
 
     font_rt = to_glyphs(designspace)
 
@@ -404,19 +404,19 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module)
 
     # Bottom box should include substitutions for D (400->600)
-    assert designspace.rules[1].name == "BRACKET.Weight_400_570"
-    assert designspace.rules[1].conditionSets == [
+    assert designspace.rules[2].name == "BRACKET.Weight_400_570"
+    assert designspace.rules[2].conditionSets == [
         [dict(name="Weight", minimum=400, maximum=570)]
     ]
-    assert designspace.rules[1].subs == [
-        ("D", "D.BRACKET.wght_400_600"),
-        ("E", "E.BRACKET.wght_400_570"),
-        ("F", "F.BRACKET.wght_400_630"),
+    assert designspace.rules[2].subs == [
+        ("D", "D.BRACKET.varAlt01"),
+        ("E", "E.BRACKET.varAlt01"),
+        ("F", "F.BRACKET.varAlt02"),
     ]
 
     for source in designspace.sources:
         ufo = source.font
-        assert "D.BRACKET.wght_400_600" in ufo
+        assert "D.BRACKET.varAlt01" in ufo
 
     font_rt = to_glyphs(designspace)
 
@@ -477,8 +477,8 @@ def test_designspace_generation_bracket_GDEF(datadir, ufo_module):
 
         assert categories == {
             "x": "base",
-            "x.BRACKET.wght_300_1000": "base",
-            "x.BRACKET.wght_600_1000": "base",
+            "x.BRACKET.varAlt01": "base",
+            "x.BRACKET.varAlt02": "base",
         }
 
 
@@ -489,7 +489,7 @@ def test_designspace_generation_bracket_glyphs3_simple(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module)
 
     for source in designspace.sources:
-        assert "A.BRACKET.wght_600_700" in source.font
+        assert "A.BRACKET.varAlt01" in source.font
 
 
 def test_designspace_generation_bracket_rclt_roundtrip(datadir, ufo_module):
@@ -531,7 +531,7 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
     assert info == {"opsz": (5, 410), "wdth": (50, 75), "wght": (690, 900)}
 
     for source in designspace.sources:
-        assert "v.BRACKET.opsz_5_410.wdth_50_75.wght_690_900" in source.font
+        assert "v.BRACKET.varAlt01" in source.font
 
     assert (
         designspace.rules[0].name
@@ -545,5 +545,5 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
         ]
     ]
     assert designspace.rules[0].subs == [
-        ("v", "v.BRACKET.opsz_5_410.wdth_50_75.wght_690_900"),
+        ("v", "v.BRACKET.varAlt01"),
     ]
