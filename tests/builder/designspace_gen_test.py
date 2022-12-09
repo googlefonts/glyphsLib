@@ -377,10 +377,7 @@ def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
         ufo = source.font
         assert "B.BRACKET.varAlt01" in ufo
         assert ufo["B"].components[0].baseGlyph == "A"
-        assert (
-            ufo["B.BRACKET.varAlt01"].components[0].baseGlyph
-            == "A.BRACKET.varAlt01"
-        )
+        assert ufo["B.BRACKET.varAlt01"].components[0].baseGlyph == "A.BRACKET.varAlt01"
         # G has no alternate layers, but it uses a component
         # which does, so it too must develop some.
         assert "G.BRACKET.varAlt01" in ufo
