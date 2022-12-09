@@ -20,7 +20,7 @@ from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
 
 def to_ufo_kerning(self):
     for master in self.font.masters:
-        groups_LTR, groups_RTL = [], []
+        groups_LTR, groups_RTL = set(), set()
         master_id = master.id
         ufo = self._sources[master_id].font
         kerning_source = master.metricsSource  # Maybe be a linked master
@@ -28,13 +28,13 @@ def to_ufo_kerning(self):
             kerning_source = master
         if kerning_source.id in self.font.kerningLTR:
             kerning = self.font.kerningLTR[kerning_source.id]
-            groups_LTR = list(_to_ufo_kerning(self, ufo, kerning))
+            groups_LTR = _to_ufo_kerning(self, ufo, kerning)
         if kerning_source.id in self.font.kerningRTL:
             kerning = self.font.kerningRTL[kerning_source.id]
-            groups_RTL = list(_to_ufo_kerning(self, ufo, kerning, "RTL"))
+            groups_RTL = _to_ufo_kerning(self, ufo, kerning, "RTL")
 
         # Prune kerning groups that are not used in kerning rules
-        used_groups = set(groups_LTR).union(groups_RTL)
+        used_groups = groups_LTR | groups_RTL
         for group in list(ufo.groups.keys()):
             if group.startswith("public.kern") and group not in used_groups:
                 del ufo.groups[group]
@@ -46,23 +46,27 @@ def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):
     class_missing_msg = "Non-existent glyph class %s found in kerning rules."
     overwriting_kerning_msg = "Overwriting kerning value for %s."
 
+    used_groups = set()
+
     for first, pairs in kerning_data.items():
         first, is_class = _ufo_class_name(first, direction, 1)
         if is_class:
-            yield first
+            used_groups | {first}
         if is_class and first not in ufo.groups:
             self.logger.warning(class_missing_msg, first)
 
         for second, kerning_val in pairs.items():
             second, is_class = _ufo_class_name(second, direction, 2)
             if is_class:
-                yield second
+                used_groups | {second}
             if is_class and second not in ufo.groups:
                 self.logger.warning(class_missing_msg, second)
 
             if (first, second) in ufo.kerning:
                 self.logger.warning(overwriting_kerning_msg, first, second)
             ufo.kerning[first, second] = kerning_val
+
+    return used_groups
 
 
 def _ufo_class_name(name, direction, order):
