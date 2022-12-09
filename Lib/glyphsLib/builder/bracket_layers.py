@@ -41,7 +41,7 @@ def to_designspace_bracket_layers(self):
         rules.append(
             (
                 [box_with_name],
-                {glyph_name: _bracket_glyph_name(glyph_name, box_with_tag)},
+                {glyph_name: _bracket_glyph_name(self, glyph_name, box_with_tag)},
             )
         )
 
@@ -95,7 +95,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 bracket_layers.append(master_layer)
                 implicit_bracket_layers.add(id(master_layer))
 
-            bracket_glyphs.add(_bracket_glyph_name(glyph_name, box))
+            bracket_glyphs.add(_bracket_glyph_name(self, glyph_name, box))
 
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         for frozenbox, layers in glyph_bracket_layers.items():
@@ -104,7 +104,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
                 ufo_layer = ufo_font.layers.defaultLayer
-                ufo_glyph_name = _bracket_glyph_name(glyph_name, box)
+                ufo_glyph_name = _bracket_glyph_name(self, glyph_name, box)
                 ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []  # Avoid cmap interference
@@ -116,7 +116,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 )
                 # swap components if base glyph contains matching bracket layers.
                 for comp in ufo_glyph.components:
-                    bracket_comp_name = _bracket_glyph_name(comp.baseGlyph, box)
+                    bracket_comp_name = _bracket_glyph_name(self, comp.baseGlyph, box)
                     if bracket_comp_name in bracket_glyphs:
                         comp.baseGlyph = bracket_comp_name
                 # Update kerning groups and pairs, bracket glyphs inherit the
@@ -124,10 +124,10 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 _expand_kerning_to_brackets(glyph_name, ufo_glyph_name, ufo_font)
 
 
-def _bracket_glyph_name(glyph_name, box):
-    description = ".".join(
-        f"{tag}_{min}_{max}" for tag, (min, max) in sorted(box.items())
-    )
+def _bracket_glyph_name(self, glyph_name, box):
+    if box not in self.alternate_names_map[glyph_name]:
+        self.alternate_names_map[glyph_name].append(box)
+    description = "varAlt%02i" % (1 + self.alternate_names_map[glyph_name].index(box))
     return BRACKET_GLYPH_TEMPLATE.format(glyph_name=glyph_name, description=description)
 
 

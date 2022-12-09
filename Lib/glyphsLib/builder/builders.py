@@ -135,6 +135,9 @@ class UFOBuilder(LoggerMixin):
         # VORG tables. VORG will only be included if the font is an otf.
         self.is_vertical = self._is_vertical()
 
+        # Counter to generate shorter names for alternate layer glyphs
+        self.alternate_names_map = defaultdict(list)
+
         # check that source was generated with at least stable version 2.3
         # https://github.com/googlefonts/glyphsLib/pull/65#issuecomment-237158140
         if int(font.appVersion) < 895:
