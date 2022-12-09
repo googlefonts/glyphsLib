@@ -381,6 +381,9 @@ def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
             ufo["B.BRACKET.varAlt01"].components[0].baseGlyph
             == "A.BRACKET.varAlt01"
         )
+        # G has no alternate layers, but it uses a component
+        # which does, so it too must develop some.
+        assert "G.BRACKET.varAlt01" in ufo
 
     font_rt = to_glyphs(designspace)
 
@@ -404,11 +407,11 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
     designspace = to_designspace(font, ufo_module=ufo_module)
 
     # Bottom box should include substitutions for D (400->600)
-    assert designspace.rules[1].name == "BRACKET.Weight_400_570"
-    assert designspace.rules[1].conditionSets == [
+    assert designspace.rules[2].name == "BRACKET.Weight_400_570"
+    assert designspace.rules[2].conditionSets == [
         [dict(name="Weight", minimum=400, maximum=570)]
     ]
-    assert designspace.rules[1].subs == [
+    assert designspace.rules[2].subs == [
         ("D", "D.BRACKET.varAlt01"),
         ("E", "E.BRACKET.varAlt01"),
         ("F", "F.BRACKET.varAlt02"),

@@ -442,6 +442,31 @@ width = 600;
 unicode = 0046;
 },
 {
+glyphname = G;
+lastChange = "2022-12-09 12:34:54 +0000";
+layers = (
+{
+components = (
+{
+name = A;
+}
+);
+layerId = "AC80BBED-896D-4DAA-A852-C79F9201ACE8";
+width = 252;
+},
+{
+components = (
+{
+name = A;
+}
+);
+layerId = "48798C20-C9A0-4BB9-9A3E-BDB30805D9C9";
+width = 416;
+}
+);
+unicode = 0047;
+},
+{
 glyphname = space;
 lastChange = "2019-07-25 10:21:14 +0000";
 layers = (
