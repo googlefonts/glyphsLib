@@ -163,8 +163,22 @@ def test_groups(ufo_module):
 
     (ufo,) = to_ufos(font)
 
-    # Check that nothing has changed
-    assert dict(ufo.groups) == groups_dict
+    # Prior to PR #838, we were checking for d1 and d2 to be equal.
+    # However, with PR #838, we are now pruning kerning groups that are not
+    # used in the kerning table.
+    # The groups in the assertion below got pruned.
+    d1 = dict(ufo.groups)
+    d2 = groups_dict
+
+    assert set(d2) ^ set(d1) == {
+        "public.kern1.notInFont",
+        "public.kern1.hebrewLikeT",
+        "public.kern1.halfInFont",
+        "public.kern2.hebrewLikeO",
+        "public.kern2.oe",
+        "public.kern1.empty",
+        "public.kern1.T",
+    }
 
     # Check that changing the `left/rightKerningGroup` fields in Glyphs
     # updates the UFO kerning groups
@@ -178,7 +192,23 @@ def test_groups(ufo_module):
 
     (ufo,) = to_ufos(font)
 
-    assert dict(ufo.groups) == groups_dict
+    # Prior to PR #838, we were checking for d1 and d2 to be equal.
+    # However, with PR #838, we are now pruning kerning groups that are not
+    # used in the kerning table.
+    # The groups in the assertion below got pruned.
+    d1 = dict(ufo.groups)
+    d2 = groups_dict
+
+    assert set(d2) ^ set(d1) == {
+        "public.kern1.halfInFont",
+        "public.kern1.empty",
+        "public.kern1.newNameT",
+        "public.kern2.oe",
+        "public.kern2.hebrewLikeO",
+        "public.kern1.onItsOwnO",
+        "public.kern1.hebrewLikeT",
+        "public.kern1.notInFont",
+    }
 
 
 def test_guidelines(ufo_module):
