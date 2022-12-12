@@ -74,3 +74,4 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     # Round-tripped RTL kernining ends up as LTR kerning, but at least it's lossess
     # and produces correct results.
     assert first_derivative_ufos[0].kerning == second_derivative_ufos[0].kerning
+    assert first_derivative_ufos[0].groups == second_derivative_ufos[0].groups
