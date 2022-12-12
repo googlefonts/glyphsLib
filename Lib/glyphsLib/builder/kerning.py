@@ -36,6 +36,7 @@ def to_ufo_kerning(self):
         # Prune kerning groups that are not used in kerning rules
         used_groups = groups_LTR | groups_RTL
         for group in list(ufo.groups.keys()):
+            # Group exists in font but not in kerning rules
             if group.startswith("public.kern") and group not in used_groups:
                 del ufo.groups[group]
 
