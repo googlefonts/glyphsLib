@@ -2268,7 +2268,6 @@ def test_load_kerning_bracket(ufo_module):
     assert ds.sources[1].font.groups == bracketed_groups
     assert ds.sources[2].font.groups == bracketed_groups
     assert ds.sources[3].font.groups == bracketed_groups
-
     assert ds.sources[0].font.kerning == {
         ("public.kern1.foo", "public.kern2.foo"): -200,
         ("a", "x"): -100,
@@ -2302,7 +2301,6 @@ def test_load_kerning_bracket(ufo_module):
     assert ds2.sources[1].font.groups == bracketed_groups
     assert ds2.sources[2].font.groups == bracketed_groups
     assert ds2.sources[3].font.groups == bracketed_groups
-
     assert ds2.sources[0].font.kerning == {
         ("public.kern1.foo", "public.kern2.foo"): -200,
         ("a", "x"): -100,
