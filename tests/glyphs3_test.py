@@ -13,7 +13,7 @@ def test_metrics():
 
 
 def test_glyphs3_italic_angle(datadir):
-    with open(str(datadir.join("Italic-G3.glyphs"))) as f:
+    with open(str(datadir.join("Italic-G3.glyphs")), encoding="utf-8") as f:
         font = glyphsLib.load(f)
     assert font.masters[0].italicAngle == 11
 
@@ -27,7 +27,7 @@ def test_glyphspackage_load(datadir):
 
 def test_glyphs2_rtl_kerning(datadir, ufo_module):
     file = "RTL_kerning_v2.glyphs"
-    with open(str(datadir.join(file))) as f:
+    with open(str(datadir.join(file)), encoding="utf-8") as f:
         font = glyphsLib.load(f)
 
     designspace = to_designspace(font, ufo_module=ufo_module)
@@ -44,7 +44,7 @@ def test_glyphs2_rtl_kerning(datadir, ufo_module):
 
 def test_glyphs3_rtl_kerning(datadir, ufo_module):
     file = "RTL_kerning_v3.glyphs"
-    with open(str(datadir.join(file))) as f:
+    with open(str(datadir.join(file)), encoding="utf-8") as f:
         original_glyphs_font = glyphsLib.load(f)
 
     # First conversion to UFO
