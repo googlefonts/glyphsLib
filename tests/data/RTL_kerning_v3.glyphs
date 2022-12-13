@@ -1,5 +1,5 @@
 {
-.appVersion = "3108";
+.appVersion = "3149";
 .formatVersion = 3;
 DisplayStrings = (
 "אב",
@@ -16,7 +16,7 @@ familyName = "RTL kerning";
 fontMaster = (
 {
 axesValues = (
-100
+1
 );
 id = m01;
 metricValues = (
@@ -38,14 +38,44 @@ pos = -200;
 }
 );
 name = Regular;
+},
+{
+axesValues = (
+100
+);
+id = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Bold;
 }
 );
 glyphs = (
 {
 glyphname = A;
+lastChange = "2022-12-13 14:06:47 +0000";
 layers = (
 {
 layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
 width = 600;
 }
 );
@@ -74,10 +104,14 @@ unicode = 67;
 {
 glyphname = "hah-ar.init";
 kernRight = "hah-ar.init";
-lastChange = "2022-02-21 17:28:46 +0000";
+lastChange = "2022-12-13 14:06:50 +0000";
 layers = (
 {
 layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
 width = 600;
 }
 );
@@ -85,10 +119,14 @@ width = 600;
 {
 glyphname = "hah-ar.init.swsh";
 kernRight = "hah-ar.init.swsh";
-lastChange = "2022-02-21 17:28:56 +0000";
+lastChange = "2022-12-13 14:07:09 +0000";
 layers = (
 {
 layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
 width = 600;
 }
 );
@@ -96,10 +134,14 @@ width = 600;
 {
 glyphname = "reh-ar";
 kernLeft = "reh-ar";
-lastChange = "2022-02-21 17:28:42 +0000";
+lastChange = "2022-12-13 14:06:34 +0000";
 layers = (
 {
 layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
 width = 600;
 }
 );
@@ -108,11 +150,15 @@ unicode = 1585;
 {
 glyphname = "alef-hb";
 kernLeft = leftAlef;
-lastChange = "2022-02-21 14:15:31 +0000";
+lastChange = "2022-12-13 14:06:34 +0000";
 layers = (
 {
 layerId = m01;
 width = 700;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
 }
 );
 metricLeft = "=50";
@@ -192,7 +238,7 @@ axesValues = (
 100
 );
 instanceInterpolations = {
-m01 = 1;
+"B0D53B35-34A4-475E-9EF4-52C3D10908C6" = 1;
 };
 name = Regular;
 }
@@ -212,6 +258,11 @@ m01 = {
 "he-hb" = {
 "@MMK_L_rightAlef" = -2;
 "he-hb" = -21;
+};
+};
+"B0D53B35-34A4-475E-9EF4-52C3D10908C6" = {
+"@MMK_R_reh-ar" = {
+"@MMK_L_hah-ar.init.swsh" = -30;
 };
 };
 };
