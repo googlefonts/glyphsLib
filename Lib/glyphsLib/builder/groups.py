@@ -79,7 +79,9 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 glyph_group = getattr(glyph, attr)
                 if glyph_group:
-                    _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side)
+                    _add_glyph_to_ufo_groups(
+                        glyph, groups, glyph_group, side, other_side
+                    )
 
     # Update all UFOs with the same info
     for source in self._sources.values():
