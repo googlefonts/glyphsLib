@@ -71,7 +71,7 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     second_derivative_ufos = [source.font for source in designspace.sources]
 
     # Comparing kerning between first and second derivative UFOs:
-    # Round-tripped RTL kernining ends up as LTR kerning, but at least it's lossess
+    # Round-tripped RTL kernining ends up as LTR kerning, but at least it's lossless
     # and produces correct results.
     assert first_derivative_ufos[0].kerning == second_derivative_ufos[0].kerning
     assert first_derivative_ufos[0].groups == second_derivative_ufos[0].groups
