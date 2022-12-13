@@ -79,31 +79,7 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 glyph_group = getattr(glyph, attr)
                 if glyph_group:
-                    if not glyph_group.endswith(".RTL"):
-                        # Traditional group
-                        group = f"public.kern{side}.{glyph_group}"
-                        if glyph.name not in groups[group]:
-                            groups[group].append(glyph.name)
-                        # Additional RTL group
-                        # This will add lots of unused groups which we'll prune later
-                        # but is necessary to implement G3 RTL kerning. See kerning.py
-                        group = f"public.kern{other_side}.{glyph_group}.RTL"
-                        if glyph.name not in groups[group]:
-                            groups[group].append(glyph.name)
-                    else:
-                        # Additional RTL group
-                        # This will add lots of unused groups which we'll prune later
-                        # but is necessary to implement G3 RTL kerning. See kerning.py
-                        if not glyph_group.endswith(".RTL"):
-                            group = f"public.kern{side}.{glyph_group}"
-                            if glyph.name not in groups[group]:
-                                groups[group].append(glyph.name)
-
-                        # Traditional group
-                        glyph_group = glyph_group[:-4]
-                        group = f"public.kern{other_side}.{glyph_group}"
-                        if glyph.name not in groups[group]:
-                            groups[group].append(glyph.name)
+                    _to_ufo_groups(glyph, groups, glyph_group, side, other_side)
 
     # Update all UFOs with the same info
     for source in self._sources.values():
@@ -112,13 +88,41 @@ def to_ufo_groups(self):
             source.font.groups[name] = glyphs[:]
 
 
+def _to_ufo_groups(glyph, groups, glyph_group, side, other_side):
+    if not glyph_group.endswith(".RTL"):
+        # Traditional group
+        group = f"public.kern{side}.{glyph_group}"
+        if glyph.name not in groups[group]:
+            groups[group].append(glyph.name)
+        # Additional RTL group
+        # This will add lots of unused groups which we'll prune later
+        # but is necessary to implement G3 RTL kerning. See kerning.py
+        group = f"public.kern{other_side}.{glyph_group}.RTL"
+        if glyph.name not in groups[group]:
+            groups[group].append(glyph.name)
+    else:
+        # Additional RTL group
+        # This will add lots of unused groups which we'll prune later
+        # but is necessary to implement G3 RTL kerning. See kerning.py
+        if not glyph_group.endswith(".RTL"):
+            group = f"public.kern{side}.{glyph_group}"
+            if glyph.name not in groups[group]:
+                groups[group].append(glyph.name)
+
+        # Traditional group
+        glyph_group = glyph_group[:-4]
+        group = f"public.kern{other_side}.{glyph_group}"
+        if glyph.name not in groups[group]:
+            groups[group].append(glyph.name)
+
+
 def to_glyphs_groups(self):
     # Build the GSClasses from the groups of the first UFO.
     groups = []
     for source in self._sources.values():
         for name, glyphs in source.font.groups.items():
             # Filter out all BRACKET glyphs first, as they are created at
-            # to_designspace time to inherit glyph kerning to their bracket
+            # to_designspace time to inherit to_ufo_groups
             # variants. They need to be removed because Glpyhs.app handles that
             # on its own.
             glyphs = [name for name in glyphs if not BRACKET_GLYPH_RE.match(name)]
