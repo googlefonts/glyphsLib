@@ -46,7 +46,7 @@ def to_ufo_kerning(self):
         # Remove .RTL from groups
         for group in list(ufo.groups.keys()):
             if group.startswith("public.kern") and group.endswith(".RTL"):
-                ufo.groups[group.replace(".RTL", "")] = ufo.groups[group]
+                ufo.groups[group[:-4]] = ufo.groups[group]
                 del ufo.groups[group]
 
         # Remove .RTL from kerning
@@ -57,19 +57,13 @@ def to_ufo_kerning(self):
                 and second.startswith("public.kern")
                 and second.endswith(".RTL")
             ):
-                ufo.kerning[
-                    first.replace(".RTL", ""), second.replace(".RTL", "")
-                ] = ufo.kerning[first, second]
+                ufo.kerning[first[:-4], second[:-4]] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
             elif first.startswith("public.kern") and first.endswith(".RTL"):
-                ufo.kerning[first.replace(".RTL", ""), second] = ufo.kerning[
-                    first, second
-                ]
+                ufo.kerning[first[:-4], second] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
             elif second.startswith("public.kern") and second.endswith(".RTL"):
-                ufo.kerning[first, second.replace(".RTL", "")] = ufo.kerning[
-                    first, second
-                ]
+                ufo.kerning[first, second[:-4]] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
 
 
