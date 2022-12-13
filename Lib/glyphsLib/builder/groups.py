@@ -104,10 +104,9 @@ def _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side):
         # Additional RTL group
         # This will add lots of unused groups which we'll prune later
         # but is necessary to implement G3 RTL kerning. See kerning.py
-        if not glyph_group.endswith(".RTL"):
-            group = f"public.kern{side}.{glyph_group}"
-            if glyph.name not in groups[group]:
-                groups[group].append(glyph.name)
+        group = f"public.kern{side}.{glyph_group}"
+        if glyph.name not in groups[group]:
+            groups[group].append(glyph.name)
 
         # Traditional group
         glyph_group = glyph_group[:-4]
