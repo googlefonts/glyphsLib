@@ -192,10 +192,7 @@ def test_groups(ufo_module):
 
     (ufo,) = to_ufos(font)
 
-    # Prior to PR #838, we were checking for d1 and d2 to be equal.
-    # However, with PR #838, we are now pruning kerning groups that are not
-    # used in the kerning table.
-    # The groups in the assertion below got pruned.
+    # Checking for known pruned groups (PR #838)
     d1 = dict(ufo.groups)
     d2 = groups_dict
 
