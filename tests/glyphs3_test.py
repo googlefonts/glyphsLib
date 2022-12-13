@@ -51,13 +51,13 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     designspace = to_designspace(original_glyphs_font, ufo_module=ufo_module)
     first_derivative_ufos = [source.font for source in designspace.sources]
 
-    assert first_derivative_ufos[0].groups["public.kern1.reh-ar.RTL"] == ["reh-ar"]
-    assert first_derivative_ufos[0].groups["public.kern2.hah-ar.init.swsh.RTL"] == [
+    assert first_derivative_ufos[0].groups["public.kern1.reh-ar"] == ["reh-ar"]
+    assert first_derivative_ufos[0].groups["public.kern2.hah-ar.init.swsh"] == [
         "hah-ar.init.swsh"
     ]
     assert (
         first_derivative_ufos[0].kerning[
-            ("public.kern1.reh-ar.RTL", "public.kern2.hah-ar.init.swsh.RTL")
+            ("public.kern1.reh-ar", "public.kern2.hah-ar.init.swsh")
         ]
         == -50
     )
@@ -73,5 +73,7 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     # Comparing kerning between first and second derivative UFOs:
     # Round-tripped RTL kernining ends up as LTR kerning, but at least it's lossless
     # and produces correct results.
-    assert first_derivative_ufos[0].kerning == second_derivative_ufos[0].kerning
     assert first_derivative_ufos[0].groups == second_derivative_ufos[0].groups
+    assert first_derivative_ufos[0].kerning == second_derivative_ufos[0].kerning
+    assert first_derivative_ufos[1].groups == second_derivative_ufos[1].groups
+    assert first_derivative_ufos[1].kerning == second_derivative_ufos[1].kerning
