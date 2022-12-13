@@ -77,3 +77,6 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     assert first_derivative_ufos[0].kerning == second_derivative_ufos[0].kerning
     assert first_derivative_ufos[1].groups == second_derivative_ufos[1].groups
     assert first_derivative_ufos[1].kerning == second_derivative_ufos[1].kerning
+    # Check that groups within one font are identical after pruning
+    assert first_derivative_ufos[0].groups == first_derivative_ufos[1].groups
+    assert second_derivative_ufos[0].groups == second_derivative_ufos[1].groups
