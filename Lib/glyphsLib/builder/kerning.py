@@ -32,27 +32,24 @@ def to_ufo_kerning(self):
             kerning = self.font.kerningRTL[kerning_source.id]
             used_groups.update(_to_ufo_kerning(self, ufo, kerning, "RTL"))
 
-    # Prune kerning groups that are not used in kerning rules
-    # (added but unused .RTL groups, see groups.py)
+    # Pruning as consequence of PR #838
     for master in self.font.masters:
         ufo = self._sources[master.id].font
+
+        # Prune kerning groups that are not used in kerning rules
+        # (added but unused .RTL groups, see groups.py)
         for group in list(ufo.groups.keys()):
             # Group exists in font but not in kerning rules
             if group.startswith("public.kern") and group not in used_groups:
                 del ufo.groups[group]
 
-    # Remove .RTL from groups
-    for master in self.font.masters:
-        ufo = self._sources[master.id].font
+        # Remove .RTL from groups
         for group in list(ufo.groups.keys()):
             if group.startswith("public.kern") and group.endswith(".RTL"):
                 ufo.groups[group.replace(".RTL", "")] = ufo.groups[group]
                 del ufo.groups[group]
 
-    # Remove .RTL from kerning
-    for master in self.font.masters:
-        ufo = self._sources[master.id].font
-        print(ufo.kerning)
+        # Remove .RTL from kerning
         for first, second in list(ufo.kerning.keys()):
             if (
                 first.startswith("public.kern")
@@ -60,19 +57,16 @@ def to_ufo_kerning(self):
                 and second.startswith("public.kern")
                 and second.endswith(".RTL")
             ):
-                print("kerning both", first, second)
                 ufo.kerning[
                     first.replace(".RTL", ""), second.replace(".RTL", "")
                 ] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
             elif first.startswith("public.kern") and first.endswith(".RTL"):
-                print("kerning first", first, second)
                 ufo.kerning[first.replace(".RTL", ""), second] = ufo.kerning[
                     first, second
                 ]
                 del ufo.kerning[first, second]
             elif second.startswith("public.kern") and second.endswith(".RTL"):
-                print("kerning second", first, second)
                 ufo.kerning[first, second.replace(".RTL", "")] = ufo.kerning[
                     first, second
                 ]
