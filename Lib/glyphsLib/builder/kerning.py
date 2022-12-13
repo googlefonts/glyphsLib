@@ -19,26 +19,64 @@ from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
 
 
 def to_ufo_kerning(self):
+    used_groups = set()
     for master in self.font.masters:
-        groups_LTR, groups_RTL = set(), set()
-        master_id = master.id
-        ufo = self._sources[master_id].font
+        ufo = self._sources[master.id].font
         kerning_source = master.metricsSource  # Maybe be a linked master
         if kerning_source is None:
             kerning_source = master
         if kerning_source.id in self.font.kerningLTR:
             kerning = self.font.kerningLTR[kerning_source.id]
-            groups_LTR = _to_ufo_kerning(self, ufo, kerning)
+            used_groups.update(_to_ufo_kerning(self, ufo, kerning))
         if kerning_source.id in self.font.kerningRTL:
             kerning = self.font.kerningRTL[kerning_source.id]
-            groups_RTL = _to_ufo_kerning(self, ufo, kerning, "RTL")
+            used_groups.update(_to_ufo_kerning(self, ufo, kerning, "RTL"))
 
-        # Prune kerning groups that are not used in kerning rules
-        used_groups = groups_LTR | groups_RTL
+    # Prune kerning groups that are not used in kerning rules
+    # (added but unused .RTL groups, see groups.py)
+    for master in self.font.masters:
+        ufo = self._sources[master.id].font
         for group in list(ufo.groups.keys()):
             # Group exists in font but not in kerning rules
             if group.startswith("public.kern") and group not in used_groups:
                 del ufo.groups[group]
+
+    # Remove .RTL from groups
+    for master in self.font.masters:
+        ufo = self._sources[master.id].font
+        for group in list(ufo.groups.keys()):
+            if group.startswith("public.kern") and group.endswith(".RTL"):
+                ufo.groups[group.replace(".RTL", "")] = ufo.groups[group]
+                del ufo.groups[group]
+
+    # Remove .RTL from kerning
+    for master in self.font.masters:
+        ufo = self._sources[master.id].font
+        print(ufo.kerning)
+        for first, second in list(ufo.kerning.keys()):
+            if (
+                first.startswith("public.kern")
+                and first.endswith(".RTL")
+                and second.startswith("public.kern")
+                and second.endswith(".RTL")
+            ):
+                print("kerning both", first, second)
+                ufo.kerning[
+                    first.replace(".RTL", ""), second.replace(".RTL", "")
+                ] = ufo.kerning[first, second]
+                del ufo.kerning[first, second]
+            elif first.startswith("public.kern") and first.endswith(".RTL"):
+                print("kerning first", first, second)
+                ufo.kerning[first.replace(".RTL", ""), second] = ufo.kerning[
+                    first, second
+                ]
+                del ufo.kerning[first, second]
+            elif second.startswith("public.kern") and second.endswith(".RTL"):
+                print("kerning second", first, second)
+                ufo.kerning[first, second.replace(".RTL", "")] = ufo.kerning[
+                    first, second
+                ]
+                del ufo.kerning[first, second]
 
 
 def _to_ufo_kerning(self, ufo, kerning_data, direction="LTR"):

@@ -79,14 +79,31 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 glyph_group = getattr(glyph, attr)
                 if glyph_group:
-                    # Traditional group
-                    group = f"public.kern{side}.{glyph_group}"
-                    groups[group].append(glyph.name)
-                    # Additional RTL group
-                    # This will add lots of unused groups which we'll prune later
-                    # but is necessary to implement G3 RTL kerning. See kerning.py
-                    group = f"public.kern{other_side}.{glyph_group}.RTL"
-                    groups[group].append(glyph.name)
+                    if not glyph_group.endswith(".RTL"):
+                        # Traditional group
+                        group = f"public.kern{side}.{glyph_group}"
+                        if glyph.name not in groups[group]:
+                            groups[group].append(glyph.name)
+                        # Additional RTL group
+                        # This will add lots of unused groups which we'll prune later
+                        # but is necessary to implement G3 RTL kerning. See kerning.py
+                        group = f"public.kern{other_side}.{glyph_group}.RTL"
+                        if glyph.name not in groups[group]:
+                            groups[group].append(glyph.name)
+                    else:
+                        # Additional RTL group
+                        # This will add lots of unused groups which we'll prune later
+                        # but is necessary to implement G3 RTL kerning. See kerning.py
+                        if not glyph_group.endswith(".RTL"):
+                            group = f"public.kern{side}.{glyph_group}"
+                            if glyph.name not in groups[group]:
+                                groups[group].append(glyph.name)
+
+                        # Traditional group
+                        glyph_group = glyph_group[:-4]
+                        group = f"public.kern{other_side}.{glyph_group}"
+                        if glyph.name not in groups[group]:
+                            groups[group].append(glyph.name)
 
     # Update all UFOs with the same info
     for source in self._sources.values():
