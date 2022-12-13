@@ -2276,10 +2276,7 @@ def test_load_kerning_bracket(ufo_module):
 
     assert ds.sources[2].font.groups == bracketed_groups
 
-    # Prior to PR #838, we were checking for d1 and d2 to be equal.
-    # However, with PR #838, we are now pruning kerning groups that are not
-    # used in the kerning table.
-    # The groups in the assertion below got pruned.
+    # Checking for known pruned groups (PR #838)
     d1 = ds.sources[3].font.groups
     d2 = bracketed_groups
     assert set(d2) ^ set(d1) == {"public.kern2.foo", "public.kern1.foo"}
