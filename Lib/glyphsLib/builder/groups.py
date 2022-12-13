@@ -79,7 +79,7 @@ def to_ufo_groups(self):
                 attr = _glyph_kerning_attr(glyph, side)
                 glyph_group = getattr(glyph, attr)
                 if glyph_group:
-                    _to_ufo_groups(glyph, groups, glyph_group, side, other_side)
+                    _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side)
 
     # Update all UFOs with the same info
     for source in self._sources.values():
@@ -88,7 +88,7 @@ def to_ufo_groups(self):
             source.font.groups[name] = glyphs[:]
 
 
-def _to_ufo_groups(glyph, groups, glyph_group, side, other_side):
+def _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side):
     if not glyph_group.endswith(".RTL"):
         # Traditional group
         group = f"public.kern{side}.{glyph_group}"
