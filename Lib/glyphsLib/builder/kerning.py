@@ -15,7 +15,11 @@
 
 import re
 
-from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
+from .constants import (
+    BRACKET_GLYPH_RE,
+    UFO_KERN_GROUP_PATTERN,
+    SORT_G3_RTL_KERNING_SUFFIX,
+)
 
 
 def to_ufo_kerning(self):
@@ -45,25 +49,40 @@ def to_ufo_kerning(self):
 
         # Remove .RTL from groups
         for group in list(ufo.groups.keys()):
-            if group.startswith("public.kern") and group.endswith(".RTL"):
-                ufo.groups[group[:-4]] = ufo.groups[group]
+            if group.startswith("public.kern") and group.endswith(
+                SORT_G3_RTL_KERNING_SUFFIX
+            ):
+                ufo.groups[group.replace(SORT_G3_RTL_KERNING_SUFFIX, "")] = ufo.groups[
+                    group
+                ]
                 del ufo.groups[group]
 
         # Remove .RTL from kerning
         for first, second in list(ufo.kerning.keys()):
             if (
                 first.startswith("public.kern")
-                and first.endswith(".RTL")
+                and first.endswith(SORT_G3_RTL_KERNING_SUFFIX)
                 and second.startswith("public.kern")
-                and second.endswith(".RTL")
+                and second.endswith(SORT_G3_RTL_KERNING_SUFFIX)
             ):
-                ufo.kerning[first[:-4], second[:-4]] = ufo.kerning[first, second]
+                ufo.kerning[
+                    first.replace(SORT_G3_RTL_KERNING_SUFFIX, ""),
+                    second.replace(SORT_G3_RTL_KERNING_SUFFIX, ""),
+                ] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
-            elif first.startswith("public.kern") and first.endswith(".RTL"):
-                ufo.kerning[first[:-4], second] = ufo.kerning[first, second]
+            elif first.startswith("public.kern") and first.endswith(
+                SORT_G3_RTL_KERNING_SUFFIX
+            ):
+                ufo.kerning[
+                    first.replace(SORT_G3_RTL_KERNING_SUFFIX, ""), second
+                ] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
-            elif second.startswith("public.kern") and second.endswith(".RTL"):
-                ufo.kerning[first, second[:-4]] = ufo.kerning[first, second]
+            elif second.startswith("public.kern") and second.endswith(
+                SORT_G3_RTL_KERNING_SUFFIX
+            ):
+                ufo.kerning[
+                    first, second.replace(SORT_G3_RTL_KERNING_SUFFIX, "")
+                ] = ufo.kerning[first, second]
                 del ufo.kerning[first, second]
 
 
@@ -110,7 +129,7 @@ def _ufo_class_name(name, direction, order):
     if name_is_class:
         name = f"public.kern{order}.{match.group(1)}"
         if direction == "RTL":
-            name += ".RTL"
+            name += SORT_G3_RTL_KERNING_SUFFIX
 
     return name, name_is_class
 

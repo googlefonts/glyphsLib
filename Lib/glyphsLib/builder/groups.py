@@ -22,6 +22,7 @@ from .constants import (
     UFO_GROUPS_NOT_IN_FEATURE_KEY,
     UFO_KERN_GROUP_PATTERN,
     BRACKET_GLYPH_RE,
+    SORT_G3_RTL_KERNING_SUFFIX,
 )
 
 
@@ -91,7 +92,7 @@ def to_ufo_groups(self):
 
 
 def _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side):
-    if not glyph_group.endswith(".RTL"):
+    if not glyph_group.endswith(SORT_G3_RTL_KERNING_SUFFIX):
         # Traditional group
         group = f"public.kern{side}.{glyph_group}"
         if glyph.name not in groups[group]:
@@ -99,7 +100,7 @@ def _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side):
         # Additional RTL group
         # This will add lots of unused groups which we'll prune later
         # but is necessary to implement G3 RTL kerning. See kerning.py
-        group = f"public.kern{other_side}.{glyph_group}.RTL"
+        group = f"public.kern{other_side}.{glyph_group}{SORT_G3_RTL_KERNING_SUFFIX}"
         if glyph.name not in groups[group]:
             groups[group].append(glyph.name)
     else:
@@ -111,7 +112,7 @@ def _add_glyph_to_ufo_groups(glyph, groups, glyph_group, side, other_side):
             groups[group].append(glyph.name)
 
         # Traditional group
-        glyph_group = glyph_group[:-4]
+        glyph_group = glyph_group.replace(SORT_G3_RTL_KERNING_SUFFIX, "")
         group = f"public.kern{other_side}.{glyph_group}"
         if glyph.name not in groups[group]:
             groups[group].append(glyph.name)
