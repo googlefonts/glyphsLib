@@ -145,6 +145,23 @@ In practice there are always a few diffs on things that don't really make a
 difference, like optional things being added/removed or whitespace changes or
 things getting reordered...
 
+Kerning interaction between Glyphs 3 and UFO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Glyphs 3 introduced the attribute ``.kerningRTL`` for the storage of RTL kerning pairs
+which breaks with the UFO spec of storing kerning as logical first/second pairs
+regardless of writing direction.
+As of `PR #838 <https://github.com/googlefonts/glyphsLib/pull/838>`__ glyphsLib
+reverts this separate Glyphs 3-style RTL kerning back to Glyphs 2/UFO-style kerning
+upon conversion of a Glyphs object to a UFO object, *but it does not convert the kerning
+back to Glyphs 3-style when converting a UFO object to a Glyphs object.* 
+
+This means that if you convert a UFO to a Glyphs file and subsequently open that file
+in Glyphs 3, the RTL kerning will initially not be visible in the UI, but be hidden
+in the LTR kerning. This is identical to opening a Glyphs 2 file with RTL kerning
+in Glyphs 3. It is in the responsibility of Glyphs 3 and the user to convert the kerning
+back to Glyphs 3's separate RTL kerning.
+
 Make a release
 ^^^^^^^^^^^^^^
 
