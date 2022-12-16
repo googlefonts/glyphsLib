@@ -3664,13 +3664,19 @@ class GSLayer(GSBase):
 
     @property
     def smartComponentPoleMapping(self):
-        if "PartSelection" not in self.userData:
-            self.userData["PartSelection"] = {}
-        return self.userData["PartSelection"]
+        if self.parent.parent.format_version < 3:
+            if "PartSelection" not in self.userData:
+                self.userData["PartSelection"] = {}
+            return self.userData["PartSelection"]
+        else:
+            return self.partSelection
 
     @smartComponentPoleMapping.setter
     def smartComponentPoleMapping(self, value):
-        self.userData["PartSelection"] = value
+        if self.parent.parent.format_version < 3:
+            self.userData["PartSelection"] = value
+        else:
+            self.partSelection = value
 
     @property
     def bounds(self):

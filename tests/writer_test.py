@@ -734,7 +734,15 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertIn('unicode = "00C1,E002";', written)
 
     def test_write_layer(self):
+        font = classes.GSFont()
+        font.format_version = 2
+        master = classes.GSFontMaster()
+        master.id = "M1"
+        font.masters.append(master)
+        glyph = classes.GSGlyph("A")
+        font.glyphs.append(glyph)
         layer = classes.GSLayer()
+        glyph.layers.append(layer)
         # http://docu.glyphsapp.com/#gslayer
         # parent: not written
         # name
