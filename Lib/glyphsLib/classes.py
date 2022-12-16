@@ -1581,7 +1581,6 @@ class GSFontMaster(GSBase):
         "ascender": 800,
         "descender": -200,
         "italic angle": 0,
-        "baseline": 0,
     }
 
     _axis_defaults = (100, 100)
@@ -1770,19 +1769,15 @@ class GSFontMaster(GSBase):
         if len(self.metrics) == 0:
             return []
 
-        validZoneMetrics = (
-            "ascender",
-            "cap height",
-            "x-height",
-            "baseline",
-            "descender",
-        )
-
         zones = []
         for index, fontMetric in enumerate(self.font.metrics):
-            if fontMetric.type not in validZoneMetrics:
+            # Ignore the "italic angle" "metric", it is not an alignmentZone
+            if fontMetric.type == "italic angle":
                 continue
             metric = self.metrics[index]
+            # Ignore metric without overshoot, it is not an alignmentZone
+            if metric.overshoot == 0:
+                continue
             zone = GSAlignmentZone(pos=metric.position, size=metric.overshoot)
             zones.append(zone)
         return zones
