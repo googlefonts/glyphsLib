@@ -19,7 +19,7 @@ import logging
 from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib.util import build_ufo_path
-from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter
+from glyphsLib.classes import WEIGHT_CODES, GSCustomParameter, InstanceType
 from .constants import (
     UFO_FILENAME_CUSTOM_PARAM,
     EXPORT_KEY,
@@ -47,6 +47,8 @@ logger = logging.getLogger(__name__)
 def to_designspace_instances(self):
     """Write instance data from self.font to self.designspace."""
     for instance in self.font.instances:
+        if instance.type == InstanceType.VARIABLE:
+            continue
         if self.minimize_glyphs_diffs or (
             is_instance_active(instance)
             and _is_instance_included_in_family(self, instance)
