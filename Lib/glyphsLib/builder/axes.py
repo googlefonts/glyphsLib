@@ -180,7 +180,12 @@ def to_designspace_axes(self):
         # See https://github.com/googlefonts/glyphsLib/issues/568
         if custom_mapping:
             if axis.tag in custom_mapping:
-                mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                # In Glyphs.app, 'Axis Mappings' map from internal design-space coordinates to
+                # external user-space coordinates, whereas in DesignSpace format the
+                # axis map 'inputs' define external user-space coordinates, and the 'outputs'
+                # internal design-space coordinates, hence below we flip keys and values:
+                # https://github.com/googlefonts/glyphsLib/issues/745
+                mapping = {float(v): float(k) for k, v in custom_mapping[axis.tag].items()}
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
                 reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
                 regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
