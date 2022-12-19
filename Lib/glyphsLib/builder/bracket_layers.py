@@ -213,9 +213,13 @@ def find_component_use(self):
                     if my_bracket_layers != components_bracket_layers:
                         # Find what we need to add, and make them hashable
                         they_have = set(
-                            tuple(x.items()) for x in components_bracket_layers
+                            tuple(x.items())
+                            for x in components_bracket_layers
+                            if x.items()
                         )
-                        i_have = set(tuple(x.items()) for x in my_bracket_layers)
+                        i_have = set(
+                            tuple(x.items()) for x in my_bracket_layers if x.items()
+                        )
                         needed = they_have - i_have
                         if needed:
                             problematic_glyphs[(glyph_name, master)] |= needed
