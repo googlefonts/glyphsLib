@@ -47,6 +47,7 @@ class UFOBuilder(LoggerMixin):
         generate_GDEF=True,
         store_editor_state=True,
         write_skipexportglyphs=False,
+        expand_includes=False,
         minimal=False,
         glyph_data=None,
     ):
@@ -79,6 +80,10 @@ class UFOBuilder(LoggerMixin):
                                          into the UFOs' and Designspace's lib instead
                                          of the glyph level lib key
                                          "com.schriftgestaltung.Glyphs.Export".
+        expand_includes -- If True, expand include statements in the GSFont features
+                           and inline them in the UFO features.fea.
+        minimal -- If True, it is assumed that the UFOs will only be used in font
+                   production, and unnecessary steps will be skipped.
         glyph_data -- A list of GlyphData.
         """
         self.font = font
@@ -96,6 +101,7 @@ class UFOBuilder(LoggerMixin):
         self.store_editor_state = store_editor_state
         self.bracket_layers = []
         self.write_skipexportglyphs = write_skipexportglyphs
+        self.expand_includes = expand_includes
         self.minimal = minimal
 
         if propagate_anchors is None:
@@ -422,6 +428,7 @@ class GlyphsBuilder(LoggerMixin):
         glyphs_module=classes,
         ufo_module=None,
         minimize_ufo_diffs=False,
+        expand_includes=False,
     ):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
@@ -450,9 +457,12 @@ class GlyphsBuilder(LoggerMixin):
         minimize_ufo_diffs -- set to True to store extra info in .glyphs files
                               in order to get smaller diffs between UFOs
                               when going UFOs->glyphs->UFOs
+        expand_includes -- If True, expand include statements in the UFOs' features.fea
+                           and inline them in the GSFont features.
         """
         self.glyphs_module = glyphs_module
         self.minimize_ufo_diffs = minimize_ufo_diffs
+        self.expand_includes = expand_includes
 
         if designspace is not None:
             if ufos:

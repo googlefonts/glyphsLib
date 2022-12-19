@@ -31,6 +31,7 @@ def to_ufos(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    expand_includes=False,
     minimal=False,
     glyph_data=None,
 ):
@@ -47,6 +48,9 @@ def to_ufos(
     If generate_GDEF is True, write a `table GDEF {...}` statement in the
     UFO's features.fea, containing GlyphClassDef and LigatureCaretByPos.
 
+    If expand_includes is True, resolve include statements in the GSFont features
+    and inline them in the UFO features.fea.
+
     If minimal is True, it is assumed that the UFOs will only be used in
     font production, and unnecessary steps (e.g. converting background layers)
     will be skipped.
@@ -60,6 +64,7 @@ def to_ufos(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        expand_includes=expand_includes,
         minimal=minimal,
         glyph_data=glyph_data,
     )
@@ -81,6 +86,7 @@ def to_designspace(
     generate_GDEF=True,
     store_editor_state=True,
     write_skipexportglyphs=False,
+    expand_includes=False,
     minimal=False,
     glyph_data=None,
 ):
@@ -117,6 +123,7 @@ def to_designspace(
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
         write_skipexportglyphs=write_skipexportglyphs,
+        expand_includes=expand_includes,
         minimal=minimal,
         glyph_data=glyph_data,
     )
@@ -128,6 +135,7 @@ def to_glyphs(
     glyphs_module=classes,
     ufo_module=None,
     minimize_ufo_diffs=False,
+    expand_includes=False,
 ):
     """
     Take a list of UFOs or a single DesignspaceDocument with attached UFOs
@@ -146,6 +154,7 @@ def to_glyphs(
             glyphs_module=glyphs_module,
             ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
+            expand_includes=expand_includes,
         )
     else:
         builder = GlyphsBuilder(
@@ -153,5 +162,6 @@ def to_glyphs(
             glyphs_module=glyphs_module,
             ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
+            expand_includes=expand_includes,
         )
     return builder.font

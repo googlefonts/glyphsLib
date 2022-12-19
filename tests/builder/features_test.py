@@ -343,6 +343,50 @@ def test_include_no_semicolon(tmpdir, ufo_module):
     assert rtufo.features.text == ufo.features.text
 
 
+def test_to_glyphs_expand_includes(tmp_path, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        include(family.fea);
+        """
+    )
+    ufo.save(str(tmp_path / "font.ufo"))
+
+    included_path = tmp_path / "family.fea"
+    included_path.write_text("# hello from family.fea")
+    assert included_path.exists()
+
+    font = to_glyphs([ufo], minimize_ufo_diffs=True, expand_includes=True)
+
+    assert len(font.featurePrefixes) == 1
+    assert font.featurePrefixes[0].code.strip() == "# hello from family.fea"
+
+
+def test_to_ufos_expand_includes(tmp_path, ufo_module):
+    font = classes.GSFont()
+    font.masters.append(classes.GSFontMaster())
+
+    feature_prefix = classes.GSFeaturePrefix()
+    feature_prefix.name = "include"
+    feature_prefix.code = dedent(
+        """\
+        include(family.fea);
+        """
+    )
+    font.featurePrefixes.append(feature_prefix)
+
+    font.filepath = str(tmp_path / "font.glyphs")
+    font.save()
+
+    included_path = tmp_path / "family.fea"
+    included_path.write_text("# hello from family.fea")
+    assert included_path.exists()
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module, expand_includes=True)
+
+    assert ufo.features.text == ("# Prefix: include\n# hello from family.fea")
+
+
 def test_standalone_lookup(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     # FIXME: (jany) does not preserve whitespace before and after
