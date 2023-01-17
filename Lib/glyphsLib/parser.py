@@ -14,7 +14,7 @@
 
 
 from collections import OrderedDict
-from fontTools.misc.filenames import userNameToFileName
+from fontTools.misc.filenames import userNameToFileName, reservedFileNames
 import glyphsLib
 import logging
 import openstep_plist
@@ -107,7 +107,9 @@ def load_glyphspackage(package_dir):
     data = openstep_plist.load(open(infofile, "r", encoding="utf-8"), use_numbers=True)
     data["glyphs"] = []
     for g in glyphorder:
-        glyphname = userNameToFileName(g) + ".glyph"
+        if g not in reservedFileNames:
+            g = userNameToFileName(g)
+        glyphname = g + ".glyph"
         glyphfile = os.path.join(package_dir, "glyphs", glyphname)
         data["glyphs"].append(
             openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
