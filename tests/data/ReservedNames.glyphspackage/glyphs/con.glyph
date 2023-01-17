@@ -1,0 +1,21 @@
+{
+glyphname = con;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(50,0,l),
+(550,0,l),
+(550,500,l),
+(50,500,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 42863;
+}

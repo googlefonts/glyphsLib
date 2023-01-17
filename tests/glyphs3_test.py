@@ -22,3 +22,7 @@ def test_glyphspackage_load(datadir):
     font1.DisplayStrings = ""  # glyphspackages, rather sensibly, don't store user state
     font2 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
+
+    font3 = glyphsLib.load(str(datadir.join("ReservedNames.glyphspackage")))
+    assert "A" in font3.glyphs
+    assert "con" in font3.glyphs
