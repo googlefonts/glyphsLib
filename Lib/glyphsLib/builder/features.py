@@ -30,6 +30,8 @@ from .constants import (
     ORIGINAL_CATEGORY_KEY,
     LANGUAGE_MAPPING,
     REVERSE_LANGUAGE_MAPPING,
+    INSERT_FEATURE_MARKER_RE,
+    INSERT_FEATURE_MARKER_COMMENT,
 )
 from .tokens import TokenExpander, PassThruExpander
 
@@ -69,6 +71,11 @@ def _to_glyphs_language(langID):
     if langID not in REVERSE_LANGUAGE_MAPPING:
         raise ValueError(f"Unknown name langID: {langID}")
     return REVERSE_LANGUAGE_MAPPING[langID]
+
+
+def _is_manual_kern_feature(feature):
+    """Return true if the feature is a manually written 'kern' features."""
+    return feature.name == "kern" and not feature.automatic
 
 
 def _to_ufo_features(
@@ -155,6 +162,15 @@ def _to_ufo_features(
             lines.extend("#" + line for line in code.splitlines())
         else:
             lines.append(code)
+
+        # Manual kern features in glyphs also have the automatic code added after them
+        # We make sure it gets added with an "Automatic Code..." marker if it doesn't
+        # already have one.
+        if _is_manual_kern_feature(feature) and not re.search(
+            INSERT_FEATURE_MARKER_RE, code
+        ):
+            lines.append(INSERT_FEATURE_MARKER_COMMENT)
+
         lines.append("} %s;" % feature.name)
         feature_defs.append("\n".join(lines))
     fea_str = "\n\n".join(feature_defs)
