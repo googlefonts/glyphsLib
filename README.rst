@@ -154,7 +154,7 @@ regardless of writing direction.
 As of `PR #838 <https://github.com/googlefonts/glyphsLib/pull/838>`__ glyphsLib
 reverts this separate Glyphs 3-style RTL kerning back to Glyphs 2/UFO-style kerning
 upon conversion of a Glyphs object to a UFO object, *but it does not convert the kerning
-back to Glyphs 3-style when converting a UFO object to a Glyphs object.* 
+back to Glyphs 3-style when converting a UFO object to a Glyphs object!* 
 
 This means that if you convert a UFO to a Glyphs file and subsequently open that file
 in Glyphs 3, the RTL kerning will initially not be visible in the UI, but be hidden
