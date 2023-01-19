@@ -31,26 +31,11 @@ from .constants import (
 )
 
 
-def _has_manual_kern_feature(font):
-    """Return true if the GSFont contains a manually written 'kern' feature."""
-    return any(f for f in font.features if f.name == "kern" and not f.automatic)
-
-
 def to_designspace_family_user_data(self):
     if self.use_designspace:
         for key, value in dict(self.font.userData).items():
             if _user_data_has_no_special_meaning(key):
                 self.designspace.lib[key] = value
-
-        # only write our custom ufo2ft featureWriters settings if the font
-        # does have a manually written 'kern' feature; and if the lib key wasn't
-        # already set in font.userData (in which case we assume the user knows
-        # what she's doing).
-        if (
-            _has_manual_kern_feature(self.font)
-            and UFO2FT_FEATURE_WRITERS_KEY not in self.designspace.lib
-        ):
-            self.designspace.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
 
 def to_ufo_family_user_data(self, ufo):
