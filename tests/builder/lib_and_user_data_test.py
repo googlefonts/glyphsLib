@@ -51,34 +51,6 @@ def test_designspace_lib_equivalent_to_font_user_data(tmpdir):
     assert designspace.lib["designspaceLibKey1"] == "designspaceLibValue1"
 
 
-def test_default_featureWriters_in_designspace_lib(tmpdir, ufo_module):
-    """Test that the glyphsLib custom featureWriters settings (with mode="append")
-    are exported to the designspace lib whenever a GSFont contains a manual 'kern'
-    feature. And that they are not imported back to GSFont.userData if they are
-    the same as the default value.
-    """
-    font = classes.GSFont()
-    font.masters.append(classes.GSFontMaster())
-    kern = classes.GSFeature(name="kern", code="pos a b 100;")
-    font.features.append(kern)
-
-    designspace = to_designspace(font, ufo_module=ufo_module)
-    path = str(tmpdir / "test.designspace")
-    designspace.write(path)
-    for source in designspace.sources:
-        source.font.save(str(tmpdir / source.filename))
-
-    designspace2 = DesignSpaceDocument.fromfile(path)
-
-    assert UFO2FT_FEATURE_WRITERS_KEY in designspace2.lib
-    assert designspace2.lib[UFO2FT_FEATURE_WRITERS_KEY] == DEFAULT_FEATURE_WRITERS
-
-    font2 = to_glyphs(designspace2, ufo_module=ufo_module)
-
-    assert not len(font2.userData)
-    assert len([f for f in font2.features if f.name == "kern"]) == 1
-
-
 def test_custom_featureWriters_in_designpace_lib(tmpdir, ufo_module):
     """Test that we can roundtrip custom user-defined ufo2ft featureWriters
     settings that are stored in the designspace lib or GSFont.userData.

@@ -17,9 +17,10 @@
 import os
 from textwrap import dedent
 
-from glyphsLib import to_glyphs, to_ufos, classes
+from glyphsLib import to_glyphs, to_ufos, classes, to_designspace
 from glyphsLib.builder.features import _build_public_opentype_categories
 
+from fontTools.designspaceLib import DesignSpaceDocument
 import pytest
 
 
@@ -741,3 +742,33 @@ def test_mark_class_used_as_glyph_class(tmpdir, ufo_module):
     # hence the following assertion would fail...
     # https://github.com/googlefonts/glyphsLib/issues/694#issuecomment-1117204523
     # assert rtufo.features.text == ufo.features.text
+
+
+def test_automatic_added_to_manual_kern(tmpdir, ufo_module):
+    """Test that when a Glyphs file has a manual kern feature,
+    automatic markers are added so that the source kerning also
+    gets applied.
+    """
+    font = classes.GSFont()
+    font.masters.append(classes.GSFontMaster())
+
+    (ufo,) = to_ufos(font)
+
+    assert "# Automatic Code" not in ufo.features.text
+
+    kern = classes.GSFeature(name="kern", code="pos a b 100;")
+    font.features.append(kern)
+    (ufo,) = to_ufos(font)
+
+    assert "# Automatic Code" in ufo.features.text
+
+    designspace = to_designspace(font, ufo_module=ufo_module)
+    path = str(tmpdir / "test.designspace")
+    designspace.write(path)
+    for source in designspace.sources:
+        source.font.save(str(tmpdir / source.filename))
+
+    designspace2 = DesignSpaceDocument.fromfile(path)
+    font2 = to_glyphs(designspace2, ufo_module=ufo_module)
+
+    assert len([f for f in font2.features if f.name == "kern"]) == 1
