@@ -2600,7 +2600,19 @@ class GSComponent(GSBase):
 
     @property
     def layer(self):
-        return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
+        base_glyph = self.component
+        parent_layer = self.parent
+        if parent_layer.attributes.get("color"):
+            return next(
+                (
+                    l
+                    for l in base_glyph.layers
+                    if l.attributes.get("color")
+                    and l.associatedMasterId == parent_layer.associatedMasterId
+                ),
+                base_glyph.layers[parent_layer.associatedMasterId],
+            )
+        return base_glyph.layers[parent_layer.associatedMasterId]
 
     def applyTransformation(self, x, y):
         x *= self.scale[0]

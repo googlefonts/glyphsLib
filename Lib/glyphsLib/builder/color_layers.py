@@ -14,11 +14,17 @@
 
 import math
 
+from fontTools.misc.arrayTools import calcBounds, unionRect
 from fontTools.misc.transform import Identity, Transform
 from fontTools.ttLib.tables.otTables import PaintFormat
 
+from glyphsLib.affine import Affine, identity
 from .common import to_ufo_color
-from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
+from .constants import (
+    UFO2FT_COLOR_LAYERS_KEY,
+    UFO2FT_COLOR_PALETTES_KEY,
+    UFO2FT_COLR_CLIP_BOXES_KEY,
+)
 
 
 def _to_ufo_color_palette_layers(builder, master, layerMapping):
@@ -164,8 +170,44 @@ def _to_component_paint(component):
     return paint
 
 
+def _iter_control_points(layer, transform=identity):
+    layer_points = ((n.position.x, n.position.y) for p in layer.paths for n in p.nodes)
+    if transform.is_identity:
+        yield from layer_points
+    else:
+        yield from (pt * transform for pt in layer_points)
+    for comp in layer.components:
+        affine = Affine(
+            comp.transform[0],
+            comp.transform[1],
+            comp.transform[4],
+            comp.transform[2],
+            comp.transform[3],
+            comp.transform[5],
+        )
+        yield from _iter_control_points(comp.layer, transform * affine)
+
+
+def _layer_control_bounds(layer, quantize_factor=1):
+    points = list(_iter_control_points(layer))
+    if not points:
+        return None
+    bounds = calcBounds(points)
+    return (
+        int(math.floor(bounds[0] / quantize_factor) * quantize_factor),
+        int(math.floor(bounds[1] / quantize_factor) * quantize_factor),
+        int(math.ceil(bounds[2] / quantize_factor) * quantize_factor),
+        int(math.ceil(bounds[3] / quantize_factor) * quantize_factor),
+    )
+
+
 def _to_ufo_color_layers(builder, ufo, master, layerMapping):
     palette = ([], ufo.lib.get(UFO2FT_COLOR_PALETTES_KEY, [[]])[0])
+    # we don't need exact, tightest clipboxes, it's preferable that same clipboxes get
+    # reused, hence we quantize to 1/10th of upem, rounded to nearest multiple of 10
+    # e.g. 100 unit intervals for 1000 upem, 200 units for 2048 etc.
+    quantize_factor = int(round(builder.font.upm / 10, -1))
+    clipBoxes = {}
     for (glyph, masterLayer), layers in builder._color_layers:
         if master.id != masterLayer.associatedMasterId:
             continue
@@ -178,7 +220,15 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
         assert glyph.name not in layerMapping
 
         colorLayers = []
+        clipBox = None
         for i, layer in enumerate(layers):
+            bounds = _layer_control_bounds(layer, quantize_factor)
+            if bounds is not None:
+                if clipBox is None:
+                    clipBox = bounds
+                else:
+                    clipBox = unionRect(clipBox, bounds)
+
             if layer.components and layer.attributes:
                 colorLayers.append(_to_component_paint(layer.components[0]))
                 continue
@@ -222,10 +272,17 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
             layerMapping[glyph.name] = dict(
                 Format=PaintFormat.PaintColrLayers, Layers=colorLayers
             )
+        if clipBox is not None:
+            clipBoxes.setdefault(clipBox, []).append(glyph.name)
 
     if palette[0]:
         for p in ufo.lib.setdefault(UFO2FT_COLOR_PALETTES_KEY, [[]]):
             p.extend(palette[0])
+
+    if clipBoxes:
+        ufo.lib[UFO2FT_COLR_CLIP_BOXES_KEY] = [
+            (glyphs, cbox) for cbox, glyphs in clipBoxes.items()
+        ]
 
 
 def to_ufo_color_layers(self, ufo, master):

@@ -152,6 +152,7 @@ UFO2FT_FEATURE_WRITERS_KEY = "com.github.googlei18n.ufo2ft.featureWriters"
 UFO2FT_COLOR_PALETTES_KEY = "com.github.googlei18n.ufo2ft.colorPalettes"
 UFO2FT_COLOR_LAYER_MAPPING_KEY = "com.github.googlei18n.ufo2ft.colorLayerMapping"
 UFO2FT_COLOR_LAYERS_KEY = "com.github.googlei18n.ufo2ft.colorLayers"
+UFO2FT_COLR_CLIP_BOXES_KEY = "com.github.googlei18n.ufo2ft.colrClipBoxes"
 
 UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 # ufo2ft KernFeatureWriter default to "skip" mode (i.e. do not write features
