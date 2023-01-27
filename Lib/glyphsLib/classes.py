@@ -26,7 +26,7 @@ from io import StringIO
 import openstep_plist
 
 # renamed to avoid shadowing glyphsLib.types.Transform imported further below
-from fontTools.misc.transform import Transform as Affine
+from fontTools.misc.transform import Identity, Transform as Affine
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
     AbstractPointPen,
@@ -2290,6 +2290,8 @@ class GSPath(GSBase):
     def applyTransform(self, transformationMatrix):
         assert len(transformationMatrix) == 6
         transform = Affine(*transformationMatrix)
+        if transform == Identity:
+            return
         for node in self.nodes:
             x, y = transform.transformPoint((node.position.x, node.position.y))
             node.position.x = x
