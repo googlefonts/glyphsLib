@@ -25,6 +25,8 @@ from io import StringIO
 
 import openstep_plist
 
+# renamed to avoid shadowing glyphsLib.types.Transform imported further below
+from fontTools.misc.transform import Transform as Affine
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
     AbstractPointPen,
@@ -32,7 +34,6 @@ from fontTools.pens.pointPen import (
     SegmentToPointPen,
 )
 
-from glyphsLib.affine import Affine
 from glyphsLib.parser import Parser
 from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
@@ -2288,16 +2289,9 @@ class GSPath(GSBase):
     # TODO
     def applyTransform(self, transformationMatrix):
         assert len(transformationMatrix) == 6
+        transform = Affine(*transformationMatrix)
         for node in self.nodes:
-            transformation = Affine(
-                transformationMatrix[0],
-                transformationMatrix[1],
-                transformationMatrix[4],
-                transformationMatrix[2],
-                transformationMatrix[3],
-                transformationMatrix[5],
-            )
-            x, y = (node.position.x, node.position.y) * transformation
+            x, y = transform.transformPoint((node.position.x, node.position.y))
             node.position.x = x
             node.position.y = y
 
@@ -2577,14 +2571,13 @@ class GSComponent(GSBase):
         self.updateAffineTransform()
 
     def updateAffineTransform(self):
-        affine = list(
-            Affine.translation(self.transform[4], self.transform[5])
-            * Affine.scale(self._sX, self._sY)
-            * Affine.rotation(self._R)
-        )[:6]
-        self.transform = Transform(
-            affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
+        affine = (
+            Affine()
+            .translate(self.transform[4], self.transform[5])
+            .rotate(math.radians(self._R))
+            .scale(self._sX, self._sY)
         )
+        self.transform = Transform(*affine)
 
     @property
     def componentName(self):
@@ -3436,14 +3429,13 @@ class GSBackgroundImage(GSBase):
         self._alpha = value
 
     def updateAffineTransform(self):
-        affine = list(
-            Affine.translation(self.transform[4], self.transform[5])
-            * Affine.scale(self._sX, self._sY)
-            * Affine.rotation(self._R)
-        )[:6]
-        self.transform = Transform(
-            affine[0], affine[1], affine[3], affine[4], affine[2], affine[5]
+        affine = (
+            Affine()
+            .translate(self.transform[4], self.transform[5])
+            .rotate(math.radians(self._R))
+            .scale(self._sX, self._sY)
         )
+        self.transform = Transform(*affine)
 
 
 GSBackgroundImage._add_parsers(
