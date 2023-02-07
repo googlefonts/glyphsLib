@@ -644,9 +644,9 @@ class NameRecordParamHandler(AbstractParamHandler):
 
             try:
                 name_id = self.parse_decimal(identifiers[0])
-                platform_id = 3  # Unicode
-                encoding_id = 1  # Unicode
-                language_id = 0x49  # Windows English
+                platform_id = 3  # Windows
+                encoding_id = 1  # Unicode BMP
+                language_id = 0x49  # English, United States
 
                 if len(identifiers) >= 2:
                     platform_id = self.parse_decimal(identifiers[1])
