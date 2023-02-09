@@ -2640,3 +2640,10 @@ class TestGlyphOrder:
         ufo = self.from_glyphs(ufo_module)
         assert ["c", "xxx1", "a", "f", "xxx2"] == ufo.lib["public.glyphOrder"]
         assert GLYPHS_PREFIX + "glyphOrder" not in ufo.lib
+
+    def test_glyphs_to_ufo_with_partial_glyphOrder(self, ufo_module):
+        self.prepare(ufo_module)
+        self.font.customParameters["glyphOrder"] = ["xxx1", "f", "xxx2"]
+        ufo = self.from_glyphs(ufo_module)
+        assert ["xxx1", "f", "xxx2", "c", "a"] == ufo.lib["public.glyphOrder"]
+        assert GLYPHS_PREFIX + "glyphOrder" not in ufo.lib

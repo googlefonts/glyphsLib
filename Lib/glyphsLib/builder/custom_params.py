@@ -819,6 +819,12 @@ class GlyphOrderParamHandler(AbstractParamHandler):
         if glyphs.is_font():
             glyphs_glyphOrder = glyphs.get_custom_value("glyphOrder")
             if glyphs_glyphOrder:
+                ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+                # If the custom parameter provides partial coverage we want to
+                # append the original glyph order for uncovered glyphs.
+                glyphs_glyphOrder += [
+                    g for g in ufo_glyphOrder if g not in glyphs_glyphOrder
+                ]
                 ufo.set_lib_value(PUBLIC_PREFIX + "glyphOrder", glyphs_glyphOrder)
 
 

@@ -68,7 +68,7 @@ def test_glyphs_to_designspace(filename: Path, caplog: Any) -> None:
             glyphsLib.build_masters(filename, tmp_dir, None, designspace_path=ds)
 
         reference_output_dir = filename.parent / filename.stem
-        report = diff_directories(tmp_dir, reference_output_dir)
+        report = diff_directories(reference_output_dir, tmp_dir)
         if report:
             print("".join(report))
         assert not report
