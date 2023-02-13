@@ -1446,7 +1446,14 @@ class GSAlignmentZone(GSBase):
         )
 
     def __lt__(self, other):
+        if not isinstance(other, GSAlignmentZone):
+            return NotImplemented
         return (self.position, self.size) < (other.position, other.size)
+
+    def __eq__(self, other):
+        if not isinstance(other, GSAlignmentZone):
+            return NotImplemented
+        return (self.position, self.size) == (other.position, other.size)
 
     def plistValue(self, format_version=2):
         return '"{{{}, {}}}"'.format(
@@ -1580,25 +1587,30 @@ class GSFontMaster(GSBase):
     _axis_defaults = (100, 100)
 
     def _parse_alignmentZones_dict(self, parser, text):
+        """
+        For glyphs file format 2 this parses the aligmentZone parameter
+        directly. For file format 3 alignmentZones will be infered from
+        metricValues.
+        """
         _zones = parser._parse(text, str)
-        self.alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
+        self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
     def __init__(self):
         self._customParameters = []
         self._name = None
         self._userData = None
-        self.alignmentZones = []
+        self._alignmentZones = None
+        self._horizontalStems = None
+        self._verticalStems = None
         self.axes = list(self._axis_defaults)
         self.metrics = []
         self.customName = ""
         self.font = None
         self.guides = []
-        self.horizontalStems = 0
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
         self.numbers = []
         self.stems = []
-        self.verticalStems = 0
         self.visible = False
         self.weight = self._defaultsForName["weight"]
         self.width = self._defaultsForName["width"]
@@ -1747,6 +1759,87 @@ class GSFontMaster(GSBase):
             # Pad array with ... zeroes?
             self.metrics.append(GSMetricValue(position=0))
         self.metrics[metricIndex] = GSMetricValue(position=value)
+
+    @property
+    def alignmentZones(self):
+        # If there are values that are parsed from file format 2 or which are
+        # explicitly set return those
+        if self._alignmentZones is not None:
+            return self._alignmentZones
+
+        if len(self.metrics) == 0:
+            return []
+
+        zones = []
+        for index, fontMetric in enumerate(self.font.metrics):
+            # Ignore the "italic angle" "metric", it is not an alignmentZone
+            if fontMetric.type == "italic angle":
+                continue
+            metric = self.metrics[index]
+            # Ignore metric without overshoot, it is not an alignmentZone
+            if metric.overshoot == 0:
+                continue
+            zone = GSAlignmentZone(pos=metric.position, size=metric.overshoot)
+            zones.append(zone)
+        return zones
+
+    @alignmentZones.setter
+    def alignmentZones(self, entries):
+        if not isinstance(entries, tuple) and not isinstance(entries, list):
+            raise TypeError(
+                "alignmentZones expected as list, got %s (%s)"
+                % (entries, type(entries))
+            )
+        zones = []
+        for zone in entries:
+            if not isinstance(zone, tuple) and not isinstance(zone, GSAlignmentZone):
+                raise TypeError(
+                    "alignmentZones values expected as tuples of (pos, size) "
+                    "or GSAligmentZone, got: %s (%s)" % (zone, type(zone))
+                )
+            if zone not in zones:
+                zones.append(zone)
+        self._alignmentZones = zones
+
+    @property
+    def horizontalStems(self):
+        if self._horizontalStems is not None:
+            return self._horizontalStems
+
+        if not hasattr(self.font, "stems"):
+            return []
+
+        horizontalStems = []
+        for index, font_stem in enumerate(self.font.stems):
+            if not font_stem.horizontal:
+                continue
+            horizontalStems.append(self.stems[index])
+        return horizontalStems
+
+    @horizontalStems.setter
+    def horizontalStems(self, value):
+        assert type(value) == list
+        self._horizontalStems = value
+
+    @property
+    def verticalStems(self):
+        if self._verticalStems is not None:
+            return self._verticalStems
+
+        if not hasattr(self.font, "stems"):
+            return []
+
+        verticalStems = []
+        for index, font_stem in enumerate(self.font.stems):
+            if font_stem.horizontal:
+                continue
+            verticalStems.append(self.stems[index])
+        return verticalStems
+
+    @verticalStems.setter
+    def verticalStems(self, value):
+        assert type(value) == list
+        self._verticalStems = value
 
     @property
     def ascender(self):
