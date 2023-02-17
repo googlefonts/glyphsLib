@@ -15,11 +15,11 @@ from fontTools.misc.bezierTools import (
 )
 from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.misc.roundTools import otRound
+from fontTools.misc.transform import Transform
 from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY
-from glyphsLib.affine import Affine
 
 
 try:
@@ -329,10 +329,10 @@ class CornerComponentApplier:
             )
 
     def scale_paths(self):
-        scaling = Affine.scale(*self.scale)
+        scaling = Transform().scale(*self.scale)
         for path in [self.corner_path] + self.other_paths:
             for pt in path:
-                pt.x, pt.y = scaling * (pt.x, pt.y)
+                pt.x, pt.y = scaling.transformPoint((pt.x, pt.y))
 
     def align_my_path_to_main_path(self):
         # Work out my rotation (1): Rotation occurring due to corner paths
@@ -379,13 +379,14 @@ class CornerComponentApplier:
 
         # Rotate the paths around the origin and then align them
         # so that the origin of the corner starts on the target node
-        rot = Affine.rotation(math.degrees(angle))
-        translation = Affine.translation(
+        rot = Transform().rotate(angle)
+        translation = Transform().translate(
             self.target_node.x + self.effective_start[0], self.target_node.y
         )
         for path in [self.corner_path] + self.other_paths:
             for pt in path:
-                pt.x, pt.y = (translation * rot) * (pt.x, pt.y)
+                pt.x, pt.y = translation.transform(rot).transformPoint((pt.x, pt.y))
+
         return instroke_intersection_point, outstroke_intersection_point
 
     def recompute_instroke_intersection_point(self):
