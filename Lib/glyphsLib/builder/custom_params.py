@@ -653,9 +653,13 @@ class NameRecordParamHandler(AbstractParamHandler):
 
                 if len(identifiers) >= 3:
                     encoding_id = self.parse_decimal(identifiers[2])
+                elif platform_id == 1:
+                    encoding_id = 0
 
                 if len(identifiers) >= 4:
                     language_id = self.parse_decimal(identifiers[3])
+                elif platform_id == 1:
+                    language_id = 0
 
                 return {
                     "nameID": name_id,
