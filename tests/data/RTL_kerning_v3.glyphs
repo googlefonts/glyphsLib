@@ -1,0 +1,292 @@
+{
+.appVersion = "3149";
+.formatVersion = 3;
+DisplayStrings = (
+"אב",
+"/hah-ar.init ر/hah-ar.init.swsh"
+);
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+date = "2022-02-09 20:07:11 +0000";
+familyName = "RTL kerning";
+fontMaster = (
+{
+axesValues = (
+1
+);
+id = m01;
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Regular;
+},
+{
+axesValues = (
+100
+);
+id = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = A;
+lastChange = "2022-12-13 14:06:47 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
+}
+);
+unicode = 65;
+},
+{
+glyphname = B;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 66;
+},
+{
+glyphname = C;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 67;
+},
+{
+glyphname = "hah-ar.init";
+kernRight = "hah-ar.init";
+lastChange = "2022-12-13 14:06:50 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
+}
+);
+},
+{
+glyphname = "hah-ar.init.swsh";
+kernRight = "hah-ar.init.swsh";
+lastChange = "2022-12-13 14:07:09 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
+}
+);
+},
+{
+glyphname = "reh-ar";
+kernLeft = "reh-ar";
+lastChange = "2022-12-13 14:06:34 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
+}
+);
+unicode = 1585;
+},
+{
+glyphname = "alef-hb";
+kernLeft = leftAlef;
+lastChange = "2022-12-13 14:06:34 +0000";
+layers = (
+{
+layerId = m01;
+width = 700;
+},
+{
+layerId = "B0D53B35-34A4-475E-9EF4-52C3D10908C6";
+width = 600;
+}
+);
+metricLeft = "=50";
+metricRight = "=50";
+unicode = 1488;
+},
+{
+glyphname = "bet-hb";
+kernRight = rightBet;
+lastChange = "2022-02-21 11:18:27 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 1489;
+},
+{
+glyphname = "he-hb";
+lastChange = "2022-02-17 09:36:21 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 1492;
+},
+{
+glyphname = "one-ar";
+kernLeft = "left-one-ar";
+lastChange = "2022-02-21 14:41:31 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 1633;
+},
+{
+glyphname = "one-ar.wide";
+kernLeft = "left-one-ar";
+lastChange = "2022-02-21 14:56:37 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+},
+{
+glyphname = one;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 49;
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 32;
+}
+);
+instances = (
+{
+axesValues = (
+100
+);
+instanceInterpolations = {
+"B0D53B35-34A4-475E-9EF4-52C3D10908C6" = 1;
+};
+name = Regular;
+}
+);
+kerningRTL = {
+m01 = {
+"@MMK_R_leftAlef" = {
+"@MMK_L_rightBet" = -20;
+"he-hb" = 4;
+};
+"@MMK_R_leftBet" = {
+"@MMK_L_rightAlef" = 20;
+};
+"@MMK_R_reh-ar" = {
+"@MMK_L_hah-ar.init.swsh" = -50;
+};
+"he-hb" = {
+"@MMK_L_rightAlef" = -2;
+"he-hb" = -21;
+};
+};
+"B0D53B35-34A4-475E-9EF4-52C3D10908C6" = {
+"@MMK_R_reh-ar" = {
+"@MMK_L_hah-ar.init.swsh" = -30;
+};
+};
+};
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
