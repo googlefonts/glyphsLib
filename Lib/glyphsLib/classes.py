@@ -3195,6 +3195,8 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "properties", condition="if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
