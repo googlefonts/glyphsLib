@@ -2567,10 +2567,10 @@ class GSComponent(GSBase):
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
         if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(
                 self, "position", keyName="pos", default=Point(0, 0)
             )
-            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(self, "name", keyName="ref")
             if self.scale != (1, 1):
                 writer.writeKeyValue("scale", Point(list(self.scale)))
@@ -2806,9 +2806,15 @@ GSAnchor._add_parsers(
 
 class GSHint(GSBase):
     def _serialize_to_plist(self, writer):
-        writer.writeObjectKeyValue(self, "horizontal", "if_true")
-
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "name", condition="if_true")
+        for field in ["horizontal", "options"]:
+            writer.writeObjectKeyValue(self, field, condition="if_true")
         for field in ["origin", "place"]:
+            writer.writeObjectKeyValue(self, field)
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "stem", self.stem != -2)
+        for field in ["other1", "other2", "scale"]:
             writer.writeObjectKeyValue(self, field)
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "target")
@@ -2819,12 +2825,11 @@ class GSHint(GSBase):
             else:
                 writer.writeValue(self.target)
             writer.file.write(";\n")
-        for field in ["other1", "other2", "scale"]:
-            writer.writeObjectKeyValue(self, field)
-        writer.writeObjectKeyValue(self, "stem", self.stem != -2)
-
-        for field in ["type", "name", "options", "settings"]:
+        for field in ["settings", "type"]:
             writer.writeObjectKeyValue(self, field, condition="if_true")
+        if writer.format_version == 2:
+            writer.writeObjectKeyValue(self, "stem", self.stem != -2)
+            writer.writeObjectKeyValue(self, "name", condition="if_true")
 
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
@@ -3006,8 +3011,8 @@ GSHint._add_parsers(
 class GSFeature(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
-        writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
+        writer.writeObjectKeyValue(self, "disabled", "if_true")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "labels", "if_true")
             writer.writeKeyValue("tag", self.name)
@@ -3061,8 +3066,8 @@ GSFeature._add_parsers(
 class GSClass(GSFeature):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
-        writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
+        writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeKeyValue("name", self.name)
 
     pass
@@ -3573,8 +3578,8 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "layerId", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
-            writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
             writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
+            writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
         else:
             writer.writeObjectKeyValue(self, "metricLeft")
             writer.writeObjectKeyValue(self, "metricRight")
@@ -4046,6 +4051,7 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "layers", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "metricLeft", "if_true")
+            writer.writeObjectKeyValue(self, "metricRight", "if_true")
             writer.writeObjectKeyValue(self, "metricWidth", "if_true")
         else:
             writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
@@ -4055,17 +4061,14 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(
                 self, "metricWidth", "if_true", keyName="widthMetricsKey"
             )
-            writer.writeObjectKeyValue(
-                self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
-            )
-        writer.writeObjectKeyValue(self, "note")
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "metricRight", "if_true")
-        else:
             writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
             writer.writeObjectKeyValue(
                 self, "metricRight", "if_true", keyName="rightMetricsKey"
             )
+            writer.writeObjectKeyValue(
+                self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
+            )
+        writer.writeObjectKeyValue(self, "note")
         writer.writeObjectKeyValue(self, "topKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
