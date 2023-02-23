@@ -147,6 +147,22 @@ def test_glyphs3_instance_filtering():
     assert len(doc.instances) == 2
 
 
+def test_glyphs3_instance_properties(tmpdir):
+    expected_num_properties = [0, 0, 1, 1, 1, 1]
+
+    file = "InstanceFamilyName-G3.glyphs"
+    font = glyphsLib.GSFont(os.path.join(DATA, file))
+
+    for instance, num in zip(font.instances, expected_num_properties):
+        assert len(instance.properties) == num
+
+    font.save(tmpdir / file)
+    font = glyphsLib.GSFont(tmpdir / file)
+
+    for instance, num in zip(font.instances, expected_num_properties):
+        assert len(instance.properties) == num
+
+
 def test_rename_glyphs(tmpdir):
     font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
     instance_dir = tmpdir.ensure_dir("instance_ufo")
