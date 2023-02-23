@@ -1120,13 +1120,13 @@ rememberToDownloadARealRemindersApp = 1;}"',
                 """\
             {
             horizontal = 1;
+            name = "My favourite hint";
             options = 128;
             origin = "{0, 0}";
             other1 = "{0, 2}";
             other2 = "{1, 0}";
             target = "{0, 1}";
             type = 16;
-            name = "My favourite hint";
             }
         """
             ),
@@ -1176,8 +1176,8 @@ rememberToDownloadARealRemindersApp = 1;}"',
             dedent(
                 """\
              {
-             name = "My favourite hint";
              horizontal = 1;
+             name = "My favourite hint";
              options = 128;
              origin = (0,0);
              other1 = (0,2);
