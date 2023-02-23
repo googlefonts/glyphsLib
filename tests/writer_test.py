@@ -678,9 +678,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             leftKerningGroup = A;
             leftMetricsKey = A;
             widthMetricsKey = A;
-            note = "Stunning one-bedroom A with renovated acute accent";
             rightKerningGroup = A;
             rightMetricsKey = A;
+            note = "Stunning one-bedroom A with renovated acute accent";
             unicode = 00C1;
             script = latin;
             category = Letter;
@@ -849,8 +849,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             layerId = L1;
             leftMetricsKey = A;
-            widthMetricsKey = A;
             rightMetricsKey = A;
+            widthMetricsKey = A;
             name = "{125, 100}";
             paths = (
             {
@@ -1120,13 +1120,13 @@ rememberToDownloadARealRemindersApp = 1;}"',
                 """\
             {
             horizontal = 1;
+            options = 128;
             origin = "{0, 0}";
-            target = "{0, 1}";
             other1 = "{0, 2}";
             other2 = "{1, 0}";
+            target = "{0, 1}";
             type = 16;
             name = "My favourite hint";
-            options = 128;
             }
         """
             ),
@@ -1176,14 +1176,14 @@ rememberToDownloadARealRemindersApp = 1;}"',
             dedent(
                 """\
              {
+             name = "My favourite hint";
              horizontal = 1;
+             options = 128;
              origin = (0,0);
-             target = (0,1);
              other1 = (0,2);
              other2 = (1,0);
+             target = (0,1);
              type = 16;
-             name = "My favourite hint";
-             options = 128;
              }
          """,
             ),
