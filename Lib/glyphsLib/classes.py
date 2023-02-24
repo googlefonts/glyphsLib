@@ -2559,15 +2559,17 @@ class segment(list):
 
 class GSComponent(GSBase):
     def _serialize_to_plist(self, writer):
+        # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
+        if writer.format_version > 2:
+            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "name")
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(
                 self, "position", keyName="pos", default=Point(0, 0)
             )
@@ -2806,16 +2808,13 @@ GSAnchor._add_parsers(
 
 class GSHint(GSBase):
     def _serialize_to_plist(self, writer):
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "name", condition="if_true")
-        for field in ["horizontal", "options"]:
-            writer.writeObjectKeyValue(self, field, condition="if_true")
-        for field in ["origin", "place"]:
+        # NOTE: The fields should come in alphabetical order.
+        for field in ["horizontal", "name", "options"]:
+            writer.writeObjectKeyValue(self, field, "if_true")
+        for field in ["origin", "other1", "other2", "place", "scale"]:
             writer.writeObjectKeyValue(self, field)
-        if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "stem", self.stem != -2)
-        for field in ["other1", "other2", "scale"]:
-            writer.writeObjectKeyValue(self, field)
+        writer.writeObjectKeyValue(self, "settings", "if_true")
+        writer.writeObjectKeyValue(self, "stem", self.stem != -2)
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "target")
         elif self.target:
@@ -2825,11 +2824,7 @@ class GSHint(GSBase):
             else:
                 writer.writeValue(self.target)
             writer.file.write(";\n")
-        for field in ["settings", "type"]:
-            writer.writeObjectKeyValue(self, field, condition="if_true")
-        if writer.format_version == 2:
-            writer.writeObjectKeyValue(self, "stem", self.stem != -2)
-            writer.writeObjectKeyValue(self, "name", condition="if_true")
+        writer.writeObjectKeyValue(self, "type", "if_true")
 
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
@@ -3010,6 +3005,7 @@ GSHint._add_parsers(
 
 class GSFeature(GSBase):
     def _serialize_to_plist(self, writer):
+        # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
@@ -3065,6 +3061,7 @@ GSFeature._add_parsers(
 
 class GSClass(GSFeature):
     def _serialize_to_plist(self, writer):
+        # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
@@ -3561,6 +3558,7 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 class GSLayer(GSBase):
     def _serialize_to_plist(self, writer):
+        # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "anchors", "if_true")
         writer.writeObjectKeyValue(self, "annotations", "if_true")
         if self.layerId != self.associatedMasterId:
@@ -3580,6 +3578,7 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "layerId", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
+            # NOTE: The following two are an exception from the ordering rule.
             writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
             writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
         else:
