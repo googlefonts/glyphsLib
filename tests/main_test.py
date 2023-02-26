@@ -14,8 +14,9 @@
 # limitations under the License.
 
 
-import os
+import difflib
 import glob
+import os
 
 import glyphsLib.cli
 import glyphsLib.parser
@@ -65,8 +66,8 @@ def test_parser_main(capsys):
         expected = f.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual, _ = capsys.readouterr()
+    assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3(capsys):
@@ -78,62 +79,47 @@ def test_parser_main_v3(capsys):
         expected = f.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual, _ = capsys.readouterr()
+    assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
-
     with open(filename, encoding="utf-8") as file:
-        expected = file.read()
+        expected_content = file.read()
 
     glyphsLib.parser.main([filename])
-    actual, _ = capsys.readouterr()
+    actual_content, _ = capsys.readouterr()
 
-    exceptions = [
-        # The line is removed.
-        "visible = 1;",
-        # The tab is changed.
-        r'"10 608 LINE {name = \"Hallo\011Welt\";\ntest = \"Hallo\012Welt\";}"',
-        r'"10 608 LINE {name = \"Hallo	Welt\";\ntest = \"Hallo\012Welt\";}"',
-        # The quotes are removed.
-        'locked = "1";',
-        "locked = 1;",
-        # The line is removed.
-        'bottomName = "";',
-        # The line is removed.
-        'topName = "";',
-        # The block is removed.
-        "vertKerning = {",
-        "m01 = {",
-        "A = {",
-        "A = -30;",
-        "};",
-        "};",
-        "};",
-    ]
-    expected = [
-        line
-        for line in expected.splitlines()
-        if not any(line == exception for exception in exceptions)
-    ]
-    actual = [
-        line
-        for line in actual.splitlines()
-        if not any(line == exception for exception in exceptions)
-    ]
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.diff")
+    with open(filename, encoding="utf-8") as file:
+        expected_diff = file.read()
 
-    assert actual == expected
+    actual_diff = difflib.Differ().compare(
+        expected_content.splitlines(),
+        actual_content.splitlines(),
+    )
+    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+
+    assert actual_diff == expected_diff.splitlines()
 
 
 def test_parser_main_v3_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
-
     with open(filename, encoding="utf-8") as file:
-        expected = file.read()
+        expected_content = file.read()
 
     glyphsLib.parser.main([filename])
-    actual, _ = capsys.readouterr()
+    actual_content, _ = capsys.readouterr()
 
-    assert actual.splitlines() == expected.splitlines()
+    filename = os.path.join(DATA, "GlyphsFileFormatv3.diff")
+    with open(filename, encoding="utf-8") as file:
+        expected_diff = file.read()
+
+    actual_diff = difflib.Differ().compare(
+        expected_content.splitlines(),
+        actual_content.splitlines(),
+    )
+    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+
+    assert actual_diff == expected_diff.splitlines()

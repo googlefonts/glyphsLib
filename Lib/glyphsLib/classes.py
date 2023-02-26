@@ -38,6 +38,7 @@ from glyphsLib.parser import Parser
 from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
     Point,
+    Pointer,
     Rect,
     Transform,
     UnicodesList,
@@ -262,15 +263,6 @@ class OnlyInGlyphsAppError(NotImplementedError):
         )
 
 
-def parse_hint_target(line=None):
-    if line is None:
-        return None
-    if line[0] == "{":
-        return Point(line)
-    else:
-        return line
-
-
 def transformStructToScaleAndRotation(transform):
     Det = transform[0] * transform[3] - transform[1] * transform[2]
     _sX = math.sqrt(math.pow(transform[0], 2) + math.pow(transform[1], 2))
@@ -369,7 +361,11 @@ class GSBase:
                 transformer=transformer,
             ):
                 if transformer:
-                    if isinstance(value, list) and transformer not in [Point, Rect]:
+                    if isinstance(value, list) and transformer not in [
+                        Point,
+                        Pointer,
+                        Rect,
+                    ]:
                         self[target] = [transformer(v) for v in value]
                     else:
                         self[target] = transformer(value)
@@ -2815,16 +2811,8 @@ class GSHint(GSBase):
             writer.writeObjectKeyValue(self, field)
         writer.writeObjectKeyValue(self, "settings", "if_true")
         writer.writeObjectKeyValue(self, "stem", self.stem != -2)
-        if writer.format_version == 2:
-            writer.writeObjectKeyValue(self, "target")
-        elif self.target:
-            writer.writeKey("target")
-            if isinstance(self.target, list):
-                writer.file.write("(%i,%i)" % (self.target[0], self.target[1]))
-            else:
-                writer.writeValue(self.target)
-            writer.file.write(";\n")
-        writer.writeObjectKeyValue(self, "type", "if_true")
+        for field in ["target", "type"]:
+            writer.writeObjectKeyValue(self, field, "if_true")
 
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
@@ -2835,13 +2823,6 @@ class GSHint(GSBase):
         "scale": None,
         "stem": -2,
     }
-
-    def _parse_target_dict(self, parser, value):
-        # In glyphs 2 this is a string, in glyphs 3 it is a point or string
-        if isinstance(value, str):
-            self._target = parse_hint_target(value)
-        else:
-            self._target = Point([int(x) for x in value])
 
     def __init__(self):
         self.horizontal = False
@@ -2993,9 +2974,10 @@ class GSHint(GSBase):
 
 GSHint._add_parsers(
     [
-        {"plist_name": "origin", "object_name": "_origin", "converter": Point},
-        {"plist_name": "other1", "object_name": "_other1", "converter": Point},
-        {"plist_name": "other2", "object_name": "_other2", "converter": Point},
+        {"plist_name": "origin", "object_name": "_origin", "converter": Pointer},
+        {"plist_name": "other1", "object_name": "_other1", "converter": Pointer},
+        {"plist_name": "other2", "object_name": "_other2", "converter": Pointer},
+        {"plist_name": "target", "object_name": "_target", "converter": Pointer},
         {"plist_name": "place", "converter": Point},
         {"plist_name": "scale", "converter": Point},
         {"plist_name": "horizontal", "converter": bool},

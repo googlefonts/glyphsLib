@@ -13,25 +13,29 @@
 # limitations under the License.
 
 
-import re
-import datetime
-import copy
 import binascii
+import copy
+import datetime
+import re
+from typing import List
+from typing import Optional
+from typing import Union
 
 __all__ = [
-    "Transform",
+    "BinaryData",
     "Point",
+    "Pointer",
     "Rect",
     "Size",
+    "Transform",
+    "UnicodesList",
     "ValueType",
-    "parse_datetime",
-    "parse_color",
     "floatToString3",
     "floatToString5",
-    "readIntlist",
-    "UnicodesList",
-    "BinaryData",
+    "parse_color",
+    "parse_datetime",
     "parse_float_or_int",
+    "readIntlist",
 ]
 
 
@@ -405,3 +409,46 @@ class BinaryData(bytes):
         # TODO write hex bytes in chunks and split over multiple lines
         # for better readability, like the fonttools xmlWriter does
         return "<%s>" % binascii.hexlify(self).decode()
+
+
+class Pointer(ValueType):
+    def __init__(
+        self,
+        value: Union[int, str, List[Union[int, str]]],
+        value2: Optional[int] = None,
+        value3: Optional[int] = None,
+        value4: Optional[int] = None,
+    ):
+        if value4 is not None:
+            self.value = [value, value2, value3, value4]
+        elif value3 is not None:
+            self.value = [value, value2, value3]
+        elif value2 is not None:
+            self.value = [value, value2]
+        elif isinstance(value, (list, tuple)):
+            self.value = value
+        else:
+            self.value = self.fromString(value)
+
+    def fromString(self, string: str) -> List[Union[int, str]]:
+        values = string.strip().lstrip('"{(').rstrip(')}"').split(",")
+        return [
+            (int(value) if value.isdigit() else value)
+            for value in map(str.strip, values)
+        ]
+
+    def plistValue(self, format_version: int = 2) -> str:
+        if format_version == 2:
+            if len(self.value) == 1:
+                return self.value[0]
+            return '"{' + ", ".join(map(str, self.value)) + '}"'
+        return "(" + ",".join(map(str, self.value)) + ")"
+
+    def __getitem__(self, key: int) -> Union[int, str]:
+        return self.value[key]
+
+    def __setitem__(self, key: int, value: Union[int, str]) -> None:
+        self.value[key] = value
+
+    def __len__(self) -> int:
+        return len(self.value)

@@ -15,27 +15,29 @@
 
 from .constants import HINTS_LIB_KEY
 from glyphsLib.types import Point
+from glyphsLib.types import Pointer
 
 
 def to_ufo_hints(self, ufo_glyph, layer):
-    try:
-        value = layer.hints
-    except KeyError:
+    if not hasattr(layer, "hints"):
         return
     hints = []
-    for hi in value:
+    for source in layer.hints:
         hint = {}
-        for attr in ["horizontal", "options", "stem", "type"]:
-            val = getattr(hi, attr, None)
-            hint[attr] = val
-        for attr in ["origin", "other1", "other2", "place", "scale", "target"]:
-            val = getattr(hi, attr, None)
-            if attr == "target" and val in ("up", "down"):
-                hint[attr] = val
-            elif val is not None and not any(v is None for v in val):
-                hint[attr] = list(val)
+        for name in ["horizontal", "options", "stem", "type"]:
+            hint[name] = getattr(source, name, None)
+        for name in ["origin", "other1", "other2", "target"]:
+            pointer = getattr(source, name, None)
+            if pointer:
+                if name == "target" and pointer.value in (["up"], ["down"]):
+                    hint[name] = pointer.value[0]
+                elif not any(value is None for value in pointer):
+                    hint[name] = pointer.value
+        for name in ["place", "scale"]:
+            point = getattr(source, name, None)
+            if point and not any(value is None for value in point):
+                hint[name] = point.value
         hints.append(hint)
-
     if hints:
         ufo_glyph.lib[HINTS_LIB_KEY] = hints
 
@@ -43,20 +45,19 @@ def to_ufo_hints(self, ufo_glyph, layer):
 def to_glyphs_hints(self, ufo_glyph, layer):
     if HINTS_LIB_KEY not in ufo_glyph.lib:
         return
-    for hint in ufo_glyph.lib[HINTS_LIB_KEY]:
-        hi = self.glyphs_module.GSHint()
-        for attr in ["horizontal", "options", "stem", "type"]:
-            setattr(hi, attr, hint[attr])
-        for attr in ["origin", "other1", "other2", "place", "scale", "target"]:
-            if attr in hint:
+    for source in ufo_glyph.lib[HINTS_LIB_KEY]:
+        hint = self.glyphs_module.GSHint()
+        for name in ["horizontal", "options", "stem", "type"]:
+            setattr(hint, name, source[name])
+        for name in ["origin", "other1", "other2", "target"]:
+            if name in source:
+                value = source[name]
                 # https://github.com/googlefonts/glyphsLib/pull/613
                 # handle target = ['u', 'p'] or ['d', 'o', 'w', 'n']
-                if attr == "target" and hint[attr] in (list("down"), list("up")):
-                    value = "".join(hint[attr])
-                # handle target = "up" or "down"
-                elif attr == "target" and hint[attr] in ("down", "up"):
-                    value = hint[attr]
-                else:
-                    value = Point(*hint[attr])
-                setattr(hi, attr, value)
-        layer.hints.append(hi)
+                if name == "target" and value in ([list("down")], [list("up")]):
+                    value = ["".join(value)]
+                setattr(hint, name, Pointer(*value))
+        for name in ["place", "scale"]:
+            if name in source:
+                setattr(hint, name, Point(*source[name]))
+        layer.hints.append(hint)
