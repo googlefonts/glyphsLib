@@ -369,7 +369,7 @@ class GSBase:
                 transformer=transformer,
             ):
                 if transformer:
-                    if isinstance(value, list) and transformer != Point:
+                    if isinstance(value, list) and transformer not in [Point, Rect]:
                         self[target] = [transformer(v) for v in value]
                     else:
                         self[target] = transformer(value)
