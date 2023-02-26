@@ -20,6 +20,8 @@ import glob
 import glyphsLib.cli
 import glyphsLib.parser
 
+DATA = os.path.join(os.path.dirname(__file__), "data")
+
 
 def test_glyphs_main_masters(tmpdir):
     """Tests the glyphs2ufo and ufo2glyphs of glyphsLib and also the
@@ -27,7 +29,7 @@ def test_glyphs_main_masters(tmpdir):
     """
     import fontTools.designspaceLib
 
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
     master_dir = os.path.join(str(tmpdir), "master_ufos_test")
 
     glyphsLib.cli.main(
@@ -58,7 +60,7 @@ def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
     with open(filename) as f:
         expected = f.read()
 
@@ -71,22 +73,67 @@ def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(
-        os.path.dirname(__file__), "data/GlyphsUnitTestSans3.glyphs"
-    )
+    filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
     with open(filename) as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
     out, _err = capsys.readouterr()
     assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+
+
+def test_parser_main_upstream(capsys):
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
+
+    with open(filename, encoding="utf-8") as file:
+        expected = file.read()
+
+    glyphsLib.parser.main([filename])
+    actual, _ = capsys.readouterr()
+
+    exceptions = [
+        # The line is removed.
+        "visible = 1;",
+        # The tab is changed.
+        r'"10 608 LINE {name = \"Hallo\011Welt\";\ntest = \"Hallo\012Welt\";}"',
+        r'"10 608 LINE {name = \"Hallo	Welt\";\ntest = \"Hallo\012Welt\";}"',
+        # The quotes are removed.
+        'locked = "1";',
+        "locked = 1;",
+        # The line is removed.
+        'bottomName = "";',
+        # The line is removed.
+        'topName = "";',
+        # The block is removed.
+        "vertKerning = {",
+        "m01 = {",
+        "A = {",
+        "A = -30;",
+        "};",
+        "};",
+        "};",
+    ]
+    expected = [
+        line
+        for line in expected.splitlines()
+        if not any(line == exception for exception in exceptions)
+    ]
+    actual = [
+        line
+        for line in actual.splitlines()
+        if not any(line == exception for exception in exceptions)
+    ]
+
+    assert actual == expected
 
 
 def test_parser_main_v3_upstream(capsys):
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsFileFormatv3.glyphs")
-    with open(filename) as f:
-        expected = f.read()
+    filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
+
+    with open(filename, encoding="utf-8") as file:
+        expected = file.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual, _ = capsys.readouterr()
+
+    assert actual.splitlines() == expected.splitlines()
