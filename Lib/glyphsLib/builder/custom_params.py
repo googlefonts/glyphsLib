@@ -680,19 +680,14 @@ class NameRecordParamHandler(AbstractParamHandler):
                 glyphs.set_custom_values("Name Table Entry", entries)
 
     def to_ufo(self, builder, glyphs, ufo):
-        if glyphs.is_font():
-            entries = glyphs.get_custom_values("Name Table Entry")
-
-            if entries:
-                records = []
-
-                for entry in entries:
-                    record = self.to_record(entry)
-
-                    if record is not None:
-                        records.append(record)
-
-                ufo.set_info_value("openTypeNameRecords", records)
+        entries = glyphs.get_custom_values("Name Table Entry")
+        if entries:
+            records = ufo.get_info_value("openTypeNameRecords") or []
+            for entry in entries:
+                record = self.to_record(entry)
+                if record is not None:
+                    records.append(record)
+            ufo.set_info_value("openTypeNameRecords", records)
 
 
 register(NameRecordParamHandler())

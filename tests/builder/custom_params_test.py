@@ -14,9 +14,10 @@
 # limitations under the License.
 
 
-from textwrap import dedent
-import unittest
+import copy
 import os
+import unittest
+from textwrap import dedent
 
 from unittest import mock
 from unittest.mock import patch
@@ -613,3 +614,52 @@ def test_ufo_filename_custom_param_instance_empty(ufo_module):
     assert ds.sources[0].filename == "aaa.ufo"
     # Instance filename should be whatever the default is.
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
+
+
+def test_ufo_instance():
+    from glyphsLib.interpolation import apply_instance_data_to_ufo
+
+    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceTest.glyphs"))
+    space = glyphsLib.to_designspace(file, minimal=True)
+
+    assert len(space.sources) == 2
+    for source in space.sources:
+        actual = list(map(dict, source.font.info.openTypeNameRecords))
+        expected = [
+            {
+                "nameID": 42,
+                "platformID": 0,
+                "encodingID": 4,
+                "languageID": 0,
+                "string": "File",
+            },
+        ]
+        assert actual == expected
+
+    assert len(space.instances) == 3
+    for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
+        actual = instance.lib[glyphsLib.builder.constants.CUSTOM_PARAMETERS_KEY]
+        expected = [("Name Table Entry", f"43 0 4 0;{name} Instance")]
+        assert actual == expected
+
+        source = copy.deepcopy(space.sources[0])
+        apply_instance_data_to_ufo(source.font, instance, space)
+
+        actual = list(map(dict, source.font.info.openTypeNameRecords))
+        expected = [
+            {
+                "nameID": 42,
+                "platformID": 0,
+                "encodingID": 4,
+                "languageID": 0,
+                "string": "File",
+            },
+            {
+                "nameID": 43,
+                "platformID": 0,
+                "encodingID": 4,
+                "languageID": 0,
+                "string": f"{name} Instance",
+            },
+        ]
+        assert actual == expected

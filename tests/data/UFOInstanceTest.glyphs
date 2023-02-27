@@ -1,0 +1,125 @@
+{
+.appVersion = "3151";
+customParameters = (
+{
+name = "Name Table Entry";
+value = "42 0 4 0;File";
+},
+{
+name = Axes;
+value = (
+{
+Name = Weight;
+Tag = wght;
+}
+);
+}
+);
+date = "2019-08-15 11:39:54 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+ascender = 800;
+capHeight = 700;
+custom = Thin;
+descender = -200;
+id = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+userData = {
+com.schriftgestaltung.Glyphs.ufoFilename = MyFontMaster.ufo;
+};
+weightValue = 0;
+xHeight = 500;
+},
+{
+ascender = 800;
+capHeight = 700;
+custom = Black;
+descender = -200;
+id = m002;
+userData = {
+com.schriftgestaltung.Glyphs.ufoFilename = MyFontMaster.ufo;
+};
+weightValue = 1000;
+xHeight = 500;
+}
+);
+glyphs = (
+{
+glyphname = A;
+lastChange = "2023-02-27 11:53:34 +0000";
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+},
+{
+layerId = m002;
+width = 600;
+}
+);
+unicode = 0041;
+},
+{
+glyphname = space;
+lastChange = "2023-02-27 11:53:34 +0000";
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+},
+{
+layerId = m002;
+width = 600;
+}
+);
+unicode = 0020;
+}
+);
+instances = (
+{
+customParameters = (
+{
+name = "Name Table Entry";
+value = "43 0 4 0;Thin Instance";
+}
+);
+interpolationWeight = 0;
+instanceInterpolations = {
+"F8C94C2E-1D94-453C-B1DE-0473CD97C963" = 1;
+};
+name = Thin;
+weightClass = Thin;
+},
+{
+customParameters = (
+{
+name = "Name Table Entry";
+value = "43 0 4 0;Regular Instance";
+}
+);
+interpolationWeight = 500;
+instanceInterpolations = {
+"F8C94C2E-1D94-453C-B1DE-0473CD97C963" = 0.5;
+m002 = 0.5;
+};
+name = Regular;
+},
+{
+customParameters = (
+{
+name = "Name Table Entry";
+value = "43 0 4 0;Black Instance";
+}
+);
+interpolationWeight = 1000;
+instanceInterpolations = {
+m002 = 1;
+};
+name = Black;
+weightClass = Black;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
