@@ -33,9 +33,14 @@ def to_ufo_kerning(self):
         kerning_source = master.metricsSource  # Maybe be a linked master
         if kerning_source is None:
             kerning_source = master
+        both_directions = (
+            kerning_source.id in self.font.kerningLTR
+            and kerning_source.id in self.font.kerningRTL
+        )
         combined_kerning = OrderedDict()
         if kerning_source.id in self.font.kerningLTR:
-            combined_kerning = deepcopy(self.font.kerningLTR[kerning_source.id])
+            kerning = self.font.kerningLTR[kerning_source.id]
+            combined_kerning = deepcopy(kerning) if both_directions else kerning
         if kerning_source.id in self.font.kerningRTL:
             for kern1, subtable in self.font.kerningRTL[kerning_source.id].items():
                 combined_kerning[flip_class_side(kern1)] = {
