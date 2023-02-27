@@ -780,8 +780,7 @@
   {
   backgroundImage = {
   angle = 3;
-- crop = (41.425,42.805,503.416,507.56);
-+ crop = "{{41.425, 42.805}, {503.416, 507.56}}";
+  crop = (41.425,42.805,503.416,507.56);
 - imagePath = files/Smily.png;
 + imagePath = "files/Smily.png";
   pos = (61,90);
@@ -793,8 +792,7 @@
   {
   backgroundImage = {
   angle = 3;
-- crop = (41.425,42.805,503.416,507.56);
-+ crop = "{{41.425, 42.805}, {503.416, 507.56}}";
+  crop = (41.425,42.805,503.416,507.56);
   imagePath = Smily.png;
   pos = (106,89);
   scale = (0.9,0.8);
@@ -813,8 +811,7 @@
   };
   backgroundImage = {
   angle = 3;
-- crop = (0,0,140,160);
-+ crop = "{{0, 0}, {140, 160}}";
+  crop = (0,0,140,160);
 - imagePath = files/Smily.png;
 + imagePath = "files/Smily.png";
   locked = 1;

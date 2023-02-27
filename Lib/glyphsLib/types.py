@@ -209,7 +209,11 @@ class Rect(Vector(4)):
 
     def plistValue(self, format_version=2):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString3(v) for v in self.value)
+        if format_version == 2:
+            return '"{{%s, %s}, {%s, %s}}"' % tuple(
+                floatToString3(v) for v in self.value
+            )
+        return "(" + ",".join(map(floatToString3, self.value)) + ")"
 
     def __repr__(self):
         return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
