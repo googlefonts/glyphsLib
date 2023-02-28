@@ -14,8 +14,8 @@
 
 
 from .constants import HINTS_LIB_KEY
+from glyphsLib.types import IndexPath
 from glyphsLib.types import Point
-from glyphsLib.types import Pointer
 
 
 def to_ufo_hints(self, ufo_glyph, layer):
@@ -27,12 +27,12 @@ def to_ufo_hints(self, ufo_glyph, layer):
         for name in ["horizontal", "options", "stem", "type"]:
             hint[name] = getattr(source, name, None)
         for name in ["origin", "other1", "other2", "target"]:
-            pointer = getattr(source, name, None)
-            if pointer:
-                if name == "target" and pointer.value in (["up"], ["down"]):
-                    hint[name] = pointer.value[0]
-                elif not any(value is None for value in pointer):
-                    hint[name] = pointer.value
+            index_path = getattr(source, name, None)
+            if index_path:
+                if name == "target" and index_path.value in (["up"], ["down"]):
+                    hint[name] = index_path.value[0]
+                elif not any(value is None for value in index_path):
+                    hint[name] = index_path.value
         for name in ["place", "scale"]:
             point = getattr(source, name, None)
             if point and not any(value is None for value in point):
@@ -56,7 +56,7 @@ def to_glyphs_hints(self, ufo_glyph, layer):
                 # handle target = ['u', 'p'] or ['d', 'o', 'w', 'n']
                 if name == "target" and value in ([list("down")], [list("up")]):
                     value = ["".join(value)]
-                setattr(hint, name, Pointer(*value))
+                setattr(hint, name, IndexPath(*value))
         for name in ["place", "scale"]:
             if name in source:
                 setattr(hint, name, Point(*source[name]))

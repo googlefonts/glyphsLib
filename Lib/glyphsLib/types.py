@@ -23,8 +23,8 @@ from typing import Union
 
 __all__ = [
     "BinaryData",
+    "IndexPath",
     "Point",
-    "Pointer",
     "Rect",
     "Size",
     "Transform",
@@ -415,7 +415,19 @@ class BinaryData(bytes):
         return "<%s>" % binascii.hexlify(self).decode()
 
 
-class Pointer(ValueType):
+class IndexPath(ValueType):
+    """A list of indexes.
+
+    It is analogous to `NSIndexPath`, which is a list of indices that together
+    represent the path to a specific location in a tree of nested arrays. This
+    class is used internally by Glyphs for storing properties of hints,
+    including `origin`, `other1`, `other2`, and `target`.
+
+    The most common case is that it is a list of two integers pointing at a real
+    node. However, it can also be three or four integers. Moreover, in the case
+    of `origin` and `target`, it can be a list containing a single string.
+    """
+
     def __init__(
         self,
         value: Union[int, str, List[Union[int, str]]],

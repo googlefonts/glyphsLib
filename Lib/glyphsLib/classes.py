@@ -37,8 +37,8 @@ from fontTools.pens.pointPen import (
 from glyphsLib.parser import Parser
 from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
+    IndexPath,
     Point,
-    Pointer,
     Rect,
     Transform,
     UnicodesList,
@@ -362,8 +362,8 @@ class GSBase:
             ):
                 if transformer:
                     if isinstance(value, list) and transformer not in [
+                        IndexPath,
                         Point,
-                        Pointer,
                         Rect,
                     ]:
                         self[target] = [transformer(v) for v in value]
@@ -2974,10 +2974,10 @@ class GSHint(GSBase):
 
 GSHint._add_parsers(
     [
-        {"plist_name": "origin", "object_name": "_origin", "converter": Pointer},
-        {"plist_name": "other1", "object_name": "_other1", "converter": Pointer},
-        {"plist_name": "other2", "object_name": "_other2", "converter": Pointer},
-        {"plist_name": "target", "object_name": "_target", "converter": Pointer},
+        {"plist_name": "origin", "object_name": "_origin", "converter": IndexPath},
+        {"plist_name": "other1", "object_name": "_other1", "converter": IndexPath},
+        {"plist_name": "other2", "object_name": "_other2", "converter": IndexPath},
+        {"plist_name": "target", "object_name": "_target", "converter": IndexPath},
         {"plist_name": "place", "converter": Point},
         {"plist_name": "scale", "converter": Point},
         {"plist_name": "horizontal", "converter": bool},
