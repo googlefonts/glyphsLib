@@ -504,7 +504,7 @@ class SetCustomParamsTestBase(object):
                 "nameID": 1024,
                 "platformID": 3,
                 "encodingID": 1,
-                "languageID": 0x49,
+                "languageID": 0x409,
                 "string": "FOO; BAZ",
             },
             {
@@ -532,7 +532,7 @@ class SetCustomParamsTestBase(object):
                 "nameID": 16384,
                 "platformID": 60,
                 "encodingID": 1,
-                "languageID": 0x49,
+                "languageID": 0x409,
                 "string": "BAZ",
             },
         ]
@@ -543,11 +543,11 @@ class SetCustomParamsTestBase(object):
 
         font = glyphsLib.to_glyphs([self.ufo])
 
-        self.assertEqual(font.customParameters[0].value, "1024 3 1 73; FOO; BAZ")
+        self.assertEqual(font.customParameters[0].value, "1024 3 1 1033; FOO; BAZ")
         self.assertEqual(font.customParameters[1].value, "2048 1 0 0; FOO")
         self.assertEqual(font.customParameters[2].value, "4096 1 2 0; FOO")
         self.assertEqual(font.customParameters[3].value, "8192 1 2 3; FOO")
-        self.assertEqual(font.customParameters[4].value, "16384 60 1 73; BAZ")
+        self.assertEqual(font.customParameters[4].value, "16384 60 1 1033; BAZ")
 
 
 class SetCustomParamsTestUfoLib2(SetCustomParamsTestBase, unittest.TestCase):
