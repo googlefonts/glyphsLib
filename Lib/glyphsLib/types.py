@@ -454,9 +454,9 @@ class IndexPath(ValueType):
         ]
 
     def plistValue(self, format_version: int = 2) -> str:
+        if len(self.value) == 1:
+            return self.value[0]
         if format_version == 2:
-            if len(self.value) == 1:
-                return self.value[0]
             return '"{' + ", ".join(map(str, self.value)) + '}"'
         return "(" + ",".join(map(str, self.value)) + ")"
 

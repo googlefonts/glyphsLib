@@ -1207,6 +1207,14 @@ glyphname = _part.test;
 lastChange = "2023-02-25 14:14:38 +0000";
 layers = (
 {
+hints = (
+{
+horizontal = 1;
+origin = (0,3);
+target = down;
+type = TopGhost;
+}
+);
 layerId = m01;
 partSelection = {
 Width = 1;
