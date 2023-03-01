@@ -14,11 +14,14 @@
 # limitations under the License.
 
 
-import os
+import difflib
 import glob
+import os
 
 import glyphsLib.cli
 import glyphsLib.parser
+
+DATA = os.path.join(os.path.dirname(__file__), "data")
 
 
 def test_glyphs_main_masters(tmpdir):
@@ -27,7 +30,7 @@ def test_glyphs_main_masters(tmpdir):
     """
     import fontTools.designspaceLib
 
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
     master_dir = os.path.join(str(tmpdir), "master_ufos_test")
 
     glyphsLib.cli.main(
@@ -58,35 +61,65 @@ def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
     with open(filename) as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual, _ = capsys.readouterr()
+    assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
-    filename = os.path.join(
-        os.path.dirname(__file__), "data/GlyphsUnitTestSans3.glyphs"
-    )
+    filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
     with open(filename) as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual, _ = capsys.readouterr()
+    assert actual.splitlines() == expected.splitlines()
+
+
+def test_parser_main_upstream(capsys):
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
+    with open(filename, encoding="utf-8") as file:
+        expected_content = file.read()
+
+    glyphsLib.parser.main([filename])
+    actual_content, _ = capsys.readouterr()
+
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.diff")
+    with open(filename, encoding="utf-8") as file:
+        expected_diff = file.read()
+
+    actual_diff = difflib.Differ().compare(
+        expected_content.splitlines(),
+        actual_content.splitlines(),
+    )
+    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+
+    assert actual_diff == expected_diff.splitlines()
 
 
 def test_parser_main_v3_upstream(capsys):
-    filename = os.path.join(os.path.dirname(__file__), "data/GlyphsFileFormatv3.glyphs")
-    with open(filename) as f:
-        expected = f.read()
+    filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
+    with open(filename, encoding="utf-8") as file:
+        expected_content = file.read()
 
     glyphsLib.parser.main([filename])
-    out, _err = capsys.readouterr()
-    assert expected == out, "The roundtrip should output the .glyphs file unmodified."
+    actual_content, _ = capsys.readouterr()
+
+    filename = os.path.join(DATA, "GlyphsFileFormatv3.diff")
+    with open(filename, encoding="utf-8") as file:
+        expected_diff = file.read()
+
+    actual_diff = difflib.Differ().compare(
+        expected_content.splitlines(),
+        actual_content.splitlines(),
+    )
+    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+
+    assert actual_diff == expected_diff.splitlines()

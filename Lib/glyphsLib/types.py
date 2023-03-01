@@ -13,25 +13,29 @@
 # limitations under the License.
 
 
-import re
-import datetime
-import copy
 import binascii
+import copy
+import datetime
+import re
+from typing import List
+from typing import Optional
+from typing import Union
 
 __all__ = [
-    "Transform",
+    "BinaryData",
+    "IndexPath",
     "Point",
     "Rect",
     "Size",
+    "Transform",
+    "UnicodesList",
     "ValueType",
-    "parse_datetime",
-    "parse_color",
     "floatToString3",
     "floatToString5",
-    "readIntlist",
-    "UnicodesList",
-    "BinaryData",
+    "parse_color",
+    "parse_datetime",
     "parse_float_or_int",
+    "readIntlist",
 ]
 
 
@@ -205,7 +209,11 @@ class Rect(Vector(4)):
 
     def plistValue(self, format_version=2):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
-        return '"{{%s, %s}, {%s, %s}}"' % tuple(floatToString3(v) for v in self.value)
+        if format_version == 2:
+            return '"{{%s, %s}, {%s, %s}}"' % tuple(
+                floatToString3(v) for v in self.value
+            )
+        return "(" + ",".join(map(floatToString3, self.value)) + ")"
 
     def __repr__(self):
         return "<rect origin={} size={}>".format(str(self.origin), str(self.size))
@@ -405,3 +413,58 @@ class BinaryData(bytes):
         # TODO write hex bytes in chunks and split over multiple lines
         # for better readability, like the fonttools xmlWriter does
         return "<%s>" % binascii.hexlify(self).decode()
+
+
+class IndexPath(ValueType):
+    """A list of indexes.
+
+    It is analogous to `NSIndexPath`, which is a list of indices that together
+    represent the path to a specific location in a tree of nested arrays. This
+    class is used internally by Glyphs for storing properties of hints,
+    including `origin`, `other1`, `other2`, and `target`.
+
+    The most common case is that it is a list of two integers pointing at a real
+    node. However, it can also be three or four integers. Moreover, in the case
+    of `origin` and `target`, it can be a list containing a single string.
+    """
+
+    def __init__(
+        self,
+        value: Union[int, str, List[Union[int, str]]],
+        value2: Optional[int] = None,
+        value3: Optional[int] = None,
+        value4: Optional[int] = None,
+    ):
+        if value4 is not None:
+            self.value = [value, value2, value3, value4]
+        elif value3 is not None:
+            self.value = [value, value2, value3]
+        elif value2 is not None:
+            self.value = [value, value2]
+        elif isinstance(value, (list, tuple)):
+            self.value = value
+        else:
+            self.value = self.fromString(value)
+
+    def fromString(self, string: str) -> List[Union[int, str]]:
+        values = string.strip().lstrip('"{(').rstrip(')}"').split(",")
+        return [
+            (int(value) if value.isdigit() else value)
+            for value in map(str.strip, values)
+        ]
+
+    def plistValue(self, format_version: int = 2) -> str:
+        if len(self.value) == 1:
+            return self.value[0]
+        if format_version == 2:
+            return '"{' + ", ".join(map(str, self.value)) + '}"'
+        return "(" + ",".join(map(str, self.value)) + ")"
+
+    def __getitem__(self, key: int) -> Union[int, str]:
+        return self.value[key]
+
+    def __setitem__(self, key: int, value: Union[int, str]) -> None:
+        self.value[key] = value
+
+    def __len__(self) -> int:
+        return len(self.value)

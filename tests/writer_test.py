@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import shutil
-import tempfile
 import unittest
 from collections import OrderedDict
 from io import StringIO
@@ -27,16 +24,8 @@ from glyphsLib.writer import dump, dumps
 
 from . import test_helpers
 
-DATA = os.path.join(os.path.dirname(__file__), "data")
-
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def setUp(self):
-        self.temporary_path = tempfile.mkdtemp()
-
-    def tearDown(self):
-        shutil.rmtree(self.temporary_path)
-
     def assertWrites(self, glyphs_object, text, format_version=2):
         """Assert that the given object, when given to the writer,
         produces the given text.
@@ -1237,69 +1226,6 @@ rememberToDownloadARealRemindersApp = 1;}"',
             ),
         )
 
-    def test_write_official_reference_v2(self):
-        name = "GlyphsFileFormatv2.glyphs"
-
-        path = os.path.join(DATA, name)
-        font = classes.GSFont(path)
-        with open(path, encoding="utf=8") as file:
-            expected = file.read()
-
-        path = os.path.join(self.temporary_path, name)
-        font.save(path)
-        with open(path, encoding="utf=8") as file:
-            actual = file.read()
-
-        exceptions = [
-            # The line is removed.
-            "visible = 1;",
-            # The tab is changed.
-            r'"10 608 LINE {name = \"Hallo\011Welt\";\ntest = \"Hallo\012Welt\";}"',
-            r'"10 608 LINE {name = \"Hallo	Welt\";\ntest = \"Hallo\012Welt\";}"',
-            # The quotes are removed.
-            'locked = "1";',
-            "locked = 1;",
-            # The line is removed.
-            'bottomName = "";',
-            # The line is removed.
-            'topName = "";',
-            # The block is removed.
-            "vertKerning = {",
-            "m01 = {",
-            "A = {",
-            "A = -30;",
-            "};",
-            "};",
-            "};",
-        ]
-        expected = [
-            line
-            for line in expected.splitlines()
-            if not any(line == exception for exception in exceptions)
-        ]
-        actual = [
-            line
-            for line in actual.splitlines()
-            if not any(line == exception for exception in exceptions)
-        ]
-
-        assert actual == expected
-
-    def test_write_official_reference_v3(self):
-        name = "GlyphsFileFormatv3.glyphs"
-
-        path = os.path.join(DATA, name)
-        font = classes.GSFont(path)
-        with open(path, encoding="utf=8") as file:
-            expected = file.read()
-
-        path = os.path.join(self.temporary_path, name)
-        font.save(path)
-        with open(path, encoding="utf=8") as file:
-            actual = file.read()
-
-        assert actual.splitlines() == expected.splitlines()
-
 
 class WriterDumpInterfaceTest(unittest.TestCase):
     def test_dump(self):
@@ -1316,14 +1242,6 @@ class WriterDumpInterfaceTest(unittest.TestCase):
         string = dumps(obj)
 
         self.assertTrue(string)
-
-
-class WriterRoundtripTest(unittest.TestCase, test_helpers.AssertParseWriteRoundtrip):
-    def test_roundtrip_on_file(self):
-        filename = os.path.join(
-            os.path.dirname(__file__), "data/GlyphsUnitTestSans.glyphs"
-        )
-        self.assertParseWriteRoundtrip(filename)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,350 @@
+  {
+  .appVersion = "1350";
+  DisplayStrings = (
+  A,
+  AB,
+  D,
+  "/_part.test"
+  );
+  classes = (
+  {
+  code = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\012";
+  name = Uppercase;
+  }
+  );
+  copyright = "Default Copyright1";
+  customParameters = (
+  {
+  name = "Import Font";
+  value = {
+  };
+  },
+  {
+  name = localizedCopyright;
+  value = "German;Deutsches Copyright";
+  },
+  {
+  name = trademark;
+  value = "Default Trademark";
+  },
+  {
+  name = description;
+  value = "Default Description";
+  },
+  {
+  name = Axes;
+  value = (
+  {
+  Hidden = 1;
+  Name = Weight;
+  Tag = wght;
+  }
+  );
+  }
+  );
+  date = "2020-01-03 19:42:13 +0000";
+  designerURL = "Designer URL";
+  disablesNiceNames = 1;
+  familyName = "New Font";
+  featurePrefixes = (
+  {
+  automatic = 1;
+  code = "languagesystem DFLT dflt;\012";
+  name = Languagesystems;
+  }
+  );
+  features = (
+  {
+  code = "sub C by D;\012";
+  disabled = 1;
+  name = test;
+  },
+  {
+  code = "sub A by B;\012";
+  name = ss01;
+  notes = "featureNames {\012	name 3 1 0x409 \"Stylistic Set Name 1\";\012	name 3 1 0x407 \"Formatsatzname 1\";\012};\012";
+  }
+  );
+  fontMaster = (
+  {
+  alignmentZones = (
+  "{800, 15}",
+  "{700, 15}",
+  "{550, 15}",
+  "{500, 15}",
+  "{0, -15}",
+  "{-200, -15}"
+  );
+  ascender = 800;
+  capHeight = 700;
+  customParameters = (
+  {
+  name = "Default Layer Width";
+  value = "600";
+  },
+  {
+  name = smallCapHeight;
+  value = 550;
+  }
+  );
+  descender = -200;
+  guideLines = (
+  {
+  angle = 17.1044;
+  locked = 1;
+  position = "{121, 148}";
+  showMeasurement = 1;
+  }
+  );
+  horizontalStems = (
+  321
+  );
+  id = m01;
+  verticalStems = (
+  123
+  );
+- visible = 1;
+  weightValue = 0;
+  xHeight = 500;
+  }
+  );
+  glyphs = (
+  {
+  glyphname = A;
+  lastChange = "2020-10-28 19:17:01 +0000";
+  layers = (
+  {
+  guideLines = (
+  {
+  angle = 12.9339;
+  locked = 1;
+  position = "{348, 402}";
+  showMeasurement = 1;
+  }
+  );
+  hints = (
+  {
+  horizontal = 1;
+  origin = "{0, 0}";
+  target = "{0, 3}";
+  type = Stem;
+  }
+  );
+  layerId = m01;
+  rightMetricsKey = "=20";
+  paths = (
+  {
+  closed = 1;
+  nodes = (
+  "10 66 LINE",
+  "439 66 LINE",
+  "439 608 LINE",
+- "10 608 LINE {name = \"Hallo\011Welt\";\ntest = \"Hallo\012Welt\";}"
++ "10 608 LINE {name = \"Hallo	Welt\";\ntest = \"Hallo\012Welt\";}"
+  );
+  }
+  );
+  width = 459;
+  },
+  {
+  associatedMasterId = m01;
+  layerId = "B53B276E-7ED6-4F56-94FF-4162BC3B585A";
+  name = Color;
+  width = 600;
+  }
+  );
+  leftKerningGroup = A;
+  leftMetricsKey = "=10";
+  rightKerningGroup = A;
+  topKerningGroup = A;
+  bottomKerningGroup = A;
+  unicode = "0041,0061";
+  },
+  {
+  glyphname = B;
+  lastChange = "2020-01-04 22:33:44 +0000";
+  layers = (
+  {
+  components = (
+  {
+  name = A;
+  transform = "{0.75175, 0.27362, -0.27362, 0.75175, 0, 0}";
+  }
+  );
+  layerId = m01;
+  width = 480;
+  }
+  );
+  unicode = "0042,0062";
+  },
+  {
+  glyphname = C;
+  lastChange = "2020-01-04 19:35:27 +0000";
+  layers = (
+  {
+  backgroundImage = {
+  crop = "{{0, 0}, {140, 160}}";
+  imagePath = Screenshot.png;
+- locked = "1";
++ locked = 1;
+  transform = "{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}";
+  };
+  layerId = m01;
+  width = 600;
+  }
+  );
+  unicode = 0043;
+  },
+  {
+  glyphname = D;
+  lastChange = "2020-01-04 23:28:31 +0000";
+  layers = (
+  {
+  components = (
+  {
+  name = _part.test;
+  piece = {
+  Width = 29.74825;
+  };
+  }
+  );
+  layerId = m01;
+  width = 100;
+  }
+  );
+  unicode = 0044;
+  },
+  {
+  glyphname = one;
+  lastChange = "2020-01-04 16:36:08 +0000";
+  layers = (
+  {
+  layerId = m01;
+  width = 600;
+  }
+  );
+  unicode = 0031;
+  userData = {
+  case = upper;
+  };
+  },
+  {
+  glyphname = space;
+  layers = (
+  {
+  layerId = m01;
+  width = 200;
+  }
+  );
+  unicode = 0020;
+  },
+  {
+  glyphname = smily;
+  production = someSmily;
+  lastChange = "2020-12-17 12:02:33 +0000";
+  layers = (
+  {
+  layerId = m01;
+  width = 600;
+  }
+  );
+  script = "Black Letter";
+  category = Symbol;
+  subCategory = Emoji;
+  },
+  {
+  export = 0;
+  glyphname = _part.test;
+  lastChange = "2020-01-04 23:28:09 +0000";
+  layers = (
+  {
+  layerId = m01;
+  paths = (
+  {
+  closed = 1;
+  nodes = (
+  "5 0 LINE",
+  "138 0 LINE",
+  "38 700 LINE",
+  "5 700 LINE"
+  );
+  }
+  );
+  userData = {
+  PartSelection = {
+  Width = 1;
+  };
+  };
+  width = 100;
+  },
+  {
+  associatedMasterId = m01;
+  layerId = "BEE6AB80-1627-43EB-904A-37A721971B03";
+  name = Wide;
+  paths = (
+  {
+  closed = 1;
+  nodes = (
+  "5 0 LINE",
+  "988 0 LINE",
+  "38 700 LINE",
+  "5 700 LINE"
+  );
+  }
+  );
+  userData = {
+  PartSelection = {
+  Width = 2;
+  };
+  };
+  width = 1000;
+  }
+  );
+  partsSettings = (
+  {
+  name = Width;
+- bottomName = "";
+  bottomValue = 0;
+- topName = "";
+  topValue = 100;
+  }
+  );
+  }
+  );
+  instances = (
+  {
+  customParameters = (
+  {
+  name = familyName;
+  value = "Instance Family Name";
+  }
+  );
+  interpolationWeight = 123;
+  instanceInterpolations = {
+  m01 = 1;
+  };
+  isBold = 1;
+  isItalic = 1;
+  name = Regular;
+  }
+  );
+  kerning = {
+  m01 = {
+  A = {
+  B = 30;
+- };
+- };
+- };
+- vertKerning = {
+- m01 = {
+- A = {
+- A = -30;
+  };
+  };
+  };
+  manufacturer = Manufacturer;
+  manufacturerURL = "Manufacturer URL";
+  unitsPerEm = 1000;
+  versionMajor = 1;
+  versionMinor = 0;
+  }
