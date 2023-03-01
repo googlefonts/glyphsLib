@@ -1,5 +1,5 @@
   {
-  .appVersion = "3179";
+  .appVersion = "3180";
   .formatVersion = 3;
   DisplayStrings = (
   "/Smily",
@@ -7,9 +7,8 @@
   "/_part.test",
   A,
   B,
-  "ا",
-  A,
-  D
+  "国",
+  A
   );
   axes = (
   {
@@ -386,13 +385,11 @@
   },
   {
   horizontal = 1;
-- place = (-46, 58);
-+ place = (-46,58);
+  place = (-46,58);
   type = Stem;
   },
   {
-- place = (165, 101);
-+ place = (165,101);
+  place = (165,101);
   type = Stem;
   }
   );
@@ -924,7 +921,7 @@
   },
   {
   glyphname = "alef-ar";
-  lastChange = "2023-02-25 14:50:34 +0000";
+  lastChange = "2023-03-01 14:01:52 +0000";
   layers = (
   {
   annotations = (
@@ -952,6 +949,39 @@
   type = Minus;
   }
   );
+  hints = (
+  {
+  horizontal = 1;
+  origin = (0,3);
+  target = down;
+  type = TopGhost;
+  },
+  {
+  horizontal = 1;
+  origin = (0,0);
+  target = up;
+  type = BottomGhost;
+  },
+  {
+  options = 4;
+  origin = lsb;
+  target = (0,0);
+  type = TTStem;
+  },
+  {
+  options = 4;
+  origin = rsb;
+  target = (0,1);
+  type = TTStem;
+  },
+  {
+  options = 4;
+  origin = (0,0);
+  other1 = (0,2);
+  target = (0,1);
+  type = TTInterpolate;
+  }
+  );
   layerId = m01;
   shapes = (
   {
@@ -967,6 +997,20 @@
   width = 135;
   },
   {
+  hints = (
+  {
+  horizontal = 1;
+  place = (778,-20);
+  target = down;
+  type = TopGhost;
+  },
+  {
+  horizontal = 1;
+  place = (19,21);
+  target = up;
+  type = BottomGhost;
+  }
+  );
   layerId = "C2ECF50A-02EF-4989-A14C-AF8E838D1105";
   shapes = (
   {
@@ -988,9 +1032,46 @@
   },
   {
   glyphname = uni56FD;
-  lastChange = "2023-02-25 14:23:38 +0000";
+  lastChange = "2023-03-01 14:03:29 +0000";
   layers = (
   {
+  hints = (
+  {
+  horizontal = 1;
+  options = 2;
+  origin = (2,3,3,0);
+  target = (2,3,3,2);
+  type = TTStem;
+  },
+  {
+  horizontal = 1;
+  origin = (0,3);
+  type = TTSnap;
+  },
+  {
+  horizontal = 1;
+  options = 4;
+  origin = (3,3);
+  target = (3,0);
+  type = TTShift;
+  },
+  {
+  horizontal = 1;
+  options = 4;
+  origin = (0,2);
+  stem = 1;
+  target = (1,0);
+  type = TTStem;
+  },
+  {
+  horizontal = 1;
+  options = 4;
+  origin = (1,3);
+  stem = -1;
+  target = (0,3);
+  type = TTStem;
+  }
+  );
   layerId = m01;
   shapes = (
   {
