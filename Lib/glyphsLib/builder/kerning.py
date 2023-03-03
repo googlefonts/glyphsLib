@@ -14,8 +14,18 @@
 
 
 import re
+from collections import OrderedDict
+from copy import deepcopy
 
 from .constants import BRACKET_GLYPH_RE, UFO_KERN_GROUP_PATTERN
+
+
+def flip_class_side(s):
+    if s.startswith("@MMK_L_"):
+        return f"@MMK_R_{s[7:]}"
+    elif s.startswith("@MMK_R_"):
+        return f"@MMK_L_{s[7:]}"
+    return s
 
 
 def to_ufo_kerning(self):
@@ -23,9 +33,21 @@ def to_ufo_kerning(self):
         kerning_source = master.metricsSource  # Maybe be a linked master
         if kerning_source is None:
             kerning_source = master
-        if kerning_source.id in self.font.kerning:
-            kerning = self.font.kerning[kerning_source.id]
-            _to_ufo_kerning(self, self._sources[master.id].font, kerning)
+        both_directions = (
+            kerning_source.id in self.font.kerningLTR
+            and kerning_source.id in self.font.kerningRTL
+        )
+        combined_kerning = OrderedDict()
+        if kerning_source.id in self.font.kerningLTR:
+            kerning = self.font.kerningLTR[kerning_source.id]
+            combined_kerning = deepcopy(kerning) if both_directions else kerning
+        if kerning_source.id in self.font.kerningRTL:
+            for kern1, subtable in self.font.kerningRTL[kerning_source.id].items():
+                combined_kerning[flip_class_side(kern1)] = {
+                    flip_class_side(kern2): v for kern2, v in subtable.items()
+                }
+        if combined_kerning:
+            _to_ufo_kerning(self, self._sources[master.id].font, combined_kerning)
 
 
 def _to_ufo_kerning(self, ufo, kerning_data):
