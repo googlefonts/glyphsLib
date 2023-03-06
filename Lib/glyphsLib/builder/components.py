@@ -46,22 +46,28 @@ def to_ufo_components(self, ufo_glyph, layer):
         to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
         return
 
-    # The same for color layers.
-    if (
-        not self.minimal
-        and layer.components
-        and layer.layerId != layer.associatedMasterId
-        and (layer._is_color_palette_layer())
-    ):
-        logger.warning(
-            f"Glyph '{ufo_glyph.name}': All components of the color layer "
-            f"'{layer.name}' will be decomposed."
-        )
-        to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
-        return
-
     pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
+        component_name = component.name
+        if layer._is_color_palette_layer():
+            # Glyphs handles components for color layers in a special way. If
+            # the component glyph has color layers of its own, the component
+            # use the first color layer with the same color index, otherwise it
+            # fallback to the default layer. We try to do that here as well.
+            font = layer.parent.parent
+            component_glyph = font.glyphs[component_name]
+            color_layers = [
+                l for l in component_glyph.layers if l._is_color_palette_layer()
+            ]
+            for i, l in enumerate(color_layers):
+                if l._color_palette_index() == layer._color_palette_index():
+                    if l.layerId != l.associatedMasterId:
+                        # If it is not a master layer, we rename it in
+                        # _to_ufo_color_palette_layers(), so we reference the
+                        # same name here.
+                        component_name += f".color{i}"
+                    break
+            print(ufo_glyph.name, component_name)
         # XXX We may also want to test here if we're compiling a font (and decompose
         # if so) or changing the representation format (in which case we leave it
         # as a component and save the smart component values).
@@ -69,7 +75,7 @@ def to_ufo_components(self, ufo_glyph, layer):
         if component.smartComponentValues and component.component.smartComponentAxes:
             to_ufo_smart_component(self, layer, component, pen)
         else:
-            pen.addComponent(component.name, component.transform)
+            pen.addComponent(component_name, component.transform)
 
         if not (component.anchor or component.alignment):
             continue
