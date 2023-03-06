@@ -67,7 +67,6 @@ def to_ufo_components(self, ufo_glyph, layer):
                         # same name here.
                         component_name += f".color{i}"
                     break
-            print(ufo_glyph.name, component_name)
         # XXX We may also want to test here if we're compiling a font (and decompose
         # if so) or changing the representation format (in which case we leave it
         # as a component and save the smart component values).
