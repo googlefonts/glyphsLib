@@ -1144,24 +1144,15 @@ def test_glyph_lib_color_mapping_invalid_index(ufo_module):
     ]
 
 
-def test_glyph_color_layers_decompose(ufo_module):
+def test_glyph_color_layers_components(ufo_module):
     font = generate_minimal_font()
     glypha = add_glyph(font, "a")
-    glyphb = add_glyph(font, "b")
     glyphc = add_glyph(font, "c")
     glyphd = add_glyph(font, "d")
-    for i, g in enumerate([glypha, glyphb, glyphc, glyphd]):
-        path = GSPath()
-        path.nodes = [
-            GSNode(position=(i + 0, i + 0), nodetype="line"),
-            GSNode(position=(i + 1, i + 1), nodetype="line"),
-            GSNode(position=(i + 2, i + 2), nodetype="line"),
-            GSNode(position=(i + 3, i + 3), nodetype="line"),
-        ]
-        g.layers[0].paths.append(path)
 
-    compc = GSComponent(glyph=glyphc)
-    compd = GSComponent(glyph=glyphd)
+    glypha.layers[0].name = "Color 0"
+    glyphd.layers.append(GSLayer())
+    glyphd.layers[1].name = "Color 0"
 
     color0 = GSLayer()
     color1 = GSLayer()
@@ -1169,10 +1160,11 @@ def test_glyph_color_layers_decompose(ufo_module):
     color0.name = "Color 0"
     color1.name = "Color 1"
     color3.name = "Color 3"
-    color0.components.append(compd)
-    color0.components.append(compc)
-    color3.components.append(compc)
-    color1.paths.append(path)
+    color0.components.append(GSComponent(glyph=glypha))
+    color0.components.append(GSComponent(glyph=glyphd))
+    color0.components.append(GSComponent(glyph=glyphc))
+    color3.components.append(GSComponent(glyph=glyphc))
+    color1.components.append(GSComponent(glyph=glypha))
 
     glypha.layers.append(color1)
     glypha.layers.append(color0)
@@ -1181,30 +1173,19 @@ def test_glyph_color_layers_decompose(ufo_module):
     ds = to_designspace(font, ufo_module=ufo_module)
     ufo = ds.sources[0].font
 
-    assert len(ufo.layers["color.0"]["a"].components) == 0
-    assert len(ufo.layers["color.0"]["a"]) == 2
-    pen1 = _PointDataPen()
-    ufo.layers["color.0"]["a"].drawPoints(pen1)
-    pen2 = _PointDataPen()
-    ufo["d"].drawPoints(pen2)
-    ufo["c"].drawPoints(pen2)
-    assert pen1.contours == pen2.contours
+    assert len(ufo.layers["color.0"]["a"].components) == 3
+    assert len(ufo.layers["color.0"]["a"]) == 0
+    assert [c.baseGlyph for c in ufo.layers["color.0"]["a"].components] == [
+        "a.color1",
+        "d.color0",
+        "c",
+    ]
 
-    assert len(ufo.layers["color.1"]["a"].components) == 0
-    assert len(ufo.layers["color.1"]["a"]) == 1
-    pen1 = _PointDataPen()
-    ufo.layers["color.1"]["a"].drawPoints(pen1)
-    pen2 = _PointDataPen()
-    ufo["d"].drawPoints(pen2)
-    assert pen1.contours == pen2.contours
+    assert len(ufo.layers["color.1"]["a"].components) == 1
+    assert len(ufo.layers["color.1"]["a"]) == 0
 
-    assert len(ufo.layers["color.3"]["a"].components) == 0
-    assert len(ufo.layers["color.3"]["a"]) == 1
-    pen1 = _PointDataPen()
-    ufo.layers["color.3"]["a"].drawPoints(pen1)
-    pen2 = _PointDataPen()
-    ufo["c"].drawPoints(pen2)
-    assert pen1.contours == pen2.contours
+    assert len(ufo.layers["color.3"]["a"].components) == 1
+    assert len(ufo.layers["color.3"]["a"]) == 0
 
 
 def test_glyph_color_palette_layers_explode(ufo_module):
