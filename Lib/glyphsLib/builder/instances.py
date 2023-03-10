@@ -71,6 +71,13 @@ def _to_designspace_instance(self, instance):
                 fname = self.instance_dir + "/" + fname
             ufo_instance.filename = fname
 
+    # Since Glyphs Format v3 the "postscriptFontName" property
+    # is stored in "properties" instead of "customParameters".
+    for p in instance.properties:
+        key, value = p.key, p.value
+        if key == "postscriptFontName":
+            ufo_instance.postScriptFontName = value
+
     # Read either from properties or custom parameter or the font
     ufo_instance.familyName = instance.familyName
     ufo_instance.styleName = instance.name
