@@ -24,7 +24,7 @@ def to_ufo_hints(self, ufo_glyph, layer):
     hints = []
     for source in layer.hints:
         hint = {}
-        for name in ["horizontal", "options", "stem", "type"]:
+        for name in ["horizontal", "options", "stem", "type", "name"]:
             hint[name] = getattr(source, name, None)
         for name in ["origin", "other1", "other2", "target"]:
             index_path = getattr(source, name, None)
@@ -47,7 +47,7 @@ def to_glyphs_hints(self, ufo_glyph, layer):
         return
     for source in ufo_glyph.lib[HINTS_LIB_KEY]:
         hint = self.glyphs_module.GSHint()
-        for name in ["horizontal", "options", "stem", "type"]:
+        for name in ["horizontal", "options", "stem", "type", "name"]:
             setattr(hint, name, source[name])
         for name in ["origin", "other1", "other2", "target"]:
             if name in source:
