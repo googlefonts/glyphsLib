@@ -25,7 +25,7 @@ from xmldiff import main, formatting
 import defcon
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance
+from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue
 from glyphsLib import to_designspace, to_glyphs
 import ufoLib2
 
@@ -241,10 +241,30 @@ class DesignspaceTest(unittest.TestCase):
 
         self.expect_designspace_roundtrip(designspace)
 
-    def test_postscriptFontName(self):
+    def test_postscriptFontNameCustomParameter(self):
         master = makeMaster("Master")
         thin, black = makeInstance("Thin"), makeInstance("Black")
         black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
+        font = makeFont([master], [thin, black], "PSNameTest")
+        designspace = to_designspace(font, instance_dir="out")
+        path = self.write_to_tmp_path(designspace, "psname.designspace")
+        d = etree.parse(path)
+
+        def psname(doc, style):
+            inst = doc.find('instances/instance[@stylename="%s"]' % style)
+            return inst.attrib.get("postscriptfontname")
+
+        self.assertIsNone(psname(d, "Thin"))
+        self.assertEqual(psname(d, "Black"), "PSNameTest-Superfat")
+
+        self.expect_designspace_roundtrip(designspace)
+
+    def test_postscriptFontNameProperty(self):
+        master = makeMaster("Master")
+        thin, black = makeInstance("Thin"), makeInstance("Black")
+        black.properties.append(
+            GSFontInfoValue("postscriptFontName", "PSNameTest-Superfat")
+        )
         font = makeFont([master], [thin, black], "PSNameTest")
         designspace = to_designspace(font, instance_dir="out")
         path = self.write_to_tmp_path(designspace, "psname.designspace")
