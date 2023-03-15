@@ -3945,7 +3945,7 @@ class GSLayer(GSBase):
             index = self.attributes["colorPalette"]
             if index == "*":
                 return 0xFFFF
-            return index
+            return int(index)
 
         # Glyphs 2
         m = re.match(self.COLOR_PALETTE_LAYER_RE, self.name)
