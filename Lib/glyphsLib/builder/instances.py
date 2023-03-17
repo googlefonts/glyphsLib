@@ -74,7 +74,10 @@ def _to_designspace_instance(self, instance):
     # Read either from properties or custom parameters or the font
     ufo_instance.familyName = instance.familyName
     ufo_instance.styleName = instance.name
-    ufo_instance.postScriptFontName = instance.postScriptFontName
+    ufo_instance.postScriptFontName = (
+        instance.properties.get("postscriptFontName")
+        or instance.customParameters["postscriptFontName"]
+    )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
     designspace_axis_tags = {a.tag for a in self.designspace.axes}

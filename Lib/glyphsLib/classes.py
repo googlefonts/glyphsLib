@@ -3293,14 +3293,9 @@ class GSInstance(GSBase):
 
     @familyName.setter
     def familyName(self, value):
+        # TODO: Update this to write into either custom parameters or properties
+        # depending on the version.
         self.customParameters["familyName"] = value
-
-    @property
-    def postScriptFontName(self):
-        return (
-            self.properties.get("postscriptFontName")
-            or self.customParameters["postscriptFontName"]
-        )
 
     @property
     def preferredFamily(self):
@@ -3370,14 +3365,19 @@ class GSInstance(GSBase):
 
     @property
     def fontName(self):
-        value = self.customParameters["postscriptFontName"]
+        value = (
+            self.properties.get("postscriptFontName")
+            or self.customParameters["postscriptFontName"]
+        )
         if value:
             return value
-        # TODO: strip invalid characters
+        # TODO: Strip invalid characters.
         return "".join(self.familyName.split(" ")) + "-" + self.name
 
     @fontName.setter
     def fontName(self, value):
+        # TODO: Update this to write into either custom parameters or properties
+        # depending on the version.
         self.customParameters["postscriptFontName"] = value
 
     @property
