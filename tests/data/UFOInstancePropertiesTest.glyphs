@@ -1,0 +1,217 @@
+{
+.appVersion = "3151";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+date = "2019-08-15 11:39:54 +0000";
+familyName = Neue;
+fontMaster = (
+{
+axesValues = (
+0
+);
+id = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Thin;
+userData = {
+com.schriftgestaltung.Glyphs.ufoFilename = MyFontMaster.ufo;
+};
+},
+{
+axesValues = (
+1000
+);
+id = m002;
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Black;
+userData = {
+com.schriftgestaltung.Glyphs.ufoFilename = MyFontMaster.ufo;
+};
+}
+);
+glyphs = (
+{
+glyphname = A;
+lastChange = "2023-02-27 11:53:34 +0000";
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+},
+{
+layerId = m002;
+width = 600;
+}
+);
+unicode = 65;
+},
+{
+glyphname = space;
+lastChange = "2023-02-27 11:53:34 +0000";
+layers = (
+{
+layerId = "F8C94C2E-1D94-453C-B1DE-0473CD97C963";
+width = 600;
+},
+{
+layerId = m002;
+width = 600;
+}
+);
+unicode = 32;
+}
+);
+instances = (
+{
+axesValues = (
+0
+);
+instanceInterpolations = {
+"F8C94C2E-1D94-453C-B1DE-0473CD97C963" = 1;
+};
+name = Thin;
+properties = (
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Thin";
+}
+);
+},
+{
+key = preferredFamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Neue";
+}
+);
+}
+);
+weightClass = 100;
+},
+{
+axesValues = (
+500
+);
+instanceInterpolations = {
+"F8C94C2E-1D94-453C-B1DE-0473CD97C963" = 0.5;
+m002 = 0.5;
+};
+name = Regular;
+properties = (
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Regular";
+}
+);
+},
+{
+key = preferredFamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Neue";
+}
+);
+}
+);
+},
+{
+axesValues = (
+1000
+);
+instanceInterpolations = {
+m002 = 1;
+};
+name = Black;
+properties = (
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Black";
+}
+);
+},
+{
+key = preferredFamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Neue";
+}
+);
+}
+);
+weightClass = 900;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

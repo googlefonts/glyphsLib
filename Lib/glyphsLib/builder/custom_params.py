@@ -156,14 +156,10 @@ class GlyphsObjectProxy:
     def has_properties(self):
         if self.is_font():
             return self._owner.format_version > 2
-        else:
-            return hasattr(self._owner, "properties")
+        return hasattr(self._owner, "properties")
 
     def get_property(self, key):
-        for prop in self._owner.properties:
-            if key == prop.key:
-                return prop.defaultValue
-        return None
+        return self._owner.properties.get(key)
 
 
 class UFOProxy:
@@ -319,8 +315,6 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("hheaDescender", "openTypeHheaDescender"),
     ("hheaLineGap", "openTypeHheaLineGap"),
     ("compatibleFullName", "openTypeNameCompatibleFullName"),
-    ("preferredFamilyName", "openTypeNamePreferredFamilyName"),
-    ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName"),
     ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
@@ -367,6 +361,12 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("trademark", "trademark", "trademarks"),
     ("description", "openTypeNameDescription", "descriptions"),
     ("sampleText", "openTypeNameSampleText", "sampleTexts"),
+    ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
+    (
+        "preferredSubfamilyName",
+        "openTypeNamePreferredSubfamilyName",
+        "preferredSubfamilyNames",
+    ),
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),

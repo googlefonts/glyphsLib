@@ -616,10 +616,10 @@ def test_ufo_filename_custom_param_instance_empty(ufo_module):
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
 
 
-def test_ufo_instance():
+def test_ufo_instance_parameters():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
-    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceTest.glyphs"))
+    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceParametersTest.glyphs"))
     space = glyphsLib.to_designspace(file, minimal=True)
 
     assert len(space.sources) == 2
