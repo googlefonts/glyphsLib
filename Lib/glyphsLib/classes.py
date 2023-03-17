@@ -3317,7 +3317,6 @@ class GSInstance(GSBase):
         return (
             self.properties.get("preferredSubfamilyNames")
             or self.customParameters["preferredSubfamilyName"]
-            or self.name
         )
 
     @preferredSubfamilyName.setter
