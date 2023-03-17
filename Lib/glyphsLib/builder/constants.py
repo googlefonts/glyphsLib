@@ -70,7 +70,20 @@ FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
 # Following typo kept for backwards compatibility
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
+
 CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
+CUSTOM_PARAMETERS_BLACKLIST = [
+    # These will be stored in the official descriptor attributes.
+    "familyName",
+    "postscriptFontName",
+    "fileName",
+    FULL_FILENAME_KEY,
+    UFO_FILENAME_CUSTOM_PARAM,
+    # We can recover them by reading the mapping backward, because the mapping
+    # is built from where the instances are.
+    "weightClass",
+    "widthClass",
+]
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
 LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."

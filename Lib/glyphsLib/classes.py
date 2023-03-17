@@ -438,7 +438,7 @@ class ListDictionaryProxy(Proxy):
         super().__init__(owner)
         self._name = name
         self._class = klass
-        self._items = getattr(owner, name, None)
+        self._items = getattr(owner, name, [])
 
     def get(self, name, default=None):
         item = self._get_by_name(name)
