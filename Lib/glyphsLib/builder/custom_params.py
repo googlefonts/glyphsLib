@@ -362,7 +362,11 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("description", "openTypeNameDescription", "descriptions"),
     ("sampleText", "openTypeNameSampleText", "sampleTexts"),
     ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
-    ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName", "preferredSubfamilyNames"),
+    (
+        "preferredSubfamilyName",
+        "openTypeNamePreferredSubfamilyName",
+        "preferredSubfamilyNames",
+    ),
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),

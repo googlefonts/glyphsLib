@@ -3152,7 +3152,10 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         if self._localized_values:
             writer.writeKeyValue(
                 "values",
-                [{"language": l, "value": v} for l, v in self._localized_values.items()],
+                [
+                    {"language": l, "value": v}
+                    for l, v in self._localized_values.items()
+                ],
             )
         else:
             writer.writeObjectKeyValue(self, "value")
