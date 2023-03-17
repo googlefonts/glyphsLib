@@ -58,43 +58,15 @@ def to_designspace_instances(self):
 
 def _to_designspace_instance(self, instance):
     ufo_instance = self.designspace.newInstanceDescriptor()
+
     # FIXME: (jany) most of these customParameters are actually attributes,
     # at least according to https://docu.glyphsapp.com/#fontName
-    for p in instance.customParameters:
-        param, value = p.name, p.value
-        if param == "postscriptFontName":
-            # Glyphs uses "postscriptFontName", not "postScriptFontName"
-            ufo_instance.postScriptFontName = value
-        elif param == "fileName":
-            fname = value + ".ufo"
-            if self.instance_dir is not None:
-                fname = self.instance_dir + "/" + fname
-            ufo_instance.filename = fname
 
-    # Since Glyphs Format v3 the "postscriptFontName" property
-    # is stored in "properties" instead of "customParameters".
-    ufo_instance.postScriptFontName = instance.properties.get(
-        "postscriptFontName",
-        ufo_instance.postScriptFontName,
-    )
-
-    # Read either from properties or custom parameter or the font
+    # Read either from properties or custom parameters or the font
     ufo_instance.familyName = instance.familyName
     ufo_instance.styleName = instance.name
-
-    fname = (
-        instance.customParameters[UFO_FILENAME_CUSTOM_PARAM]
-        or instance.customParameters[FULL_FILENAME_KEY]
-    )
-    if fname is not None:
-        if self.instance_dir:
-            fname = self.instance_dir + "/" + os.path.basename(fname)
-        ufo_instance.filename = fname
-    if not ufo_instance.filename:
-        instance_dir = self.instance_dir or "instance_ufos"
-        ufo_instance.filename = build_ufo_path(
-            instance_dir, ufo_instance.familyName, ufo_instance.styleName
-        )
+    ufo_instance.postScriptFontName = instance.postScriptFontName
+    ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
     designspace_axis_tags = {a.tag for a in self.designspace.axes}
     location = {}
@@ -157,6 +129,29 @@ def _to_designspace_instance(self, instance):
         ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = params
 
     self.designspace.addInstance(ufo_instance)
+
+
+def _to_filename(self, instance, ufo_instance):
+    filename = (
+        instance.customParameters[UFO_FILENAME_CUSTOM_PARAM]
+        or instance.customParameters[FULL_FILENAME_KEY]
+    )
+    if filename:
+        if self.instance_dir:
+            filename = os.path.basename(filename)
+            filename = os.path.join(self.instance_dir, filename)
+        return filename
+    filename = instance.customParameters["fileName"]
+    if filename:
+        filename = f"{filename}.ufo"
+        if self.instance_dir:
+            filename = os.path.join(self.instance_dir, filename)
+        return filename
+    return build_ufo_path(
+        self.instance_dir or "instance_ufos",
+        ufo_instance.familyName,
+        ufo_instance.styleName,
+    )
 
 
 def _is_instance_included_in_family(self, instance):

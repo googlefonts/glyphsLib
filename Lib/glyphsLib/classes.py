@@ -3295,6 +3295,13 @@ class GSInstance(GSBase):
         self.customParameters["familyName"] = value
 
     @property
+    def postScriptFontName(self):
+        return (
+            self.properties.get("postscriptFontName")
+            or self.customParameters["postscriptFontName"]
+        )
+
+    @property
     def preferredFamily(self):
         value = self.customParameters["preferredFamily"]
         if value:
