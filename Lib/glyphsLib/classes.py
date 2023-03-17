@@ -3282,13 +3282,11 @@ class GSInstance(GSBase):
 
     @property
     def familyName(self):
-        value = (
+        return (
             self.properties.get("familyNames")
             or self.customParameters["familyName"]
+            or self.parent.familyName
         )
-        if value:
-            return value
-        return self.parent.familyName
 
     @familyName.setter
     def familyName(self, value):
@@ -3303,24 +3301,38 @@ class GSInstance(GSBase):
 
     @property
     def preferredFamily(self):
-        value = self.customParameters["preferredFamily"]
-        if value:
-            return value
-        return self.parent.familyName
+        self.preferredFamilyName
 
     @preferredFamily.setter
     def preferredFamily(self, value):
+        self.preferredFamilyName = value
+
+    @property
+    def preferredFamilyName(self):
+        return (
+            self.properties.get("preferredFamilyNames")
+            or self.customParameters["preferredFamily"]
+            or self.parent.familyName
+        )
+
+    @preferredFamilyName.setter
+    def preferredFamilyName(self, value):
+        # TODO: Update this to write into either custom parameters or properties
+        # depending on the version.
         self.customParameters["preferredFamily"] = value
 
     @property
     def preferredSubfamilyName(self):
-        value = self.customParameters["preferredSubfamilyName"]
-        if value:
-            return value
-        return self.name
+        return (
+            self.properties.get("preferredSubfamilyNames")
+            or self.customParameters["preferredSubfamilyName"]
+            or self.name
+        )
 
     @preferredSubfamilyName.setter
     def preferredSubfamilyName(self, value):
+        # TODO: Update this to write into either custom parameters or properties
+        # depending on the version.
         self.customParameters["preferredSubfamilyName"] = value
 
     @property
