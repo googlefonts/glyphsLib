@@ -433,6 +433,90 @@ class Proxy:
             raise TypeError
 
 
+class ListDictionaryProxy(Proxy):
+    def __init__(self, owner, name, klass):
+        super().__init__(owner)
+        self._name = name
+        self._class = klass
+        self._items = getattr(owner, name, None)
+
+    def append(self, item):
+        item.parent = self._owner
+        self._items.append(item)
+
+    def extend(self, items):
+        for item in items:
+            item.parent = self._owner
+        self._items.extend(items)
+
+    def remove(self, item):
+        if isinstance(item, str):
+            item = self.__getitem__(item)
+        self._items.remove(item)
+
+    def insert(self, index, item):
+        item.parent = self._owner
+        self._items.insert(index, item)
+
+    def values(self):
+        return self._items
+
+    def setterMethod(self):
+        return self.__setter__
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self.values().__getitem__(key)
+        if isinstance(key, int):
+            return self._items[key]
+        else:
+            item = self._get_by_name(key)
+            if item is not None:
+                return item.value
+        return None
+
+    def __setitem__(self, name, value):
+        item = self._get_by_name(name)
+        if item is not None:
+            item.value = value
+        else:
+            item = self._class(name=name, value=value)
+            self._items.append(item)
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            del self._items[key]
+        elif isinstance(key, str):
+            for item in self._items:
+                if item.name == key:
+                    self._items.remove(item)
+        else:
+            raise KeyError(key)
+
+    def __contains__(self, item):
+        if isinstance(item, str):
+            return self.__getitem__(item) is not None
+        return item in self._items
+
+    def __iter__(self):
+        for index in range(len(self._items)):
+            yield self._items[index]
+
+    def __len__(self):
+        return len(self._items)
+
+    def __setter__(self, items):
+        for item in items:
+            item.parent = self._owner
+        self._items = items
+        setattr(self._owner, self._name, items)
+
+    def _get_by_name(self, name):
+        for item in self._items:
+            if item.name == name:
+                return item
+
+
 class LayersIterator:
     __slots__ = "curInd", "_owner", "_orderedLayers"
 
@@ -1057,47 +1141,15 @@ class PathNodesProxy(IndexedObjectsProxy):
         super().__init__(owner)
 
 
-class CustomParametersProxy(Proxy):
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            return self.values().__getitem__(key)
-        if isinstance(key, int):
-            return self._owner._customParameters[key]
-        else:
-            customParameter = self._get_parameter_by_key(key)
-            if customParameter is not None:
-                return customParameter.value
-        return None
-
-    def _get_parameter_by_key(self, key):
-        if key == "Axes" and isinstance(self._owner, GSFont):
-            return self._owner._get_custom_parameter_from_axes()
-        if key == "Name Table Entry":
-            return None
-        for customParameter in self._owner._customParameters:
-            if customParameter.name == key:
-                return customParameter
+class CustomParametersProxy(ListDictionaryProxy):
+    def __init__(self, owner):
+        super().__init__(owner, "_customParameters", GSCustomParameter)
 
     def __setitem__(self, key, value):
         if key == "Axes" and isinstance(self._owner, GSFont):
             self._owner._set_axes_from_custom_parameter(value)
-            return
-        customParameter = self._get_parameter_by_key(key)
-        if customParameter is not None:
-            customParameter.value = value
         else:
-            parameter = GSCustomParameter(name=key, value=value)
-            self._owner._customParameters.append(parameter)
-
-    def __delitem__(self, key):
-        if isinstance(key, int):
-            del self._owner._customParameters[key]
-        elif isinstance(key, str):
-            for parameter in self._owner._customParameters:
-                if parameter.name == key:
-                    self._owner._customParameters.remove(parameter)
-        else:
-            raise KeyError
+            super().__setitem__(key, value)
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -1105,14 +1157,24 @@ class CustomParametersProxy(Proxy):
                 return self._owner.axes
             if item == "Axis Location" and isinstance(self._owner, GSInstance):
                 return self._owner.axes
-            return self.__getitem__(item) is not None
-        return item in self._owner._customParameters
+        return super().__contains__(item)
 
     def __iter__(self):
-        for index in range(len(self._owner._customParameters)):
-            yield self._owner._customParameters[index]
+        for item in super().__iter__():
+            yield item
         if self._should_add_axes():
             yield self._owner._get_custom_parameter_from_axes()
+
+    def __len__(self):
+        length = super().__len__()
+        return length + 1 if self._should_add_axes() else length
+
+    def _get_by_name(self, name):
+        if name == "Axes" and isinstance(self._owner, GSFont):
+            return self._owner._get_custom_parameter_from_axes()
+        if name == "Name Table Entry":
+            return None
+        return super()._get_by_name(name)
 
     def _should_add_axes(self):
         if isinstance(self._owner, GSFont) and self._owner.format_version < 3:
@@ -1120,41 +1182,6 @@ class CustomParametersProxy(Proxy):
             if axes:
                 return True
         return False
-
-    def append(self, parameter):
-        parameter.parent = self._owner
-        self._owner._customParameters.append(parameter)
-
-    def extend(self, parameters):
-        for parameter in parameters:
-            parameter.parent = self._owner
-        self._owner._customParameters.extend(parameters)
-
-    def remove(self, parameter):
-        if isinstance(parameter, str):
-            parameter = self.__getitem__(parameter)
-        self._owner._customParameters.remove(parameter)
-
-    def insert(self, index, parameter):
-        parameter.parent = self._owner
-        self._owner._customParameters.insert(index, parameter)
-
-    def __len__(self):
-        if self._should_add_axes():
-            return len(self._owner._customParameters) + 1
-
-        return len(self._owner._customParameters)
-
-    def values(self):
-        return self._owner._customParameters
-
-    def __setter__(self, parameters):
-        for parameter in parameters:
-            parameter.parent = self._owner
-        self._owner._customParameters = parameters
-
-    def setterMethod(self):
-        return self.__setter__
 
 
 class UserDataProxy(Proxy):
@@ -1592,7 +1619,7 @@ class GSFontMaster(GSBase):
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
     def __init__(self):
-        self._customParameters = []
+        self.customParameters = []
         self._name = None
         self._userData = None
         self._alignmentZones = None
@@ -3196,7 +3223,7 @@ class GSInstance(GSBase):
 
     def __init__(self):
         self.axes = list(self._axis_defaults)
-        self._customParameters = []
+        self.customParameters = []
         self.active = self._defaultsForName["active"]
         self.custom = None
         self.instanceInterpolations = copy.deepcopy(
