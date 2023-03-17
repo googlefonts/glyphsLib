@@ -440,6 +440,10 @@ class ListDictionaryProxy(Proxy):
         self._class = klass
         self._items = getattr(owner, name, None)
 
+    def get(self, name, default=None):
+        item = self._get_by_name(name)
+        return item.value if item else default
+
     def append(self, item):
         item.parent = self._owner
         self._items.append(item)
@@ -480,7 +484,7 @@ class ListDictionaryProxy(Proxy):
         if item is not None:
             item.value = value
         else:
-            item = self._class(name=name, value=value)
+            item = self._class(name, value)
             self._items.append(item)
 
     def __delitem__(self, key):
@@ -1182,6 +1186,11 @@ class CustomParametersProxy(ListDictionaryProxy):
             if axes:
                 return True
         return False
+
+
+class PropertiesProxy(ListDictionaryProxy):
+    def __init__(self, owner):
+        super().__init__(owner, "_properties", GSFontInfoValue)
 
 
 class UserDataProxy(Proxy):
@@ -3128,34 +3137,46 @@ GSAnnotation._add_parsers(
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def __init__(self, key="", value=""):
         self.key = key
-        self.value = value
-        self.localized_values = None
+        self._value = value
+        self._localized_values = None
 
     def _parse_values_dict(self, parser, values):
-        self.localized_values = {}
+        self._localized_values = {}
         for v in values:
             if "language" not in v or "value" not in v:
                 continue
-            self.localized_values[v["language"]] = v["value"]
+            self._localized_values[v["language"]] = v["value"]
 
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "key", "if_true")
-        if self.localized_values:
+        if self._localized_values:
             writer.writeKeyValue(
                 "values",
-                [{"language": l, "value": v} for l, v in self.localized_values.items()],
+                [{"language": l, "value": v} for l, v in self._localized_values.items()],
             )
         else:
             writer.writeObjectKeyValue(self, "value")
 
     @property
-    def defaultValue(self):
-        if not self.localized_values:
-            return self.value
+    def name(self):
+        return self.key
+
+    @name.setter
+    def name(self, value):
+        self.key = value
+
+    @property
+    def value(self):
+        if not self._localized_values:
+            return self._value
         for key in ["dflt", "default", "ENG"]:
-            if key in self.localized_values:
-                return self.localized_values[key]
-        return list(self.localized_values.values())[0]
+            if key in self._localized_values:
+                return self._localized_values[key]
+        return list(self._localized_values.values())[0]
+
+    @value.setter
+    def value(self, value):
+        self._value = value
 
 
 class GSInstance(GSBase):
@@ -3245,6 +3266,11 @@ class GSInstance(GSBase):
         lambda self, value: CustomParametersProxy(self).setter(value),
     )
 
+    properties = property(
+        lambda self: PropertiesProxy(self),
+        lambda self, value: PropertiesProxy(self).setter(value),
+    )
+
     @property
     def exports(self):
         """Deprecated alias for `active`, which is in the documentation."""
@@ -3254,16 +3280,10 @@ class GSInstance(GSBase):
     def exports(self, value):
         self.active = value
 
-    def _get_from_properties(self, key):
-        for p in self.properties:
-            if p.key == key:
-                return p.defaultValue
-        return None
-
     @property
     def familyName(self):
         value = (
-            self._get_from_properties("familyNames")
+            self.properties.get("familyNames")
             or self.customParameters["familyName"]
         )
         if value:
@@ -4565,6 +4585,11 @@ class GSFont(GSBase):
         lambda self, value: CustomParametersProxy(self).setter(value),
     )
 
+    properties = property(
+        lambda self: PropertiesProxy(self),
+        lambda self, value: PropertiesProxy(self).setter(value),
+    )
+
     userData = property(
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value),
@@ -4701,58 +4726,43 @@ class GSFont(GSBase):
 
     @property
     def manufacturer(self):
-        return self._get_from_properties("manufacturers")
+        return self.properties.get("manufacturers", "")
 
     @manufacturer.setter
     def manufacturer(self, value):
-        self._set_in_properties("manufacturers", value)
+        self.properties["manufacturers"] = value
 
     @property
     def manufacturerURL(self):
-        return self._get_from_properties("manufacturerURL")
+        return self.properties.get("manufacturerURL", "")
 
     @manufacturerURL.setter
     def manufacturerURL(self, value):
-        self._set_in_properties("manufacturerURL", value)
+        self.properties["manufacturerURL"] = value
 
     @property
     def copyright(self):
-        return self._get_from_properties("copyrights")
+        return self.properties.get("copyrights", "")
 
     @copyright.setter
     def copyright(self, value):
-        self._set_in_properties("copyrights", value)
+        self.properties["copyrights"] = value
 
     @property
     def designer(self):
-        return self._get_from_properties("designers")
+        return self.properties.get("designers", "")
 
     @designer.setter
     def designer(self, value):
-        self._set_in_properties("designers", value)
+        self.properties["designers"] = value
 
     @property
     def designerURL(self):
-        return self._get_from_properties("designerURL")
+        return self.properties.get("designerURL", "")
 
     @designerURL.setter
     def designerURL(self, value):
-        self._set_in_properties("designerURL", value)
-
-    def _get_from_properties(self, key):
-        for p in self.properties:
-            if p.key == key:
-                return p.defaultValue
-        return ""
-
-    def _set_in_properties(self, key, value):
-        for p in self.properties:
-            if p.key == key:
-                p.localized_values = None
-                p.value = value
-                return
-        newprop = GSFontInfoValue(key, value)
-        self.properties.append(newprop)
+        self.properties["designerURL"] = value
 
     def _get_custom_parameter_from_axes(self):
         # We were specifically asked for our Axes custom parameter, so we
