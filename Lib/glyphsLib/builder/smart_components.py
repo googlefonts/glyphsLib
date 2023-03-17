@@ -143,8 +143,13 @@ def to_ufo_smart_component(self, layer, component, pen):
     # Don't forget that the GSComponent might also be transformed, so
     # we need to apply that transformation to the new layer as well
     if component.transform:
+        # We must reverse path direction for flipped components
+        # https://github.com/googlefonts/glyphsLib/issues/882
+        should_reverse = component.transform.determinant() < 0
         for p in new_layer.paths:
             p.applyTransform(component.transform)
+            if should_reverse:
+                p.reverse()
 
     # And we are done
     new_layer.drawPoints(pen)

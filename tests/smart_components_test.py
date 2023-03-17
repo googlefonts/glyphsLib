@@ -16,6 +16,7 @@
 
 import pytest
 
+from fontTools.pens.areaPen import AreaPen
 from glyphsLib import to_ufos
 from glyphsLib.classes import (
     GSFont,
@@ -129,6 +130,7 @@ def smart_font():
 
 def rectangle_path(x, y, w, h):
     path = GSPath()
+    # draw a rect counter-clockwise (to the right, top, left and close)
     path.nodes.append(GSNode((x, y)))
     path.nodes.append(GSNode((x + w, y)))
     path.nodes.append(GSNode((x + w, y + h)))
@@ -137,7 +139,7 @@ def rectangle_path(x, y, w, h):
 
 
 @pytest.mark.parametrize(
-    "values,expected",
+    "values,expected_rect",
     [
         # Eight corners
         ({"Width": 0, "Height": 100, "Shift": 0}, (100, 100, 100, 100)),
@@ -154,22 +156,64 @@ def rectangle_path(x, y, w, h):
         ({"Width": 0, "Height": 800, "Shift": 0}, (100, 100, 100, 800)),
     ],
 )
-def test_smart_component_regular(values, expected, smart_font):
+def test_smart_component_regular(values, expected_rect, smart_font):
     component = smart_font.glyphs["a"].layers[0].components[0]
     for key, value in values.items():
         component.smartComponentValues[key] = value
 
     (ufo,) = to_ufos(smart_font)
 
-    assert get_rectangle_data(ufo) == expected
+    rect, clockwise = get_rectangle_data(ufo)
+    assert rect == expected_rect
+    assert not clockwise
+
+
+@pytest.mark.parametrize(
+    "values,expected_rect",
+    [
+        # Eight corners
+        ({"Width": 0, "Height": 100, "Shift": 0}, (-200, 100, 100, 100)),
+        ({"Width": 1, "Height": 100, "Shift": 0}, (-600, 100, 500, 100)),
+        ({"Width": 0, "Height": 500, "Shift": 0}, (-200, 100, 100, 500)),
+        ({"Width": 1, "Height": 500, "Shift": 0}, (-600, 100, 500, 500)),
+        ({"Width": 0, "Height": 100, "Shift": -100}, (-100, 0, 100, 100)),
+        ({"Width": 1, "Height": 100, "Shift": -100}, (-500, 0, 500, 100)),
+        ({"Width": 0, "Height": 500, "Shift": -100}, (-100, 0, 100, 500)),
+        ({"Width": 1, "Height": 500, "Shift": -100}, (-500, 0, 500, 500)),
+        # Some points in the middle
+        ({"Width": 0.5, "Height": 300, "Shift": -50}, (-350, 50, 300, 300)),
+        # Extrapolation
+        ({"Width": 0, "Height": 800, "Shift": 0}, (-200, 100, 100, 800)),
+    ],
+)
+def test_smart_component_regular_flipped_x(values, expected_rect, smart_font):
+    # same as test_smart_component_regular but with transform that flips x
+    component = smart_font.glyphs["a"].layers[0].components[0]
+    component.transform[0] = -1.0
+    for key, value in values.items():
+        component.smartComponentValues[key] = value
+
+    (ufo,) = to_ufos(smart_font)
+
+    rect, clockwise = get_rectangle_data(ufo)
+    assert rect == expected_rect
+    # after decomposing the flipped component, the original counter-clockwise
+    # path direction should not change
+    assert not clockwise
 
 
 def get_rectangle_data(ufo, glyph_name="a"):
     """Retrieve the results of the smart component interpolation."""
     a = ufo[glyph_name]
     contour = a[0]
+
     left = min(node.x for node in contour)
     right = max(node.x for node in contour)
     top = max(node.y for node in contour)
     bottom = min(node.y for node in contour)
-    return (left, bottom, right - left, top - bottom)
+
+    pen = AreaPen(ufo)
+    contour.draw(pen)
+    clockwise = pen.value < 0
+
+    return (left, bottom, right - left, top - bottom), clockwise

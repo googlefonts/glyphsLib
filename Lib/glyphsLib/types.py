@@ -260,6 +260,10 @@ class Transform(Vector(6)):
         assert isinstance(self.value, list) and len(self.value) == self.dimension
         return '"{%s}"' % (", ".join(floatToString5(v) for v in self.value))
 
+    def determinant(self):
+        a, b, c, d = self[:4]
+        return a * d - b * c
+
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
 
