@@ -84,6 +84,11 @@ CUSTOM_PARAMETERS_BLACKLIST = [
     "weightClass",
     "widthClass",
 ]
+PROPERTIES_KEY = GLYPHS_PREFIX + "properties"
+PROPERTIES_WHITELIST = [
+    "preferredFamilyNames",
+    "preferredSubfamilyNames",
+]
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
 LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."

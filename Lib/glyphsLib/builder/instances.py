@@ -23,6 +23,7 @@ from glyphsLib.classes import (
     CustomParametersProxy,
     GSCustomParameter,
     InstanceType,
+    PropertiesProxy,
     WEIGHT_CODES,
 )
 from .constants import (
@@ -35,6 +36,8 @@ from .constants import (
     INSTANCE_INTERPOLATIONS_KEY,
     CUSTOM_PARAMETERS_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
+    PROPERTIES_KEY,
+    PROPERTIES_WHITELIST,
 )
 from .names import build_stylemap_names
 from .axes import (
@@ -109,14 +112,15 @@ def _to_designspace_instance(self, instance):
         ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
         ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
-    # Strategy: dump all custom parameters into the InstanceDescriptor.
-    # Later, when using `apply_instance_data`, we will dig out those custom
-    # parameters using `InstanceDescriptorAsGSInstance` and apply them to the
-    # instance UFO with `to_ufo_custom_params`.
-    # NOTE: customParameters are not a dict! One key can have several values
+    # Dump selected custom parameters and properties into the instance
+    # descriptor. Later, when using `apply_instance_data`, we will dig out those
+    # custom parameters and apply them to the UFO instance.
     parameters = _to_custom_parameters(instance)
     if parameters:
         ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = parameters
+    properties = _to_properties(instance)
+    if properties:
+        ufo_instance.lib[PROPERTIES_KEY] = properties
 
     self.designspace.addInstance(ufo_instance)
 
@@ -150,6 +154,14 @@ def _to_filename(self, instance, ufo_instance):
         ufo_instance.familyName,
         ufo_instance.styleName,
     )
+
+
+def _to_properties(instance):
+    return [
+        (item.name, item.value)
+        for item in instance.properties
+        if item.name in PROPERTIES_WHITELIST
+    ]
 
 
 def _is_instance_included_in_family(self, instance):
@@ -280,6 +292,10 @@ class InstanceDescriptorAsGSInstance:
         if CUSTOM_PARAMETERS_KEY in descriptor.lib:
             for name, value in descriptor.lib[CUSTOM_PARAMETERS_KEY]:
                 self.customParameters[name] = value
+        self.properties = PropertiesProxy(None)
+        if PROPERTIES_KEY in descriptor.lib:
+            for name, value in descriptor.lib[PROPERTIES_KEY]:
+                self.properties[name] = value
 
 
 def _set_class_from_instance(ufo, designspace, instance, axis_tag):
