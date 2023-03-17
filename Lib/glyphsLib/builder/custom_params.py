@@ -315,8 +315,6 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("hheaDescender", "openTypeHheaDescender"),
     ("hheaLineGap", "openTypeHheaLineGap"),
     ("compatibleFullName", "openTypeNameCompatibleFullName"),
-    ("preferredFamilyName", "openTypeNamePreferredFamilyName"),
-    ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName"),
     ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
@@ -363,6 +361,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     ("trademark", "trademark", "trademarks"),
     ("description", "openTypeNameDescription", "descriptions"),
     ("sampleText", "openTypeNameSampleText", "sampleTexts"),
+    ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
+    ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName", "preferredSubfamilyNames"),
     ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
