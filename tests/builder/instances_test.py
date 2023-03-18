@@ -112,6 +112,74 @@ def test_reencode_glyphs(tmpdir):
     assert ufos[1]["C"].unicode is None
 
 
+def test_glyphs3_names():
+    file = "InstanceFamilyName-G3.glyphs"
+    font = glyphsLib.GSFont(os.path.join(DATA, file))
+
+    expected_names = {
+        "familyName": [
+            "MyFamily",
+            "MyFamily",
+            "MyFamily 12pt",
+            "MyFamily 12pt",
+            "MyFamily 72pt",
+            "MyFamily 72pt",
+        ],
+        "preferredFamily": [
+            "MyFamily",
+            "MyFamily",
+            "MyFamily",
+            "Typographic MyFamily 12pt",
+            "MyFamily",
+            "MyFamily",
+        ],
+        "preferredFamilyName": [
+            None,
+            None,
+            None,
+            "Typographic MyFamily 12pt",
+            None,
+            None,
+        ],
+        "preferredSubfamilyName": [
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Typographic Black",
+        ],
+        "windowsFamily": [
+            "MyFamily Thin",
+            "MyFamily Black",
+            "MyFamily 12pt Thin",
+            "MyFamily 12pt Black",
+            "MyFamily 72pt Thin",
+            "MyFamily 72pt Black",
+        ],
+        "fontName": [
+            "MyFamily-Thin",
+            "MyFamily-Black",
+            "MyFamily12pt-Thin",
+            "MyFamily12pt-Black",
+            "MyFamily72pt-Thin",
+            "MyFamily72pt-Black",
+        ],
+        "fullName": [
+            "MyFamily Thin",
+            "MyFamily Black",
+            "MyFamily 12pt Thin",
+            "MyFamily 12pt Black",
+            "MyFamily 72pt Thin",
+            "MyFamily 72pt Black",
+        ],
+    }
+
+    for name, expected in expected_names.items():
+        actual = [getattr(instance, name) for instance in font.instances]
+        assert expected == actual, name
+
+
 def test_glyphs3_mapping():
     font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3Instances.glyphs"))
     # Instance1: designspace 200 -> userspace 400
@@ -148,19 +216,19 @@ def test_glyphs3_instance_filtering():
 
 
 def test_glyphs3_instance_properties(tmpdir):
-    expected_num_properties = [0, 0, 1, 1, 1, 1]
+    expected_num_properties = [0, 0, 1, 2, 1, 2]
 
     file = "InstanceFamilyName-G3.glyphs"
     font = glyphsLib.GSFont(os.path.join(DATA, file))
 
-    for instance, num in zip(font.instances, expected_num_properties):
-        assert len(instance.properties) == num
+    for expected, instance in zip(expected_num_properties, font.instances):
+        assert expected == len(instance.properties)
 
     font.save(tmpdir / file)
     font = glyphsLib.GSFont(tmpdir / file)
 
-    for instance, num in zip(font.instances, expected_num_properties):
-        assert len(instance.properties) == num
+    for expected, instance in zip(expected_num_properties, font.instances):
+        assert expected == len(instance.properties)
 
 
 def test_rename_glyphs(tmpdir):
