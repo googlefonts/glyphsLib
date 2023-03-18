@@ -85,9 +85,36 @@ CUSTOM_PARAMETERS_BLACKLIST = [
     "widthClass",
 ]
 PROPERTIES_KEY = GLYPHS_PREFIX + "properties"
+# Reference:
+# https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
 PROPERTIES_WHITELIST = [
+    "familyNames",
+    "designers",
+    "designerURL",
+    "manufacturers",
+    "manufacturerURL",
+    "copyrights",
+    "versionString",
+    "vendorID",
+    "uniqueID",
+    "licenses",
+    "licenseURL",
+    "trademarks",
+    "descriptions",
+    "sampleTexts",
+    "postscriptFullNames",
+    "postscriptFullName",
+    "postscriptFontName",
+    "compatibleFullNames",
+    "styleNames",
+    "styleMapFamilyNames",
+    "styleMapStyleNames",
     "preferredFamilyNames",
     "preferredSubfamilyNames",
+    "variableStyleNames",
+    "WWSFamilyName",
+    "WWSSubfamilyName",
+    "variationsPostScriptNamePrefix",
 ]
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
