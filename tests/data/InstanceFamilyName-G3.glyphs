@@ -202,6 +202,15 @@ language = dflt;
 value = "MyFamily 12pt";
 }
 );
+},
+{
+key = preferredFamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic MyFamily 12pt";
+}
+);
 }
 );
 weightClass = 900;
@@ -244,6 +253,15 @@ values = (
 {
 language = dflt;
 value = "MyFamily 72pt";
+}
+);
+},
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Black";
 }
 );
 }
