@@ -311,11 +311,13 @@ def register(handler):
 
 
 GLYPHS_UFO_CUSTOM_PARAMS = (
+    # These are be stored in the official descriptor attributes.
+    # "familyName",
+    # "fileName",
+    ("compatibleFullName", "openTypeNameCompatibleFullName"),
     ("hheaAscender", "openTypeHheaAscender"),
     ("hheaDescender", "openTypeHheaDescender"),
     ("hheaLineGap", "openTypeHheaLineGap"),
-    ("compatibleFullName", "openTypeNameCompatibleFullName"),
-    ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
     ("fsType", "openTypeOS2Type"),
@@ -325,27 +327,29 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("unicodeRanges", "openTypeOS2UnicodeRanges"),
     ("strikeoutSize", "openTypeOS2StrikeoutSize"),
     ("strikeoutPosition", "openTypeOS2StrikeoutPosition"),
-    # OS/2 Subscript parameters
+    # OS/2 subscript parameters
     ("subscriptXSize", "openTypeOS2SubscriptXSize"),
     ("subscriptYSize", "openTypeOS2SubscriptYSize"),
     ("subscriptXOffset", "openTypeOS2SubscriptXOffset"),
     ("subscriptYOffset", "openTypeOS2SubscriptYOffset"),
-    # OS/2 Superscript parameters
+    # OS/2 superscript parameters
     ("superscriptXSize", "openTypeOS2SuperscriptXSize"),
     ("superscriptYSize", "openTypeOS2SuperscriptYSize"),
     ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
     ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
-    # ('weightClass', 'openTypeOS2WeightClass'),
-    # ('widthClass', 'openTypeOS2WidthClass'),
-    # ('winAscent', 'openTypeOS2WinAscent'),
-    # ('winDescent', 'openTypeOS2WinDescent'),
+    # These can be recovered by reading the mapping backward.
+    # ("weightClass", "openTypeOS2WeightClass"),
+    # ("widthClass", "openTypeOS2WidthClass"),
+    # These are processed separatedly down below.
+    # ("winAscent", "openTypeOS2WinAscent"),
+    # ("winDescent", "openTypeOS2WinDescent"),
     ("vheaVertAscender", "openTypeVheaVertTypoAscender"),
     ("vheaVertDescender", "openTypeVheaVertTypoDescender"),
     ("vheaVertLineGap", "openTypeVheaVertTypoLineGap"),
     ("vheaVertTypoAscender", "openTypeVheaVertTypoAscender"),
     ("vheaVertTypoDescender", "openTypeVheaVertTypoDescender"),
     ("vheaVertTypoLineGap", "openTypeVheaVertTypoLineGap"),
-    # Postscript parameters
+    # PostScript parameters
     ("blueScale", "postscriptBlueScale"),
     ("blueShift", "postscriptBlueShift"),
     ("isFixedPitch", "postscriptIsFixedPitch"),
@@ -355,23 +359,50 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
     register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
 
+# Reference:
+# https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
 GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
+    # This is stored in the official descriptor attributes.
+    # "familyNames",
+    # TODO: Map these properties to custom parameters if applicable.
+    # "designers",
+    # "designerURL",
+    # "manufacturers",
+    # "manufacturerURL",
+    # "copyrights",
+    ("versionString", "openTypeNameVersion", "versionString"),
+    ("vendorID", "openTypeOS2VendorID", "vendorID"),
+    # TODO: Map this property to a custom parameter if applicable.
+    # "uniqueID",
     ("license", "openTypeNameLicense", "licenses"),
     ("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
     ("trademark", "trademark", "trademarks"),
     ("description", "openTypeNameDescription", "descriptions"),
     ("sampleText", "openTypeNameSampleText", "sampleTexts"),
+    # TODO: Should the postscriptFullName or postscriptFullNames property be
+    # used for the postscriptFullName custom parameter?
+    # "postscriptFullNames",
+    ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
+    # TODO: This is stored in the official descriptor attibutes. Should this
+    # entry be removed?
+    ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
+    # TODO: Map these properties to custom parameters if applicable.
+    # "compatibleFullNames",
+    # "styleNames",
+    # "styleMapFamilyNames",
+    # "styleMapStyleNames",
     ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
     (
         "preferredSubfamilyName",
         "openTypeNamePreferredSubfamilyName",
         "preferredSubfamilyNames",
     ),
-    ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
-    ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
+    # TODO: Map this property to a custom parameter if applicable.
+    # "variableStyleNames",
     ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
-    ("vendorID", "openTypeOS2VendorID", "vendorID"),
-    ("versionString", "openTypeNameVersion", "versionString"),
+    ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName", "WWSSubfamilyName"),
+    # TODO: Map this property to a custom parameter if applicable.
+    # "variationsPostScriptNamePrefix",
 )
 
 for glyphs_name, ufo_name, property_name in GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES:
@@ -400,9 +431,9 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeOS2FamilyClass",
     "postscriptSlantAngle",
     "postscriptUniqueID",
-    # Should this be handled in `blue_values.py`?
-    # 'postscriptFamilyBlues',
-    # 'postscriptFamilyOtherBlues',
+    # TODO: Should this be handled in `blue_values.py`?
+    # "postscriptFamilyBlues",
+    # "postscriptFamilyOtherBlues",
     "postscriptBlueFuzz",
     "postscriptForceBold",
     "postscriptDefaultWidthX",
