@@ -73,21 +73,51 @@ INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
 
 CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
 CUSTOM_PARAMETERS_BLACKLIST = [
-    # These will be stored in the official descriptor attributes.
+    # These are stored in the official descriptor attributes.
     "familyName",
     "postscriptFontName",
     "fileName",
-    FULL_FILENAME_KEY,
-    UFO_FILENAME_CUSTOM_PARAM,
-    # We can recover them by reading the mapping backward, because the mapping
-    # is built from where the instances are.
+    # These can be recovered by reading the mapping backward.
     "weightClass",
     "widthClass",
+    # These are artificial.
+    FULL_FILENAME_KEY,
+    UFO_FILENAME_CUSTOM_PARAM,
 ]
+
+# Reference:
+# https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
 PROPERTIES_KEY = GLYPHS_PREFIX + "properties"
 PROPERTIES_WHITELIST = [
+    # This is stored in the official descriptor attributes.
+    # "familyNames",
+    "designers",
+    "designerURL",
+    "manufacturers",
+    "manufacturerURL",
+    "copyrights",
+    "versionString",
+    "vendorID",
+    "uniqueID",
+    "licenses",
+    "licenseURL",
+    "trademarks",
+    "descriptions",
+    "sampleTexts",
+    "postscriptFullNames",
+    "postscriptFullName",
+    # This is stored in the official descriptor attributes.
+    # "postscriptFontName",
+    "compatibleFullNames",
+    "styleNames",
+    "styleMapFamilyNames",
+    "styleMapStyleNames",
     "preferredFamilyNames",
     "preferredSubfamilyNames",
+    "variableStyleNames",
+    "WWSFamilyName",
+    "WWSSubfamilyName",
+    "variationsPostScriptNamePrefix",
 ]
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
