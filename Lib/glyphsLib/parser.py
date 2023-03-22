@@ -14,7 +14,7 @@
 
 
 from collections import OrderedDict
-from fontTools.misc.filenames import userNameToFileName
+from pathlib import Path
 import glyphsLib
 import logging
 import openstep_plist
@@ -101,17 +101,25 @@ class Parser:
 
 
 def load_glyphspackage(package_dir):
-    infofile = os.path.join(package_dir, "fontinfo.plist")
-    orderfile = os.path.join(package_dir, "order.plist")
+    package = Path(package_dir)
+    infofile = package / "fontinfo.plist"
+    orderfile = package / "order.plist"
     glyphorder = openstep_plist.load(open(orderfile, "r", encoding="utf-8"))
     data = openstep_plist.load(open(infofile, "r", encoding="utf-8"), use_numbers=True)
     data["glyphs"] = []
-    for g in glyphorder:
-        glyphname = userNameToFileName(g) + ".glyph"
-        glyphfile = os.path.join(package_dir, "glyphs", glyphname)
-        data["glyphs"].append(
-            openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
+    for glyphfile in (package / "glyphs").glob("*.glyph"):
+        glyph = openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
+        data["glyphs"].append(glyph)
+    # Sort according to glyphorder
+    data["glyphs"] = list(
+        sorted(
+            data["glyphs"],
+            key=lambda x: (
+                x["glyphname"] not in glyphorder,  # unknown glyphs at end
+                x["glyphname"] in glyphorder and glyphorder.index(x["glyphname"]),
+            ),
         )
+    )
 
     return data
 
