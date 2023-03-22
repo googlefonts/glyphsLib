@@ -104,11 +104,18 @@ def load_glyphspackage(package_dir):
     package = Path(package_dir)
     infofile = package / "fontinfo.plist"
     orderfile = package / "order.plist"
-    glyphorder = openstep_plist.load(open(orderfile, "r", encoding="utf-8"))
-    data = openstep_plist.load(open(infofile, "r", encoding="utf-8"), use_numbers=True)
+
+    glyphorder = []
+    if orderfile.exists():
+        with open(orderfile, "r", encoding="utf-8") as order_fh:
+            glyphorder = openstep_plist.load(order_fh)
+
+    with open(infofile, "r", encoding="utf-8") as info_fh:
+        data = openstep_plist.load(info_fh, use_numbers=True)
     data["glyphs"] = []
     for glyphfile in (package / "glyphs").glob("*.glyph"):
-        glyph = openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
+        with open(glyphfile, "r") as fh:
+            glyph = openstep_plist.load(fh, use_numbers=True)
         data["glyphs"].append(glyph)
     # Sort according to glyphorder
 
