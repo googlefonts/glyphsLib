@@ -22,6 +22,20 @@ def test_glyphspackage_load(datadir):
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font1.DisplayStrings = ""  # glyphspackages, rather sensibly, don't store user state
     font2 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
+    names = [glyph.name for glyph in font2.glyphs]
+    assert names == [
+        "A",
+        "Adieresis",
+        "a",
+        "adieresis",
+        "h",
+        "m",
+        "n",
+        "a.sc",
+        "dieresis",
+        "_part.shoulder",
+        "_part.stem",  # Deliberately removed from glyph order file
+    ]
     assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
 
 
