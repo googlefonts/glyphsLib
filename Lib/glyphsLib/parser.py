@@ -111,15 +111,15 @@ def load_glyphspackage(package_dir):
         glyph = openstep_plist.load(open(glyphfile, "r"), use_numbers=True)
         data["glyphs"].append(glyph)
     # Sort according to glyphorder
-    data["glyphs"] = list(
-        sorted(
-            data["glyphs"],
-            key=lambda x: (
-                x["glyphname"] not in glyphorder,  # unknown glyphs at end
-                x["glyphname"] in glyphorder and glyphorder.index(x["glyphname"]),
-            ),
-        )
-    )
+
+    def sort_key(glyph):
+        glyphname = glyph["glyphname"]
+        if glyphname in glyphorder:
+            return (0, glyphorder.index(glyphname))
+        else:
+            return (1, glyphname)
+
+    data["glyphs"] = list(sorted(data["glyphs"], key=sort_key))
 
     return data
 
