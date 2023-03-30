@@ -110,6 +110,11 @@ def to_ufo_smart_component(self, layer, component, pen):
             % (root.name, layer.name)
         )
 
+    if len(masters) == 1:
+        # Treat this as a dumb component.
+        pen.addComponent(component.name, component.transform)
+        return
+
     model = variation_model(root, masters, layer)
 
     # Determine the normalized location of the interpolant within the
