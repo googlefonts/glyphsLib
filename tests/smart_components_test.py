@@ -17,7 +17,7 @@
 import pytest
 
 from fontTools.pens.areaPen import AreaPen
-from glyphsLib import to_ufos
+from glyphsLib import to_ufos, load
 from glyphsLib.classes import (
     GSFont,
     GSFontMaster,
@@ -217,3 +217,16 @@ def get_rectangle_data(ufo, glyph_name="a"):
     clockwise = pen.value < 0
 
     return (left, bottom, right - left, top - bottom), clockwise
+
+
+def test_smarts_with_one_master(datadir, ufo_module):
+    file = "DumbSmarts.glyphs"
+    with open(str(datadir.join(file)), encoding="utf-8") as f:
+        original_glyphs_font = load(f)
+
+    ufos = to_ufos(original_glyphs_font, ufo_module=ufo_module)
+
+    assert len(ufos[0]["lam-ar.swsh"].components) == 1
+    assert len(ufos[0]["lam-ar.swsh"]) == 1
+    assert len(ufos[1]["lam-ar.swsh"].components) == 1
+    assert len(ufos[1]["lam-ar.swsh"]) == 1
