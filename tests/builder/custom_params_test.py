@@ -616,20 +616,26 @@ def test_ufo_filename_with_instance_empty(ufo_module):
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
 
 
-def test_ufo_opentype_name_preferred_family_name_v2():
+def test_ufo_opentype_name_preferred_family_name():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
-    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceParametersTestV2.glyphs"))
-    space = glyphsLib.to_designspace(file, minimal=True)
+    filenames = [
+        "UFOInstanceParametersTestV2.glyphs",
+        "UFOInstanceParametersTestV3.glyphs",
+    ]
 
-    assert len(space.sources) == 2
-    assert len(space.instances) == 3
-    for instance in space.instances:
-        source = copy.deepcopy(space.sources[0])
-        apply_instance_data_to_ufo(source.font, instance, space)
+    for filename in filenames:
+        file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        space = glyphsLib.to_designspace(file, minimal=True)
 
-        actual = source.font.info.openTypeNamePreferredFamilyName
-        assert actual == "Typographic New Font"
+        assert len(space.sources) == 2
+        assert len(space.instances) == 3
+        for instance in space.instances:
+            source = copy.deepcopy(space.sources[0])
+            apply_instance_data_to_ufo(source.font, instance, space)
+
+            actual = source.font.info.openTypeNamePreferredFamilyName
+            assert actual == "Typographic New Font", filename
 
 
 def test_ufo_opentype_name_records_v2():
