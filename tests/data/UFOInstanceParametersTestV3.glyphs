@@ -129,6 +129,15 @@ language = dflt;
 value = "Typographic New Font";
 }
 );
+},
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Thin";
+}
+);
 }
 );
 weightClass = 100;
@@ -157,6 +166,15 @@ language = dflt;
 value = "Typographic New Font";
 }
 );
+},
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Regular";
+}
+);
 }
 );
 },
@@ -181,6 +199,15 @@ values = (
 {
 language = dflt;
 value = "Typographic New Font";
+}
+);
+},
+{
+key = preferredSubfamilyNames;
+values = (
+{
+language = dflt;
+value = "Typographic Black";
 }
 );
 }

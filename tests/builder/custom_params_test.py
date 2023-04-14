@@ -616,11 +616,13 @@ def test_ufo_filename_with_instance_empty(ufo_module):
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
 
 
-def test_ufo_opentype_name_preferred_family_name():
+def test_ufo_opentype_name_preferred_family_subfamily_name():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
     filenames = [
         "UFOInstanceParametersTestV2.glyphs",
+        # NOTE: In the format of version 3, the preferred family and subfamily
+        # names are not actually saved in custom paramters but properties.
         "UFOInstanceParametersTestV3.glyphs",
     ]
 
@@ -628,14 +630,17 @@ def test_ufo_opentype_name_preferred_family_name():
         file = glyphsLib.GSFont(os.path.join(DATA, filename))
         space = glyphsLib.to_designspace(file, minimal=True)
 
-        assert len(space.sources) == 2
-        assert len(space.instances) == 3
-        for instance in space.instances:
+        assert len(space.sources) == 2, filename
+        assert len(space.instances) == 3, filename
+        for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
             source = copy.deepcopy(space.sources[0])
             apply_instance_data_to_ufo(source.font, instance, space)
 
             actual = source.font.info.openTypeNamePreferredFamilyName
             assert actual == "Typographic New Font", filename
+
+            actual = source.font.info.openTypeNamePreferredSubfamilyName
+            assert actual == f"Typographic {name}", filename
 
 
 def test_ufo_opentype_name_records():
@@ -650,7 +655,7 @@ def test_ufo_opentype_name_records():
         file = glyphsLib.GSFont(os.path.join(DATA, filename))
         space = glyphsLib.to_designspace(file, minimal=True)
 
-        assert len(space.sources) == 2
+        assert len(space.sources) == 2, filename
         for source in space.sources:
             actual = list(map(dict, source.font.info.openTypeNameRecords))
             expected = [
@@ -664,7 +669,7 @@ def test_ufo_opentype_name_records():
             ]
             assert actual == expected, filename
 
-        assert len(space.instances) == 3
+        assert len(space.instances) == 3, filename
         for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
             source = copy.deepcopy(space.sources[0])
             apply_instance_data_to_ufo(source.font, instance, space)

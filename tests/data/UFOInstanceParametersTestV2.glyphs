@@ -85,6 +85,10 @@ value = "43 0 4 0; Thin Instance";
 {
 name = preferredFamilyName;
 value = "Typographic New Font";
+},
+{
+name = preferredSubfamilyName;
+value = "Typographic Thin";
 }
 );
 interpolationWeight = 0;
@@ -103,6 +107,10 @@ value = "43 0 4 0; Regular Instance";
 {
 name = preferredFamilyName;
 value = "Typographic New Font";
+},
+{
+name = preferredSubfamilyName;
+value = "Typographic Regular";
 }
 );
 interpolationWeight = 500;
@@ -121,6 +129,10 @@ value = "43 0 4 0; Black Instance";
 {
 name = preferredFamilyName;
 value = "Typographic New Font";
+},
+{
+name = preferredSubfamilyName;
+value = "Typographic Black";
 }
 );
 interpolationWeight = 1000;
