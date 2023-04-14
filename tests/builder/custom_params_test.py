@@ -558,7 +558,7 @@ class SetCustomParamsTestDefcon(SetCustomParamsTestBase, unittest.TestCase):
     ufo_module = defcon
 
 
-def test_ufo_filename_custom_param(ufo_module):
+def test_ufo_filename(ufo_module):
     """Test that new-style UFO_FILENAME_CUSTOM_PARAM is written instead of
     (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
@@ -588,7 +588,7 @@ def test_ufo_filename_custom_param(ufo_module):
     assert ds_rt.instances[0].filename == "../build/instance_ufos/MyFont.ufo"
 
 
-def test_ufo_filename_custom_param_plus_legacy(ufo_module):
+def test_ufo_filename_with_legacy(ufo_module):
     """Test that new-style UFO_FILENAME_CUSTOM_PARAM overrides legacy
     (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
@@ -602,7 +602,7 @@ def test_ufo_filename_custom_param_plus_legacy(ufo_module):
     assert ds.instances[0].filename == "bbb.ufo"
 
 
-def test_ufo_filename_custom_param_instance_empty(ufo_module):
+def test_ufo_filename_with_instance_empty(ufo_module):
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
     font.masters[0].customParameters[UFO_FILENAME_CUSTOM_PARAM] = "aaa.ufo"
     del font.instances[0].customParameters[UFO_FILENAME_CUSTOM_PARAM]
@@ -616,7 +616,7 @@ def test_ufo_filename_custom_param_instance_empty(ufo_module):
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
 
 
-def test_ufo_instance_parameters():
+def test_ufo_opentype_name_records():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
     file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceParametersTest.glyphs"))
@@ -639,7 +639,7 @@ def test_ufo_instance_parameters():
     assert len(space.instances) == 3
     for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
         actual = instance.lib[glyphsLib.builder.constants.CUSTOM_PARAMETERS_KEY]
-        expected = [("Name Table Entry", f"43 0 4 0;{name} Instance")]
+        expected = [("Name Table Entry", f"43 0 4 0; {name} Instance")]
         assert actual == expected
 
         source = copy.deepcopy(space.sources[0])

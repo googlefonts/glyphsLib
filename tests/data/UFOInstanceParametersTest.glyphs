@@ -3,7 +3,7 @@
 customParameters = (
 {
 name = "Name Table Entry";
-value = "42 0 4 0;File";
+value = "42 0 4 0; File";
 },
 {
 name = Axes;
@@ -80,7 +80,7 @@ instances = (
 customParameters = (
 {
 name = "Name Table Entry";
-value = "43 0 4 0;Thin Instance";
+value = "43 0 4 0; Thin Instance";
 }
 );
 interpolationWeight = 0;
@@ -94,7 +94,7 @@ weightClass = Thin;
 customParameters = (
 {
 name = "Name Table Entry";
-value = "43 0 4 0;Regular Instance";
+value = "43 0 4 0; Regular Instance";
 }
 );
 interpolationWeight = 500;
@@ -108,7 +108,7 @@ name = Regular;
 customParameters = (
 {
 name = "Name Table Entry";
-value = "43 0 4 0;Black Instance";
+value = "43 0 4 0; Black Instance";
 }
 );
 interpolationWeight = 1000;
