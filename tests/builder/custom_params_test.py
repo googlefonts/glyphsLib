@@ -638,46 +638,52 @@ def test_ufo_opentype_name_preferred_family_name():
             assert actual == "Typographic New Font", filename
 
 
-def test_ufo_opentype_name_records_v2():
+def test_ufo_opentype_name_records():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
-    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceParametersTestV2.glyphs"))
-    space = glyphsLib.to_designspace(file, minimal=True)
+    filenames = [
+        "UFOInstanceParametersTestV2.glyphs",
+        "UFOInstanceParametersTestV3.glyphs",
+    ]
 
-    assert len(space.sources) == 2
-    for source in space.sources:
-        actual = list(map(dict, source.font.info.openTypeNameRecords))
-        expected = [
-            {
-                "nameID": 42,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": "File",
-            },
-        ]
-        assert actual == expected
+    for filename in filenames:
+        file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        space = glyphsLib.to_designspace(file, minimal=True)
 
-    assert len(space.instances) == 3
-    for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
-        source = copy.deepcopy(space.sources[0])
-        apply_instance_data_to_ufo(source.font, instance, space)
+        assert len(space.sources) == 2
+        for source in space.sources:
+            actual = list(map(dict, source.font.info.openTypeNameRecords))
+            expected = [
+                {
+                    "nameID": 42,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": "File",
+                },
+            ]
+            assert actual == expected, filename
 
-        actual = list(map(dict, source.font.info.openTypeNameRecords))
-        expected = [
-            {
-                "nameID": 42,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": "File",
-            },
-            {
-                "nameID": 43,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": f"{name} Instance",
-            },
-        ]
-        assert actual == expected
+        assert len(space.instances) == 3
+        for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
+            source = copy.deepcopy(space.sources[0])
+            apply_instance_data_to_ufo(source.font, instance, space)
+
+            actual = list(map(dict, source.font.info.openTypeNameRecords))
+            expected = [
+                {
+                    "nameID": 42,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": "File",
+                },
+                {
+                    "nameID": 43,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": f"{name} Instance",
+                },
+            ]
+            assert actual == expected, filename
