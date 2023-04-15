@@ -1,5 +1,5 @@
 {
-.appVersion = "3151";
+.appVersion = "3186";
 .formatVersion = 3;
 axes = (
 {
@@ -11,6 +11,10 @@ customParameters = (
 {
 name = "Name Table Entry";
 value = "42 0 4 0; File";
+},
+{
+name = "Use Typo Metrics";
+value = 1;
 }
 );
 date = "2019-08-15 11:39:54 +0000";
@@ -114,6 +118,10 @@ customParameters = (
 {
 name = "Name Table Entry";
 value = "43 0 4 0; Thin Instance";
+},
+{
+name = "Has WWS Names";
+value = 1;
 }
 );
 instanceInterpolations = {
@@ -150,6 +158,10 @@ customParameters = (
 {
 name = "Name Table Entry";
 value = "43 0 4 0; Regular Instance";
+},
+{
+name = "Has WWS Names";
+value = 1;
 }
 );
 instanceInterpolations = {
@@ -186,6 +198,10 @@ customParameters = (
 {
 name = "Name Table Entry";
 value = "43 0 4 0; Black Instance";
+},
+{
+name = "Has WWS Names";
+value = 1;
 }
 );
 instanceInterpolations = {

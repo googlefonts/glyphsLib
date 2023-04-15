@@ -692,3 +692,25 @@ def test_ufo_opentype_name_records():
                 },
             ]
             assert actual == expected, filename
+
+
+def test_ufo_opentype_os2_selection():
+    from glyphsLib.interpolation import apply_instance_data_to_ufo
+
+    filenames = [
+        "UFOInstanceParametersTestV2.glyphs",
+        "UFOInstanceParametersTestV3.glyphs",
+    ]
+
+    for filename in filenames:
+        file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        space = glyphsLib.to_designspace(file, minimal=True)
+
+        assert len(space.sources) == 2, filename
+        assert len(space.instances) == 3, filename
+        for instance in space.instances:
+            source = copy.deepcopy(space.sources[0])
+            apply_instance_data_to_ufo(source.font, instance, space)
+
+            actual = source.font.info.openTypeOS2Selection
+            assert actual == [7, 8], filename

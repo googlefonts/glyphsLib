@@ -1,9 +1,13 @@
 {
-.appVersion = "3151";
+.appVersion = "3186";
 customParameters = (
 {
 name = "Name Table Entry";
 value = "42 0 4 0; File";
+},
+{
+name = "Use Typo Metrics";
+value = 1;
 },
 {
 name = Axes;
@@ -83,6 +87,10 @@ name = "Name Table Entry";
 value = "43 0 4 0; Thin Instance";
 },
 {
+name = "Has WWS Names";
+value = 1;
+},
+{
 name = preferredFamilyName;
 value = "Typographic New Font";
 },
@@ -105,6 +113,10 @@ name = "Name Table Entry";
 value = "43 0 4 0; Regular Instance";
 },
 {
+name = "Has WWS Names";
+value = 1;
+},
+{
 name = preferredFamilyName;
 value = "Typographic New Font";
 },
@@ -125,6 +137,10 @@ customParameters = (
 {
 name = "Name Table Entry";
 value = "43 0 4 0; Black Instance";
+},
+{
+name = "Has WWS Names";
+value = 1;
 },
 {
 name = preferredFamilyName;
