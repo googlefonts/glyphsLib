@@ -153,13 +153,10 @@ class GlyphsObjectProxy:
         opposed to a master or instance."""
         return hasattr(self._owner, "glyphs")
 
-    def has_properties(self):
-        if self.is_font():
-            return self._owner.format_version > 2
-        return hasattr(self._owner, "properties")
-
     def get_property(self, key):
-        return self._owner.properties.get(key)
+        if key and hasattr(self._owner, "properties"):
+            return self._owner.properties.get(key)
+        return None
 
 
 class UFOProxy:
@@ -251,21 +248,23 @@ class ParamHandler(AbstractParamHandler):
         self._write_to_ufo(glyphs, ufo, ufo_value)
 
     def _read_from_glyphs(self, glyphs):
-        # Is it now a property?
-        if self.glyphs3_property and glyphs.has_properties():
-            return glyphs.get_property(self.glyphs3_property)
-        # Try both the prefixed (long) name and the short name
+        value = None
+        # Try to read from the properties first.
+        value = glyphs.get_property(self.glyphs3_property)
+        if value is not None:
+            return value
+        # Try to read from the custom parameters next, using both the short
+        # name, which has precedence, and the prefixed (long) name.
         if self.glyphs_multivalued:
             getter = glyphs.get_custom_values
         else:
             getter = glyphs.get_custom_value
-        # The value registered using the small name has precedence
-        small_name_value = getter(self.glyphs_name)
-        if small_name_value is not None:
-            return small_name_value
+        value = getter(self.glyphs_name)
+        if value is not None:
+            return value
         if self.glyphs_long_name is not None:
-            return getter(self.glyphs_long_name)
-        return None
+            value = getter(self.glyphs_long_name)
+        return value
 
     def _write_to_glyphs(self, glyphs, value):
         # We currently convert UFO to Glyphs2 files.

@@ -558,7 +558,7 @@ class SetCustomParamsTestDefcon(SetCustomParamsTestBase, unittest.TestCase):
     ufo_module = defcon
 
 
-def test_ufo_filename_custom_param(ufo_module):
+def test_ufo_filename(ufo_module):
     """Test that new-style UFO_FILENAME_CUSTOM_PARAM is written instead of
     (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
@@ -588,7 +588,7 @@ def test_ufo_filename_custom_param(ufo_module):
     assert ds_rt.instances[0].filename == "../build/instance_ufos/MyFont.ufo"
 
 
-def test_ufo_filename_custom_param_plus_legacy(ufo_module):
+def test_ufo_filename_with_legacy(ufo_module):
     """Test that new-style UFO_FILENAME_CUSTOM_PARAM overrides legacy
     (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
@@ -602,7 +602,7 @@ def test_ufo_filename_custom_param_plus_legacy(ufo_module):
     assert ds.instances[0].filename == "bbb.ufo"
 
 
-def test_ufo_filename_custom_param_instance_empty(ufo_module):
+def test_ufo_filename_with_instance_empty(ufo_module):
     font = glyphsLib.GSFont(os.path.join(DATA, "UFOFilenameTest.glyphs"))
     font.masters[0].customParameters[UFO_FILENAME_CUSTOM_PARAM] = "aaa.ufo"
     del font.instances[0].customParameters[UFO_FILENAME_CUSTOM_PARAM]
@@ -616,50 +616,79 @@ def test_ufo_filename_custom_param_instance_empty(ufo_module):
     assert ds.instances[0].filename == "instance_ufos/NewFont-Regular.ufo"
 
 
-def test_ufo_instance_parameters():
+def test_ufo_opentype_name_preferred_family_subfamily_name():
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
-    file = glyphsLib.GSFont(os.path.join(DATA, "UFOInstanceParametersTest.glyphs"))
-    space = glyphsLib.to_designspace(file, minimal=True)
+    filenames = [
+        "UFOInstanceParametersTestV2.glyphs",
+        # NOTE: In the format of version 3, the preferred family and subfamily
+        # names are not actually saved in custom paramters but properties.
+        "UFOInstanceParametersTestV3.glyphs",
+    ]
 
-    assert len(space.sources) == 2
-    for source in space.sources:
-        actual = list(map(dict, source.font.info.openTypeNameRecords))
-        expected = [
-            {
-                "nameID": 42,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": "File",
-            },
-        ]
-        assert actual == expected
+    for filename in filenames:
+        file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        space = glyphsLib.to_designspace(file, minimal=True)
 
-    assert len(space.instances) == 3
-    for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
-        actual = instance.lib[glyphsLib.builder.constants.CUSTOM_PARAMETERS_KEY]
-        expected = [("Name Table Entry", f"43 0 4 0;{name} Instance")]
-        assert actual == expected
+        assert len(space.sources) == 2, filename
+        assert len(space.instances) == 3, filename
+        for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
+            source = copy.deepcopy(space.sources[0])
+            apply_instance_data_to_ufo(source.font, instance, space)
 
-        source = copy.deepcopy(space.sources[0])
-        apply_instance_data_to_ufo(source.font, instance, space)
+            actual = source.font.info.openTypeNamePreferredFamilyName
+            assert actual == "Typographic New Font", filename
 
-        actual = list(map(dict, source.font.info.openTypeNameRecords))
-        expected = [
-            {
-                "nameID": 42,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": "File",
-            },
-            {
-                "nameID": 43,
-                "platformID": 0,
-                "encodingID": 4,
-                "languageID": 0,
-                "string": f"{name} Instance",
-            },
-        ]
-        assert actual == expected
+            actual = source.font.info.openTypeNamePreferredSubfamilyName
+            assert actual == f"Typographic {name}", filename
+
+
+def test_ufo_opentype_name_records():
+    from glyphsLib.interpolation import apply_instance_data_to_ufo
+
+    filenames = [
+        "UFOInstanceParametersTestV2.glyphs",
+        "UFOInstanceParametersTestV3.glyphs",
+    ]
+
+    for filename in filenames:
+        file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        space = glyphsLib.to_designspace(file, minimal=True)
+
+        assert len(space.sources) == 2, filename
+        for source in space.sources:
+            actual = list(map(dict, source.font.info.openTypeNameRecords))
+            expected = [
+                {
+                    "nameID": 42,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": "File",
+                },
+            ]
+            assert actual == expected, filename
+
+        assert len(space.instances) == 3, filename
+        for instance, name in zip(space.instances, ["Thin", "Regular", "Black"]):
+            source = copy.deepcopy(space.sources[0])
+            apply_instance_data_to_ufo(source.font, instance, space)
+
+            actual = list(map(dict, source.font.info.openTypeNameRecords))
+            expected = [
+                {
+                    "nameID": 42,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": "File",
+                },
+                {
+                    "nameID": 43,
+                    "platformID": 0,
+                    "encodingID": 4,
+                    "languageID": 0,
+                    "string": f"{name} Instance",
+                },
+            ]
+            assert actual == expected, filename
