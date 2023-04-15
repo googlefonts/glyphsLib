@@ -818,14 +818,14 @@ class OS2SelectionParamHandler(AbstractParamHandler):
         if not use_typo_metrics and not has_wws_name and unsupported_bits is None:
             return
 
-        selection_bits = []
+        selection_bits = ufo.get_info_value("openTypeOS2Selection") or []
         if use_typo_metrics:
             selection_bits.append(7)
         if has_wws_name:
             selection_bits.append(8)
         if unsupported_bits:
             selection_bits.extend(unsupported_bits)
-        ufo.set_info_value("openTypeOS2Selection", sorted(selection_bits))
+        ufo.set_info_value("openTypeOS2Selection", sorted(set(selection_bits)))
 
 
 register(OS2SelectionParamHandler())
