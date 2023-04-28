@@ -64,8 +64,14 @@ expander = TokenExpander(TESTFONT, master)
             False,
         ),  # will expand to all glyph names that end in ".sc"
         ("$[not name endswith '.sc']", "A Sacute", False),
+        ("$[NOT name endswith '.sc']", "A Sacute", False),
+        ("$[! name endswith '.sc']", "A Sacute", False),
         ("$[name endswith '.sc' or not name endswith '.sc']", "A.sc A Sacute", False),
+        ("$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']", "A.sc A Sacute", False),
+        ("$[name endswith '.sc' || ! name endswith '.sc']", "A.sc A Sacute", False),
         ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
+        ("$[name ENDSWITH '.sc' AND NOT name ENDSWITH '.sc']", "", False),
+        ("$[name endswith '.sc' && ! name endswith '.sc']", "", False),
         # ('$[layer0.width < 500]', "", False), # layer0 = first master
         # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
         # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL

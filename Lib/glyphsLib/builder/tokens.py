@@ -213,7 +213,7 @@ class TokenExpander:
         return list(glyphs.keys())
 
     def _parse_optional_not(self):
-        m = re.match(r"^\s*not\s+", self.glyph_predicate)
+        m = re.match(r"(?i)^\s*(not|!)\s+", self.glyph_predicate)
         if m:
             self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
             return True
