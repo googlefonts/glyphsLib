@@ -294,9 +294,14 @@ class TokenExpander:
                 "Unknown glyph property '%s' at position %i" % (value, self.position)
             ) from e
 
+    gsglyph_attr = {
+        "colorIndex": "color",
+    }
+
     def _get_value_for_glyph(self, g, value):
+        attr = self.gsglyph_attr.get(value, value)
         try:
-            return getattr(g, value)
+            return getattr(g, attr)
         except AttributeError as exc:
             raise ValueError(
                 "Glyphs attribute %s used in predicate '%s'"

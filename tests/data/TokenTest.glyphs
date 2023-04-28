@@ -143,8 +143,9 @@ note = "I love it!";
 },
 {
 category = Separator;
+color = 5;
 glyphname = Sacute;
-lastChange = "2023-04-28 17:52:32 +0000";
+lastChange = "2023-04-28 22:20:21 +0000";
 layers = (
 {
 layerId = m01;

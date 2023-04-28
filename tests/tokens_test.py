@@ -69,7 +69,7 @@ expander = TokenExpander(TESTFONT, master)
         # ('$[layer0.width < 500]', "", False), # layer0 = first master
         # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
         # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL
-        # ('$[colorIndex == 5]', "", False),
+        ("$[colorIndex == 5]", "Sacute", False),
         # ('$[case == smallCaps]', "", False),
         # predefined constants: noCase, upper, lower, smallCaps, minor, other
         (
