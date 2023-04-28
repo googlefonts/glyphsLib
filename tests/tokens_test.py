@@ -66,6 +66,10 @@ expander = TokenExpander(TESTFONT, master)
         ("$[not name endswith '.sc']", "A Sacute", False),
         ("$[name endswith '.sc' or not name endswith '.sc']", "A.sc A Sacute", False),
         ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
+        ("$[name like 'A']", "A", False),
+        ("$[name like 'Sacut']", "", False),
+        ("$[name like 'S?cute']", "Sacute", False),
+        ("$[name like 'S*']", "Sacute", False),
         # ('$[layer0.width < 500]', "", False), # layer0 = first master
         # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
         # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL

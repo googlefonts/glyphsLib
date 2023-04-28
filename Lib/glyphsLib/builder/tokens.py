@@ -1,12 +1,11 @@
 import re
+import fnmatch
 from collections import OrderedDict
 
 
 def _like(got, expected):
-    expected = expected.replace("?", ".")
-    expected = expected.replace("*", ".*")
-    # Technically we should be a bit stricter than this
-    return re.match(expected, str(got))
+    # LIKE is similar to Unix shell-style wildcards supported by fnmatch
+    return fnmatch.fnmatch(str(got), expected)
 
 
 class TokenExpander:
