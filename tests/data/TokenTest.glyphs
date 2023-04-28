@@ -19,7 +19,9 @@ name = Languagesystems;
 );
 features = (
 {
-code = "pos A A.sc ${padding*2};";
+code = "pos A A.sc ${padding*2};
+
+pos A Sacute ${Sacute:width/2};";
 tag = dist;
 }
 );
@@ -82,13 +84,41 @@ glyphs = (
 glyphname = A;
 kernLeft = H;
 kernRight = L;
-lastChange = "2021-01-14 12:22:21 +0000";
+lastChange = "2023-04-28 17:12:34 +0000";
 layers = (
 {
+anchors = (
+{
+name = bottom;
+pos = (300,0);
+},
+{
+name = ogonek;
+pos = (540,10);
+},
+{
+name = top;
+pos = (300,700);
+}
+);
 layerId = m01;
 width = 600;
 },
 {
+anchors = (
+{
+name = bottom;
+pos = (300,0);
+},
+{
+name = ogonek;
+pos = (540,10);
+},
+{
+name = top;
+pos = (300,700);
+}
+);
 layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
 width = 600;
 }
@@ -114,11 +144,11 @@ note = "I love it!";
 {
 category = Separator;
 glyphname = Sacute;
-lastChange = "2021-01-14 12:22:48 +0000";
+lastChange = "2023-04-28 17:52:32 +0000";
 layers = (
 {
 layerId = m01;
-width = 600;
+width = 300;
 },
 {
 layerId = "11119B89-ADF6-486B-9172-E51437C3592A";

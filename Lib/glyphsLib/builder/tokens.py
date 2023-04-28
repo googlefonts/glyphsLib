@@ -13,6 +13,7 @@ class TokenExpander:
 
     number_token_re = r"\$\{([^}]+)\}"
     glyph_predicate_re = r"\$\[([^\]]+)\]"
+    glyph_property_re = r"\$\{([^}]+:[^}]+)\}"
     bare_number_value_re = r"\$(\w+)\b"
 
     def __init__(self, font, master):
@@ -38,6 +39,7 @@ class TokenExpander:
 
     def parse_token(self):
         for (regexp, parser) in [
+            (self.glyph_property_re, self.parse_glyph_property),
             (self.number_token_re, self.parse_number_token),
             (self.glyph_predicate_re, self.parse_glyph_predicate),
             (self.bare_number_value_re, self.parse_bare_number_value),
@@ -67,7 +69,7 @@ class TokenExpander:
         # number tokens
         return str(value)
 
-    def parse_number_token(self, token):
+    def parse_number_token(self, token, layer=None):
         # These things can contain: number tokens, literal numbers, +-*/, space
         # We will also allow ()
         expression = ""
@@ -77,18 +79,33 @@ class TokenExpander:
                 expression += token[0]
                 token = token[1:]
                 continue
-            # Assume it's a number token
-            m = re.match(r"^(\w+)", token)
+            # Assume it's a property or a number token
+            if layer is not None:
+                m = re.match(r"^([a-zA-Z0-9_.]+)", token)
+            else:
+                m = re.match(r"^(\w+)", token)
             if not m:
                 raise ValueError(
                     "Unknown character %s in number token '%s' at position %i"
                     % (token[0], originaltoken, self.position)
                 )
-            expression += self.parse_bare_number_value(m[1])
+            if layer is not None:
+                try:
+                    expression += self._get_value_for_layer(layer, m[1])
+                except ValueError:
+                    expression += self.parse_bare_number_value(m[1])
+            else:
+                expression += self.parse_bare_number_value(m[1])
             token = token[len(m[0]) :]
         # This expression is now just numbers and operators - safe to eval,
         # but needs to be an integer
         return "%i" % eval(expression)
+
+    def parse_glyph_property(self, token):
+        glyphname, token = token.split(":")
+        glyph = self.font.glyphs[glyphname]
+        layer = glyph.layers[self.master.id]
+        return self.parse_number_token(token, layer)
 
     def parse_glyph_predicate(self, token):
         self.originaltoken = token
@@ -251,6 +268,31 @@ class TokenExpander:
             self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
             return m[1]
         self._parse_error_in_predicate("value")
+
+    def _get_value_for_anchor(self, layer, value):
+        _, anchorname, attr = value.split(".")
+        anchor = layer.anchors[anchorname]
+        if anchor is None:
+            raise ValueError(
+                "Unknown anchor '%s' at position %i" % (anchorname, self.position)
+            )
+        try:
+            return str(getattr(anchor.position, attr))
+        except AttributeError as e:
+            raise ValueError(
+                "Unknown anchor attribute '%s' at position %i" % (attr, self.position)
+            ) from e
+
+    def _get_value_for_layer(self, layer, value):
+        if value.startswith("anchors."):
+            return self._get_value_for_anchor(layer, value)
+
+        try:
+            return str(getattr(layer, value))
+        except AttributeError as e:
+            raise ValueError(
+                "Unknown glyph property '%s' at position %i" % (value, self.position)
+            ) from e
 
     def _get_value_for_glyph(self, g, value):
         try:

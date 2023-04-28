@@ -37,6 +37,26 @@ expander = TokenExpander(TESTFONT, master)
         (r"pos a ${padding + padding} b;", "pos a 500 b;", False),
         (r"pos a ${padding + (padding/2)} b;", "pos a 375 b;", False),
         ("pos a $xxx b;", "", True),
+        (r"pos A ${A.sc:width};", "pos A 600;", False),
+        (r"pos A ${A:width+1};", "pos A 601;", False),
+        (r"pos A ${A:width*-1};", "pos A -600;", False),
+        (r"pos A -${A:width};", "pos A -600;", False),
+        (r"pos A ${A:width*10};", "pos A 6000;", False),
+        (r"pos A ${A:width/10};", "pos A 60;", False),
+        (r"pos A ${A:width-10};", "pos A 590;", False),
+        (r"pos A ${A:width+width};", "pos A 1200;", False),
+        (r"pos A ${A:width+padding};", "pos A 850;", False),
+        (r"pos A ${A:length};", "", True),
+        # (r"pos A ${A:LSB}", "pos A 600;", False),
+        (r"pos A ${A:anchors.top.x};", "pos A 300;", False),
+        (r"pos A ${A:anchors.ogonek.y};", "pos A 10;", False),
+        (
+            r"pos A <${A:anchors.top.x} ${A:anchors.top.y} 0 0>;",
+            "pos A <300 700 0 0>;",
+            False,
+        ),
+        (r"pos A ${A:anchors.ogonek.z};", "", True),
+        (r"pos A ${A:anchors.center.x};", "", True),
         # Tests from Glyphs tutorial
         (
             "$[name endswith '.sc']",
@@ -103,3 +123,6 @@ def test_end_to_end():
 
     assert "pos A A.sc 100" in ufos[0].features.text
     assert "pos A A.sc 500" in ufos[1].features.text
+
+    assert "pos A Sacute 150" in ufos[0].features.text
+    assert "pos A Sacute 300" in ufos[1].features.text
