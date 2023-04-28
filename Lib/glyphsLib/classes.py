@@ -3980,7 +3980,7 @@ class GSLayer(GSBase):
             return None
 
         if self.parent.parent.format_version > 2:
-            return self.attributes["coordinates"]  # Glyphs 3
+            return (float(v) for v in self.attributes["coordinates"])  # Glyphs 3
 
         # Glyphs 2
         name = self.name
