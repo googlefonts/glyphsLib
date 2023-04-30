@@ -312,6 +312,8 @@ class TokenExpander:
         "!=": lambda got, exp: got != exp,
         ">=": lambda got, exp: got >= exp,
         "<=": lambda got, exp: got <= exp,
+        ">": lambda got, exp: got > exp,
+        "<": lambda got, exp: got < exp,
         "between": lambda got, exp: got >= exp[0] and got <= exp[1],
         "in": lambda got, exp: got in exp,
     }
