@@ -293,7 +293,17 @@ class TokenExpander:
                 "Unknown glyph property '%s' at position %i" % (value, self.position)
             ) from e
 
+    gsglyph_attr_getters = {
+        "colorIndex": lambda g: g.color,
+        "countOfUnicodes": lambda g: len(g.unicodes),
+        "countOfLayers": lambda g: len(g.layers),
+    }
+
     def _get_value_for_glyph(self, g, value):
+        getter = self.gsglyph_attr_getters.get(value, None)
+        if getter:
+            return getter(g)
+
         try:
             return getattr(g, value)
         except AttributeError as exc:

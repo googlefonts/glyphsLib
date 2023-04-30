@@ -63,12 +63,24 @@ expander = TokenExpander(TESTFONT, master)
             "A.sc",
             False,
         ),  # will expand to all glyph names that end in ".sc"
-        ("$[not name endswith '.sc']", "A Sacute", False),
-        ("$[NOT name endswith '.sc']", "A Sacute", False),
-        ("$[! name endswith '.sc']", "A Sacute", False),
-        ("$[name endswith '.sc' or not name endswith '.sc']", "A.sc A Sacute", False),
-        ("$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']", "A.sc A Sacute", False),
-        ("$[name endswith '.sc' || ! name endswith '.sc']", "A.sc A Sacute", False),
+        ("$[not name endswith '.sc']", "A space Sacute", False),
+        ("$[NOT name endswith '.sc']", "A space Sacute", False),
+        ("$[! name endswith '.sc']", "A space Sacute", False),
+        (
+            "$[name endswith '.sc' or not name endswith '.sc']",
+            "A.sc A space Sacute",
+            False,
+        ),
+        (
+            "$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']",
+            "A.sc A space Sacute",
+            False,
+        ),
+        (
+            "$[name endswith '.sc' || ! name endswith '.sc']",
+            "A.sc A space Sacute",
+            False,
+        ),
         ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
         ("$[name ENDSWITH '.sc' AND NOT name ENDSWITH '.sc']", "", False),
         ("$[name endswith '.sc' && ! name endswith '.sc']", "", False),
@@ -79,12 +91,12 @@ expander = TokenExpander(TESTFONT, master)
         # ('$[layer0.width < 500]', "", False), # layer0 = first master
         # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
         # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL
-        # ('$[colorIndex == 5]', "", False),
+        ("$[colorIndex == 5]", "Sacute", False),
         # ('$[case == smallCaps]', "", False),
         # predefined constants: noCase, upper, lower, smallCaps, minor, other
         (
             '$[name matches "S|s.*"]',
-            "A.sc Sacute",
+            "A.sc space Sacute",
             False,
         ),  # "matches": regular expression
         # ('$[leftMetricsKey like "*"]', "", False), # "like": wildcard search
@@ -95,8 +107,8 @@ expander = TokenExpander(TESTFONT, master)
         ('$[rightKerningGroup like "L"]', "A", False),
         ('$[unicode beginswith "41"]', "A", False),  # beginswith, endswith, contains
         ('$[note contains "love it"]', "A.sc", False),  # glyph note
-        # ('$[countOfUnicodes > 1]', "", False),
-        # ('$[countOfLayers > 1]', "", False),
+        ("$[countOfUnicodes > 1]", "space", False),
+        ("$[countOfLayers > 2]", "space", False),
         ('$[subCategory like "Arrow"]', "Sacute", False),
         # ('$[hasHints == 0]', "", False), # boolean: false, no, 0 versus true, yes, 1
         # ('$[isColorGlyph == true]', "", False),
