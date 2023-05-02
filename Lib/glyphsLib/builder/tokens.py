@@ -1,12 +1,11 @@
 import re
+import fnmatch
 from collections import OrderedDict
 
 
 def _like(got, expected):
-    expected = expected.replace("?", ".")
-    expected = expected.replace("*", ".*")
-    # Technically we should be a bit stricter than this
-    return re.match(expected, str(got))
+    # LIKE is similar to Unix shell-style wildcards supported by fnmatch
+    return fnmatch.fnmatchcase(str(got), expected)
 
 
 class TokenExpander:
@@ -213,7 +212,7 @@ class TokenExpander:
         return list(glyphs.keys())
 
     def _parse_optional_not(self):
-        m = re.match(r"^\s*not\s+", self.glyph_predicate)
+        m = re.match(r"(?i)^\s*(not|!)\s+", self.glyph_predicate)
         if m:
             self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
             return True
@@ -294,7 +293,17 @@ class TokenExpander:
                 "Unknown glyph property '%s' at position %i" % (value, self.position)
             ) from e
 
+    gsglyph_attr_getters = {
+        "colorIndex": lambda g: g.color,
+        "countOfUnicodes": lambda g: len(g.unicodes),
+        "countOfLayers": lambda g: len(g.layers),
+    }
+
     def _get_value_for_glyph(self, g, value):
+        getter = self.gsglyph_attr_getters.get(value, None)
+        if getter:
+            return getter(g)
+
         try:
             return getattr(g, value)
         except AttributeError as exc:
@@ -313,6 +322,8 @@ class TokenExpander:
         "!=": lambda got, exp: got != exp,
         ">=": lambda got, exp: got >= exp,
         "<=": lambda got, exp: got <= exp,
+        ">": lambda got, exp: got > exp,
+        "<": lambda got, exp: got < exp,
         "between": lambda got, exp: got >= exp[0] and got <= exp[1],
         "in": lambda got, exp: got in exp,
     }

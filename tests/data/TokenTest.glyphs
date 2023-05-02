@@ -142,9 +142,31 @@ width = 600;
 note = "I love it!";
 },
 {
+glyphname = space;
+lastChange = "2023-04-30 16:25:25 +0000";
+layers = (
+{
+layerId = m01;
+width = 200;
+},
+{
+layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
+width = 200;
+},
+{
+associatedMasterId = m01;
+layerId = "54D50A9B-7A3E-4CD6-AC9C-62E91FCBECBA";
+name = Test;
+width = 200;
+}
+);
+unicode = (32,160);
+},
+{
 category = Separator;
+color = 5;
 glyphname = Sacute;
-lastChange = "2023-04-28 17:52:32 +0000";
+lastChange = "2023-04-28 22:20:21 +0000";
 layers = (
 {
 layerId = m01;
