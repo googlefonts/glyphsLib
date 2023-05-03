@@ -277,6 +277,11 @@ class UFOBuilder(LoggerMixin):
 
         # And sublayers (brace, bracket, ...) second.
         for glyph, layer in supplementary_layer_data:
+
+            # Normalize layer names from v3 attributes for writing to UFO
+            if "coordinates" in layer.attributes and layer._is_brace_layer():
+                layer.name = "{%s}" % ", ".join([str(v) for v in layer.attributes["coordinates"]])
+
             if (
                 layer.layerId not in master_layer_ids
                 and layer.associatedMasterId not in master_layer_ids
