@@ -1163,6 +1163,14 @@ class CustomParametersProxy(ListDictionaryProxy):
                 return self._owner.axes
         return super().__contains__(item)
 
+    def __setter__(self, items):
+        axes_params = [i for i in items if i.name == "Axes"]
+        for param in axes_params:
+            self._owner._set_axes_from_custom_parameter(param.value)
+
+        params = [i for i in items if i.name != "Axes"]
+        super().__setter__(params)
+
     def __iter__(self):
         for item in super().__iter__():
             yield item
@@ -4345,7 +4353,6 @@ class GSFont(GSBase):
         "classes": [],
         "features": [],
         "featurePrefixes": [],
-        "customParameters": [],
         "disablesAutomaticAlignment": False,
         "disablesNiceNames": False,
         "gridLength": 1,
@@ -4439,11 +4446,6 @@ class GSFont(GSBase):
             self.glyphs.append(l)
         return 0
 
-    def _parse_customParameters_dict(self, parser, value):
-        _customParameters = parser._parse(value, GSCustomParameter)
-        for cp in _customParameters:
-            self.customParameters[cp.name] = cp.value  # This will intercept axes
-
     def _parse_settings_dict(self, parser, settings):
         self.disablesAutomaticAlignment = bool(
             settings.get("disablesAutomaticAlignment", False)
@@ -4474,7 +4476,7 @@ class GSFont(GSBase):
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])
         self.featurePrefixes = copy.deepcopy(self._defaultsForName["featurePrefixes"])
-        self.customParameters = copy.deepcopy(self._defaultsForName["customParameters"])
+        self.customParameters = []
         self.date = None
         self.disablesAutomaticAlignment = self._defaultsForName[
             "disablesAutomaticAlignment"
@@ -4826,6 +4828,7 @@ class GSFont(GSBase):
 
 GSFont._add_parsers(
     [
+        {"plist_name": "customParameters", "type": GSCustomParameter},
         {"plist_name": "unitsPerEm", "object_name": "upm"},
         {"plist_name": "gridLength", "object_name": "grid"},
         {"plist_name": "gridSubDivisions", "object_name": "gridSubDivision"},
