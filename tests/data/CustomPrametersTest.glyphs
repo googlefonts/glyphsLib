@@ -38,6 +38,24 @@ Location = 100;
 );
 date = "2023-05-15 18:23:31 +0000";
 familyName = "Custom Prameters Test";
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+features = (
+{
+code = "";
+tag = ccmp;
+},
+{
+code = "";
+tag = liga;
+}
+);
 fontMaster = (
 {
 axesValues = (
@@ -57,6 +75,27 @@ width = 200;
 }
 );
 unicode = 32;
+}
+);
+instances = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = "Replace Feature";
+value = "ccmp;sub space by space;";
+},
+{
+name = "Replace Feature";
+value = "liga;sub space space by space;";
+}
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
 }
 );
 unitsPerEm = 1000;
