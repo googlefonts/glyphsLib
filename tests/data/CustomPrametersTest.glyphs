@@ -1,0 +1,104 @@
+{
+.appVersion = "3192";
+.formatVersion = 3;
+axes = (
+{
+name = Spacing;
+tag = SPAC;
+}
+);
+customParameters = (
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = 0;
+}
+);
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = -100;
+}
+);
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = 100;
+}
+);
+}
+);
+date = "2023-05-15 18:23:31 +0000";
+familyName = "Custom Prameters Test";
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+features = (
+{
+code = "";
+tag = ccmp;
+},
+{
+code = "";
+tag = liga;
+}
+);
+fontMaster = (
+{
+axesValues = (
+0
+);
+id = m01;
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 32;
+}
+);
+instances = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = "Replace Feature";
+value = "ccmp;sub space by space;";
+},
+{
+name = "Replace Feature";
+value = "liga;sub space space by space;";
+}
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

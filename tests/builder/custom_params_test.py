@@ -714,3 +714,24 @@ def test_ufo_opentype_os2_selection():
 
             actual = source.font.info.openTypeOS2Selection
             assert actual == [7, 8], filename
+
+
+def test_mutiple_params(ufo_module):
+    """Test multiple custom parameters with the same name on GSFont."""
+
+    font = GSFont(os.path.join(DATA, "CustomPrametersTest.glyphs"))
+    assert len(font.customParameters) == 3
+
+    assert all("Virtual Master" == c.name for c in font.customParameters)
+
+    assert font.customParameters[0].value == [{"Axis": "Spacing", "Location": 0}]
+    assert font.customParameters[1].value == [{"Axis": "Spacing", "Location": -100}]
+    assert font.customParameters[2].value == [{"Axis": "Spacing", "Location": 100}]
+
+    instance = font.instances[0]
+    assert len(instance.customParameters) == 2
+
+    assert all("Replace Feature" == c.name for c in instance.customParameters)
+
+    assert instance.customParameters[0].value == "ccmp;sub space by space;"
+    assert instance.customParameters[1].value == "liga;sub space space by space;"
