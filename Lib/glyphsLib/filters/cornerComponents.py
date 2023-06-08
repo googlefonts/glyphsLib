@@ -19,7 +19,7 @@ from fontTools.misc.transform import Transform
 from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Glyph
 
-from glyphsLib.builder.constants import HINTS_LIB_KEY
+from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_SIGNATURE_LIB_KEY
 
 
 try:
@@ -477,7 +477,19 @@ class CornerComponentsFilter(BaseFilter):
         todo_list = []
 
         for glyphs_cc in corner_components:
-            path_idx, node_idx = glyphs_cc["origin"]
+            shape_index, node_idx = glyphs_cc["origin"]
+            path_indices = {}
+            if SHAPE_SIGNATURE_LIB_KEY in glyph.lib:
+                # Map between shape index and path index
+                for ix, sign in enumerate(glyph.lib[SHAPE_SIGNATURE_LIB_KEY]):
+                    if sign == "P":
+                        path_indices[ix] = len(path_indices.keys())
+                if shape_index not in path_indices:
+                    raise ValueError(
+                        f"Could not find shape number {shape_index} in {glyph.name}"
+                    )
+            path_idx = path_indices.get(shape_index, shape_index)
+
             # We use font, not .glyphSet here because corner components
             # aren't normally exported
             if glyphs_cc["name"] not in self.context.font:
