@@ -18,7 +18,7 @@ import logging
 
 import glyphsLib.glyphdata
 
-from .. import GSLayer
+from .. import GSLayer, GSPath
 from .common import from_loose_ufo_time, to_ufo_time
 from .constants import (
     GLYPHLIB_PREFIX,
@@ -28,6 +28,7 @@ from .constants import (
     BRACKET_GLYPH_RE,
     BRACKET_GLYPH_SUFFIX_RE,
     SCRIPT_LIB_KEY,
+    SHAPE_SIGNATURE_LIB_KEY,
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
 )
@@ -162,6 +163,11 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_hints(ufo_glyph, layer)  # .hints
     self.to_ufo_paths(ufo_glyph, layer)  # .paths
     self.to_ufo_components(ufo_glyph, layer)  # .components
+    # Store shape order for mixed glyphs
+    if layer.paths and layer.components:
+        ufo_glyph.lib[SHAPE_SIGNATURE_LIB_KEY] = "".join(
+            [("P" if isinstance(x, GSPath) else "C") for x in layer.shapes]
+        )
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)  # .anchors
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below

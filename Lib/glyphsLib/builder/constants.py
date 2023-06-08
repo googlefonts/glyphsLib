@@ -60,6 +60,7 @@ UFO_KERN_GROUP_PATTERN = re.compile("^public\\.kern([12])\\.(.*)$")
 LOCKED_GUIDE_NAME_SUFFIX = " [locked]"
 
 HINTS_LIB_KEY = GLYPHS_PREFIX + "hints"
+SHAPE_SIGNATURE_LIB_KEY = GLYPHLIB_PREFIX + "shapeSignature"
 
 SMART_COMPONENT_AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"
 
