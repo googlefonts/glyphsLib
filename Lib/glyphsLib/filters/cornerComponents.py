@@ -160,6 +160,8 @@ def point_on_seg_at_distance(seg, distance):
     else:
         start, end = aligned_seg
         if math.isclose(end[0], start[0]):
+            if math.isclose(end[1], start[1]):
+                return 0
             return distance / (end[1] - start[1])
         else:
             return distance / (end[0] - start[0])
@@ -428,6 +430,10 @@ class CornerComponentApplier:
             self.path,
             (self.target_node_ix + len(self.corner_path) - 1) % len(self.path),
         )
+
+        if not intersection:
+            # Something's probably wrong...
+            return
 
         if len(outstroke) == 2:
             (outstroke[0].x, outstroke[0].y) = otRound(intersection[0]), otRound(
