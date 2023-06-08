@@ -636,7 +636,6 @@ class FontFontMasterProxy(Proxy):
                 glyph.layers.append(newLayer)
 
     def remove(self, FontMaster):
-
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
             for layer in glyph.layers:
@@ -923,7 +922,7 @@ class GlyphLayerProxy(Proxy):
                 newLayers[layer.layerId] = layer
         else:
             raise TypeError
-        for (key, layer) in newLayers.items():
+        for key, layer in newLayers.items():
             self._owner._setupLayer(layer, key)
         self._owner._layers = newLayers
 
@@ -3837,7 +3836,6 @@ class GSLayer(GSBase):
         left, bottom, right, top = None, None, None, None
 
         for item in self.paths.values() + self.components.values():
-
             newLeft, newBottom, newWidth, newHeight = item.bounds
             newRight = newLeft + newWidth
             newTop = newBottom + newHeight
