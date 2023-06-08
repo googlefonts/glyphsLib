@@ -488,6 +488,21 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
+
+    if SHAPE_SIGNATURE_LIB_KEY in ufo_glyph.lib:
+        # Reshuffle shapes array to match original shape order
+        new_shapes = []
+        path_counter = 0
+        comp_counter = 0
+        for sign in ufo_glyph.lib[SHAPE_SIGNATURE_LIB_KEY]:
+            if sign == "P":
+                new_shapes.append(layer.paths[path_counter])
+                path_counter += 1
+            else:
+                new_shapes.append(layer.components[comp_counter])
+                comp_counter += 1
+        layer.shapes = new_shapes
+
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
 
