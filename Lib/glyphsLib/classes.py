@@ -1105,16 +1105,24 @@ class LayerShapesProxy(IndexedObjectsProxy):
             raise KeyError
 
     def setter(self, values):
-        newvalues = list(
-            filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
-        )
+        if self._filter:
+            newvalues = list(
+                filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
+            )
+        else:
+            newvalues = []
         newvalues.extend(list(values))
         self._owner._shapes = newvalues
         for value in newvalues:
             value._parent = self._owner
 
     def values(self):
-        return list(filter(lambda s: isinstance(s, self._filter), self._owner._shapes))
+        if self._filter:
+            return list(
+                filter(lambda s: isinstance(s, self._filter), self._owner._shapes)
+            )
+        else:
+            return self._owner._shapes[:]
 
 
 class LayerHintsProxy(IndexedObjectsProxy):
@@ -3786,6 +3794,11 @@ class GSLayer(GSBase):
     components = property(
         lambda self: LayerComponentsProxy(self),
         lambda self, value: LayerComponentsProxy(self).setter(value),
+    )
+
+    shapes = property(
+        lambda self: LayerShapesProxy(self),
+        lambda self, value: LayerShapesProxy(self).setter(value),
     )
 
     guides = property(
