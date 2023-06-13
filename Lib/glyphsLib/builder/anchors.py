@@ -16,7 +16,7 @@
 from glyphsLib.types import Point
 import uuid
 
-from ufo2ft.constants import OBJECT_LIBS_KEY
+from glyphsLib.builder.constants import OBJECT_LIBS_KEY
 
 __all__ = [
     "to_ufo_glyph_anchors",
