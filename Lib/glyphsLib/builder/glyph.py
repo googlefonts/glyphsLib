@@ -18,7 +18,7 @@ import logging
 
 import glyphsLib.glyphdata
 
-from .. import GSLayer, GSPath
+from .. import GSLayer, GSPath, GSComponent
 from .common import from_loose_ufo_time, to_ufo_time
 from .constants import (
     GLYPHLIB_PREFIX,
@@ -165,9 +165,14 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_components(ufo_glyph, layer)  # .components
     # Store shape order for mixed glyphs
     if layer.paths and layer.components:
-        ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = "".join(
-            [("P" if isinstance(x, GSPath) else "C") for x in layer.shapes]
-        )
+        ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = ""
+        for shape in layer.shapes:
+            if isinstance(shape, GSPath):
+                ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] += "P"
+            elif isinstance(shape, GSComponent):
+                ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] += "C"
+            else:
+                raise ValueError("Unknown shape type %s" % shape)
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)  # .anchors
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below
@@ -498,9 +503,11 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
             if sign == "P":
                 new_shapes.append(layer.paths[path_counter])
                 path_counter += 1
-            else:
+            elif sign == "C":
                 new_shapes.append(layer.components[comp_counter])
                 comp_counter += 1
+            else:
+                raise ValueError("Unknown shape type %s" % sign)
         layer.shapes = new_shapes
 
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
