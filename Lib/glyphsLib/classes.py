@@ -2830,6 +2830,7 @@ class GSAnchor(GSBase):
 
     def __init__(self, name=None, position=None):
         self.name = "" if name is None else name
+        self._userData = None
         if position is None:
             self.position = copy.deepcopy(self._defaultsForName["position"])
         else:
@@ -2844,10 +2845,16 @@ class GSAnchor(GSBase):
     def parent(self):
         return self._parent
 
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
+
 
 GSAnchor._add_parsers(
     [
         {"plist_name": "pos", "object_name": "position", "converter": Point},
+        {"plist_name": "userData", "object_name": "_userData", "type": dict},
         {"plist_name": "position", "converter": Point},
     ]
 )
