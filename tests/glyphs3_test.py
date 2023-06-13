@@ -168,12 +168,12 @@ def test_glyphs3_shape_order(datadir, ufo_module):
 
     designspace = glyphsLib.to_designspace(original_glyphs_font, ufo_module=ufo_module)
     ufo = designspace.sources[0].font
-    assert "com.schriftgestaltung.Glyphs.shapeSignature" in ufo["A"].lib
-    assert "com.schriftgestaltung.Glyphs.shapeSignature" in ufo["B"].lib
-    assert "com.schriftgestaltung.Glyphs.shapeSignature" not in ufo["_comp"].lib
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" in ufo["A"].lib
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" in ufo["B"].lib
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" not in ufo["_comp"].lib
 
-    assert ufo["A"].lib["com.schriftgestaltung.Glyphs.shapeSignature"] == "PC"
-    assert ufo["B"].lib["com.schriftgestaltung.Glyphs.shapeSignature"] == "CP"
+    assert ufo["A"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "PC"
+    assert ufo["B"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "CP"
 
     # Round trip
     round_trip = glyphsLib.to_glyphs([ufo])

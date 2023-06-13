@@ -28,7 +28,7 @@ from .constants import (
     BRACKET_GLYPH_RE,
     BRACKET_GLYPH_SUFFIX_RE,
     SCRIPT_LIB_KEY,
-    SHAPE_SIGNATURE_LIB_KEY,
+    SHAPE_ORDER_LIB_KEY,
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
 )
@@ -165,7 +165,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_components(ufo_glyph, layer)  # .components
     # Store shape order for mixed glyphs
     if layer.paths and layer.components:
-        ufo_glyph.lib[SHAPE_SIGNATURE_LIB_KEY] = "".join(
+        ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = "".join(
             [("P" if isinstance(x, GSPath) else "C") for x in layer.shapes]
         )
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)  # .anchors
@@ -489,12 +489,12 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
 
-    if SHAPE_SIGNATURE_LIB_KEY in ufo_glyph.lib:
+    if SHAPE_ORDER_LIB_KEY in ufo_glyph.lib:
         # Reshuffle shapes array to match original shape order
         new_shapes = []
         path_counter = 0
         comp_counter = 0
-        for sign in ufo_glyph.lib[SHAPE_SIGNATURE_LIB_KEY]:
+        for sign in ufo_glyph.lib[SHAPE_ORDER_LIB_KEY]:
             if sign == "P":
                 new_shapes.append(layer.paths[path_counter])
                 path_counter += 1
