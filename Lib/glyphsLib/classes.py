@@ -636,7 +636,6 @@ class FontFontMasterProxy(Proxy):
                 glyph.layers.append(newLayer)
 
     def remove(self, FontMaster):
-
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
             for layer in glyph.layers:
@@ -923,7 +922,7 @@ class GlyphLayerProxy(Proxy):
                 newLayers[layer.layerId] = layer
         else:
             raise TypeError
-        for (key, layer) in newLayers.items():
+        for key, layer in newLayers.items():
             self._owner._setupLayer(layer, key)
         self._owner._layers = newLayers
 
@@ -1105,16 +1104,24 @@ class LayerShapesProxy(IndexedObjectsProxy):
             raise KeyError
 
     def setter(self, values):
-        newvalues = list(
-            filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
-        )
+        if self._filter:
+            newvalues = list(
+                filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
+            )
+        else:
+            newvalues = []
         newvalues.extend(list(values))
         self._owner._shapes = newvalues
         for value in newvalues:
             value._parent = self._owner
 
     def values(self):
-        return list(filter(lambda s: isinstance(s, self._filter), self._owner._shapes))
+        if self._filter:
+            return list(
+                filter(lambda s: isinstance(s, self._filter), self._owner._shapes)
+            )
+        else:
+            return self._owner._shapes[:]
 
 
 class LayerHintsProxy(IndexedObjectsProxy):
@@ -3788,6 +3795,11 @@ class GSLayer(GSBase):
         lambda self, value: LayerComponentsProxy(self).setter(value),
     )
 
+    shapes = property(
+        lambda self: LayerShapesProxy(self),
+        lambda self, value: LayerShapesProxy(self).setter(value),
+    )
+
     guides = property(
         lambda self: LayerGuideLinesProxy(self),
         lambda self, value: LayerGuideLinesProxy(self).setter(value),
@@ -3824,7 +3836,6 @@ class GSLayer(GSBase):
         left, bottom, right, top = None, None, None, None
 
         for item in self.paths.values() + self.components.values():
-
             newLeft, newBottom, newWidth, newHeight = item.bounds
             newRight = newLeft + newWidth
             newTop = newBottom + newHeight

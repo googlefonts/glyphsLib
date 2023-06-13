@@ -1,6 +1,6 @@
 import glyphsLib
 import pytest
-from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone
+from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone, GSPath, GSComponent
 
 
 def test_metrics():
@@ -159,3 +159,25 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     # Check that groups within one font are identical after pruning
     assert first_derivative_ufos[0].groups == first_derivative_ufos[1].groups
     assert second_derivative_ufos[0].groups == second_derivative_ufos[1].groups
+
+
+def test_glyphs3_shape_order(datadir, ufo_module):
+    file = "ShapeOrder.glyphs"
+    with open(str(datadir.join(file)), encoding="utf-8") as f:
+        original_glyphs_font = glyphsLib.load(f)
+
+    designspace = glyphsLib.to_designspace(original_glyphs_font, ufo_module=ufo_module)
+    ufo = designspace.sources[0].font
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" in ufo["A"].lib
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" in ufo["B"].lib
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" not in ufo["_comp"].lib
+
+    assert ufo["A"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "PC"
+    assert ufo["B"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "CP"
+
+    # Round trip
+    round_trip = glyphsLib.to_glyphs([ufo])
+    glyph_a = round_trip.glyphs["A"].layers[0]
+    glyph_b = round_trip.glyphs["B"].layers[0]
+    assert isinstance(glyph_a.shapes[0], GSPath)
+    assert isinstance(glyph_b.shapes[0], GSComponent)
