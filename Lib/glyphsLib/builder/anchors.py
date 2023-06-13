@@ -16,6 +16,8 @@
 from glyphsLib.types import Point
 import uuid
 
+from ufo2ft.constants import OBJECT_LIBS_KEY
+
 __all__ = [
     "to_ufo_glyph_anchors",
     "to_glyphs_glyph_anchors",
@@ -31,7 +33,9 @@ def to_ufo_glyph_anchors(self, glyph, anchors):
         if anchor.userData:
             identifier = str(uuid.uuid4()).upper()
             anchor_dict["identifier"] = identifier
-            glyph.lib.setdefault("public.objectLibs", {})[identifier] = dict(anchor.userData)
+            glyph.lib.setdefault(OBJECT_LIBS_KEY, {})[identifier] = dict(
+                anchor.userData
+            )
         glyph.appendAnchor(anchor_dict)
 
 
