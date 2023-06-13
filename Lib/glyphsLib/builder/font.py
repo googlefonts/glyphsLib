@@ -15,6 +15,8 @@
 
 from .common import to_ufo_time, from_ufo_time
 from .constants import (
+    DEFAULT_FEATURE_WRITERS,
+    UFO2FT_FEATURE_WRITERS_KEY,
     UFO2FT_FILTERS_KEY,
     APP_VERSION_LIB_KEY,
     KEYBOARD_INCREMENT_KEY,
@@ -52,6 +54,7 @@ def to_ufo_font_attributes(self, family_name):
         ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
             {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
         )
+        ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
         self.to_ufo_custom_params(ufo, font)  # .custom_params
         self.to_ufo_master_attributes(ufo, master)  # .masters
