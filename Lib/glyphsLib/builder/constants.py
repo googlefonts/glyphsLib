@@ -212,7 +212,12 @@ UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 # See https://glyphsapp.com/tutorials/contextual-kerning
 DEFAULT_FEATURE_WRITERS = [
     {"class": "KernFeatureWriter", "options": {"mode": "append"}},
-    {"module": "glyphsLib.featureWriters.markFeatureWriter", "class": "ContextualMarkFeatureWriter", "options": {"mode": "skip"}},
+    {
+        "module": "glyphsLib.featureWriters.markFeatureWriter",
+        "class": "ContextualMarkFeatureWriter",
+        "options": {"mode": "skip"},
+    },
+    {"class": "CursFeatureWriter"},
 ]
 
 DEFAULT_LAYER_NAME = PUBLIC_PREFIX + "default"
