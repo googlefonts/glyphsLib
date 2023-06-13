@@ -16,6 +16,7 @@ import re
 
 PUBLIC_PREFIX = "public."
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
+OBJECT_LIBS_KEY = PUBLIC_PREFIX + "objectLibs"
 
 GLYPHS_PREFIX = "com.schriftgestaltung."
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
