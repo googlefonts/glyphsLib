@@ -157,7 +157,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
         by_context = defaultdict(list)
         markGlyphNames = self.context.markGlyphNames
 
-        for glyphName, anchors in self.context.anchorLists.items():
+        for glyphName, anchors in sorted(self.context.anchorLists.items()):
             if glyphName in markGlyphNames:
                 continue
             for anchor in anchors:
@@ -186,6 +186,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
             else:
                 after = fullcontext
                 before = ""
+            after = after.strip()
             if before not in dispatch_lookups:
                 dispatch_lookups[before] = ast.LookupBlock(
                     "ContextualMarkDispatch_%i" % len(dispatch_lookups.keys())
@@ -195,6 +196,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                     ast.LookupReferenceStatement(dispatch_lookups[before])
                 )
             lkp = dispatch_lookups[before]
+            lkp.statements.append(ast.Comment("# " + after))
             lookup = ast.LookupBlock(lookupname)
             for glyph, anchor in glyph_anchor_pair:
                 lookup.statements.append(MarkToBasePos(glyph, [anchor]).asAST())
@@ -209,7 +211,9 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                 # Replace & with mark name if present
                 contextual = after.replace("*", f"{glyph}")
                 contextual = contextual.replace("&", f"{marks}' lookup {lookupname}")
-                lkp.statements.append(ast.Comment(f"pos {contextual};"))
+                lkp.statements.append(
+                    ast.Comment(f"pos {contextual}; # {glyph}/{anchor.name}")
+                )
 
         lookups.extend(dispatch_lookups.values())
 
