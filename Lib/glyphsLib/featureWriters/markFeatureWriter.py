@@ -149,35 +149,6 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                 result[glyphName] = list(anchorDict.values())
         return result
 
-    def _makeMarkToBaseAttachments(self, contextual=False):
-        markGlyphNames = self.context.markGlyphNames
-        baseClass = self.context.gdefClasses.base
-        result = []
-        for glyphName, anchors in self.context.anchorLists.items():
-            # exclude mark glyphs, or glyphs not listed in GDEF Base
-            if glyphName in markGlyphNames or (
-                baseClass is not None and glyphName not in baseClass
-            ):
-                continue
-            baseMarks = []
-            for anchor in anchors:
-                if not contextual and anchor.isContextual:
-                    continue
-                if contextual:
-                    # Check if anchor context fits
-                    pass
-                if anchor.markClass is None or anchor.number is not None:
-                    # skip anchors for which no mark class is defined; also
-                    # skip '_1', '_2', etc. suffixed anchors for this lookup
-                    # type; these will be are added in the mark2liga lookup
-                    continue
-                assert not anchor.isMark
-                baseMarks.append(anchor)
-            if not baseMarks:
-                continue
-            result.append(MarkToBasePos(glyphName, baseMarks))
-        return result
-
     def _makeFeatures(self):
         features = super()._makeFeatures()
         # Now do the contextual ones
