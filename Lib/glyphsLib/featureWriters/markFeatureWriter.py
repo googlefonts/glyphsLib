@@ -163,7 +163,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
             for anchor in anchors:
                 if not anchor.isContextual:
                     continue
-                anchor_context = anchor.libData["GPOS_Context"]
+                anchor_context = anchor.libData["GPOS_Context"].strip()
                 by_context[anchor_context].append((glyphName, anchor))
         if not by_context:
             return features, []
