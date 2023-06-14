@@ -176,7 +176,12 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
         ]
 
         dispatch_lookups = {}
-        for ix, (fullcontext, glyph_anchor_pair) in enumerate(by_context.items()):
+        # We sort the full context by longest first. This isn't perfect
+        # but it gives us the best chance that more specific contexts
+        # (typically longer) will take precedence over more general ones.
+        for ix, (fullcontext, glyph_anchor_pair) in enumerate(
+            sorted(by_context.items(), key=lambda x: -len(x[0]))
+        ):
             # Make the contextual lookup
             lookupname = "ContextualMark_%i" % ix
             if ";" in fullcontext:
