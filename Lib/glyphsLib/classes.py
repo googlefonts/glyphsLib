@@ -1174,7 +1174,7 @@ class CustomParametersProxy(ListDictionaryProxy):
         return super()._get_by_name(name)
 
     def _should_add_axes(self):
-        if isinstance(self._owner, GSFont) and self._owner.format_version < 3:
+        if isinstance(self._owner, GSFont) and self._owner.formatVersion < 3:
             axes = self._owner._get_custom_parameter_from_axes()
             if axes:
                 return True
@@ -1387,9 +1387,9 @@ class GSCustomParameter(GSBase):
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
 
-    def plistValue(self, format_version=2):
+    def plistValue(self, formatVersion=2):
         string = StringIO()
-        writer = Writer(string, format_version=format_version)
+        writer = Writer(string, formatVersion=formatVersion)
         self._serialize_to_plist(writer)
         return "{\n" + string.getvalue() + "}"
 
@@ -1480,7 +1480,7 @@ class GSAlignmentZone(GSBase):
             return NotImplemented
         return (self.position, self.size) == (other.position, other.size)
 
-    def plistValue(self, format_version=2):
+    def plistValue(self, formatVersion=2):
         return '"{{{}, {}}}"'.format(
             floatToString5(self.position), floatToString5(self.size)
         )
@@ -1490,12 +1490,12 @@ class GSGuide(GSBase):
     def _serialize_to_plist(self, writer):
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "lockAngle", "if_true")
         writer.writeObjectKeyValue(self, "locked", "if_true")
 
         writer.writeObjectKeyValue(self, "name", "if_true")
-        if writer.format_version == 3 and self.position != Point(0, 0):
+        if writer.formatVersion >= 3 and self.position != Point(0, 0):
             writer.writeKeyValue("pos", self.position)
         else:
             writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
@@ -1538,12 +1538,12 @@ MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 
 class GSFontMaster(GSBase):
     def _serialize_to_plist(self, writer):
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
             writer.writeObjectKeyValue(self, "ascender")
-        if writer.format_version == 3 and self.axes:
+        if writer.formatVersion == 3 and self.axes:
             writer.writeKeyValue("axesValues", self.axes)
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "capHeight")
             if self.customName:
                 writer.writeKeyValue("custom", self.customName)
@@ -1554,42 +1554,42 @@ class GSFontMaster(GSBase):
 
         writer.writeObjectKeyValue(self, "customParameters", "if_true")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "descender")
 
         if self.guides:
-            if writer.format_version == 3:
+            if writer.formatVersion >= 3:
                 writer.writeKeyValue("guides", self.guides)
             else:
                 writer.writeKeyValue("guideLines", self.guides)
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "horizontalStems", "if_true")
 
         writer.writeObjectKeyValue(self, "iconName", "if_true")
         writer.writeObjectKeyValue(self, "id")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "italicAngle", "if_true")
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeKeyValue("metricValues", self.metrics)
 
         if self._name and self._name != self.name:
             writer.writeKeyValue("name", self._name)
-        elif writer.format_version == 3:
+        elif writer.formatVersion == 3:
             writer.writeKeyValue("name", self.name)
 
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(
                 self, "numbers", "if_true", keyName="numberValues"
             )
             writer.writeObjectKeyValue(self, "stems", "if_true", keyName="stemValues")
 
         writer.writeObjectKeyValue(self, "userData", "if_true")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "verticalStems", "if_true")
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "visible", "if_true")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "weight", self.weight != "Regular")
             writer.writeObjectKeyValue(self, "weightValue", self.weightValue != 100)
             writer.writeObjectKeyValue(self, "width", self.width != "Regular")
@@ -2050,13 +2050,13 @@ class GSNode(GSBase):
     def parent(self):
         return self._parent
 
-    def plistValue(self, format_version=2):
+    def plistValue(self, formatVersion=2):
         string = ""
         if self._userData is not None and len(self._userData) > 0:
             string = StringIO()
-            writer = Writer(string, format_version=format_version)
+            writer = Writer(string, formatVersion=formatVersion)
             writer.writeDict(self._userData)
-        if format_version == 2:
+        if formatVersion == 2:
             content = self.type.upper()
             if self.smooth:
                 content += " SMOOTH"
@@ -2240,13 +2240,13 @@ class GSPath(GSBase):
     _parent = None
 
     def _serialize_to_plist(self, writer):
-        if writer.format_version == 3 and self.attributes:
+        if writer.formatVersion >= 3 and self.attributes:
             writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
     def _parse_nodes_dict(self, parser, d):
-        if parser.format_version == 3:
+        if parser.formatVersion >= 3:
             read_node = GSNode.read_v3
         else:
             read_node = GSNode.read
@@ -2577,21 +2577,21 @@ class GSComponent(GSBase):
         # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "name")
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(
                 self, "position", keyName="pos", default=Point(0, 0)
             )
             writer.writeObjectKeyValue(self, "name", keyName="ref")
             if self.scale != (1, 1):
                 writer.writeKeyValue("scale", Point(list(self.scale)))
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(
                 self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
             )
@@ -2762,7 +2762,7 @@ GSComponent._add_parsers(
 
 class GSSmartComponentAxis(GSBase):
     def _serialize_to_plist(self, writer):
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "bottomName", "if_true")
             writer.writeObjectKeyValue(self, "bottomValue")
             writer.writeObjectKeyValue(self, "name")
@@ -2787,7 +2787,7 @@ class GSAnchor(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "name", "if_true")
         posKey = "position"
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             posKey = "pos"
         writer.writeObjectKeyValue(
             self, "position", True, keyName=posKey, default=Point(0, 0)
@@ -3017,7 +3017,7 @@ class GSFeature(GSBase):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
-        if writer.format_version == 3:
+        if writer.formatVersion == 3:
             writer.writeObjectKeyValue(self, "labels", "if_true")
             writer.writeKeyValue("tag", self.name)
         else:
@@ -3086,7 +3086,7 @@ class GSAnnotation(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "angle", default=0)
         posKey = "position"
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             posKey = "pos"
         writer.writeObjectKeyValue(
             self, "position", keyName=posKey, default=Point(0, 0)
@@ -3175,11 +3175,11 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(
                 self, "customValue", condition="if_true", keyName="interpolationCustom"
             )
@@ -3208,14 +3208,14 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
-        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
+        if writer.formatVersion > 2 and self.type == InstanceType.VARIABLE:
             writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "properties", condition="if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
@@ -3463,14 +3463,14 @@ GSInstance._add_parsers(
 class GSBackgroundImage(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
             writer.writeObjectKeyValue(self, "crop", default=Rect())
         else:
             writer.writeObjectKeyValue(self, "crop")
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             if self.position != Point(0, 0):
                 writer.writeObjectKeyValue(self, "position", keyName="pos")
             if self.scale != (1.0, 1.0):
@@ -3595,20 +3595,20 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "annotations", "if_true")
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "attributes", "if_true", keyName="attr")
         writer.writeObjectKeyValue(self, "background", self._background is not None)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "components", "if_true")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "guides", "if_true")
         elif self.guides:
             writer.writeKeyValue("guideLines", self.guides)
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
             # NOTE: The following two are an exception from the ordering rule.
             writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
@@ -3623,7 +3623,7 @@ class GSLayer(GSBase):
             and self.layerId != self.associatedMasterId
         ):
             writer.writeObjectKeyValue(self, "name")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "partSelection", "if_true")
             if self._shapes:
                 writer.writeKeyValue("shapes", self._shapes)
@@ -3794,7 +3794,7 @@ class GSLayer(GSBase):
 
     @property
     def smartComponentPoleMapping(self):
-        if self.parent.parent.format_version < 3:
+        if self.parent.parent.formatVersion < 3:
             if "PartSelection" not in self.userData:
                 self.userData["PartSelection"] = {}
             return self.userData["PartSelection"]
@@ -3803,7 +3803,7 @@ class GSLayer(GSBase):
 
     @smartComponentPoleMapping.setter
     def smartComponentPoleMapping(self, value):
-        if self.parent.parent.format_version < 3:
+        if self.parent.parent.formatVersion < 3:
             self.userData["PartSelection"] = value
         else:
             self.partSelection = value
@@ -3923,7 +3923,7 @@ class GSLayer(GSBase):
     )
 
     def _is_bracket_layer(self):
-        if self.parent.parent.format_version > 2:
+        if self.parent.parent.formatVersion > 2:
             return "axisRules" in self.attributes  # Glyphs 3
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
@@ -3933,7 +3933,7 @@ class GSLayer(GSBase):
         if not self._is_bracket_layer():
             return {}
 
-        if self.parent.parent.format_version > 2:
+        if self.parent.parent.formatVersion > 2:
             # Glyphs 3
             info = {}
             for axis, rule in zip(axes, self.attributes["axisRules"]):
@@ -3963,7 +3963,7 @@ class GSLayer(GSBase):
             return {axis.tag: (bracket_crossover, designspace_max)}
 
     def _is_brace_layer(self):
-        if self.parent.parent.format_version > 2:
+        if self.parent.parent.formatVersion > 2:
             return "coordinates" in self.attributes  # Glyphs 3
         # Glyphs 2
         return "{" in self.name and "}" in self.name and ".background" not in self.name
@@ -3972,8 +3972,8 @@ class GSLayer(GSBase):
         if not self._is_brace_layer():
             return None
 
-        if self.parent.parent.format_version > 2:
-            return [float(v) for v in self.attributes["coordinates"]]  # Glyphs 3
+        if self.parent.parent.formatVersion > 2:
+            return (float(v) for v in self.attributes["coordinates"])  # Glyphs 3
 
         # Glyphs 2
         name = self.name
@@ -3998,7 +3998,7 @@ class GSLayer(GSBase):
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
     def _is_color_palette_layer(self):
-        if self.parent.parent.format_version > 2:
+        if self.parent.parent.formatVersion > 2:
             return "colorPalette" in self.attributes  # Glyphs 3
         return re.match(self.COLOR_PALETTE_LAYER_RE, self.name.strip())  # Glyphs 2
 
@@ -4006,7 +4006,7 @@ class GSLayer(GSBase):
         if not self._is_color_palette_layer():
             return None
 
-        if self.parent.parent.format_version > 2:
+        if self.parent.parent.formatVersion > 2:
             # Glyphs 3
             index = self.attributes["colorPalette"]
             if index == "*":
@@ -4081,15 +4081,15 @@ class GSBackgroundLayer(GSLayer):
 
 class GSGlyph(GSBase):
     def _serialize_to_plist(self, writer):
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "case")
             writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "color")
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "production", "if_true")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(
                 self, "leftKerningGroup", "if_true", keyName="kernLeft"
             )
@@ -4098,7 +4098,7 @@ class GSGlyph(GSBase):
             )
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "metricLeft", "if_true")
             writer.writeObjectKeyValue(self, "metricRight", "if_true")
             writer.writeObjectKeyValue(self, "metricWidth", "if_true")
@@ -4122,17 +4122,17 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
         writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
         writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
-        if self.unicodes and writer.format_version == 2:
+        if self.unicodes and writer.formatVersion == 2:
             writer.writeKeyValue("unicode", self.unicodes)
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "production", "if_true")
         writer.writeObjectKeyValue(self, "script")
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "subCategory")
-        if writer.format_version > 2:
+        if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "tags", "if_true")
-        if self.unicodes and writer.format_version > 2:
+        if self.unicodes and writer.formatVersion > 2:
             writer.writeKeyValue("unicode", self.unicodes)
         writer.writeObjectKeyValue(self, "userData", "if_true")
         if self.smartComponentAxes:
@@ -4158,7 +4158,7 @@ class GSGlyph(GSBase):
 
     def _parse_unicode_dict(self, parser, value):
         parser.current_type = None
-        if parser.format_version == 3:
+        if parser.formatVersion >= 3:
             if not isinstance(value, list):
                 value = [value]
             uni = ["%x" % x for x in value]
@@ -4364,22 +4364,23 @@ class GSFont(GSBase):
 
     def _serialize_to_plist(self, writer):
         writer.writeKeyValue(".appVersion", self.appVersion)
-        if self.format_version > 2:
-            writer.writeKeyValue(".formatVersion", self.format_version)
+        if writer.formatVersion > 2:
+            writer.writeKeyValue(".formatVersion", self.formatVersion)
 
         writer.writeObjectKeyValue(self, "DisplayStrings", "if_true")
 
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "axes", "if_true")
         writer.writeObjectKeyValue(self, "classes", "if_true")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "copyright", "if_true")
 
+        print("__customParameters", self.customParameters)
         writer.writeObjectKeyValue(self, "customParameters", "if_true")
         writer.writeObjectKeyValue(self, "date")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "designer", "if_true")
             writer.writeObjectKeyValue(self, "designerURL", "if_true")
             writer.writeObjectKeyValue(self, "disablesAutomaticAlignment", "if_true")
@@ -4393,7 +4394,7 @@ class GSFont(GSBase):
         writer.writeKeyValue("fontMaster", self.masters)
         writer.writeObjectKeyValue(self, "glyphs")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             if self.grid != 1:
                 writer.writeKeyValue("gridLength", self.grid)
             if self.gridSubDivisions != 1:
@@ -4401,7 +4402,7 @@ class GSFont(GSBase):
 
         writer.writeObjectKeyValue(self, "instances")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
             if self.kerningLTR:
                 writer.writeKeyValue("kerning", self.kerningLTR)
@@ -4410,14 +4411,14 @@ class GSFont(GSBase):
             writer.writeObjectKeyValue(self, "kerningRTL", "if_true")
             writer.writeObjectKeyValue(self, "kerningVertical", "if_true")
 
-        if writer.format_version == 2:
+        if writer.formatVersion == 2:
             writer.writeObjectKeyValue(
                 self, "keyboardIncrement", self.keyboardIncrement != 1
             )
             writer.writeObjectKeyValue(self, "manufacturer", "if_true")
             writer.writeObjectKeyValue(self, "manufacturerURL", "if_true")
 
-        if writer.format_version == 3:
+        if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "metrics")
             writer.writeObjectKeyValue(self, "_note", "if_true", keyName="note")
             writer.writeObjectKeyValue(self, "numbers", "if_true")
@@ -4461,7 +4462,7 @@ class GSFont(GSBase):
         self.keyboardIncrementHuge = settings.get("keyboardIncrementHuge", 100)
 
     def _parse___formatVersion_dict(self, parser, val):
-        self.format_version = parser.format_version = val
+        self.formatVersion = parser.formatVersion = val
 
     def __init__(self, path=None):
         self.DisplayStrings = ""
@@ -4471,7 +4472,7 @@ class GSFont(GSBase):
         self.axes = copy.deepcopy(self._defaultAxes)
         self._userData = None
         self._versionMinor = 0
-        self.format_version = 2
+        self.formatVersion = 2
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])
@@ -4520,7 +4521,7 @@ class GSFont(GSBase):
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
         with open(path, "w", encoding="utf-8") as fp:
-            w = Writer(fp, format_version=self.format_version)
+            w = Writer(fp, formatVersion=self.formatVersion)
             logger.info("Writing %r to .glyphs file", self)
             w.write(self)
 
@@ -4651,7 +4652,7 @@ class GSFont(GSBase):
 
     @property
     def note(self):
-        if self.format_version < 3:
+        if self.formatVersion < 3:
             value = self.customParameters["note"]
             if value:
                 return value
@@ -4662,7 +4663,7 @@ class GSFont(GSBase):
 
     @note.setter
     def note(self, value):
-        if self.format_version < 3:
+        if self.formatVersion < 3:
             self.customParameters["note"] = value
         else:
             self._note = value

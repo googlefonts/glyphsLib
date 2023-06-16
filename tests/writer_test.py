@@ -26,17 +26,17 @@ from . import test_helpers
 
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def assertWrites(self, glyphs_object, text, format_version=2):
+    def assertWrites(self, glyphs_object, text, formatVersion=2):
         """Assert that the given object, when given to the writer,
         produces the given text.
         """
         expected = text.splitlines()
-        actual = test_helpers.write_to_lines(glyphs_object, format_version)
+        actual = test_helpers.write_to_lines(glyphs_object, formatVersion)
         self.assertLinesEqual(
             expected, actual, "The writer has not produced the expected output"
         )
 
-    def assertWritesValue(self, glyphs_value, text, format_version=2):
+    def assertWritesValue(self, glyphs_value, text, formatVersion=2):
         """Assert that the writer produces the given text for the given value."""
         expected = (
             dedent(
@@ -51,7 +51,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
         # We wrap the value in a dict to use the same test helper
         actual = test_helpers.write_to_lines(
-            {"writtenValue": glyphs_value}, format_version
+            {"writtenValue": glyphs_value}, formatVersion
         )
         self.assertLinesEqual(
             expected, actual, "The writer has not produced the expected output"
@@ -734,7 +734,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def test_write_layer(self):
         font = classes.GSFont()
-        font.format_version = 2
+        font.formatVersion = 2
         master = classes.GSFontMaster()
         master.id = "M1"
         font.masters.append(master)
@@ -1186,7 +1186,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
              }
          """,
             ),
-            format_version=3,
+            formatVersion=3,
         )
 
         # FIXME: (jany) What about the undocumented scale & stem?

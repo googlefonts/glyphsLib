@@ -19,6 +19,7 @@ from .constants import (
     UFO2FT_FEATURE_WRITERS_KEY,
     UFO2FT_FILTERS_KEY,
     APP_VERSION_LIB_KEY,
+    FORMATVERSION_LIB_KEY,
     KEYBOARD_INCREMENT_KEY,
     MASTER_ORDER_LIB_KEY,
 )
@@ -106,6 +107,7 @@ def fill_ufo_metadata(master, ufo):
 def fill_ufo_metadata_roundtrip(master, ufo):
     font = master.font
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
+    ufo.lib[FORMATVERSION_LIB_KEY] = font.formatVersion
     ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
 
 

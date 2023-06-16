@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
-    def __init__(self, fp, format_version=2):
+    def __init__(self, fp, formatVersion=2):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b"")
@@ -46,7 +46,7 @@ class Writer:
             import codecs
 
             self.file = codecs.getwriter("utf-8")(fp)
-        self.format_version = format_version
+        self.formatVersion = formatVersion
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -122,13 +122,13 @@ class Writer:
 
     def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
-            value = value.plistValue(format_version=self.format_version)
+            value = value.plistValue(formatVersion=self.formatVersion)
             if value is not None:
                 self.file.write(value)
         elif forKey in ["color", "strokeColor"] and hasattr(value, "__iter__"):
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
-            if self.format_version == 2:
+            if self.formatVersion == 2:
                 self.file.write(str(tuple(value)))
             else:
                 self.file.write("(")
@@ -167,7 +167,7 @@ class Writer:
 
     def escape_string(self, string, forKey):
         if _needs_quotes(string):
-            if self.format_version < 3 and forKey != "unicode":
+            if self.formatVersion < 3 and forKey != "unicode":
                 string = string.replace("\\", "\\\\")
                 string = string.replace('"', '\\"')
                 string = string.replace("\n", "\\012")
@@ -184,8 +184,8 @@ def dump(obj, fp):
     """
     writer = Writer(fp)
     logger.info("Writing .glyphs file")
-    if hasattr(obj, "format_version"):
-        writer.format_version = obj.format_version
+    if hasattr(obj, "formatVersion"):
+        writer.formatVersion = obj.formatVersion
     writer.write(obj)
 
 

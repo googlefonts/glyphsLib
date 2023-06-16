@@ -62,9 +62,9 @@ TESTFILE_PATH = os.path.join(
 )
 
 
-def generate_minimal_font(format_version=2):
+def generate_minimal_font(formatVersion=2):
     font = GSFont()
-    font.format_version = format_version
+    font.formatVersion = formatVersion
     font.appVersion = 895
     font.date = datetime.datetime.today()
     font.familyName = "MyFont"

@@ -968,7 +968,7 @@ def test_glyph_lib_Export_feature_names_long_escaped_from_notes(ufo_module):
 
 
 def test_glyph_lib_Export_feature_names_from_labels(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     add_glyph(font, "a")
     add_glyph(font, "a.ss01")
     ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
@@ -1303,7 +1303,7 @@ def test_glyph_color_palette_layers_explode_no_export(ufo_module):
 
 
 def test_glyph_color_palette_layers_explode_v3(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
     glyphb = add_glyph(font, "b")
     glyphc = add_glyph(font, "c")
@@ -1402,7 +1402,7 @@ def test_glyph_color_layers_no_unicode_mapping(ufo_module):
 
 
 def test_glyph_color_layers_explode(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color0 = GSLayer()
@@ -1509,7 +1509,7 @@ def test_glyph_color_layers_explode(ufo_module):
 
 
 def test_glyph_color_layers_strokecolor(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color = GSLayer()
@@ -1574,7 +1574,7 @@ def test_glyph_color_layers_strokecolor(ufo_module):
 
 
 def test_glyph_color_layers_strokewidth(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color = GSLayer()
@@ -1633,7 +1633,7 @@ def test_glyph_color_layers_strokewidth(ufo_module):
 
 
 def test_glyph_color_layers_stroke_no_attributes(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color = GSLayer()
@@ -1691,7 +1691,7 @@ def test_glyph_color_layers_stroke_no_attributes(ufo_module):
 
 
 def test_glyph_color_layers_component(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
     glyphb = add_glyph(font, "b")
 
@@ -1752,7 +1752,7 @@ def test_glyph_color_layers_component(ufo_module):
 
 
 def test_glyph_color_layers_component_color(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
     glyphb = add_glyph(font, "b")
 
@@ -1817,7 +1817,7 @@ def test_glyph_color_layers_component_color(ufo_module):
 
 
 def test_glyph_color_layers_component_color_translate(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
     glyphb = add_glyph(font, "b")
 
@@ -1892,7 +1892,7 @@ def test_glyph_color_layers_component_color_translate(ufo_module):
 
 
 def test_glyph_color_layers_component_color_transform(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
     glyphb = add_glyph(font, "b")
 
@@ -1966,7 +1966,7 @@ def test_glyph_color_layers_component_color_transform(ufo_module):
 
 
 def test_glyph_color_layers_group_paths(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color = GSLayer()
@@ -2026,7 +2026,7 @@ def test_glyph_color_layers_group_paths(ufo_module):
 
 
 def test_glyph_color_layers_group_paths_nonconsecutive(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glypha = add_glyph(font, "a")
 
     color = GSLayer()
@@ -2128,7 +2128,7 @@ def test_glyph_color_layers_group_paths_nonconsecutive(ufo_module):
 
 
 def test_glyph_color_layers_master_layer(ufo_module):
-    font = generate_minimal_font(format_version=3)
+    font = generate_minimal_font(formatVersion=3)
     glyph = add_glyph(font, "a")
 
     layer = glyph.layers[0]
