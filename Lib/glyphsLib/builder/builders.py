@@ -348,6 +348,8 @@ class UFOBuilder(LoggerMixin):
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
 
+        self.designspace.lib["com.schriftgestaltung.formatVersion"] = self.font.formatVersion
+        self.designspace.lib["com.schriftgestaltung.appVersion"] = self.font.appVersion
         return self._designspace
 
     # DEPRECATED
@@ -498,6 +500,12 @@ class GlyphsBuilder(LoggerMixin):
         # are assumed to be sparse or "brace" layers and are ignored because Glyphs
         # considers them to be special layers and will handle them itself.
         self._font = self.glyphs_module.GSFont()
+
+        if "com.schriftgestaltung.formatVersion" in self.designspace.lib:
+            self._font.formatVersion = self.designspace.lib["com.schriftgestaltung.formatVersion"]
+        if "com.schriftgestaltung.appVersion" in self.designspace.lib:
+            self._font.appVersion = self.designspace.lib["com.schriftgestaltung.appVersion"]
+
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
             master = self.glyphs_module.GSFontMaster()

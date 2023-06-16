@@ -122,7 +122,7 @@ def _to_ufo_features(
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
         feature_names = None
-        if font.format_version == 2 and notes:
+        if font.formatVersion == 2 and notes:
             m = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
             if m:
                 name = m.groups()[0]
@@ -138,7 +138,7 @@ def _to_ufo_features(
                     # Replace special chars backslash and doublequote for AFDKO syntax
                     name = name.replace("\\", r"\005c").replace('"', r"\0022")
                     feature_names = ["featureNames {", f'  name "{name}";', "};"]
-        elif font.format_version == 3 and feature.labels:
+        elif font.formatVersion == 3 and feature.labels:
             feature_names = []
             feature_names.append("featureNames {")
             for label in feature.labels:
@@ -724,7 +724,7 @@ class FeatureFileProcessor:
                         # platEncID and langID, write it using the simple
                         # syntax. Otherwise write out the full featureNames
                         # statement.
-                        if self._font.format_version == 2:
+                        if self._font.formatVersion == 2:
                             name = feature_names.statements[0]
                             if (
                                 len(feature_names.statements) == 1
@@ -738,7 +738,7 @@ class FeatureFileProcessor:
                             notes_text = name_text + "\n" + notes_text
                             notes = True
                             contents.pop(i)
-                        elif self._font.format_version == 3:
+                        elif self._font.formatVersion == 3:
                             labels = []
                             for name in feature_names.statements:
                                 if name.platformID == 3 and name.platEncID == 1:

@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 class Parser:
     """Parses Python dictionaries from Glyphs files."""
 
-    def __init__(self, current_type=OrderedDict, format_version=2):
+    def __init__(self, current_type=OrderedDict, formatVersion=2):
         self.current_type = current_type
-        self.format_version = format_version
+        self.formatVersion = formatVersion
 
     def parse(self, d):
         try:

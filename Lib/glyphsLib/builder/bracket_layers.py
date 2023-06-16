@@ -259,7 +259,7 @@ def synthesize_bracket_layer(old_layer, box, axes):
     new_layer.layerId = ""
     new_layer.associatedMasterId = old_layer.layerId
 
-    if new_layer.parent.parent.format_version == 2:
+    if new_layer.parent.parent.formatVersion == 2:
         axis, (bottom, top) = next(iter(box.items()))
         designspace_min, designspace_max = util.designspace_min_max(axes[0])
         if designspace_min == bottom:
