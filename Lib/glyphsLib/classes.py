@@ -84,23 +84,26 @@ __all__ = [
     "GSOFFCURVE",
     "GSSHARP",
     "GSSMOOTH",
-    "TAG",
-    "TOPGHOST",
-    "STEM",
-    "BOTTOMGHOST",
-    "TTANCHOR",
-    "TTSTEM",
-    "TTALIGN",
-    "TTINTERPOLATE",
-    "TTDIAGONAL",
-    "TTDELTA",
-    "CORNER",
-    "CAP",
-    "TTDONTROUND",
-    "TTROUND",
-    "TTROUNDUP",
-    "TTROUNDDOWN",
-    "TRIPLE",
+    "PS_TOP_GHOST",
+    "PS_BOTTOM_GHOST",
+    "PS_STEM",
+    "PS_FLEX",
+    "TT_STEM",
+    "TT_SHIFT",
+    "TT_SNAP",
+    "TT_INTERPOLATE",
+    "TT_DIAGONAL",
+    "TT_DELTA",
+    "GS_TAG",
+    "GS_CORNER",
+    "GS_CAP",
+    "GS_BRUSH",
+    "GS_SEGMENT",
+    "TT_DONTROUND",
+    "TT_ROUND",
+    "TT_ROUNDUP",
+    "TT_ROUNDDOWN",
+    #"TRIPLE",
     "TEXT",
     "ARROW",
     "CIRCLE",
@@ -149,7 +152,7 @@ class InstanceType(IntEnum):
     SINGLE = 0
     VARIABLE = 1
 
-
+''' # Glyphs used those int values, but we can use the str values from the file as is for now
 TAG = -2
 TOPGHOST = -1
 STEM = 0
@@ -162,12 +165,30 @@ TTDIAGONAL = 6
 TTDELTA = 7
 CORNER = 16
 CAP = 17
+'''
 
-TTDONTROUND = 4
-TTROUND = 0
-TTROUNDUP = 1
-TTROUNDDOWN = 2
-TRIPLE = 128
+PS_TOP_GHOST = "TopGhost"
+PS_BOTTOM_GHOST = "BottomGhost"
+PS_STEM = "Stem"
+PS_FLEX = "Flex"
+TT_STEM = "TTStem"
+TT_SHIFT = "TTShift" # TTAlign in G2
+TT_SNAP = "TTSnap" # "TTAnchor" in G2
+TT_INTERPOLATE = "TTInterpolate"
+TT_DIAGONAL = "TTDiagonal"
+TT_DELTA = "TTDelta"
+GS_TAG = "Tag"
+GS_CORNER = "Corner"
+GS_CAP = "Cap"
+GS_BRUSH = "Brush"
+GS_SEGMENT = "Segment"
+
+
+TT_DONTROUND = 4
+TT_ROUND = 0
+TT_ROUNDUP = 1
+TT_ROUNDDOWN = 2
+#TRIPLE = 128
 
 # Annotations:
 TEXT = 1
@@ -2861,7 +2882,7 @@ class GSHint(GSBase):
         self.scale = self._defaultsForName["scale"]
         self.settings = {}
         self.stem = self._defaultsForName["stem"]
-        self.type = ""
+        self._type = None
         self._target = None
         self._targetNode = None
 
@@ -2886,13 +2907,13 @@ class GSHint(GSBase):
             direction = "horizontal"
         else:
             direction = "vertical"
-        if self.type == "BOTTOMGHOST" or self.type == "TOPGHOST":
+        if self.type == PS_BOTTOM_GHOST or self.type == PS_TOP_GHOST:
             return "<GSHint {} origin=({})>".format(self.type, self._origin_pos())
-        elif self.type == "STEM":
+        elif self.type == PS_STEM:
             return "<GSHint {} Stem origin=({}) target=({})>".format(
                 direction, self._origin_pos(), self._width_pos()
             )
-        elif self.type == "CORNER" or self.type == "CAP":
+        elif self.type == GS_CORNER or self.type == GS_CAP:
             return f"<GSHint {self.type} {self.name}>"
         else:
             return f"<GSHint {self.type} {direction}>"
@@ -2997,6 +3018,14 @@ class GSHint(GSBase):
         self._other2 = other2
         self._otherNode2 = None
 
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, hintType):
+        assert type(hintType) == type(GS_CORNER), "hintType %s (%s) != %s" % (hintType, type(hintType), type(GS_CORNER))
+        self._type = hintType
 
 GSHint._add_parsers(
     [
