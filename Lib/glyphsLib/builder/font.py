@@ -24,6 +24,11 @@ from .constants import (
     MASTER_ORDER_LIB_KEY,
 )
 
+try:
+    from GlyphsApp import GS_CORNER
+except:
+    from glyphsLib.classes import GS_CORNER
+
 
 def to_ufo_font_attributes(self, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data.
@@ -195,6 +200,6 @@ def has_any_corner_components(font, master):
                 or not layer.hints
             ):
                 continue
-            if any(h.type.upper() == "CORNER" for h in layer.hints):
+            if any(h.type == GS_CORNER for h in layer.hints):
                 return True
     return False
