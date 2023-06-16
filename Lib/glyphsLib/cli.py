@@ -227,6 +227,7 @@ def main(args=None):
     group.add_argument(
         "--enable-automatic-alignment",
         action="store_false",
+        default=None,
         help="Enable automatic alignment of components in glyphs.",
     )
     group.add_argument(
@@ -329,9 +330,10 @@ def ufo2glyphs(options):
     )
 
     # Make the Glyphs file more suitable for roundtrip:
-    font.customParameters["Disable Last Change"] = options.enable_last_change
-    font.disablesAutomaticAlignment = options.enable_automatic_alignment
-
+    if not options.enable_last_change:
+        font.customParameters["Disable Last Change"] = True
+    if options.enable_automatic_alignment is not None:
+        font.disablesAutomaticAlignment = options.enable_automatic_alignment
     if options.output_path:
         font.save(options.output_path)
     else:
