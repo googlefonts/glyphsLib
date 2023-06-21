@@ -74,7 +74,7 @@ class TokenExpander:
         expression = ""
         originaltoken = token
         while len(token) > 0:
-            if token[0] in "0123456789+-*/() ":
+            if token[0] in "0123456789.+-*/() ":
                 expression += token[0]
                 token = token[1:]
                 continue
