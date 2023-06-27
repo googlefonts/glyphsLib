@@ -4380,7 +4380,6 @@ class GSFont(GSBase):
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "copyright", "if_true")
 
-        print("__customParameters", self.customParameters)
         writer.writeObjectKeyValue(self, "customParameters", "if_true")
         writer.writeObjectKeyValue(self, "date")
 
