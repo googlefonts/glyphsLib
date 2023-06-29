@@ -44,7 +44,7 @@ from glyphsLib.classes import (
     segment,
     LayerComponentsProxy,
     LayerGuideLinesProxy,
-    STEM,
+    PS_STEM,
     TEXT,
     ARROW,
     CIRCLE,
@@ -172,7 +172,7 @@ class GSFontTest(unittest.TestCase):
 
     def test_repr(self):
         font = GSFont()
-        self.assertEqual(repr(font), '<GSFont "Unnamed font">')
+        assert repr(font).startswith('<GSFont "Unnamed font" at 0x')
 
     def test_update_custom_parameter(self):
         font = GSFont()
@@ -273,6 +273,10 @@ class GSFontFromFileTest(GSObjectsTestCase):
         font = self.font
         amount = len(font.masters)
         self.assertEqual(len(list(font.masters)), 3)
+        
+        self.assertEqual(font.masters[0].name, "Light")
+        self.assertEqual(font.masters[1].name, "Regular")
+        self.assertEqual(font.masters[2].name, "Bold")
 
         new_master = GSFontMaster()
         font.masters.append(new_master)
@@ -414,7 +418,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
         self.assertEqual(len(font.featurePrefixes), amount)
 
     def test_ints(self):
-        attributes = ["versionMajor", "versionMajor", "upm", "grid", "gridSubDivisions"]
+        attributes = ["versionMajor", "versionMajor", "upm", "grid", "gridSubDivision"]
         font = self.font
         for attr in attributes:
             self.assertInteger(getattr(font, attr))
@@ -517,27 +521,23 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertIsNotNone(master.__repr__())
         self.assertIsNotNone(master.id)
         self.assertIsNotNone(master.name)
-        self.assertIsNotNone(master.weight)
-        self.assertIsNotNone(master.width)
+        self.assertIsNotNone(master.internalAxesValues[0])
+        self.assertIsNone(master.internalAxesValues[1])
         # weightValue
-        obj = master.weightValue
+        obj = master.internalAxesValues[0]
         old_obj = obj
         self.assertIsInstance(obj, int)
-        master.weightValue = 0.5
-        self.assertEqual(master.weightValue, 0.5)
-        self.assertIsInstance(master.weightValue, float)
-        master.weightValue = old_obj
-        self.assertIsInstance(master.widthValue, int)
-        self.assertIsInstance(master.customValue, int)
+        master.internalAxesValues[0] = 0.5
+        self.assertEqual(master.internalAxesValues[0], 0.5)
+        self.assertIsInstance(master.internalAxesValues[0], float)
+        master.internalAxesValues[0] = old_obj
+        self.assertIsInstance(master.internalAxesValues[0], int)
         self.assertIsInstance(master.ascender, int)
         self.assertIsInstance(master.capHeight, int)
         self.assertIsInstance(master.xHeight, int)
         self.assertIsInstance(master.descender, int)
         self.assertIsInstance(master.italicAngle, int)
         for attr in [
-            "weightValue",
-            "widthValue",
-            "customValue",
             "ascender",
             "capHeight",
             "xHeight",
@@ -549,7 +549,6 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             setattr(master, attr, 0.5)
             self.assertEqual(getattr(master, attr), 0.5)
             setattr(master, attr, value)
-        self.assertIsInstance(master.customName, str)
 
         # verticalStems
         oldStems = master.verticalStems
@@ -616,144 +615,6 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         # font
         self.assertEqual(self.font, self.master.font)
 
-    def test_name(self):
-        master = self.master
-        self.assertEqual("Light", master.name)
-
-        master.width = "Condensed"
-        self.assertEqual(master.name, "Condensed Light")
-        master.width = ""
-
-        master.customParameters["Master Name"] = "My custom master name"
-        self.assertEqual("My custom master name", master.name)
-        del master.customParameters["Master Name"]
-        self.assertEqual("Light", master.name)
-
-        master.italicAngle = 11
-        self.assertEqual("Light Italic", master.name)
-        master.italicAngle = 0
-
-        master.italicAngle = 11
-        master.width = "Condensed"
-        self.assertEqual("Condensed Light Italic", master.name)
-        master.width = ""
-        master.italicAngle = 0
-
-        master.customName = "Rounded"
-        self.assertEqual("Light Rounded", master.name)
-        master.customName = "Rounded Stretched Filled Rotated"
-        self.assertEqual("Light Rounded Stretched Filled Rotated", master.name)
-        master.customName = ""
-        self.assertEqual("Light", master.name)
-
-        # Test the name of a master set to "Regular" in the UI dropdown
-        # but with a customName
-        thin = GSFontMaster()
-        thin.customName = "Thin"
-        self.assertEqual("Thin", thin.name)
-
-        # Test that we don't get an extra "Regular" in the name of "Italic"
-        # https://github.com/googlefonts/glyphsLib/issues/380
-        master = GSFontMaster()
-        master.weight = "Regular"
-        master.width = "Regular"
-        master.italicAngle = 10.0
-        self.assertEqual("Italic", master.name)
-
-        # Test that we don't get an extra "Italic" in the name of masters
-        # whose customName already contain the string "Italic"
-        master = GSFontMaster()
-        master.weight = "Regular"
-        master.width = "Regular"
-        master.customName = "Italic"
-        master.italicAngle = 10.0
-        self.assertEqual("Italic", master.name)
-
-    def test_name_assignment(self):
-        test_data = [
-            # <name>, <expected weight>, <expected width>, <expected custom>
-            # Regular
-            ("Regular", "", "", ""),
-            # Weights from the dropdown
-            ("Light", "Light", "", ""),
-            ("SemiLight", "SemiLight", "", ""),
-            ("SemiBold", "SemiBold", "", ""),
-            ("Bold", "Bold", "", ""),
-            # Widths from the dropdown
-            ("Condensed", "", "Condensed", ""),
-            ("SemiCondensed", "", "SemiCondensed", ""),
-            ("SemiExtended", "", "SemiExtended", ""),
-            ("Extended", "", "Extended", ""),
-            # Mixed weight and width from dropdowns
-            ("Light Condensed", "Light", "Condensed", ""),
-            ("Bold SemiExtended", "Bold", "SemiExtended", ""),
-            # With italic -- in Glyphs 1114  works like a custom part
-            ("Light Italic", "Light", "", "Italic"),
-            ("SemiLight Italic", "SemiLight", "", "Italic"),
-            ("SemiBold Italic", "SemiBold", "", "Italic"),
-            ("Bold Italic", "Bold", "", "Italic"),
-            ("Condensed Italic", "", "Condensed", "Italic"),
-            ("SemiCondensed Italic", "", "SemiCondensed", "Italic"),
-            ("SemiExtended Italic", "", "SemiExtended", "Italic"),
-            ("Extended Italic", "", "Extended", "Italic"),
-            ("Light Condensed Italic", "Light", "Condensed", "Italic"),
-            ("Bold SemiExtended Italic", "Bold", "SemiExtended", "Italic"),
-            # With custom parts
-            ("Thin", "", "", "Thin"),
-            ("SemiLight Ultra Expanded", "SemiLight", "", "Ultra Expanded"),
-            ("Bold Compressed", "Bold", "", "Compressed"),
-            ("Fat Condensed", "", "Condensed", "Fat"),
-            ("Ultra Light Extended", "Light", "Extended", "Ultra"),
-            ("Hyper Light Condensed Dunhill", "Light", "Condensed", "Hyper  Dunhill"),
-            ("Bold SemiExtended Rugged", "Bold", "SemiExtended", "Rugged"),
-            ("Thin Italic", "", "", "Thin Italic"),
-            (
-                "SemiLight Ultra Expanded Italic",
-                "SemiLight",
-                "",
-                "Ultra Expanded Italic",
-            ),
-            ("Bold Compressed Italic", "Bold", "", "Compressed Italic"),
-            ("Fat Condensed Italic", "", "Condensed", "Fat Italic"),
-            ("Ultra Light Extended Italic", "Light", "Extended", "Ultra  Italic"),
-            (
-                "Hyper Light Condensed Dunhill Italic",
-                "Light",
-                "Condensed",
-                "Hyper  Dunhill Italic",
-            ),
-            (
-                "Bold SemiExtended Rugged Italic",
-                "Bold",
-                "SemiExtended",
-                "Rugged Italic",
-            ),
-            ("Green Light Red Extended Blue", "Light", "Extended", "Green Red Blue"),
-            (
-                "Green SemiExtended Red SemiBold Blue",
-                "SemiBold",
-                "SemiExtended",
-                "Green Red Blue",
-            ),
-        ]
-        master = GSFontMaster()
-        for name, weight, width, custom in test_data:
-            master.name = name
-            self.assertEqual(master.name, name)
-            self.assertEqual(master.weight, weight or "Regular")
-            self.assertEqual(master.width, width or "Regular")
-            self.assertEqual(master.customName, custom)
-
-    def test_default_values(self):
-        master = GSFontMaster()
-        self.assertEqual(master.weightValue, 100.0)
-        self.assertEqual(master.widthValue, 100.0)
-        self.assertEqual(master.customValue, 0.0)
-        self.assertEqual(master.customValue1, 0.0)
-        self.assertEqual(master.customValue2, 0.0)
-        self.assertEqual(master.customValue3, 0.0)
-
-
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
@@ -795,20 +656,15 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(instance.name, str)
 
         # weight
-        self.assertIsInstance(instance.weight, str)
+        self.assertIsInstance(instance.weightClass, str)
 
         # width
-        self.assertIsInstance(instance.width, str)
+        self.assertIsInstance(instance.widthClass, str)
 
-        # weightValue
-        # widthValue
-        # customValue
-        for attr in ["weightValue", "widthValue", "customValue"]:
-            value = getattr(instance, attr)
-            self.assertIsInstance(value, int)
-            setattr(instance, attr, 0.5)
-            self.assertEqual(getattr(instance, attr), 0.5)
-            setattr(instance, attr, value)
+        self.assertEqual(instance.internalAxesValues[0], 17)
+        instance.internalAxesValues[0] = 17.5
+        self.assertEqual(instance.internalAxesValues[0], 17.5)
+        
         # isItalic
         # isBold
         for attr in ["isItalic", "isBold"]:
@@ -869,15 +725,6 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
 
         # TODO generate()
 
-    def test_default_values(self):
-        instance = GSInstance()
-        self.assertEqual(instance.weightValue, 100.0)
-        self.assertEqual(instance.widthValue, 100.0)
-        self.assertEqual(instance.customValue, 0.0)
-        self.assertEqual(instance.customValue1, 0.0)
-        self.assertEqual(instance.customValue2, 0.0)
-        self.assertEqual(instance.customValue3, 0.0)
-
 
 class GSGlyphFromFileTest(GSObjectsTestCase):
     def setUp(self):
@@ -924,8 +771,7 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         glyph.layers.remove(glyph.layers[-1])
         self.assertEqual(amount, len(glyph.layers))
         self.assertEqual(
-            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, '
-            '<GSLayer "Bold" (a)>, <GSLayer "{155, 100}" (a)>]',
+            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155, 100}" (a)>]',
             repr(list(glyph.layers)),
         )
         self.assertEqual(
@@ -1213,7 +1059,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         newHint = copy.copy(newHint)
         newHint.originNode = layer.paths[0].nodes[0]
         newHint.targetNode = layer.paths[0].nodes[1]
-        newHint.type = STEM
+        newHint.type = PS_STEM
         layer.hints.append(newHint)
         self.assertIsNotNone(layer.hints[0].__repr__())
         self.assertEqual(len(layer.hints), 1)
@@ -1222,11 +1068,11 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         newHint1 = GSHint()
         newHint1.originNode = layer.paths[0].nodes[0]
         newHint1.targetNode = layer.paths[0].nodes[1]
-        newHint1.type = STEM
+        newHint1.type = PS_STEM
         newHint2 = GSHint()
         newHint2.originNode = layer.paths[0].nodes[0]
         newHint2.targetNode = layer.paths[0].nodes[1]
-        newHint2.type = STEM
+        newHint2.type = PS_STEM
         layer.hints.extend([newHint1, newHint2])
         newHint = GSHint()
         newHint.originNode = layer.paths[0].nodes[0]

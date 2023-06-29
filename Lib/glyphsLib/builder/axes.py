@@ -17,7 +17,11 @@ import logging
 
 from fontTools.varLib.models import piecewiseLinearMap
 
-from glyphsLib import classes
+try:
+    from GlyphsApp import GSFontMaster, GSAxis, GSInstance
+except:
+    from glyphsLib.classes import GSFontMaster, GSAxis, GSInstance
+
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
 
@@ -126,26 +130,27 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
 
 
 def update_mapping_from_instances(
-    mapping, instances, axis_def, minimize_glyphs_diffs, cp_only=False
+    mapping, instances, axis, minimize_glyphs_diffs, cp_only=False
 ):
     # Collect the axis mappings from instances and update the mapping dict.
     for instance in instances:
         if instance.type == InstanceType.VARIABLE:
             continue
-        if is_instance_active(instance) or minimize_glyphs_diffs:
-            designLoc = axis_def.get_design_loc(instance)
+        if instance.exports or minimize_glyphs_diffs:
+            designLoc = instance.internalAxesValues[axis.axisId]
             if cp_only:
                 # Only use the Axis Location custom parameter for the user location
-                userLoc = axis_def.get_user_loc_from_axis_location_cp(instance)
+                # TODO: it should stick to the data in the font and not trying to be too clever. (gs)
+                userLoc = get_user_loc_from_axis_location_cp(instance, axis.axisId)
             else:
                 # Use all heuristics to derive a user location
-                userLoc = axis_def.get_user_loc(instance)
+                userLoc = get_user_loc(instance, axis)
             if userLoc is None:
                 # May happen if the custom parameter is disabled
                 continue
             if userLoc in mapping and mapping[userLoc] != designLoc:
                 logger.warning(
-                    f"Axis {axis_def.tag}: Instance '{instance.name}' redefines "
+                    f"Axis {axis.axisTag}: Instance '{instance.name}' redefines "
                     f"the mapping for user location {userLoc} "
                     f"from {mapping[userLoc]} to {designLoc}"
                 )
@@ -161,7 +166,7 @@ def to_designspace_axes(self):
     if not self.font.masters:
         return
     regular_master = get_regular_master(self.font)
-    assert isinstance(regular_master, classes.GSFontMaster)
+    assert isinstance(regular_master, GSFontMaster)
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
     virtual_masters = [
@@ -170,28 +175,19 @@ def to_designspace_axes(self):
         if cp.name == "Virtual Master"
     ]
 
-    for axis_def in get_axis_definitions(self.font):
-        axis = self.designspace.newAxisDescriptor()
-        axis.tag = axis_def.tag
-        axis.name = axis_def.name
+    axes = self.font.axes
+    for axis in axes:
+        axisDescriptor = self.designspace.newAxisDescriptor()
+        axisDescriptor.tag = axis.axisTag
+        axisDescriptor.name = axis.name
+        axisDescriptor.axisId = axis.axisId
         # TODO add support for localised axis.labelNames when Glyphs.app does
-
-        # Make sure here that if there is an Axes parameter, we actually really
-        # keep axes that are defined in it, even if they do nothing. This
-        # prevents an edge case where you have a single master at the default
-        # location that ends in with a Designspace with no axes, as they were
-        # all filtered out by the `if` statement at the bottom.
-        axis_wanted = False
-        if any(
-            a.get("Tag") == axis.tag for a in self.font.customParameters["Axes"] or []
-        ):
-            axis_wanted = True
 
         # See https://github.com/googlefonts/glyphsLib/issues/568
         if custom_mapping:
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
-                regularDesignLoc = axis_def.get_design_loc(regular_master)
+                regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
                 reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
                 regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             else:
@@ -207,8 +203,8 @@ def to_designspace_axes(self):
             # instances.
             mapping = {}
             for master in self.font.masters:
-                designLoc = axis_def.get_design_loc(master)
-                userLoc = axis_def.get_user_loc(master)
+                designLoc = master.internalAxesValues[axis.axisId]
+                userLoc = master.externalAxesValues[axis.axisId]
                 if userLoc in mapping and mapping[userLoc] != designLoc:
                     logger.warning(
                         f"Axis {axis_def.tag}: Master '{master.name}' redefines "
@@ -220,15 +216,15 @@ def to_designspace_axes(self):
             update_mapping_from_instances(
                 mapping,
                 self.font.instances,
-                axis_def,
+                axis,
                 minimize_glyphs_diffs=self.minimize_glyphs_diffs,
                 # Glyphs doesn't deduce instance mappings if font uses axis locations.
                 # Use only the custom parameter if present.
                 cp_only=True,
             )
 
-            regularDesignLoc = axis_def.get_design_loc(regular_master)
-            regularUserLoc = axis_def.get_user_loc(regular_master)
+            regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
+            regularUserLoc = regular_master.externalAxesValues[axis.axisId]
         else:
             # Build the mapping from the instances because they have both
             # a user location and a design location.
@@ -236,14 +232,14 @@ def to_designspace_axes(self):
             update_mapping_from_instances(
                 instance_mapping,
                 self.font.instances,
-                axis_def,
+                axis,
                 minimize_glyphs_diffs=self.minimize_glyphs_diffs,
             )
 
             master_mapping = {}
             for master in self.font.masters:
                 # Glyphs masters don't have a user location
-                userLoc = designLoc = axis_def.get_design_loc(master)
+                userLoc = designLoc = master.internalAxesValues[axis.axisId]
                 master_mapping[userLoc] = designLoc
 
             # Prefer the instance-based mapping (but only if interesting)
@@ -253,7 +249,7 @@ def to_designspace_axes(self):
                 else master_mapping
             )
 
-            regularDesignLoc = axis_def.get_design_loc(regular_master)
+            regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
             reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
@@ -289,11 +285,11 @@ def to_designspace_axes(self):
             or axis_wanted
         ):
             if not is_identity_map:
-                axis.map = sorted(mapping.items())
-            axis.minimum = minimum
-            axis.maximum = maximum
-            axis.default = default
-            self.designspace.addAxis(axis)
+                axisDescriptor.map = sorted(mapping.items())
+            axisDescriptor.minimum = minimum
+            axisDescriptor.maximum = maximum
+            axisDescriptor.default = default
+            self.designspace.addAxis(axisDescriptor)
 
     # If there are no interesting axes, but only a single master at default location
     # along all 3 predefined axes, all with identity user:design mapping, we end up
@@ -303,11 +299,12 @@ def to_designspace_axes(self):
     # https://github.com/googlefonts/fontmake/issues/644
     if not self.designspace.axes:
         self.designspace.addAxisDescriptor(
-            name=WEIGHT_AXIS_DEF.name,
-            tag=WEIGHT_AXIS_DEF.tag,
-            minimum=WEIGHT_AXIS_DEF.default_user_loc,
-            default=WEIGHT_AXIS_DEF.default_user_loc,
-            maximum=WEIGHT_AXIS_DEF.default_user_loc,
+            name="Weight",
+            tag="wght",
+            minimum=0,
+            default=0,
+            maximum=0,
+            #axisId="wght",
         )
 
 
@@ -327,22 +324,69 @@ def to_glyphs_axes(self):
     for axis in self.designspace.axes:
         if axis.tag == "wght":
             axes_parameter.append(
-                classes.GSAxis(name=axis.name or "Weight", tag="wght")
+                GSAxis(name=axis.name or "Weight", tag="wght")
             )
         elif axis.tag == "wdth":
-            axes_parameter.append(classes.GSAxis(name=axis.name or "Width", tag="wdth"))
+            axes_parameter.append(GSAxis(name=axis.name or "Width", tag="wdth"))
         else:
-            axes_parameter.append(classes.GSAxis(name=axis.name, tag=axis.tag))
-
-    if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
-        self.font.axes = axes_parameter
+            axes_parameter.append(GSAxis(name=axis.name, tag=axis.tag))
+    if axes_parameter:
+        self._font.axes = axes_parameter
 
     if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
             axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
         }
-        self.font.customParameters["Axis Mappings"] = mapping
+        self._font.customParameters["Axis Mappings"] = mapping
 
+# TODO: this is in the ExternalAxisValue already
+def get_user_loc_from_axis_location_cp(master_or_instance, axis):
+    # Masters and instances have a customParameter that specifies a user location
+    # along custom axes. If this is present it takes precedence over everything
+    # else.
+    loc_param = master_or_instance.customParameters["Axis Location"]
+    try:
+        for location in loc_param:
+            if location.get("Axis") == axis.name:
+                return int(location["Location"])
+    except (TypeError, KeyError):
+        pass
+
+# TODO: move that into the ExternalAxisValue proxy
+def get_user_loc(master_or_instance, axis):
+    """Get the user location of a Glyphs master or instance.
+    Masters and instances in Glyphs can have a user location in the
+    "Axis Location" custom parameter.
+
+    The user location is what the user sees on the slider in his
+    variable-font-enabled UI. For weight it is a value between 0 and 1000,
+    400 being Regular and 700 Bold.
+
+    For width it's a percentage of extension with respect to the normal
+    width, 100 being normal, 200 Ultra-expanded = twice as wide.
+    It may or may not match the design location.
+    """
+    user_loc = master_or_instance.externalAxesValues[axis.axisId]
+    if user_loc:
+        return user_loc
+    # Try to guess the user location by looking at the OS/2 weightClass
+    # and widthClass. If a weightClass is found, it translates directly
+    # to a user location in 0..1000. If a widthClass is found, it
+    # translate to a percentage of extension according to the spec, see
+    # the mapping named `WIDTH_CLASS_TO_VALUE` at the top.
+
+    if isinstance(master_or_instance, GSInstance):
+        user_loc_str = None
+        if axis.axisTag == "wght":
+            user_loc_str = master_or_instance.weightClass
+        if axis.axisTag == "wdth":
+            user_loc_str = master_or_instance.widthClass
+        if user_loc_str:
+            new_user_loc = user_loc_string_to_value(axis.axisTag, user_loc_str)
+            if new_user_loc is not None:
+                return new_user_loc
+
+    return master_or_instance.internalAxesValues[axis.axisId]
 
 class AxisDefinition:
     """Centralize the code that deals with axis locations, user location versus
@@ -373,77 +417,15 @@ class AxisDefinition:
         axis it could be the thickness of a stem, for the width a percentage
         of extension with respect to the normal width.
         """
-        return glyphs_master_or_instance._get_axis_value(self.design_loc_key)
+        return glyphs_master_or_instance.axes[self.design_loc_key]
 
     def set_design_loc(self, master_or_instance, value):
         """Set the design location of a Glyphs master or instance."""
-        master_or_instance._set_axis_value(self.design_loc_key, value)
-
-    def get_user_loc(self, master_or_instance):
-        """Get the user location of a Glyphs master or instance.
-        Masters and instances in Glyphs can have a user location in the
-        "Axis Location" custom parameter.
-
-        The user location is what the user sees on the slider in his
-        variable-font-enabled UI. For weight it is a value between 0 and 1000,
-        400 being Regular and 700 Bold.
-
-        For width it's a percentage of extension with respect to the normal
-        width, 100 being normal, 200 Ultra-expanded = twice as wide.
-        It may or may not match the design location.
-        """
-        user_loc = self.default_user_loc
-
-        if self.tag != "wght":
-            # The user location is by default the same as the design location.
-            user_loc = self.get_design_loc(master_or_instance)
-
-        # Try to guess the user location by looking at the OS/2 weightClass
-        # and widthClass. If a weightClass is found, it translates directly
-        # to a user location in 0..1000. If a widthClass is found, it
-        # translate to a percentage of extension according to the spec, see
-        # the mapping named `WIDTH_CLASS_TO_VALUE` at the top.
-        if self.user_loc_key is not None and hasattr(
-            master_or_instance, self.user_loc_key
-        ):
-            # Instances have special ways to specify a user location.
-            # Only weight and with have a custom user location via a key.
-            # The `user_loc_key` gives a "location code" = Glyphs UI string
-            user_loc_str = getattr(master_or_instance, self.user_loc_key)
-            new_user_loc = user_loc_string_to_value(self.tag, user_loc_str)
-            if new_user_loc is not None:
-                user_loc = new_user_loc
-
-        # The custom param takes over the key if it exists
-        # e.g. for weight:
-        #       key = "weight" -> "Bold" -> 700
-        # but param = "weightClass" -> 600       => 600 wins
-        if self.user_loc_param is not None:
-            class_ = master_or_instance.customParameters[self.user_loc_param]
-            if class_ is not None:
-                user_loc = class_to_value(self.tag, class_)
-
-        axis_location = self.get_user_loc_from_axis_location_cp(master_or_instance)
-        if axis_location is not None:
-            user_loc = axis_location
-
-        return user_loc
-
-    def get_user_loc_from_axis_location_cp(self, master_or_instance):
-        # Masters and instances have a customParameter that specifies a user location
-        # along custom axes. If this is present it takes precedence over everything
-        # else.
-        loc_param = master_or_instance.customParameters["Axis Location"]
-        try:
-            for location in loc_param:
-                if location.get("Axis") == self.name:
-                    return int(location["Location"])
-        except (TypeError, KeyError):
-            pass
+        master_or_instance.axes[self.design_loc_key] = value
 
     def set_user_loc(self, master_or_instance, value):
         """Set the user location of a Glyphs master or instance."""
-        if isinstance(master_or_instance, classes.GSInstance):
+        if isinstance(master_or_instance, GSInstance):
             # The following code is only valid for instances.
             # Masters also the keys `weight` and `width` but they should not be
             # used, they are deprecated and should only be used to store
@@ -494,7 +476,7 @@ class AxisDefinition:
             location["Location"] = value
 
     def set_user_loc_code(self, instance, code):
-        assert isinstance(instance, classes.GSInstance)
+        assert isinstance(instance, GSInstance)
         # The previous method `set_user_loc` will not roundtrip every
         # time, for example for value = 600, both "DemiBold" and "SemiBold"
         # would work, so we provide this other method to set a specific code.
@@ -509,71 +491,6 @@ class AxisDefinition:
             "openTypeOS2WeightClass" if self.tag == "wght" else "openTypeOS2WidthClass"
         )
         setattr(ufo.info, ufo_key, class_)
-
-
-class AxisDefinitionFactory:
-    """Creates a set of axis definitions, making sure to recognize default axes
-    (weight and width) and also keeping track of indices of custom axes.
-
-    From looking at a Glyphs file with only one custom axis, it looks like
-    when there is an "Axes" customParameter, the axis design locations are
-    stored in `weightValue` for the first axis (regardless of whether it is
-    a weight axis, `widthValue` for the second axis, etc.
-    """
-
-    def __init__(self):
-        self.axis_index = -1
-
-    def get(self, tag=None, name="Custom"):
-        self.axis_index += 1
-        design_loc_key = self._design_loc_key()
-        if tag is None:
-            if self.axis_index == 0:
-                tag = "XXXX"
-            else:
-                tag = "XXX%d" % self.axis_index
-
-        if tag == "wght":
-            return AxisDefinition(
-                tag, name, design_loc_key, 100.0, "weight", "weightClass", 400.0
-            )
-        if tag == "wdth":
-            return AxisDefinition(
-                tag, name, design_loc_key, 100.0, "width", "widthClass", 100.0
-            )
-        return AxisDefinition(tag, name, design_loc_key, 0.0, None, None, 0.0)
-
-    def _design_loc_key(self):
-        return self.axis_index
-
-
-defaults_factory = AxisDefinitionFactory()
-
-WEIGHT_AXIS_DEF = defaults_factory.get("wght", "Weight")
-WIDTH_AXIS_DEF = defaults_factory.get("wdth", "Width")
-CUSTOM_AXIS_DEF = defaults_factory.get("XXXX", "Custom")
-DEFAULT_AXES_DEFS = (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, CUSTOM_AXIS_DEF)
-
-
-# Adapted from PR https://github.com/googlefonts/glyphsLib/pull/306
-def get_axis_definitions(font):
-    axesParameter = font.customParameters["Axes"]
-    if axesParameter is None:
-        return DEFAULT_AXES_DEFS
-
-    factory = AxisDefinitionFactory()
-    return [factory.get(axis.get("Tag"), axis["Name"]) for axis in axesParameter]
-
-
-def _is_subset_of_default_axes(axes_parameter):
-    if len(axes_parameter) > 3:
-        return False
-    for axis, axis_def in zip(axes_parameter, DEFAULT_AXES_DEFS):
-        if axis.name != axis_def.name:
-            return False
-        if axis.axisTag != axis_def.tag:
-            return False
-    return True
 
 
 def _has_meaningful_map(axis, designspace):
@@ -661,10 +578,3 @@ def find_base_style(masters):
         base_style = [s for s in style if s in base_style]
     base_style = " ".join(base_style)
     return base_style
-
-
-def is_instance_active(instance):
-    # Glyphs.app recognizes both "exports=0" and "active=0" as a flag
-    # to mark instances as inactive. Inactive instances should get ignored.
-    # https://github.com/googlefonts/glyphsLib/issues/129
-    return instance.exports and getattr(instance, "active", True)

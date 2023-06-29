@@ -476,7 +476,7 @@ class CornerComponentsFilter(BaseFilter):
         corner_components = [
             hint
             for hint in glyph.lib[HINTS_LIB_KEY]
-            if hint.get("type").upper() == "CORNER"
+            if hint.get("type") == GS_CORNER
         ]
 
         if not corner_components:

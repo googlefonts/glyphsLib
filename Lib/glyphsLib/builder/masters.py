@@ -15,7 +15,7 @@
 
 import os
 
-from .axes import font_uses_axis_locations, get_axis_definitions
+from .axes import font_uses_axis_locations
 from .constants import (
     GLYPHS_PREFIX,
     MASTER_ID_LIB_KEY,
@@ -23,6 +23,7 @@ from .constants import (
     UFO_NOTE_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
 )
+from glyphsLib.util import best_repr, best_repr_list
 
 
 def to_ufo_master_attributes(self, ufo, master):
@@ -39,44 +40,65 @@ def to_ufo_master_attributes(self, ufo, master):
     if vertical_stems:
         ufo.info.postscriptStemSnapV = vertical_stems
     if italic_angle is not None:
-        ufo.info.italicAngle = italic_angle
-
-    year = master.userData[UFO_YEAR_KEY]
+        ufo.info.italicAngle = best_repr(italic_angle)
+    
+    userData = dict(master.userData)
+    year = userData.get(UFO_YEAR_KEY)
     if year is not None:
         ufo.info.year = year
-    note = master.userData[UFO_NOTE_KEY]
+        del(userData[UFO_YEAR_KEY])
+    note = userData.get(UFO_NOTE_KEY)
     if note is not None:
         ufo.info.note = note
-
+        delf(userData[UFO_NOTE_KEY])
     # All of this will go into the designspace as well
     # "Native" designspace fonts will only have the designspace info
-    # FIXME: (jany) maybe we should not duplicate the information and only
-    # write it in the designspace?
-    widthValue = master.widthValue
-    weightValue = master.weightValue
-    if weightValue is not None:
-        ufo.lib[GLYPHS_PREFIX + "weightValue"] = weightValue
-    if widthValue:
-        ufo.lib[GLYPHS_PREFIX + "widthValue"] = widthValue
-    for number in ("", "1", "2", "3"):
-        custom_value = getattr(master, "customValue" + number)
-        if custom_value:
-            ufo.lib[GLYPHS_PREFIX + "customValue" + number] = custom_value
+    if master.font.formatVersion >= 3:
+        axesValues = []
+        axes = []
+        for axis in master.font.axes:
+            value = master.internalAxesValues[axis.axisId]
+            axesValues.append(value)
+            axesDict = {"name": axis.name, "tag": axis.axisTag}
+            if axis.hidden:
+                axesDict["hidden"] = True
+            axes.append(axesDict)
+        if axes and axesValues:
+            ufo.lib[GLYPHS_PREFIX + "axes"] = axes
+            ufo.lib[GLYPHS_PREFIX + "axesValues"] = axesValues
+    else:
+        legacyNames = [
+            "weightValue",
+            "widthValue",
+            "customValue",
+            "customValue1",
+            "customValue2",
+            "customValue3",
+        ]
+        idx = -1
+        for axis in master.font.axes:
+            idx += 1
+            value = master.internalAxesValues[axis.axisId]
+            lib_key = legacyNames[idx]
+            if master._defaultsForName[lib_key] == value:
+                continue
+            ufo.lib[GLYPHS_PREFIX + lib_key] = value
 
     if font_uses_axis_locations(self.font):
         # Set the OS/2 weightClass and widthClas according the this master's
         # user location ("Axis Location" parameter)
-        for axis in get_axis_definitions(self.font):
-            if axis.tag in ("wght", "wdth"):
-                user_loc = axis.get_user_loc(master)
+        for axis in self.font.axes:
+            if axis.axisTag in ("wght", "wdth"):
+                user_loc = get_user_loc(master, axis)
                 axis.set_ufo_user_loc(ufo, user_loc)
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
     # vertical. Glyphsapp uses the font upm, not the typo metrics
     # for these.
+    custom_params = list(master.customParameters)
     if self.is_vertical:
-        custom_params = master.customParameters
+
         font_upm = self.font.upm
         if not any(
             k in custom_params for k in ("vheaVertAscender", "vheaVertTypoAscender")
@@ -90,10 +112,11 @@ def to_ufo_master_attributes(self, ufo, master):
             k in custom_params for k in ("vheaVertLineGap", "vheaVertTypoLineGap")
         ):
             ufo.info.openTypeVheaVertTypoLineGap = font_upm
-
+    if custom_params:
+        ufo.lib[GLYPHS_PREFIX + "fontMaster.customParameters"] = custom_params
     self.to_ufo_blue_values(ufo, master)
     self.to_ufo_guidelines(ufo, master)
-    self.to_ufo_master_user_data(ufo, master)
+    self.to_ufo_master_user_data(ufo, userData)
     # Note: master's custom parameters will be applied later on, after glyphs and
     # features have been generated (see UFOBuilder::masters method).
 

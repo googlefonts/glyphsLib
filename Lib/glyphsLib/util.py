@@ -97,6 +97,19 @@ def reverse_cast_to_number_or_bool(input):
         return "false"  # FIXME: (jany) dubious, glyphs handbook says should be 0
     return str(input)
 
+def best_repr(float_or_int):
+    if isinstance(float_or_int, float) and float_or_int.is_integer():
+        return int(float_or_int)
+    return float_or_int
+
+def best_repr_list(list_of_float_or_int):
+    new_list = []
+    for float_or_int in list_of_float_or_int:
+        if isinstance(float_or_int, float) and float_or_int.is_integer():
+            new_list.append(int(float_or_int))
+        else:
+            new_list.append(float_or_int)
+    return new_list
 
 def bin_to_int_list(value):
     string = num2binary(value)

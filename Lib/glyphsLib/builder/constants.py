@@ -49,6 +49,10 @@ INSERT_FEATURE_MARKER_COMMENT = "# Automatic Code\n"
 APP_VERSION_LIB_KEY = GLYPHS_PREFIX + "appVersion"
 FORMATVERSION_LIB_KEY = GLYPHS_PREFIX + "formatVersion"
 KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + "keyboardIncrement"
+KEYBOARD_INCREMENT_BIG_KEY = GLYPHS_PREFIX + "keyboardIncrementBig"
+KEYBOARD_INCREMENT_HUGE_KEY = GLYPHS_PREFIX + "keyboardIncrementHuge"
+GRID_SIZE_KEY = GLYPHS_PREFIX + "gridSize"
+GRID_SUBDIVISION_KEY = GLYPHS_PREFIX + "gridSubDivision"
 MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + "fontMasterOrder"
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
@@ -67,14 +71,13 @@ SHAPE_ORDER_LIB_KEY = GLYPHLIB_PREFIX + "shapeOrder"
 SMART_COMPONENT_AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"
 
 EXPORT_KEY = GLYPHS_PREFIX + "export"
-WIDTH_KEY = GLYPHS_PREFIX + "width"
-WEIGHT_KEY = GLYPHS_PREFIX + "weight"
+WIDTH_KEY = GLYPHS_PREFIX + "widthClass"
+WEIGHT_KEY = GLYPHS_PREFIX + "weightClass"
 FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
 # Following typo kept for backwards compatibility
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
 
-CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
 CUSTOM_PARAMETERS_BLACKLIST = [
     # These are stored in the official descriptor attributes.
     "familyName",
@@ -133,7 +136,7 @@ UFO_YEAR_KEY = GLYPHLIB_PREFIX + "ufoYear"
 UFO_NOTE_KEY = GLYPHLIB_PREFIX + "ufoNote"
 
 UFO_DATA_KEY = GLYPHLIB_PREFIX + "ufoData"
-FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "fontUserData"
+FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "font.userData"
 LAYER_LIB_KEY = GLYPHLIB_PREFIX + "layerLib"
 LAYER_NAME_KEY = GLYPHLIB_PREFIX + "layerName"
 GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + "glyphUserData"
@@ -141,16 +144,16 @@ NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + "nodeUserData"
 
 
 GLYPHS_COLORS = (
-    "0.85,0.26,0.06,1",
-    "0.99,0.62,0.11,1",
-    "0.65,0.48,0.2,1",
-    "0.97,1,0,1",
-    "0.67,0.95,0.38,1",
-    "0.04,0.57,0.04,1",
-    "0,0.67,0.91,1",
-    "0.18,0.16,0.78,1",
-    "0.5,0.09,0.79,1",
-    "0.98,0.36,0.67,1",
+    "0.85,0.26,0.06,1", # red
+    "0.99,0.62,0.11,1", # orange
+    "0.65,0.48,0.2,1",  # brown
+    "0.97,0.9,0.0,1",   # yellow
+    "0.67,0.95,0.38,1", # green
+    "0.04,0.57,0.04,1", # dark green
+    "0.06,0.6,0.98,1",  # cyan
+    "0,0.2,0.88,1",     # blue
+    "0.5,0.09,0.79,1",  # violet
+    "0.98,0.36,0.67,1", # pink
     "0.75,0.75,0.75,1",
     "0.25,0.25,0.25,1",
 )

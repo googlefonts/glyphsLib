@@ -1,7 +1,24 @@
+import pytest, os, tempfile
 import glyphsLib
-import pytest
 from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone, GSPath, GSComponent
 
+def test_round_tripping(datadir):
+    original_file_path = str(datadir.join("GlyphsUnitTestSans3.glyphs"))
+    with tempfile.TemporaryDirectory() as outputdir:
+        temp_dir = str(outputdir)
+        temp_file_path = os.path.join(temp_dir, "GlyphsUnitTestSans3.glyphs")
+        temp_file_path = str(datadir.join("GlyphsUnitTestSans3_temp.glyphs"))
+        print("__writing temp file to", temp_file_path)
+        font = glyphsLib.load(original_file_path)
+        font.save(temp_file_path)
+        original_file = open(original_file_path)
+        original_file_content = original_file.read()
+        original_file.close()
+    
+        temp_file = open(temp_file_path)
+        temp_file_content = temp_file.read()
+        temp_file.close()
+        assert original_file_content == temp_file_content
 
 def test_metrics():
     font = GSFont()
@@ -40,7 +57,9 @@ def test_glyphspackage_load(datadir):
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font2 = GSFont(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected
-    assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
+    d1 = glyphsLib.dumps(font1)
+    d2 = glyphsLib.dumps(font2)
+    assert d1 == d2
 
 
 def test_glyphs3_alignment_zones(datadir):

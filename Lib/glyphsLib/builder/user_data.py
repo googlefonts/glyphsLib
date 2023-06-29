@@ -15,7 +15,7 @@
 
 import logging
 import os
-import posixpath
+import posixpath, copy
 
 from .constants import (
     GLYPHS_PREFIX,
@@ -50,15 +50,19 @@ def to_ufo_family_user_data(self, ufo):
         ufo.lib[FONT_USER_DATA_KEY] = dict(self.font.userData)
 
 
-def to_ufo_master_user_data(self, ufo, master):
+def to_ufo_master_user_data(self, ufo, userData):
     """Set master-specific user data as Glyphs does."""
-    for key in master.userData.keys():
+    if not userData:
+        return
+    userdata_lib = {}
+    for key in userData.keys():
         if _user_data_has_no_special_meaning(key):
-            ufo.lib[key] = master.userData[key]
-
+            userdata_lib[key] = copy.copy(userData[key])
+    if userdata_lib:
+        ufo.lib[GLYPHS_PREFIX + "fontMaster.userData"] = userdata_lib
     # Restore UFO data files. This code assumes that all paths are POSIX paths.
-    if UFO_DATA_KEY in master.userData:
-        for filename, data in master.userData[UFO_DATA_KEY].items():
+    if UFO_DATA_KEY in userData:
+        for filename, data in userData[UFO_DATA_KEY].items():
             ufo.data[filename] = bytes(data)
 
 
@@ -89,8 +93,11 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
     # the GSFont useData under a key named after the layer.
     # When different original UFOs each had a layer with the same layer name,
     # only the layer lib of the last one was stored and was exported to UFOs
-    if key in self.font.userData.keys():
-        ufo_layer.lib.update(self.font.userData[key])
+    user_data = user_data = self.font.userData
+    if not user_data:
+        return
+    if key in user_data.keys():
+        ufo_layer.lib.update(user_data[key])
     if key in master.userData.keys():
         ufo_layer.lib.update(master.userData[key])
         if LAYER_NAME_KEY in ufo_layer.lib:

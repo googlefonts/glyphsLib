@@ -15,7 +15,7 @@
 
 from glyphsLib import types
 from glyphsLib.pens import _to_glyphs_node_type, _to_ufo_node_type
-
+from glyphsLib.util import best_repr_list
 
 def to_ufo_paths(self, ufo_glyph, layer):
     """Draw .glyphs paths onto a pen."""
@@ -36,7 +36,7 @@ def to_ufo_paths(self, ufo_glyph, layer):
             node = nodes.pop(0)
             assert node.type == "line", "Open path starts with off-curve points"
             pen.addPoint(
-                tuple(node.position),
+                best_repr_list(tuple(node.position)),
                 segmentType="move",
                 name=node.userData.get("name"),
             )
@@ -48,7 +48,7 @@ def to_ufo_paths(self, ufo_glyph, layer):
         for node in nodes:
             node_type = _to_ufo_node_type(node.type)
             pen.addPoint(
-                tuple(node.position),
+                tuple(best_repr_list(node.position)),
                 segmentType=node_type,
                 smooth=node.smooth,
                 name=node.userData.get("name"),
@@ -57,8 +57,9 @@ def to_ufo_paths(self, ufo_glyph, layer):
             # might have changed node order.
             # A node's name will be stored as a UFO point's name attribute, so filter
             # it from the Glyph node user data to avoid storing duplicate information.
-            node_user_data = {k: v for k, v in node.userData.items() if k != "name"}
-            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+            if node.userData:
+                node_user_data = {k: v for k, v in node.userData.items() if k != "name"}
+                self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
         pen.endPath()
 
 
