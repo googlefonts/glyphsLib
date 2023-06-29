@@ -18,10 +18,13 @@ import re
 import logging
 
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
+from Foundation import NSArray
+
 from .filters import parse_glyphs_filter
 from .common import to_ufo_color
 from .constants import (
     GLYPHS_PREFIX,
+    GLYPH_ORDER_KEY,
     UFO2FT_COLOR_PALETTES_KEY,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
@@ -32,6 +35,7 @@ from .constants import (
     UFO2FT_META_TABLE_KEY,
 )
 from .features import replace_feature, replace_prefixes
+from glyphsLib.classes import GSCustomParameter
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -79,84 +83,6 @@ logger = logging.getLogger(__name__)
 
 def identity(value):
     return value
-
-
-class GlyphsObjectProxy:
-    """Accelerate and record access to the glyphs object's custom parameters"""
-
-    def __init__(self, glyphs_object, glyphs_module):
-        self._owner = glyphs_object
-        # This is a key part to be used in UFO lib keys to be able to choose
-        # between master and font attributes during roundtrip
-        self.sub_key = glyphs_object.__class__.__name__ + "."
-        self._glyphs_module = glyphs_module
-        self._lookup = defaultdict(list)
-        for param in glyphs_object.customParameters:
-            self._lookup[param.name].append(param.value)
-        self._handled = set()
-
-    def get_attribute_value(self, key):
-        if not hasattr(self._owner, key):
-            return None
-        return getattr(self._owner, key)
-
-    def set_attribute_value(self, key, value):
-        if not hasattr(self._owner, key):
-            return
-        setattr(self._owner, key, value)
-
-    def get_custom_value(self, key):
-        """Return the first and only custom parameter matching the given name."""
-        self._handled.add(key)
-        values = self._lookup[key]
-        if len(values) > 1:
-            raise RuntimeError(f"More than one value for this customParameter: {key}")
-        if values:
-            return values[0]
-        return None
-
-    def get_custom_values(self, key):
-        """Return a set of values for the given customParameter name."""
-        self._handled.add(key)
-        return self._lookup[key]
-
-    def set_custom_value(self, key, value):
-        """Set one custom parameter with the given value.
-        We assume that the list of custom parameters does not already contain
-        the given parameter so we only append.
-        """
-        self._owner.customParameters.append(
-            self._glyphs_module.GSCustomParameter(name=key, value=value)
-        )
-
-    def set_custom_values(self, key, values):
-        """Set several values for the customParameter with the given key.
-        We append one GSCustomParameter per value.
-        """
-        for value in values:
-            self.set_custom_value(key, value)
-
-    def unhandled_custom_parameters(self):
-        for param in self._owner.customParameters:
-            if param.name not in self._handled:
-                yield param
-
-    def mark_handled(self, key):
-        """Mark a key as handled so it is ignored by `unhandled_custom_parameters`.
-
-        Use e.g. when you handle a custom parameter outside this module.
-        """
-        self._handled.add(key)
-
-    def is_font(self):
-        """Returns whether we are looking at a top-level GSFont object as
-        opposed to a master or instance."""
-        return hasattr(self._owner, "glyphs")
-
-    def get_property(self, key):
-        if key and hasattr(self._owner, "properties"):
-            return self._owner.properties.get(key)
-        return None
 
 
 class UFOProxy:
@@ -209,17 +135,19 @@ class ParamHandler(AbstractParamHandler):
         glyphs_name,
         ufo_name=None,
         glyphs_long_name=None,
-        glyphs_multivalued=False,
+        #glyphs_multivalued=False,
         glyphs3_property=None,
         ufo_prefix=CUSTOM_PARAM_PREFIX,
         ufo_info=True,
         ufo_default=None,
         value_to_ufo=identity,
         value_to_glyphs=identity,
+        write_to_ufo=True, # for supporting older lib keys
+        write_to_glyphs=True,
     ):
         self.glyphs_name = glyphs_name
         self.glyphs_long_name = glyphs_long_name
-        self.glyphs_multivalued = glyphs_multivalued
+        #self.glyphs_multivalued = glyphs_multivalued
         self.glyphs3_property = glyphs3_property
         # By default, they have the same name in both
         self.ufo_name = ufo_name or glyphs_name
@@ -229,41 +157,44 @@ class ParamHandler(AbstractParamHandler):
         # Value transformation functions
         self.value_to_ufo = value_to_ufo
         self.value_to_glyphs = value_to_glyphs
+        self.write_to_ufo = write_to_ufo
+        self.write_to_glyphs = write_to_glyphs
 
     # By default, the parameter is read from/written to:
     #  - the Glyphs object's customParameters
     #  - the UFO's info object if it has a matching attribute, else the lib
     def to_glyphs(self, glyphs, ufo):
+        if not self.write_to_glyphs:
+            return
         ufo_value = self._read_from_ufo(glyphs, ufo)
+
         if ufo_value is None:
             return
         glyphs_value = self.value_to_glyphs(ufo_value)
         self._write_to_glyphs(glyphs, glyphs_value)
 
     def to_ufo(self, builder, glyphs, ufo):
+        if not self.write_to_ufo:
+            return
         glyphs_value = self._read_from_glyphs(glyphs)
         if glyphs_value is None:
             return
         ufo_value = self.value_to_ufo(glyphs_value)
-        self._write_to_ufo(glyphs, ufo, ufo_value)
+        if ufo_value is not None:
+            self._write_to_ufo(glyphs, ufo, ufo_value)
 
     def _read_from_glyphs(self, glyphs):
         value = None
         # Try to read from the properties first.
-        value = glyphs.get_property(self.glyphs3_property)
-        if value is not None:
-            return value
-        # Try to read from the custom parameters next, using both the short
-        # name, which has precedence, and the prefixed (long) name.
-        if self.glyphs_multivalued:
-            getter = glyphs.get_custom_values
-        else:
-            getter = glyphs.get_custom_value
-        value = getter(self.glyphs_name)
+        if self.glyphs3_property is not None:
+            value = glyphs[self.glyphs3_property]
+            if value is not None:
+                return value
+        value = glyphs[self.glyphs_name]
         if value is not None:
             return value
         if self.glyphs_long_name is not None:
-            value = getter(self.glyphs_long_name)
+            value = glyphs[self.glyphs_long_name]
         return value
 
     def _write_to_glyphs(self, glyphs, value):
@@ -272,12 +203,8 @@ class ParamHandler(AbstractParamHandler):
         # here to the one in _read_from_glyphs to determine whether a
         # value should be placed in the new properties top-level key.
 
-        # Never write the prefixed (long) name?
-        # FIXME: (jany) maybe should rather preserve the naming choice of user
-        if self.glyphs_multivalued:
-            glyphs.set_custom_values(self.glyphs_name, value)
-        else:
-            glyphs.set_custom_value(self.glyphs_name, value)
+        parameter = GSCustomParameter(self.glyphs_name, value)
+        glyphs.append(parameter)
 
     def _read_from_ufo(self, glyphs, ufo):
         if self.ufo_info and ufo.has_info_attr(self.ufo_name):
@@ -285,7 +212,7 @@ class ParamHandler(AbstractParamHandler):
         else:
             ufo_prefix = self.ufo_prefix
             if ufo_prefix == CUSTOM_PARAM_PREFIX:
-                ufo_prefix += glyphs.sub_key
+                ufo_prefix += glyphs.__class__.__name__+"."
             return ufo.get_lib_value(ufo_prefix + self.ufo_name)
 
     def _write_to_ufo(self, glyphs, ufo, value):
@@ -298,7 +225,7 @@ class ParamHandler(AbstractParamHandler):
             # everything else gets dumped in the lib
             ufo_prefix = self.ufo_prefix
             if ufo_prefix == CUSTOM_PARAM_PREFIX:
-                ufo_prefix += glyphs.sub_key
+                ufo_prefix += glyphs._owner.__class__.__name__+"."
             ufo.set_lib_value(ufo_prefix + self.ufo_name, value)
 
 
@@ -465,6 +392,8 @@ register(EmptyListDefaultParamHandler("postscriptFamilyOtherBlues"))
 
 # Convert code page numbers to OS/2 ulCodePageRange bits. Empty lists stay empty lists.
 class OS2CodePageRangesParamHandler(AbstractParamHandler):
+    glyphs_name = "codePageRanges"
+    ufo_name = "openTypeOS2CodePageRanges"
     def to_glyphs(self, glyphs, ufo):
         ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
         if ufo_codepage_bits is None:
@@ -478,27 +407,23 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             else:
                 unsupported_codepage_bits.append(codepage)
 
-        glyphs.set_custom_value("codePageRanges", codepages)
+        glyphs[self.glyphs_name] = codepages
         if unsupported_codepage_bits:
-            glyphs.set_custom_value(
-                "codePageRangesUnsupportedBits", unsupported_codepage_bits
-            )
+            glyphs["codePageRangesUnsupportedBits"] = unsupported_codepage_bits
+
 
     def to_ufo(self, builder, glyphs, ufo):
-        codepages = glyphs.get_custom_value("codePageRanges")
+        codepages = glyphs[self.glyphs_name]
         if codepages is None:
-            codepages = glyphs.get_custom_value("openTypeOS2CodePageRanges")
+            codepages = glyphs[self.ufo_name]
             if codepages is None:
                 return
+        ufo_codepage_bits = [CODEPAGE_RANGES[int(v)] for v in codepages]
+        #unsupported_codepage_bits = glyphs["codePageRangesUnsupportedBits"]
+        #if unsupported_codepage_bits:
+        #    ufo_codepage_bits.extend(unsupported_codepage_bits)
 
-        ufo_codepage_bits = [CODEPAGE_RANGES[v] for v in codepages]
-        unsupported_codepage_bits = glyphs.get_custom_value(
-            "codePageRangesUnsupportedBits"
-        )
-        if unsupported_codepage_bits:
-            ufo_codepage_bits.extend(unsupported_codepage_bits)
-
-        ufo.set_info_value("openTypeOS2CodePageRanges", sorted(ufo_codepage_bits))
+        ufo.set_info_value(self.ufo_name, sorted(ufo_codepage_bits))
 
 
 register(OS2CodePageRangesParamHandler())
@@ -633,6 +558,8 @@ register(
 
 
 class NameRecordParamHandler(AbstractParamHandler):
+    glyphs_name = "Name Table Entry"
+    ufo_name = "openTypeNameRecords"
     def to_entry(self, record):
         identifiers = [
             record["nameID"],
@@ -703,21 +630,20 @@ class NameRecordParamHandler(AbstractParamHandler):
 
     def to_glyphs(self, glyphs, ufo):
         if glyphs.is_font():
-            records = ufo.get_info_value("openTypeNameRecords")
+            records = ufo.get_info_value(self.ufo_name)
             if records:
                 entries = [self.to_entry(record) for record in records]
 
-                glyphs.set_custom_values("Name Table Entry", entries)
+                glyphs.set_custom_values(self.glyphs_name, entries)
 
     def to_ufo(self, builder, glyphs, ufo):
-        entries = glyphs.get_custom_values("Name Table Entry")
-        if entries:
-            records = ufo.get_info_value("openTypeNameRecords") or []
-            for entry in entries:
-                record = self.to_record(entry)
+        for entrie in glyphs:
+            if entrie.name == self.glyphs_name:
+                records = ufo.get_info_value(self.ufo_name) or []
+                record = self.to_record(entry.value)
                 if record is not None:
                     records.append(record)
-            ufo.set_info_value("openTypeNameRecords", records)
+                ufo.set_info_value(self.ufo_name, records)
 
 
 register(NameRecordParamHandler())
@@ -741,14 +667,17 @@ class MiscParamHandler(ParamHandler):
     """Copy GSFont attributes to ufo lib"""
 
     def _read_from_glyphs(self, glyphs):
-        return glyphs.get_attribute_value(self.glyphs_name)
+        return glyphs[self.glyphs_name]
 
     def _write_to_glyphs(self, glyphs, value):
-        glyphs.set_attribute_value(self.glyphs_name, value)
+        if hasattr(glyphs, self.glyphs_name):
+           setattr(glyphs, self.glyphs_name, value)
 
 
-register(MiscParamHandler(glyphs_name="disablesAutomaticAlignment"))
-register(MiscParamHandler(glyphs_name="iconName"))
+register(MiscParamHandler(glyphs_name="disablesAutomaticAlignment", ufo_prefix="com.schriftgestaltung."))
+register(MiscParamHandler(glyphs_name="disablesAutomaticAlignment", write_to_ufo=False))
+register(MiscParamHandler(glyphs_name="iconName", ufo_prefix="com.schriftgestaltung.", value_to_ufo=lambda value: value if value is not None and len(value) > 0 and value != "Regular" else None))
+register(MiscParamHandler(glyphs_name="iconName", write_to_ufo=False))
 
 
 class DisplayStringsParamHandler(MiscParamHandler):
@@ -761,7 +690,7 @@ class DisplayStringsParamHandler(MiscParamHandler):
         if (
             builder is not None
             and builder.store_editor_state
-            and builder.font.DisplayStrings
+            and builder.font.displayStrings
         ):
             super().to_ufo(builder, glyphs, ufo)
 
@@ -773,15 +702,25 @@ register(
     MiscParamHandler(
         glyphs_name="disablesNiceNames",
         ufo_name="useNiceNames",
-        value_to_ufo=lambda value: int(not value),
+        value_to_ufo=lambda value: bool(not value),
         value_to_glyphs=lambda value: not bool(value),
+        ufo_prefix="com.schriftgestaltung.",
+    )
+)
+register(
+    MiscParamHandler(
+        glyphs_name="disablesNiceNames",
+        ufo_name="useNiceNames",
+        value_to_ufo=lambda value: bool(not value),
+        value_to_glyphs=lambda value: not bool(value),
+        write_to_ufo=False,
     )
 )
 
 for number in ("", "1", "2", "3"):
-    register(MiscParamHandler("customValue" + number, ufo_info=False))
-register(MiscParamHandler("weightValue", ufo_info=False))
-register(MiscParamHandler("widthValue", ufo_info=False))
+    register(MiscParamHandler("customValue" + number, ufo_info=False, ufo_default=0))
+register(MiscParamHandler("weightValue", ufo_info=False, ufo_default=100))
+register(MiscParamHandler("widthValue", ufo_info=False, ufo_default=100))
 
 
 def append_unique(array, value):
@@ -790,6 +729,8 @@ def append_unique(array, value):
 
 
 class OS2SelectionParamHandler(AbstractParamHandler):
+    glyphs_name = None
+    ufo_name = "openTypeOS2Selection"
     flags = {7: "Use Typo Metrics", 8: "Has WWS Names"}
 
     # Note that en empty openTypeOS2Selection list should stay an empty list, as
@@ -797,35 +738,33 @@ class OS2SelectionParamHandler(AbstractParamHandler):
     # former, we at least write an empty list to openTypeOS2SelectionUnsupportedBits
     # which we use to re-instate an empty list in the UFO on tripping back.
     def to_glyphs(self, glyphs, ufo):
-        ufo_flags = ufo.get_info_value("openTypeOS2Selection")
+        ufo_flags = ufo.get_info_value(self.ufo_name)
         if ufo_flags is None:
             return
 
         unsupported_bits = []
         for flag in ufo_flags:
             if flag in self.flags:
-                glyphs.set_custom_value(self.flags[flag], True)
+                glyphs[self.flags[flag]] = True
             else:
                 unsupported_bits.append(flag)
-        glyphs.set_custom_value("openTypeOS2SelectionUnsupportedBits", unsupported_bits)
+        glyphs["openTypeOS2SelectionUnsupportedBits"] = unsupported_bits
 
     def to_ufo(self, builder, glyphs, ufo):
-        use_typo_metrics = glyphs.get_custom_value(self.flags[7])
-        has_wws_name = glyphs.get_custom_value(self.flags[8])
-        unsupported_bits = glyphs.get_custom_value(
-            "openTypeOS2SelectionUnsupportedBits"
-        )
+        use_typo_metrics = glyphs[self.flags[7]]
+        has_wws_name = glyphs[self.flags[8]]
+        unsupported_bits = glyphs["openTypeOS2SelectionUnsupportedBits"]
         if not use_typo_metrics and not has_wws_name and unsupported_bits is None:
             return
 
-        selection_bits = ufo.get_info_value("openTypeOS2Selection") or []
+        selection_bits = ufo.get_info_value(self.ufo_name) or []
         if use_typo_metrics:
             selection_bits.append(7)
         if has_wws_name:
             selection_bits.append(8)
         if unsupported_bits:
             selection_bits.extend(unsupported_bits)
-        ufo.set_info_value("openTypeOS2Selection", sorted(set(selection_bits)))
+        ufo.set_info_value(self.ufo_name, sorted(set(selection_bits)))
 
 
 register(OS2SelectionParamHandler())
@@ -837,24 +776,27 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 
     See the GlyphOrderTest class for a thorough explanation.
     """
+    glyphs_name = "glyphOrder"
+    ufo_name = GLYPH_ORDER_KEY
 
     def to_glyphs(self, glyphs, ufo):
         if glyphs.is_font():
-            ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
-            if ufo_glyphOrder:
-                glyphs.set_custom_value("glyphOrder", ufo_glyphOrder)
+            ufo_glyphOrder = ufo.get_lib_value(self.ufo_name)
+            use_glyphOrder = ufo.get_lib_value("com.schriftgestaltung.useGlyphOrder")
+            if (use_glyphOrder is None or use_glyphOrder) and ufo_glyphOrder:
+                glyphs[self.glyphs_name] = ufo_glyphOrder
 
     def to_ufo(self, builder, glyphs, ufo):
         if glyphs.is_font():
-            glyphs_glyphOrder = glyphs.get_custom_value("glyphOrder")
+            glyphs_glyphOrder = glyphs[self.glyphs_name]
             if glyphs_glyphOrder:
-                ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+                ufo_glyphOrder = ufo.get_lib_value(self.ufo_name)
                 # If the custom parameter provides partial coverage we want to
                 # append the original glyph order for uncovered glyphs.
                 glyphs_glyphOrder += [
                     g for g in ufo_glyphOrder if g not in glyphs_glyphOrder
                 ]
-                ufo.set_lib_value(PUBLIC_PREFIX + "glyphOrder", glyphs_glyphOrder)
+                ufo.set_lib_value(self.ufo_name, glyphs_glyphOrder)
 
 
 register(GlyphOrderParamHandler())
@@ -864,7 +806,7 @@ class FilterParamHandler(AbstractParamHandler):
     """Handler for (Pre)Filter custom paramters.
 
     This is complicated. ufo2ft grew filter modules to mimic some of Glyph's
-    automatic features, but due to the impendance mismatch between the flow of
+    automatic features, but due to the impedance mismatch between the flow of
     data in Glyphs and in UFOs plus Designspaces, they need to be handled in
     two ways: once for filters that should be applied to masters and once for
     filters on instances, which should be applied only to interpolated UFOs:
@@ -874,7 +816,7 @@ class FilterParamHandler(AbstractParamHandler):
        +----+-+                   |
             |                     |
           +-+-----------+       +-+----------+
-          |GSFontMaster |       |GSIntance   |
+          |GSFontMaster |       |GSInstance   |
           +-------------+       +------------+
            userData                    customParameters
              com...ufo2ft.filters        Filter & PreFilter
@@ -913,7 +855,8 @@ class FilterParamHandler(AbstractParamHandler):
     filters are a UFO lib key, they are automatically stored in a master's
     userData by another code path.
     """
-
+    glyphs_name = "Filter"
+    ufo_name = UFO2FT_FILTERS_KEY
     def to_glyphs(self, glyphs, ufo):
         pass
 
@@ -927,9 +870,9 @@ class FilterParamHandler(AbstractParamHandler):
 
             if not ufo_filters:
                 return
-            if not ufo.has_lib_key(UFO2FT_FILTERS_KEY):
-                ufo.set_lib_value(UFO2FT_FILTERS_KEY, [])
-            existing = ufo.get_lib_value(UFO2FT_FILTERS_KEY)
+            if not ufo.has_lib_key(self.ufo_name):
+                ufo.set_lib_value(self.ufo_name, [])
+            existing = ufo.get_lib_value(self.ufo_name)
             existing.extend(ufo_filters)
 
 
@@ -937,9 +880,11 @@ register(FilterParamHandler())
 
 
 class ReplacePrefixParamHandler(AbstractParamHandler):
+    glyphs_name = "Replace Prefix"
+    ufo_name = None
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
-        for value in glyphs.get_custom_values("Replace Prefix"):
+        for value in glyphs.get_custom_values(self.glyphs_name):
             prefix_name, prefix_code = re.split(r"\s*;\s*", value, 1)
             # if multiple 'Replace Prefix' custom params replace the same
             # prefix, the last wins
@@ -965,8 +910,10 @@ register(ReplacePrefixParamHandler())
 
 
 class ReplaceFeatureParamHandler(AbstractParamHandler):
+    glyphs_name = "Replace Feature"
+    ufo_name = None
     def to_ufo(self, builder, glyphs, ufo):
-        for value in glyphs.get_custom_values("Replace Feature"):
+        for value in glyphs.get_custom_values(self.glyphs_name):
             tag, repl = re.split(r"\s*;\s*", value, 1)
             ufo._owner.features.text = replace_feature(
                 tag, repl, ufo._owner.features.text or ""
@@ -974,7 +921,7 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
 
     def to_glyphs(self, glyphs, ufo):
         # TODO: (jany) The "Replace Feature" custom parameter can be used to
-        # have one master/instance with different features than what is stored
+        # have one instance with different features than what is stored
         # in the GSFont. When going from several UFOs to one GSFont, we could
         # detect when UFOs have different features, put the common ones in
         # GSFont and replace the different ones with this custom parameter.
@@ -1000,11 +947,13 @@ class ReencodeGlyphsParamHandler(AbstractParamHandler):
     and not also in the opposite direction, as the parameter isn't stored in
     the UFO lib, but directly applied to the UFO unicode values.
     """
+    glyphs_name = "Reencode Glyphs"
+    ufo_name = None
 
     def to_ufo(self, builder, glyphs, ufo):
         # TODO Check that the wrapped glyphs object is indeed an instance, and
         # not a GSFont or GSMaster (unlikely)
-        reencode_list = glyphs.get_custom_value("Reencode Glyphs")
+        reencode_list = glyphs.get_custom_value(self.glyphs_name)
         if not reencode_list:
             return
         ufo = ufo._owner
@@ -1039,9 +988,11 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
     The glyph data is swapped, but the unicode assignments remain the
     same.
     """
+    glyphs_name = "Rename Glyphs"
+    ufo_name = None
 
     def to_ufo(self, builder, glyphs, ufo):
-        rename_list = glyphs.get_custom_value("Rename Glyphs")
+        rename_list = glyphs.get_custom_value(self.glyphs_name)
         if not rename_list:
             return
         ufo = ufo._owner
@@ -1064,23 +1015,32 @@ register(RenameGlyphsParamHandler())
 
 def to_ufo_custom_params(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
-    glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
+    glyphs_proxy = glyphs_object.customParameters
     ufo_proxy = UFOProxy(ufo)
 
-    glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
-
+    #glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
+    _handled = []
     for handler in KNOWN_PARAM_HANDLERS:
         handler.to_ufo(self, glyphs_proxy, ufo_proxy)
-
-    for param in glyphs_proxy.unhandled_custom_parameters():
+        _handled.append(handler.glyphs_name)
+        _handled.append(handler.ufo_name)
+    parameters = []
+    for param in glyphs_proxy:
+        if param.name in _handled:
+            continue
         name = _normalize_custom_param_name(param.name)
-        ufo.lib[CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key + name] = param.value
+        value = _normalize_custom_param_value(param.value)
+        parameters.append({"name":name, "value":value})
+    if len(parameters) > 0:
+        key = GLYPHS_PREFIX + glyphs_proxy._owner.__class__.__name__+".customParameters"
+        key = key.replace("GSF", "f")
+        ufo.lib[key] = parameters
 
     _set_default_params(ufo)
 
 
 def to_glyphs_custom_params(self, ufo, glyphs_object):
-    glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=self.glyphs_module)
+    glyphs_proxy = glyphs_object.customParameters
     ufo_proxy = UFOProxy(ufo)
 
     # Handle known parameters
@@ -1090,13 +1050,14 @@ def to_glyphs_custom_params(self, ufo, glyphs_object):
     # Since all UFO `info` entries (from `fontinfo.plist`) have a registered
     # handler, the only place where we can find unexpected stuff is the `lib`.
     # See the file `tests/builder/fontinfo_test.py` for `fontinfo` coverage.
-    prefix = CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key
+    prefix = CUSTOM_PARAM_PREFIX + glyphs_proxy.__class__.__name__+"."
     for name, value in ufo_proxy.unhandled_lib_items():
         name = _normalize_custom_param_name(name)
         if not name.startswith(prefix):
             continue
         name = name[len(prefix) :]
-        glyphs_proxy.set_custom_value(name, value)
+        parameter = GSCustomParameter(name, value)
+        glyphs_proxy.append(parameter)
 
     _unset_default_params(glyphs_object)
 
@@ -1112,6 +1073,25 @@ def _normalize_custom_param_name(name):
         name = name.replace(orig, replacement)
     return name
 
+def _normalize_custom_param_value(value):
+    """
+    replace custom object with a dict representation of themselves
+    """
+    if isinstance(value, (list, NSArray)):
+        new_value = []
+        for item in value:
+            new_item = _normalize_custom_param_value(item)
+            new_value.append(new_item)
+        return new_value
+    try:
+        return value.propertyListValueFormat_(3) # TODO: this is the plain Glyphs API. pythonize this
+    except:
+        from objc._pythonify import OC_PythonLong, OC_PythonFloat
+        if isinstance(value, OC_PythonLong):
+            return int(value)
+        elif isinstance(value, OC_PythonFloat):
+            return float(value)
+        return value
 
 DEFAULT_PARAMETERS = (
     # ufo2ft defaults to fsType Bit 2 ("Preview & Print embedding"), while

@@ -158,6 +158,8 @@ def load(file_or_path, font=None):
         fp = open(file_or_path, "r", encoding="utf-8")
         data = openstep_plist.load(fp, use_numbers=True)
     p.parse_into_object(font, data)
+    p.parse_into_object(res, data)
+    font.post_read()
     return font
 
 

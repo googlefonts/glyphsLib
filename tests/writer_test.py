@@ -124,8 +124,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         }
         # grid -> gridLength
         font.grid = 35
-        # gridSubDivisions
-        font.gridSubDivisions = 5
+        # gridSubDivision
+        font.gridSubDivision = 5
         # keyboardIncrement
         font.keyboardIncrement = 1.2
         # disablesNiceNames

@@ -142,7 +142,7 @@ def to_ufo_smart_component(self, layer, component, pen):
     # Decompose by creating a new layer, copying its shapes and applying
     # the new coordinates
     new_layer = GSLayer()
-    new_layer._shapes = [shape.clone() for shape in masters[0]._shapes]
+    new_layer.shapes = [shape.copy() for shape in masters[0].shapes]
     set_coordinates(new_layer, new_coords)
 
     # Don't forget that the GSComponent might also be transformed, so
@@ -150,7 +150,7 @@ def to_ufo_smart_component(self, layer, component, pen):
     if component.transform:
         # We must reverse path direction for flipped components
         # https://github.com/googlefonts/glyphsLib/issues/882
-        should_reverse = component.transform.determinant() < 0
+        should_reverse = component.scale[0] * component.scale[0] < 0
         for p in new_layer.paths:
             p.applyTransform(component.transform)
             if should_reverse:

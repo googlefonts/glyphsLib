@@ -110,7 +110,7 @@ def _to_ufo_features(
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
-            "{}{} = [ {}\n];".format(
+            "{}{} = [ {} ];".format(
                 autostr(class_.automatic), name, expander.expand(class_.code)
             )
         )
@@ -157,7 +157,7 @@ def _to_ufo_features(
             lines.extend(feature_names)
         if feature.automatic:
             lines.append("# automatic")
-        if feature.disabled:
+        if not feature.active:
             lines.append("# disabled")
             lines.extend("#" + line for line in code.splitlines())
         else:

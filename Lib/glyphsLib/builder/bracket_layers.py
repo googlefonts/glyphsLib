@@ -8,11 +8,38 @@ from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 from fontTools.varLib.featureVars import overlayFeatureVariations
 
 from glyphsLib import util
+from glyphsLib.classes import LAYER_ATTRIBUTE_AXIS_RULES
+from glyphsLib.util import designspace_min_max
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
     GLYPHLIB_PREFIX,
 )
 
+def _bracket_info(layer, axes):
+    # Returns a region expressed as a {axis_tag: (min, max)} box
+    # (dictionary), once the axes have been computed
+    if not layer.isBracketLayer():
+        return {}
+
+    info = {}
+    for axis in axes:
+        rule = layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES].get(axis.axisId)
+        if "min" not in rule and "max" not in rule:
+            continue
+        # Rules are expressed in designspace coordinates,
+        # so map appropriately.
+        designspace_min, designspace_max = designspace_min_max(axis)
+        axis_min = rule.get("min", designspace_min)
+        axis_max = rule.get("max", designspace_max)
+        if isinstance(axis_min, str):
+            axis_min = float(axis_min)
+        if isinstance(axis_max, str):
+            axis_max = float(axis_max)
+        if axis_max == axis.minimum and axis_max == axis.maximum:
+            # It's full range, ignore it.
+            continue
+        info[axis.tag] = (axis_min, axis_max)
+    return info
 
 def to_designspace_bracket_layers(self):
     """Extract bracket layers in a GSGlyph into free-standing UFO glyphs with
@@ -30,7 +57,7 @@ def to_designspace_bracket_layers(self):
     rules = []
     tag_to_name = {axis.tag: axis.name for axis in self._designspace.axes}
     for layer in self.bracket_layers:
-        box_with_tag = layer._bracket_info(self._designspace.axes)
+        box_with_tag = _bracket_info(layer, self._designspace.axes)
         glyph_name = layer.parent.name
         # It'd be nice to use tag for both glyph names and designspace
         # rules, but given designspace refers to axes by name, our hand
@@ -201,13 +228,13 @@ def find_component_use(self):
         for master, layers in master_layers.items():
             for glyph_name, layer in layers.items():
                 my_bracket_layers = [
-                    layer._bracket_info(self._designspace.axes)
+                    _bracket_info(layer, self._designspace.axes)
                     for layer in alternate_layers[master][glyph_name]
                 ]
                 for comp in layer.components:
                     # Check our alternate layer set-up agrees with theirs
                     components_bracket_layers = [
-                        layer._bracket_info(self._designspace.axes)
+                        _bracket_info(layer, self._designspace.axes)
                         for layer in alternate_layers[master][comp.name]
                     ]
                     if my_bracket_layers != components_bracket_layers:
@@ -230,7 +257,7 @@ def find_component_use(self):
         # And now, fix the problem.
         for (glyph_name, master), needed_brackets in problematic_glyphs.items():
             my_bracket_layers = [
-                layer._bracket_info(self._designspace.axes)
+                _bracket_info(layer, self._designspace.axes)
                 for layer in alternate_layers[master][glyph_name]
             ]
             if my_bracket_layers:
@@ -259,28 +286,15 @@ def synthesize_bracket_layer(old_layer, box, axes):
     new_layer.layerId = ""
     new_layer.associatedMasterId = old_layer.layerId
 
-    if new_layer.parent.parent.formatVersion == 2:
-        axis, (bottom, top) = next(iter(box.items()))
-        designspace_min, designspace_max = util.designspace_min_max(axes[0])
-        if designspace_min == bottom:
-            new_layer.name = old_layer.name + f" ]{top}]"
-        else:
-            new_layer.name = old_layer.name + f"[{bottom}]"
-    else:
-        new_layer.attributes = dict(
-            new_layer.attributes
-        )  # But we do need our own version of this
-        new_layer.attributes["axisRules"] = []
-        for axis in axes:
-            if axis.tag in box:
-                new_layer.attributes["axisRules"].append(
-                    {
-                        "min": box[axis.tag][0],
-                        "max": box[axis.tag][1],
-                    }
-                )
-            else:
-                new_layer.attributes["axisRules"].append({})
-
-    assert new_layer._bracket_info(axes) == box
+    new_layer.attributes = dict(
+        new_layer.attributes
+    )  # But we do need our own version of this
+    new_layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = {}
+    for axis in axes:
+        if axis.tag in box:
+            new_layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES][axis.axisId] = {
+                "min": box[axis.tag][0],
+                "max": box[axis.tag][1],
+            }
+    assert _bracket_info(new_layer, axes) == box
     return new_layer

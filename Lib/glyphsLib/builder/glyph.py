@@ -17,9 +17,14 @@ import itertools
 import logging
 
 import glyphsLib.glyphdata
+from glyphsLib.util import best_repr
 
-from .. import GSLayer, GSPath, GSComponent
+try:
+    from GlyphsApp import GSLayer, GSPath, GSComponent
+except:
+    from .. import GSLayer, GSPath, GSComponent
 from .common import from_loose_ufo_time, to_ufo_time
+from .common import from_loose_ufo_time, to_ufo_time, to_glyphs_time 
 from .constants import (
     GLYPHLIB_PREFIX,
     GLYPHS_COLORS,
@@ -32,6 +37,7 @@ from .constants import (
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
 )
+from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +62,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     if layer.layerId == layer.associatedMasterId and do_color_layers:
         self.to_ufo_glyph_color(ufo_glyph, layer, glyph)
-
-    ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
+    if glyph.unicodes:
+        ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
     export = glyph.export
     if not export:
@@ -158,7 +164,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         and glyph.parent.customParameters["Disable Last Change"] is not True
         and glyph.lastChange is not None
     ):
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_glyphs_time(glyph.lastChange)
 
     self.to_ufo_hints(ufo_glyph, layer)  # .hints
     self.to_ufo_paths(ufo_glyph, layer)  # .paths
@@ -212,7 +218,7 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
             ufo_glyph.lib[GLYPHLIB_PREFIX + "layer." + key] = value
         value = getattr(glyph, key, None)
         if value:
-            ufo_glyph.lib[GLYPHLIB_PREFIX + "glyph." + key] = value
+            ufo_glyph.lib[GLYPHLIB_PREFIX + key] = value
 
 
 def effective_width(layer, glyph):
@@ -234,7 +240,7 @@ def effective_width(layer, glyph):
                 )
         else:
             width = None
-    return width
+    return best_repr(width)
 
 
 def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
@@ -251,13 +257,13 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # add them as separate glyphs to the UFO font.
 
     if any(
-        l._is_color_palette_layer() and l.associatedMasterId == layer.associatedMasterId
+        l.isColorPaletteLayer() and l.associatedMasterId == layer.associatedMasterId
         for l in glyph.layers
     ):
         layerMapping = [
             (l.layerId, l._color_palette_index())
             for l in glyph.layers
-            if l._is_color_palette_layer()
+            if l.isColorPaletteLayer()
             and l.associatedMasterId == layer.associatedMasterId
         ]
 
@@ -280,7 +286,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
         color_layers = [
             l
             for l in glyph.layers
-            if l.attributes.get("color")
+            if l.attributes.get(LAYER_ATTRIBUTE_COLOR)
             and l.associatedMasterId == layer.associatedMasterId
         ]
         if color_layers:
@@ -303,7 +309,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
                     for k, g in itertools.groupby(
                         color_layer.components,
                         key=lambda c: any(
-                            l.attributes.get("color")
+                            l.attributes.get(LAYER_ATTRIBUTE_COLOR)
                             for l in c.component.layers
                             if l.associatedMasterId == layer.associatedMasterId
                         ),
@@ -444,8 +450,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # so it's easier to put it back on the most specific level, i.e. the
         # layer)
         for prefix, glyphs_object in (
-            ("glyph.", glyph),
-            ("", layer),
+            ("", glyph),
+            #("", layer),
             ("layer.", layer),
         ):
             full_key = GLYPHLIB_PREFIX + prefix + key

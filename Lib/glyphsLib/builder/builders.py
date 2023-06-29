@@ -27,9 +27,10 @@ from .constants import (
     BRACKET_GLYPH_RE,
     FONT_CUSTOM_PARAM_PREFIX,
 )
-from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
+from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
-
+from glyphsLib.classes import GSAxis
+from .sources import _to_glyphs_source
 
 class UFOBuilder(LoggerMixin):
     """Builder for Glyphs to UFO + designspace."""
@@ -292,7 +293,7 @@ class UFOBuilder(LoggerMixin):
                     )
                 continue
 
-            if not layer.name and not layer._is_bracket_layer():
+            if not layer.name and not layer.isBracketLayer():
                 # Empty layer names are invalid according to the UFO spec.
                 if self.minimize_glyphs_diffs:
                     self.logger.warning(
@@ -306,7 +307,7 @@ class UFOBuilder(LoggerMixin):
             # set to non-export (in which case makes no sense to have Designspace rules
             # referencing non existent glyphs).
             if (
-                layer._is_bracket_layer()
+                layer.isBracketLayer()
                 and glyph.export
                 and ".background" not in layer.name
             ):
@@ -314,7 +315,7 @@ class UFOBuilder(LoggerMixin):
             elif (
                 self.minimal
                 and layer.layerId not in master_layer_ids
-                and not layer._is_brace_layer()
+                and not layer.isBraceLayer()
             ):
                 continue
             else:
@@ -501,6 +502,8 @@ class GlyphsBuilder(LoggerMixin):
         # considers them to be special layers and will handle them itself.
         self._font = self.glyphs_module.GSFont()
 
+        self.to_glyphs_axes()
+
         if "com.schriftgestaltung.formatVersion" in self.designspace.lib:
             self._font.formatVersion = self.designspace.lib["com.schriftgestaltung.formatVersion"]
         if "com.schriftgestaltung.appVersion" in self.designspace.lib:
@@ -517,11 +520,14 @@ class GlyphsBuilder(LoggerMixin):
                     for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
                     if not BRACKET_GLYPH_RE.match(glyph_name)
                 ]
-
+            if source.copyInfo:
+                self._font.familyName = source.familyName
             self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
             self.to_glyphs_master_attributes(source, master)
             self._font.masters.insert(len(self._font.masters), master)
             self._sources[master.id] = source
+            _to_glyphs_source(self, master)
+            master.post_read()
 
             # First, move free-standing bracket glyphs back to layers to avoid dealing
             # with GSLayer transplantation.
@@ -655,16 +661,16 @@ class GlyphsBuilder(LoggerMixin):
         # Make weight and width axis if relevant
         for info_key, axis_def in zip(
             ("openTypeOS2WeightClass", "openTypeOS2WidthClass"),
-            (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF),
+            (GSAxis("Weight", "wght"), GSAxis("Width", "wdth")),
         ):
             axis = designspace.newAxisDescriptor()
-            axis.tag = axis_def.tag
+            axis.tag = axis_def.axisTag
             axis.name = axis_def.name
             mapping = []
             for ufo in ufos:
                 user_loc = getattr(ufo.info, info_key)
                 if user_loc is not None:
-                    design_loc = class_to_value(axis_def.tag, user_loc)
+                    design_loc = class_to_value(axis_def.axisTag, user_loc)
                     mapping.append((user_loc, design_loc))
                     ufo_to_location[id(ufo)][axis_def.name] = design_loc
 
@@ -728,7 +734,7 @@ class GlyphsBuilder(LoggerMixin):
     from .masters import to_glyphs_master_attributes
     from .names import to_glyphs_family_names, to_glyphs_master_names
     from .paths import to_glyphs_paths
-    from .sources import to_glyphs_sources
+    from .sources import _to_glyphs_source
     from .user_data import (
         to_glyphs_family_user_data_from_designspace,
         to_glyphs_family_user_data_from_ufo,

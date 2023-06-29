@@ -29,14 +29,14 @@ def to_ufo_hints(self, ufo_glyph, layer):
         for name in ["origin", "other1", "other2", "target"]:
             index_path = getattr(source, name, None)
             if index_path:
-                if name == "target" and index_path.value in (["up"], ["down"]):
-                    hint[name] = index_path.value[0]
+                if name == "target" and index_path in (["up"], ["down"]):
+                    hint[name] = index_path[0]
                 elif not any(value is None for value in index_path):
-                    hint[name] = index_path.value
+                    hint[name] = list(index_path)
         for name in ["place", "scale"]:
             point = getattr(source, name, None)
             if point and not any(value is None for value in point):
-                hint[name] = point.value
+                hint[name] = list(point)
         hints.append(hint)
     if hints:
         ufo_glyph.lib[HINTS_LIB_KEY] = hints

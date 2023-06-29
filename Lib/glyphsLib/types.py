@@ -264,6 +264,16 @@ class Transform(Vector(6)):
         a, b, c, d = self[:4]
         return a * d - b * c
 
+class OneLineList:
+    def __init__(self, values):
+        self.values = values
+
+    def plistValue(self, formatVersion=3):
+        assert isinstance(self.values, list)
+        if formatVersion == 2:
+            return '"{%s}"' % (", ".join(v for v in self.values))
+        else:
+            return "(%s)" % (",".join(v for v in self.values))
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
 

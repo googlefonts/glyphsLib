@@ -17,12 +17,15 @@ import datetime
 from glyphsLib.types import parse_datetime
 
 UFO_FORMAT = "%Y/%m/%d %H:%M:%S"
-
+GLYPHS_FORMAT = "%Y-%m-%d %H:%M:%S +0000"
 
 def to_ufo_time(datetime_obj):
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime(UFO_FORMAT)
 
+def to_glyphs_time(datetime_obj):
+    """Format a datetime object as specified for UFOs."""
+    return datetime_obj.strftime(GLYPHS_FORMAT)
 
 def from_ufo_time(string):
     """Parses a datetime as specified for UFOs into a datetime object."""

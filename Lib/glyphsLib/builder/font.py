@@ -21,6 +21,10 @@ from .constants import (
     APP_VERSION_LIB_KEY,
     FORMATVERSION_LIB_KEY,
     KEYBOARD_INCREMENT_KEY,
+    KEYBOARD_INCREMENT_BIG_KEY,
+    KEYBOARD_INCREMENT_HUGE_KEY,
+    GRID_SIZE_KEY,
+    GRID_SUBDIVISION_KEY,
     MASTER_ORDER_LIB_KEY,
 )
 
@@ -78,12 +82,15 @@ INFO_FIELDS = (
     ("unitsPerEm", "upm", True),
     ("versionMajor", "versionMajor", True),
     ("versionMinor", "versionMinor", True),
-    ("copyright", "copyright", False),
-    ("openTypeNameDesigner", "designer", False),
-    ("openTypeNameDesignerURL", "designerURL", False),
-    ("openTypeNameManufacturer", "manufacturer", False),
-    ("openTypeNameManufacturerURL", "manufacturerURL", False),
 )
+
+PROPERTIES_FIELDS = {
+    "copyrights": "copyright",
+    "designers" : "openTypeNameDesigner",
+    "designerURL": "openTypeNameDesignerURL",
+    "manufacturers":  "openTypeNameManufacturer",
+    "manufacturerURL": "manufacturerURL",
+}
 
 
 def fill_ufo_metadata(master, ufo):
@@ -113,7 +120,20 @@ def fill_ufo_metadata_roundtrip(master, ufo):
     font = master.font
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
     ufo.lib[FORMATVERSION_LIB_KEY] = font.formatVersion
-    ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+    if font._defaultsForName["keyboardIncrement"] != font.keyboardIncrement:
+        ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+    if font._defaultsForName["keyboardIncrementBig"] != font.keyboardIncrementBig:
+        ufo.lib[KEYBOARD_INCREMENT_BIG_KEY] = font.keyboardIncrementBig
+    if font._defaultsForName["keyboardIncrementHuge"] != font.keyboardIncrementHuge:
+        ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY] = font.keyboardIncrementHuge
+    if font._defaultsForName["keyboardIncrementHuge"] != font.keyboardIncrementHuge:
+        ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY] = font.keyboardIncrementHuge
+    if font._defaultsForName["grid"] != font.grid:
+        ufo.lib[GRID_SIZE_KEY] = font.grid
+    if font._defaultsForName["gridSubDivision"] != font.gridSubDivision:
+        ufo.lib[GRID_SUBDIVISION_KEY] = font.gridSubDivision
+    if font.customParameters["glyphOrder"] is None:
+        ufo.lib["com.schriftgestaltung.useGlyphOrder"] = False
 
 
 # UFO to glyphs
@@ -144,7 +164,14 @@ def _set_glyphs_font_attributes(self, source):
         font.appVersion = ufo.lib[APP_VERSION_LIB_KEY]
     if KEYBOARD_INCREMENT_KEY in ufo.lib:
         font.keyboardIncrement = ufo.lib[KEYBOARD_INCREMENT_KEY]
-
+    if KEYBOARD_INCREMENT_BIG_KEY in ufo.lib:
+        font.keyboardIncrementBig = ufo.lib[KEYBOARD_INCREMENT_BIG_KEY]
+    if KEYBOARD_INCREMENT_HUGE_KEY in ufo.lib:
+        font.keyboardIncrementHuge = ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY]
+    if GRID_SIZE_KEY in ufo.lib:
+        font.grid = ufo.lib[GRID_SIZE_KEY]
+    if GRID_SUBDIVISION_KEY in ufo.lib:
+        font.gridSubDivision = ufo.lib[GRID_SUBDIVISION_KEY]
     if info.openTypeHeadCreated is not None:
         # FIXME: (jany) should wrap in glyphs_datetime? or maybe the GSFont
         #     should wrap in glyphs_datetime if needed?
