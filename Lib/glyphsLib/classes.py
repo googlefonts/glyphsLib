@@ -841,7 +841,6 @@ class FontFeaturePrefixesProxy(FontClassesProxy):
 
 class GlyphLayerProxy(Proxy):
     def __getitem__(self, key):
-        self._ensureMasterLayers()
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -883,16 +882,13 @@ class GlyphLayerProxy(Proxy):
         return len(self.values())
 
     def keys(self):
-        self._ensureMasterLayers()
         return self._owner._layers.keys()
 
     def values(self):
-        self._ensureMasterLayers()
         return self._owner._layers.values()
 
     def append(self, layer):
         assert layer is not None
-        self._ensureMasterLayers()
         if not layer.associatedMasterId:
             if self._owner.parent:
                 layer.associatedMasterId = self._owner.parent.masters[0].id
@@ -909,7 +905,6 @@ class GlyphLayerProxy(Proxy):
         return self._owner.removeLayerForKey_(layer.layerId)
 
     def insert(self, index, layer):
-        self._ensureMasterLayers()
         self.append(layer)
 
     def setter(self, values):
@@ -925,21 +920,6 @@ class GlyphLayerProxy(Proxy):
         for key, layer in newLayers.items():
             self._owner._setupLayer(layer, key)
         self._owner._layers = newLayers
-
-    def _ensureMasterLayers(self):
-        # Ensure existence of master-linked layers (even for iteration, len() etc.)
-        # if accidentally deleted
-        if not self._owner.parent:
-            return
-        for master in self._owner.parent.masters:
-            # if (master.id not in self._owner._layers or
-            #         self._owner._layers[master.id] is None):
-            if self._owner.parent.masters[master.id] is None:
-                newLayer = GSLayer()
-                newLayer.associatedMasterId = master.id
-                newLayer.layerId = master.id
-                self._owner._setupLayer(newLayer, master.id)
-                self.__setitem__(master.id, newLayer)
 
     def plistArray(self):
         return list(self._owner._layers.values())
