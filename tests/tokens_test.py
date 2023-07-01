@@ -36,6 +36,7 @@ expander = TokenExpander(TESTFONT, master)
         (r"pos a ${padding * 2} b;", "pos a 500 b;", False),
         (r"pos a ${padding + padding} b;", "pos a 500 b;", False),
         (r"pos a ${padding + (padding/2)} b;", "pos a 375 b;", False),
+        (r"pos a ${padding + (padding/2.5)} b;", "pos a 350 b;", False),
         ("pos a $xxx b;", "", True),
         (r"pos A ${A.sc:width};", "pos A 600;", False),
         (r"pos A ${A:width+1};", "pos A 601;", False),
@@ -50,6 +51,7 @@ expander = TokenExpander(TESTFONT, master)
         # (r"pos A ${A:LSB}", "pos A 600;", False),
         (r"pos A ${A:anchors.top.x};", "pos A 300;", False),
         (r"pos A ${A:anchors.ogonek.y};", "pos A 10;", False),
+        (r"pos A ${A:anchors.ogonek.y*1.5};", "pos A 15;", False),
         (
             r"pos A <${A:anchors.top.x} ${A:anchors.top.y} 0 0>;",
             "pos A <300 700 0 0>;",
