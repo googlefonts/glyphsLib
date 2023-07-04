@@ -2705,7 +2705,7 @@ class GSPath(GSBase):
     def draw(self, pen: AbstractPen) -> None:
         """Draws contour with the given pen."""
         pointPen = PointToSegmentPen(pen)
-        frawPoints(pointPen)
+        self.drawPoints(pointPen)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
         """Draws points of contour with the given point pen."""
@@ -4092,7 +4092,7 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 
 class GSLayer(GSBase):
-    def _serialize_attributes_to_plist(self):
+    def _get_plist_attributes(self):
         attributes = dict(self.attributes)
         font = self.parent.parent
         if LAYER_ATTRIBUTE_AXIS_RULES in self.attributes:
@@ -4120,7 +4120,7 @@ class GSLayer(GSBase):
         if self.layerId != self.associatedMasterId:
             writer.writeObjectKeyValue(self, "associatedMasterId")
         if writer.formatVersion > 2:
-            attributes = self._serialize_attributes_to_plist()
+            attributes = self._get_plist_attributes()
             if attributes:
                 writer.writeKeyValue("attr", attributes)
         writer.writeObjectKeyValue(self, "background", self._background is not None)

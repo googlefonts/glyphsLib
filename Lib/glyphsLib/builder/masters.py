@@ -50,7 +50,7 @@ def to_ufo_master_attributes(self, ufo, master):
     note = userData.get(UFO_NOTE_KEY)
     if note is not None:
         ufo.info.note = note
-        delf(userData[UFO_NOTE_KEY])
+        del(userData[UFO_NOTE_KEY])
     # All of this will go into the designspace as well
     # "Native" designspace fonts will only have the designspace info
     if master.font.formatVersion >= 3:
