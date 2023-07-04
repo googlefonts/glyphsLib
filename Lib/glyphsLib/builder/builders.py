@@ -734,7 +734,6 @@ class GlyphsBuilder(LoggerMixin):
     from .masters import to_glyphs_master_attributes
     from .names import to_glyphs_family_names, to_glyphs_master_names
     from .paths import to_glyphs_paths
-    from .sources import _to_glyphs_source
     from .user_data import (
         to_glyphs_family_user_data_from_designspace,
         to_glyphs_family_user_data_from_ufo,
