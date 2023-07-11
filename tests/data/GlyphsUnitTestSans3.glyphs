@@ -1040,7 +1040,7 @@ nodes = (
 );
 };
 layerId = "1FA54028-AD2E-4209-AA7B-72DF2DF16264";
-name = "{155, 100}";
+name = "{155}";
 shapes = (
 {
 closed = 1;
