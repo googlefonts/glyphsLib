@@ -15,6 +15,7 @@
 
 
 import os
+import fnmatch
 from fontTools.designspaceLib import DesignSpaceDocument
 from xmldiff import main, formatting
 from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
@@ -168,17 +169,29 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
     ]
 
-    source_order = [(s.filename, s.layerName, s.name) for s in designspace.sources]
-    assert source_order == [
-        ("NewFont-Light.ufo", None, "New Font Light"),
-        ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
-        ("NewFont-Bold.ufo", None, "New Font Bold"),
-        ("NewFont-Bold.ufo", "{75}", "New Font Bold {75}"),
-        ("NewFont-Bold.ufo", "Test2 {90.5, 500}", "New Font Bold Test2 {90.5, 500}"),
-        ("NewFont-Bold.ufo", "Test1 {90.5, 600}", "New Font Bold Test1 {90.5, 600}"),
-        ("NewFont-CondensedLight.ufo", None, "New Font Condensed Light"),
-        ("NewFont-CondensedBold.ufo", None, "New Font Condensed Bold"),
-    ]
+    for (fname, layerName, name), (exp_fname, exp_layerName, exp_name) in zip(
+        [(s.filename, s.layerName, s.name) for s in designspace.sources],
+        [
+            ("NewFont-Light.ufo", None, "New Font Light"),
+            ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
+            ("NewFont-Bold.ufo", None, "New Font Bold"),
+            ("NewFont-Bold.ufo", "{75}", "New Font Bold {75}"),
+            ("NewFont-Bold.ufo", "*{90.5, 500}", "New Font Bold *{90.5, 500}"),
+            ("NewFont-Bold.ufo", "*{90.5, 600}", "New Font Bold *{90.5, 600}"),
+            ("NewFont-CondensedLight.ufo", None, "New Font Condensed Light"),
+            ("NewFont-CondensedBold.ufo", None, "New Font Condensed Bold"),
+        ],
+    ):
+        assert fname == exp_fname
+        # the brace layer name for Glyphs3 is automatically generated from its
+        # coordinates and unlike in Glyphs2 won't contain any extra prefix, hence
+        # we only 'fnmatch' it.
+        # https://github.com/googlefonts/glyphsLib/issues/851
+        if exp_layerName is not None:
+            assert fnmatch.fnmatch(layerName, exp_layerName)
+        else:
+            assert layerName is None
+        assert fnmatch.fnmatch(name, exp_name)
 
     # Check that all sources have a font object attached and sources with the same
     # filename have the same font object attached.
