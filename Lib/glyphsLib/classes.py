@@ -3757,11 +3757,11 @@ class GSLayer(GSBase):
             if master:
                 return master.name
         # For Glyphs 3's intermediate (formerly 'brace') layers we must generate the
-        # layer.name from the attributes (as it's shown in Glyphs.app UI) and discard the layer's
-        # actual 'name' as found in the source file. This is usually just the date-time
-        # a layer was first created and contains no real information worth retaining.
-        # This name will be assigned to the UFO source layer contaning the intermediate
-        # glyph instances at a given intermediate location, see:
+        # layer.name from the attributes (as it's shown in Glyphs.app UI) and discard
+        # the layer's actual 'name' as found in the source file. This is usually just
+        # the date-time a layer was first created and contains no real information.
+        # The generated name will be assigned to the UFO layer contaning the
+        # intermediate glyph instances at a given intermediate location, see:
         # https://github.com/googlefonts/glyphsLib/issues/851
         if "coordinates" in self.attributes and self._is_brace_layer():
             return f"{{{', '.join(str(v) for v in self.attributes['coordinates'])}}}"

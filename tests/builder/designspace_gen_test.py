@@ -183,8 +183,9 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         ],
     ):
         assert fname == exp_fname
-        # the brace layer name for Glyphs3 is automatically generated from its coordinates
-        # and unlike in Glyphs2 won't contain any extra prefix, hence we only fnmatch it
+        # the brace layer name for Glyphs3 is automatically generated from its
+        # coordinates and unlike in Glyphs2 won't contain any extra prefix, hence
+        # we only 'fnmatch' it.
         # https://github.com/googlefonts/glyphsLib/issues/851
         if exp_layerName is not None:
             assert fnmatch.fnmatch(layerName, exp_layerName)
