@@ -1508,8 +1508,7 @@
   );
   };
   layerId = "403102FA-569E-44B5-9F7D-836F0E7D2DAD";
-- name = "25. Feb. 23, 15:21";
-+ name = "{450}";
+  name = "25. Feb. 23, 15:21";
 + visible = 1;
   vertWidth = 600;
 - visible = 1;
