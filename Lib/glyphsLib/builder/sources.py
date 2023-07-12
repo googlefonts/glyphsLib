@@ -156,7 +156,7 @@ def _to_designspace_source_layer(self):
     for glyph in self.font.glyphs:
         for layer in glyph.layers:
             if layer._is_brace_layer():
-                key = (layer.name, tuple(layer._brace_coordinates()))
+                key = (layer._brace_layer_name(), tuple(layer._brace_coordinates()))
                 layer_to_master_ids[key].add(layer.associatedMasterId)
                 layer_to_glyph_names[key].append(glyph.name)
 

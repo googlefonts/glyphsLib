@@ -3993,6 +3993,21 @@ class GSLayer(GSBase):
         coordinates = name[name.index("{") + 1 : name.index("}")]
         return [float(c) for c in coordinates.split(",")]
 
+    def _brace_layer_name(self):
+        # For Glyphs 3's intermediate (formerly 'brace') layers we must generate the
+        # name from the attributes (as it's shown in Glyphs.app UI) and discard
+        # the layer's actual 'name' as found in the source file, which is usually just
+        # the unique date-time when a layer was first created.
+        # Using the generated name ensures that all the intermediate glyph instances
+        # at a given location end up in the same UFO source layer, see:
+        # https://github.com/googlefonts/glyphsLib/issues/851
+        # TODO: Figure out a better API for layer.name vs layer.nameUI() mess...
+        if "coordinates" in self.attributes:
+            # Glyphs 3
+            return f"{{{', '.join(str(v) for v in self.attributes['coordinates'])}}}"
+        # Glyphs 2
+        return self.name
+
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
     def _is_color_palette_layer(self):

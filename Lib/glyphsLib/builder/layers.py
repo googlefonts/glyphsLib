@@ -36,15 +36,8 @@ def to_ufo_layer(self, glyph, layer):
     # Give color layers better names
     if layer._is_color_palette_layer():
         layer_name = f"color.{layer._color_palette_index()}"
-    elif "coordinates" in layer.attributes:
-        # For Glyphs 3's intermediate (formerly 'brace') layers we must generate the
-        # name from the attributes (as it's shown in Glyphs.app UI) and discard
-        # the layer's actual 'name' as found in the source file, which is usually just
-        # the unique date-time when a layer was first created.
-        # Using the generated name ensures that all the intermediate glyph instances
-        # at a given location end up in the same UFO source layer, see:
-        # https://github.com/googlefonts/glyphsLib/issues/851
-        layer_name = f"{{{', '.join(str(v) for v in layer.attributes['coordinates'])}}}"
+    elif layer._is_brace_layer():
+        layer_name = layer._brace_layer_name()
 
     if layer.associatedMasterId == layer.layerId:
         ufo_layer = ufo_font.layers.defaultLayer
