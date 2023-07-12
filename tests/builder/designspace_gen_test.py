@@ -169,8 +169,8 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         ("Weight", 100, 100, 700, [(100, 100.0), (700, 1000.0)]),
     ]
 
-    for (fname, layerName, name), (exp_fname, exp_layerName, exp_name) in zip(
-        [(s.filename, s.layerName, s.name) for s in designspace.sources],
+    for (fname, layerName, name, ufo), (exp_fname, exp_layerName, exp_name) in zip(
+        [(s.filename, s.layerName, s.name, s.font) for s in designspace.sources],
         [
             ("NewFont-Light.ufo", None, "New Font Light"),
             ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
@@ -189,6 +189,7 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         # https://github.com/googlefonts/glyphsLib/issues/851
         if exp_layerName is not None:
             assert fnmatch.fnmatch(layerName, exp_layerName)
+            assert layerName in ufo.layers
         else:
             assert layerName is None
         assert fnmatch.fnmatch(name, exp_name)
