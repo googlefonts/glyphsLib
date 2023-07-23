@@ -266,7 +266,7 @@ PRODUCTION_NAMES = {
     "hatafsegol_siluqleft-hb": "uni05B105BD",
     "iMark_toandakhiat-khmer": "uni17B717CD",
     "iMark_toandakhiat-khmer.narrow": "uni17B717CD.narrow",
-    "idotaccent.sc": "i.sc.loclTRK",
+    "idotaccent.sc": "i.loclTRK.sc",  # i.sc.loclTRK
     "iiMatra_reph-deva": "uni09400930094D",
     "iiMatra_reph-deva.alt2": "uni09400930094D.alt2",
     "iiMatra_reph_anusvara-deva": "uni09400930094D0902",
@@ -369,7 +369,7 @@ PRODUCTION_NAMES = {
     "sa_iiMatra-tamil": "uni0BB80BC0",
     "sa_uMatra-tamil": "uni0BB80BC1",
     "sa_uuMatra-tamil": "uni0BB80BC2",
-    "sh_r-deva": "uni0936094D0930094D",
+    "sh_r-deva": "uni0936094D094D0930",  # uni0936094D0930094D
     "sh_ra-deva": "uni0936094D0930",
     "sh_ra_iiMatra-tamil": "uni0BB60BCD0BB00BC0",
     "ss_tta-deva": "uni0937094D091F",
@@ -378,7 +378,7 @@ PRODUCTION_NAMES = {
     "ssa_iiMatra-tamil": "uni0BB70BC0",
     "ssa_uMatra-tamil": "uni0BB70BC1",
     "ssa_uuMatra-tamil": "uni0BB70BC2",
-    "t_r-deva": "uni0924094D0930094D",
+    "t_r-deva": "uni0924094D094D0930",  # uni0924094D0930094D
     "t_ra-deva": "uni0924094D0930",
     "t_ta-deva": "uni0924094D0924",
     "ta-khmer.below.ro": "uni17D2178F.ro",
