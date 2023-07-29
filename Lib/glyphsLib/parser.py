@@ -131,15 +131,16 @@ def load_glyphspackage(package_dir):
     return data
 
 
-def load(file_or_path):
+def load(file_or_path, font=None):
     """Read a .glyphs file. 'file_or_path' should be a (readable) file
     object, a file name, or in the case of a .glyphspackage file, a
-    directory name.
-    Return a GSFont object.
+    directory name. 'font' is an existing object to parse into, or None.
+    Return a 'font' or a GSFont object.
     """
-    p = Parser(current_type=glyphsLib.classes.GSFont)
     logger.info("Parsing .glyphs file")
-    res = glyphsLib.classes.GSFont()
+    if font is None:
+        font = glyphsLib.classes.GSFont()
+    p = Parser(current_type=font.__class__)
     if hasattr(file_or_path, "read"):
         data = openstep_plist.load(file_or_path, use_numbers=True)
     elif os.path.isdir(file_or_path):
@@ -147,8 +148,8 @@ def load(file_or_path):
     else:
         fp = open(file_or_path, "r", encoding="utf-8")
         data = openstep_plist.load(fp, use_numbers=True)
-    p.parse_into_object(res, data)
-    return res
+    p.parse_into_object(font, data)
+    return font
 
 
 def loads(s):

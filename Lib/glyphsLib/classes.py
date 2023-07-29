@@ -23,8 +23,6 @@ from collections import OrderedDict
 from enum import IntEnum
 from io import StringIO
 
-import openstep_plist
-
 # renamed to avoid shadowing glyphsLib.types.Transform imported further below
 from fontTools.misc.transform import Identity, Transform as Affine
 from fontTools.pens.basePen import AbstractPen
@@ -34,7 +32,7 @@ from fontTools.pens.pointPen import (
     SegmentToPointPen,
 )
 
-from glyphsLib.parser import Parser
+from glyphsLib.parser import load, Parser
 from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
     IndexPath,
@@ -4518,14 +4516,7 @@ class GSFont(GSBase):
 
         if path:
             path = os.fsdecode(os.fspath(path))
-            assert os.path.splitext(path)[-1] == ".glyphs", (
-                "Please supply a file path to a .glyphs file",
-            )
-
-            with open(path, "r", encoding="utf-8") as fp:
-                logger.info('Parsing "%s" file into <GSFont>', path)
-                p = Parser()
-                p.parse_into_object(self, openstep_plist.load(fp, use_numbers=True))
+            load(path, self)
             self.filepath = path
             for master in self.masters:
                 master.font = self
