@@ -33,13 +33,11 @@ def test_glyphspackage_load(datadir):
         "_part.stem",  # Deliberately removed from glyph order file
     ]
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
-    font1.DisplayStrings = ""  # glyphspackages, rather sensibly, don't store user state
     font2 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected
     assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
 
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
-    font1.DisplayStrings = ""  # glyphspackages, rather sensibly, don't store user state
     font2 = GSFont(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected
     assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)

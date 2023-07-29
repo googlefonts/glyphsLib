@@ -104,6 +104,7 @@ def load_glyphspackage(package_dir):
     package = Path(package_dir)
     infofile = package / "fontinfo.plist"
     orderfile = package / "order.plist"
+    uistatefile = package / "UIState.plist"
 
     glyphorder = []
     if orderfile.exists():
@@ -112,6 +113,14 @@ def load_glyphspackage(package_dir):
 
     with open(infofile, "r", encoding="utf-8") as info_fh:
         data = openstep_plist.load(info_fh, use_numbers=True)
+
+    if uistatefile.exists():
+        with open(uistatefile, "r", encoding="utf-8") as uistate_fh:
+            uistate = openstep_plist.load(uistate_fh, use_numbers=True)
+            if "displayStrings" in uistate and "DisplayStrings" not in uistate:
+                uistate["DisplayStrings"] = uistate.pop("displayStrings")
+            data.update(uistate)
+
     data["glyphs"] = []
     for glyphfile in (package / "glyphs").glob("*.glyph"):
         with open(glyphfile, "r") as fh:
