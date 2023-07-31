@@ -4115,7 +4115,7 @@ class GSLayer(GSBase):
 
         userData = dict(self.userData)
 
-        if self.layerId != self.associatedMasterId:
+        if not self.isMasterLayer:
             writer.writeObjectKeyValue(self, "associatedMasterId")
         if writer.formatVersion > 2:
             attributes = self._get_plist_attributes()
@@ -4142,9 +4142,9 @@ class GSLayer(GSBase):
             writer.writeObjectKeyValue(self, "metricRight")
             writer.writeObjectKeyValue(self, "metricWidth")
         if (
-            self.name is not None
-            and len(self.name) > 0
-            and self.layerId != self.associatedMasterId
+            self._name is not None
+            and len(self._name) > 0
+            and not self.isMasterLayer
         ):
             writer.writeObjectKeyValue(self, "name")
         if writer.formatVersion > 2:
@@ -4471,6 +4471,9 @@ class GSLayer(GSBase):
     @widthMetricsKey.setter
     def widthMetricsKey(self, value):
         self.metricWidth = value
+
+    def isMasterLayer(self):
+        return self.layerId == self.associatedMasterId
 
     def isBracketLayer(self):
         return LAYER_ATTRIBUTE_AXIS_RULES in self.attributes
