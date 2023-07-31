@@ -196,12 +196,15 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                 dispatch_lookups[before] = ast.LookupBlock(
                     "ContextualMarkDispatch_%i" % len(dispatch_lookups.keys())
                 )
-                dispatch_lookups[before].statements.append(ast.Comment(before + ";\n"))
+                if before:
+                    dispatch_lookups[before].statements.append(
+                        ast.Comment(f"{before};")
+                    )
                 features["mark"].statements.append(
                     ast.LookupReferenceStatement(dispatch_lookups[before])
                 )
             lkp = dispatch_lookups[before]
-            lkp.statements.append(ast.Comment("# " + after))
+            lkp.statements.append(ast.Comment(f"# {after}"))
             lookup = ast.LookupBlock(lookupname)
             for glyph, anchor in glyph_anchor_pair:
                 lookup.statements.append(MarkToBasePos(glyph, [anchor]).asAST())
