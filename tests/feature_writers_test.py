@@ -23,8 +23,9 @@ def test_contextual_anchors(datadir):
         assert str(lookup) == (
             "lookup ContextualMarkDispatch_0 {\n"
             "    lookupflag UseMarrkFilteringSet [twodotshorizontalbelow];\n"
-            "    # reh-ar *\n"
-            "    pos reh-ar behDotless-ar.init [dotbelow-ar twodotshorizontalbelow-ar]'"
+            "    # reh-ar * behDotess-ar.medi &\n"
+            "    pos reh-ar behDotless-ar.init behDotess-ar.medi"
+            " [dotbelow-ar twodotshorizontalbelow-ar]'"
             " lookup ContextualMark_0; # behDotless-ar.init/*bottom.twodots\n"
             "} ContextualMarkDispatch_0;\n"
         )

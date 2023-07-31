@@ -580,7 +580,7 @@ GPOS_Context = "reh-ar *";
 name = "*bottom.twodots";
 pos = (25,-126);
 userData = {
-GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar *";
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar * behDotess-ar.medi &";
 };
 },
 {
@@ -618,7 +618,7 @@ GPOS_Context = "reh-ar *";
 name = "*bottom.twodots";
 pos = (55,-200);
 userData = {
-GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar *";
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar * behDotess-ar.medi &";
 };
 },
 {
@@ -656,7 +656,7 @@ GPOS_Context = "reh-ar *";
 name = "*bottom.twodots";
 pos = (105,-226);
 userData = {
-GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar *";
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar * behDotess-ar.medi &";
 };
 },
 {
