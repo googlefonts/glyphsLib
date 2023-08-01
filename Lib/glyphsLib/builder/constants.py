@@ -210,7 +210,6 @@ DEFAULT_FEATURE_WRITERS = [
     {
         "module": "glyphsLib.featureWriters.markFeatureWriter",
         "class": "ContextualMarkFeatureWriter",
-        "options": {"mode": "skip"},
     },
     {"class": "GdefFeatureWriter"},
     {"class": "CursFeatureWriter"},
