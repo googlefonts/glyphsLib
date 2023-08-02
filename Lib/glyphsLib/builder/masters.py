@@ -80,7 +80,7 @@ def to_ufo_master_attributes(self, ufo, master):
             idx += 1
             value = master.internalAxesValues[axis.axisId]
             lib_key = legacyNames[idx]
-            if master._defaultsForName[lib_key] == value:
+            if master._defaultsForName.get(lib_key, 0) == value:
                 continue
             ufo.lib[GLYPHS_PREFIX + lib_key] = value
 
