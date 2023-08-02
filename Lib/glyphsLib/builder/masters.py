@@ -112,8 +112,8 @@ def to_ufo_master_attributes(self, ufo, master):
             k in custom_params for k in ("vheaVertLineGap", "vheaVertTypoLineGap")
         ):
             ufo.info.openTypeVheaVertTypoLineGap = font_upm
-    if custom_params:
-        ufo.lib[GLYPHS_PREFIX + "fontMaster.customParameters"] = custom_params
+    #if custom_params:
+    #    ufo.lib[GLYPHS_PREFIX + "fontMaster.customParameters"] = custom_params
     self.to_ufo_blue_values(ufo, master)
     self.to_ufo_guidelines(ufo, master)
     self.to_ufo_master_user_data(ufo, userData)
