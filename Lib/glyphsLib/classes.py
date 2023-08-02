@@ -4568,18 +4568,9 @@ class GSLayer(GSBase):
     def _color_palette_index(self):
         if not self.isColorPaletteLayer:
             return None
-
-        if self.parent.parent.formatVersion > 2:
-            # Glyphs 3
-            index = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
-            if index == "*":
-                return 0xFFFF
-            return int(index)
-
-        # Glyphs 2
-        m = re.match(self.COLOR_PALETTE_LAYER_RE, self.name)
-        index = m.group("index")
-        if index.startswith("*"):
+        # Glyphs 3
+        index = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
+        if index == "*":
             return 0xFFFF
         return int(index)
 
