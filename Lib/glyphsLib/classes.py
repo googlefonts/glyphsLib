@@ -46,6 +46,7 @@ from glyphsLib.types import (
     parse_datetime,
     parse_float_or_int,
     readIntlist,
+    NegateBool,
 )
 from glyphsLib.util import designspace_min_max
 from glyphsLib.writer import Writer
@@ -3415,6 +3416,7 @@ class GSFeature(GSBase):
 
 GSFeature._add_parsers([
     {"plist_name": "code", "object_name": "_code"},
+    {"plist_name": "disabled", "object_name": "active", "converter": NegateBool},
     {"plist_name": "tag", "object_name": "name"},
     {"plist_name": "labels", "type": dict},
 ])
