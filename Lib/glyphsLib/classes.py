@@ -4308,6 +4308,63 @@ class GSLayer(GSBase):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
 
+    def _name_from_attributes(self):
+        # For Glyphs 3's speciall layers (brace, bracket, color) we must generate the
+        # name from the attributes (as it's shown in Glyphs.app UI) and discard
+        # the layer's actual 'name' as found in the source file, which is usually just
+        # the unique date-time when a layer was first created.
+        # Using the generated name ensures that all the intermediate glyph instances
+        # at a given location end up in the same UFO source layer, see:
+        # https://github.com/googlefonts/glyphsLib/issues/851
+        nameStrings = []
+        
+        if self.isColorPaletteLayer:
+            name = f"color.{layer._color_palette_index()}"
+            if name:
+                nameStrings.append(name)
+        if self.isBracketLayer:
+            name = self._bracket_layer_name()
+            if name:
+                nameStrings.append(name)
+        if self.isBraceLayer:
+            name = self._brace_layer_name()
+            if name:
+                nameStrings.append(name)
+        if len(nameStrings):
+            return " ".join(nameStrings)
+        return None
+
+    def _brace_layer_name(self):
+        
+        if not self.isBraceLayer:
+            return None
+        coordinates = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
+        return f"{{{', '.join(str(v) for v in coordinates)}}}"
+
+    def _bracket_layer_name(self):
+        if not self.isBraceLayer:
+            return None
+        nameStrings = []
+        axisRules = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
+        if not axisRules or not isinstance(axisRules, dict):
+            return None
+        
+        ruleStrings = []
+        for axis in self.font.axes:
+            rule = axisRules.get(axis.axisId, None)
+            if rule:
+                minValue = rule.get("min", None)
+                maxValue = rule.get("max", None)
+                if minValue and maxValue:
+                    ruleStrings.append("%s‹%s‹%s", (floatToString3(minValue), axis.shortAxisTag, floatToString3(maxValue)))
+                elif minValue:
+                    ruleStrings.append("%s‹%s" % (floatToString3(minValue), axis.shortAxisTag))
+                elif maxValue:
+                    ruleStrings.append("%s‹%s" % (axis.shortAxisTag, floatToString3(maxValue)))
+        if ruleStrings:
+            return "[%s]" % ", ".join(ruleStrings)
+        return "[]"
+
     @property
     def name(self):
         if (
@@ -4318,6 +4375,9 @@ class GSLayer(GSBase):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name
+        name = self._name_from_attributes()
+        if name:
+            return name
         return self._name
 
     @name.setter
