@@ -87,26 +87,17 @@ def _to_ufo_features(  # noqa: C901
 ) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
-    Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
+    Optionally, build a GDEF table definition, excluding 'skip_export_glyphs'.
     """
     if not master:
         expander = PassThruExpander()
     else:
         expander = TokenExpander(font, master)
 
-    prefixes = []
-    for prefix in font.featurePrefixes:
-        strings = []
-        if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
-            strings.append("# Prefix: %s\n" % prefix.name)
-        strings.append(autostr(prefix.automatic))
-        strings.append(expander.expand(prefix.code))
-        prefixes.append("".join(strings))
-
-    prefix_str = "\n\n".join(prefixes)
-
     class_defs = []
     for class_ in font.classes:
+        if not class_.active:
+            continue
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
@@ -116,8 +107,23 @@ def _to_ufo_features(  # noqa: C901
         )
     class_str = "\n\n".join(class_defs)
 
+    prefixes = []
+    for prefix in font.featurePrefixes:
+        if not prefix.active:
+            continue
+        strings = []
+        if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
+            strings.append("# Prefix: %s\n" % prefix.name)
+        strings.append(autostr(prefix.automatic))
+        strings.append(expander.expand(prefix.code))
+        prefixes.append("".join(strings))
+
+    prefix_str = "\n\n".join(prefixes)
+
     feature_defs = []
     for feature in font.features:
+        if not feature.active:
+            continue
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
