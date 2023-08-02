@@ -1652,7 +1652,7 @@ class GSMetricValue(GSBase):
             writer.writeKeyValue("pos", self.position)
 
     def __repr__(self):
-        return "<{} {}: {}/{}>".format(self.__class__.__name__, self.metric.metricType, self.position, self.overshoot)
+        return "<{} {}: {}/{}>".format(self.__class__.__name__, self.metric.metricType if self.metric else "-", self.position, self.overshoot)
 
 
 GSMetricValue._add_parsers([
