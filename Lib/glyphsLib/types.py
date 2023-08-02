@@ -482,3 +482,6 @@ class IndexPath(ValueType):
 
     def __len__(self) -> int:
         return len(self.value)
+
+def NegateBool(value):
+    return not bool(value)
