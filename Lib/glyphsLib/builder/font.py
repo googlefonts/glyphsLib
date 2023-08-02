@@ -41,7 +41,10 @@ def to_ufo_font_attributes(self, family_name):
     """
 
     font = self.font
-
+    disableAllAutomaticBehaviour = False
+    disableAllAutomaticBehaviourParameter = font.customParameters["DisableAllAutomaticBehaviour"]
+    if disableAllAutomaticBehaviourParameter:
+        disableAllAutomaticBehaviour = disableAllAutomaticBehaviourParameter
     for index, master in enumerate(font.masters):
         ufo = self.ufo_module.Font()
 
@@ -61,9 +64,10 @@ def to_ufo_font_attributes(self, family_name):
                 }
             )
 
-        ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-            {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
-        )
+        if not disableAllAutomaticBehaviour:
+            ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
+                {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
+            )
         ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
         self.to_ufo_custom_params(ufo, font)  # .custom_params
