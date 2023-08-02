@@ -34,7 +34,7 @@ def to_ufo_layer(self, glyph, layer):
 
     layer_name = layer.name
     # Give color layers better names
-    if layer.isColorPaletteLayer():
+    if layer.isColorPaletteLayer:
         layer_name = f"color.{layer._color_palette_index()}"
     elif layer._is_brace_layer():
         layer_name = layer._brace_layer_name()
