@@ -1867,9 +1867,7 @@ class GSFontMaster(GSBase):
 
     def _parse_alignmentZones_dict(self, parser, text):
         """
-        For glyphs file format 2 this parses the aligmentZone parameter
-        directly. For file format 3 alignmentZones will be infered from
-        metricValues.
+        For glyphs file format 2 this parses the alignmentZone parameter directly.
         """
         _zones = parser._parse(text, str)
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
@@ -1882,7 +1880,7 @@ class GSFontMaster(GSBase):
         self._verticalStems = None
         self._internalAxesValues = {}
         self._externalAxesValues = {}
-        self.metrics = {}
+        self._metrics = {}
         self.font = None
         self.guides = []
         self.iconName = ""
@@ -1895,7 +1893,7 @@ class GSFontMaster(GSBase):
         self.custom = None
         self.readBuffer = {} # temp storage while reading
         self._axesValues = None
-
+        self._alignmentZones = None
     def __repr__(self):
         return '<GSFontMaster "{}" {}>'.format(
             self.name, self.internalAxesValues.values()
@@ -1903,14 +1901,32 @@ class GSFontMaster(GSBase):
 
     def post_read(self): # GSFontMaster
         axes = self.font.axes
-        axesValues = self.readBuffer.get("axesValues", self._axesValues or [])
-        axesCount = min(len(self.font.axes), len(axesValues))
-        for idx in range(axesCount):
-            axis = axes[idx]
-            value = axesValues[idx]
-            self.internalAxesValues[axis.axisId] = value
-        if self.font.formatVersion < 3 and len(self._internalAxesValues) == 0:
-            self.internalAxesValues[self.font.axes[0].axisId] = 100
+        axesValues = self.readBuffer.get("axesValues", None)
+        if axesValues:
+            axesCount = len(axes)
+            for idx in range(axesCount):
+                axis = axes[idx]
+                value = axesValues.get(idx, 0)
+                self.internalAxesValues[axis.axisId] = value
+        if self.font.formatVersion < 3:
+            axesValues = self.readBuffer.get("axesValues", {})
+            #print("__self.readBuffer 2", self.readBuffer, self._axesValues, axesValues)
+            axesCount = len(axes)
+            for idx in range(axesCount):
+                axis = axes[idx]
+                value = axesValues.get(idx, 0)
+                self.internalAxesValues[axis.axisId] = value
+            if len(self._internalAxesValues) == 0:
+                self.internalAxesValues[self.font.axes[0].axisId] = 100
+        else:
+            axesValues = self._axesValues
+            if axesValues:
+                print("__self.readBuffer 3", self.readBuffer.keys(), self._axesValues, self._internalAxesValues)
+                axesCount = len(axes)
+                for idx in range(axesCount):
+                    axis = axes[idx]
+                    value = axesValues[idx]
+                    self.internalAxesValues[axis.axisId] = value
 
         if self.font.formatVersion >= 3:
             assert isinstance(self._metrics, list)
@@ -1940,7 +1956,6 @@ class GSFontMaster(GSBase):
                             end = zone.position + zone.size
                             metricValue.overshoot = end - metricValue.position;
                             self._alignmentZones.remove(zone)
-                            break
                 if len(self._alignmentZones) > 0:
                     zoneIdx = 1
                     for zone in self._alignmentZones:
