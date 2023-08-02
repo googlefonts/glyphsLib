@@ -5103,9 +5103,8 @@ class GSFont(GSBase):
 
         if path:
             path = os.fsdecode(os.fspath(path))
-            load(path, self)
             self.filepath = path
-            self.post_read()
+            load(path, self)
 
 
     def __repr__(self):
