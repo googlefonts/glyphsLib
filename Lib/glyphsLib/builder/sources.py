@@ -158,7 +158,7 @@ def _to_designspace_source_layer(self):
     layer_to_glyph_names = collections.defaultdict(list)
     for glyph in self.font.glyphs:
         for layer in glyph.layers:
-            if layer.isBraceLayer():
+            if layer.isBraceLayer:
                 coordinates = layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
                 values = []
                 for axis in self.font.axes:

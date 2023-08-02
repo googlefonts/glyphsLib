@@ -257,13 +257,13 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # add them as separate glyphs to the UFO font.
 
     if any(
-        l.isColorPaletteLayer() and l.associatedMasterId == layer.associatedMasterId
+        l.isColorPaletteLayer and l.associatedMasterId == layer.associatedMasterId
         for l in glyph.layers
     ):
         layerMapping = [
             (l.layerId, l._color_palette_index())
             for l in glyph.layers
-            if l.isColorPaletteLayer()
+            if l.isColorPaletteLayer
             and l.associatedMasterId == layer.associatedMasterId
         ]
 

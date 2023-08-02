@@ -4472,22 +4472,24 @@ class GSLayer(GSBase):
     def widthMetricsKey(self, value):
         self.metricWidth = value
 
+    @property
     def isMasterLayer(self):
         return self.layerId == self.associatedMasterId
 
+    @property
     def isBracketLayer(self):
         return LAYER_ATTRIBUTE_AXIS_RULES in self.attributes
 
+    @property
     def isBraceLayer(self):
         return LAYER_ATTRIBUTE_COORDINATES in self.attributes
 
+    @property
     def isColorPaletteLayer(self):
-        if self.parent.parent.formatVersion > 2:
-            return LAYER_ATTRIBUTE_COLOR_PALETTE in self.attributes  # Glyphs 3
-        return re.match(self.COLOR_PALETTE_LAYER_RE, self.name.strip())  # Glyphs 2
+        return LAYER_ATTRIBUTE_COLOR_PALETTE in self.attributes
 
     def _color_palette_index(self):
-        if not self.isColorPaletteLayer():
+        if not self.isColorPaletteLayer:
             return None
 
         if self.parent.parent.formatVersion > 2:

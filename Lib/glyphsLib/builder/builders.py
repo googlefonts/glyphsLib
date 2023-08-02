@@ -293,7 +293,7 @@ class UFOBuilder(LoggerMixin):
                     )
                 continue
 
-            if not layer.name and not layer.isBracketLayer():
+            if not layer.name and not layer.isBracketLayer:
                 # Empty layer names are invalid according to the UFO spec.
                 if self.minimize_glyphs_diffs:
                     self.logger.warning(
@@ -307,7 +307,7 @@ class UFOBuilder(LoggerMixin):
             # set to non-export (in which case makes no sense to have Designspace rules
             # referencing non existent glyphs).
             if (
-                layer.isBracketLayer()
+                layer.isBracketLayer
                 and glyph.export
                 and ".background" not in layer.name
             ):
@@ -315,7 +315,7 @@ class UFOBuilder(LoggerMixin):
             elif (
                 self.minimal
                 and layer.layerId not in master_layer_ids
-                and not layer.isBraceLayer()
+                and not layer.isBraceLayer
             ):
                 continue
             else:

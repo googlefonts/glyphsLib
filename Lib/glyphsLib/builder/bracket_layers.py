@@ -18,7 +18,7 @@ from .constants import (
 def _bracket_info(layer, axes):
     # Returns a region expressed as a {axis_tag: (min, max)} box
     # (dictionary), once the axes have been computed
-    if not layer.isBracketLayer():
+    if not layer.isBracketLayer:
         return {}
 
     info = {}
