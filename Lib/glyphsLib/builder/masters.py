@@ -24,7 +24,9 @@ from .constants import (
     UFO_FILENAME_CUSTOM_PARAM,
 )
 from glyphsLib.util import best_repr, best_repr_list
-
+from glyphsLib.classes import (
+    GSCustomParameter,
+)
 
 def to_ufo_master_attributes(self, ufo, master):
     ufo.info.ascender = master.ascender
@@ -140,7 +142,6 @@ def to_glyphs_master_attributes(self, source, master):
         # Don't be smart, we don't know where the UFOs come from so we can't make them
         # relative to anything.
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = os.path.basename(ufo.path)
-
     if ufo.info.ascender is not None:
         master.ascender = ufo.info.ascender
     if ufo.info.capHeight is not None:
@@ -171,4 +172,4 @@ def to_glyphs_master_attributes(self, source, master):
     self.to_glyphs_master_names(ufo, master)
     self.to_glyphs_master_user_data(ufo, master)
     self.to_glyphs_guidelines(ufo, master)
-    self.to_glyphs_custom_params(ufo, master)
+    self.to_glyphs_custom_params(ufo, master, "fontMaster")

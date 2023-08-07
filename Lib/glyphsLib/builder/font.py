@@ -70,7 +70,7 @@ def to_ufo_font_attributes(self, family_name):
             )
         ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
-        self.to_ufo_custom_params(ufo, font)  # .custom_params
+        self.to_ufo_custom_params(ufo, font, "font")  # .custom_params
         self.to_ufo_master_attributes(ufo, master)  # .masters
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
@@ -200,7 +200,7 @@ def _set_glyphs_font_attributes(self, source):
 
     self.to_glyphs_family_names(ufo)
     self.to_glyphs_family_user_data_from_ufo(ufo)
-    self.to_glyphs_custom_params(ufo, font)
+    self.to_glyphs_custom_params(ufo, font, "font")
 
 
 def _compare_and_merge_glyphs_font_attributes(self, source):

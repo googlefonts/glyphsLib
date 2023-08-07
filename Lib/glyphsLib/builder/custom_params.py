@@ -35,7 +35,7 @@ from .constants import (
     UFO2FT_META_TABLE_KEY,
 )
 from .features import replace_feature, replace_prefixes
-from glyphsLib.classes import GSCustomParameter
+from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -144,6 +144,7 @@ class ParamHandler(AbstractParamHandler):
         value_to_glyphs=identity,
         write_to_ufo=True, # for supporting older lib keys
         write_to_glyphs=True,
+        glyphs_owner_class=None # to distingish where things are allowed to go
     ):
         self.glyphs_name = glyphs_name
         self.glyphs_long_name = glyphs_long_name
@@ -159,11 +160,14 @@ class ParamHandler(AbstractParamHandler):
         self.value_to_glyphs = value_to_glyphs
         self.write_to_ufo = write_to_ufo
         self.write_to_glyphs = write_to_glyphs
+        self.glyphs_owner_class = glyphs_owner_class
 
     # By default, the parameter is read from/written to:
     #  - the Glyphs object's customParameters
     #  - the UFO's info object if it has a matching attribute, else the lib
     def to_glyphs(self, glyphs, ufo):
+        if self.glyphs_owner_class and not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+            return
         if not self.write_to_glyphs:
             return
         ufo_value = self._read_from_ufo(glyphs, ufo)
@@ -236,17 +240,29 @@ def register(handler):
     KNOWN_PARAM_HANDLERS.append(handler)
 
 
-GLYPHS_UFO_CUSTOM_PARAMS = (
-    # These are be stored in the official descriptor attributes.
+GLYPHS_FONT_UFO_CUSTOM_PARAMS = (
+    # These are stored in the official descriptor attributes.
     # "familyName",
     # "fileName",
     ("compatibleFullName", "openTypeNameCompatibleFullName"),
+    # OS/2 parameters
+    ("panose", "openTypeOS2Panose"),
+    ("fsType", "openTypeOS2Type"),
+    # OS/2 subscript parameters
+    # PostScript parameters
+    ("blueScale", "postscriptBlueScale"),
+    ("blueShift", "postscriptBlueShift"),
+    ("isFixedPitch", "postscriptIsFixedPitch"),
+)
+
+GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
+    # These are stored in the official descriptor attributes.
+    # "familyName",
+    # "fileName",
     ("hheaAscender", "openTypeHheaAscender"),
     ("hheaDescender", "openTypeHheaDescender"),
     ("hheaLineGap", "openTypeHheaLineGap"),
     # OS/2 parameters
-    ("panose", "openTypeOS2Panose"),
-    ("fsType", "openTypeOS2Type"),
     ("typoAscender", "openTypeOS2TypoAscender"),
     ("typoDescender", "openTypeOS2TypoDescender"),
     ("typoLineGap", "openTypeOS2TypoLineGap"),
@@ -276,14 +292,15 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("vheaVertTypoDescender", "openTypeVheaVertTypoDescender"),
     ("vheaVertTypoLineGap", "openTypeVheaVertTypoLineGap"),
     # PostScript parameters
-    ("blueScale", "postscriptBlueScale"),
-    ("blueShift", "postscriptBlueShift"),
-    ("isFixedPitch", "postscriptIsFixedPitch"),
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
 )
-for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
-    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
+
+for glyphs_name, ufo_name in GLYPHS_FONT_UFO_CUSTOM_PARAMS:
+    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSFont))
+
+for glyphs_name, ufo_name in GLYPHS_MASTER_UFO_CUSTOM_PARAMS:
+    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSFontMaster))
 
 # Reference:
 # https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
@@ -1013,7 +1030,7 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
 register(RenameGlyphsParamHandler())
 
 
-def to_ufo_custom_params(self, ufo, glyphs_object):
+def to_ufo_custom_params(self, ufo, glyphs_object, class_key):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
     glyphs_proxy = glyphs_object.customParameters
     ufo_proxy = UFOProxy(ufo)
@@ -1032,14 +1049,13 @@ def to_ufo_custom_params(self, ufo, glyphs_object):
         value = _normalize_custom_param_value(param.value)
         parameters.append({"name":name, "value":value})
     if len(parameters) > 0:
-        key = GLYPHS_PREFIX + glyphs_proxy._owner.__class__.__name__+".customParameters"
-        key = key.replace("GSF", "f")
+        key = GLYPHS_PREFIX + class_key + ".customParameters"
         ufo.lib[key] = parameters
 
     _set_default_params(ufo)
 
 
-def to_glyphs_custom_params(self, ufo, glyphs_object):
+def to_glyphs_custom_params(self, ufo, glyphs_object, class_key):
     glyphs_proxy = glyphs_object.customParameters
     ufo_proxy = UFOProxy(ufo)
 
@@ -1050,7 +1066,13 @@ def to_glyphs_custom_params(self, ufo, glyphs_object):
     # Since all UFO `info` entries (from `fontinfo.plist`) have a registered
     # handler, the only place where we can find unexpected stuff is the `lib`.
     # See the file `tests/builder/fontinfo_test.py` for `fontinfo` coverage.
-    prefix = CUSTOM_PARAM_PREFIX + glyphs_proxy.__class__.__name__+"."
+
+    key = GLYPHS_PREFIX + class_key + ".customParameters"
+    if key in ufo.lib:
+        for cp_dict in ufo.lib[key]:
+            glyphs_object.customParameters.append(GSCustomParameter(cp_dict["name"], cp_dict["value"]))
+
+    prefix = GLYPHS_PREFIX + class_key + ".customParameters"
     for name, value in ufo_proxy.unhandled_lib_items():
         name = _normalize_custom_param_name(name)
         if not name.startswith(prefix):
