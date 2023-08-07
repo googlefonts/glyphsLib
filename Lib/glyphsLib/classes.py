@@ -1187,9 +1187,52 @@ class ExternalAxesProxy(Proxy):
             self._owner._externalAxesValues[axis.axisId] = value
             idx += 1
 
+class MasterStemsProxy(Proxy):
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return [self.__getitem__(i) for i in range(*key.indices(self.__len__()))]
+        stem = self._owner.font._stemForKey(key)
+        if stem is None:
+            raise KeyError("No stem for %s" % key)
+        return self._owner._stems[stem.id]
+
+    def __setitem__(self, key, value):
+        stem = self._owner.font._stemForKey(key)
+        if stem is None:
+            if isString(key):
+                name = key
+            else:
+                name = "stem%s" % key
+            stem = GSMetric.new()
+            stem.setName_(name)
+            stem.setHorizontal_(True)
+            self._owner.font.addStem_(stem)
+        self._owner._stems[stem.id] = value
+
+    def values(self):
+        values = []
+        for stem in self._owner.font.stems:
+            values.append(self._owner._stems.get(stem.id, None))
+        return values
+
+    def __len__(self):
+        if self._owner.font is None:
+            return 0
+        return len(self._owner.font.stems)
+
+    def _setterMethod(self, values):
+        if self._owner.font is None:
+            return
+        if self.__len__() != len(values):
+            raise ValueError("Count of values doesn’t match stems")
+        idx = 0
+        for stem in self._owner.font.stems:
+            self._owner.stems[stem.id] = values[idx]
+            idx += 1
+
     def setterMethod(self):
         return self._setterMethod
-
 
 
 class LayerShapesProxy(IndexedObjectsProxy):
@@ -1886,7 +1929,7 @@ class GSFontMaster(GSBase):
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
         self.numbers = []
-        self.stems = []
+        self._stems = {}
         self.visible = False
         self.weight = None
         self.width = None
@@ -1928,8 +1971,7 @@ class GSFontMaster(GSBase):
                     value = axesValues[idx]
                     self.internalAxesValues[axis.axisId] = value
 
-        if self.font.formatVersion >= 3:
-            assert isinstance(self._metrics, list)
+        if isinstance(self._metrics, list):
             metricValues = list(self._metrics)
             self._metrics = {}
             if metricValues:
@@ -1966,7 +2008,28 @@ class GSFontMaster(GSBase):
 
             position, overshoot = self.readBuffer.get(GSMetricsKeyItalicAngle, (0, 0))
             self._set_metric(GSMetricsKeyItalicAngle, position, overshoot)
-            
+
+        if self._horizontalStems:
+            for idx in range(len(self._horizontalStems)):
+                name = "hStem%d" % idx
+                metric = self.font.stemForName(name)
+                if not metric:
+                    metric = GSMetric()
+                    metric.name = name
+                    metric.horizontal = True
+                    self.font.stems.append(metric)
+                self._stems[metric.id] = self._horizontalStems[idx]
+        if self._verticalStems:
+            for idx in range(len(self._verticalStems)):
+                name = "vStem%d" % idx
+                metric = self.font.stemForName(name)
+                if not metric:
+                    metric = GSMetric()
+                    metric.name = name
+                    metric.horizontal = False
+                    self.font.stems.append(metric)
+                self._stems[metric.id] = self._verticalStems[idx]
+
         if self.name is None:
             weight = self.weight
             width = self.width
@@ -2137,14 +2200,32 @@ class GSFontMaster(GSBase):
                 zones.append(zone)
         self._alignmentZones = zones
 
+    def _set_stem(self, name, size, direction, filter=None):
+        assert self.font
+        stems = self.font.stems
+        stem = None
+        for currStem in stems:
+            if name == currStem.mame and name == currStem.name and filter == currStem.filter:
+                stem = currStem
+                break
+        if not stem:
+            stem = GSMetric()
+            metric.name = name
+            metric.direction = direction
+            metric.filter = filter
+            self.font.stems.append(metric)
+        metricValue = GSMetricValue(position=position, overshoot=overshoot)
+        metricValue.metric = metric
+        self.metrics[metric.id] = metricValue
+
+    stems = property(
+        lambda self: MasterStemsProxy(self),
+        lambda self, value: MasterStemsProxy(self).setter(value),
+    )
+
+    # Legacy accessors
     @property
     def horizontalStems(self):
-        if self._horizontalStems is not None:
-            return self._horizontalStems
-
-        if not hasattr(self.font, "stems"):
-            return []
-
         horizontalStems = []
         for index, font_stem in enumerate(self.font.stems):
             if not font_stem.horizontal:
@@ -2159,12 +2240,6 @@ class GSFontMaster(GSBase):
 
     @property
     def verticalStems(self):
-        if self._verticalStems is not None:
-            return self._verticalStems
-
-        if not hasattr(self.font, "stems"):
-            return []
-
         verticalStems = []
         for index, font_stem in enumerate(self.font.stems):
             if font_stem.horizontal:
@@ -5095,7 +5170,7 @@ class GSFont(GSBase):
         self.metrics = copy.deepcopy(self._defaultMetrics)
         self.numbers = []
         self.properties = []
-        self.stems = []
+        self._stems = []
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.keyboardIncrementBig = self._defaultsForName["keyboardIncrementBig"]
         self.keyboardIncrementHuge = self._defaultsForName["keyboardIncrementHuge"]
@@ -5303,6 +5378,41 @@ class GSFont(GSBase):
         lambda self: UserDataProxy(self),
         lambda self, value: UserDataProxy(self).setter(value),
     )
+
+    @property
+    def stems(self):
+        return self._stems
+
+    @stems.setter
+    def stems(self, stems):
+        if stems and not isinstance(stems[0], GSMetrics):
+            pxjx
+        self._stems = stems
+    
+    def stemForKey(self, key):
+        if isinstance(key, int):
+            if key < 0:
+                key += self.__len__()
+            stem = self.stems[key]
+        elif isString(key):
+            stem = self.stemForName(key)
+            if stem is None:
+                stem = self.stemForId(key)
+        else:
+            raise TypeError("list indices must be integers or strings, not %s" % type(key).__name__)
+        return stem
+    
+    def stemForName(self, key):
+        for stem in self._stems:
+            if stem.name == key:
+                return stem
+        return None
+
+    def stemForId(self, key):
+        for stem in self._stems:
+            if stem.id == key:
+                return stem
+        return None
 
     @property
     def kerning(self):
