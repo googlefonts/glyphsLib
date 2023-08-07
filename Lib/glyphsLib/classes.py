@@ -3819,7 +3819,7 @@ class GSInstance(GSBase):
         lambda self, value: PropertiesProxy(self).setter(value),
     )
 
-    def post_read(self):
+    def post_read(self): # GSInstance
         assert(self.font)
         axes = self.font.axes
         if axes:
@@ -4261,7 +4261,7 @@ class GSLayer(GSBase):
     )
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
-    def post_read(self):
+    def post_read(self): # GSLayer
         assert(self.parent)
         font = self.parent.parent
         if font.formatVersion == 2:
@@ -4826,7 +4826,7 @@ class GSGlyph(GSBase):
             self.layers.append(l)
         return 0
 
-    def post_read(self):
+    def post_read(self): # GSGlyph
         for layer in self.layers:
             layer.post_read()
 
@@ -5252,7 +5252,7 @@ class GSFont(GSBase):
             legacyAxes[-1].axisId = "a05"
         return legacyAxes
 
-    def post_read(self):
+    def post_read(self): # GSFont
         if self.formatVersion < 3:
             axesParameter = self.customParameters["Axes"]
             if axesParameter:
