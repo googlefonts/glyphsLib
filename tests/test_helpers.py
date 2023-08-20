@@ -93,7 +93,6 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
 
 
 class ParametrizedUfoModuleTestMixin(object):
-
     ufo_module = None  # subclasses must override this
 
     def to_ufos(self, *args, **kwargs):

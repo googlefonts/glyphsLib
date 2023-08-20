@@ -132,7 +132,6 @@ expander = TokenExpander(TESTFONT, master)
     ],
 )
 def test_token_expander(test_input, expected, throws):
-
     if throws:
         with pytest.raises(ValueError):
             expander.expand(test_input)
