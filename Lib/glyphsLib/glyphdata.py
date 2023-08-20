@@ -196,8 +196,8 @@ def _construct_category(glyph_name, data):
     # Glyph variants (e.g. "fi.alt") don't have their own entry, so we strip e.g. the
     # ".alt" and try a second lookup with just the base name. A variant is hopefully in
     # the same category as its base glyph.
-    base_name = glyph_name.split(".", 1)[0]
-    base_attribute = data.names.get(base_name) or {}
+    base_name = _split_glyph_name(glyph_name, data)[0]
+    base_attribute = _lookup_attributes(base_name, data) or {}
     if base_attribute:
         category = base_attribute.get("category")
         sub_category = base_attribute.get("subCategory")
@@ -205,13 +205,7 @@ def _construct_category(glyph_name, data):
 
     # Detect ligatures.
     if "_" in base_name:
-        base_names = base_name.split("_")
-        # The last name has a suffix, add it to all the names.
-        if "-" in base_names[-1]:
-            _, s = base_names[-1].rsplit("-", 1)
-            base_names = [
-                (n if n.endswith(f"-{s}") else f"{n}-{s}") for n in base_names
-            ]
+        base_names = _split_ligature_glyph_name(base_name, data)
         base_names_attributes = [_lookup_attributes(name, data) for name in base_names]
         first_attribute = base_names_attributes[0]
 
@@ -300,6 +294,50 @@ def _translate_category(glyph_name, unicode_category):
     return glyphs_category
 
 
+def _split_ligature_glyph_name(name, data):
+    # Split name to ligature parts
+    parts = name.split("_")
+
+    # If the last part has a script suffix, strip it and re-split the name.
+    if "-" in parts[-1]:
+        base, script = name.rsplit("-", 1)
+        parts = base.split("_")
+
+        # If there is more than one part, try adding the script suffix to each
+        # part, if this results in a known glyph name, use it as the part name.
+        if len(parts) > 1:
+            for i, part in enumerate(parts):
+                new = f"{part}-{script}"
+                # If the part already has a script suffix, keep it unchanged.
+                if "-" in part:
+                    continue
+                # If the non suffixed name exists and the suffixed name does
+                # not exist, keep the part name unchanged.
+                if _lookup_attributes(part, data) and not _lookup_attributes(new, data):
+                    continue
+                parts[i] = new
+    else:
+        parts = name.split("_")
+    return parts
+
+
+def _split_glyph_name(name, data):
+    # Split glyph name into base and suffix
+    base, dot, suffix = name.partition(".")
+
+    # If there are more than one suffix (e.g. ".below.ro"), try adding each
+    # suffix to the base name, if it results in a known glyph name, use that as
+    # base name.
+    if dot and dot in suffix:
+        suffixes = suffix.split(dot)
+        new = base
+        while suffixes:
+            new += dot + suffixes.pop(0)
+            if _lookup_attributes(new, data):
+                return new, dot, dot.join(suffixes)
+    return base, dot, suffix
+
+
 def _construct_production_name(glyph_name, data=None):
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
@@ -321,7 +359,7 @@ def _construct_production_name(glyph_name, data=None):
 
     # At this point, we have already checked the data for the full glyph name, so
     # directly go to the base name here (e.g. when looking at "fi.alt").
-    base_name, dot, suffix = glyph_name.partition(".")
+    base_name, dot, suffix = _split_glyph_name(glyph_name, data)
     glyphinfo = _lookup_attributes(base_name, data)
     if glyphinfo and glyphinfo.get("production"):
         # Found the base glyph.
@@ -339,7 +377,7 @@ def _construct_production_name(glyph_name, data=None):
 
     # So we have a ligature that is not mapped in the data. Split it up and
     # look up the individual parts.
-    base_name_parts = base_name.split("_")
+    base_name_parts = _split_ligature_glyph_name(base_name, data)
 
     # If all parts are in the AGLFN list, the glyph name is our production
     # name already.
@@ -354,7 +392,7 @@ def _construct_production_name(glyph_name, data=None):
             # A name present in the AGLFN is a production name already.
             production_names.append(part)
         else:
-            part_entry = data.names.get(part) or {}
+            part_entry = _lookup_attributes(part, data) or {}
             part_production_name = part_entry.get("production")
             if part_production_name:
                 production_names.append(part_production_name)
