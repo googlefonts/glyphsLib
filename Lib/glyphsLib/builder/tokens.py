@@ -9,7 +9,6 @@ def _like(got, expected):
 
 
 class TokenExpander:
-
     number_token_re = r"\$\{([^}]+)\}"
     glyph_predicate_re = r"\$\[([^\]]+)\]"
     glyph_property_re = r"\$\{([^}]+:[^}]+)\}"
@@ -37,7 +36,7 @@ class TokenExpander:
         self.featurecode = self.featurecode[len(m[0]) :]
 
     def parse_token(self):
-        for (regexp, parser) in [
+        for regexp, parser in [
             (self.glyph_property_re, self.parse_glyph_property),
             (self.number_token_re, self.parse_number_token),
             (self.glyph_predicate_re, self.parse_glyph_predicate),

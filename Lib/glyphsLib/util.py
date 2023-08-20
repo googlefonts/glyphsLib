@@ -135,7 +135,6 @@ def freezedict(dct):
 
 
 class LoggerMixin:
-
     _logger = None
 
     @property

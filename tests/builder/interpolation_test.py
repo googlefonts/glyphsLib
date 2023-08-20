@@ -421,7 +421,6 @@ WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
 
 class SetWeightWidthClassesTestBase(object):
-
     ufo_module = None  # subclasses must override this
 
     def test_no_weight_class(self):

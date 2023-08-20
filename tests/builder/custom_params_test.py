@@ -48,7 +48,6 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
 class SetCustomParamsTestBase(object):
-
     ufo_module = None  # subclasses must override this
 
     def setUp(self):

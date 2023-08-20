@@ -2,7 +2,6 @@ import glyphsLib
 
 
 def test_glyphs_font_without_propagated_anchors(datadir):
-
     font = glyphsLib.GSFont(str(datadir.join("AnchorPropagation.glyphs")))
 
     # These two layers are supposed to be devoid of anchors in the .glyphs source
@@ -24,7 +23,6 @@ def test_glyphs_font_without_propagated_anchors(datadir):
 
 
 def test_ufo_with_propagated_anchors(datadir):
-
     ufo = glyphsLib.load_to_ufos(datadir.join("AnchorPropagation.glyphs"))[0]
 
     # In UFO, the same two glyphs (see above) are supposed to show anchors
