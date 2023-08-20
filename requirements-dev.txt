@@ -46,7 +46,7 @@ fs==2.4.16
     # via fonttools
 iniconfig==1.1.1
     # via pytest
-lxml==4.9.1
+lxml==4.9.3
     # via xmldiff
 mccabe==0.7.0
     # via flake8
