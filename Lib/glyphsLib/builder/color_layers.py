@@ -37,6 +37,9 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
                 builder.to_ufo_glyph(ufo_glyph, layer, glyph)
+                # Remove Unicode mapping from each color layer to avoid
+                # duplicate entries.
+                ufo_glyph.unicodes = []
             colorLayers.append((layerGlyphName, colorId))
         layerMapping[glyph.name] = colorLayers
 
