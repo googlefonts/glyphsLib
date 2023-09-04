@@ -1188,6 +1188,28 @@ def test_glyph_color_layers_components(ufo_module):
     assert len(ufo.layers["color.3"]["a"]) == 0
 
 
+def test_glyph_color_palette_layers_no_unicode_mapping(ufo_module):
+    font = generate_minimal_font()
+    glypha = add_glyph(font, "a")
+
+    glypha.unicode = "0061"
+
+    color0 = GSLayer()
+    color1 = GSLayer()
+    color0.name = "Color 0"
+    color1.name = "Color 1"
+
+    glypha.layers.append(color0)
+    glypha.layers.append(color1)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo["a"].unicode == 97
+    assert ufo["a.color0"].unicode is None
+    assert ufo["a.color1"].unicode is None
+
+
 def test_glyph_color_palette_layers_explode(ufo_module):
     font = generate_minimal_font()
     glypha = add_glyph(font, "a")
