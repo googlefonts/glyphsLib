@@ -1332,6 +1332,55 @@ def test_glyph_color_palette_layers_explode_v3(ufo_module):
     assert len(ufo["a.color2"]) == 0
 
 
+def test_glyph_color_layers_no_unicode_mapping(ufo_module):
+    font = generate_minimal_font()
+    glypha = add_glyph(font, "a")
+
+    glypha.unicode = "0061"
+
+    color0 = GSLayer()
+    color1 = GSLayer()
+    color2 = GSLayer()
+    color0.attributes["color"] = 1
+    color1.attributes["color"] = 1
+    color2.attributes["color"] = 1
+    glypha.layers.append(color0)
+    glypha.layers.append(color1)
+    glypha.layers.append(color2)
+
+    for i, layer in enumerate(glypha.layers):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(i + 0, i + 0), nodetype="line"),
+            GSNode(position=(i + 100, i + 100), nodetype="line"),
+            GSNode(position=(i + 200, i + 200), nodetype="line"),
+            GSNode(position=(i + 300, i + 300), nodetype="line"),
+        ]
+        if i == 1:
+            path.attributes["fillColor"] = [255, 124, 0, 225]
+        elif i == 2:
+            path.attributes["gradient"] = {
+                "colors": [[[0, 0, 0, 255], 0], [[185, 0, 0, 255], 1]],
+                "end": [0.2, 0.3],
+                "start": [0.4, 0.09],
+            }
+        elif i == 3:
+            path.attributes["gradient"] = {
+                "colors": [[[185, 0, 0, 255], 0], [[0, 0, 0, 255], 1]],
+                "end": [0.2, 0.3],
+                "start": [0.4, 0.09],
+                "type": "circle",
+            }
+        layer.paths.append(path)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo["a"].unicode == 97
+    assert ufo["a.color0"].unicode is None
+    assert ufo["a.color1"].unicode is None
+
+
 def test_glyph_color_layers_explode(ufo_module):
     font = generate_minimal_font(format_version=3)
     glypha = add_glyph(font, "a")
