@@ -195,6 +195,9 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
                 builder.to_ufo_glyph(ufo_glyph, layer, glyph, do_color_layers=False)
+                # Remove Unicode mapping from each color layer to avoid
+                # duplicate entries.
+                ufo_glyph.unicodes = []
 
             attributes = layer.paths[0].attributes if layer.paths else {}
             if "gradient" in attributes:
