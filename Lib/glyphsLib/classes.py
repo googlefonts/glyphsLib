@@ -1192,7 +1192,7 @@ class MasterStemsProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, slice):
             return [self.__getitem__(i) for i in range(*key.indices(self.__len__()))]
-        stem = self._owner.font._stemForKey(key)
+        stem = self._owner.font.stemForKey(key)
         if stem is None:
             raise KeyError("No stem for %s" % key)
         return self._owner._stems[stem.id]
@@ -1936,6 +1936,7 @@ class GSFontMaster(GSBase):
         self.custom = None
         self.readBuffer = {} # temp storage while reading
         self._axesValues = None
+        self._stems = None
         self._alignmentZones = None
     def __repr__(self):
         return '<GSFontMaster "{}" {}>'.format(
@@ -2009,26 +2010,35 @@ class GSFontMaster(GSBase):
             position, overshoot = self.readBuffer.get(GSMetricsKeyItalicAngle, (0, 0))
             self._set_metric(GSMetricsKeyItalicAngle, position, overshoot)
 
-        if self._horizontalStems:
-            for idx in range(len(self._horizontalStems)):
-                name = "hStem%d" % idx
-                metric = self.font.stemForName(name)
-                if not metric:
-                    metric = GSMetric()
-                    metric.name = name
-                    metric.horizontal = True
-                    self.font.stems.append(metric)
-                self._stems[metric.id] = self._horizontalStems[idx]
-        if self._verticalStems:
-            for idx in range(len(self._verticalStems)):
-                name = "vStem%d" % idx
-                metric = self.font.stemForName(name)
-                if not metric:
-                    metric = GSMetric()
-                    metric.name = name
-                    metric.horizontal = False
-                    self.font.stems.append(metric)
-                self._stems[metric.id] = self._verticalStems[idx]
+        if self._stems:
+            #print("__", self.font.stems, self._stems)
+            assert len(self.font.stems) == len(self._stems)
+            stems = {}
+            for idx, stem in enumerate(self.font.stems):
+                stems[stem.id] = self._stems[idx]
+            self._stems = stems
+        else:
+            self._stems = {}
+            if self._horizontalStems:
+                for idx in range(len(self._horizontalStems)):
+                    name = "hStem%d" % idx
+                    metric = self.font.stemForName(name)
+                    if not metric:
+                        metric = GSMetric()
+                        metric.name = name
+                        metric.horizontal = True
+                        self.font.stems.append(metric)
+                    self._stems[metric.id] = self._horizontalStems[idx]
+            if self._verticalStems:
+                for idx in range(len(self._verticalStems)):
+                    name = "vStem%d" % idx
+                    metric = self.font.stemForName(name)
+                    if not metric:
+                        metric = GSMetric()
+                        metric.name = name
+                        metric.horizontal = False
+                        self.font.stems.append(metric)
+                    self._stems[metric.id] = self._verticalStems[idx]
 
         if self.name is None:
             weight = self.weight
@@ -2370,7 +2380,7 @@ GSFontMaster._add_parsers([
     {"plist_name": "custom", "object_name": "customName"},
     {"plist_name": "axesValues", "object_name": "_axesValues"},  # v3
     {"plist_name": "numberValues", "object_name": "numbers"},  # v3
-    {"plist_name": "stemValues", "object_name": "stems"},  # v3
+    {"plist_name": "stemValues", "object_name": "_stems"},  # v3
     {"plist_name": "metricValues", "object_name": "_metrics", "type": GSMetricValue},  # v3
     #{"plist_name": "name", "object_name": "_name"},
 ])
@@ -5383,7 +5393,7 @@ class GSFont(GSBase):
 
     @stems.setter
     def stems(self, stems):
-        if stems and not isinstance(stems[0], GSMetrics):
+        if stems and not isinstance(stems[0], GSMetric):
             pxjx
         self._stems = stems
     
