@@ -1360,8 +1360,8 @@ class CustomParametersProxy(ListDictionaryProxy):
         super().__setitem__(key, value)
         self._update_lookup()
 
-    def __setter__(self, params):
-        super().__setter__(params)
+    def setter(self, params):
+        super().setter(params)
         self._update_lookup()
 
     def __iter__(self):

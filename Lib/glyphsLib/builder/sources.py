@@ -24,7 +24,6 @@ from glyphsLib.util import build_ufo_path
 
 from .axes import (
      get_regular_master,
-#     font_uses_axis_locations,
 )
 
 from glyphsLib.classes import LAYER_ATTRIBUTE_COORDINATES
@@ -231,7 +230,6 @@ def _to_glyphs_source(self, master):
             # The location does not have this axis?
             continue
         master.internalAxesValues[axis_def.axisId] = design_location
-        #if font_uses_axis_locations(self.font):
         # The user location can be found by reading the mapping backwards
         mapping = []
         for axis in self.designspace.axes:

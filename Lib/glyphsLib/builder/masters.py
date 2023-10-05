@@ -15,7 +15,6 @@
 
 import os
 
-from .axes import font_uses_axis_locations
 from .constants import (
     GLYPHS_PREFIX,
     MASTER_ID_LIB_KEY,
@@ -24,9 +23,8 @@ from .constants import (
     UFO_FILENAME_CUSTOM_PARAM,
 )
 from glyphsLib.util import best_repr, best_repr_list
-from glyphsLib.classes import (
-    GSCustomParameter,
-)
+from glyphsLib.classes import GSCustomParameter
+
 
 def to_ufo_master_attributes(self, ufo, master):
     ufo.info.ascender = master.ascender
@@ -86,13 +84,6 @@ def to_ufo_master_attributes(self, ufo, master):
                 continue
             ufo.lib[GLYPHS_PREFIX + lib_key] = value
 
-    if font_uses_axis_locations(self.font):
-        # Set the OS/2 weightClass and widthClas according the this master's
-        # user location ("Axis Location" parameter)
-        for axis in self.font.axes:
-            if axis.axisTag in ("wght", "wdth"):
-                user_loc = get_user_loc(master, axis)
-                axis.set_ufo_user_loc(ufo, user_loc)
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
