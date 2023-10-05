@@ -1178,7 +1178,7 @@ class ExternalAxesProxy(Proxy):
             return 0
         return self._owner.font.countOfAxes()
 
-    def _setterMethod(self, values):
+    def setterMethod(self, values):
         if self._owner.font is None:
             return
         idx = 0
@@ -1186,6 +1186,24 @@ class ExternalAxesProxy(Proxy):
             value = values[idx]
             self._owner._externalAxesValues[axis.axisId] = value
             idx += 1
+
+def axisLocationToAxesValue(master_or_instances):
+    axisLocations = master_or_instances.customParameters["Axis Location"]
+    if axisLocations is None:
+        return
+    print("__axisLocations", axisLocations)
+    for axis in master_or_instances.font.axes:
+        locationDict = None
+        for currLocartion in axisLocations:
+            if currLocartion["Axis"] == axis.name:
+                locationDict = currLocartion
+                break
+        if locationDict is None:
+            continue
+        location = locationDict.get("Location", None)
+        if location:
+            master_or_instances.externalAxesValues[axis.axisId] = location
+
 
 class MasterStemsProxy(Proxy):
 
@@ -2047,6 +2065,7 @@ class GSFontMaster(GSBase):
             self.name = self._joinNames(weight, width, custom)
         if not self.name:
             self.name = self._defaultsForName["name"]
+        axisLocationToAxesValue(self)
 
     @property
     def metricsSource(self):
@@ -3832,13 +3851,14 @@ class GSInstance(GSBase):
     def post_read(self): # GSInstance
         assert(self.font)
         axes = self.font.axes
-        if axes:
+        if axes and self.type != InstanceType.VARIABLE:
             axesValues = self.readBuffer.get("axesValues", self._axesValues)
-            axesCount = min(len(self.font.axes), len(axesValues))
-            for idx in range(axesCount):
-                axis = axes[idx]
-                value = axesValues[idx]
-                self.internalAxesValues[axis.axisId] = value
+            if axesValues:
+                axesCount = min(len(self.font.axes), len(axesValues))
+                for idx in range(axesCount):
+                    axis = axes[idx]
+                    value = axesValues[idx]
+                    self.internalAxesValues[axis.axisId] = value
         if self.font.formatVersion < 3:
             weightClass = WEIGHT_CODES.get(self.weightClass)
             if weightClass:
@@ -3856,6 +3876,8 @@ class GSInstance(GSBase):
         if weight_class_parameter:
             self.weightClass = int(weight_class_parameter)
             del(self.customParameters["weightClass"])
+
+        axisLocationToAxesValue(self)
 
     @property
     def exports(self):
