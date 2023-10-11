@@ -141,11 +141,12 @@ def _to_designspace_instance(self, instance):
         (ufo_instance.familyName or "", ufo_instance.styleName or "")
     )
 
+    ufo_instance.lib["openTypeOS2WidthClass"] = instance.widthClass
+    ufo_instance.lib["openTypeOS2WeightClass"] = instance.weightClass
+    
     if self.minimize_glyphs_diffs:
         if not instance.exports:
             ufo_instance.lib[EXPORT_KEY] = False
-        ufo_instance.lib[GLYPHS_PREFIX + "widthClass"] = instance.widthClass
-        ufo_instance.lib[GLYPHS_PREFIX + "weightClass"] = instance.weightClass
         ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
         ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
@@ -335,51 +336,6 @@ class InstanceDescriptorAsGSInstance:
                 self.properties[name] = value
 
 
-def _set_class_from_instance(ufo, designspace, instance, axis_tag):
-    # FIXME: (jany) copy-pasted from above, factor into method?
-    assert axis_tag in ("wght", "wdth")
-
-    factory = AxisDefinitionFactory()
-    for axis in designspace.axes:
-        if axis.tag == axis_tag:
-            axis_def = factory.get(axis.tag, axis.name)
-            mapping = axis.map
-            break
-    else:
-        # axis not found, try use the default axis definition
-        axis_def = WEIGHT_AXIS_DEF if axis_tag == "wght" else WIDTH_AXIS_DEF
-        mapping = []
-
-    try:
-        design_loc = instance.location[axis_def.name]
-    except KeyError:
-        user_loc = axis_def.default_user_loc
-    else:
-        if mapping:
-            # Retrieve the user location (weightClass/widthClass)
-            # by going through the axis mapping in reverse.
-            reverse_mapping = {dl: ul for ul, dl in mapping}
-            user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
-        else:
-            # no mapping means user space location is same as design space
-            user_loc = design_loc
-    axis_def.set_ufo_user_loc(ufo, user_loc)
-
-
-def set_weight_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WeightClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
-    _set_class_from_instance(ufo, designspace, instance, "wght")
-
-
-def set_width_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WidthClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
-    _set_class_from_instance(ufo, designspace, instance, "wdth")
-
-
 def apply_instance_data(designspace, include_filenames=None, Font=None):
     """Open UFO instances referenced by designspace, apply Glyphs instance
     data if present, re-save UFOs and return updated UFO Font objects.
@@ -446,10 +402,14 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     Returns:
         None.
     """
-    if any(axis.tag == "wght" for axis in designspace.axes):
-        set_weight_class(ufo, designspace, instance)
-    if any(axis.tag == "wdth" for axis in designspace.axes):
-        set_width_class(ufo, designspace, instance)
+    try:
+        ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
+    except:
+        pass
+    try:
+        ufo.info.openTypeOS2WeightClass = instance.lib["openTypeOS2WeightClass"]
+    except:
+        pass
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
     to_ufo_custom_params(None, ufo, glyphs_instance, "instance")
