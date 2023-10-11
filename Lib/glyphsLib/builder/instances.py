@@ -411,4 +411,4 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
         set_width_class(ufo, designspace, instance)
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
-    to_ufo_custom_params(None, ufo, glyphs_instance)
+    to_ufo_custom_params(None, ufo, glyphs_instance, "instance")
