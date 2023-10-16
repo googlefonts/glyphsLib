@@ -5347,7 +5347,7 @@ class GSFont(GSBase):
         self.axes = []
         self._userData = None
         self._versionMinor = 0
-        self.formatVersion = 2
+        self.formatVersion = 3
         self.appVersion = "895"  # minimum required version
         self.classes = copy.deepcopy(self._defaultsForName["classes"])
         self.features = copy.deepcopy(self._defaultsForName["features"])
