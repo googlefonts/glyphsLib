@@ -24,7 +24,6 @@ from xmldiff import main, formatting
 
 import defcon
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue
 from glyphsLib import to_designspace, to_glyphs
 import ufoLib2
@@ -427,16 +426,16 @@ class SetWeightWidthClassesTestBase(object):
         ufo = self.ufo_module.Font()
         # name here says "Bold", however no explicit weightClass
         # is assigned
-        doc, instance = makeInstanceDescriptor("Bold")
-        set_weight_class(ufo, doc, instance)
+        instance = makeInstance("Bold")
+        ufo.info.openTypeOS2WeightClass = instance.weightClass
         # the default OS/2 weight class is set
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 400)
 
     def test_weight_class(self):
         ufo = self.ufo_module.Font()
-        doc, data = makeInstanceDescriptor("Bold", weight=("Bold", None, 150))
+        instance = makeInstance("Bold", weight=("Bold", None, 150))
 
-        set_weight_class(ufo, doc, data)
+        ufo.info.openTypeOS2WeightClass = instance.weightClass
         self.assertEqual(ufo.info.openTypeOS2WeightClass, 700)
 
     def test_explicit_default_weight(self):
