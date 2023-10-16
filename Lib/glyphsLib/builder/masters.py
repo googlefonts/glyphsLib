@@ -161,3 +161,5 @@ def to_glyphs_master_attributes(self, source, master):
     self.to_glyphs_master_user_data(ufo, master)
     self.to_glyphs_guidelines(ufo, master)
     self.to_glyphs_custom_params(ufo, master, "fontMaster")
+    if source.styleName:
+        master.name = source.styleName
