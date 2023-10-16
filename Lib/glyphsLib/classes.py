@@ -5223,6 +5223,9 @@ class GSFont(GSBase):
             parameters = GSFontInfoValue.legacyCustomParametersFromProperties(self.properties, self)
             if parameters:
                 customParameters.extend(parameters)
+            if self.note:
+                parameter = GSCustomParameter("note", self.note)
+                customParameters.append(parameter)
 
         if self.axes:
             if writer.formatVersion >= 3:
