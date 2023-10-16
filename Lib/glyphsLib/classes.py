@@ -1465,7 +1465,7 @@ class CustomParametersProxy(ListDictionaryProxy):
             if not parameter.active:
                 continue
             if parameter.name == key:
-                return parameter
+                return parameter.value
         return None
     def get_custom_values(self, key):
         parameters = []
