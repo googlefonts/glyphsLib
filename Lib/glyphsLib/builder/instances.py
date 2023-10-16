@@ -277,6 +277,7 @@ def to_glyphs_instances(self):  # noqa: C901
 
 
 class InstanceDescriptorAsGSInstance:
+    # FIXME: (georg) find a better way
     """Wraps a designspace InstanceDescriptor and makes it behave like a
     GSInstance, just enough to use the descriptor as a source of custom
     parameters for `to_ufo_custom_parameters`

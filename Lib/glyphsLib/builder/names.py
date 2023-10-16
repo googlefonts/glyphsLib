@@ -24,6 +24,7 @@ def to_ufo_names(self, ufo, master, family_name):
 
     is_italic = bool(master.italicAngle)
 
+    # FIXME: (georg) Master names don’t mean anything. That is what instances are for
     styleName = master.name
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
