@@ -48,9 +48,9 @@ def to_ufo_font_attributes(self, family_name):
     for index, master in enumerate(font.masters):
         ufo = self.ufo_module.Font()
 
-        fill_ufo_metadata(master, ufo)
+        to_ufo_metadata(master, ufo)
         if not self.minimal:
-            fill_ufo_metadata_roundtrip(master, ufo)
+            to_ufo_metadata_roundtrip(master, ufo)
 
         self.to_ufo_names(ufo, master, family_name)  # .names
         self.to_ufo_family_user_data(ufo)  # .user_data
@@ -89,15 +89,29 @@ INFO_FIELDS = (
 )
 
 PROPERTIES_FIELDS = {
+    "compatibleFullNames": "openTypeNameCompatibleFullName",
     "copyrights": "copyright",
+    "descriptions": "openTypeNameDescription",
     "designers" : "openTypeNameDesigner",
     "designerURL": "openTypeNameDesignerURL",
+    #"familyNames": "familyName",
+    "licenses": "openTypeNameLicense",
+    "licenseURL": "openTypeNameLicenseURL",
     "manufacturers":  "openTypeNameManufacturer",
-    "manufacturerURL": "manufacturerURL",
+    "manufacturerURL": "openTypeNameManufacturerURL",
+    "postscriptFontName": "postscriptFontName",
+    "postscriptFullNames": "postscriptFullName",
+    "sampleTexts": "openTypeNameSampleText",
+    "trademarks": "trademark",
+    "uniqueID": "openTypeNameUniqueID",
+    # "variationsPostScriptNamePrefix": "variationsPostScriptNamePrefix", # TODO: what is the correct ufo key?
+    "vendorID": "openTypeOS2VendorID",
+    "versionString": "openTypeNameVersion",
+    "WWSFamilyName": "openTypeNameWWSFamilyName",
 }
 
 
-def fill_ufo_metadata(master, ufo):
+def to_ufo_metadata(master, ufo):
     font = master.font
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
@@ -113,14 +127,23 @@ def fill_ufo_metadata(master, ufo):
 
     if date_created is not None:
         ufo.info.openTypeHeadCreated = date_created
-
+    for infoValue in font.properties:
+        ufo_key = PROPERTIES_FIELDS[infoValue.key]
+        setattr(ufo.info, ufo_key, infoValue.value)
     # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
     # order of glyphs in the glyphs file, which can optionally be overwritten
     # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
     ufo.glyphOrder = list(glyph.name for glyph in font.glyphs)
 
+def to_glyphs_metadata(ufo, font):
+    
+    for glyphs_key, ufo_key in PROPERTIES_FIELDS.items():
+        value = getattr(ufo.info, ufo_key)
+        if value:
+            font.properties[glyphs_key] = value
 
-def fill_ufo_metadata_roundtrip(master, ufo):
+
+def to_ufo_metadata_roundtrip(master, ufo):
     font = master.font
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
     ufo.lib[FORMATVERSION_LIB_KEY] = font.formatVersion
@@ -187,17 +210,20 @@ def _set_glyphs_font_attributes(self, source):
     if info.versionMinor is not None:
         font.versionMinor = info.versionMinor
 
-    if info.copyright is not None:
-        font.copyright = info.copyright
-    if info.openTypeNameDesigner is not None:
-        font.designer = info.openTypeNameDesigner
-    if info.openTypeNameDesignerURL is not None:
-        font.designerURL = info.openTypeNameDesignerURL
-    if info.openTypeNameManufacturer is not None:
-        font.manufacturer = info.openTypeNameManufacturer
-    if info.openTypeNameManufacturerURL is not None:
-        font.manufacturerURL = info.openTypeNameManufacturerURL
+    # if info.copyright is not None:
+    #     font.copyright = info.copyright
+    # if info.trademark is not None:
+    #     font.trademark = info.trademark
+    # if info.openTypeNameDesigner is not None:
+    #     font.designer = info.openTypeNameDesigner
+    # if info.openTypeNameDesignerURL is not None:
+    #     font.designerURL = info.openTypeNameDesignerURL
+    # if info.openTypeNameManufacturer is not None:
+    #     font.manufacturer = info.openTypeNameManufacturer
+    # if info.openTypeNameManufacturerURL is not None:
+    #     font.manufacturerURL = info.openTypeNameManufacturerURL
 
+    to_glyphs_metadata(ufo, font)
     self.to_glyphs_family_names(ufo)
     self.to_glyphs_family_user_data_from_ufo(ufo)
     self.to_glyphs_custom_params(ufo, font, "font")

@@ -243,7 +243,7 @@ GLYPHS_FONT_UFO_CUSTOM_PARAMS = (
     # These are stored in the official descriptor attributes.
     # "familyName",
     # "fileName",
-    ("compatibleFullName", "openTypeNameCompatibleFullName"),
+    #("compatibleFullName", "openTypeNameCompatibleFullName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
     ("fsType", "openTypeOS2Type"),
@@ -312,37 +312,33 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     # "manufacturers",
     # "manufacturerURL",
     # "copyrights",
-    ("versionString", "openTypeNameVersion", "versionString"),
-    ("vendorID", "openTypeOS2VendorID", "vendorID"),
+    #("versionString", "openTypeNameVersion", "versionString"),
+    #("vendorID", "openTypeOS2VendorID", "vendorID"),
     # TODO: Map this property to a custom parameter if applicable.
     # "uniqueID",
-    ("license", "openTypeNameLicense", "licenses"),
-    ("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
-    ("trademark", "trademark", "trademarks"),
-    ("description", "openTypeNameDescription", "descriptions"),
-    ("sampleText", "openTypeNameSampleText", "sampleTexts"),
+    #("license", "openTypeNameLicense", "licenses"),
+    #("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
+    #("trademark", "trademark", "trademarks"),
+    #("description", "openTypeNameDescription", "descriptions"),
+    #("sampleText", "openTypeNameSampleText", "sampleTexts"),
     # TODO: Should the postscriptFullName or postscriptFullNames property be
     # used for the postscriptFullName custom parameter?
     # "postscriptFullNames",
-    ("postscriptFullName", "postscriptFullName", "postscriptFullName"),
+    #("postscriptFullName", "postscriptFullName", "postscriptFullName"),
     # TODO: This is stored in the official descriptor attibutes. Should this
     # entry be removed?
-    ("postscriptFontName", "postscriptFontName", "postscriptFontName"),
+    #("postscriptFontName", "postscriptFontName", "postscriptFontName"),
     # TODO: Map these properties to custom parameters if applicable.
     # "compatibleFullNames",
     # "styleNames",
     # "styleMapFamilyNames",
     # "styleMapStyleNames",
-    ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
-    (
-        "preferredSubfamilyName",
-        "openTypeNamePreferredSubfamilyName",
-        "preferredSubfamilyNames",
-    ),
+    #("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
+    #("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName", "preferredSubfamilyNames"),
     # TODO: Map this property to a custom parameter if applicable.
     # "variableStyleNames",
-    ("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
-    ("WWSSubfamilyName", "openTypeNameWWSSubfamilyName", "WWSSubfamilyName"),
+    #("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
+    #("WWSSubfamilyName", "openTypeNameWWSSubfamilyName", "WWSSubfamilyName"),
     # TODO: Map this property to a custom parameter if applicable.
     # "variationsPostScriptNamePrefix",
 )
@@ -368,11 +364,11 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeVheaCaretOffset",
     "openTypeHeadLowestRecPPEM",
     "openTypeHeadFlags",
-    "openTypeNameVersion",
-    "openTypeNameUniqueID",
+    #"openTypeNameVersion",
+    #"openTypeNameUniqueID",
     "openTypeOS2FamilyClass",
     "postscriptSlantAngle",
-    "postscriptUniqueID",
+    #"postscriptUniqueID",
     # TODO: Should this be handled in `blue_values.py`?
     # "postscriptFamilyBlues",
     # "postscriptFamilyOtherBlues",
@@ -385,8 +381,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "postscriptWindowsCharacterSet",
     "macintoshFONDFamilyID",
     "macintoshFONDName",
-    "styleMapFamilyName",
-    "styleMapStyleName",
+    #"styleMapFamilyName",
+    #"styleMapStyleName",
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register(ParamHandler(name))

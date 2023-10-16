@@ -29,7 +29,7 @@ from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder import to_ufos
 from glyphsLib.builder.custom_params import (
     _set_default_params,
-    GLYPHS_UFO_CUSTOM_PARAMS,
+    GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES,
 )
 from glyphsLib.builder.constants import (
     UFO2FT_FILTERS_KEY,
@@ -141,7 +141,7 @@ class SetCustomParamsTestBase(object):
             "superscriptYOffset",
         ]
         params_to_check = [
-            (k, v) for (k, v) in GLYPHS_UFO_CUSTOM_PARAMS if k in integer_params
+            (k, v) for (k, v) in GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES if k in integer_params
         ]
 
         for glyphs_key, ufo_key in params_to_check:

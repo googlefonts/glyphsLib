@@ -1482,6 +1482,17 @@ class PropertiesProxy(ListDictionaryProxy):
     def __init__(self, owner):
         super().__init__(owner, "_properties", GSFontInfoValue)
 
+    def __setitem__(self, key, value):
+        infoValue = self[key]
+        if infoValue is None or not isinstance(infoValue, GSFontInfoValue):
+            infoValue = GSFontInfoValue(key)
+            infoValue.parent = self._owner
+            self._owner.properties.append(infoValue)
+        if key.endswith("s"):
+            infoValue.setLocalizedValue(value, "dflt")
+        else:
+            infoValue.value = value
+
     def setProperty(self, key, value, language="dflt"):
         for infoValue in self:
             if infoValue.name != key:
@@ -3712,7 +3723,7 @@ GSAnnotation._add_parsers([
 
 
 LOCALIZED_PARAMETERS = ("localizedFamilyName", "localizedStyleName", "localizedStyleMapFamilyName", "localizedDesigner")
-SIMPLE_PARAMETERS = ("trademark")
+#SIMPLE_PARAMETERS = ("trademark")
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def __init__(self, key="", value=None):
@@ -3908,7 +3919,9 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
         if writer.formatVersion > 2:
-            writer.writeObjectKeyValue(self, "properties", condition="if_true")
+            if self.properties and len(self.properties) > 0:
+                self._properties.sort(key=lambda key : key.key.lower())
+                writer.writeObjectKeyValue(self, "properties")
             writer.writeObjectKeyValue(self, "weightClass", default=400)
             writer.writeObjectKeyValue(self, "widthClass", default=5)
         else:
@@ -4005,8 +4018,7 @@ class GSInstance(GSBase):
     @property
     def familyName(self):
         return (
-            self.properties.get("familyNames")
-            #or self.customParameters["familyName"] # TODO: put in properties on read
+            self.properties["familyNames"]
             or self.font.familyName
         )
 
@@ -4020,30 +4032,27 @@ class GSInstance(GSBase):
 
     @preferredFamily.setter
     def preferredFamily(self, value):
-        self.customParameters["preferredFamily"] = value
+        self.preferredFamilyName = value
 
     @property
     def preferredFamilyName(self):
-        return (
-            self.properties.get("preferredFamilyNames")
-            or self.customParameters["preferredFamilyName"]
-        )
+        return self.properties["preferredFamilyNames"]
+
+    @preferredFamilyName.setter
+    def preferredFamilyName(self, value):
+        self.properties["preferredFamilyName"] = value
 
     @property
     def preferredSubfamilyName(self):
-        return (
-            self.properties.get("preferredSubfamilyNames")
-            or self.customParameters["preferredSubfamilyName"]
-        )
+        return self.properties["preferredSubfamilyNames"]
 
     @preferredSubfamilyName.setter
     def preferredSubfamilyName(self, value):
-        # TODO: should always be in properties
-        self.customParameters["preferredSubfamilyName"] = value
+        self.properties["preferredSubfamilyName"] = value
 
     @property
     def windowsFamily(self):
-        value = self.customParameters["styleMapFamilyName"]
+        value = self.properties["styleMapFamilyName"]
         if value:
             return value
         if self.name not in ("Regular", "Bold", "Italic", "Bold Italic"):
@@ -4053,7 +4062,7 @@ class GSInstance(GSBase):
 
     @windowsFamily.setter
     def windowsFamily(self, value):
-        self.customParameters["styleMapFamilyName"] = value
+        self.properties["styleMapFamilyName"] = value
 
     @property
     def windowsStyle(self):
@@ -4074,7 +4083,7 @@ class GSInstance(GSBase):
     @property
     def fontName(self):
         return (
-            self.properties.get("postscriptFontName")
+            self.properties["postscriptFontName"]
             or self.customParameters["postscriptFontName"]
             # TODO: Strip invalid characters.
             or ("".join(self.familyName.split(" ")) + "-" + self.name)
@@ -5243,7 +5252,9 @@ class GSFont(GSBase):
             writer.writeObjectKeyValue(self, "metrics")
             writer.writeObjectKeyValue(self, "_note", "if_true", keyName="note")
             writer.writeObjectKeyValue(self, "numbers", "if_true")
-            writer.writeObjectKeyValue(self, "properties", "if_true")
+            if len(self.properties) > 0:
+                self._properties.sort(key=lambda key : key.key.lower())
+                writer.writeObjectKeyValue(self, "properties")
             writer.writeObjectKeyValue(self, "settings", "if_true")
             writer.writeObjectKeyValue(self, "stems", "if_true")
 
@@ -5313,7 +5324,7 @@ class GSFont(GSBase):
         self._kerningVertical = OrderedDict()
         self.metrics = copy.deepcopy(self._defaultMetrics)
         self.numbers = []
-        self.properties = []
+        self._properties = []
         self._stems = []
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
         self.keyboardIncrementBig = self._defaultsForName["keyboardIncrementBig"]
@@ -5321,6 +5332,7 @@ class GSFont(GSBase):
         self.upm = self._defaultsForName["unitsPerEm"]
         self.versionMajor = 1
         self._note = ""
+        self.readBuffer = {}
 
         if path:
             path = os.fsdecode(os.fspath(path))
@@ -5692,7 +5704,7 @@ class GSFont(GSBase):
 
     @property
     def manufacturer(self):
-        return self.properties.get("manufacturers", "")
+        return self.properties["manufacturers"]
 
     @manufacturer.setter
     def manufacturer(self, value):
@@ -5700,7 +5712,7 @@ class GSFont(GSBase):
 
     @property
     def manufacturerURL(self):
-        return self.properties.get("manufacturerURL", "")
+        return self.properties["manufacturerURL"]
 
     @manufacturerURL.setter
     def manufacturerURL(self, value):
@@ -5708,15 +5720,23 @@ class GSFont(GSBase):
 
     @property
     def copyright(self):
-        return self.properties.get("copyrights", "")
+        return self.properties["copyrights"]
 
     @copyright.setter
     def copyright(self, value):
         self.properties.setProperty("copyrights", value)
 
     @property
+    def trademark(self):
+        return self.properties["trademarks"]
+
+    @copyright.setter
+    def trademark(self, value):
+        self.properties.setProperty("trademarks", value)
+
+    @property
     def designer(self):
-        return self.properties.get("designers", "")
+        return self.properties["designers"]
 
     @designer.setter
     def designer(self, value):
@@ -5724,7 +5744,7 @@ class GSFont(GSBase):
 
     @property
     def designerURL(self):
-        return self.properties.get("designerURL", "")
+        return self.properties["designerURL"]
 
     @designerURL.setter
     def designerURL(self, value):
