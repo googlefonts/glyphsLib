@@ -161,7 +161,9 @@ def _to_designspace_source_layer(self):
                 coordinates = layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
                 values = []
                 for axis in self.font.axes:
-                    value = coordinates[axis.axisId]
+                    value = coordinates.get(axis.axisId)
+                    if value is None:
+                        pass
                     values.append(value)
                 key = (layer.name, tuple(values))
                 layer_to_master_ids[key].add(layer.associatedMasterId)
