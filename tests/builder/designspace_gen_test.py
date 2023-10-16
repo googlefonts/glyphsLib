@@ -562,12 +562,12 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
     # Remove names of bracket layers, make sure the layers get
     # copied anyway
     for l in font.glyphs["v"].layers:
-        if l._is_bracket_layer():
+        if l.isBracketLayer:
             l.name = ""
 
     designspace = to_designspace(font, ufo_module=ufo_module)
     axes = designspace.axes
-    info = font.glyphs["v"].layers[8]._bracket_info(axes)
+    info = _bracket_info(font.glyphs["v"].layers[8], axes)
     assert info == {"opsz": (5, 410), "wdth": (50, 75), "wght": (690, 900)}
 
     for source in designspace.sources:
