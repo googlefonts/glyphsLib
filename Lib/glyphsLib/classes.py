@@ -2295,6 +2295,54 @@ class GSFontMaster(GSBase):
                 zones.append(zone)
         self._alignmentZones = zones
 
+    @property
+    def blueValues(self):
+        """Set postscript blue values from Glyphs alignment zones."""
+
+        if len(self.font.metrics) == 0:
+            return []
+
+        blueValues = []
+        for fontMetric in self.font.metrics:
+            # Ignore the "italic angle" "metric", it is not an alignmentZone
+            if fontMetric.metricType == GSMetricsKeyItalicAngle or fontMetric.filter:
+                continue
+            metric = self.metrics.get(fontMetric.id)
+            if not metric:
+                continue
+            # Ignore metric without overshoot, it is not an alignmentZone
+            if metric.overshoot is None or (metric.overshoot <= 0 and metric.position != 0):
+                continue
+            blueValues.append(metric.position)
+            blueValues.append(metric.position + metric.overshoot)
+
+        blueValues.sort()
+        return blueValues
+    
+    @property
+    def otherBlues(self):
+        """Set postscript blue values from Glyphs alignment zones."""
+
+        if len(self.font.metrics) == 0:
+            return []
+
+        otherBlues = []
+        for fontMetric in self.font.metrics:
+            # Ignore the "italic angle" "metric", it is not an alignmentZone
+            if fontMetric.metricType == GSMetricsKeyItalicAngle or fontMetric.filter:
+                continue
+            metric = self.metrics.get(fontMetric.id)
+            if not metric:
+                continue
+            # Ignore metric without overshoot, it is not an alignmentZone
+            if metric.overshoot is None or metric.overshoot >= 0 or metric.position == 0:
+                continue
+            otherBlues.append(metric.position)
+            otherBlues.append(metric.position + metric.overshoot)
+
+        otherBlues.sort()
+        return otherBlues
+
     def _set_stem(self, name, size, direction, filter=None):
         assert self.font
         stems = self.font.stems
