@@ -1995,8 +1995,8 @@ class GSFontMaster(GSBase):
         # and weight anymore as attributes, even though those properties are
         # still written to the saved files.
         "name": "Regular",
-        "weight": "Regular",
-        "width": "Regular",
+        #"weight": "Regular",
+        #"width": "Regular",
         "x-height": 500,
         "cap height": 700,
         "ascender": 800,
@@ -2015,9 +2015,9 @@ class GSFontMaster(GSBase):
         _zones = parser._parse(text, str)
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
-    def __init__(self):
+    def __init__(self, name=None):
         self.customParameters = []
-        self.name = None
+        self.name = name
         self._userData = None
         self._horizontalStems = None
         self._verticalStems = None
@@ -2033,7 +2033,7 @@ class GSFontMaster(GSBase):
         self.visible = False
         self.weight = None
         self.width = None
-        self.custom = None
+        self.customName = None
         self.readBuffer = {} # temp storage while reading
         self._axesValues = None
         self._stems = None
@@ -3949,7 +3949,7 @@ class GSInstance(GSBase):
         "type": InstanceType.SINGLE,
     }
 
-    def __init__(self):
+    def __init__(self, name="Regular"):
         self.font = None
         self._internalAxesValues = {}
         self._externalAxesValues = {}
@@ -3963,7 +3963,7 @@ class GSInstance(GSBase):
         self.isItalic = False
         self.linkStyle = ""
         self.manualInterpolation = False
-        self.name = "Regular"
+        self.name = name
         self.properties = []
         self.visible = True
         self.weightClass = self._defaultsForName["weightClass"]
