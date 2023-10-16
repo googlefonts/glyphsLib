@@ -649,8 +649,8 @@ class NameRecordParamHandler(AbstractParamHandler):
                     glyphs.append(GSCustomParameter(self.glyphs_name, entry))
 
     def to_ufo(self, builder, glyphs, ufo):
-        for entrie in glyphs:
-            if entrie.name == self.glyphs_name:
+        for entry in glyphs:
+            if entry.name == self.glyphs_name:
                 records = ufo.get_info_value(self.ufo_name) or []
                 record = self.to_record(entry.value)
                 if record is not None:
