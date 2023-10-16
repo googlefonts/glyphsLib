@@ -2055,8 +2055,9 @@ class GSFontMaster(GSBase):
                 axis = axes[idx]
                 value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                 self.internalAxesValues[axis.axisId] = value
-            if len(self._internalAxesValues) == 0:
-                self.internalAxesValues[self.font.axes[0].axisId] = 100
+            if axes and len(self._internalAxesValues) == 0:
+                axisId = axes[0].axisId
+                self.internalAxesValues[axisId] = 100
         else:
             axesValues = self._axesValues
             if axesValues:
@@ -3979,13 +3980,25 @@ class GSInstance(GSBase):
         assert(self.font)
         axes = self.font.axes
         if axes and self.type != InstanceType.VARIABLE:
-            axesValues = self.readBuffer.get("axesValues", self._axesValues)
-            if axesValues:
-                axesCount = min(len(self.font.axes), len(axesValues))
+            if self.font.formatVersion < 3:
+                axesValues = self.readBuffer.get("axesValues", {})
+                axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
                     value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                     self.internalAxesValues[axis.axisId] = value
+                if axes and len(self._internalAxesValues) == 0:
+                    axisId = axes[0].axisId
+                    self.internalAxesValues[axisId] = 100
+            else:
+                axesValues = self._axesValues
+                if axesValues:
+                    axesCount = len(axes)
+                    for idx in range(axesCount):
+                        axis = axes[idx]
+                        value = axesValues[idx]
+                        self.internalAxesValues[axis.axisId] = value
+
         if self.font.formatVersion < 3:
             weightClass = WEIGHT_CODES.get(self.weightClass)
             if weightClass:
@@ -4344,7 +4357,7 @@ class GSLayer(GSBase):
             rule = attributes[LAYER_ATTRIBUTE_AXIS_RULES]
             ruleMap = []
             for axis in font.axes:
-                ruleMap.append(rule.get(axis.axisId))
+                ruleMap.append(rule.get(axis.axisId, {}))
             attributes[LAYER_ATTRIBUTE_AXIS_RULES] = ruleMap
         if LAYER_ATTRIBUTE_COORDINATES in self.attributes:
             coordinates = attributes[LAYER_ATTRIBUTE_COORDINATES]
@@ -4435,6 +4448,13 @@ class GSLayer(GSBase):
                 coordinatesMap = {}
                 for c, axis in zip(coordinatesString.split(","), font.axes):
                     coordinatesMap[axis.axisId] = float(c)
+                master = None
+                for axis in font.axes:
+                    if axis.axisId not in coordinatesMap:
+                        if master is None:
+                            master = font.masters[self.associatedMasterId]
+                        value = master.internalAxesValues[axis.axisId]
+                        coordinatesMap[axis.axisId] = value
                 self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
 
             if not self.smartComponentPoleMapping and "PartSelection" in self.userData:
@@ -4452,6 +4472,13 @@ class GSLayer(GSBase):
                 coordinatesMap = {}
                 for axis, value in zip(font.axes, coordinates):
                     coordinatesMap[axis.axisId] = value
+                master = None
+                for axis in font.axes:
+                    if axis.axisId not in coordinatesMap:
+                        if master is None:
+                            master = font.masters[self.associatedMasterId]
+                        value = master.internalAxesValues[axis.axisId]
+                        coordinatesMap[axis.axisId] = value
                 self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
 
     def _parse_shapes_dict(self, parser, shapes):
