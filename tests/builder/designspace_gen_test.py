@@ -154,6 +154,27 @@ def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
     assert designspace.sources[1].filename != designspace.sources[2].filename
     assert designspace.sources[0].filename != designspace.sources[2].filename
 
+def test_properties_roundtrip(tmpdir, ufo_module):
+
+    datadir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+    orig_file_path = os.path.join(datadir,"test_font_properties.glyphs")
+    with open(orig_file_path) as f:
+        font = glyphsLib.load(f)
+
+    assert len(font.properties) == 17
+
+    designspace = to_designspace(
+        font, ufo_module=ufo_module, minimize_glyphs_diffs=True
+    )
+    
+    font_rt = to_glyphs(designspace)
+    
+    path_rt = os.path.join(str(tmpdir), "test_font_properties_roundtrip.glyphs")
+    font_rt.save(path_rt)
+    assert (
+        len(diff_files(path_rt, orig_file_path))
+        == 0
+    )
 
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
 def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
