@@ -2224,7 +2224,10 @@ class GSFontMaster(GSBase):
     def _get_metric(self, metricType, name=None, filter=None):
         for metric in self.font.metrics:
             if metric.metricType == metricType and metric.filter == filter:
-                metricValue = self.metrics[metric.id]
+                metricValue = self.metrics.get(metric.id)
+                if not metricValue:
+                    metricValue = GSMetricValue()
+                    self.metrics[metric.id] = metricValue
                 metricValue.metric = metric
                 return metricValue
         if metricType == GSMetricsKeyBodyHeight:
@@ -2252,9 +2255,15 @@ class GSFontMaster(GSBase):
             metric.metricType = metricType
             metric.filter = filter
             self.font.metrics.append(metric)
-        metricValue = GSMetricValue(position=position, overshoot=overshoot)
-        metricValue.metric = metric
-        self.metrics[metric.id] = metricValue
+        metricValue = self.metrics.get(metric.id)
+        if not metricValue:
+            metricValue = GSMetricValue(position=position, overshoot=overshoot)
+            self.metrics[metric.id] = metricValue
+            metricValue.metric = metric
+        else:
+            metricValue.position = position
+            if overshoot:
+                metricValue.overshoot = overshoot
 
     @property
     def metrics(self):
