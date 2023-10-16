@@ -189,3 +189,19 @@ class PeekableIterator:
 
     def peek(self, n=0):
         return self.list[self.index + n]
+
+
+try:
+    import objc
+    from Foundation import NSString, NSArray
+    stringClasses = (str, NSString)
+    listClasses = (list, tuple, NSArray)
+except ImportError:
+    stringClasses = str
+    listClasses = (list, tuple)
+
+def isString(value):
+    return isinstance(value, stringClasses)
+
+def isList(value):
+    return isinstance(value, listClasses)

@@ -48,7 +48,7 @@ from glyphsLib.types import (
     readIntlist,
     NegateBool,
 )
-from glyphsLib.util import designspace_min_max
+from glyphsLib.util import designspace_min_max, isString, isList
 from glyphsLib.writer import Writer
 import glyphsLib.glyphdata as glyphdata
 
@@ -477,9 +477,8 @@ class Proxy:
         if type(values) == list:
             method(values)
         elif (
-            type(values) == tuple
-            or values.__class__.__name__ == "__NSArrayM"
-            or type(values) == type(self)
+            isList(values) or
+            type(values) == type(self)
         ):
             method(list(values))
         elif values is None:

@@ -17,8 +17,7 @@ from collections import defaultdict
 import re
 import logging
 
-from glyphsLib.util import bin_to_int_list, int_list_to_bin
-from Foundation import NSArray
+from glyphsLib.util import bin_to_int_list, int_list_to_bin, isList
 
 from .filters import parse_glyphs_filter
 from .common import to_ufo_color
@@ -1100,7 +1099,7 @@ def _normalize_custom_param_value(value):
     """
     replace custom object with a dict representation of themselves
     """
-    if isinstance(value, (list, NSArray)):
+    if isList(value):
         new_value = []
         for item in value:
             new_item = _normalize_custom_param_value(item)
