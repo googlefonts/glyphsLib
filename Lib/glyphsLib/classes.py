@@ -2451,7 +2451,10 @@ class GSFontMaster(GSBase):
 
     @property
     def italicAngle(self):
-        return self._get_metric_position(GSMetricsKeyItalicAngle)
+        value = self._get_metric_position(GSMetricsKeyItalicAngle)
+        if value:
+            return value
+        return 0
 
     @italicAngle.setter
     def italicAngle(self, value):
