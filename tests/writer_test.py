@@ -23,7 +23,7 @@ from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
 
 from . import test_helpers
-
+from .builder import diff_lists
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
     def assertWrites(self, glyphs_object, text, formatVersion=2):
@@ -32,9 +32,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """
         expected = text.splitlines()
         actual = test_helpers.write_to_lines(glyphs_object, formatVersion)
-        self.assertLinesEqual(
-            expected, actual, "The writer has not produced the expected output"
-        )
+        assert len(diff_lists(actual, expected)) == 0, "The writer has not produced the expected output"
 
     def assertWritesValue(self, glyphs_value, text, formatVersion=2):
         """Assert that the writer produces the given text for the given value."""
@@ -53,9 +51,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         actual = test_helpers.write_to_lines(
             {"writtenValue": glyphs_value}, formatVersion
         )
-        self.assertLinesEqual(
-            expected, actual, "The writer has not produced the expected output"
-        )
+        assert len(diff_lists(actual, expected)) == 0, "The writer has not produced the expected output"
 
     def test_write_font_attributes(self):
         """Test the writer on all GSFont attributes"""
@@ -66,13 +62,24 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         m1 = classes.GSFontMaster()
         m1.id = "M1"
         font.masters.insert(0, m1)
+        # FIXME: (georg) should this be set by default?
+        m1.ascender = 800
+        m1.capHeight = 700
+        m1.xHeight = 500
+        m1.descender = -200
+        assert m1.font == font
         m2 = classes.GSFontMaster()
         m2.id = "M2"
         font.masters.insert(1, m2)
+        m2.ascender = 800
+        m2.capHeight = 700
+        m2.xHeight = 500
+        m2.descender = -200
         # instances
         i1 = classes.GSInstance()
         i1.name = "MuchBold"
         font.instances.append(i1)
+        assert i1.font == font
         # glyphs
         g1 = classes.GSGlyph()
         g1.name = "G1"
@@ -159,12 +166,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             copyright = "Copyright Bob";
             customParameters = (
             {
-            name = note;
-            value = "Was bored, made this";
-            },
-            {
             name = ascender;
             value = 300;
+            },
+            {
+            name = note;
+            value = "Was bored, made this";
             }
             );
             date = "2017-10-03 07:35:46 +0000";
