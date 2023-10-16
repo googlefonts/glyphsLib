@@ -3979,6 +3979,9 @@ class GSInstance(GSBase):
         self.readBuffer = {}
         self._axesValues = None
 
+    def __repr__(self):
+        return f'<{self.__class__.__name__} "{self.name}">'
+
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value),
