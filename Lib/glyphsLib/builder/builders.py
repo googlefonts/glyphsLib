@@ -667,6 +667,7 @@ class GlyphsBuilder(LoggerMixin):
             axis.tag = axis_def.axisTag
             axis.name = axis_def.name
             mapping = []
+            default_user_loc = getattr(ufos[0].info, info_key)
             for ufo in ufos:
                 user_loc = getattr(ufo.info, info_key)
                 if user_loc is not None:
@@ -680,7 +681,7 @@ class GlyphsBuilder(LoggerMixin):
                 axis.minimum = min([user_loc for user_loc, _ in mapping])
                 axis.maximum = max([user_loc for user_loc, _ in mapping])
                 axis.default = min(
-                    axis.maximum, max(axis.minimum, axis_def.default_user_loc)
+                    axis.maximum, max(axis.minimum, default_user_loc)
                 )
                 designspace.addAxis(axis)
 
