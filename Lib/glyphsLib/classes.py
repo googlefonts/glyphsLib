@@ -2275,10 +2275,11 @@ class GSFontMaster(GSBase):
             pxjx
         self._metrics = metrics
 
+    # Legacy accessors
     @property
     def alignmentZones(self):
 
-        if len(self.metrics) == 0:
+        if len(self.font.metrics) == 0:
             return []
 
         zones = []
@@ -2286,9 +2287,11 @@ class GSFontMaster(GSBase):
             # Ignore the "italic angle" "metric", it is not an alignmentZone
             if fontMetric.metricType == GSMetricsKeyItalicAngle or fontMetric.filter:
                 continue
-            metric = self.metrics[fontMetric.id]
+            metric = self.metrics.get(fontMetric.id)
+            if not metric:
+                continue
             # Ignore metric without overshoot, it is not an alignmentZone
-            if metric.overshoot == 0:
+            if metric.overshoot is None or metric.overshoot == 0:
                 continue
             zone = GSAlignmentZone(pos=metric.position, size=metric.overshoot)
             zones.append(zone)
