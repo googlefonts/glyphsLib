@@ -157,6 +157,7 @@ def load(file_or_path, font=None):
     else:
         fp = open(file_or_path, "r", encoding="utf-8")
         data = openstep_plist.load(fp, use_numbers=True)
+    font.formatVersion = 2 # default to 2, version 3+ is read from the file
     p.parse_into_object(font, data)
     font.post_read()
     return font
