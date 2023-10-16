@@ -20,7 +20,7 @@ from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
-
+from glyphsLib.classes import GS_CORNER
 
 try:
     from math import dist
