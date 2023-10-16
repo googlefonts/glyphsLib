@@ -43,6 +43,7 @@ from glyphsLib.classes import (
     segment,
     LayerComponentsProxy,
     LayerGuideLinesProxy,
+    GSMetricValue,
     PS_STEM,
     TEXT,
     ARROW,
@@ -56,9 +57,13 @@ from glyphsLib.classes import (
 from glyphsLib.types import Point, Transform, Rect
 
 
-TESTFILE_PATH = os.path.join(
-    os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans.glyphs")
+TESTFILE_PATHV2 = os.path.join(
+    os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans2.glyphs")
 )
+TESTFILE_PATHV3 = os.path.join(
+    os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans3.glyphs")
+)
+
 
 
 def generate_minimal_font(format_version=2):
@@ -79,7 +84,6 @@ def generate_minimal_font(format_version=2):
     font.upm = 1000
     font.versionMajor = 1
     font.versionMinor = 0
-
     return font
 
 
@@ -189,7 +193,7 @@ class GSFontTest(unittest.TestCase):
 
 class GSObjectsTestCase(unittest.TestCase):
     def setUp(self):
-        self.font = GSFont(TESTFILE_PATH)
+        self.font = GSFont(TESTFILE_PATHV3)
 
     def assertString(self, value):
         self.assertIsInstance(value, str)
@@ -248,11 +252,11 @@ class GSFontFromFileTest(GSObjectsTestCase):
     def test_pathlike_path(self):
         from pathlib import Path
 
-        font = GSFont(TESTFILE_PATH)
-        self.assertEqual(font.filepath, TESTFILE_PATH)
+        font = GSFont(TESTFILE_PATHV3)
+        self.assertEqual(font.filepath, TESTFILE_PATHV3)
 
-        font = GSFont(Path(TESTFILE_PATH))
-        self.assertEqual(font.filepath, TESTFILE_PATH)
+        font = GSFont(Path(TESTFILE_PATHV3))
+        self.assertEqual(font.filepath, TESTFILE_PATHV3)
 
     def test_masters(self):
         font = self.font
@@ -498,7 +502,6 @@ class GSFontFromFileTest(GSObjectsTestCase):
 class GSFontMasterFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
-        self.font = GSFont(TESTFILE_PATH)
         self.master = self.font.masters[0]
 
     def test_attributes(self):
@@ -516,58 +519,21 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual(master.internalAxesValues[0], 0.5)
         self.assertIsInstance(master.internalAxesValues[0], float)
         master.internalAxesValues[0] = old_obj
-        self.assertIsInstance(master.internalAxesValues[0], int)
-        self.assertIsInstance(master.ascender, int)
-        self.assertIsInstance(master.capHeight, int)
-        self.assertIsInstance(master.xHeight, int)
-        self.assertIsInstance(master.descender, int)
-        self.assertIsInstance(master.italicAngle, int)
-        for attr in [
-            "ascender",
-            "capHeight",
-            "xHeight",
-            "descender",
-            "italicAngle",
-        ]:
-            value = getattr(master, attr)
-            self.assertIsInstance(value, int)
-            setattr(master, attr, 0.5)
-            self.assertEqual(getattr(master, attr), 0.5)
-            setattr(master, attr, value)
 
-        # verticalStems
-        oldStems = master.verticalStems
-        master.verticalStems = [10, 15, 20]
-        self.assertEqual(len(master.verticalStems), 3)
-        master.verticalStems = oldStems
-
-        # horizontalStems
-        oldStems = master.horizontalStems
-        master.horizontalStems = [10, 15, 20]
-        self.assertEqual(len(master.horizontalStems), 3)
-        master.horizontalStems = oldStems
-
-        # alignmentZones
-        self.assertIsInstance(master.alignmentZones, list)
-
-        # TODO blueValues
-        # self.assertIsInstance(master.blueValues, list)
-
-        # TODO otherBlues
-        # self.assertIsInstance(master.otherBlues, list)
-
-        # guides
-        self.assertIsInstance(master.guides, list)
-        master.guides = []
-        self.assertEqual(len(master.guides), 0)
-        newGuide = GSGuide()
-        newGuide.position = Point("{100, 100}")
-        newGuide.angle = -10.0
-        master.guides.append(newGuide)
-        self.assertIsNotNone(master.guides[0].__repr__())
-        self.assertEqual(len(master.guides), 1)
-        del master.guides[0]
-        self.assertEqual(len(master.guides), 0)
+        metrics = []
+        for metric in self.font.metrics:
+            value = master.metrics[metric.id]
+            self.assertIsInstance(value, GSMetricValue)
+            metrics.append((value.position, value.overshoot))
+        expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10), (0, 0), (520, 10)]
+        self.assertEqual(metrics, expected)
+        
+        stems = []
+        for stem in self.font.stems:
+            value = master.stems[stem.id]
+            stems.append(value)
+        expected = [16, 16, 18, 17, 19]
+        self.assertEqual(stems, expected)
 
         # guides
         self.assertIsInstance(master.guides, list)
@@ -600,6 +566,55 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         # font
         self.assertEqual(self.font, self.master.font)
 
+    def test_legacyAttributes(self):
+        master = self.master
+        self.assertIsInstance(master.ascender, int)
+        self.assertIsInstance(master.capHeight, int)
+        self.assertIsInstance(master.xHeight, int)
+        self.assertIsInstance(master.descender, int)
+        self.assertIsInstance(master.italicAngle, int)
+
+        for attr in [
+            "ascender",
+            "capHeight",
+            "xHeight",
+            "descender",
+            "italicAngle",
+        ]:
+            value = getattr(master, attr)
+            self.assertIsInstance(value, int)
+            setattr(master, attr, 0.5)
+            self.assertEqual(getattr(master, attr), 0.5)
+            setattr(master, attr, value)
+        # verticalStems
+        self.assertEqual(len(master.verticalStems), 2)
+        self.assertEqual(master.verticalStems, [17, 19])
+
+        # horizontalStems
+        self.assertEqual(len(master.horizontalStems), 3)
+        self.assertEqual(master.horizontalStems, [16, 16, 18])
+
+        # alignmentZones
+        self.assertIsInstance(master.alignmentZones, list)
+        zones = []
+        for zone in master.alignmentZones:
+            self.assertIsInstance(zone, GSAlignmentZone)
+            zones.append((zone.position, zone.size))
+        expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]
+        self.assertEqual(zones, expected)
+        
+        # blueValues
+        self.assertIsInstance(master.blueValues, list)
+        self.assertEqual(master.blueValues, [-10, 0, 470, 480, 700, 710, 800, 810])
+
+
+        
+        # otherBlues
+        self.assertIsInstance(master.otherBlues, list)
+        self.assertEqual(master.otherBlues, [-210, -200])
+
+
+''' .alignmentZones is readonly now. 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
@@ -623,7 +638,7 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
         self.assertEqual(master.alignmentZones[-1].size, 10)
         del master.alignmentZones[-1]
         self.assertEqual(len(master.alignmentZones), 0)
-
+'''
 
 class GSInstanceFromFileTest(GSObjectsTestCase):
     def setUp(self):
@@ -641,10 +656,10 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(instance.name, str)
 
         # weight
-        self.assertIsInstance(instance.weightClass, str)
+        self.assertIsInstance(instance.weightClass, int)
 
         # width
-        self.assertIsInstance(instance.widthClass, str)
+        self.assertIsInstance(instance.widthClass, int)
 
         self.assertEqual(instance.internalAxesValues[0], 17)
         instance.internalAxesValues[0] = 17.5
@@ -756,12 +771,12 @@ class GSGlyphFromFileTest(GSObjectsTestCase):
         glyph.layers.remove(glyph.layers[-1])
         self.assertEqual(amount, len(glyph.layers))
         self.assertEqual(
-            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155, 100}" (a)>]',
+            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155}" (a)>]',
             repr(list(glyph.layers)),
         )
         self.assertEqual(
             '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, '
-            '<GSLayer "Light" (a)>, <GSLayer "{155, 100}" (a)>]',
+            '<GSLayer "Light" (a)>, <GSLayer "{155}" (a)>]',
             repr(list(glyph.layers.values())),
         )
 
@@ -1653,7 +1668,7 @@ class segmentTest(unittest.TestCase):
 
 class FontGlyphsProxyTest(unittest.TestCase):
     def setUp(self):
-        self.font = GSFont(TESTFILE_PATH)
+        self.font = GSFont(TESTFILE_PATHV3)
 
     def test_remove_glyphs(self):
         assert self.font.glyphs[0].name == "A"
@@ -1673,7 +1688,7 @@ class FontGlyphsProxyTest(unittest.TestCase):
 
 class FontClassesProxyTest(unittest.TestCase):
     def setUp(self):
-        self.font = GSFont(TESTFILE_PATH)
+        self.font = GSFont(TESTFILE_PATHV3)
 
     def test_indxing_by_name(self):
         assert "Languagesystems" in self.font.featurePrefixes

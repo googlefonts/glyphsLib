@@ -1,0 +1,175 @@
+{
+.appVersion = "3221";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+date = "2023-10-14 19:48:24 +0000";
+familyName = "Family Name";
+fontMaster = (
+{
+axesValues = (
+0
+);
+id = m01;
+metricValues = (
+{
+},
+{
+},
+{
+},
+{
+},
+{
+},
+{
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+properties = (
+{
+key = compatibleFullNames;
+values = (
+{
+language = dflt;
+value = "Compatible Full Name";
+}
+);
+},
+{
+key = copyrights;
+values = (
+{
+language = dflt;
+value = "© Glooble";
+}
+);
+},
+{
+key = descriptions;
+values = (
+{
+language = dflt;
+value = Description;
+}
+);
+},
+{
+key = designers;
+values = (
+{
+language = dflt;
+value = Designer;
+}
+);
+},
+{
+key = designerURL;
+value = www.property.test;
+},
+{
+key = licenses;
+values = (
+{
+language = dflt;
+value = License;
+}
+);
+},
+{
+key = licenseURL;
+value = www.property.test;
+},
+{
+key = manufacturers;
+values = (
+{
+language = dflt;
+value = Manufacturer;
+}
+);
+},
+{
+key = manufacturerURL;
+value = www.property.test;
+},
+{
+key = postscriptFontName;
+value = "Font Name";
+},
+{
+key = postscriptFullNames;
+values = (
+{
+language = dflt;
+value = "Full Name";
+}
+);
+},
+{
+key = sampleTexts;
+values = (
+{
+language = dflt;
+value = "Sample Text";
+}
+);
+},
+{
+key = trademarks;
+values = (
+{
+language = dflt;
+value = Trademark;
+}
+);
+},
+{
+key = uniqueID;
+value = "Unique Font Identifier";
+},
+{
+key = vendorID;
+value = abcd;
+},
+{
+key = versionString;
+value = "Version String";
+},
+{
+key = WWSFamilyName;
+value = "WWS Family Name";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

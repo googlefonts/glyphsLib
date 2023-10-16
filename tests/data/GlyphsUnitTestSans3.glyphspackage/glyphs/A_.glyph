@@ -149,6 +149,7 @@ nodes = (
 );
 };
 backgroundImage = {
+crop = (0,0,489,637);
 imagePath = A.jpg;
 };
 guides = (

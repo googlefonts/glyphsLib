@@ -30,7 +30,7 @@ def test_glyphs_main_masters(tmpdir):
     """
     import fontTools.designspaceLib
 
-    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans2.glyphs")
     master_dir = os.path.join(str(tmpdir), "master_ufos_test")
 
     glyphsLib.cli.main(
@@ -52,16 +52,16 @@ def test_glyphs_main_masters(tmpdir):
     for instance in designspace.instances:
         assert str(instance.filename).startswith("hurf")
 
-    glyphs_file = os.path.join(master_dir, "GlyphsUnitTestSans.glyphs")
+    glyphs_file = os.path.join(master_dir, "GlyphsUnitTestSans2.glyphs")
     glyphsLib.cli.main(["ufo2glyphs", ds[0], "--output-path", glyphs_file])
     assert os.path.isfile(glyphs_file)
 
 
 def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of GlyphsUnitTestSans.glyphs.
+    and for the round-trip of  GlyphsUnitTestSans2.glyphs.
     """
-    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans2.glyphs")
     with open(filename) as f:
         expected = f.read()
 
@@ -72,7 +72,7 @@ def test_parser_main(capsys):
 
 def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of GlyphsUnitTestSans.glyphs.
+    and for the round-trip of  GlyphsUnitTestSans2.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
     with open(filename) as f:

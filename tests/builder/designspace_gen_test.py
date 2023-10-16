@@ -26,7 +26,8 @@ import pytest
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs
 from glyphsLib.util import open_ufo
-
+from glyphsLib.builder.bracket_layers import _bracket_info
+from . import diff_files
 
 def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
     ufo_Lt = ufo_module.Font()
@@ -55,6 +56,10 @@ def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
     ufo_ExBd.info.openTypeOS2WeightClass = 800
 
     font = to_glyphs([ufo_Lt, ufo_Rg, ufo_Md, ufo_Bd, ufo_ExBd])
+    
+    assert font.masters[0].name == "Light"
+    assert font.masters[4].name == "XBold"
+
     designspace = to_designspace(font, ufo_module=ufo_module)
 
     path = os.path.join(str(tmpdir), "actual.designspace")
@@ -194,13 +199,13 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
         [(s.filename, s.layerName, s.name, s.font) for s in designspace.sources],
         [
             ("NewFont-Light.ufo", None, "New Font Light"),
-            ("NewFont-Light.ufo", "{75}", "New Font Light {75}"),
+            ("NewFont-Light.ufo", "{75, 100}", "New Font Light {75, 100}"),
             ("NewFont-Bold.ufo", None, "New Font Bold"),
-            ("NewFont-Bold.ufo", "{75}", "New Font Bold {75}"),
+            ("NewFont-Bold.ufo", "{75, 1000}", "New Font Bold {75, 1000}"),
             ("NewFont-Bold.ufo", "*{90.5, 500}", "New Font Bold *{90.5, 500}"),
             ("NewFont-Bold.ufo", "*{90.5, 600}", "New Font Bold *{90.5, 600}"),
-            ("NewFont-CondensedLight.ufo", None, "New Font Condensed Light"),
-            ("NewFont-CondensedBold.ufo", None, "New Font Condensed Bold"),
+            ("NewFont-LightCondensed.ufo", None, "New Font Light Condensed"), # (georg) was: NewFont-CondensedLight.ufo, New Font Condensed Light
+            ("NewFont-BoldCondensed.ufo", None, "New Font Bold Condensed"), # (georg) was: NewFont-CondensedBold.ufo, New Font Condensed Bold
         ],
     ):
         assert fname == exp_fname
@@ -307,8 +312,8 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
         "[300]",
         "[600]",
         "Bold",
-        "Condensed Bold",
-        "Condensed Light",
+        "Bold Condensed",
+        "Light Condensed",
         "Light",
         "Other [600]",
         "Something [300]",
@@ -317,8 +322,8 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert len(g2.layers) == 8 and {l.name for l in g2.layers} == {
         "[300]",
         "Bold",
-        "Condensed Bold",
-        "Condensed Light",
+        "Bold Condensed",
+        "Light Condensed",
         "Light",
     }
     assert "a.BRACKET.300" not in font_rt.glyphs
@@ -327,7 +332,7 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
 
 
 def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
-    with open(str(datadir.join("PSNames.glyphs"))) as f:
+    with open(str(datadir.join("PSNamesv2.glyphs"))) as f:
         font = glyphsLib.load(f)
     designspace: DesignSpaceDocument = to_designspace(font, ufo_module=ufo_module)
 
