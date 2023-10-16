@@ -4421,7 +4421,10 @@ class GSLayer(GSBase):
             and len(self._name) > 0
             and not self.isMasterLayer
         ):
-            writer.writeObjectKeyValue(self, "name")
+            if writer.formatVersion > 2:
+                writer.writeKeyValue("name", self._name)
+            else:
+                writer.writeObjectKeyValue(self, self.name)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "smartComponentPoleMapping", "if_true", keyName="partSelection")
             if self._shapes:
