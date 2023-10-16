@@ -717,6 +717,69 @@ class FontFontMasterProxy(Proxy):
         for m in values:
             m.font = self._owner
 
+class FontInstanceProxy(Proxy):
+    """The list of instances. You can access it with the index.
+    Usage:
+        Font.instances[index]
+        for instance in Font.instances:
+            ...
+    """
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return self.values().__getitem__(key)
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
+            return self.values()[key]
+        raise KeyError(key)
+
+    def __setitem__(self, key, instance):
+        instance.font = self._owner
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
+            self._owner._instances[key] = instance
+        else:
+            raise KeyError(key)
+
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
+            return self.remove(self._owner._instances[key])
+        else:
+            raise KeyError(key)
+
+    def values(self):
+        return self._owner._instances
+
+    def append(self, instance):
+        instance.font = self._owner
+        # If the master to be appended has no ID yet or it's a duplicate,
+        # make up a new one.
+        self._owner._instances.append(instance)
+
+    def remove(self, instance):
+        if instance.font == self._owner:
+            instance.font = None
+        self._owner._instances.remove(instance)
+
+    def insert(self, Index, instance):
+        instance.font = self._owner
+        self._owner._instances.insert(Index, instance)
+
+    def extend(self, instances):
+        for instance in instances:
+            instance.font = self._owner
+        self._owner._instances.extend(instances)
+
+    def setter(self, values):
+        if isinstance(values, Proxy):
+            values = list(values)
+        self._owner._instances = values
+        for instance in values:
+            instance.font = self._owner
 
 class FontGlyphsProxy(Proxy):
     """The list of glyphs. You can access it with the index or the glyph name.
@@ -5370,16 +5433,10 @@ class GSFont(GSBase):
                 return master
         return None
 
-    # FIXME: (jany) Why is this not a FontInstanceProxy?
-    @property
-    def instances(self):
-        return self._instances
-
-    @instances.setter
-    def instances(self, value):
-        self._instances = value
-        for i in self._instances:
-            i.font = self
+    instances = property(
+        lambda self: FontInstanceProxy(self),
+        lambda self, value: FontInstanceProxy(self).setter(value),
+    )
 
     classes = property(
         lambda self: FontClassesProxy(self),
