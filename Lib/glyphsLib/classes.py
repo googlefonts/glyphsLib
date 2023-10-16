@@ -294,6 +294,8 @@ WIDTH_CODES = {
 
 WIDTH_CODES_REVERSE = {v: k for k, v in WIDTH_CODES.items()}
 
+DefaultAxisValuesV2 = [100, 100, 0, 0, 0, 0]
+
 def instance_type(value):
     # Convert the instance type from the plist ("variable") into the integer constant
     return getattr(InstanceType, value.upper())
@@ -2039,7 +2041,7 @@ class GSFontMaster(GSBase):
             axesCount = len(axes)
             for idx in range(axesCount):
                 axis = axes[idx]
-                value = axesValues.get(idx, 0)
+                value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                 self.internalAxesValues[axis.axisId] = value
             if len(self._internalAxesValues) == 0:
                 self.internalAxesValues[self.font.axes[0].axisId] = 100
@@ -3920,7 +3922,7 @@ class GSInstance(GSBase):
                 axesCount = min(len(self.font.axes), len(axesValues))
                 for idx in range(axesCount):
                     axis = axes[idx]
-                    value = axesValues[idx]
+                    value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                     self.internalAxesValues[axis.axisId] = value
         if self.font.formatVersion < 3:
             weightClass = WEIGHT_CODES.get(self.weightClass)
