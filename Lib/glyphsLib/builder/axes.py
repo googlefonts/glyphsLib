@@ -176,14 +176,14 @@ def to_designspace_axes(self):
 
         # See https://github.com/googlefonts/glyphsLib/issues/568
         if custom_mapping:
-            if axis.tag in custom_mapping:
-                mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+            if axis.axisTag in custom_mapping:
+                mapping = {float(k): v for k, v in custom_mapping[axis.axisTag].items()}
                 regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
                 reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
                 regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             else:
                 logger.debug(
-                    f"Skipping {axis.tag} since it hasn't been defined "
+                    f"Skipping {axis.axisTag} since it hasn't been defined "
                     "in the Axis Mapping."
                 )
                 continue
@@ -200,7 +200,7 @@ def to_designspace_axes(self):
                     userLoc = designLoc
                 if userLoc in mapping and mapping[userLoc] != designLoc:
                     logger.warning(
-                        f"Axis {axis.tag}: Master '{master.name}' redefines "
+                        f"Axis {axis.axisTag}: Master '{master.name}' redefines "
                         f"the mapping for user location {userLoc} "
                         f"from {mapping[userLoc]} to {designLoc}"
                     )
