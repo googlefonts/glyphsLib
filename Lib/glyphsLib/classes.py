@@ -633,7 +633,7 @@ class FontFontMasterProxy(Proxy):
         Font.masters[index]
         Font.masters[id]
         for master in Font.masters:
-        ...
+            ...
     """
 
     def __getitem__(self, Key):
@@ -810,7 +810,7 @@ class FontGlyphsProxy(Proxy):
             self._owner._setupGlyph(glyph)
             self._owner._glyphs[key] = glyph
         else:
-            raise KeyError  # TODO: add other access methods
+            raise KeyError(key)  # TODO: add other access methods
 
     def __delitem__(self, key):
         if isinstance(key, int):
@@ -821,7 +821,7 @@ class FontGlyphsProxy(Proxy):
                 raise KeyError("No glyph '%s' in the font" % key)
             self._owner._glyphs.remove(glyph)
         else:
-            raise KeyError
+            raise KeyError(key)
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -1868,6 +1868,7 @@ MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
 MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 MASTER_AXIS_VALUE_KEYS = ("weightValue", "widthValue", "customValue", "customValue1", "customValue2", "customValue3")
 MASTER_ICON_NAMES  = set(("Light_Condensed", "Light_SemiCondensed", "Light", "Light_SemiExtended", "Light_Extended", "SemiLight_Condensed", "SemiLight_SemiCondensed", "SemiLight", "SemiLight_SemiExtended", "SemiLight_Extended", "Condensed", "SemiCondensed", "Regular", "SemiExtended", "Extended", "SemiBold_Condensed", "SemiBold_SemiCondensed", "SemiBold", "SemiBold_SemiExtended", "SemiBold_Extended", "Bold_Condensed", "Bold_SemiCondensed", "Bold", "Bold_SemiExtended", "Bold_Extended"))
+
 class GSFontMaster(GSBase):
 
     def _write_axis_value(self, writer, idx, defaultValue):
@@ -2021,6 +2022,7 @@ class GSFontMaster(GSBase):
         self._axesValues = None
         self._stems = None
         self._alignmentZones = None
+
     def __repr__(self):
         return '<GSFontMaster "{}" {}>'.format(
             self.name, self.internalAxesValues.values()
@@ -5277,7 +5279,6 @@ class GSFont(GSBase):
             path = os.fsdecode(os.fspath(path))
             self.filepath = path
             load(path, self)
-
 
     def __repr__(self):
         adress = id(self)
