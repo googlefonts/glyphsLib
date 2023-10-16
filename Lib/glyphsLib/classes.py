@@ -4624,7 +4624,7 @@ class GSLayer(GSBase):
         if not self.isBraceLayer:
             return None
         coordinates = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
-        return f"{{{', '.join(str(v) for v in coordinates)}}}"
+        return f"{{{', '.join(floatToString5(v) for v in coordinates.values())}}}"
 
     def _bracket_layer_name(self):
         if not self.isBraceLayer:
