@@ -421,7 +421,7 @@ def _has_meaningful_map(axis, designspace):
             max_axis = loc
         else:
             max_axis = max(loc, max_axis)
-    if min_axis != axis.map[0][0] or max_axis != axis.map[-1][0]:
+    if (min_axis and min_axis != axis.map[0][0]) or (max_axis and max_axis != axis.map[-1][0]):
         return True
     return False
 
