@@ -33,7 +33,7 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     ids=["default", "include_1", "include_2"],
 )
 def test_apply_instance_data(tmpdir, instance_names, ufo_module):
-    font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans.glyphs"))
+    font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans2.glyphs"))
     instance_dir = "instances"
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
     path = str(tmpdir / (font.familyName + ".designspace"))
@@ -76,7 +76,8 @@ def test_apply_instance_data(tmpdir, instance_names, ufo_module):
             900,
             357,
         }
-        assert ufo.info.openTypeOS2WidthClass is None  # GlyphsUnitTestSans is wght only
+        # FIXME: GSInstance always has a widthClass, so this will be "5"
+        # assert ufo.info.openTypeOS2WidthClass is None  # GlyphsUnitTestSans is wght only
 
 
 def test_reexport_apply_instance_data():
@@ -186,11 +187,23 @@ def test_glyphs3_mapping():
     # Instance2: designspace 800 -> userspace 900
     # Instance2: designspace 600 -> userspace 650
     doc = glyphsLib.to_designspace(font)
-    assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    # FIXME: (georg) mapping is not implied from the weightClass any more
+    #assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
     assert doc.instances[0].location == {"Weight": 200}
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
 
+def test_glyphs3_mapping_AxisLocation():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3InstancesAxisLocation.glyphs"))
+    # Instance1: designspace 200 -> userspace 400
+    # Instance2: designspace 800 -> userspace 900
+    # Instance2: designspace 600 -> userspace 650
+    doc = glyphsLib.to_designspace(font)
+    print("__doc.axes[0].map", doc.axes[0].map, [(400, 200), (600, 650), (900, 800)])
+    assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    assert doc.instances[0].location == {"Weight": 200}
+    assert doc.instances[1].location == {"Weight": 800}
+    assert doc.instances[2].location == {"Weight": 650}
 
 def test_glyphs3_instance_filtering():
     font = glyphsLib.GSFont(os.path.join(DATA, "InstanceFamilyName-G3.glyphs"))

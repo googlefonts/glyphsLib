@@ -1,6 +1,7 @@
 (
 A,
 Adieresis,
+I,
 a,
 adieresis,
 h,
@@ -8,5 +9,6 @@ m,
 n,
 a.sc,
 dieresis,
-_part.shoulder
+_part.shoulder,
+_part.stem
 )

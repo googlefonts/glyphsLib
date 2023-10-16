@@ -425,7 +425,7 @@ nodes = (
 );
 };
 backgroundImage = {
-crop = "{{0, 0}, {489, 637}}";
+crop = "{{0, 0}, {100, 100}}";
 imagePath = A.jpg;
 };
 guideLines = (

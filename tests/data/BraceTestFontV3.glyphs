@@ -144,7 +144,7 @@ pos = -200;
 {
 }
 );
-name = "Condensed Light";
+name = "Light Condensed";
 },
 {
 axesValues = (
@@ -186,7 +186,7 @@ pos = -200;
 {
 }
 );
-name = "Condensed Bold";
+name = "Bold Condensed";
 }
 );
 glyphs = (
@@ -341,7 +341,8 @@ width = 300;
 associatedMasterId = "1034EC4A-9832-4D17-A75A-2B17BF7C4AA6";
 attr = {
 coordinates = (
-75
+75,
+100
 );
 };
 layerId = "1ABBBA7E-D0DC-49B1-AC13-AB42C8F97BA5";
@@ -450,7 +451,8 @@ width = 300;
 associatedMasterId = "ED9A0AB1-C69E-43FC-AC45-FCA9085EE0B1";
 attr = {
 coordinates = (
-75
+75,
+1000
 );
 };
 layerId = "FD486ED6-D76D-490C-B562-C4A027492D0B";
