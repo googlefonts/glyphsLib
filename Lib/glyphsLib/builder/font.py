@@ -151,7 +151,7 @@ def to_glyphs_font_attributes(self, source, master, is_initial):
     self -- The UFOBuilder
     ufo -- The current UFO being read
     master -- The current master being written
-    is_initial -- True iff this the first UFO that we process
+    is_initial -- True if this the first UFO that we process
     """
     if is_initial:
         _set_glyphs_font_attributes(self, source)
