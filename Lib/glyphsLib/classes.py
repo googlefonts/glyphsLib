@@ -2046,13 +2046,6 @@ class GSFontMaster(GSBase):
 
     def post_read(self): # GSFontMaster
         axes = self.font.axes
-        axesValues = self.readBuffer.get("axesValues", None)
-        if axesValues:
-            axesCount = len(axes)
-            for idx in range(axesCount):
-                axis = axes[idx]
-                value = axesValues.get(idx, 0)
-                self.internalAxesValues[axis.axisId] = value
         if self.font.formatVersion < 3:
             axesValues = self.readBuffer.get("axesValues", {})
             #print("__self.readBuffer 2", self.readBuffer, self._axesValues, axesValues)
@@ -2141,11 +2134,10 @@ class GSFontMaster(GSBase):
                         metric.horizontal = False
                         self.font.stems.append(metric)
                     self._stems[metric.id] = self._verticalStems[idx]
-
-        if self.name is None:
+        if self.name is None and self.font.formatVersion < 3:
             weight = self.weight
             width = self.width
-            custom = self.custom
+            custom = self.customName
             self.name = self._joinNames(weight, width, custom)
         if not self.name:
             self.name = self._defaultsForName["name"]
