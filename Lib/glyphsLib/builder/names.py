@@ -79,6 +79,8 @@ def build_stylemap_names(
 def _get_linked_style(style_name, is_bold, is_italic):
     # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
     # depending on the values of is_bold and is_italic
+    if style_name is None or len(style_name) == 0:
+        return ""
     linked_style = deque()
     is_regular = not (is_bold or is_italic)
     for part in reversed(style_name.split()):
