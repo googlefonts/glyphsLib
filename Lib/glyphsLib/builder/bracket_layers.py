@@ -22,8 +22,11 @@ def _bracket_info(layer, axes):
         return {}
 
     info = {}
+    rules = layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
     for axis in axes:
-        rule = layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES].get(axis.axisId)
+        rule = rules.get(axis.axisId)
+        if rule is None:
+            continue
         if "min" not in rule and "max" not in rule:
             continue
         # Rules are expressed in designspace coordinates,
