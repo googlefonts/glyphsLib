@@ -1892,8 +1892,14 @@ class GSFontMaster(GSBase):
     def _default_icon_name(self):
         name_parts = self.name.split(" ")
         if len(name_parts) > 1:
-            name_parts.remove("Regular")
-            name_parts.remove("Italic")
+            try:
+                name_parts.remove("Regular")
+            except ValueError:
+                pass
+            try:
+                name_parts.remove("Italic")
+            except ValueError:
+                pass
         iconName = "_".join(name_parts)
         if len(iconName) == 0 or not iconName in MASTER_ICON_NAMES:
             iconName = "Regular"
