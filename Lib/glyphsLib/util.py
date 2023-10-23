@@ -192,7 +192,6 @@ class PeekableIterator:
 
 
 try:
-    import objc
     from Foundation import NSString, NSArray
     stringClasses = (str, NSString)
     listClasses = (list, tuple, NSArray)
