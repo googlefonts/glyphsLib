@@ -71,6 +71,7 @@ def to_ufo_font_attributes(self, family_name):
         ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
         self.to_ufo_custom_params(ufo, font, "font")  # .custom_params
+        self.to_ufo_custom_params(ufo, master, "fontMaster")  # .custom_params
         self.to_ufo_master_attributes(ufo, master)  # .masters
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
