@@ -3617,6 +3617,13 @@ class GSHint(GSBase):
         assert type(hintType) == type(GS_CORNER), "hintType %s (%s) != %s" % (hintType, type(hintType), type(GS_CORNER))
         self._type = hintType
 
+    @property
+    def isPathComponent(self):
+        return self._type == GS_CORNER or self._type == GS_CAP or self._type == GS_BRUSH or self._type == GS_SEGMENT
+    @property
+    def isCorner(self):
+        return self.isPathComponent
+
 
 GSHint._add_parsers([
     {"plist_name": "origin", "object_name": "_origin", "converter": IndexPath},
@@ -4374,6 +4381,9 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 
 class GSLayer(GSBase):
+    
+    parent = None
+    
     def _get_plist_attributes(self):
         attributes = dict(self.attributes)
         font = self.parent.parent
@@ -4858,7 +4868,13 @@ class GSLayer(GSBase):
             return 0xFFFF
         return int(index)
 
-
+    @property
+    def hasPathComponents(self):
+        return any(h.isPathComponent for h in self.hints)
+    @property
+    def hasCorners(self):
+        return self.hasPathComponents
+        
 GSLayer._add_parsers([
     {
         "plist_name": "annotations",
