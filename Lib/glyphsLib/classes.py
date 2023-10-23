@@ -2067,6 +2067,7 @@ class GSFontMaster(GSBase):
         else:
             axesValues = self._axesValues
             if axesValues:
+                #print("__self.readBuffer 3", self.readBuffer.keys(), self._axesValues, self._internalAxesValues)
                 axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
@@ -4593,10 +4594,9 @@ class GSLayer(GSBase):
     @layerId.setter
     def layerId(self, value):
         self._layerId = value
+        ''' # FIXME: this is not the right place to do this. Maybe `_setupLayer`
         # Update the layer map in the parent glyph, if any.
-        # The "hasattr" is here because this setter is called by the GSBase
-        # __init__() method before the parent property is set.
-        if hasattr(self, "parent") and self.parent:
+        if self.parent:
             parent_layers = OrderedDict()
             updated = False
             for id, layer in self.parent._layers.items():
@@ -4608,6 +4608,7 @@ class GSLayer(GSBase):
             if not updated:
                 parent_layers[self._layerId] = self
             self.parent._layers = parent_layers
+        '''
 
     @property
     def master(self):
