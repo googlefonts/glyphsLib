@@ -250,13 +250,12 @@ def _original_master_order(source):
 
 def has_any_corner_components(font, master):
     for glyph in font.glyphs:
-        for layer in glyph.layers:
+        for layerId, layer in glyph._layers.items():
             if (
-                layer.layerId != master.id
-                or layer.associatedMasterId != master.id
+                layer.associatedMasterId != master.id
                 or not layer.hints
             ):
                 continue
-            if any(h.type == GS_CORNER for h in layer.hints):
+            if layer.hasCorners:
                 return True
     return False
