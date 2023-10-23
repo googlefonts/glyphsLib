@@ -1844,7 +1844,8 @@ class GSGuide(GSBase):
         else:
             writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
-
+        if writer.formatVersion >= 3:
+            writer.writeKeyValue("userData", self.userData)
     _parent = None
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
 
@@ -1857,6 +1858,7 @@ class GSGuide(GSBase):
         self.position = Point(0, 0)
         self.showMeasurement = False
         self.lockAngle = False
+        self._userData = None
 
     def __repr__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
@@ -1867,10 +1869,15 @@ class GSGuide(GSBase):
     def parent(self):
         return self._parent
 
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
 
 GSGuide._add_parsers([
     {"plist_name": "position", "converter": Point},  # v2
     {"plist_name": "pos", "object_name": "position", "converter": Point},  # v3
+    {"plist_name": "userData", "object_name": "_userData", "type": dict},  # v3
 ])
 
 
