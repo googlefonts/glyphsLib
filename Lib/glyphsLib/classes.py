@@ -2067,7 +2067,6 @@ class GSFontMaster(GSBase):
         else:
             axesValues = self._axesValues
             if axesValues:
-                print("__self.readBuffer 3", self.readBuffer.keys(), self._axesValues, self._internalAxesValues)
                 axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
