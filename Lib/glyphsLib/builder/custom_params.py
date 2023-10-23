@@ -119,6 +119,7 @@ class UFOProxy:
 
 
 class AbstractParamHandler:
+    glyphs_owner_class = None
     # @abstractmethod
     def to_glyphs(self):
         pass
@@ -1031,8 +1032,10 @@ def to_ufo_custom_params(self, ufo, glyphs_object, class_key, set_default_params
     ufo_proxy = UFOProxy(ufo)
 
     #glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
-    _handled = []
+    _handled = ["UFO Filename"]
     for handler in KNOWN_PARAM_HANDLERS:
+        if handler.glyphs_owner_class and not isinstance(glyphs_object, handler.glyphs_owner_class):
+            continue
         handler.to_ufo(self, glyphs_proxy, ufo_proxy)
         _handled.append(handler.glyphs_name)
         _handled.append(handler.ufo_name)
