@@ -265,15 +265,24 @@ class UFOBuilder(LoggerMixin):
         supplementary_layer_data = []
 
         # Generate the main (master) layers first.
+
+        hasPathComponents = False
         for glyph in self.font.glyphs:
-            for layer in glyph.layers.values():
-                if layer.associatedMasterId != layer.layerId:
+            for layerId, layer in glyph._layers.items():
+                if layer.associatedMasterId != layerId:
                     # The layer is not the main layer of a master
                     # Store all layers, even the invalid ones, and just skip
                     # them and print a warning below.
                     supplementary_layer_data.append((glyph, layer))
                     continue
-
+                if not hasPathComponents and layer.hasPathComponents:
+                    ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
+                        {
+                            "namespace": "glyphsLib.filters",
+                            "name": "cornerComponents",
+                            "pre": True,
+                        }
+                    )
                 ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)  # .glyph
