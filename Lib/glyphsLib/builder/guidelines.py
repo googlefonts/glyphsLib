@@ -18,11 +18,8 @@ import re
 from glyphsLib.types import Point
 from glyphsLib.builder.constants import LOCKED_GUIDE_NAME_SUFFIX
 
-COLOR_NAME_SUFFIX = " [%s]"
-COLOR_NAME_RE = re.compile(r"^.*( \[([0-1.,eE+-]+)\])$")
-IDENTIFIER_NAME_SUFFIX = " [#%s]"
-IDENTIFIER_NAME_RE = re.compile(r"^.*( \[#([^\]]+)\])$")
-
+IDENTIFIER_GLYPHS_KEY = "UFO.identifier"
+COLOR_GLYPHS_KEY = "UFO.color"
 
 def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
     """Set guidelines."""
@@ -43,21 +40,19 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
             new_guideline["y"] = y
             new_guideline["angle"] = angle
         name = guideline.name
-        if name is not None:
-            # Identifier
-            m = IDENTIFIER_NAME_RE.match(name)
-            if m:
-                new_guideline["identifier"] = m.group(2)
-                name = name[: -len(m.group(1))]
-            # Color
-            m = COLOR_NAME_RE.match(name)
-            if m:
-                new_guideline["color"] = m.group(2)
-                name = name[: -len(m.group(1))]
         if guideline.locked:
             name = (name or "") + LOCKED_GUIDE_NAME_SUFFIX
         if name:
             new_guideline["name"] = name
+
+        identifier = guideline.userData[IDENTIFIER_GLYPHS_KEY]
+        if identifier:
+            new_guideline["identifier"] = identifier
+
+        color = guideline.userData[COLOR_GLYPHS_KEY]
+        if color:
+            new_guideline["color"] = color
+
         new_guidelines.append(new_guideline)
     ufo_obj.guidelines = new_guidelines
 
@@ -73,16 +68,23 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
         if name is not None and name.endswith(LOCKED_GUIDE_NAME_SUFFIX):
             name = name[: -len(LOCKED_GUIDE_NAME_SUFFIX)]
             new_guideline.locked = True
-        if guideline.color:
-            name = (name or "") + COLOR_NAME_SUFFIX % str(guideline.color)
-        if guideline.identifier:
-            name = (name or "") + IDENTIFIER_NAME_SUFFIX % guideline.identifier
+
         new_guideline.name = name
         new_guideline.position = Point(guideline.x or 0, guideline.y or 0)
+
         if guideline.angle is not None:
             new_guideline.angle = guideline.angle % 360
         elif _is_vertical(guideline.x, guideline.y, None):
             new_guideline.angle = 90
+
+        identifier = guideline.identifier
+        if identifier:
+            guideline.userData[IDENTIFIER_GLYPHS_KEY] = identifier
+
+        color = guideline.color
+        if color:
+            guideline.userData[COLOR_GLYPHS_KEY] = color
+
         glyphs_obj.guides.append(new_guideline)
 
 
