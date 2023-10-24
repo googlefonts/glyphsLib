@@ -165,7 +165,7 @@ def _to_designspace_source_layer(self):
                     if value is None:
                         pass
                     values.append(value)
-                key = (layer.name, tuple(values))
+                key = (layer.name, tuple(values)) # TODO: the layer.name is calcualted from the attributes, so it should be good as the key. Then we can directly compute the `layer_coordinates_mapping`
                 layer_to_master_ids[key].add(layer.associatedMasterId)
                 layer_to_glyph_names[key].append(glyph.name)
 
