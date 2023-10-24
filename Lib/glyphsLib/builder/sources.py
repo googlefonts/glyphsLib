@@ -54,7 +54,7 @@ def _warn_duplicate_master_locations(self):
         ]
         if any(s.layerName for s in designspace.sources):
             msg.append(
-                " Make sure that you used consistent 'brace layer' names"
+                " Make sure that you used consistent 'brace layer' coordinates"
                 " in all the glyph layers that share the same location."
             )
         for loc, sources in sorted(duplicates.items()):
