@@ -163,7 +163,7 @@ def _to_designspace_source_layer(self):
                 for axis in self.font.axes:
                     value = coordinates.get(axis.axisId)
                     if value is None:
-                        pass
+                        value = 0 #FIXME: (georg) get the default value for this axis
                     values.append(value)
                 key = (layer.name, tuple(values)) # TODO: the layer.name is calcualted from the attributes, so it should be good as the key. Then we can directly compute the `layer_coordinates_mapping`
                 layer_to_master_ids[key].add(layer.associatedMasterId)
