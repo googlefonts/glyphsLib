@@ -179,26 +179,13 @@ def _to_designspace_source_layer(self):
             # ... as they may need to be filled up with the values of the associated
             # master.
             master = self._sources[master_id]
-            master_coordinates = brace_coordinates
-            if len(master_coordinates) < len(designspace.axes):
-                master_locations = [master.location[a.name] for a in designspace.axes]
-                master_coordinates = (
-                    brace_coordinates + master_locations[len(brace_coordinates) :]
-                )
-            elif len(master_coordinates) > len(designspace.axes):
-                logger.warning(
-                    "Glyph(s) %s, brace layer '%s' defines more locations than "
-                    "there are design axes.",
-                    layer_to_glyph_names[key],
-                    layer_name,
-                )
 
+            assert len(brace_coordinates) == len(designspace.axes)
             # If we have more locations than axes, ignore the extra locations.
             layer_coordinates_mapping = collections.OrderedDict(
                 (axis.name, location)
-                for axis, location in zip(designspace.axes, master_coordinates)
+                for axis, location in zip(designspace.axes, brace_coordinates)
             )
-
             s = fontTools.designspaceLib.SourceDescriptor()
             s.filename = master.filename
             s.font = master.font
