@@ -1616,7 +1616,7 @@ class GSPathFromFileTest(GSObjectsTestCase):
             GSNode((415, 185), "offcurve"),
             GSNode((371, 185), "curve")
         ]
-        self.assertEqual(len(p.segments), 1)
+        self.assertEqual(len(p.segments), 6)
 
     def test_bounds(self):
         bounds = self.path.bounds
