@@ -2314,7 +2314,7 @@ class GSPath(GSBase):
                 newSegment.appendNode(nodes[wrap(nodeCount + 1)])
                 newSegment.appendNode(nodes[wrap(nodeCount + 2)])
                 nodeCount += 3
-            elif nodes[nodeCount].type == "line":
+            elif nodes[nodeCount].type == "line" or nodes[nodeCount].type == "qcurve":
                 newSegment.appendNode(nodes[nodeCount])
                 nodeCount += 1
 
