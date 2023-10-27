@@ -225,21 +225,19 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     """
 
     # Read data on first use.
-    global GLYPHDATA
-    if GLYPHDATA is None:
-        try:
-            from importlib.resources import files
-        except ImportError:
-            # Python <= 3.8 backport
-            from importlib_resources import files
-
-        data_dir = files("glyphsLib.data")
-        with (data_dir / "GlyphData.xml").open("rb") as f1:
-            with (data_dir / "GlyphData_Ideographs.xml").open("rb") as f2:
-                GLYPHDATA = GlyphData.from_files(f1, f2)
-                assert len(GLYPHDATA.names) > 30000
-
     if data is None:
+        global GLYPHDATA
+        if GLYPHDATA is None:
+            try:
+                from importlib.resources import files
+            except ImportError:
+                # Python <= 3.8 backport
+                from importlib_resources import files
+
+            with (files('glyphsLib.data') / 'GlyphData.xml').open('rb') as f1:
+                with (files('glyphsLib.data') / 'GlyphData_Ideographs.xml').open('rb') as f2:
+                    GLYPHDATA = GlyphData.from_files(f1, f2)
+            assert len(GLYPHDATA.names) > 20000
         data = GLYPHDATA
 
     # Look up data by full glyph name first.
