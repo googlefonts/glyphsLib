@@ -256,6 +256,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # When building minimal UFOs, we instead collect color layers and later
     # add them as separate glyphs to the UFO font.
 
+    masterId = layer.associatedMasterId
     if any(
         l.associatedMasterId == masterId and l.isColorPaletteLayer
         for layerId, l in glyph._layers.items()
