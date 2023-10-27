@@ -1255,7 +1255,6 @@ def axisLocationToAxesValue(master_or_instances):
     axisLocations = master_or_instances.customParameters["Axis Location"]
     if axisLocations is None:
         return
-    print("__axisLocations", axisLocations)
     for axis in master_or_instances.font.axes:
         locationDict = None
         for currLocartion in axisLocations:
