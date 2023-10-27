@@ -118,7 +118,7 @@ PROPERTIES_WHITELIST = [
     "styleNames",
     #"styleMapFamilyNames",
     #"styleMapStyleNames",
-    #"preferredFamilyNames",
+    "preferredFamilyNames",
     "preferredSubfamilyNames",
     "variableStyleNames",
     "WWSFamilyName",

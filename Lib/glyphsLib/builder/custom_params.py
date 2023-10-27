@@ -334,8 +334,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     # "styleNames",
     # "styleMapFamilyNames",
     # "styleMapStyleNames",
-    #("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
-    #("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName", "preferredSubfamilyNames"),
+    ("preferredFamilyName", "openTypeNamePreferredFamilyName", "preferredFamilyNames"),
+    ("preferredSubfamilyName", "openTypeNamePreferredSubfamilyName", "preferredSubfamilyNames"),
     # TODO: Map this property to a custom parameter if applicable.
     # "variableStyleNames",
     #("WWSFamilyName", "openTypeNameWWSFamilyName", "WWSFamilyName"),
@@ -1025,24 +1025,21 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
 
 register(RenameGlyphsParamHandler())
 
-
-def to_ufo_custom_params(self, ufo, glyphs_object, class_key):
+def to_ufo_properties(self, ufo, glyphs_object):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
-    glyphs_proxy = glyphs_object.customParameters
+    glyphs_properties_proxy = glyphs_object.properties
     ufo_proxy = UFOProxy(ufo)
 
-    #glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
-    _handled = ["UFO Filename"]
     for handler in KNOWN_PARAM_HANDLERS:
         if handler.glyphs_owner_class and not isinstance(glyphs_object, handler.glyphs_owner_class):
+            #print("__wrong Class")
+            #print("__handler.class != glyphs_object.class", handler, glyphs_object, handler.glyphs_owner_class)
             continue
-        handler.to_ufo(self, glyphs_proxy, ufo_proxy)
-        _handled.append(handler.glyphs_name)
-        _handled.append(handler.ufo_name)
+        handler.to_ufo(self, glyphs_properties_proxy, ufo_proxy)
+
+def to_ufo_custom_params(self, ufo, glyphs_object, class_key):
     parameters = []
-    for param in glyphs_proxy:
-        if param.name in _handled:
-            continue
+    for param in glyphs_object.customParameters:
         name = _normalize_custom_param_name(param.name)
         value = _normalize_custom_param_value(param.value)
         parameters.append({"name":name, "value":value})

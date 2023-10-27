@@ -393,7 +393,7 @@ class UFOBuilder(LoggerMixin):
     from .color_layers import to_ufo_color_layers
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
-    from .custom_params import to_ufo_custom_params
+    from .custom_params import to_ufo_custom_params, to_ufo_properties
     from .features import regenerate_gdef, to_ufo_master_features
     from .font import to_ufo_font_attributes
     from .groups import to_ufo_groups

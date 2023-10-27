@@ -40,7 +40,7 @@ from .constants import (
     PROPERTIES_WHITELIST,
 )
 from .names import build_stylemap_names
-from .custom_params import to_ufo_custom_params
+from .custom_params import to_ufo_custom_params, to_ufo_properties
 
 
 logger = logging.getLogger(__name__)
@@ -372,4 +372,5 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
         pass
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
+    to_ufo_properties(None, ufo, glyphs_instance)
     to_ufo_custom_params(None, ufo, glyphs_instance, "instance")
