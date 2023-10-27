@@ -327,11 +327,11 @@ class InstanceDescriptorAsGSInstance:
     def __init__(self, descriptor):
         self._descriptor = descriptor
 
-        self.customParameters = CustomParametersProxy(None)
+        self.customParameters = CustomParametersProxy(self)
         if GLYPHS_PREFIX + "customParameters" in descriptor.lib:
             for name, value in descriptor.lib[GLYPHS_PREFIX + "customParameters"]:
                 self.customParameters[name] = value
-        self.properties = PropertiesProxy(None)
+        self.properties = PropertiesProxy(self)
         if PROPERTIES_KEY in descriptor.lib:
             for name, value in descriptor.lib[PROPERTIES_KEY]:
                 self.properties[name] = value
