@@ -803,7 +803,7 @@ class GlyphOrderParamHandler(AbstractParamHandler):
                 glyphs[self.glyphs_name] = ufo_glyphOrder
 
     def to_ufo(self, builder, glyphs, ufo):
-        if glyphs.is_font():
+        if isinstance(glyphs, GSFont):
             glyphs_glyphOrder = glyphs[self.glyphs_name]
             if glyphs_glyphOrder:
                 ufo_glyphOrder = ufo.get_lib_value(self.ufo_name)
@@ -877,7 +877,7 @@ class FilterParamHandler(AbstractParamHandler):
         pass
 
     def to_ufo(self, builder, glyphs, ufo):
-        if not glyphs.is_font():
+        if isinstance(glyphs, GSFont):
             ufo_filters = []
             for pre_filter in glyphs.get_custom_values("PreFilter"):
                 ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
@@ -900,7 +900,7 @@ class ReplacePrefixParamHandler(AbstractParamHandler):
     ufo_name = None
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
-        for value in glyphs.get_custom_values(self.glyphs_name):
+        for value in glyphs.get([self.glyphs_name], []):
             prefix_name, prefix_code = re.split(r"\s*;\s*", value, 1)
             # if multiple 'Replace Prefix' custom params replace the same
             # prefix, the last wins
@@ -929,7 +929,7 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
     glyphs_name = "Replace Feature"
     ufo_name = None
     def to_ufo(self, builder, glyphs, ufo):
-        for value in glyphs.get_custom_values(self.glyphs_name):
+        for value in glyphs.get(self.glyphs_name, []):
             tag, repl = re.split(r"\s*;\s*", value, 1)
             ufo._owner.features.text = replace_feature(
                 tag, repl, ufo._owner.features.text or ""
@@ -969,7 +969,7 @@ class ReencodeGlyphsParamHandler(AbstractParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         # TODO Check that the wrapped glyphs object is indeed an instance, and
         # not a GSFont or GSMaster (unlikely)
-        reencode_list = glyphs.get_custom_value(self.glyphs_name)
+        reencode_list = glyphs[self.glyphs_name]
         if not reencode_list:
             return
         ufo = ufo._owner
@@ -1008,7 +1008,8 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
     ufo_name = None
 
     def to_ufo(self, builder, glyphs, ufo):
-        rename_list = glyphs.get_custom_value(self.glyphs_name)
+        # TODO: make sure this is only with customParametersProxy
+        rename_list = glyphs[self.glyphs_name]
         if not rename_list:
             return
         ufo = ufo._owner
