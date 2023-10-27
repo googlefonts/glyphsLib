@@ -594,7 +594,6 @@ def test_variable_instance(ufo_module):
     font = GSFont(source_path)
     assert len(font.instances) == 28  # Including the VF setting
     doc = to_designspace(font)
-    print("__doc.axes[0]", doc.axes[0])
     # assert doc.axes[0].map[2] == (400, 80) # FIXME: (georg) the file doesn’t contain any mapping (it was implied from instance.weight/widthClass)
     assert doc.axes[0].default == 80 # 400
     assert len(doc.instances) == 27  # The VF setting should not be in the DS

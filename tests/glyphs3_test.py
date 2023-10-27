@@ -8,7 +8,6 @@ def test_round_tripping(datadir):
         temp_dir = str(outputdir)
         temp_file_path = os.path.join(temp_dir, "GlyphsUnitTestSans3.glyphs")
         temp_file_path = str(datadir.join("GlyphsUnitTestSans3_temp.glyphs"))
-        print("__writing temp file to", temp_file_path)
         font = glyphsLib.load(original_file_path)
         font.save(temp_file_path)
         original_file = open(original_file_path)
