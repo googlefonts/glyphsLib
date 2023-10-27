@@ -819,7 +819,7 @@ register(GlyphOrderParamHandler())
 
 
 class FilterParamHandler(AbstractParamHandler):
-    """Handler for (Pre)Filter custom paramters.
+    """Handler for (Pre)Filter custom parameters.
 
     This is complicated. ufo2ft grew filter modules to mimic some of Glyph's
     automatic features, but due to the impedance mismatch between the flow of
