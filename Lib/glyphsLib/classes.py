@@ -1480,6 +1480,7 @@ class CustomParametersProxy(ListDictionaryProxy):
 class PropertiesProxy(ListDictionaryProxy):
 
     def __init__(self, owner):
+        assert owner
         super().__init__(owner, "_properties", GSFontInfoValue)
 
     def __setitem__(self, key, value):
