@@ -273,14 +273,14 @@ class UFOBuilder(LoggerMixin):
                     # them and print a warning below.
                     supplementary_layer_data.append((glyph, layer))
                     continue
-                if not hasPathComponents and layer.hasPathComponents:
-                    ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-                        {
-                            "namespace": "glyphsLib.filters",
-                            "name": "cornerComponents",
-                            "pre": True,
-                        }
-                    )
+                # if not hasPathComponents and layer.hasPathComponents:
+                #     ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
+                #         {
+                #             "namespace": "glyphsLib.filters",
+                #             "name": "cornerComponents",
+                #             "pre": True,
+                #         }
+                #     )
                 ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)  # .glyph
