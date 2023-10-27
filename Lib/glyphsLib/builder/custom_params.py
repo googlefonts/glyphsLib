@@ -161,6 +161,9 @@ class ParamHandler(AbstractParamHandler):
         self.write_to_ufo = write_to_ufo
         self.write_to_glyphs = write_to_glyphs
         self.glyphs_owner_class = glyphs_owner_class
+    
+    def __repr__(self):
+        return "<{} {}>".format(self.__class__.__name__, self.glyphs_name)
 
     # By default, the parameter is read from/written to:
     #  - the Glyphs object's customParameters
