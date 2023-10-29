@@ -1706,7 +1706,7 @@ class GSCustomParameter(GSBase):
             "openTypeOS2UnicodeRanges",
             "panose",
             "unicodeRanges",
-            "codePageRanges",
+            #"codePageRanges",
             "openTypeHeadFlags",
         )
     )
