@@ -197,26 +197,20 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(self.font.customParameters["codePageRanges"], [])
 
     def test_set_codePageRanges(self):
-        self.font.customParameters["codePageRanges"] = [1252, 1250]
-        self.font.customParameters["codePageRangesUnsupportedBits"] = [15]
+        self.font.customParameters["codePageRanges"] = ["1252", "1250", "bit 15"]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(self.font.customParameters["codePageRanges"], [1252, 1250])
-        self.assertEqual(
-            self.font.customParameters["codePageRangesUnsupportedBits"], [15]
-        )
+        self.assertEqual(self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"])
 
     def test_set_openTypeOS2CodePageRanges(self):
-        self.font.customParameters["openTypeOS2CodePageRanges"] = [1252, 1250]
+        self.font.customParameters["openTypeOS2CodePageRanges"] = ["1252", "1250"]
         self.font.customParameters["codePageRangesUnsupportedBits"] = [15]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(self.font.customParameters["codePageRanges"], [1252, 1250])
-        self.assertEqual(
-            self.font.customParameters["codePageRangesUnsupportedBits"], [15]
-        )
+        self.assertEqual(self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"])
+        self.assertIsNone(self.font.customParameters["codePageRangesUnsupportedBits"])
 
     def test_gasp_table(self):
         gasp_table = {"65535": "15", "20": "7", "8": "10"}

@@ -415,22 +415,18 @@ register_parameter_handler(EmptyListDefaultParamHandler("postscriptFamilyOtherBl
 class OS2CodePageRangesParamHandler(AbstractParamHandler):
     glyphs_name = "codePageRanges"
     ufo_name = "openTypeOS2CodePageRanges"
+
     def to_glyphs(self, glyphs, ufo):
         ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
         if ufo_codepage_bits is None:
             return
 
         codepages = []
-        unsupported_codepage_bits = []
+
         for codepage in ufo_codepage_bits:
-            if codepage in REVERSE_CODEPAGE_RANGES:
-                codepages.append(REVERSE_CODEPAGE_RANGES[codepage])
-            else:
-                unsupported_codepage_bits.append(codepage)
+            codepages.append(REVERSE_CODEPAGE_RANGES.get(codepage, f"bit {codepage}"))
 
         glyphs[self.glyphs_name] = codepages
-        if unsupported_codepage_bits:
-            glyphs["codePageRangesUnsupportedBits"] = unsupported_codepage_bits
 
 
     def to_ufo(self, builder, glyphs, ufo):
@@ -439,10 +435,10 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             codepages = glyphs[self.ufo_name]
             if codepages is None:
                 return
-        ufo_codepage_bits = [CODEPAGE_RANGES[int(v)] for v in codepages]
-        #unsupported_codepage_bits = glyphs["codePageRangesUnsupportedBits"]
-        #if unsupported_codepage_bits:
-        #    ufo_codepage_bits.extend(unsupported_codepage_bits)
+        ufo_codepage_bits = [CODEPAGE_RANGES[str(v)] for v in codepages]
+        unsupported_codepage_bits = glyphs["codePageRangesUnsupportedBits"]
+        if unsupported_codepage_bits:
+            ufo_codepage_bits.extend(unsupported_codepage_bits)
 
         ufo.set_info_value(self.ufo_name, sorted(ufo_codepage_bits))
 
