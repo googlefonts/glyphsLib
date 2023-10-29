@@ -132,7 +132,10 @@ def _to_designspace_source(self, master, is_regular):
     for axis_def in self.font.axes:
         # Only write locations along defined axes
         if axis_def.axisTag in designspace_axis_tags:
-            location[axis_def.name] = master.internalAxesValues[axis_idx]
+            value = master.internalAxesValues[axis_idx]
+            if value is None: # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+                value = 0
+            location[axis_def.name] = value
         axis_idx += 1
     source.location = location
 
