@@ -174,7 +174,7 @@ class GSFontTest(unittest.TestCase):
         self.assertEqual(len(font.masters), 0)
         self.assertEqual(list(font.masters), list(()))
         self.assertEqual(len(font.instances), 0)
-        self.assertEqual(font.instances, [])
+        # self.assertEqual(font.instances, []) this is a proxy now
         self.assertEqual(len(font.customParameters), 0)
 
     def test_repr(self):
