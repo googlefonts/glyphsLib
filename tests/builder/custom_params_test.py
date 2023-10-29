@@ -29,7 +29,7 @@ from glyphsLib.builder.builders import UFOBuilder
 from glyphsLib.builder import to_ufos
 from glyphsLib.builder.custom_params import (
     _set_default_params,
-    GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES,
+    GLYPHS_MASTER_UFO_CUSTOM_PARAMS,
 )
 from glyphsLib.builder.constants import (
     UFO2FT_FILTERS_KEY,
@@ -58,8 +58,9 @@ class SetCustomParamsTestBase(object):
         self.builder = UFOBuilder(self.font)
 
     def set_custom_params(self):
-        self.builder.to_ufo_custom_params(self.ufo, self.font)
-        self.builder.to_ufo_custom_params(self.ufo, self.master)
+        self.builder.to_ufo_properties(self.ufo, self.font)
+        self.builder.to_ufo_custom_params(self.ufo, self.font, "font")
+        self.builder.to_ufo_custom_params(self.ufo, self.master, "fontMaster")
 
     def test_normalizes_curved_quotes_in_names(self):
         self.master.customParameters = [
@@ -67,8 +68,9 @@ class SetCustomParamsTestBase(object):
             GSCustomParameter(name="“also bad”", value=2),
         ]
         self.set_custom_params()
-        self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + "'bad'", self.ufo.lib)
-        self.assertIn(MASTER_CUSTOM_PARAM_PREFIX + '"also bad"', self.ufo.lib)
+        custom_parameters = self.ufo.lib["com.schriftgestaltung.fontMaster.customParameters"]
+        self.assertEqual(custom_parameters[0]["name"], "'bad'")
+        self.assertEqual(custom_parameters[1]["name"], '"also bad"')
 
     def test_set_fsSelection_flags_none(self):
         self.ufo.info.openTypeOS2Selection = None
@@ -141,7 +143,7 @@ class SetCustomParamsTestBase(object):
             "superscriptYOffset",
         ]
         params_to_check = [
-            (k, v) for (k, v) in GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES if k in integer_params
+            (k, v) for (k, v) in GLYPHS_MASTER_UFO_CUSTOM_PARAMS if k in integer_params
         ]
 
         for glyphs_key, ufo_key in params_to_check:
@@ -235,7 +237,7 @@ class SetCustomParamsTestBase(object):
     def test_set_disables_nice_names(self):
         self.font.disablesNiceNames = False
         self.set_custom_params()
-        self.assertEqual(True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "useNiceNames"])
+        self.assertEqual(True, self.ufo.lib["com.schriftgestaltung.useNiceNames"])
 
     def test_set_disable_last_change(self):
         glyph = GSGlyph()
@@ -249,9 +251,10 @@ class SetCustomParamsTestBase(object):
         glyph.lastChange = parse_datetime("2017-10-03 07:35:46 +0000")
         self.font.customParameters["Disable Last Change"] = True
         self.ufo = to_ufos(self.font)[0]
-        self.assertEqual(
-            True, self.ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"]
-        )
+        custom_parameters = self.ufo.lib["com.schriftgestaltung.font.customParameters"]
+        self.assertEqual(custom_parameters[0]["name"], "Disable Last Change")
+        self.assertEqual(custom_parameters[0]["value"], True)
+
         self.assertNotIn(GLYPHLIB_PREFIX + "lastChange", self.ufo["a"].lib)
 
     # https://github.com/googlefonts/glyphsLib/issues/268
@@ -260,7 +263,9 @@ class SetCustomParamsTestBase(object):
         self.master.customParameters["xHeight"] = "500"
         self.set_custom_params()
         # Additional xHeight values are Glyphs-specific and stored in lib
-        self.assertEqual(self.ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + "xHeight"], "500")
+        custom_parameters = self.ufo.lib["com.schriftgestaltung.fontMaster.customParameters"]
+        self.assertEqual(custom_parameters[0]["name"], "xHeight")
+        self.assertEqual(custom_parameters[0]["value"], "500")
         # The xHeight from the property is not modified
         self.assertEqual(self.ufo.info.xHeight, 300)
         # TODO: (jany) check that the instance custom param wins over the
@@ -400,20 +405,20 @@ class SetCustomParamsTestBase(object):
 
     def test_set_fstype(self):
         # Set another fsType => store that
-        self.master.customParameters["fsType"] = [2]
+        self.font.customParameters["fsType"] = [2]
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Type, [2])
 
     def test_empty_fstype(self):
         # Set empty fsType => store empty
-        self.master.customParameters["fsType"] = []
+        self.font.customParameters["fsType"] = []
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Type, [])
 
     def test_version_string(self):
         # TODO: (jany) test the automatic replacement that is described in the
         #   Glyphs Handbook
-        self.font.customParameters["versionString"] = "Version 2.040"
+        self.font.properties["versionString"] = "Version 2.040"
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeNameVersion, "Version 2.040")
 
@@ -627,6 +632,14 @@ def test_ufo_opentype_name_preferred_family_subfamily_name():
 
     for filename in filenames:
         file = glyphsLib.GSFont(os.path.join(DATA, filename))
+        instance = file.instances[0]
+        
+        actual = instance.properties["preferredFamilyNames"]
+        assert actual == "Typographic New Font", filename
+
+        actual = instance.properties["preferredSubfamilyNames"]
+        assert actual == "Typographic Thin", filename
+
         space = glyphsLib.to_designspace(file, minimal=True)
 
         assert len(space.sources) == 2, filename

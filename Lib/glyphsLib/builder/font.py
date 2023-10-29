@@ -97,6 +97,8 @@ PROPERTIES_FIELDS = {
     "designers" : "openTypeNameDesigner",
     "designerURL": "openTypeNameDesignerURL",
     #"familyNames": "familyName",
+    "preferredFamilyNames": "openTypeNamePreferredFamilyName",
+    "preferredSubfamilyNames": "openTypeNamePreferredSubfamilyName",
     "licenses": "openTypeNameLicense",
     "licenseURL": "openTypeNameLicenseURL",
     "manufacturers":  "openTypeNameManufacturer",
@@ -110,6 +112,7 @@ PROPERTIES_FIELDS = {
     "vendorID": "openTypeOS2VendorID",
     "versionString": "openTypeNameVersion",
     "WWSFamilyName": "openTypeNameWWSFamilyName",
+    "WWSSubfamilyName": "openTypeNameWWSSubfamilyName",
 }
 
 

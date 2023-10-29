@@ -527,10 +527,13 @@ def test_variation_font_origin(ufo_module):
 
     ufos, instances = to_ufos(font, include_instances=True, ufo_module=ufo_module)
 
-    key = FONT_CUSTOM_PARAM_PREFIX + name
+    custom_parameter_key = GLYPHS_PREFIX + "font.customParameters"
+
     for ufo in ufos:
-        assert key in ufo.lib
-        assert ufo.lib[key] == value
+        assert custom_parameter_key in ufo.lib
+        custom_parameters = ufo.lib[custom_parameter_key]
+        assert custom_parameters[0]["value"] == value
+
     assert name in instances
     assert instances[name] == value
 
@@ -541,7 +544,7 @@ def test_family_name_none(ufo_module):
         {"name": "Regular1"},
         {
             "name": "Regular2",
-            "customParameters": [{"name": "familyName", "value": "CustomFamily"}],
+            "properties": [{"key": "familyNames", "value": "CustomFamily"}],
         },
     ]
     font.instances = [generate_instance_from_dict(i) for i in instances_list]
@@ -555,8 +558,10 @@ def test_family_name_none(ufo_module):
     assert instances[0].name == "Regular1"
     assert instances[1].name == "Regular2"
     assert len(instances[0].customParameters) == 0
-    assert len(instances[1].customParameters) == 1
-    assert instances[1].customParameters[0].value == "CustomFamily"
+    assert len(instances[0].properties) == 0
+    assert len(instances[1].customParameters) == 0
+    assert len(instances[1].properties) == 1
+    assert instances[1].properties[0].value == "CustomFamily"
 
     # the masters' family name is unchanged
     for ufo in ufos:
@@ -569,7 +574,7 @@ def test_family_name_same_as_default(ufo_module):
         {"name": "Regular1"},
         {
             "name": "Regular2",
-            "customParameters": [{"name": "familyName", "value": "CustomFamily"}],
+            "properties": [{"key": "familyNames", "value": "CustomFamily"}],
         },
     ]
     font.instances = [generate_instance_from_dict(i) for i in instances_list]
@@ -595,7 +600,7 @@ def test_family_name_custom(ufo_module):
         {"name": "Regular1"},
         {
             "name": "Regular2",
-            "customParameters": [{"name": "familyName", "value": "CustomFamily"}],
+            "properties": [{"key": "familyNames", "value": "CustomFamily"}],
         },
     ]
     font.instances = [generate_instance_from_dict(i) for i in instances_list]
@@ -607,8 +612,9 @@ def test_family_name_custom(ufo_module):
     # only instances with familyName='CustomFamily' are included
     assert len(instances) == 1
     assert instances[0].name == "Regular2"
-    assert len(instances[0].customParameters) == 1
-    assert instances[0].customParameters[0].value == "CustomFamily"
+    assert len(instances[0].customParameters) == 0
+    assert len(instances[0].properties) == 1
+    assert instances[0].properties[0].value == "CustomFamily"
 
     # the masters' family is also modified to use custom 'family_name'
     for ufo in ufos:
@@ -658,7 +664,10 @@ def test_coerce_to_bool(ufo_module):
     font = generate_minimal_font()
     font.customParameters["Disable Last Change"] = "Truthy"
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib[FONT_CUSTOM_PARAM_PREFIX + "disablesLastChange"]
+    custom_parameter_key = GLYPHS_PREFIX + "font.customParameters"
+    custom_parameters = ufo.lib[custom_parameter_key]
+    assert custom_parameters[0]["name"] == "Disable Last Change"
+    assert custom_parameters[0]["value"]
 
 
 def _run_guideline_test(data_in, expected, ufo_module):
