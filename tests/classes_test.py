@@ -96,6 +96,10 @@ def generate_instance_from_dict(instance_dict):
         cp.name = custom_parameter["name"]
         cp.value = custom_parameter["value"]
         instance.customParameters.append(cp)
+    for property in instance_dict.get("properties", []):
+        name = property["key"]
+        value = property["value"]
+        instance.properties.setProperty(name, value)
     return instance
 
 
