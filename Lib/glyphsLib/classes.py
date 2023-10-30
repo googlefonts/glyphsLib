@@ -2311,14 +2311,14 @@ class GSFontMaster(GSBase):
 
     @alignmentZones.setter
     def alignmentZones(self, entries):
-        if not isinstance(entries, tuple) and not isinstance(entries, list):
+        if not isinstance(entries, (tuple, list)):
             raise TypeError(
                 "alignmentZones expected as list, got %s (%s)"
                 % (entries, type(entries))
             )
         zones = []
         for zone in entries:
-            if not isinstance(zone, tuple) and not isinstance(zone, GSAlignmentZone):
+            if not isinstance(zone, (tuple, GSAlignmentZone)):
                 raise TypeError(
                     "alignmentZones values expected as tuples of (pos, size) "
                     "or GSAligmentZone, got: %s (%s)" % (zone, type(zone))
