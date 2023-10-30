@@ -38,7 +38,7 @@ from .constants import (
     BACKGROUND_WIDTH_KEY,
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
-
+from glyphsLib.types import floatToString3
 logger = logging.getLogger(__name__)
 
 
@@ -231,8 +231,7 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
             and all(0 <= v < 256 for v in color_index)
         ):
             ufo_glyph.markColor = ",".join(
-                "0" if v == 0 else "1" if v == 255 else "{:.3f}".format(v / 255)
-                for v in color_index
+                floatToString3(v / 255.0) for v in color_index
             )
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]

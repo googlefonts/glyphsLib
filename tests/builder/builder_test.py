@@ -2564,7 +2564,7 @@ def test_glyph_color(ufo_module):
     glyph4.layers.append(layer4)
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert ufo["a"].lib.get("public.markColor") == "0.957,0,0.541,0.004"
-    assert ufo["b"].lib.get("public.markColor") == "0.97,1,0,1"
+    assert ufo["b"].lib.get("public.markColor") == "0.97,0.9,0,1"
     assert ufo["c"].lib.get("public.markColor") is None
     assert ufo["d"].lib.get("public.markColor") is None
 
