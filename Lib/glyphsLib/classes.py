@@ -1844,7 +1844,7 @@ class GSGuide(GSBase):
         else:
             writer.writeObjectKeyValue(self, "position", self.position != Point(0, 0))
         writer.writeObjectKeyValue(self, "showMeasurement", "if_true")
-        if writer.formatVersion >= 3:
+        if writer.formatVersion >= 3 and len(self.userData) > 0:
             writer.writeKeyValue("userData", self.userData)
     _parent = None
     _defaultsForName = {"position": Point(0, 0), "angle": 0}
@@ -4451,7 +4451,7 @@ class GSLayer(GSBase):
             if self.smartComponentPoleMapping:
                 userData["PartSelection"] = dict(self.smartComponentPoleMapping)
             writer.writeObjectKeyValue(self, "paths", "if_true")
-        if userData:
+        if len(userData) > 0:
             writer.writeKeyValue("userData", userData)
         writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")

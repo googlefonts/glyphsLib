@@ -40,7 +40,7 @@ def to_designspace_family_user_data(self):
 
 def to_ufo_family_user_data(self, ufo):
     """Set family-wide user data as Glyphs does."""
-    if not self.use_designspace:
+    if not self.use_designspace and self.font.userData:
         ufo.lib[FONT_USER_DATA_KEY] = dict(self.font.userData)
 
 
