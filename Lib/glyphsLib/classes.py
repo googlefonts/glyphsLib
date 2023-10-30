@@ -4633,7 +4633,7 @@ class GSLayer(GSBase):
         nameStrings = []
         
         if self.isColorPaletteLayer:
-            name = f"color.{layer._color_palette_index()}"
+            name = f"color.{self._color_palette_index()}"
             if name:
                 nameStrings.append(name)
         if self.isBracketLayer:
