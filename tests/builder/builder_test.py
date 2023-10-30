@@ -620,18 +620,17 @@ def test_family_name_custom(ufo_module):
         assert ufo.info.familyName == "CustomFamily"
 
 
-def test_lib_no_weight(ufo_module):
+def test_lib_no_name(ufo_module):
     font = generate_minimal_font()
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib[GLYPHS_PREFIX + "weight"] == "Regular"
+    assert ufo.lib.get(GLYPHS_PREFIX + "master.name") == None # default master name is omitted
 
 
 def test_lib_weight(ufo_module):
     font = generate_minimal_font()
-    font.masters[0].weight = "Bold"
+    font.masters[0].name = "Bold"
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib[GLYPHS_PREFIX + "weight"] == "Bold"
-
+    assert ufo.lib[GLYPHS_PREFIX + "master.name"] == "Bold"
 
 def test_lib_no_width(ufo_module):
     font = generate_minimal_font()
