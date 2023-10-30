@@ -36,8 +36,8 @@ BRACKET_GLYPH_TEMPLATE = "{glyph_name}.BRACKET.{description}"
 BRACKET_GLYPH_RE = re.compile(r"(?P<glyph_name>.+)\.BRACKET.(?P<box>.*)$")
 BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\.BRACKET\..*)$")
 
-MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
-FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
+MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster." # legacy. Should use GLYPHS_PREFIX.fontMaster.customParameters > list of parameters
+FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont." # legacy. Should use GLYPHS_PREFIX.font.customParameters > list of parameters
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
 ORIGINAL_FEATURE_CODE_KEY = GLYPHLIB_PREFIX + "originalFeatureCode"

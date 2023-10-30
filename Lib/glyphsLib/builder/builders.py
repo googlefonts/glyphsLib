@@ -25,7 +25,7 @@ from .constants import (
     GLYPH_ORDER_KEY,
     GLYPHLIB_PREFIX,
     BRACKET_GLYPH_RE,
-    FONT_CUSTOM_PARAM_PREFIX,
+    GLYPHS_PREFIX,
 )
 from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
@@ -358,8 +358,8 @@ class UFOBuilder(LoggerMixin):
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
 
-        self.designspace.lib["com.schriftgestaltung.formatVersion"] = self.font.formatVersion
-        self.designspace.lib["com.schriftgestaltung.appVersion"] = self.font.appVersion
+        self.designspace.lib[GLYPHS_PREFIX + "formatVersion"] = self.font.formatVersion
+        self.designspace.lib[GLYPHS_PREFIX + "appVersion"] = self.font.appVersion
         return self._designspace
 
     # DEPRECATED
@@ -375,9 +375,7 @@ class UFOBuilder(LoggerMixin):
         # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
         # shared by all the master ufos; here we just get it from the first one
         varfont_origin_key = "Variation Font Origin"
-        varfont_origin = first_ufo.lib.get(
-            FONT_CUSTOM_PARAM_PREFIX + varfont_origin_key
-        )
+        varfont_origin = self.font.customParameters[varfont_origin_key]
         if varfont_origin:
             instance_data[varfont_origin_key] = varfont_origin
         return instance_data
@@ -513,10 +511,10 @@ class GlyphsBuilder(LoggerMixin):
 
         self.to_glyphs_axes()
 
-        if "com.schriftgestaltung.formatVersion" in self.designspace.lib:
-            self._font.formatVersion = self.designspace.lib["com.schriftgestaltung.formatVersion"]
-        if "com.schriftgestaltung.appVersion" in self.designspace.lib:
-            self._font.appVersion = self.designspace.lib["com.schriftgestaltung.appVersion"]
+        if GLYPHS_PREFIX + "formatVersion" in self.designspace.lib:
+            self._font.formatVersion = self.designspace.lib[GLYPHS_PREFIX + "formatVersion"]
+        if GLYPHS_PREFIX + "appVersion" in self.designspace.lib:
+            self._font.appVersion = self.designspace.lib[GLYPHS_PREFIX + "appVersion"]
 
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):

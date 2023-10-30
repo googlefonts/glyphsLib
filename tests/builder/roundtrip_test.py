@@ -57,13 +57,13 @@ class UFORoundtripTest(test_helpers.AssertUFORoundtrip):
         designspace = glyphsLib.to_designspace(font)
         for source in designspace.sources:
             assert source.font.lib[
-                glyphsLib.builder.constants.FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"
+                glyphsLib.builder.constants.GLYPHS_PREFIX + "displayStrings"
             ] == ["a", "b"]
 
         designspace = glyphsLib.to_designspace(font, store_editor_state=False)
         for source in designspace.sources:
             assert (
-                glyphsLib.builder.constants.FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"
+                glyphsLib.builder.constants.GLYPHS_PREFIX + "displayStrings"
                 not in source.font.lib
             )
 

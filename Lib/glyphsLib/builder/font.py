@@ -26,6 +26,7 @@ from .constants import (
     GRID_SIZE_KEY,
     GRID_SUBDIVISION_KEY,
     MASTER_ORDER_LIB_KEY,
+    GLYPHS_PREFIX,
 )
 
 try:
@@ -165,7 +166,7 @@ def to_ufo_metadata_roundtrip(master, ufo):
     if font._defaultsForName["gridSubDivision"] != font.gridSubDivision:
         ufo.lib[GRID_SUBDIVISION_KEY] = font.gridSubDivision
     if font.customParameters["glyphOrder"] is None:
-        ufo.lib["com.schriftgestaltung.useGlyphOrder"] = False
+        ufo.lib[GLYPHS_PREFIX + "useGlyphOrder"] = False
 
 
 # UFO to glyphs
