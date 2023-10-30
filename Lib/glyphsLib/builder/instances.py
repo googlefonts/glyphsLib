@@ -313,8 +313,7 @@ def to_glyphs_instances(self):  # noqa: C901
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
-        # FIXME: (jany) cannot `.append()` because no proxy => no parent
-        self.font.instances = self.font.instances + [instance]
+        self.font.instances.append(instance)
 
 
 class InstanceDescriptorAsGSInstance:
