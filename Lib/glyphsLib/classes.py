@@ -1472,7 +1472,7 @@ class CustomParametersProxy(ListDictionaryProxy):
             if not parameter.active:
                 continue
             if parameter.name == key:
-                parameters.append(parameter)
+                parameters.append(parameter.value)
         return parameters
 
 
