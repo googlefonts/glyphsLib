@@ -2497,30 +2497,30 @@ def test_to_ufo_draw_paths_qcurve(ufo_module):
 
 def test_glyph_color(ufo_module):
     font = generate_minimal_font()
-    glyph = GSGlyph(name="a")
-    glyph2 = GSGlyph(name="b")
-    glyph3 = GSGlyph(name="c")
-    glyph4 = GSGlyph(name="d")
-    glyph.color = [244, 0, 138, 1]
-    glyph2.color = 3
-    glyph3.color = 88
-    glyph4.color = [800, 0, 138, 255]
-    font.glyphs.append(glyph)
-    font.glyphs.append(glyph2)
-    font.glyphs.append(glyph3)
-    font.glyphs.append(glyph4)
-    layer = GSLayer()
-    layer2 = GSLayer()
-    layer3 = GSLayer()
-    layer4 = GSLayer()
-    layer.layerId = font.masters[0].id
-    layer2.layerId = font.masters[0].id
-    layer3.layerId = font.masters[0].id
-    layer4.layerId = font.masters[0].id
-    glyph.layers.append(layer)
-    glyph2.layers.append(layer2)
-    glyph3.layers.append(layer3)
-    glyph4.layers.append(layer4)
+    glypha = GSGlyph(name="a")
+    glyphb = GSGlyph(name="b")
+    glyphc = GSGlyph(name="c")
+    glyphd = GSGlyph(name="d")
+    glypha.color = [244, 0, 138, 1]
+    glyphb.color = 3
+    glyphc.color = 88
+    glyphd.color = [800, 0, 138, 255]
+    font.glyphs.append(glypha)
+    font.glyphs.append(glyphb)
+    font.glyphs.append(glyphc)
+    font.glyphs.append(glyphd)
+    layera = GSLayer()
+    layerb = GSLayer()
+    layerc = GSLayer()
+    layerd = GSLayer()
+    layera.layerId = font.masters[0].id
+    layerb.layerId = font.masters[0].id
+    layerc.layerId = font.masters[0].id
+    layerd.layerId = font.masters[0].id
+    glypha.layers.append(layera)
+    glyphb.layers.append(layerb)
+    glyphc.layers.append(layerc)
+    glyphd.layers.append(layerd)
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert ufo["a"].lib.get("public.markColor") == "0.957,0,0.541,0.004"
     assert ufo["b"].lib.get("public.markColor") == "0.97,0.9,0,1"
