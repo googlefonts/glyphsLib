@@ -2242,7 +2242,7 @@ class GSFontMaster(GSBase):
         metrics = self.font.metrics
         metric = None
         for currMetric in metrics:
-            if metricType == currMetric.metricType and name == currMetric.name and filter == currMetric.filter:
+            if metricType == currMetric.metricType and name == currMetric.name and filter == currMetric.filter and metricType != GSMetricsKeyUndefined:
                 metric = currMetric
                 break
         if not metric:
