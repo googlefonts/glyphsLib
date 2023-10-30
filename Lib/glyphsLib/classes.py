@@ -3821,7 +3821,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def propertiesFromLegacyCustomParameters(cls, obj):
         for parameter in list(obj.customParameters):
             name = parameter.name
-            if name in ("familyName", "trademark"):
+            if name in ("familyName", "trademark", "preferredFamilyName", "preferredSubfamilyName"):
                 obj.properties.setProperty(name + "s", parameter.value)
                 obj.customParameters.remove(parameter)
                 continue
@@ -4083,7 +4083,7 @@ class GSInstance(GSBase):
 
     @preferredFamilyName.setter
     def preferredFamilyName(self, value):
-        self.properties["preferredFamilyName"] = value
+        self.properties["preferredFamilyNames"] = value
 
     @property
     def preferredSubfamilyName(self):
