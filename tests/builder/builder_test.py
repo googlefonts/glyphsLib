@@ -2593,8 +2593,9 @@ class TestSkipDanglingAndNamelessLayers:
         assert not caplog.records
 
     def test_dangling_layer(self, caplog, ufo_module):
-        self.font.glyphs[0].layers[0].layerId = "yyy"
-        self.font.glyphs[0].layers[0].associatedMasterId = "xxx"
+        layer = self.font.glyphs[0].layers[0]
+        layer.layerId = "yyy"
+        layer.associatedMasterId = "xxx"
 
         to_ufos(self.font, ufo_module=ufo_module, minimize_glyphs_diffs=True)
         assert ["is dangling and will be skipped" in x.message for x in caplog.records]
