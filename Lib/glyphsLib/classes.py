@@ -4470,34 +4470,39 @@ class GSLayer(GSBase):
         r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*"
     )
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
-
+    
+    def layer_name_to_atributes(self):
+        name = self.name
+        m = re.match(self.BRACKET_LAYER_RE, name)
+        font = self.parent.parent
+        assert font
+        if m:
+            axis = font.axes[0]  # For glyphs 2
+            reverse = m.group("first_bracket") == "]"
+            bracket_crossover = int(m.group("value"))
+            rule = {
+                axis.axisId: {"max" if reverse else "min": bracket_crossover}
+            }
+            self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = rule
+        elif "{" in name and "}" in name and ".background" not in self.name:
+            coordinatesString = name[name.index("{") + 1 : name.index("}")]
+            coordinatesMap = {}
+            for c, axis in zip(coordinatesString.split(","), font.axes):
+                coordinatesMap[axis.axisId] = float(c)
+            master = None
+            for axis in font.axes:
+                if axis.axisId not in coordinatesMap:
+                    if master is None:
+                        master = font.masters[self.associatedMasterId]
+                    value = master.internalAxesValues[axis.axisId]
+                    coordinatesMap[axis.axisId] = value
+            self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
+    
     def post_read(self): # GSLayer
         assert(self.parent)
         font = self.parent.parent
         if font.formatVersion == 2:
-            name = self.name
-            m = re.match(self.BRACKET_LAYER_RE, name)
-            if m:
-                axis = font.axes[0]  # For glyphs 2
-                reverse = m.group("first_bracket") == "]"
-                bracket_crossover = int(m.group("value"))
-                rule = {
-                    axis.axisId: {"max" if reverse else "min": bracket_crossover}
-                }
-                self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = rule
-            elif "{" in name and "}" in name and ".background" not in self.name:
-                coordinatesString = name[name.index("{") + 1 : name.index("}")]
-                coordinatesMap = {}
-                for c, axis in zip(coordinatesString.split(","), font.axes):
-                    coordinatesMap[axis.axisId] = float(c)
-                master = None
-                for axis in font.axes:
-                    if axis.axisId not in coordinatesMap:
-                        if master is None:
-                            master = font.masters[self.associatedMasterId]
-                        value = master.internalAxesValues[axis.axisId]
-                        coordinatesMap[axis.axisId] = value
-                self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
+            self.layer_name_to_atributes()
 
             if not self.smartComponentPoleMapping and "PartSelection" in self.userData:
                 self.smartComponentPoleMapping = self.userData["PartSelection"]
