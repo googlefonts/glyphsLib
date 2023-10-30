@@ -2347,8 +2347,9 @@ class GSFontMaster(GSBase):
             # Ignore metric without overshoot, it is not an alignmentZone
             if metric.overshoot is None or (metric.overshoot <= 0 and metric.position != 0):
                 continue
-            blueValues.append(metric.position)
-            blueValues.append(metric.position + metric.overshoot)
+            if metric.overshoot != 0:
+                blueValues.append(metric.position)
+                blueValues.append(metric.position + metric.overshoot)
 
         blueValues.sort()
         return blueValues
