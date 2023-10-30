@@ -700,8 +700,6 @@ register_parameter_handler(MiscParamHandler(glyphs_name="iconName", write_to_ufo
 
 
 class DisplayStringsParamHandler(MiscParamHandler):
-    def __init__(self):
-        super().__init__(glyphs_name="DisplayStrings")
 
     def to_ufo(self, builder, glyphs, ufo):
         # We test for builder here because apply_instance_data() passes None and
@@ -714,7 +712,7 @@ class DisplayStringsParamHandler(MiscParamHandler):
             super().to_ufo(builder, glyphs, ufo)
 
 
-register_parameter_handler(DisplayStringsParamHandler())
+register_parameter_handler(DisplayStringsParamHandler(glyphs_name="displayStrings", ufo_name="DisplayStrings", ufo_prefix=GLYPHS_PREFIX))
 
 # deal with any Glyphs naming quirks here
 register_parameter_handler(

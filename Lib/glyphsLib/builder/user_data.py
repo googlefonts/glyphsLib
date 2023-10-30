@@ -165,8 +165,8 @@ def to_glyphs_master_user_data(self, ufo, master):
     for key, value in ufo.lib.items():
         if _user_data_has_no_special_meaning(key) and key not in special_math_keys:
             target_user_data_proxy[key] = value
-    if "com.schriftgestaltung.fontMaster.userData" in ufo.lib:
-        user_data = ufo.lib["com.schriftgestaltung.fontMaster.userData"]
+    if GLYPHS_PREFIX + "fontMaster.userData" in ufo.lib:
+        user_data = ufo.lib[GLYPHS_PREFIX + "fontMaster.userData"]
         for key, value in user_data.items():
             target_user_data_proxy[key] = value
     # Save UFO data files

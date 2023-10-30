@@ -45,7 +45,6 @@ from glyphsLib.builder.constants import (
     COMPONENT_INFO_KEY,
     GLYPHS_PREFIX,
     GLYPHLIB_PREFIX,
-    FONT_CUSTOM_PARAM_PREFIX,
 )
 
 from ..classes_test import (
@@ -1044,9 +1043,9 @@ def test_glyph_lib_metricsKeys(ufo_module):
 
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
 
-    assert ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.leftMetricsKey"] == "y"
-    assert ufo["x"].lib[GLYPHLIB_PREFIX + "glyph.rightMetricsKey"] == "z"
-    assert GLYPHLIB_PREFIX + "glyph.widthMetricsKey" not in ufo["x"].lib
+    assert ufo["x"].lib[GLYPHLIB_PREFIX + "leftMetricsKey"] == "y"
+    assert ufo["x"].lib[GLYPHLIB_PREFIX + "rightMetricsKey"] == "z"
+    assert GLYPHLIB_PREFIX + "widthMetricsKey" not in ufo["x"].lib
 
 
 def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):

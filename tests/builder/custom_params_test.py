@@ -34,8 +34,6 @@ from glyphsLib.builder.custom_params import (
 from glyphsLib.builder.constants import (
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
-    FONT_CUSTOM_PARAM_PREFIX,
-    MASTER_CUSTOM_PARAM_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     GLYPHLIB_PREFIX,
     UFO_FILENAME_KEY,
