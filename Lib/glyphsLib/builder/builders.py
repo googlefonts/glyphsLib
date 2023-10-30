@@ -189,7 +189,7 @@ class UFOBuilder(LoggerMixin):
     def _is_vertical(self):
         master_ids = {m.id for m in self.font.masters}
         for glyph in self.font.glyphs:
-            for layer in glyph.layers:
+            for layer in glyph._layers.values():
                 if layer.layerId not in master_ids:
                     continue
                 if layer.vertWidth is not None or layer.vertOrigin is not None:
