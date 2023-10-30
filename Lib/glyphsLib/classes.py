@@ -2095,19 +2095,7 @@ class GSFontMaster(GSBase):
                 del(self.customParameters["smallCapHeight"])
                 
             if self._alignmentZones:
-                for metricValue in self.metrics.values():
-                    for zone in list(self._alignmentZones):
-                        if abs(zone.position - metricValue.position) <= 1:
-                            end = zone.position + zone.size
-                            metricValue.overshoot = end - metricValue.position;
-                            self._alignmentZones.remove(zone)
-                if len(self._alignmentZones) > 0:
-                    zoneIdx = 1
-                    for zone in self._alignmentZones:
-                        zoneKey = "zone %d" % zoneIdx
-                        self._set_metric(GSMetricsKeyUndefined, zone.position, zone.size)
-                        zoneIdx += 1
-            self._alignmentZones = None
+                self._import_alignmentZones_to_metrics()
 
             position, overshoot = self.readBuffer.get(GSMetricsKeyItalicAngle, (0, 0))
             self._set_metric(GSMetricsKeyItalicAngle, position, overshoot)
@@ -2272,6 +2260,21 @@ class GSFontMaster(GSBase):
             if overshoot:
                 metricValue.overshoot = overshoot
 
+    def _import_alignmentZones_to_metrics(self):
+        for metricValue in self.metrics.values():
+            for zone in list(self._alignmentZones):
+                if abs(zone.position - metricValue.position) <= 1:
+                    end = zone.position + zone.size
+                    metricValue.overshoot = end - metricValue.position;
+                    self._alignmentZones.remove(zone)
+        if len(self._alignmentZones) > 0:
+            zoneIdx = 1
+            for zone in self._alignmentZones:
+                zoneKey = "zone %d" % zoneIdx
+                self._set_metric(GSMetricsKeyUndefined, zone.position, zone.size)
+                zoneIdx += 1
+        self._alignmentZones = None
+
     @property
     def metrics(self):
         return self._metrics
@@ -2323,6 +2326,8 @@ class GSFontMaster(GSBase):
             if zone not in zones:
                 zones.append(zone)
         self._alignmentZones = zones
+        if self.font:
+            self._import_alignmentZones_to_metrics()
 
     @property
     def blueValues(self):
