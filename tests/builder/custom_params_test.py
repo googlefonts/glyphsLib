@@ -429,6 +429,7 @@ class SetCustomParamsTestBase(object):
         # Test the round-tripping of ufo2ft filters from UFO -> Glyphs master -> UFO.
         # See the docstring for FilterParamHandler.
         font_rt = glyphsLib.to_glyphs([self.ufo])
+        # FIXME: (georg) above it is put into customParameters and after rt, it still is but we expect it not to be?
         self.assertNotIn("PreFilter", font_rt.masters[0].customParameters)
         self.assertEqual(font_rt.masters[0].userData[UFO2FT_FILTERS_KEY], ufo_filters)
         ufo_rt = glyphsLib.to_ufos(font_rt, ufo_module=self.ufo_module)[0]
