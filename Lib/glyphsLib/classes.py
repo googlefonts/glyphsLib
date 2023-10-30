@@ -2022,7 +2022,7 @@ class GSFontMaster(GSBase):
         _zones = parser._parse(text, str)
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
-    def __init__(self, name=None):
+    def __init__(self, name="Regular"):
         self.customParameters = []
         self.name = name
         self._userData = None
@@ -2141,11 +2141,11 @@ class GSFontMaster(GSBase):
                         metric.horizontal = False
                         self.font.stems.append(metric)
                     self._stems[metric.id] = self._verticalStems[idx]
-        if self.name is None and self.font.formatVersion < 3:
-            weight = self.weight
-            width = self.width
-            custom = self.customName
-            self.name = self._joinNames(weight, width, custom)
+        if self.font.formatVersion < 3 and (self.weight or self.width or self.customName):
+            self.name = self._joinNames(self.weight, self.width, self.customName)
+            self.weight = None
+            self.width = None
+            self.customName = None
         if not self.name:
             self.name = self._defaultsForName["name"]
         axisLocationToAxesValue(self)
