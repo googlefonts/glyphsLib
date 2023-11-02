@@ -92,21 +92,21 @@ __all__ = [
     "PS_BOTTOM_GHOST",
     "PS_STEM",
     "PS_FLEX",
-    "TT_STEM",
-    "TT_SHIFT",
-    "TT_SNAP",
-    "TT_INTERPOLATE",
-    "TT_DIAGONAL",
-    "TT_DELTA",
-    "GS_TAG",
-    "GS_CORNER",
-    "GS_CAP",
-    "GS_BRUSH",
-    "GS_SEGMENT",
-    "TT_DONTROUND",
-    "TT_ROUND",
-    "TT_ROUNDUP",
-    "TT_ROUNDDOWN",
+    "TTSTEM",
+    "TTSHIFT",
+    "TTSNAP",
+    "TTINTERPOLATE",
+    "TTDIAGONAL",
+    "TTDELTA",
+    "TAG",
+    "CORNER",
+    "CAP",
+    "BRUSH",
+    "SEGMENT",
+    "TTDONTROUND",
+    "TTROUND",
+    "TTROUNDUP",
+    "TTROUNDDOWN",
     #"TRIPLE",
     "TEXT",
     "ARROW",
@@ -204,22 +204,22 @@ PS_TOP_GHOST = "TopGhost"
 PS_BOTTOM_GHOST = "BottomGhost"
 PS_STEM = "Stem"
 PS_FLEX = "Flex"
-TT_STEM = "TTStem"
-TT_SHIFT = "TTShift" # TTAlign in G2
-TT_SNAP = "TTSnap" # "TTAnchor" in G2
-TT_INTERPOLATE = "TTInterpolate"
-TT_DIAGONAL = "TTDiagonal"
-TT_DELTA = "TTDelta"
-GS_TAG = "Tag"
-GS_CORNER = "Corner"
-GS_CAP = "Cap"
-GS_BRUSH = "Brush"
-GS_SEGMENT = "Segment"
+TTSTEM = "TTStem"
+TTSHIFT = "TTShift" # TTAlign in G2
+TTSNAP = "TTSnap" # "TTAnchor" in G2
+TTINTERPOLATE = "TTInterpolate"
+TTDIAGONAL = "TTDiagonal"
+TTDELTA = "TTDelta"
+TAG = "Tag"
+CORNER = "Corner"
+CAP = "Cap"
+BRUSH = "Brush"
+SEGMENT = "Segment"
 
-TT_DONTROUND = 4
-TT_ROUND = 0
-TT_ROUNDUP = 1
-TT_ROUNDDOWN = 2
+TTDONTROUND = 4
+TTROUND = 0
+TTROUNDUP = 1
+TTROUNDDOWN = 2
 #TRIPLE = 128
 
 # Annotations:
@@ -3404,17 +3404,17 @@ HINT_TYPE_TO_STRING = {
     PS_BOTTOM_GHOST: "BottomGhost",
     PS_STEM: "Stem",
     PS_FLEX: "Flex",
-    TT_STEM: "TTStem",
-    TT_SHIFT: "TTShift",
-    TT_SNAP: "TTSnap",
-    TT_INTERPOLATE: "TTInterpolate",
-    TT_DIAGONAL: "TTDiagonal",
-    TT_DELTA: "TTDelta",
-    GS_TAG: "Tag",
-    GS_CORNER: "Corner",
-    GS_CAP: "Cap",
-    GS_BRUSH: "Brush",
-    GS_SEGMENT: "Segment",
+    TTSTEM: "TTStem",
+    TTSHIFT: "TTShift",
+    TTSNAP: "TTSnap",
+    TTINTERPOLATE: "TTInterpolate",
+    TTDIAGONAL: "TTDiagonal",
+    TTDELTA: "TTDelta",
+    TAG: "Tag",
+    CORNER: "Corner",
+    CAP: "Cap",
+    BRUSH: "Brush",
+    SEGMENT: "Segment",
 }
 
 HINT_TYPE_TO_STRING_V2 = {
@@ -3422,17 +3422,17 @@ HINT_TYPE_TO_STRING_V2 = {
     PS_BOTTOM_GHOST: "BottomGhost",
     PS_STEM: "Stem",
     PS_FLEX: "Flex",
-    TT_STEM: "TTStem",
-    TT_SHIFT: "Align",
-    TT_SNAP: "Anchor",
-    TT_INTERPOLATE: "Interpolate",
-    TT_DIAGONAL: "Diagonal",
-    TT_DELTA: "Delta",
-    GS_TAG: "Tag",
-    GS_CORNER: "Corner",
-    GS_CAP: "Cap",
-    GS_BRUSH: "Brush",
-    GS_SEGMENT: "Segment",
+    TTSTEM: "TTStem",
+    TTSHIFT: "Align",
+    TTSNAP: "Anchor",
+    TTINTERPOLATE: "Interpolate",
+    TTDIAGONAL: "Diagonal",
+    TTDELTA: "Delta",
+    TAG: "Tag",
+    CORNER: "Corner",
+    CAP: "Cap",
+    BRUSH: "Brush",
+    SEGMENT: "Segment",
 }
 
 class GSHint(GSBase):
@@ -3510,7 +3510,7 @@ class GSHint(GSBase):
             return "<GSHint {} Stem origin=({}) target=({})>".format(
                 direction, self.origin, self.width
             )
-        elif self.type == GS_CORNER or self.type == GS_CAP:
+        elif self.type == CORNER or self.type == CAP:
             return f"<GSHint {self.type} {self.name}>"
         else:
             return f"<GSHint {self.type} {direction}>"
@@ -3621,12 +3621,12 @@ class GSHint(GSBase):
 
     @type.setter
     def type(self, hintType):
-        assert type(hintType) == type(GS_CORNER), "hintType %s (%s) != %s" % (hintType, type(hintType), type(GS_CORNER))
+        assert type(hintType) == type(CORNER), "hintType %s (%s) != %s" % (hintType, type(hintType), type(CORNER))
         self._type = hintType
 
     @property
     def isPathComponent(self):
-        return self._type == GS_CORNER or self._type == GS_CAP or self._type == GS_BRUSH or self._type == GS_SEGMENT
+        return self._type == CORNER or self._type == CAP or self._type == BRUSH or self._type == SEGMENT
     @property
     def isCorner(self):
         return self.isPathComponent

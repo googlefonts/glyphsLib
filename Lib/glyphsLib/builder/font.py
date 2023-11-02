@@ -30,9 +30,9 @@ from .constants import (
 )
 
 try:
-    from GlyphsApp import GS_CORNER
+    from GlyphsApp import CORNER
 except:
-    from glyphsLib.classes import GS_CORNER
+    from glyphsLib.classes import CORNER
 
 
 def to_ufo_font_attributes(self, family_name):
