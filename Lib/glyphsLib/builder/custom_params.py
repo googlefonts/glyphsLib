@@ -445,6 +445,8 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
 
 register_parameter_handler(OS2CodePageRangesParamHandler())
 
+register_parameter_handler(ParamHandler(glyphs_name="codePageRangesUnsupportedBits", write_to_ufo=False))
+
 # enforce that winAscent/Descent are positive, according to UFO spec
 for glyphs_name in ("winAscent", "winDescent"):
     ufo_name = "openTypeOS2W" + glyphs_name[1:]

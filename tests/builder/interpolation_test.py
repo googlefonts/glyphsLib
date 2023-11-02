@@ -24,12 +24,12 @@ from xmldiff import main, formatting
 
 import defcon
 from glyphsLib.builder.constants import GLYPHS_PREFIX
-from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue
+from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue, GSAxis
 from glyphsLib import to_designspace, to_glyphs
 import ufoLib2
 
 
-# Current limitation of glyphsLib for designspace to designspace round-trip:
+# Limitations of glyphsLib for designspace to designspace round-trip:
 # the designspace's axes, sources and instances must be as such:
 #  - the axes' min, max must match extreme masters
 #  - the axes' default must match the "regular master"
@@ -45,16 +45,17 @@ import ufoLib2
 # Glyphs gets a UI to setup this information.
 #
 # REVIEW: check that the above makes sense
+# FIXME: (georg) arbitrary mapping is possible with the "Axis Mapping" parameter
 
 
 def makeFamily():
     m1 = makeMaster("Regular", weight=90.0)
     m2 = makeMaster("Black", weight=190.0)
     instances = [
-        makeInstance("Regular", weight=("Regular", 400, 90)),
-        makeInstance("Semibold", weight=("SemiBold", 600, 128)),
-        makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
-        makeInstance("Black", weight=("Black", 900, 190)),
+        makeInstance("Regular", weight=(400, 90)),
+        makeInstance("Semibold", weight=(600, 128)),
+        makeInstance("Bold", weight=(700, 151), is_bold=True),
+        makeInstance("Black", weight=(900, 190)),
     ]
     return [m1, m2], instances
 
@@ -62,10 +63,11 @@ def makeFamily():
 def makeMaster(styleName, weight=None, width=None):
     m = GSFontMaster()
     m.name = styleName
+    m._axesValues = []
     if weight is not None:
-        m.weightValue = weight
+        m._axesValues.append(weight)
     if width is not None:
-        m.widthValue = width
+        m._axesValues.append(width)
     return m
 
 
@@ -74,43 +76,25 @@ def makeInstance(
 ):
     inst = GSInstance()
     inst.name = name
+    # Glyphs 3 stores in instances:
+    # - weightClass/widthClass: as a numerical value
+    # - internalAxesValues: dict with axisId > axis coordinats (such as 66.0), which typically is
+    #    the stem width but can be anything that works for interpolation
+    # - externalAxesValues: dict with axisId > axis coordinats (such as 400 for the weight axis). This are the extranl axis values that the use sees. Will be used to generate avar
+    
+    inst._axesValues = []
     if weight is not None:
-        # Glyphs 2.5 stores the instance weight in two to three places:
-        # 1. as a textual weight (such as “Bold”; no value defaults to
-        #    "Regular");
-        # 2. (optional) as numeric customParameters.weightClass (such as 700),
-        #    which corresponds to OS/2.usWeightClass where 100 means Thin,
-        #    400 means Regular, 700 means Bold, and 900 means Black;
-        # 3. as numeric weightValue (such as 66.0), which typically is
-        #    the stem width but can be anything that works for interpolation
-        #    (no value defaults to 100).
-        weightName, weightClass, interpolationWeight = weight
-        if weightName is not None:
-            inst.weight = weightName
+        weightClass, interpolationWeight = weight
         if weightClass is not None:
-            inst.customParameters["weightClass"] = weightClass
+            inst.weightClass = weightClass
         if interpolationWeight is not None:
-            inst.weightValue = interpolationWeight
+            inst._axesValues.append(interpolationWeight)
     if width is not None:
-        # Glyphs 2.5 stores the instance width in two to three places:
-        # 1. as a textual width (such as “Condensed”; no value defaults
-        #    to "Medium (normal)");
-        # 2. (optional) as numeric customParameters.widthClass (such as 5),
-        #    which corresponds to OS/2.usWidthClass where 1 means Ultra-
-        #    condensed, 5 means Medium (normal), and 9 means Ultra-expanded;
-        # 3. as numeric widthValue (such as 79), which typically is
-        #    a percentage of whatever the font designer considers “normal”
-        #    but can be anything that works for interpolation (no value
-        #    defaults to 100).
-        widthName, widthClass, interpolationWidth = width
-        if widthName is not None:
-            inst.width = widthName
+        widthClass, interpolationWidth = width
         if widthClass is not None:
-            inst.customParameters["widthClass"] = widthClass
+            inst.widthClass = widthClass
         if interpolationWidth is not None:
-            inst.widthValue = interpolationWidth
-    # TODO: Support custom axes; need to triple-check how these are encoded in
-    # Glyphs files. Glyphs 3 will likely overhaul the representation of axes.
+            inst._axesValues.append(interpolationWidth)
     if is_bold is not None:
         inst.isBold = is_bold
     if is_italic is not None:
@@ -128,11 +112,16 @@ def makeInstanceDescriptor(*args, **kwargs):
     return doc, doc.instances[0]
 
 
-def makeFont(masters, instances, familyName):
+def makeFont(masters, instances, familyName, numAxes=1):
     font = GSFont()
+    font.formatVersion = 3
+    font.axes.append(GSAxis("Weight", "wght"))
+    if numAxes > 1 or len(masters[0]._axesValues) > 1 or (len(instances) > 0 and len(instances[0]._axesValues) > 1):
+        font.axes.append(GSAxis("Width", "wdth"))
     font.familyName = familyName
     font.masters = masters
     font.instances = instances
+    font.post_read()
     return font
 
 
@@ -144,7 +133,9 @@ class DesignspaceTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def write_to_tmp_path(self, doc, name):
-        path = os.path.join(self.tmpdir, name)
+        #path = os.path.join(self.tmpdir, name)
+        path = os.path.join("/Users/georg/Stuff/Temp", name)
+        print("__write_to_tmp_path", path)
         doc.write(path)
         return path
 
@@ -154,7 +145,7 @@ class DesignspaceTest(unittest.TestCase):
         return self._expect_designspace(doc, expected_path)
 
     def _expect_designspace(self, doc, expected_path):
-        actual_path = self.write_to_tmp_path(doc, "generated.designspace")
+        actual_path = self.write_to_tmp_path(doc, os.path.basename(expected_path))
         actual_diff = main.diff_files(
             actual_path, expected_path, formatter=formatting.DiffFormatter()
         )
@@ -178,6 +169,22 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace(doc, "DesignspaceTestBasic.designspace")
         self.expect_designspace_roundtrip(doc)
 
+    def test_axis_location(self):
+        masters, instances = makeFamily()
+        font = makeFont(masters, instances, "DesignspaceTest Axis Location")
+        axis = font.axes[0]
+        masters[0].externalAxesValues[axis.axisId] = 400
+        masters[1].externalAxesValues[axis.axisId] = 900
+        instances[0].externalAxesValues[axis.axisId] = 400
+        instances[1].externalAxesValues[axis.axisId] = 600
+        instances[2].externalAxesValues[axis.axisId] = 700
+        instances[3].externalAxesValues[axis.axisId] = 900
+
+        doc = to_designspace(font, instance_dir="out")
+        self.expect_designspace(doc, "DesignspaceTestAxisLocation.designspace")
+        self.expect_designspace_roundtrip(doc)
+
+
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
         # https://github.com/googlefonts/glyphsLib/issues/129
@@ -197,9 +204,9 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_familyName(self):
         masters, _ = makeFamily()
-        customFamily = makeInstance("Regular", weight=("Bold", 600, 151))
-        customFamily.customParameters["familyName"] = "Custom Family"
-        instances = [makeInstance("Regular", weight=("Regular", 400, 90)), customFamily]
+        customFamily = makeInstance("Regular", weight=(600, 151))
+        customFamily.properties["familyNames"] = "Custom Family"
+        instances = [makeInstance("Regular", weight=(400, 90)), customFamily]
         font = makeFont(masters, instances, "DesignspaceTest FamilyName")
         doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestFamilyName.designspace")
@@ -207,10 +214,10 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_fileName(self):
         masters, _ = makeFamily()
-        customFileName = makeInstance("Regular", weight=("Bold", 600, 151))
+        customFileName = makeInstance("Regular", weight=(600, 151))
         customFileName.customParameters["fileName"] = "Custom FileName"
         instances = [
-            makeInstance("Regular", weight=("Regular", 400, 90)),
+            makeInstance("Regular", weight=(400, 90)),
             customFileName,
         ]
         font = makeFont(masters, instances, "DesignspaceTest FamilyName")
@@ -225,11 +232,17 @@ class DesignspaceTest(unittest.TestCase):
         # glyhpsLib tries to work around this downstream limitation.
         masters = [makeMaster("Thin", weight=26), makeMaster("Black", weight=190)]
         instances = [
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Bold", weight=("Thin", 100, 26)),
+            makeInstance("Black", weight=(900, 190)),
+            makeInstance("Regular", weight=(400, 90)),
+            makeInstance("Bold", weight=(100, 26)),
         ]
         font = makeFont(masters, instances, "NoRegularMaster")
+        axis = font.axes[0]
+        masters[0].externalAxesValues[axis.axisId] = 100
+        masters[1].externalAxesValues[axis.axisId] = 900
+        instances[0].externalAxesValues[axis.axisId] = 900
+        instances[1].externalAxesValues[axis.axisId] = 400
+        instances[2].externalAxesValues[axis.axisId] = 100
         designspace = to_designspace(font, instance_dir="out")
         path = self.write_to_tmp_path(designspace, "noregular.designspace")
         doc = etree.parse(path)
@@ -241,9 +254,9 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace_roundtrip(designspace)
 
     def test_postscriptFontNameCustomParameter(self):
-        master = makeMaster("Master")
-        thin, black = makeInstance("Thin"), makeInstance("Black")
-        black.customParameters["postscriptFontName"] = "PSNameTest-Superfat"
+        master = makeMaster("Master", weight=100)
+        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance("Black", weight=(400, 200))
+        black.properties["postscriptFontName"] = "PSNameTest-Superfat"
         font = makeFont([master], [thin, black], "PSNameTest")
         designspace = to_designspace(font, instance_dir="out")
         path = self.write_to_tmp_path(designspace, "psname.designspace")
@@ -259,8 +272,8 @@ class DesignspaceTest(unittest.TestCase):
         self.expect_designspace_roundtrip(designspace)
 
     def test_postscriptFontNameProperty(self):
-        master = makeMaster("Master")
-        thin, black = makeInstance("Thin"), makeInstance("Black")
+        master = makeMaster("Master", weight=100)
+        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance("Black", weight=(400, 200))
         black.properties.append(
             GSFontInfoValue("postscriptFontName", "PSNameTest-Superfat")
         )
@@ -284,9 +297,9 @@ class DesignspaceTest(unittest.TestCase):
         # https://github.com/googlefonts/glyphsLib/issues/113
         masters, _ = makeFamily()
         instances = [
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Bold", weight=("Bold", 700, 151), is_bold=True),
+            makeInstance("Black", weight=(900, 190)),
+            makeInstance("Regular", weight=(400, 90)),
+            makeInstance("Bold", weight=(700, 151), is_bold=True),
         ]
         font = makeFont(masters, instances, "DesignspaceTest InstanceOrder")
         doc = to_designspace(font, instance_dir="out")
@@ -307,27 +320,16 @@ class DesignspaceTest(unittest.TestCase):
             makeMaster("ExtraCond Thin", weight=26, width=70),
         ]
         instances = [
-            makeInstance("Thin", weight=("Thin", 100, 26)),
-            makeInstance("Regular", weight=("Regular", 400, 90)),
-            makeInstance("Semibold", weight=("SemiBold", 600, 128)),
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance(
-                "ExtraCondensed Thin",
-                weight=("Thin", 100, 26),
-                width=("Extra Condensed", 2, 70),
-            ),
-            makeInstance(
-                "ExtraCondensed",
-                weight=("Regular", 400, 90),
-                width=("Extra Condensed", 2, 70),
-            ),
-            makeInstance(
-                "ExtraCondensed Black",
-                weight=("Black", 900, 190),
-                width=("Extra Condensed", 2, 70),
-            ),
+            makeInstance("Thin", weight=(100, 26)),
+            makeInstance("Regular", weight=(400, 90)),
+            makeInstance("Semibold", weight=(600, 128)),
+            makeInstance("Black", weight=(900, 190)),
+            makeInstance("ExtraCondensed Thin", weight=(100, 26), width=(2, 70)),
+            makeInstance("ExtraCondensed", weight=(400, 90), width=(2, 70)),
+            makeInstance("ExtraCondensed Black", weight=(900, 190), width=(2, 70)),
         ]
-        font = makeFont(masters, instances, familyName)
+        font = makeFont(masters, instances, familyName, 2)
+        print("__font axes a", font.axes)
         doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestTwoAxes.designspace")
         self.expect_designspace_roundtrip(doc)
@@ -343,10 +345,10 @@ class DesignspaceTest(unittest.TestCase):
             makeMaster("Black", weight=190),
         ]
         instances = [
-            makeInstance("Black", weight=("Black", 900, 190)),
-            makeInstance("Medium", weight=("Medium", 444, 111)),
-            makeInstance("Regular", weight=("Regular", 400, 100)),
-            makeInstance("Thin", weight=("Thin", 100, 26)),
+            makeInstance("Black", weight=(900, 190)),
+            makeInstance("Medium", weight=(444, 111)),
+            makeInstance("Regular", weight=(400, 100)),
+            makeInstance("Thin", weight=(100, 26)),
         ]
         font = makeFont(masters, instances, "Family")
         font.customParameters["Variation Font Origin"] = "Medium"
@@ -356,7 +358,7 @@ class DesignspaceTest(unittest.TestCase):
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
-        self.assertEqual(weightAxis.attrib["default"], "444")
+        self.assertEqual(weightAxis.attrib["default"], "111") # (georg) changed from 444 > 111 as there are no axis Location/extern coordinates
 
         self.expect_designspace_roundtrip(designspace)
 
@@ -418,7 +420,7 @@ class DesignspaceTest(unittest.TestCase):
 WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
 WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
-
+'''# Do we need to test ufo behavior?
 class SetWeightWidthClassesTestBase(object):
     ufo_module = None  # subclasses must override this
 
@@ -440,7 +442,7 @@ class SetWeightWidthClassesTestBase(object):
 
     def test_explicit_default_weight(self):
         ufo = self.ufo_module.Font()
-        doc, data = makeInstanceDescriptor("Regular", weight=("Regular", None, 100))
+        doc, data = makeInstanceDescriptor("Regular", weight=(None, 100))
 
         set_weight_class(ufo, doc, data)
         # the default OS/2 weight class is set
@@ -456,14 +458,14 @@ class SetWeightWidthClassesTestBase(object):
 
     def test_width_class(self):
         ufo = self.ufo_module.Font()
-        doc, data = makeInstanceDescriptor("Condensed", width=("Condensed", 3, 80))
+        doc, data = makeInstanceDescriptor("Condensed", width=(3, 80))
 
         set_width_class(ufo, doc, data)
         self.assertEqual(ufo.info.openTypeOS2WidthClass, 3)
 
     def test_explicit_default_width(self):
         ufo = self.ufo_module.Font()
-        doc, data = makeInstanceDescriptor("Regular", width=("Medium (normal)", 5, 100))
+        doc, data = makeInstanceDescriptor("Regular", width=(5, 100))
 
         set_width_class(ufo, doc, data)
         # the default OS/2 width class is set
@@ -471,11 +473,7 @@ class SetWeightWidthClassesTestBase(object):
 
     def test_weight_and_width_class(self):
         ufo = self.ufo_module.Font()
-        doc, data = makeInstanceDescriptor(
-            "SemiCondensed ExtraBold",
-            weight=("ExtraBold", None, 160),
-            width=("SemiCondensed", 4, 90),
-        )
+        doc, data = makeInstanceDescriptor("SemiCondensed ExtraBold", weight=(None, 160), width=(4, 90))
 
         set_weight_class(ufo, doc, data)
         set_width_class(ufo, doc, data)
@@ -491,9 +489,7 @@ class SetWeightWidthClassesTestBase(object):
         # NOTE It is not possible from the user interface to set a custom
         # string as instance 'weightClass' since the choice is constrained
         # by a drop-down menu.
-        doc, data = makeInstanceDescriptor(
-            "DemiLight Italic", weight=("DemiLight", 350, 70)
-        )
+        doc, data = makeInstanceDescriptor("DemiLight Italic", weight=(350, 70))
 
         set_weight_class(ufo, doc, data)
 
@@ -509,9 +505,7 @@ class SetWeightWidthClassesTestBase(object):
         # NOTE It is not possible from the user interface to set a custom
         # string as instance 'weightClass' since the choice is constrained
         # by a drop-down menu.
-        doc, data = makeInstanceDescriptor(
-            "DemiLight Italic", weight=("DemiLight", None, 70)
-        )
+        doc, data = makeInstanceDescriptor("DemiLight Italic", weight=(None, 70))
 
         set_weight_class(ufo, doc, data)
 
@@ -527,7 +521,7 @@ class SetWeightWidthClassesTestUfoLib2(
 
 class SetWeightWidthClassesTestDefcon(SetWeightWidthClassesTestBase, unittest.TestCase):
     ufo_module = defcon
-
+'''
 
 if __name__ == "__main__":
     sys.exit(unittest.main())
