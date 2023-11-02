@@ -1,10 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <designspace format="5.0">
   <axes>
-    <axis tag="wght" name="Weight" minimum="90" maximum="190" default="90"/>
+    <axis tag="wght" name="Weight" minimum="400" maximum="900" default="400">
+      <map input="400" output="90"/>
+      <map input="600" output="128"/>
+      <map input="700" output="151"/>
+      <map input="900" output="190"/>
+    </axis>
   </axes>
   <sources>
-    <source filename="DesignspaceTestBasic-Regular.ufo" name="DesignspaceTest Basic Regular" familyname="DesignspaceTest Basic" stylename="Regular">
+    <source filename="DesignspaceTestAxisLocation-Regular.ufo" name="DesignspaceTest Axis Location Regular" familyname="DesignspaceTest Axis Location" stylename="Regular">
       <lib copy="1"/>
       <groups copy="1"/>
       <features copy="1"/>
@@ -13,14 +18,14 @@
         <dimension name="Weight" xvalue="90"/>
       </location>
     </source>
-    <source filename="DesignspaceTestBasic-Black.ufo" name="DesignspaceTest Basic Black" familyname="DesignspaceTest Basic" stylename="Black">
+    <source filename="DesignspaceTestAxisLocation-Black.ufo" name="DesignspaceTest Axis Location Black" familyname="DesignspaceTest Axis Location" stylename="Black">
       <location>
         <dimension name="Weight" xvalue="190"/>
       </location>
     </source>
   </sources>
   <instances>
-    <instance name="DesignspaceTest Basic Regular" familyname="DesignspaceTest Basic" stylename="Regular" filename="out/DesignspaceTestBasic-Regular.ufo" stylemapfamilyname="DesignspaceTest Basic" stylemapstylename="regular">
+    <instance name="DesignspaceTest Axis Location Regular" familyname="DesignspaceTest Axis Location" stylename="Regular" filename="out/DesignspaceTestAxisLocation-Regular.ufo" stylemapfamilyname="DesignspaceTest Axis Location" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="90"/>
       </location>
@@ -33,7 +38,7 @@
         </dict>
       </lib>
     </instance>
-    <instance name="DesignspaceTest Basic Semibold" familyname="DesignspaceTest Basic" stylename="Semibold" filename="out/DesignspaceTestBasic-Semibold.ufo" stylemapfamilyname="DesignspaceTest Basic Semibold" stylemapstylename="regular">
+    <instance name="DesignspaceTest Axis Location Semibold" familyname="DesignspaceTest Axis Location" stylename="Semibold" filename="out/DesignspaceTestAxisLocation-Semibold.ufo" stylemapfamilyname="DesignspaceTest Axis Location Semibold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="128"/>
       </location>
@@ -46,7 +51,7 @@
         </dict>
       </lib>
     </instance>
-    <instance name="DesignspaceTest Basic Bold" familyname="DesignspaceTest Basic" stylename="Bold" filename="out/DesignspaceTestBasic-Bold.ufo" stylemapfamilyname="DesignspaceTest Basic" stylemapstylename="bold">
+    <instance name="DesignspaceTest Axis Location Bold" familyname="DesignspaceTest Axis Location" stylename="Bold" filename="out/DesignspaceTestAxisLocation-Bold.ufo" stylemapfamilyname="DesignspaceTest Axis Location" stylemapstylename="bold">
       <location>
         <dimension name="Weight" xvalue="151"/>
       </location>
@@ -59,7 +64,7 @@
         </dict>
       </lib>
     </instance>
-    <instance name="DesignspaceTest Basic Black" familyname="DesignspaceTest Basic" stylename="Black" filename="out/DesignspaceTestBasic-Black.ufo" stylemapfamilyname="DesignspaceTest Basic Black" stylemapstylename="regular">
+    <instance name="DesignspaceTest Axis Location Black" familyname="DesignspaceTest Axis Location" stylename="Black" filename="out/DesignspaceTestAxisLocation-Black.ufo" stylemapfamilyname="DesignspaceTest Axis Location Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="190"/>
       </location>
