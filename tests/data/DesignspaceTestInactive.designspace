@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <designspace format="5.0">
   <axes>
-    <axis tag="wght" name="Weight" minimum="600" maximum="600" default="600">
-      <map input="600" output="128"/>
-    </axis>
+    <axis tag="wght" name="Weight" minimum="90" maximum="190" default="90"/>
   </axes>
   <sources>
     <source filename="DesignspaceTestInactive-Regular.ufo" name="DesignspaceTest Inactive Regular" familyname="DesignspaceTest Inactive" stylename="Regular">
@@ -26,6 +24,22 @@
       <location>
         <dimension name="Weight" xvalue="128"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>600</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
   </instances>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.appVersion</key>
+      <string>895</string>
+      <key>com.schriftgestaltung.formatVersion</key>
+      <integer>3</integer>
+    </dict>
+  </lib>
 </designspace>

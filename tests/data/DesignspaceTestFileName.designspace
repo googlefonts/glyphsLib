@@ -1,10 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <designspace format="5.0">
   <axes>
-    <axis tag="wght" name="Weight" minimum="400" maximum="600" default="400">
-      <map input="400" output="90"/>
-      <map input="600" output="151"/>
-    </axis>
+    <axis tag="wght" name="Weight" minimum="90" maximum="190" default="90"/>
   </axes>
   <sources>
     <source filename="DesignspaceTestFamilyName-Regular.ufo" name="DesignspaceTest FamilyName Regular" familyname="DesignspaceTest FamilyName" stylename="Regular">
@@ -27,11 +24,35 @@
       <location>
         <dimension name="Weight" xvalue="90"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>400</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest FamilyName Regular" familyname="DesignspaceTest FamilyName" stylename="Regular" filename="out/Custom FileName.ufo" stylemapfamilyname="DesignspaceTest FamilyName" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="151"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>600</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
   </instances>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.appVersion</key>
+      <string>895</string>
+      <key>com.schriftgestaltung.formatVersion</key>
+      <integer>3</integer>
+    </dict>
+  </lib>
 </designspace>
