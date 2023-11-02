@@ -1893,7 +1893,7 @@ class GSFontMaster(GSBase):
         axesCount = len(axes)
         if axesCount > idx:
             value = self.internalAxesValues[axes[idx].axisId]
-            if value and abs(value - defaultValue) > 0.01:
+            if value and abs(value - defaultValue) > 0.0001:
                 writer.writeKeyValue(MASTER_AXIS_VALUE_KEYS[idx], value)
 
     def _default_icon_name(self):
@@ -1963,8 +1963,8 @@ class GSFontMaster(GSBase):
                 metricValue = self.metrics.get(metric.id)
                 metrics.append(metricValue)
             writer.writeKeyValue("metricValues", metrics)
-
-        if writer.formatVersion >= 3:
+        
+        if self.name != "Regular":
             writer.writeKeyValue("name", self.name)
 
         if writer.formatVersion >= 3:
@@ -2051,6 +2051,19 @@ class GSFontMaster(GSBase):
             self.name, self.internalAxesValues.values()
         )
 
+    def _import_stem_list(self, stems, horizontal):
+        if self._stems is None:
+            self._stems = {}
+        for idx in range(len(stems)):
+            name = "%sStem%d" % ("h" if horizontal else "v", idx)
+            metric = self.font.stemForName(name)
+            if not metric:
+                metric = GSMetric()
+                metric.name = name
+                metric.horizontal = horizontal
+                self.font.stems.append(metric)
+            self._stems[metric.id] = stems[idx]
+
     def post_read(self): # GSFontMaster
         axes = self.font.axes
         if self.font.formatVersion < 3:
@@ -2071,7 +2084,10 @@ class GSFontMaster(GSBase):
                 axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
-                    value = axesValues[idx]
+                    if idx < len(axesValues):
+                        value = axesValues[idx]
+                    else:
+                        value = 100 if idx < 2 else 0 # (georg) fallback for old designspace setup
                     self.internalAxesValues[axis.axisId] = value
 
         if isinstance(self._metrics, list):
@@ -2108,27 +2124,10 @@ class GSFontMaster(GSBase):
                 stems[stem.id] = self._stems[idx]
             self._stems = stems
         else:
-            self._stems = {}
             if self._horizontalStems:
-                for idx in range(len(self._horizontalStems)):
-                    name = "hStem%d" % idx
-                    metric = self.font.stemForName(name)
-                    if not metric:
-                        metric = GSMetric()
-                        metric.name = name
-                        metric.horizontal = True
-                        self.font.stems.append(metric)
-                    self._stems[metric.id] = self._horizontalStems[idx]
+                self._import_stem_list(self._horizontalStems, True)
             if self._verticalStems:
-                for idx in range(len(self._verticalStems)):
-                    name = "vStem%d" % idx
-                    metric = self.font.stemForName(name)
-                    if not metric:
-                        metric = GSMetric()
-                        metric.name = name
-                        metric.horizontal = False
-                        self.font.stems.append(metric)
-                    self._stems[metric.id] = self._verticalStems[idx]
+                self._import_stem_list(self._verticalStems, False)
         if self.font.formatVersion < 3 and (self.weight or self.width or self.customName):
             self.name = self._joinNames(self.weight, self.width, self.customName)
             self.weight = None
@@ -2235,7 +2234,7 @@ class GSFontMaster(GSBase):
             return metricValue.position
         return None
 
-    def _set_metric(self, metricType, position, overshoot=None, name=None, filter=None):
+    def _set_metric(self, metricType, position=None, overshoot=None, name=None, filter=None):
         if not self.font:
             self.readBuffer[metricType] = (position, overshoot) # we read that later in postRead
             return
@@ -2256,8 +2255,9 @@ class GSFontMaster(GSBase):
             self.metrics[metric.id] = metricValue
             metricValue.metric = metric
         else:
-            metricValue.position = position
-            if overshoot:
+            if position is not None:
+                metricValue.position = position
+            if overshoot is not None:
                 metricValue.overshoot = overshoot
 
     def _import_alignmentZones_to_metrics(self):
@@ -2414,7 +2414,10 @@ class GSFontMaster(GSBase):
     @horizontalStems.setter
     def horizontalStems(self, value):
         assert type(value) == list
-        self._horizontalStems = value
+        if self.font:
+            self._import_stem_list(value, True)
+        else:
+            self._horizontalStems = value
 
     @property
     def verticalStems(self):
@@ -2428,7 +2431,10 @@ class GSFontMaster(GSBase):
     @verticalStems.setter
     def verticalStems(self, value):
         assert type(value) == list
-        self._verticalStems = value
+        if self.font:
+            self._import_stem_list(value, False)
+        else:
+            self._verticalStems = value
 
     @property
     def ascender(self):
@@ -2489,6 +2495,11 @@ class GSFontMaster(GSBase):
 
     @weightValue.setter
     def weightValue(self, value):
+        if self.font:
+            axis = self.font.axes[0]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][0] = value
@@ -2499,6 +2510,11 @@ class GSFontMaster(GSBase):
 
     @widthValue.setter
     def widthValue(self, value):
+        if self.font:
+            axis = self.font.axes[1]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][1] = value
@@ -2509,6 +2525,11 @@ class GSFontMaster(GSBase):
 
     @customValue.setter
     def customValue(self, value):
+        if self.font:
+            axis = self.font.axes[2]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][2] = value
@@ -2519,6 +2540,11 @@ class GSFontMaster(GSBase):
 
     @customValue1.setter
     def customValue1(self, value):
+        if self.font:
+            axis = self.font.axes[3]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][3] = value
@@ -2529,6 +2555,12 @@ class GSFontMaster(GSBase):
 
     @customValue2.setter
     def customValue2(self, value):
+        if self.font:
+            axis = self.font.axes[4]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
+        
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][4] = value
@@ -2539,6 +2571,12 @@ class GSFontMaster(GSBase):
 
     @customValue3.setter
     def customValue3(self, value):
+        if self.font:
+            axis = self.font.axes[5]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
+        
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][5] = value
@@ -3449,12 +3487,14 @@ class GSHint(GSBase):
                 writer.writeObjectKeyValue(self, field, "if_true")
         else:
             # NOTE: Glyphs 2 had a special sorting
-            for field in ["horizontal", "name", "origin", "target", "other1", "other2", "place", "scale", "settings"]:
+            for field in ["horizontal", "origin", "target", "place", "other1", "other2", "scale"]:
                 writer.writeObjectKeyValue(self, field, "if_true")
             hint_type = HINT_TYPE_TO_STRING_V2[self.type]
             writer.writeKeyValue("type", hint_type)
             writer.writeObjectKeyValue(self, "stem", self.stem != -2)
+            writer.writeObjectKeyValue(self, "name", "if_true")
             writer.writeObjectKeyValue(self, "options", "if_true")
+            writer.writeObjectKeyValue(self, "settings", "if_true")
 
     _defaultsForName = {
         # TODO: (jany) check defaults in glyphs
@@ -4032,7 +4072,10 @@ class GSInstance(GSBase):
                     axesCount = len(axes)
                     for idx in range(axesCount):
                         axis = axes[idx]
-                        value = axesValues[idx]
+                        if idx < len(axesValues):
+                            value = axesValues[idx]
+                        else:
+                            value = 100 if idx < 2 else 0 # (georg) fallback for old designspace setup
                         self.internalAxesValues[axis.axisId] = value
 
         if self.font.formatVersion < 3:
@@ -4073,7 +4116,7 @@ class GSInstance(GSBase):
 
     @familyName.setter
     def familyName(self, value):
-        self.properties.setProperty("familyName", value)
+        self.properties["familyNames"] = value
 
     @property
     def preferredFamily(self):
@@ -4097,11 +4140,11 @@ class GSInstance(GSBase):
 
     @preferredSubfamilyName.setter
     def preferredSubfamilyName(self, value):
-        self.properties["preferredSubfamilyName"] = value
+        self.properties["preferredSubfamilyNames"] = value
 
     @property
     def windowsFamily(self):
-        value = self.properties["styleMapFamilyName"]
+        value = self.properties["styleMapFamilyNames"]
         if value:
             return value
         if self.name not in ("Regular", "Bold", "Italic", "Bold Italic"):
@@ -4111,7 +4154,7 @@ class GSInstance(GSBase):
 
     @windowsFamily.setter
     def windowsFamily(self, value):
-        self.properties["styleMapFamilyName"] = value
+        self.properties["styleMapFamilyNames"] = value
 
     @property
     def windowsStyle(self):
@@ -4133,25 +4176,23 @@ class GSInstance(GSBase):
     def fontName(self):
         return (
             self.properties["postscriptFontName"]
-            or self.customParameters["postscriptFontName"]
             # TODO: Strip invalid characters.
             or ("".join(self.familyName.split(" ")) + "-" + self.name)
         )
 
     @fontName.setter
     def fontName(self, value):
-        # TODO: should always be in properties
-        self.customParameters["postscriptFontName"] = value
+        self.properties["postscriptFontName"] = value
 
     @property
     def fullName(self):
-        return self.customParameters["postscriptFullName"] or (
+        return self.properties["postscriptFullName"] or (
             self.familyName + " " + self.name
         )
 
     @fullName.setter
     def fullName(self, value):
-        self.customParameters["postscriptFullName"] = value
+        self.properties["postscriptFullName"] = value
 
     # v2 compatibility
     def _get_axis_value(self, index):
@@ -4190,6 +4231,11 @@ class GSInstance(GSBase):
 
     @weightValue.setter
     def weightValue(self, value):
+        if self.font:
+            axis = self.font.axes[0]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][0] = value
@@ -4200,6 +4246,11 @@ class GSInstance(GSBase):
 
     @widthValue.setter
     def widthValue(self, value):
+        if self.font:
+            axis = self.font.axes[1]
+            if  axis:
+                self._internalAxesValues[axis.axisId] = value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][1] = value
@@ -4210,6 +4261,11 @@ class GSInstance(GSBase):
 
     @customValue.setter
     def customValue(self, value):
+        if self.font:
+            axis = self.font.axes[2]
+            if  axis:
+                self._internalAxesValues[axis.axisId] = value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][2] = value
@@ -4220,6 +4276,11 @@ class GSInstance(GSBase):
 
     @customValue1.setter
     def customValue1(self, value):
+        if self.font:
+            axis = self.font.axes[3]
+            if  axis:
+                self._internalAxesValues[axis.axisId] = value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][3] = value
@@ -4230,6 +4291,11 @@ class GSInstance(GSBase):
 
     @customValue2.setter
     def customValue2(self, value):
+        if self.font:
+            axis = self.font.axes[4]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][4] = value
@@ -4240,6 +4306,11 @@ class GSInstance(GSBase):
 
     @customValue3.setter
     def customValue3(self, value):
+        if self.font:
+            axis = self.font.axes[5]
+            if  axis:
+                self._internalAxesValues[axis.axisId]= value
+            return
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["_axesValues"][5] = value
@@ -4266,9 +4337,9 @@ class GSBackgroundImage(GSBase):
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
-            writer.writeObjectKeyValue(self, "crop", default=Rect())
-        else:
-            writer.writeObjectKeyValue(self, "crop")
+
+        writer.writeObjectKeyValue(self, "crop")
+
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.formatVersion > 2:
@@ -4422,7 +4493,7 @@ class GSLayer(GSBase):
             attributes = self._get_plist_attributes()
             if attributes:
                 writer.writeKeyValue("attr", attributes)
-        writer.writeObjectKeyValue(self, "background", self._background is not None)
+        writer.writeObjectKeyValue(self, "background", self._background is not None and len(self._background.shapes) > 0)
         writer.writeObjectKeyValue(self, "backgroundImage")
         writer.writeObjectKeyValue(self, "color")
         if writer.formatVersion == 2:
@@ -4450,7 +4521,7 @@ class GSLayer(GSBase):
             if writer.formatVersion > 2:
                 writer.writeKeyValue("name", self._name)
             else:
-                writer.writeObjectKeyValue(self, self.name)
+                writer.writeKeyValue("name", self.name)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "smartComponentPoleMapping", "if_true", keyName="partSelection")
             if self._shapes:
@@ -4992,8 +5063,6 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(self, "vertWidthMetricsKey", "if_true", keyName="metricVertWidth")
             writer.writeObjectKeyValue(self, "widthMetricsKey", "if_true", keyName="metricWidth")
 
-        writer.writeObjectKeyValue(self, "note", "if_true")
-
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
             writer.writeObjectKeyValue(self, "rightMetricsKey", "if_true")
@@ -5001,6 +5070,8 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(self, "topMetricsKey", "if_true")
             writer.writeObjectKeyValue(self, "bottomKerningGroup", "if_true")
             writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true")
+
+        writer.writeObjectKeyValue(self, "note", "if_true")
 
         if self.unicodes and writer.formatVersion == 2:
             writer.writeKeyValue("unicode", self.unicodes)
