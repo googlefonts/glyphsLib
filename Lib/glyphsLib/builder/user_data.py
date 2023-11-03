@@ -72,11 +72,11 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
     # the GSFont useData under a key named after the layer.
     # When different original UFOs each had a layer with the same layer name,
     # only the layer lib of the last one was stored and was exported to UFOs
-    user_data = user_data = self.font.userData
-    if not user_data:
-        return
-    if key in user_data.keys():
-        ufo_layer.lib.update(user_data[key])
+
+    user_data = self.font.userData
+    if user_data:
+        if key in user_data.keys():
+            ufo_layer.lib.update(user_data[key])
     if key in master.userData.keys():
         ufo_layer.lib.update(master.userData[key])
         if LAYER_NAME_KEY in ufo_layer.lib:
