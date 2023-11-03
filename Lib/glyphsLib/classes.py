@@ -1964,7 +1964,7 @@ class GSFontMaster(GSBase):
                 metrics.append(metricValue)
             writer.writeKeyValue("metricValues", metrics)
         
-        if self.name != "Regular":
+        if self.name != "Regular" or writer.formatVersion > 2:
             writer.writeKeyValue("name", self.name)
 
         if writer.formatVersion >= 3:
