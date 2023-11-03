@@ -713,6 +713,11 @@ class DisplayStringsParamHandler(MiscParamHandler):
         ):
             super().to_ufo(builder, glyphs, ufo)
 
+    def to_glyphs(self, glyphs, ufo):
+        # FIXME: (georg) not sure why this needs a specil case
+        value = ufo.get_lib_value(self.ufo_prefix + self.ufo_name)
+        if hasattr(glyphs._owner, self.glyphs_name) and value:
+            glyphs._owner.displayStrings = value
 
 register_parameter_handler(DisplayStringsParamHandler(glyphs_name="displayStrings", ufo_name="DisplayStrings", ufo_prefix=GLYPHS_PREFIX))
 
