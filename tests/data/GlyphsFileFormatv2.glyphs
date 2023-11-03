@@ -12,7 +12,6 @@ code = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\012";
 name = Uppercase;
 }
 );
-copyright = "Default Copyright1";
 customParameters = (
 {
 name = "Import Font";
@@ -20,8 +19,8 @@ value = {
 };
 },
 {
-name = localizedCopyright;
-value = "German;Deutsches Copyright";
+name = localizedDesigner;
+value = "German;Deutscher Designer";
 },
 {
 name = trademark;
@@ -43,6 +42,7 @@ Tag = wght;
 }
 );
 date = "2020-01-03 19:42:13 +0000";
+designer = "Default Designer1";
 designerURL = "Designer URL";
 disablesNiceNames = 1;
 familyName = "New Font";
