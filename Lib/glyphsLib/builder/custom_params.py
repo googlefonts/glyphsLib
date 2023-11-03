@@ -690,9 +690,9 @@ class MiscParamHandler(ParamHandler):
             return getattr(glyphs._owner, self.glyphs_name)
         return None
 
-    def to_glyphs(self, glyphs, value):
+    def to_glyphs(self, glyphs, ufo):
         if hasattr(glyphs, self.glyphs_name):
-           setattr(glyphs, self.glyphs_name, value)
+           setattr(glyphs, self.glyphs_name, ufo)
 
 
 register_parameter_handler(MiscParamHandler(glyphs_name="disablesAutomaticAlignment", ufo_prefix=GLYPHS_PREFIX))
