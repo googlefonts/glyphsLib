@@ -254,9 +254,10 @@ def to_designspace_axes(self):
         is_identity_map = all(uloc == dloc for uloc, dloc in mapping.items())
 
         # Virtual Masters can't have an Axis Location parameter; their coordinates
-        # can either be mapped via Axis Mappings, or implicitly by neighbouring non-virtual
-        # masters' Axis Location params at least for existing axes; for newly defined
-        # axes the virtual master coordinates are assumed to be un-mapped (user==design).
+        # can either be mapped via Axis Mappings, or implicitly by neighbouring
+        # non-virtual masters' Axis Location params at least for existing axes; for
+        # newly defined axes the virtual master coordinates are assumed to be un-mapped
+        # (user==design).
         # Only if the {user:design} mapping so far is an identity map (because it
         # has not been 'bent' by one of the above mechanisms), the virtual masters
         # contribute to extend the current axis' min/max range.
