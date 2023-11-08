@@ -680,3 +680,48 @@ def test_variable_instance(ufo_module):
     assert doc.axes[0].map[2] == (400, 80)
     assert doc.axes[0].default == 400
     assert len(doc.instances) == 27  # The VF setting should not be in the DS
+
+
+def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
+    # https://github.com/googlefonts/glyphsLib/issues/859
+    font = GSFont(datadir.join("IntermediateLayer.glyphs"))
+    assert ["Cap Height", "Weight"] == [a.name for a in font.axes]
+
+    assert "Axis Mappings" not in font.customParameters
+    for master in font.masters:
+        assert "Axis Location" not in master.customParameters
+        # all non-virtual masters are at the default Cap Height location
+        assert master.axes[0] == 700
+
+    virtual_masters = [
+        cp.value for cp in font.customParameters if cp.name == "Virtual Master"
+    ]
+    assert virtual_masters[0] == [
+        {"Axis": "Cap Height", "Location": 600},
+        {"Axis": "Weight", "Location": 400},
+    ]
+    assert virtual_masters[1] == [
+        {"Axis": "Cap Height", "Location": 800},
+        {"Axis": "Weight", "Location": 400},
+    ]
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+
+    # the min/max for this axis are taken from the virtual masters
+    assert ds.axes[0].name == "Cap Height"
+    assert ds.axes[0].minimum == 600
+    assert ds.axes[0].default == 700
+    assert ds.axes[0].maximum == 800
+    assert not ds.axes[0].map
+
+    assert ds.axes[1].name == "Weight"
+    assert ds.axes[1].minimum == 400
+    assert ds.axes[1].default == 400
+    assert ds.axes[1].maximum == 900
+    assert not ds.axes[1].map
+
+    font2 = to_glyphs(ds)
+
+    assert [
+        cp.value for cp in font2.customParameters if cp.name == "Virtual Master"
+    ] == virtual_masters
