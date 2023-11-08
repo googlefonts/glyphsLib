@@ -1170,4 +1170,8 @@ class GSFontParamHandler(ParamHandler):
 # 'Virtual Master' params are GSFont-only and multi-valued (i.e. there can be multiple
 # custom parameters named 'Virtual Master'); we know we want them stored in lib.plist
 # hence ufo_info=False
-register(GSFontParamHandler("Virtual Master", ufo_info=False, glyphs_multivalued=True))
+register(
+    GSFontParamHandler(
+        "Virtual Master", ufo_info=False, ufo_default=[], glyphs_multivalued=True
+    )
+)
