@@ -152,6 +152,11 @@ def update_mapping_from_instances(
             mapping[userLoc] = designLoc
 
 
+def is_identity(mapping):
+    """Return whether the mapping is an identity mapping."""
+    return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -241,8 +246,12 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
-            # Prefer the instance-based mapping
-            mapping = instance_mapping or master_mapping
+            # Prefer the instance-based mapping (but only if interesting)
+            mapping = (
+                instance_mapping
+                if (instance_mapping and not is_identity(instance_mapping))
+                else master_mapping
+            )
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
@@ -251,7 +260,7 @@ def to_designspace_axes(self):
             regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             # TODO make sure that the default is in mapping?
 
-        is_identity_map = all(uloc == dloc for uloc, dloc in mapping.items())
+        is_identity_map = is_identity(mapping)
 
         # Virtual Masters can't have an Axis Location parameter; their coordinates
         # can either be mapped via Axis Mappings, or implicitly by neighbouring
