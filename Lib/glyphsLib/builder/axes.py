@@ -152,6 +152,11 @@ def update_mapping_from_instances(
             mapping[userLoc] = designLoc
 
 
+def is_identity(mapping):
+    """Return whether the mapping is an identity mapping."""
+    return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -159,6 +164,11 @@ def to_designspace_axes(self):
     assert isinstance(regular_master, classes.GSFontMaster)
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
+    virtual_masters = [
+        {v["Axis"]: v["Location"] for v in cp.value}
+        for cp in self.font.customParameters
+        if cp.name == "Virtual Master"
+    ]
 
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
@@ -194,9 +204,7 @@ def to_designspace_axes(self):
         elif font_uses_axis_locations(self.font):
             # If all masters have an "Axis Location" custom parameter, only the values
             # from this parameter will be used to build the mapping of the masters and
-            # instances
-            # TODO: (jany) use Virtual Masters as well?
-            #       (jenskutilek) virtual masters can't have an Axis Location parameter.
+            # instances.
             mapping = {}
             for master in self.font.masters:
                 designLoc = axis_def.get_design_loc(master)
@@ -238,8 +246,12 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
-            # Prefer the instance-based mapping
-            mapping = instance_mapping or master_mapping
+            # Prefer the instance-based mapping (but only if interesting)
+            mapping = (
+                instance_mapping
+                if (instance_mapping and not is_identity(instance_mapping))
+                else master_mapping
+            )
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
@@ -248,11 +260,28 @@ def to_designspace_axes(self):
             regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
             # TODO make sure that the default is in mapping?
 
+        is_identity_map = is_identity(mapping)
+
+        # Virtual Masters can't have an Axis Location parameter; their coordinates
+        # can either be mapped via Axis Mappings, or implicitly by neighbouring
+        # non-virtual masters' Axis Location params at least for existing axes; for
+        # newly defined axes the virtual master coordinates are assumed to be un-mapped
+        # (user==design).
+        # Only if the {user:design} mapping so far is an identity map (because it
+        # has not been 'bent' by one of the above mechanisms), the virtual masters
+        # contribute to extend the current axis' min/max range.
+        # https://github.com/googlefonts/glyphsLib/issues/859
+        if is_identity_map:
+            for vm in virtual_masters:
+                for axis_name, axis_coord in vm.items():
+                    if axis_name != axis.name:
+                        continue
+                    mapping[axis_coord] = axis_coord
+
         minimum = min(mapping)
         maximum = max(mapping)
         default = min(maximum, max(minimum, regularUserLoc))  # clamp
 
-        is_identity_map = all(uloc == dloc for uloc, dloc in mapping.items())
         if (
             minimum < maximum
             or minimum != axis_def.default_user_loc
