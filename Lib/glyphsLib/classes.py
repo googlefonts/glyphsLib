@@ -5594,6 +5594,9 @@ class GSFont(GSBase):
             instance.post_read()
         for glyph in self.glyphs:
             glyph.post_read()
+        if self.customParameters["note"]:
+            self.note = self.customParameters["note"]
+            del(self.customParameters["note"])
 
     def getVersionMinor(self):
         return self._versionMinor
@@ -5767,21 +5770,11 @@ class GSFont(GSBase):
 
     @property
     def note(self):
-        if self.formatVersion < 3:
-            value = self.customParameters["note"]
-            if value:
-                return value
-            else:
-                return ""
-        else:
-            return self._note
+        return self._note
 
     @note.setter
     def note(self, value):
-        if self.formatVersion < 3:
-            self.customParameters["note"] = value
-        else:
-            self._note = value
+        self._note = value
 
     @property
     def gridLength(self):
