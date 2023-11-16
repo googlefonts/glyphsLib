@@ -324,7 +324,7 @@ class UFOBuilder(LoggerMixin):
             else:
                 # Brace layer
                 key = (layer._brace_layer_name(), tuple(layer._brace_coordinates()))
-                ufo_layer = self.to_ufo_layer(glyph, layer, masterId=self._where_to_put_brace_layers[key, layer.associatedLayerId])  # .layers
+                ufo_layer = self.to_ufo_layer(glyph, layer, masterId=self._where_to_put_brace_layers[key, layer.associatedMasterId])  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)  # .glyph
 
