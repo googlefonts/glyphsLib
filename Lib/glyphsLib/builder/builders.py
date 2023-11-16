@@ -441,6 +441,7 @@ class GlyphsBuilder(LoggerMixin):
         ufo_module=None,
         minimize_ufo_diffs=False,
         expand_includes=False,
+        format_version=False,
     ):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
@@ -475,6 +476,7 @@ class GlyphsBuilder(LoggerMixin):
         self.glyphs_module = glyphs_module
         self.minimize_ufo_diffs = minimize_ufo_diffs
         self.expand_includes = expand_includes
+        self.format_version = format_version
 
         if designspace is not None:
             if ufos:
@@ -515,6 +517,8 @@ class GlyphsBuilder(LoggerMixin):
 
         if GLYPHS_PREFIX + "formatVersion" in self.designspace.lib:
             self._font.formatVersion = self.designspace.lib[GLYPHS_PREFIX + "formatVersion"]
+        if self.format_version:
+            self._font.formatVersion = int(self.format_version)
         if GLYPHS_PREFIX + "appVersion" in self.designspace.lib:
             self._font.appVersion = self.designspace.lib[GLYPHS_PREFIX + "appVersion"]
 
