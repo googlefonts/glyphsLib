@@ -337,6 +337,7 @@ def ufo2glyphs(options):
         ufo_module=ufo_module,
         minimize_ufo_diffs=options.no_preserve_glyphsapp_metadata,
         expand_includes=options.expand_includes,
+        format_version=options.format_version,
     )
 
     # Make the Glyphs file more suitable for roundtrip:
