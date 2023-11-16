@@ -166,40 +166,49 @@ def _to_designspace_source_layer(self):
     for key, master_ids in layer_to_master_ids.items():
         brace_coordinates = list(key[1])
         layer_name = key[0]
-        for master_id in master_ids:
-            # ... as they may need to be filled up with the values of the associated
-            # master.
-            master = self._sources[master_id]
-            master_coordinates = brace_coordinates
-            if len(master_coordinates) < len(designspace.axes):
-                master_locations = [master.location[a.name] for a in designspace.axes]
-                master_coordinates = (
-                    brace_coordinates + master_locations[len(brace_coordinates) :]
-                )
-            elif len(master_coordinates) > len(designspace.axes):
-                logger.warning(
-                    "Glyph(s) %s, brace layer '%s' defines more locations than "
-                    "there are design axes.",
-                    layer_to_glyph_names[key],
-                    layer_name,
-                )
-
-            # If we have more locations than axes, ignore the extra locations.
-            layer_coordinates_mapping = collections.OrderedDict(
-                (axis.name, location)
-                for axis, location in zip(designspace.axes, master_coordinates)
+        # In a designspace, we can't create the brace layers with the same
+        # location under different UFOs because that would lead to several
+        # <source> elements with the same location. Instead we'll pick the first
+        # (after sorting) master and stick all the brace layers with the same
+        # key = location there.
+        # Redirect other masters who have brace layers at the same location to
+        # the "chosen" one.
+        master_id = sorted(master_ids)[0]
+        for other_master_id in master_ids:
+            self._where_to_put_brace_layers[key, other_master_id] = master_id
+        # ... as they may need to be filled up with the values of the
+        # associated master.
+        master = self._sources[master_id]
+        master_coordinates = brace_coordinates
+        if len(master_coordinates) < len(designspace.axes):
+            master_locations = [master.location[a.name] for a in designspace.axes]
+            master_coordinates = (
+                brace_coordinates + master_locations[len(brace_coordinates) :]
+            )
+        elif len(master_coordinates) > len(designspace.axes):
+            logger.warning(
+                "Glyph(s) %s, brace layer '%s' defines more locations than "
+                "there are design axes.",
+                layer_to_glyph_names[key],
+                layer_name,
             )
 
-            s = fontTools.designspaceLib.SourceDescriptor()
-            s.filename = master.filename
-            s.font = master.font
-            s.layerName = layer_name
-            s.name = f"{master.name} {layer_name}"
-            s.location = layer_coordinates_mapping
+        # If we have more locations than axes, ignore the extra locations.
+        layer_coordinates_mapping = collections.OrderedDict(
+            (axis.name, location)
+            for axis, location in zip(designspace.axes, master_coordinates)
+        )
 
-            # We collect all generated SourceDescriptors first, grouped by the masters
-            # they belong to, so we can insert them in a defined order in the next step.
-            layers_to_insert[master_id].append(s)
+        s = fontTools.designspaceLib.SourceDescriptor()
+        s.filename = master.filename
+        s.font = master.font
+        s.layerName = layer_name
+        s.name = f"{master.name} {layer_name}"
+        s.location = layer_coordinates_mapping
+
+        # We collect all generated SourceDescriptors first, grouped by the masters
+        # they belong to, so we can insert them in a defined order in the next step.
+        layers_to_insert[master_id].append(s)
 
     # Splice brace layers into the appropriate location after their master.
     for master_id, brace_layers in layers_to_insert.items():
