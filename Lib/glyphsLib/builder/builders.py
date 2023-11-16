@@ -14,6 +14,7 @@
 
 
 from collections import OrderedDict, defaultdict
+import collections
 import os
 from textwrap import dedent
 from typing import Dict
@@ -116,6 +117,39 @@ class UFOBuilder(LoggerMixin):
         # Where to actually put brace layers
         # (key, associatedMasterId) -> masterId
         self._where_to_put_brace_layers = {}
+        # To construct a source layer, we need
+        # 1. The Designspace source filename and font object which holds the layer.
+        # 2. The (brace) layer name itself.
+        # 3. The location of the intermediate master in the design space.
+        # (For logging purposes, it's nice to know which glyphs contain the layer.)
+        #
+        # Note that a brace layer can be associated with different master layers (e.g. the
+        # 'a' can have a '{400}' brace layer associated with 'Thin', and 'b''s can be
+        # associte with 'Black').
+        # Also note that if a brace layer name has less values than there are axes, they
+        # are supposed to take on the values from the associated master as the missing
+        # values.
+        # First, collect all brace layers in the font and which glyphs and which masters
+        # they belong to.
+        layer_to_master_ids = collections.defaultdict(set)
+        for glyph in self.font.glyphs:
+            for layer in glyph.layers:
+                if layer._is_brace_layer():
+                    key = (layer._brace_layer_name(), tuple(layer._brace_coordinates()))
+                    layer_to_master_ids[key].add(layer.associatedMasterId)
+
+        # Next, insert the brace layers in a defined location in the existing designspace.
+        for key, master_ids in layer_to_master_ids.items():
+            # In a designspace, we can't create the brace layers with the same
+            # location under different UFOs because that would lead to several
+            # <source> elements with the same location. Instead we'll pick the first
+            # (after sorting) master and stick all the brace layers with the same
+            # key = location there.
+            # Redirect other masters who have brace layers at the same location to
+            # the "chosen" one.
+            master_id = sorted(master_ids)[0]
+            for other_master_id in master_ids:
+                self._where_to_put_brace_layers[key, other_master_id] = master_id
 
         # Map Glyphs layer IDs to UFO layer names.
         self._layer_map = {}
