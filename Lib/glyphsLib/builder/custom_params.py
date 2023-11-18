@@ -34,7 +34,7 @@ from .constants import (
     UFO2FT_META_TABLE_KEY,
 )
 from .features import replace_feature, replace_prefixes
-from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster
+from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -260,7 +260,8 @@ GLYPHS_FONT_UFO_CUSTOM_PARAMS = (
     ("blueScale", "postscriptBlueScale"),
     ("blueShift", "postscriptBlueShift"),
     ("isFixedPitch", "postscriptIsFixedPitch"),
-    ("uniqueID", "postscriptUniqueID"),
+    ("uniqueID", "openTypeNameUniqueID"),
+    ("unicodeRanges", "openTypeOS2UnicodeRanges"),
 )
 
 GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
@@ -274,7 +275,6 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
     ("typoAscender", "openTypeOS2TypoAscender"),
     ("typoDescender", "openTypeOS2TypoDescender"),
     ("typoLineGap", "openTypeOS2TypoLineGap"),
-    ("unicodeRanges", "openTypeOS2UnicodeRanges"),
     ("strikeoutSize", "openTypeOS2StrikeoutSize"),
     ("strikeoutPosition", "openTypeOS2StrikeoutPosition"),
     # OS/2 subscript parameters
@@ -288,8 +288,6 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
     ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
     ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
     # These can be recovered by reading the mapping backward.
-    # ("weightClass", "openTypeOS2WeightClass"),
-    # ("widthClass", "openTypeOS2WidthClass"),
     # These are processed separatedly down below.
     # ("winAscent", "openTypeOS2WinAscent"),
     # ("winDescent", "openTypeOS2WinDescent"),
@@ -304,11 +302,19 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
     ("underlineThickness", "postscriptUnderlineThickness"),
 )
 
+GLYPHS_INSTANCE_UFO_CUSTOM_PARAMS = (
+    ("weightClass", "openTypeOS2WeightClass"),
+    ("widthClass", "openTypeOS2WidthClass"),
+)
+
 for glyphs_name, ufo_name in GLYPHS_FONT_UFO_CUSTOM_PARAMS:
     register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSFont))
 
 for glyphs_name, ufo_name in GLYPHS_MASTER_UFO_CUSTOM_PARAMS:
     register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSFontMaster))
+
+for glyphs_name, ufo_name in GLYPHS_INSTANCE_UFO_CUSTOM_PARAMS:
+    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSInstance))
 
 # Reference:
 # https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
@@ -415,8 +421,11 @@ register_parameter_handler(EmptyListDefaultParamHandler("postscriptFamilyOtherBl
 class OS2CodePageRangesParamHandler(AbstractParamHandler):
     glyphs_name = "codePageRanges"
     ufo_name = "openTypeOS2CodePageRanges"
+    glyphs_owner_class=GSFont
 
     def to_glyphs(self, glyphs, ufo):
+        if not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+            return
         ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
         if ufo_codepage_bits is None:
             return
@@ -461,10 +470,10 @@ for glyphs_name in ("winAscent", "winDescent"):
     )
 
 # The value of these could be a float, and ufoLib/defcon expect an int.
+# FIXME: (georg) This is actually not working as the handlers is not applied to instances, yet. There is custom code
 for glyphs_name in ("weightClass", "widthClass"):
     ufo_name = "openTypeOS2W" + glyphs_name[1:]
-    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, value_to_ufo=int))
-
+    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, value_to_ufo=int, glyphs_owner_class=GSInstance))
 
 # convert Glyphs' GASP Table to UFO openTypeGaspRangeRecords
 def to_ufo_gasp_table(value):
@@ -747,12 +756,14 @@ class OS2SelectionParamHandler(AbstractParamHandler):
     glyphs_name = None
     ufo_name = "openTypeOS2Selection"
     flags = {7: "Use Typo Metrics", 8: "Has WWS Names"}
-
+    glyphs_owner_class=(GSFont, GSInstance)
     # Note that en empty openTypeOS2Selection list should stay an empty list, as
     # opposed to a non-existant list. In the latter case, we round-trip nothing, in the
     # former, we at least write an empty list to openTypeOS2SelectionUnsupportedBits
     # which we use to re-instate an empty list in the UFO on tripping back.
     def to_glyphs(self, glyphs, ufo):
+        if not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+            return
         ufo_flags = ufo.get_info_value(self.ufo_name)
         if ufo_flags is None:
             return
@@ -763,7 +774,8 @@ class OS2SelectionParamHandler(AbstractParamHandler):
                 glyphs[self.flags[flag]] = True
             else:
                 unsupported_bits.append(flag)
-        glyphs["openTypeOS2SelectionUnsupportedBits"] = unsupported_bits
+        if len(unsupported_bits) > 0:
+            glyphs["openTypeOS2SelectionUnsupportedBits"] = unsupported_bits
 
     def to_ufo(self, builder, glyphs, ufo):
         use_typo_metrics = glyphs[self.flags[7]]

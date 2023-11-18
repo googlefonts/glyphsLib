@@ -89,6 +89,7 @@ CUSTOM_PARAMETERS_BLACKLIST = [
     # These are artificial.
     FULL_FILENAME_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
+    "uniqueID",
 ]
 
 # Reference:
