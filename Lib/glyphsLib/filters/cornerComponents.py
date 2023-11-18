@@ -266,6 +266,7 @@ class CornerComponentApplier:
         (
             instroke_intersection_point,
             outstroke_intersection_point,
+            correction,
         ) = self.align_my_path_to_main_path()
 
         # Keep hold of the original outstroke segment. Fitting the
@@ -278,7 +279,7 @@ class CornerComponentApplier:
         # instroke based on where we put the corner component, and
         # potentially stretch the corner component so that it meets the
         # instroke.
-        if self.alignment != Alignment.INSTROKE:
+        if self.alignment != Alignment.INSTROKE and correction:
             instroke_intersection_point = self.recompute_instroke_intersection_point()
             # The instroke of the corner path may need stretching to fit...
             if len(self.first_seg) == 4:
@@ -364,6 +365,7 @@ class CornerComponentApplier:
         instroke_intersection_point = segmentPointAtT(
             as_tuples(reversed(self.instroke)), t2
         )
+        correction = not (math.isclose(t2, 0.0) or math.isclose(t2, 1.0))
         instroke_angle = math.atan2(
             self.target_node.y - instroke_intersection_point[1],
             self.target_node.x - instroke_intersection_point[0],
@@ -389,7 +391,7 @@ class CornerComponentApplier:
             for pt in path:
                 pt.x, pt.y = translation.transform(rot).transformPoint((pt.x, pt.y))
 
-        return instroke_intersection_point, outstroke_intersection_point
+        return instroke_intersection_point, outstroke_intersection_point, correction
 
     def recompute_instroke_intersection_point(self):
         return unbounded_seg_seg_intersection(

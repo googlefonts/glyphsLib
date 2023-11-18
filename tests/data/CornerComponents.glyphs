@@ -1,8 +1,9 @@
 {
-.appVersion = "3109";
+.appVersion = "3225";
 .formatVersion = 3;
 DisplayStrings = (
-"/_corner.seven/al_unaligned/ai_curved_outstroke/ai_curved_outstroke.expectation"
+"/_corner.large/aw_direction",
+"/aw_direction.expectation"
 );
 customParameters = (
 {
@@ -87,7 +88,6 @@ over = -16;
 pos = -200;
 },
 {
-over = -16;
 }
 );
 name = Regular;
@@ -1748,6 +1748,81 @@ width = 600;
 );
 },
 {
+category = Letter;
+color = 1;
+export = 0;
+glyphname = _corner.large;
+layers = (
+{
+associatedMasterId = m01;
+layerId = "8D56D424-E9A7-400C-A9D5-AD8E3EE2E0AC";
+name = "Bold-18pt";
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,0,l),
+(10,-15,l),
+(161,-15,l),
+(171,0,l)
+);
+}
+);
+width = 171;
+},
+{
+associatedMasterId = m01;
+layerId = "0C674E7E-91ED-4D44-BE50-73C52ADB0B3C";
+name = "Regular-18pt";
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,0,l),
+(10,-11,l),
+(105,-11,l),
+(115,0,l)
+);
+}
+);
+width = 115.26667;
+},
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,0,l),
+(8,-11,l),
+(106,-11,l),
+(116,0,l)
+);
+}
+);
+width = 116;
+},
+{
+associatedMasterId = m01;
+layerId = "58998773-F943-4012-9030-873B26EE63FE";
+name = "Bold-17pt";
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,0,l),
+(10,-15,l),
+(161,-15,l),
+(171,0,l)
+);
+}
+);
+width = 171;
+}
+);
+subCategory = Fraction;
+},
+{
 export = 0;
 glyphname = _corner.seven;
 lastChange = "2022-11-22 12:06:08 +0000";
@@ -1800,6 +1875,64 @@ nodes = (
 }
 );
 width = 200;
+}
+);
+},
+{
+color = 9;
+glyphname = aw_direction;
+lastChange = "2023-11-18 04:55:35 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.large;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(246,0,l),
+(246,217,l),
+(198,154,o),
+(92,112,o),
+(37,112,c),
+(8,0,l)
+);
+}
+);
+width = 286;
+}
+);
+},
+{
+color = 9;
+glyphname = aw_direction.expectation;
+lastChange = "2023-11-18 04:58:15 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(246,0,l),
+(246,217,l),
+(198,154,o),
+(92,112,o),
+(37,112,c),
+(24,107,l),
+(0,12,l),
+(8,0,l),
+(8,0,l)
+);
+}
+);
+width = 286;
 }
 );
 },
