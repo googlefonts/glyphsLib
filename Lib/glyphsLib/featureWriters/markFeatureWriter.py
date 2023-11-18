@@ -9,9 +9,12 @@ from ufo2ft.featureWriters.markFeatureWriter import (
     LIGA_NUM_RE,
     MarkToBasePos,
     NamedAnchor,
-    MarkFeatureWriter,
     quantize,
 )
+from ufo2ft.featureWriters.variableMarkWriter import (
+    VariableMarkFeatureWriter
+)
+
 
 
 class ContextuallyAwareNamedAnchor(NamedAnchor):
@@ -109,7 +112,7 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
         self.libData = libData
 
 
-class ContextualMarkFeatureWriter(MarkFeatureWriter):
+class ContextualMarkFeatureWriter(VariableMarkFeatureWriter):
     NamedAnchor = ContextuallyAwareNamedAnchor
 
     def _getAnchorLists(self):
@@ -136,8 +139,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                     self.log.warning(
                         "duplicate anchor '%s' in glyph '%s'", anchorName, glyphName
                     )
-                x = quantize(anchor.x, self.options.quantization)
-                y = quantize(anchor.y, self.options.quantization)
+                x, y = self._getAnchor(glyphName, anchorName)
                 libData = None
                 if anchor.identifier:
                     libData = glyph.lib[OBJECT_LIBS_KEY].get(anchor.identifier)
