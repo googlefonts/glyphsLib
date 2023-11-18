@@ -30,7 +30,6 @@ from .constants import (
     CODEPAGE_RANGES,
     REVERSE_CODEPAGE_RANGES,
     PUBLIC_PREFIX,
-    UFO_FILENAME_CUSTOM_PARAM,
     UFO2FT_META_TABLE_KEY,
 )
 from .features import replace_feature, replace_prefixes
