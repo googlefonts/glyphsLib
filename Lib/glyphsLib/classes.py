@@ -48,6 +48,7 @@ from glyphsLib.types import (
     readIntlist,
     NegateBool,
 )
+
 from glyphsLib.util import designspace_min_max, isString, isList
 from glyphsLib.writer import Writer
 import glyphsLib.glyphdata as glyphdata
@@ -161,6 +162,38 @@ GSMetricsKeyBodyHeight = "bodyHeight"  # global top boundary, can be xHeight, Ca
 GSMetricsKeyDescender = "descender"
 GSMetricsKeyBaseline = "baseline"
 GSMetricsKeyItalicAngle = "italic angle"
+
+PROPERTIES_WHITELIST = [
+    # This is stored in the official descriptor attributes.
+    # "familyNames",
+    "designers",
+    "designerURL",
+    "manufacturers",
+    "manufacturerURL",
+    "copyrights",
+    "versionString",
+    "vendorID",
+    "uniqueID",
+    "licenses",
+    "licenseURL",
+    "trademarks",
+    "descriptions",
+    "sampleTexts",
+    "postscriptFullNames",
+    "postscriptFullName",
+    # This is stored in the official descriptor attributes.
+    # "postscriptFontName",
+    "compatibleFullNames",
+    "styleNames",
+    "styleMapFamilyNames",
+    "styleMapStyleNames",
+    "preferredFamilyNames",
+    "preferredSubfamilyNames",
+    "variableStyleNames",
+    "WWSFamilyName",
+    "WWSSubfamilyName",
+    "variationsPostScriptNamePrefix",
+]
 
 
 class GSWritingDirection(IntEnum):
@@ -1492,6 +1525,12 @@ class PropertiesProxy(ListDictionaryProxy):
             infoValue.setLocalizedValue(value, "dflt")
         else:
             infoValue.value = value
+
+    def getProperty(self, key, language="dflt"):
+        for infoValue in self:
+            if infoValue.name != key:
+                continue
+            return infoValue.localizedValue(language)
 
     def setProperty(self, key, value, language="dflt"):
         for infoValue in self:
@@ -3853,9 +3892,9 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         if not self._localized_values:
             return self._value
         if language in ["dflt", "ENG"]:
-            for key in ["dflt", "ENG"]:
-                if key in self._localized_values:
-                    return self._localized_values[key]
+            if language in self._localized_values:
+                value = self._localized_values[language]
+                return value
         return self._localized_values.get(language, None)
 
     def setLocalizedValue(self, value, language="dflt"):
@@ -3867,8 +3906,12 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def propertiesFromLegacyCustomParameters(cls, obj):
         for parameter in list(obj.customParameters):
             name = parameter.name
-            if name in ("familyName", "trademark", "preferredFamilyName", "preferredSubfamilyName"):
-                obj.properties.setProperty(name + "s", parameter.value)
+            if name in PROPERTIES_WHITELIST or name + "s" in PROPERTIES_WHITELIST:
+                if name + "s" in PROPERTIES_WHITELIST:
+                    propertyName = name + "s"
+                else:
+                    propertyName = name
+                obj.properties.setProperty(propertyName, parameter.value)
                 obj.customParameters.remove(parameter)
                 continue
             if name not in LOCALIZED_PARAMETERS:
@@ -4162,6 +4205,38 @@ class GSInstance(GSBase):
             return self.name
         else:
             return "Regular"
+
+    @property
+    def styleMapFamilyNames(self):
+        self.properties["styleMapFamilyNames"]
+        
+    @styleMapFamilyNames.setter
+    def styleMapFamilyNames(self, values):
+        self.properties["styleMapFamilyNames"] = value
+
+    @property
+    def styleMapStyleNames(self):
+        self.properties["styleMapStyleNames"]
+
+    @styleMapStyleNames.setter
+    def styleMapStyleNames(self, values):
+        self.properties["styleMapStyleNames"] = value
+
+    @property
+    def styleMapFamilyName(self):
+        return self.properties.getProperty("styleMapFamilyNames")
+
+    @styleMapFamilyName.setter
+    def styleMapFamilyName(self, value):
+        self.properties.setProperty("styleMapFamilyNames", value)
+
+    @property
+    def styleMapStyleName(self):
+        return self.properties.getProperty("styleMapStyleNames")
+
+    @styleMapStyleName.setter
+    def styleMapStyleName(self, value):
+        self.properties.setProperty("styleMapStyleNames", value)
 
     @property
     def windowsLinkedToStyle(self):
