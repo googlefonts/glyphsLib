@@ -4534,7 +4534,9 @@ class GSLayer(GSBase):
             writer.writeKeyValue("userData", userData)
         writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
-        writer.writeObjectKeyValue(self, "vertWidth")
+        if (self.vertWidth != 0):
+            # FIXME: how to know if that zero is a realy value (this is a problem with the ufo spec)
+            writer.writeObjectKeyValue(self, "vertWidth")
         writer.writeObjectKeyValue(
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
