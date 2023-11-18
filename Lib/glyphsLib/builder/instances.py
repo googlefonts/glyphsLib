@@ -147,8 +147,11 @@ def _to_designspace_instance(self, instance):
     if self.minimize_glyphs_diffs:
         if not instance.exports:
             ufo_instance.lib[EXPORT_KEY] = False
-        ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
-        ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
+        if instance.instanceInterpolations:
+            ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
+        if instance.manualInterpolation:
+            ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
+
 
     # Dump selected custom parameters and properties into the instance
     # descriptor. Later, when using `apply_instance_data`, we will dig out those
