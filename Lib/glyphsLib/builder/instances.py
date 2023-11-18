@@ -144,6 +144,10 @@ def _to_designspace_instance(self, instance):
     ufo_instance.lib["openTypeOS2WidthClass"] = instance.widthClass
     ufo_instance.lib["openTypeOS2WeightClass"] = instance.weightClass
     
+    uniqueID = instance.customParameters["uniqueID"]
+    if uniqueID:
+        ufo_instance.lib["openTypeNameUniqueID"] = uniqueID
+
     if self.minimize_glyphs_diffs:
         if not instance.exports:
             ufo_instance.lib[EXPORT_KEY] = False
@@ -315,7 +319,14 @@ def to_glyphs_instances(self):  # noqa: C901
 
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
-
+        
+        # some info that needs to be in a instance in Glyphs is stored in the sources. So we try to find a matching source (FIXME: (georg) not nice
+        for source in self.designspace.sources:
+            if source.location == ufo_instance.location:
+                instance.weightClass = source.font.info.openTypeOS2WeightClass or 400
+                instance.widthClass = source.font.info.openTypeOS2WidthClass or 5
+                if source.font.info.openTypeNameUniqueID:
+                    instance.properties["uniqueID"] = source.font.info.openTypeNameUniqueID
         self.font.instances.append(instance)
 
 
