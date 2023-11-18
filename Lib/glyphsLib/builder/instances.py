@@ -25,6 +25,7 @@ from glyphsLib.classes import (
     InstanceType,
     PropertiesProxy,
     WEIGHT_CODES,
+    PROPERTIES_WHITELIST
 )
 from .constants import (
     GLYPHS_PREFIX,
@@ -37,7 +38,6 @@ from .constants import (
     INSTANCE_INTERPOLATIONS_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
     PROPERTIES_KEY,
-    PROPERTIES_WHITELIST,
 )
 from .names import build_stylemap_names
 from .custom_params import to_ufo_custom_params, to_ufo_properties
@@ -136,6 +136,13 @@ def _to_designspace_instance(self, instance):
         )
         ufo_instance.styleMapFamilyName = styleMapFamilyName
         ufo_instance.styleMapStyleName = styleMapStyleName
+    smfm = instance.styleMapFamilyName
+    print("___smfm c", instance, instance.properties, instance.customParameters)
+    if smfm:
+        ufo_instance.styleMapFamilyName = smfm
+    smsm = instance.styleMapStyleName
+    if smsm:
+        ufo_instance.styleMapStyleName = smsm
 
     ufo_instance.name = " ".join(
         (ufo_instance.familyName or "", ufo_instance.styleName or "")
@@ -205,7 +212,7 @@ def _to_properties(instance):
     return [
         (item.name, item.value)
         for item in instance.properties
-        if item.name in PROPERTIES_WHITELIST
+        if item.name not in CUSTOM_PARAMETERS_BLACKLIST 
     ]
 
 
@@ -287,14 +294,16 @@ def to_glyphs_instances(self):  # noqa: C901
 
         smfn = ufo_instance.styleMapFamilyName
         if smfn is not None:
+            instance.styleMapFamilyName = smfn
             if smfn.startswith(ufo_instance.familyName):
                 smfn = smfn[len(ufo_instance.familyName) :].strip()
             instance.linkStyle = smfn
 
-        if ufo_instance.styleMapStyleName is not None:
-            style = ufo_instance.styleMapStyleName
-            instance.isBold = "bold" in style
-            instance.isItalic = "italic" in style
+        smsn = ufo_instance.styleMapStyleName
+        if smsn is not None:
+            instance.styleMapStyleName = smsn
+            instance.isBold = "bold" in smsn
+            instance.isItalic = "italic" in smsn
 
         if ufo_instance.postScriptFontName is not None:
             instance.fontName = ufo_instance.postScriptFontName

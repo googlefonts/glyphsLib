@@ -31,6 +31,7 @@ from .constants import (
     REVERSE_CODEPAGE_RANGES,
     PUBLIC_PREFIX,
     UFO2FT_META_TABLE_KEY,
+    CUSTOM_PARAMETERS_BLACKLIST,
 )
 from .features import replace_feature, replace_prefixes
 from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance
@@ -304,6 +305,9 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
 GLYPHS_INSTANCE_UFO_CUSTOM_PARAMS = (
     ("weightClass", "openTypeOS2WeightClass"),
     ("widthClass", "openTypeOS2WidthClass"),
+    ("uniqueID", "openTypeNameUniqueID"),
+    ("styleMapFamilyName", "styleMapFamilyName"),
+    ("styleMapStyleName", "styleMapStyleName"),
 )
 
 for glyphs_name, ufo_name in GLYPHS_FONT_UFO_CUSTOM_PARAMS:
@@ -1065,6 +1069,8 @@ def to_ufo_custom_params(self, ufo, glyphs_object, class_key, set_default_params
     parameters = []
     for param in glyphs_parameters_proxy:
         if param.name in handled_parameters:
+            continue
+        if param.name in CUSTOM_PARAMETERS_BLACKLIST:
             continue
         name = _normalize_custom_param_name(param.name)
         value = _normalize_custom_param_value(param.value)
