@@ -7,12 +7,9 @@ from ufo2ft.featureWriters.markFeatureWriter import (
     MARK_PREFIX,
     LIGA_SEPARATOR,
     LIGA_NUM_RE,
+    MarkFeatureWriter,
     MarkToBasePos,
     NamedAnchor,
-    quantize,
-)
-from ufo2ft.featureWriters.variableMarkWriter import (
-    VariableMarkFeatureWriter
 )
 
 
@@ -112,7 +109,7 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
         self.libData = libData
 
 
-class ContextualMarkFeatureWriter(VariableMarkFeatureWriter):
+class ContextualMarkFeatureWriter(MarkFeatureWriter):
     NamedAnchor = ContextuallyAwareNamedAnchor
 
     def _getAnchorLists(self):
