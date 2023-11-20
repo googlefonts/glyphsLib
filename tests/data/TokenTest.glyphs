@@ -1,5 +1,5 @@
 {
-.appVersion = "3039";
+.appVersion = "3225";
 .formatVersion = 3;
 classes = (
 {
@@ -125,6 +125,22 @@ width = 600;
 );
 script = latin;
 unicode = 65;
+},
+{
+export = 0;
+glyphname = B;
+lastChange = "2023-11-20 21:52:14 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "11119B89-ADF6-486B-9172-E51437C3592A";
+width = 600;
+}
+);
+unicode = 66;
 },
 {
 glyphname = A.sc;
