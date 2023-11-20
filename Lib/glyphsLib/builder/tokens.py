@@ -192,6 +192,8 @@ class TokenExpander:
 
         glyphs = OrderedDict({})
         for g in self.font.glyphs:
+            if not g.export:
+                continue
             v = self._get_value_for_glyph(g, obj)
             truth = self._compare(v, comparator, expected)
             if invert:
