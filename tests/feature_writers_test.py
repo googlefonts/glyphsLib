@@ -38,3 +38,27 @@ def test_contextual_anchors(datadir):
             " lookup ContextualMark_1; # behDotless-ar.init/*bottom\n"
             "} ContextualMarkDispatch_1;\n"
         )
+
+
+def test_ignorable_anchors(datadir):
+    ufos = load_to_ufos(datadir.join("IgnorableAnchors.glyphs"))
+
+    for ufo in ufos:
+        writer = ContextualMarkFeatureWriter()
+        feaFile = ast.FeatureFile()
+        assert str(feaFile) == ""
+        assert writer.write(ufo, feaFile)
+
+        assert len(feaFile.markClasses) == 1
+        assert "MC_top" in feaFile.markClasses
+
+        feature = feaFile.statements[-2]
+        assert feature.name == "mark"
+        assert len(feature.statements) == 1
+
+        lookup = feature.statements[0]
+        assert len(lookup.statements) == 4
+        for statement in lookup.statements:
+            assert isinstance(statement, ast.MarkBasePosStatement)
+            assert len(statement.marks) == 1
+            assert statement.marks[0][1].name == "MC_top"
