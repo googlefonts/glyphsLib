@@ -24,6 +24,7 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
         "number",
         "markClass",
         "isContextual",
+        "isIgnorable",
         "libData",
     )
 
@@ -83,13 +84,15 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
         else:
             isMark = False
 
-        return isMark, key, number, isContextual
+        isIgnorable = not key[0].isalpha()
+
+        return isMark, key, number, isContextual, isIgnorable
 
     def __init__(self, name, x, y, markClass=None, libData=None):
         self.name = name
         self.x = x
         self.y = y
-        isMark, key, number, isContextual = self.parseAnchorName(
+        isMark, key, number, isContextual, isIgnorable = self.parseAnchorName(
             name,
             markPrefix=self.markPrefix,
             ligaSeparator=self.ligaSeparator,
@@ -106,6 +109,7 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
         self.number = number
         self.markClass = markClass
         self.isContextual = isContextual
+        self.isIgnorable = isIgnorable
         self.libData = libData
 
 
@@ -143,6 +147,8 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                     libData = glyph.lib[OBJECT_LIBS_KEY].get(anchor.identifier)
                 a = self.NamedAnchor(name=anchorName, x=x, y=y, libData=libData)
                 if a.isContextual and not libData:
+                    continue
+                if a.isIgnorable:
                     continue
                 anchorDict[anchorName] = a
             if anchorDict:

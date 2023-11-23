@@ -1,0 +1,402 @@
+{
+.appVersion = "3227";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = "Write lastChange";
+value = 0;
+},
+{
+name = "Write DisplayStrings";
+value = 0;
+}
+);
+date = "2023-11-22 14:08:36 +0000";
+familyName = "Ignore Anchors Test";
+featurePrefixes = (
+{
+code = "languagesystem DFLT dflt;
+languagesystem latn dflt;
+";
+name = Languagesystems;
+}
+);
+fontMaster = (
+{
+axesValues = (
+100
+);
+iconName = Light;
+id = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+metricValues = (
+{
+over = 10;
+pos = 800;
+},
+{
+over = 10;
+pos = 700;
+},
+{
+over = 10;
+pos = 470;
+},
+{
+over = -10;
+},
+{
+over = -10;
+pos = -200;
+}
+);
+name = Thin;
+},
+{
+axesValues = (
+900
+);
+iconName = Bold;
+id = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+metricValues = (
+{
+over = 15;
+pos = 800;
+},
+{
+over = 15;
+pos = 700;
+},
+{
+over = 15;
+pos = 490;
+},
+{
+over = -15;
+},
+{
+over = -15;
+pos = -200;
+}
+);
+name = Black;
+}
+);
+glyphs = (
+{
+color = (120,220,20,4);
+glyphname = A;
+kernLeft = A;
+kernRight = A;
+layers = (
+{
+anchors = (
+{
+name = top;
+pos = (377,700);
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+closed = 1;
+nodes = (
+(377,700,l),
+(20,0,l),
+(733,0,l)
+);
+}
+);
+width = 753;
+},
+{
+anchors = (
+{
+name = top;
+pos = (297,700);
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+closed = 1;
+nodes = (
+(297,700,l),
+(45,0,l),
+(548,0,l)
+);
+}
+);
+width = 593;
+}
+);
+unicode = 65;
+},
+{
+glyphname = Adieresis;
+layers = (
+{
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+ref = A;
+},
+{
+pos = (110,230);
+ref = dieresiscomb;
+}
+);
+width = 593;
+},
+{
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+ref = A;
+},
+{
+pos = (110,210);
+ref = dieresiscomb;
+}
+);
+width = 753;
+}
+);
+unicode = 196;
+},
+{
+glyphname = a;
+kernLeft = a;
+kernRight = a;
+layers = (
+{
+anchors = (
+{
+name = "#top";
+pos = (258,549);
+},
+{
+name = top;
+pos = (258,490);
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+closed = 1;
+nodes = (
+(-28,0,o),
+(184,0,cs),
+(488,0,l),
+(488,454,l),
+(72,240,ls),
+(1,205,o)
+);
+}
+);
+width = 518;
+},
+{
+anchors = (
+{
+name = "#top";
+pos = (226,512);
+},
+{
+name = top;
+pos = (226,471);
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+closed = 1;
+nodes = (
+(40,0,o),
+(212,0,cs),
+(369,0,l),
+(369,428,l),
+(113,190,ls),
+(69,150,o)
+);
+}
+);
+width = 456;
+}
+);
+unicode = 97;
+},
+{
+glyphname = adieresis;
+layers = (
+{
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+ref = a;
+},
+{
+pos = (38,-62);
+ref = dieresiscomb;
+}
+);
+width = 456;
+},
+{
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+ref = a;
+},
+{
+pos = (-9,36);
+ref = dieresiscomb;
+}
+);
+width = 518;
+}
+);
+unicode = 228;
+},
+{
+glyphname = dieresiscomb;
+layers = (
+{
+anchors = (
+{
+name = "_#top";
+pos = (188,574);
+},
+{
+name = _top;
+pos = (187,470);
+},
+{
+name = top;
+pos = (188,650);
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+closed = 1;
+nodes = (
+(261,650,l),
+(261,621,l),
+(289,621,l),
+(289,650,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(88,650,l),
+(88,621,l),
+(116,621,l),
+(116,650,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = "_#top";
+pos = (267,513);
+},
+{
+name = _top;
+pos = (267,490);
+},
+{
+name = top;
+pos = (267,740);
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+closed = 1;
+nodes = (
+(298,735,l),
+(298,547,l),
+(482,547,l),
+(482,735,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(48,735,l),
+(48,547,l),
+(232,547,l),
+(232,735,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 776;
+}
+);
+instances = (
+{
+axesValues = (
+100
+);
+instanceInterpolations = {
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 1;
+};
+manualInterpolation = 1;
+name = Thin;
+weightClass = 100;
+},
+{
+axesValues = (
+400
+);
+instanceInterpolations = {
+"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 0.375;
+"C4872ECA-A3A9-40AB-960A-1DB2202F16DE" = 0.625;
+};
+name = Regular;
+},
+{
+axesValues = (
+900
+);
+instanceInterpolations = {
+"BFFFD157-90D3-4B85-B99D-9A2F366F03CA" = 1;
+};
+name = Black;
+weightClass = 900;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
