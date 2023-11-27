@@ -2322,6 +2322,9 @@ class GSPath(GSBase):
             self._segmentLength += 1
             segmentCount += 1
 
+        if not self.closed:
+            self._segments.pop(0)
+
         return self._segments
 
     @segments.setter
