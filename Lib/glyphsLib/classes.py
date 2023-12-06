@@ -1464,6 +1464,10 @@ class CustomParametersProxy(ListDictionaryProxy):
         for item in super().__iter__():
             yield item
 
+    def keys(self):
+        keys = [parameter.name for parameter in self]
+        return keys
+
     def _get_by_name(self, name):
         #AAA
         if name == "Name Table Entry":
