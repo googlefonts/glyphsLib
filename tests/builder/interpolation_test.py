@@ -81,7 +81,7 @@ def makeInstance(
     # - internalAxesValues: dict with axisId > axis coordinats (such as 66.0), which typically is
     #    the stem width but can be anything that works for interpolation
     # - externalAxesValues: dict with axisId > axis coordinats (such as 400 for the weight axis). This are the extranl axis values that the use sees. Will be used to generate avar
-    
+
     inst._axesValues = []
     if weight is not None:
         weightClass, interpolationWeight = weight
@@ -133,15 +133,15 @@ class DesignspaceTest(unittest.TestCase):
         shutil.rmtree(self.tmpdir)
 
     def write_to_tmp_path(self, doc, name):
-        #path = os.path.join(self.tmpdir, name)
-        path = os.path.join("/Users/georg/Stuff/Temp", name)
-        print("__write_to_tmp_path", path)
+        path = os.path.join(self.tmpdir, name)
+        # path = os.path.join("/Users/georg/Stuff/Temp", name)
+        # print("__write_to_tmp_path", path)
         doc.write(path)
         return path
 
     def expect_designspace(self, doc, expected_name):
         dirname = os.path.dirname(__file__)
-        expected_path = os.path.join(dirname, "..", "data", expected_name)
+        expected_path = os.path.normpath(os.path.join(dirname, "..", "data", expected_name))
         return self._expect_designspace(doc, expected_path)
 
     def _expect_designspace(self, doc, expected_path):
@@ -154,7 +154,7 @@ class DesignspaceTest(unittest.TestCase):
             sys.stderr.write("%s discrepancies (per xmldiff):\n" % (expected_name))
             for line in actual_diff.split("\n"):
                 sys.stderr.write("  %s" % (line))
-            self.fail("*.designspace file is different from expected")
+            self.fail("*.designspace file is different from expected:\n" + actual_diff)
 
     def expect_designspace_roundtrip(self, doc):
         actual_path = self.write_to_tmp_path(doc, "original.designspace")

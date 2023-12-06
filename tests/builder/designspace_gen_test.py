@@ -56,7 +56,7 @@ def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
     ufo_ExBd.info.openTypeOS2WeightClass = 800
 
     font = to_glyphs([ufo_Lt, ufo_Rg, ufo_Md, ufo_Bd, ufo_ExBd])
-    
+
     assert font.masters[0].name == "Light"
     assert font.masters[4].name == "XBold"
 
@@ -160,7 +160,6 @@ def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
     assert designspace.sources[0].filename != designspace.sources[2].filename
 
 def test_properties_roundtrip(tmpdir, ufo_module):
-
     datadir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     orig_file_path = os.path.join(datadir,"test_font_properties.glyphs")
     with open(orig_file_path) as f:
@@ -171,15 +170,12 @@ def test_properties_roundtrip(tmpdir, ufo_module):
     designspace = to_designspace(
         font, ufo_module=ufo_module, minimize_glyphs_diffs=True
     )
-    
+
     font_rt = to_glyphs(designspace)
-    
+
     path_rt = os.path.join(str(tmpdir), "test_font_properties_roundtrip.glyphs")
     font_rt.save(path_rt)
-    assert (
-        len(diff_files(path_rt, orig_file_path))
-        == 0
-    )
+    assert not diff_files(path_rt, orig_file_path)
 
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
 def test_designspace_generation_brace_layers(datadir, filename, ufo_module):

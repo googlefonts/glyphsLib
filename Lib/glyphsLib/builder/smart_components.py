@@ -150,7 +150,7 @@ def to_ufo_smart_component(self, layer, component, pen):
     if component.transform:
         # We must reverse path direction for flipped components
         # https://github.com/googlefonts/glyphsLib/issues/882
-        should_reverse = component.scale[0] * component.scale[0] < 0
+        should_reverse = component.scale[0] * component.scale[1] < 0
         for p in new_layer.paths:
             p.applyTransform(component.transform)
             if should_reverse:

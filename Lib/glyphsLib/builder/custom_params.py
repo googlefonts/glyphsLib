@@ -387,7 +387,7 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     #"openTypeNameUniqueID",
     "openTypeOS2FamilyClass",
     "postscriptSlantAngle",
-    #"postscriptUniqueID",
+    "postscriptUniqueID",
     # TODO: Should this be handled in `blue_values.py`?
     # "postscriptFamilyBlues",
     # "postscriptFamilyOtherBlues",

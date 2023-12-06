@@ -1962,7 +1962,7 @@ class GSFontMaster(GSBase):
         if writer.formatVersion >= 3 and len(self.internalAxesValues):
             writer.writeKeyValue("axesValues", self.internalAxesValues)
         customParameters = list(self.customParameters)
-        
+
         if writer.formatVersion == 2:
             (weightName, widthName, customName) = self._splitName(self.name)
             writer.writeObjectKeyValue(self, "capHeight")
@@ -1973,9 +1973,9 @@ class GSFontMaster(GSBase):
             self._write_axis_value(writer, 3, 0)
             self._write_axis_value(writer, 4, 0)
             self._write_axis_value(writer, 5, 0)
-            
+
             smallCapMetric = self._get_metric_position(GSMetricsKeyxHeight, filter="case == 3")
-            
+
             if smallCapMetric:
                 parameter = GSCustomParameter("smallCapHeight", smallCapMetric)
                 customParameters.append(parameter)
@@ -2006,7 +2006,7 @@ class GSFontMaster(GSBase):
                 metricValue = self.metrics.get(metric.id)
                 metrics.append(metricValue)
             writer.writeKeyValue("metricValues", metrics)
-        
+
         if writer.formatVersion > 2:
             writer.writeKeyValue("name", self.name)
 
@@ -2145,14 +2145,14 @@ class GSFontMaster(GSBase):
             for metricKey in (GSMetricsKeyAscender, GSMetricsKeyCapHeight, GSMetricsKeyxHeight, GSMetricsKeyBaseline, GSMetricsKeyDescender):
                 position, overshoot = self.readBuffer.get(metricKey, (0, 0))
                 self._set_metric(metricKey, position, overshoot)
-            
+
             parameter = self.customParameters["smallCapHeight"]
             if parameter:
                 xHeightMetricValue = self._get_metric(GSMetricsKeyxHeight)
                 filterString = "case == 3"
                 self._set_metric(GSMetricsKeyxHeight, parameter, xHeightMetricValue.overshoot, filter=filterString)
                 del(self.customParameters["smallCapHeight"])
-                
+
             if self._alignmentZones:
                 self._import_alignmentZones_to_metrics()
 
@@ -2396,7 +2396,7 @@ class GSFontMaster(GSBase):
 
         blueValues.sort()
         return blueValues
-    
+
     @property
     def otherBlues(self):
         """Set postscript blue values from Glyphs alignment zones."""
@@ -2603,7 +2603,7 @@ class GSFontMaster(GSBase):
             if  axis:
                 self._internalAxesValues[axis.axisId]= value
             return
-        
+
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][4] = value
@@ -2619,7 +2619,7 @@ class GSFontMaster(GSBase):
             if  axis:
                 self._internalAxesValues[axis.axisId]= value
             return
-        
+
         if not "axesValues" in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][5] = value
@@ -3774,6 +3774,14 @@ class GSFeature(GSBase):
     def parent(self):
         return self._parent
 
+    @property
+    def disabled(self):
+        raise "Use .active"
+
+    @disabled.setter
+    def disabled(self, _val):
+        raise "Use .active = "
+
 
 GSFeature._add_parsers([
     {"plist_name": "code", "object_name": "_code"},
@@ -3962,7 +3970,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
             #if (![GSGlyphsInfo customParameterTypes][parameterKey]) {
             #    return None
         customParameters = []
-        
+
         if isLocalizedParameter and infoValue._localized_values:
             values = infoValue._localized_values
             for key in sorted(values.keys()):
@@ -4213,7 +4221,7 @@ class GSInstance(GSBase):
     @property
     def styleMapFamilyNames(self):
         self.properties["styleMapFamilyNames"]
-        
+
     @styleMapFamilyNames.setter
     def styleMapFamilyNames(self, values):
         self.properties["styleMapFamilyNames"] = value
@@ -4536,9 +4544,9 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 
 class GSLayer(GSBase):
-    
+
     parent = None
-    
+
     def _get_plist_attributes(self):
         attributes = dict(self.attributes)
         font = self.parent.parent
@@ -4622,7 +4630,7 @@ class GSLayer(GSBase):
         r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*"
     )
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
-    
+
     def layer_name_to_atributes(self):
         name = self.name
         m = re.match(self.BRACKET_LAYER_RE, name)
@@ -4649,7 +4657,7 @@ class GSLayer(GSBase):
                     value = master.internalAxesValues[axis.axisId]
                     coordinatesMap[axis.axisId] = value
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
-    
+
     def post_read(self): # GSLayer
         assert(self.parent)
         font = self.parent.parent
@@ -4788,7 +4796,7 @@ class GSLayer(GSBase):
         # at a given location end up in the same UFO source layer, see:
         # https://github.com/googlefonts/glyphsLib/issues/851
         nameStrings = []
-        
+
         if self.isColorPaletteLayer:
             name = f"color.{self._color_palette_index()}"
             if name:
@@ -4806,7 +4814,7 @@ class GSLayer(GSBase):
         return None
 
     def _brace_layer_name(self):
-        
+
         if not self.isBraceLayer:
             return None
         coordinates = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
@@ -4819,7 +4827,7 @@ class GSLayer(GSBase):
         axisRules = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
         if not axisRules or not isinstance(axisRules, dict):
             return None
-        
+
         ruleStrings = []
         for axis in self.font.axes:
             rule = axisRules.get(axis.axisId, None)
@@ -5036,7 +5044,7 @@ class GSLayer(GSBase):
     @property
     def hasCorners(self):
         return self.hasPathComponents
-        
+
 GSLayer._add_parsers([
     {
         "plist_name": "annotations",
@@ -5118,7 +5126,7 @@ class GSGlyph(GSBase):
             if True: # self.direction != GSWritingDirectionRightToLeft:
                 writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
             #else:
-            #    # Glyphs 3 switches the classes. Writing to G2 
+            #    # Glyphs 3 switches the classes. Writing to G2
             #    writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true", keyName="leftKerningGroup")
 
             writer.writeObjectKeyValue(
@@ -5775,7 +5783,7 @@ class GSFont(GSBase):
         if stems and not isinstance(stems[0], GSMetric):
             pxjx
         self._stems = stems
-    
+
     def stemForKey(self, key):
         if isinstance(key, int):
             if key < 0:
@@ -5788,7 +5796,7 @@ class GSFont(GSBase):
         else:
             raise TypeError("list indices must be integers or strings, not %s" % type(key).__name__)
         return stem
-    
+
     def stemForName(self, key):
         for stem in self._stems:
             if stem.name == key:
