@@ -228,7 +228,11 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     if data is None:
         global GLYPHDATA
         if GLYPHDATA is None:
-            from importlib.resources import files
+            try:
+                from importlib.resources import files
+            except ImportError:
+                # Python 3.8
+                from importlib_resources import files
 
             with (files('glyphsLib.data') / 'GlyphData.xml').open('rb') as f1:
                 with (files('glyphsLib.data') / 'GlyphData_Ideographs.xml').open('rb') as f2:
