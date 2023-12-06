@@ -329,4 +329,4 @@ LANGUAGE_MAPPING = {
     "ZHT": 0x0404,
 }
 
-REVERSE_LANGUAGE_MAPPING = {v: k for v, k in LANGUAGE_MAPPING.items()}
+REVERSE_LANGUAGE_MAPPING = {v: k for k, v in LANGUAGE_MAPPING.items()}
