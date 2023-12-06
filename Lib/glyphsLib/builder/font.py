@@ -43,7 +43,9 @@ def to_ufo_font_attributes(self, family_name):
 
     font = self.font
     disableAllAutomaticBehaviour = False
-    disableAllAutomaticBehaviourParameter = font.customParameters["DisableAllAutomaticBehaviour"]
+    disableAllAutomaticBehaviourParameter = font.customParameters[
+        "DisableAllAutomaticBehaviour"
+    ]
     if disableAllAutomaticBehaviourParameter:
         disableAllAutomaticBehaviour = disableAllAutomaticBehaviourParameter
     for index, master in enumerate(font.masters):
@@ -56,25 +58,45 @@ def to_ufo_font_attributes(self, family_name):
         self.to_ufo_names(ufo, master, family_name)  # .names
         self.to_ufo_family_user_data(ufo)  # .user_data
 
-        if has_any_corner_components(font, master):
-            ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-                {
-                    "namespace": "glyphsLib.filters",
-                    "name": "cornerComponents",
-                    "pre": True,
-                }
-            )
-
-        if not disableAllAutomaticBehaviour:
-            ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-                {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
-            )
         ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
         self.to_ufo_properties(ufo, font)
         self.to_ufo_custom_params(ufo, font, "font")  # .custom_params
         self.to_ufo_custom_params(ufo, master, "fontMaster")  # .custom_params
         self.to_ufo_master_attributes(ufo, master)  # .masters
+
+        # Extract nested lib keys to the top level
+        nestedUserData = ufo.lib.get("com.schriftgestaltung.fontMaster.userData", {})
+        if UFO2FT_FILTERS_KEY not in ufo.lib and UFO2FT_FILTERS_KEY in nestedUserData:
+            ufo.lib[UFO2FT_FILTERS_KEY] = nestedUserData[UFO2FT_FILTERS_KEY]
+
+            del nestedUserData[UFO2FT_FILTERS_KEY]
+            if not nestedUserData:
+                del ufo.lib["com.schriftgestaltung.fontMaster.userData"]
+
+        if not disableAllAutomaticBehaviour:
+            if UFO2FT_FILTERS_KEY not in ufo.lib:
+                ufo.lib[UFO2FT_FILTERS_KEY] = [
+                    {
+                        "namespace": "glyphsLib.filters",
+                        "name": "eraseOpenCorners",
+                        "pre": True,
+                    }
+                ]
+
+        if has_any_corner_components(font, master):
+            filters = ufo.lib.setdefault(UFO2FT_FILTERS_KEY, [])
+            if not any(
+                hasattr(f, "get") and f.get("name") == "cornerComponents"
+                for f in filters
+            ):
+                filters.append(
+                    {
+                        "namespace": "glyphsLib.filters",
+                        "name": "cornerComponents",
+                        "pre": True,
+                    }
+                )
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
@@ -95,14 +117,14 @@ PROPERTIES_FIELDS = {
     "compatibleFullNames": "openTypeNameCompatibleFullName",
     "copyrights": "copyright",
     "descriptions": "openTypeNameDescription",
-    "designers" : "openTypeNameDesigner",
+    "designers": "openTypeNameDesigner",
     "designerURL": "openTypeNameDesignerURL",
-    #"familyNames": "familyName",
+    # "familyNames": "familyName",
     "preferredFamilyNames": "openTypeNamePreferredFamilyName",
     "preferredSubfamilyNames": "openTypeNamePreferredSubfamilyName",
     "licenses": "openTypeNameLicense",
     "licenseURL": "openTypeNameLicenseURL",
-    "manufacturers":  "openTypeNameManufacturer",
+    "manufacturers": "openTypeNameManufacturer",
     "manufacturerURL": "openTypeNameManufacturerURL",
     "postscriptFontName": "postscriptFontName",
     "postscriptFullNames": "postscriptFullName",
@@ -141,8 +163,8 @@ def to_ufo_metadata(master, ufo):
     # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
     ufo.glyphOrder = list(glyph.name for glyph in font.glyphs)
 
+
 def to_glyphs_metadata(ufo, font):
-    
     for glyphs_key, ufo_key in PROPERTIES_FIELDS.items():
         value = getattr(ufo.info, ufo_key)
         if value:
@@ -257,10 +279,7 @@ def _original_master_order(source):
 def has_any_corner_components(font, master):
     for glyph in font.glyphs:
         for layerId, layer in glyph._layers.items():
-            if (
-                layer.associatedMasterId != master.id
-                or not layer.hints
-            ):
+            if layer.associatedMasterId != master.id or not layer.hints:
                 continue
             if layer.hasCorners:
                 return True

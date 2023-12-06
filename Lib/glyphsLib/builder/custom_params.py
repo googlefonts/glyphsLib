@@ -35,6 +35,7 @@ from .constants import (
 )
 from .features import replace_feature, replace_prefixes
 from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance
+from .instances import InstanceDescriptorAsGSInstance
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -161,7 +162,7 @@ class ParamHandler(AbstractParamHandler):
         self.write_to_ufo = write_to_ufo
         self.write_to_glyphs = write_to_glyphs
         self.glyphs_owner_class = glyphs_owner_class
-    
+
     def __repr__(self):
         return "<{} {}>".format(self.__class__.__name__, self.glyphs_name)
 
@@ -317,7 +318,7 @@ for glyphs_name, ufo_name in GLYPHS_MASTER_UFO_CUSTOM_PARAMS:
     register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSFontMaster))
 
 for glyphs_name, ufo_name in GLYPHS_INSTANCE_UFO_CUSTOM_PARAMS:
-    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=GSInstance))
+    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name, glyphs_owner_class=(GSInstance, InstanceDescriptorAsGSInstance)))
 
 # Reference:
 # https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
@@ -476,7 +477,7 @@ for glyphs_name in ("winAscent", "winDescent"):
 # FIXME: (georg) This is actually not working as the handlers is not applied to instances, yet. There is custom code
 for glyphs_name in ("weightClass", "widthClass"):
     ufo_name = "openTypeOS2W" + glyphs_name[1:]
-    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, value_to_ufo=int, glyphs_owner_class=GSInstance))
+    register_parameter_handler(ParamHandler(glyphs_name, ufo_name, value_to_ufo=int, glyphs_owner_class=(GSInstance, InstanceDescriptorAsGSInstance)))
 
 # convert Glyphs' GASP Table to UFO openTypeGaspRangeRecords
 def to_ufo_gasp_table(value):
@@ -759,7 +760,7 @@ class OS2SelectionParamHandler(AbstractParamHandler):
     glyphs_name = None
     ufo_name = "openTypeOS2Selection"
     flags = {7: "Use Typo Metrics", 8: "Has WWS Names"}
-    glyphs_owner_class=(GSFont, GSInstance)
+    glyphs_owner_class=(GSFont, GSInstance, InstanceDescriptorAsGSInstance)
     # Note that en empty openTypeOS2Selection list should stay an empty list, as
     # opposed to a non-existant list. In the latter case, we round-trip nothing, in the
     # former, we at least write an empty list to openTypeOS2SelectionUnsupportedBits
@@ -846,7 +847,7 @@ class FilterParamHandler(AbstractParamHandler):
        +----+-+                   |
             |                     |
           +-+-----------+       +-+----------+
-          |GSFontMaster |       |GSInstance   |
+          |GSFontMaster |       |GSInstance  |
           +-------------+       +------------+
            userData                    customParameters
              com...ufo2ft.filters        Filter & PreFilter
