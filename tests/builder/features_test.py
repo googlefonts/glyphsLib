@@ -257,7 +257,7 @@ def test_feature_names_notes(tmpdir, ufo_module):
     )
 
 
-def test_feature_names_full_version_2(tmpdir, ufo_module):
+def test_feature_names_full_format_2(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
