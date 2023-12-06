@@ -40,7 +40,6 @@ from .constants import (
     PROPERTIES_KEY,
 )
 from .names import build_stylemap_names
-from .custom_params import to_ufo_custom_params, to_ufo_properties
 
 
 logger = logging.getLogger(__name__)
@@ -150,7 +149,7 @@ def _to_designspace_instance(self, instance):
 
     ufo_instance.lib["openTypeOS2WidthClass"] = instance.widthClass
     ufo_instance.lib["openTypeOS2WeightClass"] = instance.weightClass
-    
+
     uniqueID = instance.customParameters["uniqueID"]
     if uniqueID:
         ufo_instance.lib["openTypeNameUniqueID"] = uniqueID
@@ -212,7 +211,7 @@ def _to_properties(instance):
     return [
         (item.name, item.value)
         for item in instance.properties
-        if item.name not in CUSTOM_PARAMETERS_BLACKLIST 
+        if item.name not in CUSTOM_PARAMETERS_BLACKLIST
     ]
 
 
@@ -328,7 +327,7 @@ def to_glyphs_instances(self):  # noqa: C901
 
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
-        
+
         # some info that needs to be in a instance in Glyphs is stored in the sources. So we try to find a matching source (FIXME: (georg) not nice
         for source in self.designspace.sources:
             if source.location == ufo_instance.location:
@@ -425,6 +424,9 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     Returns:
         None.
     """
+    # Import here to prevent a cyclic import with custom_params
+    from .custom_params import to_ufo_custom_params, to_ufo_properties
+
     try:
         ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
     except:

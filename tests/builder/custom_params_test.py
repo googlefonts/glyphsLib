@@ -40,7 +40,14 @@ from glyphsLib.builder.constants import (
     UFO_FILENAME_KEY,
     FULL_FILENAME_KEY,
 )
-from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter, GSGlyph, GSLayer
+from glyphsLib.classes import (
+    GSFont,
+    GSFontMaster,
+    GSInstance,
+    GSCustomParameter,
+    GSGlyph,
+    GSLayer,
+)
 from glyphsLib.types import parse_datetime
 
 DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
@@ -54,12 +61,15 @@ class SetCustomParamsTestBase(object):
         self.font = GSFont()
         self.master = GSFontMaster()
         self.font.masters.insert(0, self.master)
+        self.instance = GSInstance()
+        self.font.instances.insert(0, self.instance)
         self.builder = UFOBuilder(self.font)
 
     def set_custom_params(self):
         self.builder.to_ufo_properties(self.ufo, self.font)
         self.builder.to_ufo_custom_params(self.ufo, self.font, "font")
         self.builder.to_ufo_custom_params(self.ufo, self.master, "fontMaster")
+        self.builder.to_ufo_custom_params(self.ufo, self.instance, "instance")
 
     def test_normalizes_curved_quotes_in_names(self):
         self.master.customParameters = [
@@ -67,7 +77,9 @@ class SetCustomParamsTestBase(object):
             GSCustomParameter(name="“also bad”", value=2),
         ]
         self.set_custom_params()
-        custom_parameters = self.ufo.lib["com.schriftgestaltung.fontMaster.customParameters"]
+        custom_parameters = self.ufo.lib[
+            "com.schriftgestaltung.fontMaster.customParameters"
+        ]
         self.assertEqual(custom_parameters[0]["name"], "'bad'")
         self.assertEqual(custom_parameters[1]["name"], '"also bad"')
 
@@ -88,7 +100,7 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(self.font.customParameters["Use Typo Metrics"], None)
         self.assertEqual(self.font.customParameters["Has WWS Names"], None)
         self.assertEqual(
-            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"], []
+            self.font.customParameters["openTypeOS2SelectionUnsupportedBits"], None
         )
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [])
@@ -108,16 +120,16 @@ class SetCustomParamsTestBase(object):
     def test_set_fsSelection_flags(self):
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        self.master.customParameters["Has WWS Names"] = False
+        self.font.customParameters["Has WWS Names"] = False
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, None)
 
-        self.master.customParameters["Use Typo Metrics"] = True
+        self.font.customParameters["Use Typo Metrics"] = True
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2Selection, [7])
 
         self.ufo = self.ufo_module.Font()
-        self.master.customParameters = [
+        self.font.customParameters = [
             GSCustomParameter(name="Use Typo Metrics", value=True),
             GSCustomParameter(name="Has WWS Names", value=True),
         ]
@@ -161,7 +173,7 @@ class SetCustomParamsTestBase(object):
         pre_filter = "AddExtremes"
         filter1 = "Transformations;OffsetX:40;OffsetY:60;include:uni0334,uni0335"
         filter2 = "Transformations;OffsetX:10;OffsetY:-10;exclude:uni0334,uni0335"
-        self.master.customParameters.extend(
+        self.instance.customParameters.extend(
             [
                 GSCustomParameter(name="PreFilter", value=pre_filter),
                 GSCustomParameter(name="Filter", value=filter1),
@@ -200,7 +212,9 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"])
+        self.assertEqual(
+            self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"]
+        )
 
     def test_set_openTypeOS2CodePageRanges(self):
         self.font.customParameters["openTypeOS2CodePageRanges"] = ["1252", "1250"]
@@ -208,7 +222,9 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"])
+        self.assertEqual(
+            self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15"]
+        )
         self.assertIsNone(self.font.customParameters["codePageRangesUnsupportedBits"])
 
     def test_gasp_table(self):
@@ -256,7 +272,9 @@ class SetCustomParamsTestBase(object):
         self.master.customParameters["xHeight"] = "500"
         self.set_custom_params()
         # Additional xHeight values are Glyphs-specific and stored in lib
-        custom_parameters = self.ufo.lib["com.schriftgestaltung.fontMaster.customParameters"]
+        custom_parameters = self.ufo.lib[
+            "com.schriftgestaltung.fontMaster.customParameters"
+        ]
         self.assertEqual(custom_parameters[0]["name"], "xHeight")
         self.assertEqual(custom_parameters[0]["value"], "500")
         # The xHeight from the property is not modified
@@ -284,7 +302,7 @@ class SetCustomParamsTestBase(object):
 
         repl = "liga; sub f f by ff;"
 
-        self.master.customParameters["Replace Feature"] = repl
+        self.instance.customParameters["Replace Feature"] = repl
         self.set_custom_params()
 
         self.assertEqual(
@@ -310,7 +328,7 @@ class SetCustomParamsTestBase(object):
         original = self.ufo.features.text
         repl = "numr; sub one by one.numr;\nsub two by two.numr;\n"
 
-        self.master.customParameters["Replace Feature"] = repl
+        self.instance.customParameters["Replace Feature"] = repl
         self.set_custom_params()
 
         self.assertEqual(self.ufo.features.text, original)
@@ -344,10 +362,10 @@ class SetCustomParamsTestBase(object):
             """
         )
 
-        self.master.customParameters.append(
+        self.instance.customParameters.append(
             GSCustomParameter("Replace Prefix", "FOO; include(../foo.fea);")
         )
-        self.master.customParameters.append(
+        self.instance.customParameters.append(
             GSCustomParameter("Replace Prefix", "BAR; include(../bar.fea);")
         )
         self.set_custom_params()
@@ -383,9 +401,17 @@ class SetCustomParamsTestBase(object):
             ),
         )
 
-    def test_useProductionNames(self):
+    def test_useProductionNames_font(self):
         for value in (True, False):
-            self.master.customParameters["Don't use Production Names"] = value
+            self.font.customParameters["Don't use Production Names"] = value
+            self.set_custom_params()
+
+            self.assertIn(UFO2FT_USE_PROD_NAMES_KEY, self.ufo.lib)
+            self.assertEqual(self.ufo.lib[UFO2FT_USE_PROD_NAMES_KEY], not value)
+
+    def test_useProductionNames_instance(self):
+        for value in (True, False):
+            self.instance.customParameters["Don't use Production Names"] = value
             self.set_custom_params()
 
             self.assertIn(UFO2FT_USE_PROD_NAMES_KEY, self.ufo.lib)
@@ -415,23 +441,49 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeNameVersion, "Version 2.040")
 
-    @pytest.mark.xfail
-    def test_ufo2ft_filter_roundtrip(self):
+    def test_ufo2ft_filter_glyphs_to_ufo(self):
+        # Test the one-way conversion of (Pre)Filters into ufo2ft filters.
+        # See the docstring for FilterParamHandler.
+        # This first test uses a ufo2ft-specific filter, propagateAnchors
+        glyphs_filter = "propagateAnchors;include:a,b,c"
         ufo_filters = [
             {"name": "propagateAnchors", "pre": True, "include": ["a", "b", "c"]}
         ]
-        glyphs_filter = "propagateAnchors;include:a,b,c"
-
-        # Test the one-way conversion of (Pre)Filters into ufo2ft filters. See the
-        # docstring for FilterParamHandler.
-        self.master.customParameters["PreFilter"] = glyphs_filter
+        self.instance.customParameters["PreFilter"] = glyphs_filter
         self.set_custom_params()
         self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
+    def test_Glyphsapp_filter_glyphs_to_ufo(self):
+        # Test the one-way conversion of (Pre)Filters into ufo2ft filters.
+        # See the docstring for FilterParamHandler.
+        # This second test uses a Glyphs.app-specific filter, RoundCorners
+        glyphs_filter = "RoundCorners;20;include:a,b,c"
+        ufo_filters = [
+            {
+                "name": "RoundCorners",
+                "pre": True,
+                "include": ["a", "b", "c"],
+                "args": [20],
+            }
+        ]
+        self.instance.customParameters["PreFilter"] = glyphs_filter
+        self.set_custom_params()
+        self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
+
+    def test_ufo2ft_filter_ufo_to_glyphs_to_ufo(self):
         # Test the round-tripping of ufo2ft filters from UFO -> Glyphs master -> UFO.
         # See the docstring for FilterParamHandler.
+        ufo_filters = [
+            {"name": "whateverUfo2FtCanDo", "pre": True, "include": ["a", "b", "c"]}
+        ]
+        self.ufo.lib[UFO2FT_FILTERS_KEY] = ufo_filters
+
+        # While it doesn't make sense for Glyphs.app to have filters on a
+        # GSFontMaster, we still want to put them there to match the UFO
+        # workflow. It's fine that it doesn't make sense in Glyphs.app because
+        # anyway it's userData; Glyphs.app is not expected to make sense of it
+        # or apply it to anything.
         font_rt = glyphsLib.to_glyphs([self.ufo])
-        # FIXME: (georg) above it is put into customParameters and after rt, it still is but we expect it not to be?
         self.assertNotIn("PreFilter", font_rt.masters[0].customParameters)
         self.assertEqual(font_rt.masters[0].userData[UFO2FT_FILTERS_KEY], ufo_filters)
         ufo_rt = glyphsLib.to_ufos(font_rt, ufo_module=self.ufo_module)[0]
@@ -628,7 +680,7 @@ def test_ufo_opentype_name_preferred_family_subfamily_name():
     for filename in filenames:
         file = glyphsLib.GSFont(os.path.join(DATA, filename))
         instance = file.instances[0]
-        
+
         actual = instance.properties["preferredFamilyNames"]
         assert actual == "Typographic New Font", filename
 
@@ -702,6 +754,9 @@ def test_ufo_opentype_name_records():
 
 
 def test_ufo_opentype_os2_selection():
+    """Bit 7 comes from the "Use Typo Metrics" param on the font.
+    Bit 8 comes from the "Has WWS Names" param on the instance.
+    """
     from glyphsLib.interpolation import apply_instance_data_to_ufo
 
     filenames = [
@@ -742,3 +797,12 @@ def test_mutiple_params(ufo_module):
 
     assert instance.customParameters[0].value == "ccmp;sub space by space;"
     assert instance.customParameters[1].value == "liga;sub space space by space;"
+
+
+def test_font_params_go_to_GSFont_instance_to_GSInstance():
+    """TODO: if the custom params are registered on the GSFont, they should go
+    only to the default UFO of the designspace, and if they're registered on the
+    GSInstance, they should go only on the <instance> lib key of the
+    designspace. Same in the other direction.
+    """
+    assert True
