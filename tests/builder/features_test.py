@@ -24,8 +24,8 @@ from fontTools.designspaceLib import DesignSpaceDocument
 import pytest
 
 
-def roundtrip(ufo, tmpdir, ufo_module):
-    font = to_glyphs([ufo], minimize_ufo_diffs=True)
+def roundtrip(ufo, tmpdir, ufo_module, format_version=None):
+    font = to_glyphs([ufo], minimize_ufo_diffs=True, format_version=format_version)
     filename = os.path.join(str(tmpdir), "font.glyphs")
     font.save(filename)
     font = classes.GSFont(filename)
@@ -91,17 +91,13 @@ def test_classes(tmpdir, ufo_module):
     # FIXME: (jany) no whitespace is preserved in this section
     ufo.features.text = dedent(
         """\
-        @lc = [ a b
-        ];
+        @lc = [ a b ];
 
-        @UC = [ A B
-        ];
+        @UC = [ A B ];
 
-        @all = [ @lc @UC zero one
-        ];
+        @all = [ @lc @UC zero one ];
 
-        @more = [ dot @UC colon @lc paren
-        ];
+        @more = [ dot @UC colon @lc paren ];
     """
     )
 
@@ -136,16 +132,52 @@ def test_class_synonym(tmpdir, ufo_module):
     # FIXME: (jany) should roundtrip
     assert rtufo.features.text == dedent(
         """\
-        @lc = [ a b
-        ];
+        @lc = [ a b ];
 
-        @lower = [ @lc
-        ];
+        @lower = [ @lc ];
     """
     )
 
 
-def test_feature_names(tmpdir, ufo_module):
+def test_feature_names_format_2(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module, format_version=2)
+
+    assert font.formatVersion == 2
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == "Name: Alternate g"
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+def test_feature_names_format_3(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
@@ -166,13 +198,14 @@ def test_feature_names(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == "Name: Alternate g"
+    #assert gs_feature.notes.strip() == "Name: Alternate g"
+    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
 
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -223,7 +256,49 @@ def test_feature_names_notes(tmpdir, ufo_module):
     )
 
 
-def test_feature_names_full(tmpdir, ufo_module):
+def test_feature_names_full_version_2(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module, format_version=2)
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == dedent(
+        """\
+        featureNames {
+            name 1 "Alternate g";
+        };"""
+    )
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        featureNames {
+            name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+
+def test_feature_names_full_format_3(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
@@ -265,7 +340,52 @@ def test_feature_names_full(tmpdir, ufo_module):
     )
 
 
-def test_feature_names_multi(tmpdir, ufo_module):
+def test_feature_names_multi_format_2(tmpdir, ufo_module):
+    ufo = ufo_module.Font()
+    ufo.features.text = dedent(
+        """\
+        feature ss01 {
+        featureNames {
+          name "Alternate g";
+          name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
+
+    # Check code in Glyphs font
+    gs_feature = font.features[0]
+    assert gs_feature.automatic
+    assert gs_feature.code.strip() == "sub g by g.ss01;"
+    assert gs_feature.notes.strip() == dedent(
+        """\
+        featureNames {
+            name "Alternate g";
+            name 1 "Alternate g";
+        };"""
+    )
+
+    assert rtufo.features.text == dedent(
+        """\
+        feature ss01 {
+        featureNames {
+            name "Alternate g";
+            name 1 "Alternate g";
+        };
+        # automatic
+        sub g by g.ss01;
+
+        } ss01;
+    """
+    )
+
+
+def test_feature_names_multi_format_3(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
         """\
@@ -706,8 +826,7 @@ def test_comments_in_classes(ufo_module):
     assert ufo.features.text == dedent(
         """\
             @Test = [ A
-            # B
-            ];
+            # B ];
 """
     )
 
