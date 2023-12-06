@@ -29,6 +29,7 @@ from glyphsLib.util import open_ufo
 from glyphsLib.builder.bracket_layers import _bracket_info
 from . import diff_files
 
+
 def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
     ufo_Lt = ufo_module.Font()
     ufo_Lt.info.familyName = "CoolFoundry Examplary Serif"
@@ -159,9 +160,10 @@ def test_designspace_generation_same_weight_name(tmpdir, ufo_module):
     assert designspace.sources[1].filename != designspace.sources[2].filename
     assert designspace.sources[0].filename != designspace.sources[2].filename
 
+
 def test_properties_roundtrip(tmpdir, ufo_module):
     datadir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-    orig_file_path = os.path.join(datadir,"test_font_properties.glyphs")
+    orig_file_path = os.path.join(datadir, "test_font_properties.glyphs")
     with open(orig_file_path) as f:
         font = glyphsLib.load(f)
 
@@ -176,6 +178,7 @@ def test_properties_roundtrip(tmpdir, ufo_module):
     path_rt = os.path.join(str(tmpdir), "test_font_properties_roundtrip.glyphs")
     font_rt.save(path_rt)
     assert not diff_files(path_rt, orig_file_path)
+
 
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
 def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
@@ -200,8 +203,8 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
             ("NewFont-Bold.ufo", "{75, 1000}", "New Font Bold {75, 1000}"),
             ("NewFont-Bold.ufo", "*{90.5, 500}", "New Font Bold *{90.5, 500}"),
             ("NewFont-Bold.ufo", "*{90.5, 600}", "New Font Bold *{90.5, 600}"),
-            ("NewFont-LightCondensed.ufo", None, "New Font Light Condensed"), # (georg) was: NewFont-CondensedLight.ufo, New Font Condensed Light
-            ("NewFont-BoldCondensed.ufo", None, "New Font Bold Condensed"), # (georg) was: NewFont-CondensedBold.ufo, New Font Condensed Bold
+            ("NewFont-LightCondensed.ufo", None, "New Font Light Condensed"),  # (georg) was: NewFont-CondensedLight.ufo, New Font Condensed Light
+            ("NewFont-BoldCondensed.ufo", None, "New Font Bold Condensed"),  # (georg) was: NewFont-CondensedBold.ufo, New Font Condensed Bold
         ],
     ):
         assert fname == exp_fname

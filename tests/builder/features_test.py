@@ -177,6 +177,7 @@ def test_feature_names_format_2(tmpdir, ufo_module):
     """
     )
 
+
 def test_feature_names_format_3(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
@@ -198,7 +199,7 @@ def test_feature_names_format_3(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    #assert gs_feature.notes.strip() == "Name: Alternate g"
+    # assert gs_feature.notes.strip() == "Name: Alternate g"
     assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
 
     assert rtufo.features.text == dedent(
