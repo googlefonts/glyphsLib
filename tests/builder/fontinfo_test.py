@@ -24,7 +24,7 @@ http://unifiedfontobject.org/versions/ufo3/fontinfo.plist/
 
 import os
 import pytest
-from collections import namedtuple
+from dataclasses import dataclass
 
 from glyphsLib import to_glyphs, to_ufos, classes
 
@@ -37,7 +37,11 @@ def skip_section(name, *fields):
     return pytest.param(fields, id=name, marks=pytest.mark.skip)
 
 
-Field = namedtuple("Field", "name test_value")
+@dataclass
+class Field:
+    name: str
+    test_value: any
+    instance_only: bool = False
 
 
 ufo_info_spec = [
@@ -49,10 +53,10 @@ ufo_info_spec = [
         Field("styleName", "Condensed"),
         # styleMapFamilyName string Family name used for bold, italic and bold
         # italic style mapping.
-        Field("styleMapFamilyName", "Ronoto Sans Condensed"),
+        Field("styleMapFamilyName", "Ronoto Sans Condensed", instance_only=True),
         # styleMapStyleName string Style map style. The possible values are
         # regular, italic, bold and bold italic. These are case sensitive.
-        Field("styleMapStyleName", "regular"),
+        Field("styleMapStyleName", "regular", instance_only=True),
         # versionMajor integer Major version.
         Field("versionMajor", 1),
         # versionMinor	non-negative integer	Minor version.
@@ -154,7 +158,7 @@ ufo_info_spec = [
         Field("openTypeNameVersion", "Version 2.003"),
         # openTypeNameUniqueID	string	Unique ID string.
         # Corresponds to the OpenType name table name ID 3.
-        Field("openTypeNameUniqueID", "2.003;Exemplary Sans Bold Large Display"),
+        Field("openTypeNameUniqueID", "2.003;Exemplary Sans Bold Large Display", instance_only=True),
         # openTypeNameDescription	string	Description of the font.
         # Corresponds to the OpenType name table name ID 10.
         Field("openTypeNameDescription", "Best used\nfor typesetting\nhaikus"),
@@ -181,11 +185,11 @@ ufo_info_spec = [
         "OpenType OS/2 Table Fields",
         # openTypeOS2WidthClass integer Width class value. Must be in the range
         # 1-9 Corresponds to the OpenType OS/2 table usWidthClass field.
-        Field("openTypeOS2WidthClass", 7),
+        Field("openTypeOS2WidthClass", 7, instance_only=True),
         # openTypeOS2WeightClass integer Weight class value. Must be a
         # non-negative integer. Corresponds to the OpenType OS/2 table
         # usWeightClass field.
-        Field("openTypeOS2WeightClass", 700),
+        Field("openTypeOS2WeightClass", 700, instance_only=True),
         # openTypeOS2Selection list A list of bit numbers indicating the bits
         # that should be set in fsSelection. The bit numbers are listed in the
         # OpenType OS/2 specification.
@@ -443,6 +447,12 @@ def test_info(fields, tmpdir, ufo_module):
     (ufo,) = to_ufos(font, ufo_module=ufo_module)
 
     for field in fields:
+        if field.instance_only:
+            # This test cannot handle fields that are irrelevant for GSFont
+            # TODO: (Jany, Georg) We should test instance-only info fields.
+            # Add these tests when the designspace lib key "public.fontInfo" is
+            # released: https://github.com/fonttools/fonttools/pull/3358
+            continue
         assert getattr(ufo.info, field.name) == field.test_value
 
 

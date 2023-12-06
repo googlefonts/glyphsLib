@@ -25,6 +25,7 @@ from glyphsLib.writer import dump, dumps
 from . import test_helpers
 from .builder import diff_lists
 
+
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
     def assertWrites(self, glyphs_object, text, formatVersion=2):
         """Assert that the given object, when given to the writer,
@@ -32,7 +33,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """
         expected = text.splitlines()
         actual = test_helpers.write_to_lines(glyphs_object, formatVersion)
-        assert len(diff_lists(actual, expected)) == 0, "The writer has not produced the expected output"
+        diffs = diff_lists(actual, expected)
+        assert not diffs, "The writer has not produced the expected output:\n" + diffs
 
     def assertWritesValue(self, glyphs_value, text, formatVersion=2):
         """Assert that the writer produces the given text for the given value."""
@@ -51,7 +53,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         actual = test_helpers.write_to_lines(
             {"writtenValue": glyphs_value}, formatVersion
         )
-        assert len(diff_lists(actual, expected)) == 0, "The writer has not produced the expected output"
+        assert (
+            len(diff_lists(actual, expected)) == 0
+        ), "The writer has not produced the expected output"
 
     def test_write_font_attributes(self):
         """Test the writer on all GSFont attributes"""
@@ -281,27 +285,27 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.name = "Name Hairline Megawide"
         master.customParameters["Master Name"] = "Param Hairline Megawide"
         # weight
-        #master.weight = "Thin"
+        # master.weight = "Thin"
         # width
-        #master.width = "Wide"
+        # master.width = "Wide"
         # weightValue
         master.internalAxesValues[font.axes[0].axisId] = 0.01
-        #master.weightValue = 0.01
+        # master.weightValue = 0.01
         # widthValue
         master.internalAxesValues[font.axes[1].axisId] = 0.99
-        #master.widthValue = 0.99
+        # master.widthValue = 0.99
         # customValue
         # customName
-        #master.customName = "Overextended"
+        # master.customName = "Overextended"
         # A value of 0.0 is not written to the file.
         master.internalAxesValues[font.axes[2].axisId] = 0.001
-        #master.customValue = 0.001
+        # master.customValue = 0.001
         master.internalAxesValues[font.axes[3].axisId] = 0.1
-        #master.customValue1 = 0.1
+        # master.customValue1 = 0.1
         master.internalAxesValues[font.axes[4].axisId] = 0.2
-        #master.customValue2 = 0.2
+        # master.customValue2 = 0.2
         master.internalAxesValues[font.axes[5].axisId] = 0.3
-        #master.customValue3 = 0.3
+        # master.customValue3 = 0.3
         # ascender
         master.ascender = 234.5
         # capHeight
@@ -317,8 +321,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # horizontalStems
         master.horizontalStems = [4, 5, 6]
         # alignmentZones
-        #zone = classes.GSAlignmentZone(0, -30)
-        #master.alignmentZones = [zone]
+        # zone = classes.GSAlignmentZone(0, -30)
+        # master.alignmentZones = [zone]
         master._set_metric(classes.GSMetricsKeyBaseline, position=0, overshoot=-30)
         # blueValues: not handled because it is read-only
         # otherBlues: not handled because it is read-only
@@ -369,7 +373,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             id = "MASTER-ID";
             italicAngle = 12.2;
-            name = "Name Hairline Megawide";
             userData = {
             rememberToMakeTea = 1;
             };
@@ -465,7 +468,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def test_write_instance(self):
         instance = classes.GSInstance()
-        
+
         font = classes.GSFont()
         font.instances.append(instance)
         font.axes.append(classes.GSAxis("Weight", "wght"))
@@ -478,9 +481,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # name
         instance.name = "SemiBoldCompressed (name)"
         # weight
-        #instance.weight = "SemiBold (weight)"
+        # instance.weight = "SemiBold (weight)"
         # width
-        #instance.width = "Compressed (width)"
+        # instance.width = "Compressed (width)"
         # weightValue
         instance.weightValue = 600
         # widthValue
@@ -886,7 +889,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """
             ),
         )
-        
+
         self.assertWrites(
             glyph,
             dedent(
@@ -945,9 +948,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """
             ),
-            formatVersion=3
+            formatVersion=3,
         )
-        
 
         # Write the script even when it's an empty string
         # Same for category and subCategory
@@ -964,7 +966,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         written = test_helpers.write_to_lines(glyph)
         self.assertIn('unicode = "00C1,E002";', written)
         written = test_helpers.write_to_lines(glyph, formatVersion=3)
-        self.assertIn('unicode = (193,57346);', written)
+        self.assertIn("unicode = (193,57346);", written)
 
     def test_write_layer(self):
         font = classes.GSFont()
@@ -1102,7 +1104,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         """
             ),
         )
-        
+
         self.assertWrites(
             layer,
             dedent(
@@ -1445,7 +1447,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             }
         """
             ),
-            formatVersion=3
+            formatVersion=3,
         )
 
         # FIXME: (jany) What about the undocumented scale & stem?
@@ -1484,6 +1486,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         """
             ),
         )
+
 
 class WriterDumpInterfaceTest(unittest.TestCase):
     def test_dump(self):

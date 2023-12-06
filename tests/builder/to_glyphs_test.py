@@ -582,7 +582,7 @@ def test_warn_diff_between_designspace_and_ufos(caplog, ufo_module):
     assert source.font.info.familyName == "UFO Family Name"
     assert source.font.info.styleName == "UFO Style Name"
 
-
+@pytest.mark.xfail(reason="Doesn't make sense to use an instance-only param on a GSFont, wait for lib public.fontInfo support")
 def test_custom_stylemap_style_name(ufo_module):
     ufo = ufo_module.Font()
     ufo.info.styleMapStyleName = "bold"  # Not "regular"

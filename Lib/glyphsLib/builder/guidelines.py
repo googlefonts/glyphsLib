@@ -79,11 +79,11 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
 
         identifier = guideline.identifier
         if identifier:
-            guideline.userData[IDENTIFIER_GLYPHS_KEY] = identifier
+            new_guideline.userData[IDENTIFIER_GLYPHS_KEY] = identifier
 
         color = guideline.color
         if color:
-            guideline.userData[COLOR_GLYPHS_KEY] = color
+            new_guideline.userData[COLOR_GLYPHS_KEY] = color
 
         glyphs_obj.guides.append(new_guideline)
 

@@ -642,7 +642,7 @@ def test_roundtrip_disabled_feature(ufo_module):
         sub c by c.ss03;
     """
     )
-    feature.disabled = True
+    feature.active = False
     font.features.append(feature)
 
     (ufo,) = to_ufos(font, ufo_module=ufo_module)
@@ -662,14 +662,14 @@ def test_roundtrip_disabled_feature(ufo_module):
     feature_r = font_r.features[0]
     assert feature_r.name == "ccmp"
     assert feature_r.code == feature.code
-    assert feature_r.disabled is True
+    assert feature_r.active is False
 
     font_rr = to_glyphs(to_ufos(font_r, ufo_module=ufo_module))
     assert len(font_rr.features) == 1
     feature_rr = font_rr.features[0]
     assert feature_rr.name == "ccmp"
     assert feature_rr.code == feature.code
-    assert feature_rr.disabled is True
+    assert feature_rr.active is False
 
 
 def test_roundtrip_automatic_feature(ufo_module):

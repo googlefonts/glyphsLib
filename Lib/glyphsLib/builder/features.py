@@ -122,8 +122,6 @@ def _to_ufo_features(  # noqa: C901
 
     feature_defs = []
     for feature in font.features:
-        if not feature.active:
-            continue
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
@@ -763,7 +761,7 @@ class FeatureFileProcessor:
             feature.notes = notes_text
         if disabled:
             feature.code = disabled_text
-            feature.disabled = True
+            feature.active = False
             # FIXME: (jany) check that the user has not added more new code
             #    after the disabled comment. Maybe start by checking whether
             #    the block is only made of comments
