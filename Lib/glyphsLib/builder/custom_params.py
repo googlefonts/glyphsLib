@@ -261,7 +261,7 @@ GLYPHS_FONT_UFO_CUSTOM_PARAMS = (
     ("blueScale", "postscriptBlueScale"),
     ("blueShift", "postscriptBlueShift"),
     ("isFixedPitch", "postscriptIsFixedPitch"),
-    ("uniqueID", "openTypeNameUniqueID"),
+    # ("uniqueID", "openTypeNameUniqueID"),
     ("unicodeRanges", "openTypeOS2UnicodeRanges"),
 )
 
