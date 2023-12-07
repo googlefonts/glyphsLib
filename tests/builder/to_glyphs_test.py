@@ -243,7 +243,7 @@ def test_glyph_color(ufo_module):
     font = to_glyphs([ufo])
 
     rt_a_color = font.glyphs["a"].color
-    assert rt_a_color == 3 and type(rt_a_color) is int
+    assert rt_a_color == 3 and isinstance(rt_a_color, int)
     rt_b_color = font.glyphs["b"].color
     assert rt_b_color == [4, 128, 0, 255] and all(type(x) is int for x in rt_b_color)
 

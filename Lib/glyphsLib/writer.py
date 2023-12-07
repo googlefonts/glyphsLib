@@ -144,18 +144,18 @@ class Writer:
                 self.writeArray(value)
         elif isinstance(value, (dict, OrderedDict, glyphsLib.classes.GSBase)):
             self.writeDict(value)
-        elif type(value) == float:
+        elif isinstance(value, float):
             self.file.write(floatToString5(value))
-        elif type(value) == int:
+        elif isinstance(value, int):
             self.file.write(str(value))
-        elif type(value) == bytes:
+        elif isinstance(value, bytes):
             self.file.write("<" + value.hex() + ">")
-        elif type(value) == bool:
+        elif isinstance(value, bool):
             if value:
                 self.file.write("1")
             else:
                 self.file.write("0")
-        elif type(value) == datetime.datetime:
+        elif isinstance(value, datetime.datetime):
             self.file.write('"%s +0000"' % str(value))
         else:
             value = self.escape_string(str(value), forKey)

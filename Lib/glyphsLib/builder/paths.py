@@ -17,6 +17,7 @@ from glyphsLib import types
 from glyphsLib.pens import _to_glyphs_node_type, _to_ufo_node_type
 from glyphsLib.util import best_repr_list
 
+
 def to_ufo_paths(self, ufo_glyph, layer):
     """Draw .glyphs paths onto a pen."""
     pen = ufo_glyph.getPointPen()

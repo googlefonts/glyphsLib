@@ -22,8 +22,8 @@ from .constants import (
     UFO_NOTE_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
 )
-from glyphsLib.util import best_repr, best_repr_list
-from glyphsLib.classes import GSCustomParameter
+from glyphsLib.util import best_repr  # , best_repr_list
+# from glyphsLib.classes import GSCustomParameter
 
 
 def to_ufo_master_attributes(self, ufo, master):
@@ -41,16 +41,16 @@ def to_ufo_master_attributes(self, ufo, master):
         ufo.info.postscriptStemSnapV = vertical_stems
     if italic_angle is not None:
         ufo.info.italicAngle = best_repr(italic_angle)
-    
+
     userData = dict(master.userData)
     year = userData.get(UFO_YEAR_KEY)
     if year is not None:
         ufo.info.year = year
-        del(userData[UFO_YEAR_KEY])
+        del (userData[UFO_YEAR_KEY])
     note = userData.get(UFO_NOTE_KEY)
     if note is not None:
         ufo.info.note = note
-        del(userData[UFO_NOTE_KEY])
+        del (userData[UFO_NOTE_KEY])
     # All of this will go into the designspace as well
     # "Native" designspace fonts will only have the designspace info
     if master.font.formatVersion >= 3:
@@ -84,7 +84,6 @@ def to_ufo_master_attributes(self, ufo, master):
                 continue
             ufo.lib[GLYPHS_PREFIX + lib_key] = value
 
-
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
     # vertical. Glyphsapp uses the font upm, not the typo metrics
@@ -105,8 +104,8 @@ def to_ufo_master_attributes(self, ufo, master):
             k in custom_params for k in ("vheaVertLineGap", "vheaVertTypoLineGap")
         ):
             ufo.info.openTypeVheaVertTypoLineGap = font_upm
-    #if custom_params:
-    #    ufo.lib[GLYPHS_PREFIX + "fontMaster.customParameters"] = custom_params
+    # if custom_params:
+    #     ufo.lib[GLYPHS_PREFIX + "fontMaster.customParameters"] = custom_params
     self.to_ufo_blue_values(ufo, master)
     self.to_ufo_guidelines(ufo, master)
     self.to_ufo_master_user_data(ufo, userData)

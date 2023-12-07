@@ -19,7 +19,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 
 try:
     from GlyphsApp import GSFontMaster, GSAxis, GSInstance
-except:
+except ImportError:
     from glyphsLib.classes import GSFontMaster, GSAxis, GSInstance
 
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
@@ -197,7 +197,7 @@ def to_designspace_axes(self):
                 designLoc = master.internalAxesValues[axis.axisId]
                 userLoc = master.externalAxesValues[axis.axisId]
                 if designLoc is None:
-                    designLoc = 0 # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+                    designLoc = 0  # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
                 if userLoc is None:
                     userLoc = designLoc
                 if userLoc in mapping and mapping[userLoc] != designLoc:
@@ -220,7 +220,7 @@ def to_designspace_axes(self):
 
             regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
             if regularDesignLoc is None:
-                regularDesignLoc = 0 # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+                regularDesignLoc = 0  # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
             regularUserLoc = regular_master.externalAxesValues[axis.axisId]
 
             if regularUserLoc is None:
@@ -274,8 +274,9 @@ def to_designspace_axes(self):
             minimum=0,
             default=0,
             maximum=0,
-            #axisId="wght",
+            # axisId="wght",
         )
+
 
 def to_glyphs_axes(self):
     axes_parameter = []
@@ -296,6 +297,7 @@ def to_glyphs_axes(self):
             axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
         }
         self._font.customParameters["Axis Mappings"] = mapping
+
 
 class AxisDefinition:
     """Centralize the code that deals with axis locations, user location versus

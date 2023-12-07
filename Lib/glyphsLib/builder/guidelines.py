@@ -13,13 +13,12 @@
 # limitations under the License.
 
 
-import re
-
 from glyphsLib.types import Point
 from glyphsLib.builder.constants import LOCKED_GUIDE_NAME_SUFFIX
 
 IDENTIFIER_GLYPHS_KEY = "UFO.identifier"
 COLOR_GLYPHS_KEY = "UFO.color"
+
 
 def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
     """Set guidelines."""

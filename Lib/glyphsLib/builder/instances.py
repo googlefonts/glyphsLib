@@ -121,7 +121,6 @@ def _to_designspace_instance(self, instance):
         if instance.manualInterpolation:
             ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
-
     # Dump selected custom parameters and properties into the instance
     # descriptor. Later, when using `apply_instance_data`, we will dig out those
     # custom parameters and apply them to the UFO instance.
