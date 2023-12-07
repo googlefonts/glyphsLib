@@ -32,6 +32,7 @@ from glyphsLib.util import LoggerMixin
 from glyphsLib.classes import GSAxis
 from .sources import _to_glyphs_source
 
+
 class UFOBuilder(LoggerMixin):
     """Builder for Glyphs to UFO + designspace."""
 
@@ -549,7 +550,7 @@ class GlyphsBuilder(LoggerMixin):
                 if not m:
                     continue
                 bracket_glyph = source.font[glyph_name]
-
+                print("__bracket_glyph", bracket_glyph.lib)
                 # At this point we know that we want to turn this UFO glyph into
                 # a bracket layer on the Glyphs.app side.
                 # Previously, (v2) the name of the glyph was used to define the

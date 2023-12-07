@@ -264,6 +264,7 @@ class Transform(Vector(6)):
         a, b, c, d = self[:4]
         return a * d - b * c
 
+
 class OneLineList:
     def __init__(self, values):
         self.values = values
@@ -274,6 +275,7 @@ class OneLineList:
             return '"{%s}"' % (", ".join(v for v in self.values))
         else:
             return "(%s)" % (",".join(v for v in self.values))
+
 
 UTC_OFFSET_RE = re.compile(r".* (?P<sign>[+-])(?P<hours>\d\d)(?P<minutes>\d\d)$")
 
@@ -482,6 +484,7 @@ class IndexPath(ValueType):
 
     def __len__(self) -> int:
         return len(self.value)
+
 
 def NegateBool(value):
     return not bool(value)

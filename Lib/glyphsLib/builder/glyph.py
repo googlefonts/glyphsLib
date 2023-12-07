@@ -21,10 +21,9 @@ from glyphsLib.util import best_repr
 
 try:
     from GlyphsApp import GSLayer, GSPath, GSComponent
-except:
+except ImportError:
     from .. import GSLayer, GSPath, GSComponent
-from .common import from_loose_ufo_time, to_ufo_time
-from .common import from_loose_ufo_time, to_ufo_time, to_glyphs_time 
+from .common import from_loose_ufo_time, to_glyphs_time
 from .constants import (
     GLYPHLIB_PREFIX,
     GLYPHS_COLORS,
@@ -482,7 +481,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # layer)
         for prefix, glyphs_object in (
             ("", glyph),
-            #("", layer),
+            # ("", layer),
             ("layer.", layer),
         ):
             full_key = GLYPHLIB_PREFIX + prefix + key

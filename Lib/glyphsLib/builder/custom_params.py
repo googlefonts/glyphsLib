@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from collections import defaultdict
 import re
 import logging
 
@@ -29,7 +28,7 @@ from .constants import (
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,
     REVERSE_CODEPAGE_RANGES,
-    PUBLIC_PREFIX,
+    # PUBLIC_PREFIX,
     UFO2FT_META_TABLE_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
 )
@@ -121,6 +120,7 @@ class UFOProxy:
 
 class AbstractParamHandler:
     glyphs_owner_class = None
+
     # @abstractmethod
     def to_glyphs(self):
         pass
@@ -136,20 +136,20 @@ class ParamHandler(AbstractParamHandler):
         glyphs_name,
         ufo_name=None,
         glyphs_long_name=None,
-        #glyphs_multivalued=False,
+        # glyphs_multivalued=False,
         glyphs3_property=None,
         ufo_prefix=CUSTOM_PARAM_PREFIX,
         ufo_info=True,
         ufo_default=None,
         value_to_ufo=identity,
         value_to_glyphs=identity,
-        write_to_ufo=True, # for supporting older lib keys
+        write_to_ufo=True,  # for supporting older lib keys
         write_to_glyphs=True,
-        glyphs_owner_class=None # to distingish where things are allowed to go
+        glyphs_owner_class=None  # to distingish where things are allowed to go
     ):
         self.glyphs_name = glyphs_name
         self.glyphs_long_name = glyphs_long_name
-        #self.glyphs_multivalued = glyphs_multivalued
+        # self.glyphs_multivalued = glyphs_multivalued
         self.glyphs3_property = glyphs3_property
         # By default, they have the same name in both
         self.ufo_name = ufo_name or glyphs_name
@@ -170,7 +170,7 @@ class ParamHandler(AbstractParamHandler):
     #  - the Glyphs object's customParameters
     #  - the UFO's info object if it has a matching attribute, else the lib
     def to_glyphs(self, glyphs, ufo):
-        if self.glyphs_owner_class and not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+        if self.glyphs_owner_class and not isinstance(glyphs._owner, self.glyphs_owner_class):  # some parameters should only be set either in font or on master
             return
         if not self.write_to_glyphs:
             return
@@ -220,7 +220,7 @@ class ParamHandler(AbstractParamHandler):
         else:
             ufo_prefix = self.ufo_prefix
             if ufo_prefix == CUSTOM_PARAM_PREFIX:
-                ufo_prefix += glyphs.__class__.__name__+"."
+                ufo_prefix += glyphs.__class__.__name__ + "."
             return ufo.get_lib_value(ufo_prefix + self.ufo_name)
 
     def _write_to_ufo(self, glyphs, ufo, value):
@@ -233,7 +233,7 @@ class ParamHandler(AbstractParamHandler):
             # everything else gets dumped in the lib
             ufo_prefix = self.ufo_prefix
             if ufo_prefix == CUSTOM_PARAM_PREFIX:
-                ufo_prefix += glyphs._owner.__class__.__name__+"."
+                ufo_prefix += glyphs._owner.__class__.__name__ + "."
             ufo.set_lib_value(ufo_prefix + self.ufo_name, value)
 
 
@@ -241,8 +241,10 @@ KNOWN_PARAM_HANDLERS = []
 
 KNOWN_PROPERTY_HANDLERS = []
 
+
 def register_parameter_handler(handler):
     KNOWN_PARAM_HANDLERS.append(handler)
+
 
 def register_property_handler(handler):
     KNOWN_PROPERTY_HANDLERS.append(handler)
@@ -252,7 +254,7 @@ GLYPHS_FONT_UFO_CUSTOM_PARAMS = (
     # These are stored in the official descriptor attributes.
     # "familyName",
     # "fileName",
-    #("compatibleFullName", "openTypeNameCompatibleFullName"),
+    # ("compatibleFullName", "openTypeNameCompatibleFullName"),
     # OS/2 parameters
     ("panose", "openTypeOS2Panose"),
     ("fsType", "openTypeOS2Type"),
@@ -383,8 +385,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeVheaCaretOffset",
     "openTypeHeadLowestRecPPEM",
     "openTypeHeadFlags",
-    #"openTypeNameVersion",
-    #"openTypeNameUniqueID",
+    # "openTypeNameVersion",
+    # "openTypeNameUniqueID",
     "openTypeOS2FamilyClass",
     "postscriptSlantAngle",
     "postscriptUniqueID",
@@ -400,8 +402,8 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "postscriptWindowsCharacterSet",
     "macintoshFONDFamilyID",
     "macintoshFONDName",
-    #"styleMapFamilyName",
-    #"styleMapStyleName",
+    # "styleMapFamilyName",
+    # "styleMapStyleName",
 )
 for name in GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME:
     register_parameter_handler(ParamHandler(name))
@@ -425,10 +427,10 @@ register_parameter_handler(EmptyListDefaultParamHandler("postscriptFamilyOtherBl
 class OS2CodePageRangesParamHandler(AbstractParamHandler):
     glyphs_name = "codePageRanges"
     ufo_name = "openTypeOS2CodePageRanges"
-    glyphs_owner_class=GSFont
+    glyphs_owner_class = GSFont
 
     def to_glyphs(self, glyphs, ufo):
-        if not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+        if not isinstance(glyphs._owner, self.glyphs_owner_class):  # some parameters should only be set either in font or on master
             return
         ufo_codepage_bits = ufo.get_info_value("openTypeOS2CodePageRanges")
         if ufo_codepage_bits is None:
@@ -440,7 +442,6 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             codepages.append(REVERSE_CODEPAGE_RANGES.get(codepage, f"bit {codepage}"))
 
         glyphs[self.glyphs_name] = codepages
-
 
     def to_ufo(self, builder, glyphs, ufo):
         codepages = glyphs[self.glyphs_name]
@@ -478,6 +479,7 @@ for glyphs_name in ("winAscent", "winDescent"):
 for glyphs_name in ("weightClass", "widthClass"):
     ufo_name = "openTypeOS2W" + glyphs_name[1:]
     register_parameter_handler(ParamHandler(glyphs_name, ufo_name, value_to_ufo=int, glyphs_owner_class=(GSInstance, InstanceDescriptorAsGSInstance)))
+
 
 # convert Glyphs' GASP Table to UFO openTypeGaspRangeRecords
 def to_ufo_gasp_table(value):
@@ -592,6 +594,7 @@ register_parameter_handler(
 class NameRecordParamHandler(AbstractParamHandler):
     glyphs_name = "Name Table Entry"
     ufo_name = "openTypeNameRecords"
+
     def to_entry(self, record):
         identifiers = [
             record["nameID"],
@@ -681,7 +684,7 @@ class NameRecordParamHandler(AbstractParamHandler):
 register_parameter_handler(NameRecordParamHandler())
 
 
-#register_parameter_handler(ParamHandler(glyphs_name="Disable Last Change", ufo_name="disablesLastChange"))
+# register_parameter_handler(ParamHandler(glyphs_name="Disable Last Change", ufo_name="disablesLastChange"))
 
 register_parameter_handler(
     ParamHandler(
@@ -705,7 +708,7 @@ class MiscParamHandler(ParamHandler):
 
     def to_glyphs(self, glyphs, ufo):
         if hasattr(glyphs, self.glyphs_name):
-           setattr(glyphs, self.glyphs_name, ufo)
+            setattr(glyphs, self.glyphs_name, ufo)
 
 
 register_parameter_handler(MiscParamHandler(glyphs_name="disablesAutomaticAlignment", ufo_prefix=GLYPHS_PREFIX))
@@ -732,7 +735,9 @@ class DisplayStringsParamHandler(MiscParamHandler):
         if hasattr(glyphs._owner, self.glyphs_name) and value:
             glyphs._owner.displayStrings = value
 
+
 register_parameter_handler(DisplayStringsParamHandler(glyphs_name="displayStrings", ufo_name="DisplayStrings", ufo_prefix=GLYPHS_PREFIX))
+
 
 # deal with any Glyphs naming quirks here
 register_parameter_handler(
@@ -760,13 +765,14 @@ class OS2SelectionParamHandler(AbstractParamHandler):
     glyphs_name = None
     ufo_name = "openTypeOS2Selection"
     flags = {7: "Use Typo Metrics", 8: "Has WWS Names"}
-    glyphs_owner_class=(GSFont, GSInstance, InstanceDescriptorAsGSInstance)
+    glyphs_owner_class = (GSFont, GSInstance, InstanceDescriptorAsGSInstance)
+
     # Note that en empty openTypeOS2Selection list should stay an empty list, as
     # opposed to a non-existant list. In the latter case, we round-trip nothing, in the
     # former, we at least write an empty list to openTypeOS2SelectionUnsupportedBits
     # which we use to re-instate an empty list in the UFO on tripping back.
     def to_glyphs(self, glyphs, ufo):
-        if not isinstance(glyphs._owner, self.glyphs_owner_class): # some parameters should only be set either in font or on master
+        if not isinstance(glyphs._owner, self.glyphs_owner_class):  # some parameters should only be set either in font or on master
             return
         ufo_flags = ufo.get_info_value(self.ufo_name)
         if ufo_flags is None:
@@ -888,6 +894,7 @@ class FilterParamHandler(AbstractParamHandler):
     """
     glyphs_name = "Filter"
     ufo_name = UFO2FT_FILTERS_KEY
+
     def to_glyphs(self, glyphs, ufo):
         pass
 
@@ -913,6 +920,7 @@ register_parameter_handler(FilterParamHandler())
 class ReplacePrefixParamHandler(AbstractParamHandler):
     glyphs_name = "Replace Prefix"
     ufo_name = None
+
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
         for value in glyphs.get_custom_values(self.glyphs_name):
@@ -943,6 +951,7 @@ register_parameter_handler(ReplacePrefixParamHandler())
 class ReplaceFeatureParamHandler(AbstractParamHandler):
     glyphs_name = "Replace Feature"
     ufo_name = None
+
     def to_ufo(self, builder, glyphs, ufo):
         for value in glyphs.get_custom_values(self.glyphs_name):
             tag, repl = re.split(r"\s*;\s*", value, 1)
@@ -1051,10 +1060,9 @@ def to_ufo_properties(self, ufo, glyphs_object):
     ufo_proxy = UFOProxy(ufo)
     for handler in KNOWN_PROPERTY_HANDLERS:
         if handler.glyphs_owner_class and not isinstance(glyphs_object, handler.glyphs_owner_class):
-            #print("__wrong Class")
-            #print("__handler.class != glyphs_object.class", handler, glyphs_object, handler.glyphs_owner_class)
             continue
         handler.to_ufo(self, glyphs_properties_proxy, ufo_proxy)
+
 
 def to_ufo_custom_params(self, ufo, glyphs_object, class_key, set_default_params=True):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
@@ -1075,7 +1083,7 @@ def to_ufo_custom_params(self, ufo, glyphs_object, class_key, set_default_params
             continue
         name = _normalize_custom_param_name(param.name)
         value = _normalize_custom_param_value(param.value)
-        parameters.append({"name":name, "value":value})
+        parameters.append({"name": name, "value": value})
     if len(parameters) > 0:
         key = GLYPHS_PREFIX + class_key + ".customParameters"
         ufo.lib[key] = parameters
@@ -1124,6 +1132,7 @@ def _normalize_custom_param_name(name):
         name = name.replace(orig, replacement)
     return name
 
+
 def _normalize_custom_param_value(value):
     """
     replace custom object with a dict representation of themselves
@@ -1135,7 +1144,7 @@ def _normalize_custom_param_value(value):
             new_value.append(new_item)
         return new_value
     try:
-        return value.propertyListValueFormat_(3) # TODO: this is the plain Glyphs API. pythonize this
+        return value.propertyListValueFormat_(3)  # TODO: this is the plain Glyphs API. pythonize this
     except:
         try:
             from objc._pythonify import OC_PythonLong, OC_PythonFloat
@@ -1146,6 +1155,7 @@ def _normalize_custom_param_value(value):
         except:
             pass
         return value
+
 
 DEFAULT_PARAMETERS = (
     # ufo2ft defaults to fsType Bit 2 ("Preview & Print embedding"), while

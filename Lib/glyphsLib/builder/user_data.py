@@ -15,7 +15,8 @@
 
 import logging
 import os
-import posixpath, copy
+import posixpath
+import copy
 
 from .constants import (
     GLYPHS_PREFIX,

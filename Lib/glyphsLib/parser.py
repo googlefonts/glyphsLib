@@ -77,7 +77,7 @@ class Parser:
         if new_type is None:
             # customparameter.value needs to be set from the found value
             new_type = dict
-        elif type(new_type) == list:
+        elif isinstance(new_type, list):
             new_type = new_type[0]
         res = new_type()
         self._parse_dict_into_object(res, text)
@@ -157,7 +157,7 @@ def load(file_or_path, font=None):
     else:
         fp = open(file_or_path, "r", encoding="utf-8")
         data = openstep_plist.load(fp, use_numbers=True)
-    font.formatVersion = 2 # default to 2, version 3+ is read from the file
+    font.formatVersion = 2  # default to 2, version 3+ is read from the file
     p.parse_into_object(font, data)
     font.post_read()
     return font

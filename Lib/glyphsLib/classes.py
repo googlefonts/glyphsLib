@@ -18,7 +18,6 @@ import logging
 import math
 import os
 import re
-import sys
 import uuid
 from collections import OrderedDict
 from enum import IntEnum
@@ -43,13 +42,14 @@ from glyphsLib.types import (
     Transform,
     UnicodesList,
     floatToString5,
+    floatToString3,
     parse_datetime,
     parse_float_or_int,
     readIntlist,
     NegateBool,
 )
 
-from glyphsLib.util import designspace_min_max, isString, isList
+from glyphsLib.util import isString, isList
 from glyphsLib.writer import Writer
 import glyphsLib.glyphdata as glyphdata
 
@@ -108,7 +108,7 @@ __all__ = [
     "TTROUND",
     "TTROUNDUP",
     "TTROUNDDOWN",
-    #"TRIPLE",
+    # "TRIPLE",
     "TEXT",
     "ARROW",
     "CIRCLE",
@@ -154,7 +154,7 @@ QCURVE = "qcurve"
 GSMetricsKeyUndefined = None
 GSMetricsKeyAscender = "ascender"
 GSMetricsKeyCapHeight = "cap height"
-GSMetricsKeySlantHeight = "slant height" # defaults to half xHeight
+GSMetricsKeySlantHeight = "slant height"  # defaults to half xHeight
 GSMetricsKeyxHeight = "x-height"
 GSMetricsKeyMidHeight = "midHeight"
 GSMetricsKeyTopHeight = "topHeight"  # old key
@@ -218,6 +218,7 @@ class InstanceType(IntEnum):
     SINGLE = 0
     VARIABLE = 1
 
+
 ''' # Glyphs used those int values, but we can use the str values from the file as is for now
 TAG = -2
 TOPGHOST = -1
@@ -238,8 +239,8 @@ PS_BOTTOM_GHOST = "BottomGhost"
 PS_STEM = "Stem"
 PS_FLEX = "Flex"
 TTSTEM = "TTStem"
-TTSHIFT = "TTShift" # TTAlign in G2
-TTSNAP = "TTSnap" # "TTAnchor" in G2
+TTSHIFT = "TTShift"  # TTAlign in G2
+TTSNAP = "TTSnap"  # "TTAnchor" in G2
 TTINTERPOLATE = "TTInterpolate"
 TTDIAGONAL = "TTDiagonal"
 TTDELTA = "TTDelta"
@@ -253,7 +254,7 @@ TTDONTROUND = 4
 TTROUND = 0
 TTROUNDUP = 1
 TTROUNDDOWN = 2
-#TRIPLE = 128
+# TRIPLE = 128
 
 # Annotations:
 TEXT = 1
@@ -328,6 +329,7 @@ WIDTH_CODES = {
 WIDTH_CODES_REVERSE = {v: k for k, v in WIDTH_CODES.items()}
 
 DefaultAxisValuesV2 = [100, 100, 0, 0, 0, 0]
+
 
 def instance_type(value):
     # Convert the instance type from the plist ("variable") into the integer constant
@@ -484,7 +486,7 @@ class Proxy:
         return result
 
     def pop(self, i):
-        if type(i) == int:
+        if isinstance(i, int):
             node = self[i]
             del self[i]
             return node
@@ -507,12 +509,9 @@ class Proxy:
 
     def setter(self, values):
         method = self.setterMethod()
-        if type(values) == list:
+        if isinstance(values, list):
             method(values)
-        elif (
-            isList(values) or
-            type(values) == type(self)
-        ):
+        elif isList(values) or isinstance(values, type(self)):
             method(list(values))
         elif values is None:
             method(list())
@@ -751,6 +750,7 @@ class FontFontMasterProxy(Proxy):
         for m in values:
             m.font = self._owner
 
+
 class FontInstanceProxy(Proxy):
     """The list of instances. You can access it with the index.
     Usage:
@@ -815,6 +815,7 @@ class FontInstanceProxy(Proxy):
         for instance in values:
             instance.font = self._owner
 
+
 class FontGlyphsProxy(Proxy):
     """The list of glyphs. You can access it with the index or the glyph name.
     Usage:
@@ -825,7 +826,7 @@ class FontGlyphsProxy(Proxy):
     """
 
     def __getitem__(self, key):
-        if type(key) == slice:
+        if isinstance(key, slice):
             return self.values().__getitem__(key)
 
         # by index
@@ -1061,10 +1062,10 @@ class GlyphLayerProxy(Proxy):
 
     def setter(self, values):
         newLayers = OrderedDict()
-        if type(values) == list or type(values) == tuple or type(values) == type(self):
+        if isinstance(values, (list, tuple, type(self))):
             for layer in values:
                 newLayers[layer.layerId] = layer
-        elif type(values) == dict:  # or isinstance(values, NSDictionary)
+        elif isinstance(values, dict):  # or isinstance(values, NSDictionary)
             for layer in values.values():
                 newLayers[layer.layerId] = layer
         else:
@@ -1242,6 +1243,7 @@ class InternalAxesProxy(Proxy):
     def setterMethod(self):
         return self._setterMethod
 
+
 class ExternalAxesProxy(Proxy):
 
     def __getitem__(self, key):
@@ -1283,6 +1285,7 @@ class ExternalAxesProxy(Proxy):
             value = values[idx]
             self._owner._externalAxesValues[axis.axisId] = value
             idx += 1
+
 
 def axisLocationToAxesValue(master_or_instances):
     axisLocations = master_or_instances.customParameters["Axis Location"]
@@ -1442,8 +1445,6 @@ class CustomParametersProxy(ListDictionaryProxy):
         self._update_lookup()
 
     def __getitem__(self, key):
-        #if "lueScale" in key:
-        #    lkasjdf
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -1469,7 +1470,7 @@ class CustomParametersProxy(ListDictionaryProxy):
         return keys
 
     def _get_by_name(self, name):
-        #AAA
+
         if name == "Name Table Entry":
             return None
         return super()._get_by_name(name)
@@ -1486,7 +1487,7 @@ class CustomParametersProxy(ListDictionaryProxy):
         for param in self:
             params = self._lookup.get(param.name, None)
             if params is None:
-                self._lookup[param.name] = param.value # the first wins
+                self._lookup[param.name] = param.value  # the first wins
 
     def __CustomParametersProxy_get_custom_values__(self, key):
         parameters = []
@@ -1496,6 +1497,7 @@ class CustomParametersProxy(ListDictionaryProxy):
             if parameter.name == key:
                 parameters.append(parameter)
         return parameters
+
     def get_custom_value(self, key):
         for parameter in self:
             if not parameter.active:
@@ -1503,6 +1505,7 @@ class CustomParametersProxy(ListDictionaryProxy):
             if parameter.name == key:
                 return parameter.value
         return None
+
     def get_custom_values(self, key):
         parameters = []
         for parameter in self:
@@ -1613,6 +1616,7 @@ class UserDataProxy(Proxy):
 
     def __deepcopy__(self, memo):
         return copy.deepcopy(self._owner._userData)
+
 
 class GSAxis(GSBase):
     def _serialize_to_plist(self, writer):
@@ -1749,7 +1753,7 @@ class GSCustomParameter(GSBase):
             "openTypeOS2UnicodeRanges",
             "panose",
             "unicodeRanges",
-            #"codePageRanges",
+            # "codePageRanges",
             "openTypeHeadFlags",
         )
     )
@@ -1814,9 +1818,11 @@ class GSMetric(GSBase):
         string += ">"
         return string
 
+
 GSMetric._add_parsers([
     {"plist_name": "type", "object_name": "metricType"},
 ])
+
 
 class GSMetricValue(GSBase):
     def __init__(self, position=0, overshoot=0):
@@ -1917,6 +1923,7 @@ class GSGuide(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
+
 GSGuide._add_parsers([
     {"plist_name": "position", "converter": Point},  # v2
     {"plist_name": "pos", "object_name": "position", "converter": Point},  # v3
@@ -1927,7 +1934,8 @@ GSGuide._add_parsers([
 MASTER_NAME_WEIGHTS = ("Light", "SemiLight", "SemiBold", "Bold")
 MASTER_NAME_WIDTHS = ("Condensed", "SemiCondensed", "Extended", "SemiExtended")
 MASTER_AXIS_VALUE_KEYS = ("weightValue", "widthValue", "customValue", "customValue1", "customValue2", "customValue3")
-MASTER_ICON_NAMES  = set(("Light_Condensed", "Light_SemiCondensed", "Light", "Light_SemiExtended", "Light_Extended", "SemiLight_Condensed", "SemiLight_SemiCondensed", "SemiLight", "SemiLight_SemiExtended", "SemiLight_Extended", "Condensed", "SemiCondensed", "Regular", "SemiExtended", "Extended", "SemiBold_Condensed", "SemiBold_SemiCondensed", "SemiBold", "SemiBold_SemiExtended", "SemiBold_Extended", "Bold_Condensed", "Bold_SemiCondensed", "Bold", "Bold_SemiExtended", "Bold_Extended"))
+MASTER_ICON_NAMES = set(("Light_Condensed", "Light_SemiCondensed", "Light", "Light_SemiExtended", "Light_Extended", "SemiLight_Condensed", "SemiLight_SemiCondensed", "SemiLight", "SemiLight_SemiExtended", "SemiLight_Extended", "Condensed", "SemiCondensed", "Regular", "SemiExtended", "Extended", "SemiBold_Condensed", "SemiBold_SemiCondensed", "SemiBold", "SemiBold_SemiExtended", "SemiBold_Extended", "Bold_Condensed", "Bold_SemiCondensed", "Bold", "Bold_SemiExtended", "Bold_Extended"))
+
 
 class GSFontMaster(GSBase):
 
@@ -1951,11 +1959,11 @@ class GSFontMaster(GSBase):
             except ValueError:
                 pass
         iconName = "_".join(name_parts)
-        if len(iconName) == 0 or not iconName in MASTER_ICON_NAMES:
+        if len(iconName) == 0 or iconName not in MASTER_ICON_NAMES:
             iconName = "Regular"
         return iconName
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer):  # noqa: C901
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
             writer.writeObjectKeyValue(self, "ascender")
@@ -1995,7 +2003,7 @@ class GSFontMaster(GSBase):
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "horizontalStems", "if_true")
 
-        if len(self.iconName) > 0 and (self.iconName != self._default_icon_name() or writer.formatVersion == 3) and self.iconName != "Regular": # TODO: Glyhs <= 3.1 had a bug that it would not compute the defaultIconName correctly for v3 files.
+        if len(self.iconName) > 0 and (self.iconName != self._default_icon_name() or writer.formatVersion == 3) and self.iconName != "Regular":  # TODO: Glyhs <= 3.1 had a bug that it would not compute the defaultIconName correctly for v3 files.
             writer.writeKeyValue("iconName", self.iconName)
         writer.writeObjectKeyValue(self, "id")
         if writer.formatVersion == 2:
@@ -2018,7 +2026,7 @@ class GSFontMaster(GSBase):
         if True:
             userData = dict(self.userData)
             if "com.github.googlei18n.ufo2ft.filters" in userData:
-                del(userData["com.github.googlei18n.ufo2ft.filters"])
+                del (userData["com.github.googlei18n.ufo2ft.filters"])
             if len(userData) > 0:
                 writer.writeKeyValue("userData", userData)
         else:
@@ -2045,8 +2053,8 @@ class GSFontMaster(GSBase):
         # and weight anymore as attributes, even though those properties are
         # still written to the saved files.
         "name": "Regular",
-        #"weight": "Regular",
-        #"width": "Regular",
+        # "weight": "Regular",
+        # "width": "Regular",
         "x-height": 500,
         "cap height": 700,
         "ascender": 800,
@@ -2084,7 +2092,7 @@ class GSFontMaster(GSBase):
         self.weight = None
         self.width = None
         self.customName = None
-        self.readBuffer = {} # temp storage while reading
+        self.readBuffer = {}  # temp storage while reading
         self._axesValues = None
         self._stems = None
         self._alignmentZones = None
@@ -2107,11 +2115,10 @@ class GSFontMaster(GSBase):
                 self.font.stems.append(metric)
             self._stems[metric.id] = stems[idx]
 
-    def post_read(self): # GSFontMaster
+    def post_read(self):  # GSFontMaster
         axes = self.font.axes
         if self.font.formatVersion < 3:
             axesValues = self.readBuffer.get("axesValues", {})
-            #print("__self.readBuffer 2", self.readBuffer, self._axesValues, axesValues)
             axesCount = len(axes)
             for idx in range(axesCount):
                 axis = axes[idx]
@@ -2123,14 +2130,13 @@ class GSFontMaster(GSBase):
         else:
             axesValues = self._axesValues
             if axesValues:
-                #print("__self.readBuffer 3", self.readBuffer.keys(), self._axesValues, self._internalAxesValues)
                 axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
                     if idx < len(axesValues):
                         value = axesValues[idx]
                     else:
-                        value = 100 if idx < 2 else 0 # (georg) fallback for old designspace setup
+                        value = 100 if idx < 2 else 0  # (georg) fallback for old designspace setup
                     self.internalAxesValues[axis.axisId] = value
 
         if isinstance(self._metrics, list):
@@ -2151,7 +2157,7 @@ class GSFontMaster(GSBase):
                 xHeightMetricValue = self._get_metric(GSMetricsKeyxHeight)
                 filterString = "case == 3"
                 self._set_metric(GSMetricsKeyxHeight, parameter, xHeightMetricValue.overshoot, filter=filterString)
-                del(self.customParameters["smallCapHeight"])
+                del (self.customParameters["smallCapHeight"])
 
             if self._alignmentZones:
                 self._import_alignmentZones_to_metrics()
@@ -2160,7 +2166,6 @@ class GSFontMaster(GSBase):
             self._set_metric(GSMetricsKeyItalicAngle, position, overshoot)
 
         if self._stems:
-            #print("__", self.font.stems, self._stems)
             assert len(self.font.stems) == len(self._stems)
             stems = {}
             for idx, stem in enumerate(self.font.stems):
@@ -2208,9 +2213,9 @@ class GSFontMaster(GSBase):
         return self
 
     def _joinNames(self, width, weight, custom):
-          # Remove None and empty string
-          names = list(filter(None, [width, weight, custom]))
-          return " ".join(names)
+        # Remove None and empty string
+        names = list(filter(None, [width, weight, custom]))
+        return " ".join(names)
 
     def _splitName(self, value):
         if value is None:
@@ -2251,7 +2256,7 @@ class GSFontMaster(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
-    def _get_metric_layer(metricType, layer=None):
+    def _get_metric_layer(self, metricType, layer=None):
         for metric in self.font.metrics:
             if metric.metricType == metricType and metric.filter and metric.filter.evaluateWithObject(layer.parent):
                 metricValue = self.metric[metric.id]
@@ -2279,7 +2284,7 @@ class GSFontMaster(GSBase):
 
     def _set_metric(self, metricType, position=None, overshoot=None, name=None, filter=None):
         if not self.font:
-            self.readBuffer[metricType] = (position, overshoot) # we read that later in postRead
+            self.readBuffer[metricType] = (position, overshoot)  # we read that later in postRead
             return
         metrics = self.font.metrics
         metric = None
@@ -2308,12 +2313,12 @@ class GSFontMaster(GSBase):
             for zone in list(self._alignmentZones):
                 if abs(zone.position - metricValue.position) <= 1:
                     end = zone.position + zone.size
-                    metricValue.overshoot = end - metricValue.position;
+                    metricValue.overshoot = end - metricValue.position
                     self._alignmentZones.remove(zone)
         if len(self._alignmentZones) > 0:
             zoneIdx = 1
             for zone in self._alignmentZones:
-                zoneKey = "zone %d" % zoneIdx
+                # zoneKey = "zone %d" % zoneIdx
                 self._set_metric(GSMetricsKeyUndefined, zone.position, zone.size)
                 zoneIdx += 1
         self._alignmentZones = None
@@ -2324,8 +2329,7 @@ class GSFontMaster(GSBase):
 
     @metrics.setter
     def metrics(self, metrics):
-        if not isinstance(metrics, dict):
-            pxjx
+        assert isinstance(metrics, dict)
         self._metrics = metrics
 
     # Legacy accessors
@@ -2431,13 +2435,13 @@ class GSFontMaster(GSBase):
                 break
         if not stem:
             stem = GSMetric()
-            metric.name = name
-            metric.direction = direction
-            metric.filter = filter
-            self.font.stems.append(metric)
-        metricValue = GSMetricValue(position=position, overshoot=overshoot)
-        metricValue.metric = metric
-        self.metrics[metric.id] = metricValue
+            stem.name = name
+            stem.direction = direction
+            stem.filter = filter
+            self.font.stems.append(stem)
+        metricValue = GSMetricValue(position=size)
+        metricValue.metric = stem
+        self.metrics[stem.id] = metricValue
 
     stems = property(
         lambda self: MasterStemsProxy(self),
@@ -2456,7 +2460,7 @@ class GSFontMaster(GSBase):
 
     @horizontalStems.setter
     def horizontalStems(self, value):
-        assert type(value) == list
+        assert isinstance(value, list)
         if self.font:
             self._import_stem_list(value, True)
         else:
@@ -2473,7 +2477,7 @@ class GSFontMaster(GSBase):
 
     @verticalStems.setter
     def verticalStems(self, value):
-        assert type(value) == list
+        assert isinstance(value, list)
         if self.font:
             self._import_stem_list(value, False)
         else:
@@ -2540,10 +2544,10 @@ class GSFontMaster(GSBase):
     def weightValue(self, value):
         if self.font:
             axis = self.font.axes[0]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][0] = value
 
@@ -2555,10 +2559,10 @@ class GSFontMaster(GSBase):
     def widthValue(self, value):
         if self.font:
             axis = self.font.axes[1]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][1] = value
 
@@ -2570,10 +2574,10 @@ class GSFontMaster(GSBase):
     def customValue(self, value):
         if self.font:
             axis = self.font.axes[2]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][2] = value
 
@@ -2585,10 +2589,10 @@ class GSFontMaster(GSBase):
     def customValue1(self, value):
         if self.font:
             axis = self.font.axes[3]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][3] = value
 
@@ -2600,11 +2604,11 @@ class GSFontMaster(GSBase):
     def customValue2(self, value):
         if self.font:
             axis = self.font.axes[4]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
 
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][4] = value
 
@@ -2616,11 +2620,11 @@ class GSFontMaster(GSBase):
     def customValue3(self, value):
         if self.font:
             axis = self.font.axes[5]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
 
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][5] = value
 
@@ -2634,7 +2638,7 @@ GSFontMaster._add_parsers([
     {"plist_name": "numberValues", "object_name": "numbers"},  # v3
     {"plist_name": "stemValues", "object_name": "_stems"},  # v3
     {"plist_name": "metricValues", "object_name": "_metrics", "type": GSMetricValue},  # v3
-    #{"plist_name": "name", "object_name": "_name"},
+    # {"plist_name": "name", "object_name": "_name"},
 ])
 
 
@@ -2966,7 +2970,7 @@ class GSPath(GSBase):
 
     @segments.setter
     def segments(self, value):
-        if type(value) in (list, tuple):
+        if isinstance(value, (list, tuple)):
             self.setSegments(value)
         else:
             raise TypeError
@@ -3311,10 +3315,10 @@ class GSComponent(GSBase):
         self._sX, self._sY, self._R = transformStructToScaleAndRotation(
             self.transform.value
         )
-        if type(value) in [int, float]:
+        if isinstance(value, (int, float)):
             self._sX = value
             self._sY = value
-        elif type(value) in [tuple, list] and len(value) == 2:
+        elif isinstance(value, (tuple, list)) and len(value) == 2:
             self._sX, self._sY = value
         else:
             raise ValueError
@@ -3516,6 +3520,7 @@ HINT_TYPE_TO_STRING_V2 = {
     SEGMENT: "Segment",
 }
 
+
 class GSHint(GSBase):
     def _serialize_to_plist(self, writer):
         if writer.formatVersion >= 3:
@@ -3704,12 +3709,13 @@ class GSHint(GSBase):
 
     @type.setter
     def type(self, hintType):
-        assert type(hintType) == type(CORNER), "hintType %s (%s) != %s" % (hintType, type(hintType), type(CORNER))
+        assert isinstance(hintType, type(CORNER)), "hintType %s (%s) != %s" % (hintType, type(hintType), type(CORNER))
         self._type = hintType
 
     @property
     def isPathComponent(self):
         return self._type == CORNER or self._type == CAP or self._type == BRUSH or self._type == SEGMENT
+
     @property
     def isCorner(self):
         return self.isPathComponent
@@ -3848,7 +3854,8 @@ GSAnnotation._add_parsers([
 
 
 LOCALIZED_PARAMETERS = ("localizedFamilyName", "localizedStyleName", "localizedStyleMapFamilyName", "localizedDesigner")
-#SIMPLE_PARAMETERS = ("trademark")
+# SIMPLE_PARAMETERS = ("trademark")
+
 
 class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def __init__(self, key="", value=None):
@@ -3963,12 +3970,12 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         locParameterKey = "localized" + parameterKey[0].upper() + parameterKey[1:]
         defaultValue = None
         isLocalizedParameter = True
-        if not locParameterKey in LOCALIZED_PARAMETERS: # e.g. for trademark
+        if locParameterKey not in LOCALIZED_PARAMETERS:  # e.g. for trademark
             isLocalizedParameter = False
             defaultValue = infoValue.value
             # TODO: check if it is a valid parameter altogether
-            #if (![GSGlyphsInfo customParameterTypes][parameterKey]) {
-            #    return None
+            # if (![GSGlyphsInfo customParameterTypes][parameterKey]) {
+            #     return None
         customParameters = []
 
         if isLocalizedParameter and infoValue._localized_values:
@@ -3979,7 +3986,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 if key in ["dflt", "ENG"]:
                     defaultValue = value
                 else:
-                    #langName = GSGlyphsInfo.langNameForTag(infoValue.languageTag)
+                    # langName = GSGlyphsInfo.langNameForTag(infoValue.languageTag)
                     langName = glyphdata.langTag2Name.get(key, key)
                     if not langName:
                         langName = key
@@ -3993,7 +4000,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 return customParameters
 
             # TODO: check if it is a valid parameter altogether
-            #if ([GSGlyphsInfo customParameterTypes][parameterKey]) {
+            # if ([GSGlyphsInfo customParameterTypes][parameterKey]) {
             if True:
                 parameter = GSCustomParameter(parameterKey, defaultValue)
                 customParameters.insert(0, parameter)
@@ -4001,7 +4008,9 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 return None
         return customParameters
 
+
 INSTANCE_AXIS_VALUE_KEYS = ("interpolationWeight", "interpolationWidth", "interpolationCustom", "interpolationCustom1", "interpolationCustom2", "interpolationCustom3")
+
 
 class GSInstance(GSBase):
 
@@ -4030,12 +4039,12 @@ class GSInstance(GSBase):
         if customParameters:
             writer.writeKeyValue("customParameters", customParameters)
         if writer.formatVersion == 2:
-            self._write_axis_value(writer, 2, 0);
-            self._write_axis_value(writer, 3, 0);
-            self._write_axis_value(writer, 4, 0);
-            self._write_axis_value(writer, 5, 0);
-            self._write_axis_value(writer, 0, 100);
-            self._write_axis_value(writer, 1, 100);
+            self._write_axis_value(writer, 2, 0)
+            self._write_axis_value(writer, 3, 0)
+            self._write_axis_value(writer, 4, 0)
+            self._write_axis_value(writer, 5, 0)
+            self._write_axis_value(writer, 0, 100)
+            self._write_axis_value(writer, 1, 100)
 
         if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
@@ -4107,8 +4116,8 @@ class GSInstance(GSBase):
         lambda self, value: PropertiesProxy(self).setter(value),
     )
 
-    def post_read(self): # GSInstance
-        assert(self.font)
+    def post_read(self):  # GSInstance
+        assert self.font
         axes = self.font.axes
         if axes and self.type != InstanceType.VARIABLE:
             if self.font.formatVersion < 3:
@@ -4130,7 +4139,7 @@ class GSInstance(GSBase):
                         if idx < len(axesValues):
                             value = axesValues[idx]
                         else:
-                            value = 100 if idx < 2 else 0 # (georg) fallback for old designspace setup
+                            value = 100 if idx < 2 else 0  # (georg) fallback for old designspace setup
                         self.internalAxesValues[axis.axisId] = value
 
         if self.font.formatVersion < 3:
@@ -4149,7 +4158,7 @@ class GSInstance(GSBase):
         weight_class_parameter = self.customParameters["weightClass"]
         if weight_class_parameter:
             self.weightClass = int(weight_class_parameter)
-            del(self.customParameters["weightClass"])
+            del (self.customParameters["weightClass"])
 
         axisLocationToAxesValue(self)
 
@@ -4224,7 +4233,7 @@ class GSInstance(GSBase):
 
     @styleMapFamilyNames.setter
     def styleMapFamilyNames(self, values):
-        self.properties["styleMapFamilyNames"] = value
+        self.properties["styleMapFamilyNames"] = values
 
     @property
     def styleMapStyleNames(self):
@@ -4232,7 +4241,7 @@ class GSInstance(GSBase):
 
     @styleMapStyleNames.setter
     def styleMapStyleNames(self, values):
-        self.properties["styleMapStyleNames"] = value
+        self.properties["styleMapStyleNames"] = values
 
     @property
     def styleMapFamilyName(self):
@@ -4320,10 +4329,10 @@ class GSInstance(GSBase):
     def weightValue(self, value):
         if self.font:
             axis = self.font.axes[0]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][0] = value
 
@@ -4335,10 +4344,10 @@ class GSInstance(GSBase):
     def widthValue(self, value):
         if self.font:
             axis = self.font.axes[1]
-            if  axis:
+            if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][1] = value
 
@@ -4350,10 +4359,10 @@ class GSInstance(GSBase):
     def customValue(self, value):
         if self.font:
             axis = self.font.axes[2]
-            if  axis:
+            if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][2] = value
 
@@ -4365,10 +4374,10 @@ class GSInstance(GSBase):
     def customValue1(self, value):
         if self.font:
             axis = self.font.axes[3]
-            if  axis:
+            if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][3] = value
 
@@ -4380,10 +4389,10 @@ class GSInstance(GSBase):
     def customValue2(self, value):
         if self.font:
             axis = self.font.axes[4]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["axesValues"][4] = value
 
@@ -4395,10 +4404,10 @@ class GSInstance(GSBase):
     def customValue3(self, value):
         if self.font:
             axis = self.font.axes[5]
-            if  axis:
-                self._internalAxesValues[axis.axisId]= value
+            if axis:
+                self._internalAxesValues[axis.axisId] = value
             return
-        if not "axesValues" in self.readBuffer:
+        if "axesValues" not in self.readBuffer:
             self.readBuffer["axesValues"] = {}
         self.readBuffer["_axesValues"][5] = value
 
@@ -4488,10 +4497,10 @@ class GSBackgroundImage(GSBase):
 
     @scale.setter
     def scale(self, value):
-        if type(value) in [int, float]:
+        if isinstance(value, (int, float)):
             self._sX = value
             self._sY = value
-        elif type(value) in [tuple, list] and len(value) == 2:
+        elif isinstance(value, (tuple, list)) and len(value) == 2:
             self._sX, self._sY = value
         else:
             raise ValueError
@@ -4660,15 +4669,15 @@ class GSLayer(GSBase):
                     coordinatesMap[axis.axisId] = value
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
 
-    def post_read(self): # GSLayer
-        assert(self.parent)
+    def post_read(self):  # GSLayer
+        assert self.parent
         font = self.parent.parent
         if font.formatVersion == 2:
             self.layer_name_to_atributes()
 
             if not self.smartComponentPoleMapping and "PartSelection" in self.userData:
                 self.smartComponentPoleMapping = self.userData["PartSelection"]
-                del(self.userData["PartSelection"])
+                del (self.userData["PartSelection"])
         else:
             if LAYER_ATTRIBUTE_AXIS_RULES in self.attributes:
                 rule = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
@@ -4825,7 +4834,7 @@ class GSLayer(GSBase):
     def _bracket_layer_name(self):
         if not self.isBraceLayer:
             return None
-        nameStrings = []
+
         axisRules = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
         if not axisRules or not isinstance(axisRules, dict):
             return None
@@ -5043,9 +5052,11 @@ class GSLayer(GSBase):
     @property
     def hasPathComponents(self):
         return any(h.isPathComponent for h in self.hints)
+
     @property
     def hasCorners(self):
         return self.hasPathComponents
+
 
 GSLayer._add_parsers([
     {
@@ -5123,11 +5134,10 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
 
-
         if writer.formatVersion == 2:
-            if True: # self.direction != GSWritingDirectionRightToLeft:
+            if True:  # self.direction != GSWritingDirectionRightToLeft:
                 writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
-            #else:
+            # else:
             #    # Glyphs 3 switches the classes. Writing to G2
             #    writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true", keyName="leftKerningGroup")
 
@@ -5223,7 +5233,7 @@ class GSGlyph(GSBase):
             self.layers.append(l)
         return 0
 
-    def post_read(self): # GSGlyph
+    def post_read(self):  # GSGlyph
         for layer in self.layers:
             layer.post_read()
 
@@ -5261,6 +5271,7 @@ class GSGlyph(GSBase):
         self.metricWidth = self._defaultsForName["metricWidth"]
         self.vertOriginMetricsKey = None
         self.vertWidthMetricsKey = None
+
     def __repr__(self):
         return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
 
@@ -5413,7 +5424,7 @@ class GSFont(GSBase):
         "keyboardIncrementHuge": 100,
     }
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer):  # noqa: C901
         writer.writeKeyValue(".appVersion", self.appVersion)
         if writer.formatVersion > 2:
             writer.writeKeyValue(".formatVersion", self.formatVersion)
@@ -5514,7 +5525,7 @@ class GSFont(GSBase):
         GSMetric(metricType=GSMetricsKeyxHeight),
         GSMetric(metricType=GSMetricsKeyBaseline),
         GSMetric(metricType=GSMetricsKeyDescender),
-#         GSMetric(metricType=GSMetricsKeyItalicAngle),
+        # GSMetric(metricType=GSMetricsKeyItalicAngle),
     ]
 
     def _parse_glyphs_dict(self, parser, value):
@@ -5654,7 +5665,7 @@ class GSFont(GSBase):
             legacyAxes[-1].axisId = "a05"
         return legacyAxes
 
-    def post_read(self): # GSFont
+    def post_read(self):  # GSFont
         if self.formatVersion < 3:
             axesParameter = self.customParameters["Axes"]
             if axesParameter:
@@ -5664,7 +5675,7 @@ class GSFont(GSBase):
                     axis.axisTag = axisDict["Tag"]
                     axis.axisId = "a%02d" % (len(self.axes) + 1)
                     self.axes.append(axis)
-                del(self.customParameters["Axes"])
+                del (self.customParameters["Axes"])
             else:
                 self.axes = self._getLegacyAxes()
 
@@ -5673,7 +5684,7 @@ class GSFont(GSBase):
         else:
             idx = 1
             for axis in self.axes:
-                axis.axisId = "a%02d" % idx # this is more cosmetic as the default would do
+                axis.axisId = "a%02d" % idx  # this is more cosmetic as the default would do
                 idx += 1
         assert self.axes is not None
         for master in self.masters:
@@ -5687,7 +5698,7 @@ class GSFont(GSBase):
             glyph.post_read()
         if self.customParameters["note"]:
             self.note = self.customParameters["note"]
-            del(self.customParameters["note"])
+            del (self.customParameters["note"])
 
     def getVersionMinor(self):
         return self._versionMinor
@@ -5782,8 +5793,7 @@ class GSFont(GSBase):
 
     @stems.setter
     def stems(self, stems):
-        if stems and not isinstance(stems[0], GSMetric):
-            pxjx
+        assert not stems or isinstance(stems[0], GSMetric)
         self._stems = stems
 
     def stemForKey(self, key):
@@ -5880,8 +5890,7 @@ class GSFont(GSBase):
 
     @disablesAutomaticAlignment.setter
     def disablesAutomaticAlignment(self, value):
-        if value is None and self._disablesAutomaticAlignment is not None:
-            xyz
+        assert value or self._disablesAutomaticAlignment is None
         self._disablesAutomaticAlignment = value
 
     EMPTY_KERNING_VALUE = (1 << 63) - 1  # As per the documentation
@@ -5968,7 +5977,7 @@ class GSFont(GSBase):
     def trademark(self):
         return self.properties["trademarks"]
 
-    @copyright.setter
+    @trademark.setter
     def trademark(self, value):
         self.properties.setProperty("trademarks", value)
 
@@ -6017,7 +6026,7 @@ GSFont._add_parsers([
     {"plist_name": "gridLength", "object_name": "grid"},
     {"plist_name": "DisplayStrings", "object_name": "displayStrings"},
     {"plist_name": "__appVersion", "object_name": "appVersion"},
-    #{"plist_name": "__formatVersion", "object_name": "formatVersion"},
+    # {"plist_name": "__formatVersion", "object_name": "formatVersion"},
     {"plist_name": "classes", "type": GSClass},
     {"plist_name": "instances", "type": GSInstance},
     {"plist_name": "featurePrefixes", "type": GSFeaturePrefix},

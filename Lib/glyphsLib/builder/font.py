@@ -29,11 +29,6 @@ from .constants import (
     GLYPHS_PREFIX,
 )
 
-try:
-    from GlyphsApp import CORNER
-except:
-    from glyphsLib.classes import CORNER
-
 
 def to_ufo_font_attributes(self, family_name):
     """Generate a list of UFOs with metadata loaded from .glyphs data.

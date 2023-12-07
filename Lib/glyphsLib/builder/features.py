@@ -84,7 +84,7 @@ def _to_ufo_features(  # noqa: C901
     generate_GDEF: bool = False,
     master: GSFontMaster | None = None,
     expand_includes: bool = False,
-) -> str:
+) -> str:  # noqa: C901
     """Convert GSFont features, including prefixes and classes, to UFO.
 
     Optionally, build a GDEF table definition, excluding 'skip_export_glyphs'.
