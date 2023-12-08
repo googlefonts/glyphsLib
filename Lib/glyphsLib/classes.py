@@ -5562,15 +5562,16 @@ class GSFont(GSBase):
         self._versionMinor = 0
         self.formatVersion = 3
         self.appVersion = "895"  # minimum required version
-        self.classes = copy.deepcopy(self._defaultsForName["classes"])
-        self.features = copy.deepcopy(self._defaultsForName["features"])
-        self.featurePrefixes = copy.deepcopy(self._defaultsForName["featurePrefixes"])
+        self.classes = copy.copy(self._defaultsForName["classes"])
+        self.features = copy.copy(self._defaultsForName["features"])
+        self.featurePrefixes = copy.copy(self._defaultsForName["featurePrefixes"])
         self.customParameters = []
         self.date = None
-        self.disablesAutomaticAlignment = self._defaultsForName[
+        self._disablesAutomaticAlignment = self._defaultsForName[
             "disablesAutomaticAlignment"
         ]
         self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
+        self._disablesAutomaticAlignment = None
         self.filepath = None
         self.grid = self._defaultsForName["grid"]
         self.gridSubDivision = self._defaultsForName["gridSubDivision"]
@@ -5578,7 +5579,7 @@ class GSFont(GSBase):
         self._kerningLTR = OrderedDict()
         self._kerningRTL = OrderedDict()
         self._kerningVertical = OrderedDict()
-        self.metrics = copy.deepcopy(self._defaultMetrics)
+        self.metrics = copy.copy(self._defaultMetrics)
         self.numbers = []
         self._properties = []
         self._stems = []
