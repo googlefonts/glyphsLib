@@ -2292,11 +2292,6 @@ class GSPath(GSBase):
         if not cycled:
             return []
 
-        def wrap(i):
-            if i >= len(nodes):
-                i = i % len(nodes)
-            return i
-
         for nodeIndex in range(len(nodes)):
             if nodes[nodeIndex].type == CURVE:
                 count = 3
@@ -2310,7 +2305,7 @@ class GSPath(GSBase):
             newSegment.parent = self
             newSegment.index = len(self._segments)
             for ix in range(-count, 1):
-                newSegment.appendNode(nodes[wrap(nodeIndex + ix)])
+                newSegment.appendNode(nodes[(nodeIndex + ix) % len(nodes)])
             self._segments.append(newSegment)
 
         if not self.closed:
