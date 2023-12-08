@@ -714,7 +714,7 @@ class FeatureFileProcessor:
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
-        if feature.automatic:
+        if feature.automatic or True:  # TODO: why only extract feature names for automatic features?
             # See if there is a feature names block in the code that should be
             # written to the notes.
             for i, statement in enumerate(contents):
