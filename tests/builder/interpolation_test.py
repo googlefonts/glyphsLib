@@ -22,12 +22,9 @@ import unittest
 import xml.etree.ElementTree as etree
 from xmldiff import main, formatting
 
-import defcon
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue, GSAxis
 from glyphsLib import to_designspace, to_glyphs
-import ufoLib2
-
 
 # Limitations of glyphsLib for designspace to designspace round-trip:
 # the designspace's axes, sources and instances must be as such:
@@ -135,7 +132,6 @@ class DesignspaceTest(unittest.TestCase):
     def write_to_tmp_path(self, doc, name):
         path = os.path.join(self.tmpdir, name)
         # path = os.path.join("/Users/georg/Stuff/Temp", name)
-        # print("__write_to_tmp_path", path)
         doc.write(path)
         return path
 
@@ -183,7 +179,6 @@ class DesignspaceTest(unittest.TestCase):
         doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestAxisLocation.designspace")
         self.expect_designspace_roundtrip(doc)
-
 
     def test_inactive_from_exports(self):
         # Glyphs.app recognizes exports=0 as a flag for inactive instances.
@@ -329,7 +324,6 @@ class DesignspaceTest(unittest.TestCase):
             makeInstance("ExtraCondensed Black", weight=(900, 190), width=(2, 70)),
         ]
         font = makeFont(masters, instances, familyName, 2)
-        print("__font axes a", font.axes)
         doc = to_designspace(font, instance_dir="out")
         self.expect_designspace(doc, "DesignspaceTestTwoAxes.designspace")
         self.expect_designspace_roundtrip(doc)
@@ -358,7 +352,7 @@ class DesignspaceTest(unittest.TestCase):
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
-        self.assertEqual(weightAxis.attrib["default"], "111") # (georg) changed from 444 > 111 as there are no axis Location/extern coordinates
+        self.assertEqual(weightAxis.attrib["default"], "111")  # (georg) changed from 444 > 111 as there are no axis Location/extern coordinates
 
         self.expect_designspace_roundtrip(designspace)
 
