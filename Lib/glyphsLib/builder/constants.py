@@ -80,7 +80,7 @@ INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
 
 CUSTOM_PARAMETERS_BLACKLIST = [
     # These are stored in the official descriptor attributes.
-    "familyName",
+    "familyNames",
     "postscriptFontName",
     "fileName",
     # These can be recovered by reading the mapping backward.
