@@ -125,7 +125,6 @@ def test_DisplayStrings_ufo_lib():
     font.displayStrings = "a"
 
     ufo1, ufo2 = to_ufos(font)
-    print("__ufo1.lib x", ufo1.lib)
     assert ufo1.lib["com.schriftgestaltung.DisplayStrings"] == "a"
     assert ufo2.lib["com.schriftgestaltung.DisplayStrings"] == "a"
 

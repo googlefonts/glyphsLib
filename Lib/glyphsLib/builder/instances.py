@@ -137,7 +137,6 @@ def _to_designspace_instance(self, instance):
         ufo_instance.styleMapFamilyName = styleMapFamilyName
         ufo_instance.styleMapStyleName = styleMapStyleName
     smfm = instance.styleMapFamilyName
-    print("___smfm c", instance, instance.properties, instance.customParameters)
     if smfm:
         ufo_instance.styleMapFamilyName = smfm
     smsm = instance.styleMapStyleName

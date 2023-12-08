@@ -1,6 +1,9 @@
-import pytest, os, tempfile
+import pytest
+import os
+import tempfile
 import glyphsLib
-from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone, GSPath, GSComponent
+from glyphsLib.classes import GSFont, GSFontMaster, GSPath, GSComponent
+
 
 def test_round_tripping(datadir):
     original_file_path = str(datadir.join("GlyphsUnitTestSans3.glyphs"))
@@ -13,11 +16,12 @@ def test_round_tripping(datadir):
         original_file = open(original_file_path)
         original_file_content = original_file.read()
         original_file.close()
-    
+
         temp_file = open(temp_file_path)
         temp_file_content = temp_file.read()
         temp_file.close()
         assert original_file_content == temp_file_content
+
 
 def test_metrics():
     font = GSFont()
@@ -125,6 +129,7 @@ def test_glyphs3_stems(datadir):
     assert master.verticalStems == [17, 19]
     assert master.horizontalStems == [16, 16, 18]
 '''
+
 
 def test_glyphs2_rtl_kerning(datadir, ufo_module):
     file = "RTL_kerning_v2.glyphs"
