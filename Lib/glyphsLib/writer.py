@@ -147,7 +147,7 @@ class Writer:
         elif isinstance(value, float):
             self.file.write(floatToString5(value))
         elif isinstance(value, int):
-            self.file.write(str(value))
+            self.file.write(str(int(value)))
         elif isinstance(value, bytes):
             self.file.write("<" + value.hex() + ">")
         elif isinstance(value, bool):
