@@ -2281,13 +2281,11 @@ class GSPath(GSBase):
         self._segments = []
         self._segmentLength = 0
 
-        nodeCount = 0
-        segmentCount = 0
         nodes = list(self.nodes)
-        # Cycle node list until curve or line at end
+        # Cycle node list until curve or line at start
         cycled = False
         for i, n in enumerate(nodes):
-            if n.type == "offcurve" or n.type == "line":
+            if n.type == "curve" or n.type == "line":
                 nodes = nodes[i:] + nodes[:i]
                 cycled = True
                 break
@@ -2299,32 +2297,26 @@ class GSPath(GSBase):
                 i = i % len(nodes)
             return i
 
-        while nodeCount < len(nodes):
+        for nodeIndex in range(len(nodes)):
+            if nodes[nodeIndex].type == CURVE:
+                count = 3
+            elif nodes[nodeIndex].type == QCURVE:
+                count = 2
+            elif nodes[nodeIndex].type == LINE:
+                count = 1
+            else:
+                continue
             newSegment = segment()
             newSegment.parent = self
-            newSegment.index = segmentCount
-
-            if nodeCount == 0:
-                newSegment.appendNode(nodes[-1])
-            else:
-                newSegment.appendNode(nodes[nodeCount - 1])
-
-            if nodes[nodeCount].type == "offcurve":
-                newSegment.appendNode(nodes[nodeCount])
-                newSegment.appendNode(nodes[wrap(nodeCount + 1)])
-                newSegment.appendNode(nodes[wrap(nodeCount + 2)])
-                nodeCount += 3
-            elif nodes[nodeCount].type == "line" or nodes[nodeCount].type == "qcurve":
-                newSegment.appendNode(nodes[nodeCount])
-                nodeCount += 1
-
+            newSegment.index = len(self._segments)
+            for ix in range(-count, 1):
+                newSegment.appendNode(nodes[wrap(nodeIndex + ix)])
             self._segments.append(newSegment)
-            self._segmentLength += 1
-            segmentCount += 1
 
         if not self.closed:
             self._segments.pop(0)
 
+        self._segmentLength = len(self._segments)
         return self._segments
 
     @segments.setter
