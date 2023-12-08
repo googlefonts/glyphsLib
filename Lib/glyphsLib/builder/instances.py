@@ -22,6 +22,7 @@ from glyphsLib.util import build_ufo_path, best_repr_list
 from glyphsLib.classes import (
     CustomParametersProxy,
     GSCustomParameter,
+    GSInstance,
     InstanceType,
     PropertiesProxy,
     WEIGHT_CODES,
@@ -214,7 +215,7 @@ def _to_properties(instance):
     ]
 
 
-def _is_instance_included_in_family(self, instance):
+def _is_instance_included_in_family(self, instance:GSInstance):
     if not self._do_filter_instances_by_family:
         return True
     return instance.familyName == self.family_name
