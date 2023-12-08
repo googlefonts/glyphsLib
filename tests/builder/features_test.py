@@ -17,11 +17,14 @@
 import os
 from textwrap import dedent
 
+import glyphsLib
 from glyphsLib import to_glyphs, to_ufos, classes, to_designspace
 from glyphsLib.builder.features import _build_public_opentype_categories
 
 from fontTools.designspaceLib import DesignSpaceDocument
 import pytest
+
+DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
 def roundtrip(ufo, tmpdir, ufo_module, format_version=None):
@@ -139,6 +142,17 @@ def test_class_synonym(tmpdir, ufo_module):
     )
 
 
+@pytest.mark.xfail(reason="The names form the note should be converted to .labels on import. This is not implemented, yet")
+def test_feature_names_from_glyph_2_file():
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
+    font = glyphsLib.load(filename)
+    assert len(font.features) == 2
+    feature = font.features[1]
+    assert feature.code == "sub A by B;\n"
+    assert feature.notes == ""
+    assert feature.labels == [{"language": "dflt", "value": "Feature Name dflt"}, {"language": "DEU", "value": "Feature Name DEU"}]
+
+
 def test_feature_names_format_2(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     ufo.features.text = dedent(
@@ -239,7 +253,9 @@ def test_feature_names_notes(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == "Name: Alternate g\nfoo"
+    assert gs_feature.notes.strip() == "foo"
+
+    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
 
     assert rtufo.features.text == dedent(
         """\
@@ -247,7 +263,7 @@ def test_feature_names_notes(tmpdir, ufo_module):
         # notes:
         # foo
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -320,18 +336,16 @@ def test_feature_names_full_format_3(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == dedent(
-        """\
-        featureNames {
-            name 1 "Alternate g";
-        };"""
-    )
+    assert gs_feature.notes == ""
 
+    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
+
+    # this will be converted to platform:windows as Glyphs doesn’t handle apple names any more
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         featureNames {
-            name 1 "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -357,7 +371,7 @@ def test_feature_names_multi_format_2(tmpdir, ufo_module):
     """
     )
 
-    font, rtufo = roundtrip(ufo, tmpdir, ufo_module)
+    font, rtufo = roundtrip(ufo, tmpdir, ufo_module, format_version=2)
 
     # Check code in Glyphs font
     gs_feature = font.features[0]
@@ -408,20 +422,16 @@ def test_feature_names_multi_format_3(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == dedent(
-        """\
-        featureNames {
-            name "Alternate g";
-            name 1 "Alternate g";
-        };"""
-    )
+    assert gs_feature.notes == ""
+    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}, {'language': 'ENG', 'value': 'Alternate g'}]
 
+    # this will be converted to platform:windows as Glyphs doesn’t handle apple names any more
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         featureNames {
-            name "Alternate g";
-            name 1 "Alternate g";
+          name 3 1 0x409 "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
