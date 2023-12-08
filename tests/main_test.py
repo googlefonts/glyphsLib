@@ -45,7 +45,7 @@ def test_glyphs_main_masters(tmpdir):
     )
 
     assert glob.glob(master_dir + "/*.ufo")
-    ds = glob.glob(master_dir + "/GlyphsUnitTestSans.designspace")
+    ds = glob.glob(master_dir + "/GlyphsUnitTestSans2.designspace")
     assert ds
     designspace = fontTools.designspaceLib.DesignSpaceDocument()
     designspace.read(ds[0])
