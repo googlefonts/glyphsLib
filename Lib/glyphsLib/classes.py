@@ -165,7 +165,7 @@ GSMetricsKeyItalicAngle = "italic angle"
 
 PROPERTIES_WHITELIST = [
     # This is stored in the official descriptor attributes.
-    # "familyNames",
+    "familyNames",
     "designers",
     "designerURL",
     "manufacturers",
