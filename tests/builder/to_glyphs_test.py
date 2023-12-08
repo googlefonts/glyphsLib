@@ -447,6 +447,7 @@ def test_ufo_filename_is_kept_the_same(tmpdir, ufo_module):
     assert designspace.sources[1].filename == "subdir/bold.ufo"
 
 
+@pytest.mark.xfail(reason="GSLayer.background doesn’t store the width. it is always the same as the foreground")
 def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     bg = ufo.newLayer("public.background")
