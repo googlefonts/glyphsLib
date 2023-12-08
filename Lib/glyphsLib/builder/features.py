@@ -748,11 +748,18 @@ class FeatureFileProcessor:
                         elif self._font.formatVersion == 3:
                             labels = []
                             for name in feature_names.statements:
+                                language = "dflt"
                                 if name.platformID == 3 and name.platEncID == 1:
                                     language = _to_glyphs_language(name.langID)
-                                    labels.append(
-                                        dict(language=language, value=name.string)
+                                elif name.platformID == 1 and name.platEncID == 0 and name.langID == 0:  # mostly to make the test work, Who is using apple names any more
+                                    language = "ENG"
+                                else:
+                                    self.logger.warning(
+                                        f"Unknown platform:{name.platformID}, enc:{name.platEncID}, lang:{name.langID} in featureNames. Defaulting to 'dflt'"
                                     )
+                                labels.append(
+                                    dict(language=language, value=name.string)
+                                )
                             if len(labels) == len(feature_names.statements):
                                 feature.labels = labels
                                 contents.pop(i)
