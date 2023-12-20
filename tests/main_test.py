@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import difflib
 import glob
 import os
 
@@ -59,7 +57,7 @@ def test_glyphs_main_masters(tmpdir):
 
 def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of  GlyphsUnitTestSans2.glyphs.
+    and for the round-trip of GlyphsUnitTestSans2.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans2.glyphs")
     with open(filename) as f:
@@ -69,14 +67,14 @@ def test_parser_main(capsys):
     actual, _ = capsys.readouterr()
     actual = actual.replace("weightClass = UltraLight", "weightClass = ExtraLight")  # it is not defined, what of the two equivalient values are used.
     actual = actual.replace("weightClass = Heavy;", "weightClass = Black;")
-    actual = actual.replace("},\n{\nname = Axes;\nvalue = (\n{\nName = Weight;\nTag = wght;\n}\n);\n", "")  # G3 writes that parameter. So does glpyhsLib now. TODO: (Georg) Should we update the .glyphs file
     expected = expected.replace('name = "{155, 100}";', 'name = "{155}";')
+
     assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of  GlyphsUnitTestSans2.glyphs.
+    and for the round-trip of GlyphsUnitTestSans3.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
     with open(filename) as f:
@@ -84,46 +82,47 @@ def test_parser_main_v3(capsys):
 
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
+
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, 'w', encoding="utf-8") as file:
+        file.write(actual)
+
     assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     with open(filename, encoding="utf-8") as file:
-        expected_content = file.read()
+        expected = file.read()
 
     glyphsLib.parser.main([filename])
-    actual_content, _ = capsys.readouterr()
+    actual, _ = capsys.readouterr()
 
-    filename = os.path.join(DATA, "GlyphsFileFormatv2.diff")
-    with open(filename, encoding="utf-8") as file:
-        expected_diff = file.read()
-
-    actual_diff = difflib.Differ().compare(
-        expected_content.splitlines(),
-        actual_content.splitlines(),
+    actual = actual.replace(
+        "transform = \"{0.89877, 0.04713, -0.04189, 0.7989, 106, 89}\";",
+        "transform = \"{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}\";"
     )
-    actual_diff = [line for line in actual_diff if not line.startswith("?")]
 
-    assert actual_diff == expected_diff.splitlines()
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, 'w', encoding="utf-8") as file:
+        file.write(actual)
+    assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
     with open(filename, encoding="utf-8") as file:
-        expected_content = file.read()
+        expected = file.read()
 
     glyphsLib.parser.main([filename])
-    actual_content, _ = capsys.readouterr()
+    actual, _ = capsys.readouterr()
 
-    filename = os.path.join(DATA, "GlyphsFileFormatv3.diff")
-    with open(filename, encoding="utf-8") as file:
-        expected_diff = file.read()
+    actual = actual.replace("path = ..;", "path = \"..\";")
+    actual = actual.replace("imagePath = \"files/Smily.png\";", "imagePath = files/Smily.png;")
+    actual = actual.replace("imagePath = \"files/Smily.svg\";", "imagePath = files/Smily.svg;")
 
-    actual_diff = difflib.Differ().compare(
-        expected_content.splitlines(),
-        actual_content.splitlines(),
-    )
-    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, 'w', encoding="utf-8") as file:
+        file.write(actual)
 
-    assert actual_diff == expected_diff.splitlines()
+    assert actual.splitlines() == expected.splitlines()

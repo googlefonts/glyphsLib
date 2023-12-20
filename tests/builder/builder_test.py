@@ -1431,7 +1431,7 @@ def test_glyph_color_layers_explode(ufo_module):
                 "start": [0.4, 0.09],
                 "type": "circle",
             }
-        layer.paths.append(path)
+        layer.shapes.append(path)
 
     ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
     ufo = ds.sources[0].font
@@ -1829,7 +1829,7 @@ def test_glyph_color_layers_component_color_translate(ufo_module):
     }
     glyphb.layers[0].attributes["color"] = 1
     glyphb.layers[0].paths.append(path)
-    comp = GSComponent(glyph=glyphb, offset=(100, 20))
+    comp = GSComponent(glyph=glyphb, offset=Point(100, 20))
 
     color = GSLayer()
     color.attributes["color"] = 1
