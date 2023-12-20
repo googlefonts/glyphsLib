@@ -87,8 +87,10 @@ class Parser:
     def _parse_dict_into_object(self, res, d):
         for name in d.keys():
             sane_name = name.replace(".", "__")
-            if hasattr(res, f"_parse_{sane_name}_dict"):
-                getattr(res, f"_parse_{sane_name}_dict")(self, d[name])
+            
+            key = f"_parse_{sane_name}_dict"
+            if hasattr(res, key):
+                getattr(res, key)(self, d[name])
             elif isinstance(res, (dict, OrderedDict)):
                 result = self._parse(d[name])
                 try:
