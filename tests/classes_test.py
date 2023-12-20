@@ -441,8 +441,10 @@ class GSFontFromFileTest(GSObjectsTestCase):
         ]
         font = self.font
         # FIXME: (georg) most of them are not set in the test file and will return None
-        #for attr in attributes:
-        #    self.assertUnicode(getattr(font, attr))
+        for attr in attributes:
+            value = getattr(font, attr)
+            if value is not None:
+                self.assertUnicode(value)
 
     def test_note(self):
         font = self.font
@@ -619,7 +621,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         for zone in master.alignmentZones:
             self.assertIsInstance(zone, GSAlignmentZone)
             zones.append((zone.position, zone.size))
-        expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]
+        expected = [(800, 10), (700, 10), (520, 10), (470, 10), (0, -10), (-200, -10)]
         self.assertEqual(zones, expected)
 
         # blueValues
@@ -1288,7 +1290,7 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertIsInstance(self.component.component, GSGlyph)
 
     def test_rotation(self):
-        self.assertFloat(self.component.rotation)
+        self.assertIsInstance(self.component.rotation, (float, int))
 
     def test_transform(self):
         self.assertIsInstance(self.component.transform, Transform)

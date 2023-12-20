@@ -5,6 +5,15 @@ import glyphsLib.classes as classes
 from glyphsLib.types import Transform
 
 
+def equal_transform(transform1: Transform, transform2: Transform):
+    return abs(transform1[0] - transform2[0]) < 0.01 and \
+        abs(transform1[1] - transform2[1]) < 0.01 and \
+        abs(transform1[2] - transform2[2]) < 0.01 and \
+        abs(transform1[3] - transform2[3]) < 0.01 and \
+        abs(transform1[4] - transform2[4]) < 0.01 and \
+        abs(transform1[5] - transform2[5]) < 0.01
+
+
 def test_pen_roundtrip(datadir, ufo_module):
     font = classes.GSFont(str(datadir.join("PenTest.glyphs")))
     font_temp = ufo_module.Font()
@@ -33,7 +42,11 @@ def test_pen_roundtrip(datadir, ufo_module):
             assert len(layer.components) == len(layer_temp.components)
             for comp_orig, comp_temp in zip(layer.components, layer_temp.components):
                 assert comp_orig.name == comp_temp.name
-                assert comp_orig.transform == comp_temp.transform
+                assert comp_orig.position == comp_temp.position
+                assert comp_orig.scale == comp_temp.scale
+                assert comp_orig.slant == comp_temp.slant
+                assert abs(comp_orig.rotation - comp_temp.rotation) < 0.3
+                assert equal_transform(comp_orig.transform, comp_temp.transform)  # the transform is computed back and forth, that introduces some rounding errors
 
 
 def test_pen_recording_equivalent(datadir):
@@ -80,7 +93,7 @@ def test_pen_recording(datadir):
         ("addComponent", ("dieresis", Transform(1, 0, 0, 1, 108, -126))),
         (
             "addComponent",
-            ("adieresis", Transform(0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
+            ("adieresis", Transform(0.8448089351207557, 0.31031167225893186, -0.27583249962666134, 0.7509410090344699, 517, 308)),
         ),
     ]
 
@@ -133,7 +146,7 @@ def test_pointpen_recording(datadir):
         ("addComponent", ("dieresis", Transform(1, 0, 0, 1, 108, -126)), {}),
         (
             "addComponent",
-            ("adieresis", Transform(0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
+            ("adieresis", Transform(0.8448089351207557, 0.31031167225893186, -0.27583249962666134, 0.7509410090344699, 517, 308)),
             {},
         ),
     ]

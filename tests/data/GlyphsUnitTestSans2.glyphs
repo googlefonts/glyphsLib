@@ -29,6 +29,15 @@ customParameters = (
 {
 name = note;
 value = "Bla bla";
+},
+{
+name = Axes;
+value = (
+{
+Name = Weight;
+Tag = wght;
+}
+);
 }
 );
 date = "2015-06-08 08:53:00 +0000";

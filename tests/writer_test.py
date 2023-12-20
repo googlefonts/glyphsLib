@@ -686,6 +686,17 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             classes.GSCustomParameter("fsType", [1, 2]),
             "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}",
         )
+        # Colors:
+        self.assertWritesValue(
+            classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
+            "{\nname = \"Master Color\";\nvalue = \"130,189,158,255\";\n}",
+            formatVersion=2
+        )
+        self.assertWritesValue(
+            classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
+            "{\nname = \"Master Color\";\nvalue = (130,189,158,255);\n}",
+            formatVersion=3
+        )
 
     def test_write_class(self):
         class_ = classes.GSClass()
@@ -881,7 +892,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             partsSettings = (
             {
             name = crotchDepth;
+            bottomName = "";
             bottomValue = 0;
+            topName = "";
             topValue = 0;
             }
             );
@@ -1062,10 +1075,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             associatedMasterId = M1;
             backgroundImage = {
-            crop = "{{0, 0}, {0, 0}}";
             imagePath = "/path/to/file.jpg";
             };
-            color = (1, 2, 3, 4);
+            color = "1,2,3,4";
             components = (
             {
             name = glyphName;
@@ -1123,7 +1135,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             associatedMasterId = M1;
             backgroundImage = {
-            crop = (0,0,0,0);
             imagePath = "/path/to/file.jpg";
             };
             color = (1,2,3,4);
@@ -1480,11 +1491,28 @@ rememberToDownloadARealRemindersApp = 1;}"',
             alpha = 70;
             crop = "{{0, 10}, {500, 510}}";
             imagePath = "/tmp/img.jpg";
-            locked = 1;
+            locked = "1";
             transform = "{1.09998, 0.00576, -0.00628, 1.19998, 40, 90}";
             }
         """
             ),
+        )
+        self.assertWrites(
+            image,
+            dedent(
+                """\
+            {
+            alpha = 70;
+            angle = 0.3;
+            crop = (0,10,500,510);
+            imagePath = "/tmp/img.jpg";
+            locked = 1;
+            pos = (40,90);
+            scale = (1.1,1.2);
+            }
+        """
+            ),
+            formatVersion=3
         )
 
 

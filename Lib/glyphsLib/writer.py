@@ -48,6 +48,7 @@ class Writer:
 
             self.file = codecs.getwriter("utf-8")(fp)
         self.formatVersion = formatVersion
+        self.allowTuple = False  # tuple means that certain lists (e.g. points, color values) are written in one line `(10, 10)`. This is activated/deactivated when needed.
 
     def write(self, rootObject):
         self.writeDict(rootObject)
@@ -78,7 +79,29 @@ class Writer:
         self.file.write("}")
 
     def writeArray(self, arrayValue):
-        self.file.write("(\n")
+        if hasattr(arrayValue, "plistArray"):
+            arrayValue = arrayValue.plistArray()
+
+        length = len(arrayValue)
+        if self.allowTuple and length < 5 and all(isinstance(e, (int, float)) for e in arrayValue):
+            self.writeTupel(arrayValue)
+        else:
+            self.file.write("(\n")
+            idx = 0
+            for value in arrayValue:
+                self.writeValue(value)
+                if idx < length - 1:
+                    self.file.write(",\n")
+                else:
+                    self.file.write("\n")
+                idx += 1
+            self.file.write(")")
+
+    def writeTupel(self, arrayValue):
+        if self.formatVersion == 2:
+            self.file.write("{")
+        else:
+            self.file.write("(")
         idx = 0
         length = len(arrayValue)
         if hasattr(arrayValue, "plistArray"):
@@ -86,11 +109,14 @@ class Writer:
         for value in arrayValue:
             self.writeValue(value)
             if idx < length - 1:
-                self.file.write(",\n")
+                self.file.write(",")
             else:
-                self.file.write("\n")
+                self.file.write("")
             idx += 1
-        self.file.write(")")
+        if self.formatVersion == 2:
+            self.file.write("}")
+        else:
+            self.file.write(")")
 
     def writeUserData(self, userDataValue):
         self.file.write("{\n")
@@ -130,7 +156,12 @@ class Writer:
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
             if self.formatVersion == 2:
-                self.file.write(str(tuple(value)))
+                self.file.write("\"")
+                for ix, v in enumerate(value):
+                    self.file.write(str(v))
+                    if ix < len(value) - 1:
+                        self.file.write(",")
+                self.file.write("\"")
             else:
                 self.file.write("(")
                 for ix, v in enumerate(value):
@@ -172,6 +203,8 @@ class Writer:
                 string = string.replace("\\", "\\\\")
                 string = string.replace('"', '\\"')
                 string = string.replace("\n", "\\012")
+                if forKey == "name":  # node names are written with replaced tabs (grr)
+                    string = string.replace("\t", "\\011")
             else:
                 string = string.replace("\\", "\\\\")
                 string = string.replace('"', '\\"')
