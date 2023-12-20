@@ -66,7 +66,6 @@ TESTFILE_PATHV3 = os.path.join(
 )
 
 
-
 def generate_minimal_font(formatVersion=2):
     font = GSFont()
     font.formatVersion = formatVersion
@@ -281,7 +280,7 @@ class GSFontFromFileTest(GSObjectsTestCase):
         font = self.font
         amount = len(font.masters)
         self.assertEqual(len(list(font.masters)), 3)
-        
+
         self.assertEqual(font.masters[0].name, "Light")
         self.assertEqual(font.masters[1].name, "Regular")
         self.assertEqual(font.masters[2].name, "Bold")
@@ -547,7 +546,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             metrics.append((value.position, value.overshoot))
         expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10), (0, 0), (520, 10)]
         self.assertEqual(metrics, expected)
-        
+
         stems = []
         for stem in self.font.stems:
             value = master.stems[stem.id]
@@ -622,19 +621,17 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             zones.append((zone.position, zone.size))
         expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]
         self.assertEqual(zones, expected)
-        
+
         # blueValues
         self.assertIsInstance(master.blueValues, list)
         self.assertEqual(master.blueValues, [-10, 0, 470, 480, 700, 710, 800, 810])
 
-
-        
         # otherBlues
         self.assertIsInstance(master.otherBlues, list)
         self.assertEqual(master.otherBlues, [-210, -200])
 
 
-''' .alignmentZones is readonly now. 
+''' .alignmentZones is readonly now.
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
@@ -660,6 +657,7 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
         self.assertEqual(len(master.alignmentZones), 0)
 '''
 
+
 class GSInstanceFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
@@ -684,7 +682,7 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         self.assertEqual(instance.internalAxesValues[0], 17)
         instance.internalAxesValues[0] = 17.5
         self.assertEqual(instance.internalAxesValues[0], 17.5)
-        
+
         # isItalic
         # isBold
         for attr in ["isItalic", "isBold"]:

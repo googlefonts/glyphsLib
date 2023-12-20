@@ -624,7 +624,7 @@ def test_family_name_custom(ufo_module):
 def test_lib_no_name(ufo_module):
     font = generate_minimal_font()
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib.get(GLYPHS_PREFIX + "master.name") == None # default master name is omitted
+    assert ufo.lib.get(GLYPHS_PREFIX + "master.name") is None  # default master name is omitted
 
 
 def test_lib_weight(ufo_module):
@@ -633,7 +633,8 @@ def test_lib_weight(ufo_module):
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert ufo.lib[GLYPHS_PREFIX + "master.name"] == "Bold"
 
-''' # the weight, width and custom settings is deprecated. use master.name
+
+'''  # the weight, width and custom settings is deprecated. use master.name
 def test_lib_no_width(ufo_module):
     font = generate_minimal_font()
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
@@ -659,6 +660,7 @@ def test_lib_custom(ufo_module):
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert ufo.lib[GLYPHS_PREFIX + "customName"] == "FooBar"
 '''
+
 
 def test_coerce_to_bool(ufo_module):
     font = generate_minimal_font()
@@ -1133,7 +1135,8 @@ def test_glyph_lib_color_mapping_foreground_color(ufo_module):
         ("color.65535", 65535),
     ]
 
-@pytest.mark.xfail # FIXME: (georg) This crashes in _color_palette_index(). Not sure how to handle it
+
+@pytest.mark.xfail  # FIXME: (georg) This crashes in _color_palette_index(). Not sure how to handle it
 def test_glyph_lib_color_mapping_invalid_index(ufo_module):
     font = generate_minimal_font()
     glyph = add_glyph(font, "a")
@@ -1152,7 +1155,8 @@ def test_glyph_lib_color_mapping_invalid_index(ufo_module):
         ("color.0", 0),
     ]
 
-@pytest.mark.xfail # FIXME: (georg)
+
+@pytest.mark.xfail  # FIXME: (georg)
 def test_glyph_color_layers_components(ufo_module):
     font = generate_minimal_font()
     glypha = add_glyph(font, "a")
@@ -2217,14 +2221,15 @@ def test_glyph_color_layers_master_layer(ufo_module):
     }
     assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
 
-@pytest.mark.xfail # TODO: not sure if that is relevant any more. If so, the test needs to be rewritten
+
+@pytest.mark.xfail  # TODO: not sure if that is relevant any more. If so, the test needs to be rewritten
 def test_master_with_light_weight_but_thin_name(ufo_module):
     font = generate_minimal_font()
     master = font.masters[0]
     name = "Thin"  # In Glyphs.app, show "Thin" in the sidebar
-    weight = "Light"  # In Glyphs.app, have the light "n" icon
+    # weight = "Light"  # In Glyphs.app, have the light "n" icon
     width = None  # No data => should be equivalent to Regular
-    custom_name = "Thin"
+    # custom_name = "Thin"
     master.name = name
     master.iconName = width
     assert master.name == "Thin"

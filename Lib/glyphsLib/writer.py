@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
+
     def __init__(self, fp, formatVersion=2):
         # figure out whether file object expects bytes or unicodes
         try:
