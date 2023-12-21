@@ -15,6 +15,7 @@ from .constants import (
     GLYPHLIB_PREFIX,
 )
 
+
 def _bracket_info(layer, axes):
     # Returns a region expressed as a {axis_tag: (min, max)} box
     # (dictionary), once the axes have been computed
@@ -43,6 +44,7 @@ def _bracket_info(layer, axes):
             continue
         info[axis.tag] = (axis_min, axis_max)
     return info
+
 
 def to_designspace_bracket_layers(self):
     """Extract bracket layers in a GSGlyph into free-standing UFO glyphs with

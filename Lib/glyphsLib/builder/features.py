@@ -78,13 +78,13 @@ def _is_manual_kern_feature(feature):
     return feature.name == "kern" and not feature.automatic
 
 
-def _to_ufo_features(
+def _to_ufo_features(  # noqa: C901
     font: GSFont,
     ufo: Font | None = None,
     generate_GDEF: bool = False,
     master: GSFontMaster | None = None,
     expand_includes: bool = False,
-) -> str:  # noqa: C901
+) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
     Optionally, build a GDEF table definition, excluding 'skip_export_glyphs'.
