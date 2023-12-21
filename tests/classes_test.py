@@ -56,13 +56,16 @@ from glyphsLib.classes import (
     OFFCURVE,
 )
 from glyphsLib.types import Point, Transform, Rect
-
+from glyphsLib.classes import LAYER_ATTRIBUTE_AXIS_RULES
 
 TESTFILE_PATHV2 = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans2.glyphs")
 )
 TESTFILE_PATHV3 = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans3.glyphs")
+)
+TESTFILE_BRACKETV2 = os.path.join(
+    os.path.dirname(__file__), os.path.join("data", "BracketTestFont.glyphs")
 )
 
 
@@ -160,6 +163,17 @@ class GlyphLayersTest(unittest.TestCase):
         master2.id = "abc"
         font.masters.append(master2)
         assert len({m.id for m in font.masters}) == 2
+
+
+class GlyphsBracketLayerTest(unittest.TestCase):
+    def test_read_glyphs_2(self):
+        font = GSFont(TESTFILE_BRACKETV2)
+        glyph = font.glyphs["a"]
+        for layer in glyph.layers:
+            if layer.isMasterLayer:
+                continue
+            self.assertEqual(layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES], {"a01": {"min": 300}})
+            self.assertEqual(layer.name, "[300‹wg]")
 
 
 class GSFontTest(unittest.TestCase):

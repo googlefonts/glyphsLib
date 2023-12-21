@@ -307,24 +307,11 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     font_rt = to_glyphs(designspace)
     assert "x" in font_rt.glyphs
     g1 = font_rt.glyphs["x"]
-    assert len(g1.layers) == 12 and {l.name for l in g1.layers} == {
-        "[300]",
-        "[600]",
-        "Bold",
-        "Bold Condensed",
-        "Light Condensed",
-        "Light",
-        "Other [600]",
-        "Something [300]",
-    }
+    assert len(g1.layers) == 12
+    assert {l.name for l in g1.layers} == {'Light', 'Bold', 'Light Condensed', 'Bold Condensed', '[300‹wg]', '[600‹wg]'}
     g2 = font_rt.glyphs["a"]
-    assert len(g2.layers) == 8 and {l.name for l in g2.layers} == {
-        "[300]",
-        "Bold",
-        "Bold Condensed",
-        "Light Condensed",
-        "Light",
-    }
+    assert len(g2.layers) == 8
+    assert {l.name for l in g2.layers} == {'Light', 'Bold', 'Light Condensed', 'Bold Condensed', '[300‹wg]'}
     assert "a.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs
