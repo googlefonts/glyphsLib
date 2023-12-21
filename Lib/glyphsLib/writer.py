@@ -15,6 +15,7 @@
 
 import glyphsLib.classes
 from glyphsLib.types import floatToString5
+from glyphsLib.util import isString
 import logging
 import datetime
 from collections import OrderedDict
@@ -194,7 +195,10 @@ class Writer:
             self.file.write(value)
 
     def writeKey(self, key):
-        key = self.escape_string(key, None)
+        if isString(key):
+            key = self.escape_string(key, None)
+        elif isinstance(key, float):
+            key = floatToString5(key)
         self.file.write("%s = " % key)
 
     def escape_string(self, string, forKey):

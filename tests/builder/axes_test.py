@@ -501,8 +501,8 @@ def test_axis_mapping(ufo_module):
     wdth_mapping = [(75, 75), (100, 100)]
 
     axis_mappings = {
-        "wght": {str(float(k)): v for k, v in wght_mapping},
-        "wdth": {str(float(k)): v for k, v in wdth_mapping},
+        "wght": {k: v for k, v in wght_mapping},
+        "wdth": {k: v for k, v in wdth_mapping},
     }
 
     font.customParameters["Axis Mappings"] = axis_mappings
