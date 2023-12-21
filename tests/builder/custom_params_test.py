@@ -17,7 +17,6 @@
 import copy
 import os
 import unittest
-import pytest
 from textwrap import dedent
 
 from unittest import mock

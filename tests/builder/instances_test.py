@@ -188,10 +188,11 @@ def test_glyphs3_mapping():
     # Instance2: designspace 600 -> userspace 650
     doc = glyphsLib.to_designspace(font)
     # FIXME: (georg) mapping is not implied from the weightClass any more
-    #assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    # assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
     assert doc.instances[0].location == {"Weight": 200}
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
+
 
 def test_glyphs3_mapping_AxisLocation():
     font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3InstancesAxisLocation.glyphs"))
@@ -203,6 +204,7 @@ def test_glyphs3_mapping_AxisLocation():
     assert doc.instances[0].location == {"Weight": 200}
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
+
 
 def test_glyphs3_instance_filtering():
     font = glyphsLib.GSFont(os.path.join(DATA, "InstanceFamilyName-G3.glyphs"))

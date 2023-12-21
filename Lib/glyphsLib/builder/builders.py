@@ -501,7 +501,7 @@ class GlyphsBuilder(LoggerMixin):
         self._font = None
 
     @property
-    def font(self):
+    def font(self):  # noqa: C901
         """Get the GSFont built from the UFOs + designspace."""
         if self._font is not None:
             return self._font

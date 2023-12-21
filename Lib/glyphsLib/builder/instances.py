@@ -18,7 +18,7 @@ import logging
 
 from fontTools.varLib.models import piecewiseLinearMap
 
-from glyphsLib.util import build_ufo_path, best_repr_list
+from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import (
     CustomParametersProxy,
     GSCustomParameter,
@@ -26,7 +26,6 @@ from glyphsLib.classes import (
     InstanceType,
     PropertiesProxy,
     WEIGHT_CODES,
-    PROPERTIES_WHITELIST
 )
 from .constants import (
     GLYPHS_PREFIX,
@@ -214,7 +213,7 @@ def _to_properties(instance):
     ]
 
 
-def _is_instance_included_in_family(self, instance:GSInstance):
+def _is_instance_included_in_family(self, instance: GSInstance):
     if not self._do_filter_instances_by_family:
         return True
     return instance.familyName == self.family_name
@@ -428,11 +427,11 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
 
     try:
         ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
-    except:
+    except KeyError:
         pass
     try:
         ufo.info.openTypeOS2WeightClass = instance.lib["openTypeOS2WeightClass"]
-    except:
+    except KeyError:
         pass
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)

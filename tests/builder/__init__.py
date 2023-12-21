@@ -1,9 +1,9 @@
 
 
-
 import filecmp
 from pathlib import Path
 import difflib
+
 
 def diff_files(file1, file2):
     """Takes two file paths, compares the contents and returns a formatted diff
@@ -14,6 +14,7 @@ def diff_files(file1, file2):
         right = Path(file2).read_text().splitlines()
         return "\n".join(difflib.unified_diff(left, right))
     return ""
+
 
 def diff_lists(list1, list2):
     return "\n".join(difflib.unified_diff(list1, list2))

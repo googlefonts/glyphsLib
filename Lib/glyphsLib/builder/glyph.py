@@ -27,7 +27,6 @@ from .common import from_loose_ufo_time, to_glyphs_time
 from .constants import (
     GLYPHLIB_PREFIX,
     GLYPHS_COLORS,
-    PUBLIC_PREFIX,
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
     BRACKET_GLYPH_RE,
     BRACKET_GLYPH_SUFFIX_RE,
