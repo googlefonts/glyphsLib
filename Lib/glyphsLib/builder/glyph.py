@@ -35,6 +35,7 @@ from .constants import (
     SHAPE_ORDER_LIB_KEY,
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
+    POSTSCRIPT_NAMES_KEY,
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3
@@ -108,10 +109,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     else:
         production_name = glyphinfo.production_name
     if production_name and production_name != ufo_glyph.name:
-        postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
-        if postscriptNamesKey not in ufo_font.lib:
-            ufo_font.lib[postscriptNamesKey] = dict()
-        ufo_font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
+        if POSTSCRIPT_NAMES_KEY not in ufo_font.lib:
+            ufo_font.lib[POSTSCRIPT_NAMES_KEY] = dict()
+        ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name] = production_name
 
     if script:
         ufo_glyph.lib[SCRIPT_LIB_KEY] = script
@@ -429,9 +429,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         glyph.export = False
 
     ufo_font = self._sources[master.id].font
-    ps_names_key = PUBLIC_PREFIX + "postscriptNames"
-    if ps_names_key in ufo_font.lib and ufo_glyph.name in ufo_font.lib[ps_names_key]:
-        glyph.production = ufo_font.lib[ps_names_key][ufo_glyph.name]
+
+    if POSTSCRIPT_NAMES_KEY in ufo_font.lib and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]:
+        glyph.production = ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name]
         # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
         #        maybe don't write in glyph.production if glyphinfo already
         #        has something
