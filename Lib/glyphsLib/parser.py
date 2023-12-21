@@ -87,7 +87,7 @@ class Parser:
     def _parse_dict_into_object(self, res, d):
         for name in d.keys():
             sane_name = name.replace(".", "__")
-            
+
             key = f"_parse_{sane_name}_dict"
             if hasattr(res, key):
                 getattr(res, key)(self, d[name])

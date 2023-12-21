@@ -53,7 +53,6 @@ Goal: check how files with custom axes are roundtripped.
         [("wdth", "Width"), ("wght", "Weight")],
     ],
 )
-
 def _make_designspace_with_axes(axes, ufo_module):
     doc = designspaceLib.DesignSpaceDocument()
 
@@ -124,7 +123,7 @@ def test_masters_have_user_locations_string(ufo_module):
     Some versions of Glyph store a string instead of an int.
     """
     font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
-    
+
     font.axes.append(GSAxis(name="Optical", tag="opsz"))
 
     font.masters[0].internalAxesValues[font.axes[0].axisId] = 0
@@ -138,18 +137,18 @@ def test_masters_have_user_locations_string(ufo_module):
 
     font = to_glyphs(doc)
     assert font.masters[0].externalAxesValues[font.axes[0].axisId] == 13
-    
+
     assert font.masters[1].externalAxesValues[font.axes[0].axisId] == 100
 
 
 def test_master_user_location_goes_into_os2_classes(ufo_module):
 
     # FIXME: (georg) do not imply weight/widthClass from mastet locations. That should come from instance.weight/widthClass
-    return #disable for now
+    return  # disable for now
     font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
     font.axes.append(GSAxis(name="Weight", tag="wght"))
     font.axes.append(GSAxis(name="Width", tag="wdth"))
-    
+
     font.masters[0].internalAxesValues[font.axes[0].axisId] = 0
     font.masters[0].internalAxesValues[font.axes[1].axisId] = 1000
     # This master will be Light Expanded
@@ -160,8 +159,8 @@ def test_master_user_location_goes_into_os2_classes(ufo_module):
     font.masters[1].internalAxesValues[font.axes[0].axisId] = 1000
     font.masters[1].internalAxesValues[font.axes[1].axisId] = 0
     # This master is Black Ultra-condensed but not quite
-    font.masters[1].externalAxesValues[font.axes[0].axisId] = 920 # instead of 900
-    font.masters[1].externalAxesValues[font.axes[1].axisId] = 55 # instead of 50
+    font.masters[1].externalAxesValues[font.axes[0].axisId] = 920  # instead of 900
+    font.masters[1].externalAxesValues[font.axes[1].axisId] = 55  # instead of 50
 
     light, black = to_ufos(font)
 
@@ -358,13 +357,13 @@ def test_mapping_using_axis_location_cp_on_instances_none(ufo_module):
     font.masters[1].internalAxesValues[font.axes[1].axisId] = 448
     font.masters[1].externalAxesValues[font.axes[0].axisId] = 700
     font.masters[1].externalAxesValues[font.axes[1].axisId] = 100
-    
+
     font.masters[2].name = "Thin"
     font.masters[2].internalAxesValues[font.axes[0].axisId] = 48
     font.masters[2].internalAxesValues[font.axes[1].axisId] = 448
     font.masters[2].externalAxesValues[font.axes[0].axisId] = 200
     font.masters[2].externalAxesValues[font.axes[1].axisId] = 100
-    
+
     font.masters[3].name = "Cd Regular"
     font.masters[3].internalAxesValues[font.axes[0].axisId] = 72
     font.masters[3].internalAxesValues[font.axes[1].axisId] = 224
@@ -487,7 +486,7 @@ def test_axis_mapping(ufo_module):
 
     font.axes.append(GSAxis(name="Weight", tag="wght"))
     font.axes.append(GSAxis(name="Width", tag="wdth"))
-    
+
     font.masters[0].internalAxesValues[font.axes[0].axisId] = 0
     font.masters[0].internalAxesValues[font.axes[1].axisId] = 100
     font.masters[1].internalAxesValues[font.axes[0].axisId] = 1000
@@ -560,7 +559,7 @@ def test_axis_with_no_mapping_does_not_error_in_roundtrip(ufo_module):
     doc_rt = to_designspace(font)
 
     # FIXME: (georg) The axis ranges are only stored in the master coordinates. So without them, it will fail.
-    #assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
+    # assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
 
 
 def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module):
@@ -594,8 +593,8 @@ def test_variable_instance(ufo_module):
     font = GSFont(source_path)
     assert len(font.instances) == 28  # Including the VF setting
     doc = to_designspace(font)
-    # assert doc.axes[0].map[2] == (400, 80) # FIXME: (georg) the file doesn’t contain any mapping (it was implied from instance.weight/widthClass)
-    assert doc.axes[0].default == 80 # 400
+    # assert doc.axes[0].map[2] == (400, 80)  # FIXME: (georg) the file doesn’t contain any mapping (it was implied from instance.weight/widthClass)
+    assert doc.axes[0].default == 80  # 400
     assert len(doc.instances) == 27  # The VF setting should not be in the DS
 
 
