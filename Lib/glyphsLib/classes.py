@@ -1647,6 +1647,17 @@ class GSAxis(GSBase):
     def __eq__(self, other):
         return self.name == other.name and self.axisTag == other.axisTag
 
+    @property
+    def shortAxisTag(self):
+        shortAxisTagMapping = {
+            "ital": "it",
+            "opsz": "oz",
+            "slnt": "sl",
+            "wdth": "wd",
+            "wght": "wg",
+        }
+        return shortAxisTagMapping.get(self.axisTag, self.axisTag)
+
 
 GSAxis._add_parsers([
     {"plist_name": "tag", "object_name": "axisTag"},
@@ -4876,6 +4887,10 @@ class GSLayer(GSBase):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             return master
 
+    @property
+    def font(self):
+        return self.parent.parent
+
     def _name_from_attributes(self):
         # For Glyphs 3's speciall layers (brace, bracket, color) we must generate the
         # name from the attributes (as it's shown in Glyphs.app UI) and discard
@@ -4910,8 +4925,6 @@ class GSLayer(GSBase):
         return f"{{{', '.join(floatToString5(v) for v in coordinates.values())}}}"
 
     def _bracket_layer_name(self):
-        if not self.isBraceLayer:
-            return None
 
         axisRules = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
         if not axisRules or not isinstance(axisRules, dict):
@@ -4935,11 +4948,7 @@ class GSLayer(GSBase):
 
     @property
     def name(self):
-        if (
-            self.associatedMasterId
-            and self.associatedMasterId == self.layerId
-            and self.parent
-        ):
+        if self.isMasterLayer:
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name

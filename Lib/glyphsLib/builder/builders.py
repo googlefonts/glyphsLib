@@ -568,33 +568,32 @@ class GlyphsBuilder(LoggerMixin):
                 # TODO: Georg to implement
                 # Use self.designspace.rules
 
-                # base_glyph, location = m.groups()
-                # layer_name = bracket_glyph.lib.get(
-                #     GLYPHLIB_PREFIX + "_originalLayerName"
-                # )
-                # if layer_name is None:
-                #     # Determine layer name from location
-                #     raise NotImplementedError
-                # # _originalLayerName is an empty string for 'implicit' bracket layers;
-                # # we don't import these since they were copies of master layers.
-                # if layer_name:
-                #     if layer_name not in source.font.layers:
-                #         ufo_layer = source.font.newLayer(layer_name)
-                #     else:
-                #         ufo_layer = source.font.layers[layer_name]
-                #     bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
-                #     bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
+                base_glyph, location = m.groups()
+                layer_name = bracket_glyph.lib.get(
+                    GLYPHLIB_PREFIX + "_originalLayerName"
+                )
+                if layer_name is None:
+                    # Determine layer name from location
+                    raise NotImplementedError
+                # _originalLayerName is an empty string for 'implicit' bracket layers;
+                # we don't import these since they were copies of master layers.
+                if layer_name not in source.font.layers:
+                    ufo_layer = source.font.newLayer(layer_name)
+                else:
+                    ufo_layer = source.font.layers[layer_name]
+                bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
+                bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
 
-                #     # strip '*.BRACKET.123' suffix from the components' glyph names
-                #     for comp in bracket_glyph_new.components:
-                #         m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
-                #         if m:
-                #             comp.baseGlyph = m.group("glyph_name")
+                # strip '*.BRACKET.123' suffix from the components' glyph names
+                for comp in bracket_glyph_new.components:
+                    m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
+                    if m:
+                        comp.baseGlyph = m.group("glyph_name")
 
-                # # Remove all freestanding bracket layer glyphs from all layers.
-                # for layer in source.font.layers:
-                #     if glyph_name in layer:
-                #         del layer[glyph_name]
+                # Remove all freestanding bracket layer glyphs from all layers.
+                for layer in source.font.layers:
+                    if glyph_name in layer:
+                        del layer[glyph_name]
 
             for layer in _sorted_backgrounds_last(source.font.layers):
                 self.to_glyphs_layer_lib(layer, master)
