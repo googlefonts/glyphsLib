@@ -1823,6 +1823,18 @@ class GSCustomParameter(GSBase):
             value = parser.parse(value)
         elif self.name == "note":
             value = str(value)
+        elif self.name == "Axis Mappings":  # make sure the mapping keys are all numbers, not str
+            newValue = {}
+            for axisTag, mapping in value.items():
+                newMapping = {}
+                for input, output in mapping.items():
+                    if not isinstance(input, (int, float)):
+                        input = float(input)
+                    if not isinstance(output, (int, float)):
+                        output = float(output)
+                    newMapping[input] = output
+                newValue[axisTag] = newMapping
+            value = newValue
         self._value = value
 
     value = property(getValue, setValue)

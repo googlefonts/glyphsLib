@@ -126,3 +126,23 @@ def test_parser_main_v3_upstream(capsys):
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()
+
+
+def test_parser_Custom_Parameter_Full_Test(capsys):
+    """
+    This test file contains all public custom parameters (as of version 3.2).
+    """
+    filename = os.path.join(DATA, "Custom Parameter Full Test.glyphs")
+    with open(filename, encoding="utf-8") as file:
+        expected = file.read()
+
+    glyphsLib.parser.main([filename])
+    actual, _ = capsys.readouterr()
+
+    actual = actual.replace("path = ..;", "path = \"..\";")
+
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, 'w', encoding="utf-8") as file:
+        file.write(actual)
+
+    assert actual.splitlines() == expected.splitlines()
