@@ -557,9 +557,7 @@ def test_axis_with_no_mapping_does_not_error_in_roundtrip(ufo_module):
     doc2 = deepcopy(doc)
     font = to_glyphs(doc2)
     doc_rt = to_designspace(font)
-
-    # FIXME: (georg) The axis ranges are only stored in the master coordinates. So without them, it will fail.
-    # assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
+    assert doc_rt.axes[0].serialize() == doc.axes[0].serialize()
 
 
 def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module):
