@@ -203,8 +203,10 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
             ("NewFont-Bold.ufo", "{75, 1000}", "New Font Bold {75, 1000}"),
             ("NewFont-Bold.ufo", "*{90.5, 500}", "New Font Bold *{90.5, 500}"),
             ("NewFont-Bold.ufo", "*{90.5, 600}", "New Font Bold *{90.5, 600}"),
-            ("NewFont-LightCondensed.ufo", None, "New Font Light Condensed"),  # (georg) was: NewFont-CondensedLight.ufo, New Font Condensed Light
-            ("NewFont-BoldCondensed.ufo", None, "New Font Bold Condensed"),  # (georg) was: NewFont-CondensedBold.ufo, New Font Condensed Bold
+            # (georg) was: NewFont-CondensedLight.ufo, New Font Condensed Light
+            ("NewFont-LightCondensed.ufo", None, "New Font Light Condensed"),
+            # (georg) was: NewFont-CondensedBold.ufo, New Font Condensed Bold
+            ("NewFont-BoldCondensed.ufo", None, "New Font Bold Condensed"),
         ],
     ):
         assert fname == exp_fname
@@ -308,10 +310,23 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert "x" in font_rt.glyphs
     g1 = font_rt.glyphs["x"]
     assert len(g1.layers) == 12
-    assert {l.name for l in g1.layers} == {'Light', 'Bold', 'Light Condensed', 'Bold Condensed', '[300‹wg]', '[600‹wg]'}
+    assert {l.name for l in g1.layers} == {
+        "Light",
+        "Bold",
+        "Light Condensed",
+        "Bold Condensed",
+        "[300‹wg]",
+        "[600‹wg]",
+    }
     g2 = font_rt.glyphs["a"]
     assert len(g2.layers) == 8
-    assert {l.name for l in g2.layers} == {'Light', 'Bold', 'Light Condensed', 'Bold Condensed', '[300‹wg]'}
+    assert {l.name for l in g2.layers} == {
+        "Light",
+        "Bold",
+        "Light Condensed",
+        "Bold Condensed",
+        "[300‹wg]",
+    }
     assert "a.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.300" not in font_rt.glyphs
     assert "x.BRACKET.600" not in font_rt.glyphs

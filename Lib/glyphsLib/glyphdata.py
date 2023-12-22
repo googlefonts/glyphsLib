@@ -234,8 +234,10 @@ def get_glyph(glyph_name, data=None, unicodes=None):
                 # Python <= 3.8 backport
                 from importlib_resources import files
 
-            with (files('glyphsLib.data') / 'GlyphData.xml').open('rb') as f1:
-                with (files('glyphsLib.data') / 'GlyphData_Ideographs.xml').open('rb') as f2:
+            with (files("glyphsLib.data") / "GlyphData.xml").open("rb") as f1:
+                with (files("glyphsLib.data") / "GlyphData_Ideographs.xml").open(
+                    "rb"
+                ) as f2:
                     GLYPHDATA = GlyphData.from_files(f1, f2)
             assert len(GLYPHDATA.names) > 20000
         data = GLYPHDATA

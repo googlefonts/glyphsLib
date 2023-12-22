@@ -113,7 +113,11 @@ def makeFont(masters, instances, familyName, numAxes=1):
     font = GSFont()
     font.formatVersion = 3
     font.axes.append(GSAxis("Weight", "wght"))
-    if numAxes > 1 or len(masters[0]._axesValues) > 1 or (len(instances) > 0 and len(instances[0]._axesValues) > 1):
+    if (
+        numAxes > 1
+        or len(masters[0]._axesValues) > 1
+        or (len(instances) > 0 and len(instances[0]._axesValues) > 1)
+    ):
         font.axes.append(GSAxis("Width", "wdth"))
     font.familyName = familyName
     font.masters = masters
@@ -137,7 +141,9 @@ class DesignspaceTest(unittest.TestCase):
 
     def expect_designspace(self, doc, expected_name):
         dirname = os.path.dirname(__file__)
-        expected_path = os.path.normpath(os.path.join(dirname, "..", "data", expected_name))
+        expected_path = os.path.normpath(
+            os.path.join(dirname, "..", "data", expected_name)
+        )
         return self._expect_designspace(doc, expected_path)
 
     def _expect_designspace(self, doc, expected_path):
@@ -250,7 +256,9 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_postscriptFontNameCustomParameter(self):
         master = makeMaster("Master", weight=100)
-        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance("Black", weight=(400, 200))
+        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance(
+            "Black", weight=(400, 200)
+        )
         black.properties["postscriptFontName"] = "PSNameTest-Superfat"
         font = makeFont([master], [thin, black], "PSNameTest")
         designspace = to_designspace(font, instance_dir="out")
@@ -268,7 +276,9 @@ class DesignspaceTest(unittest.TestCase):
 
     def test_postscriptFontNameProperty(self):
         master = makeMaster("Master", weight=100)
-        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance("Black", weight=(400, 200))
+        thin, black = makeInstance("Thin", weight=(400, 100)), makeInstance(
+            "Black", weight=(400, 200)
+        )
         black.properties.append(
             GSFontInfoValue("postscriptFontName", "PSNameTest-Superfat")
         )
@@ -352,7 +362,9 @@ class DesignspaceTest(unittest.TestCase):
         medium = doc.find('sources/source[@stylename="Medium"]')
         self.assertEqual(medium.find("lib").attrib["copy"], "1")
         weightAxis = doc.find('axes/axis[@tag="wght"]')
-        self.assertEqual(weightAxis.attrib["default"], "111")  # (georg) changed from 444 > 111 as there are no axis Location/extern coordinates
+        self.assertEqual(
+            weightAxis.attrib["default"], "111"
+        )  # (georg) changed from 444 > 111 as there are no axis Location/extern coordinates
 
         self.expect_designspace_roundtrip(designspace)
 
@@ -414,7 +426,7 @@ class DesignspaceTest(unittest.TestCase):
 WEIGHT_CLASS_KEY = GLYPHS_PREFIX + "weightClass"
 WIDTH_CLASS_KEY = GLYPHS_PREFIX + "widthClass"
 
-'''# Do we need to test ufo behavior?
+"""# Do we need to test ufo behavior?
 class SetWeightWidthClassesTestBase(object):
     ufo_module = None  # subclasses must override this
 
@@ -515,7 +527,7 @@ class SetWeightWidthClassesTestUfoLib2(
 
 class SetWeightWidthClassesTestDefcon(SetWeightWidthClassesTestBase, unittest.TestCase):
     ufo_module = defcon
-'''
+"""
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

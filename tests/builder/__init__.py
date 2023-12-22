@@ -1,5 +1,3 @@
-
-
 import filecmp
 from pathlib import Path
 import difflib

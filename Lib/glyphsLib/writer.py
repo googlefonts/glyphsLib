@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 
 
 class Writer:
-
     def __init__(self, fp, formatVersion=2, container="flat"):
         # figure out whether file object expects bytes or unicodes
         try:
@@ -85,7 +84,11 @@ class Writer:
             arrayValue = arrayValue.plistArray()
 
         length = len(arrayValue)
-        if self.allowTuple and length < 5 and all(isinstance(e, (int, float)) for e in arrayValue):
+        if (
+            self.allowTuple
+            and length < 5
+            and all(isinstance(e, (int, float)) for e in arrayValue)
+        ):
             self.writeTupel(arrayValue)
         else:
             self.file.write("(\n")
@@ -158,12 +161,12 @@ class Writer:
             # We have to write color tuples on one line or Glyphs 2.4.x
             # misreads it.
             if self.formatVersion == 2:
-                self.file.write("\"")
+                self.file.write('"')
                 for ix, v in enumerate(value):
                     self.file.write(str(v))
                     if ix < len(value) - 1:
                         self.file.write(",")
-                self.file.write("\"")
+                self.file.write('"')
             else:
                 self.file.write("(")
                 for ix, v in enumerate(value):

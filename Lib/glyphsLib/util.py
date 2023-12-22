@@ -196,6 +196,7 @@ class PeekableIterator:
 
 try:
     from Foundation import NSString, NSArray
+
     stringClasses = (str, NSString)
     listClasses = (list, tuple, NSArray)
 except ImportError:

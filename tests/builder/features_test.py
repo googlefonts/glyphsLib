@@ -142,7 +142,9 @@ def test_class_synonym(tmpdir, ufo_module):
     )
 
 
-@pytest.mark.xfail(reason="The names form the note should be converted to .labels on import. This is not implemented, yet")
+@pytest.mark.xfail(
+    reason="The names form the note should be converted to .labels on import. This is not implemented, yet"
+)
 def test_feature_names_from_glyph_2_file():
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     font = glyphsLib.load(filename)
@@ -150,7 +152,10 @@ def test_feature_names_from_glyph_2_file():
     feature = font.features[1]
     assert feature.code == "sub A by B;\n"
     assert feature.notes == ""
-    assert feature.labels == [{"language": "dflt", "value": "Feature Name dflt"}, {"language": "DEU", "value": "Feature Name DEU"}]
+    assert feature.labels == [
+        {"language": "dflt", "value": "Feature Name dflt"},
+        {"language": "DEU", "value": "Feature Name DEU"},
+    ]
 
 
 def test_feature_names_format_2(tmpdir, ufo_module):
@@ -176,7 +181,8 @@ def test_feature_names_format_2(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == "Name: Alternate g"
+    assert gs_feature.notes.strip() == ""  # "Name: Alternate g"
+    assert gs_feature.labels[0] == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
         """\
@@ -214,7 +220,7 @@ def test_feature_names_format_3(tmpdir, ufo_module):
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     # assert gs_feature.notes.strip() == "Name: Alternate g"
-    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
         """\
@@ -255,7 +261,7 @@ def test_feature_names_notes(tmpdir, ufo_module):
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     assert gs_feature.notes.strip() == "foo"
 
-    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
         """\
@@ -338,7 +344,7 @@ def test_feature_names_full_format_3(tmpdir, ufo_module):
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     assert gs_feature.notes == ""
 
-    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}]
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     # this will be converted to platform:windows as Glyphs doesn’t handle apple names any more
     assert rtufo.features.text == dedent(
@@ -423,7 +429,10 @@ def test_feature_names_multi_format_3(tmpdir, ufo_module):
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     assert gs_feature.notes == ""
-    assert gs_feature.labels == [{'language': 'ENG', 'value': 'Alternate g'}, {'language': 'ENG', 'value': 'Alternate g'}]
+    assert gs_feature.labels == [
+        {"language": "ENG", "value": "Alternate g"},
+        {"language": "ENG", "value": "Alternate g"},
+    ]
 
     # this will be converted to platform:windows as Glyphs doesn’t handle apple names any more
     assert rtufo.features.text == dedent(

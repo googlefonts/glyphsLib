@@ -158,7 +158,11 @@ ufo_info_spec = [
         Field("openTypeNameVersion", "Version 2.003"),
         # openTypeNameUniqueID	string	Unique ID string.
         # Corresponds to the OpenType name table name ID 3.
-        Field("openTypeNameUniqueID", "2.003;Exemplary Sans Bold Large Display", instance_only=True),
+        Field(
+            "openTypeNameUniqueID",
+            "2.003;Exemplary Sans Bold Large Display",
+            instance_only=True,
+        ),
         # openTypeNameDescription	string	Description of the font.
         # Corresponds to the OpenType name table name ID 10.
         Field("openTypeNameDescription", "Best used\nfor typesetting\nhaikus"),

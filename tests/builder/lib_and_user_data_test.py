@@ -144,8 +144,14 @@ def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
     assert font.masters[1].userData["ufoLibKey2"] == "ufoLibValue2"
 
     ufo1, ufo2 = to_ufos(font)
-    assert ufo1.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey1"] == "ufoLibValue1"
-    assert ufo2.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey2"] == "ufoLibValue2"
+    assert (
+        ufo1.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey1"]
+        == "ufoLibValue1"
+    )
+    assert (
+        ufo2.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey2"]
+        == "ufoLibValue2"
+    )
     assert "ufoLibKey2" not in ufo1.lib
     assert "ufoLibKey1" not in ufo2.lib
 

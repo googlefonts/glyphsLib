@@ -142,7 +142,6 @@ def test_masters_have_user_locations_string(ufo_module):
 
 
 def test_master_user_location_goes_into_os2_classes(ufo_module):
-
     # FIXME: (georg) do not imply weight/widthClass from mastet locations. That should come from instance.weight/widthClass
     return  # disable for now
     font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
@@ -301,7 +300,11 @@ def test_mapping_using_axis_location_cp_on_masters_none(ufo_module):
     font.masters[3].internalAxesValues[font.axes[0].axisId] = 72
     font.masters[3].internalAxesValues[font.axes[1].axisId] = 224
 
-    font.instances = [GSInstance("Regular"), GSInstance("SCd Regular"), GSInstance("Cd Regular")]
+    font.instances = [
+        GSInstance("Regular"),
+        GSInstance("SCd Regular"),
+        GSInstance("Cd Regular"),
+    ]
 
     font.instances[0].internalAxesValues[font.axes[0].axisId] = 72
     font.instances[0].internalAxesValues[font.axes[1].axisId] = 448
