@@ -141,3 +141,6 @@ expected*
 
 # Mac
 .DS_Store
+
+*_temp.glyphs
+*_temp.glyphspackage
