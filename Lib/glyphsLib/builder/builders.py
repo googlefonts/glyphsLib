@@ -267,7 +267,7 @@ class UFOBuilder(LoggerMixin):
 
         # Generate the main (master) layers first.
 
-        hasPathComponents = False
+        # hasPathComponents = False
         for glyph in self.font.glyphs:
             for layerId, layer in glyph._layers.items():
                 if layer.associatedMasterId != layerId:
@@ -373,7 +373,7 @@ class UFOBuilder(LoggerMixin):
             instances = list(filter_instances_by_family(instances, self.family_name))
         instance_data = {"data": instances, "designspace": self.designspace}
 
-        first_ufo = next(iter(self.masters))
+        # first_ufo = next(iter(self.masters))
 
         # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
         # shared by all the master ufos; here we just get it from the first one
