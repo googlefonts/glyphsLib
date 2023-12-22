@@ -31,6 +31,7 @@ from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
 from glyphsLib.classes import GSAxis
 from .sources import _to_glyphs_source
+from fontTools.designspaceLib import SourceDescriptor
 
 
 class UFOBuilder(LoggerMixin):
@@ -501,7 +502,7 @@ class GlyphsBuilder(LoggerMixin):
         self._font = None
 
     @property
-    def font(self):  # noqa: C901
+    def font(self):
         """Get the GSFont built from the UFOs + designspace."""
         if self._font is not None:
             return self._font
@@ -525,82 +526,7 @@ class GlyphsBuilder(LoggerMixin):
 
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
-            master = self.glyphs_module.GSFontMaster()
-
-            # Filter bracket glyphs out of public.glyphOrder.
-            if GLYPH_ORDER_KEY in source.font.lib:
-                source.font.lib[GLYPH_ORDER_KEY] = [
-                    glyph_name
-                    for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
-                    if not BRACKET_GLYPH_RE.match(glyph_name)
-                ]
-            if source.copyInfo:
-                self._font.familyName = source.familyName
-            self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
-            self.to_glyphs_master_attributes(source, master)
-            self._font.masters.insert(len(self._font.masters), master)
-            self._sources[master.id] = source
-            _to_glyphs_source(self, master)
-            master.post_read()
-
-            # First, move free-standing bracket glyphs back to layers to avoid dealing
-            # with GSLayer transplantation.
-            for glyph_name in list(source.font.keys()):
-                m = BRACKET_GLYPH_RE.match(glyph_name)
-                if not m:
-                    continue
-                bracket_glyph = source.font[glyph_name]
-                print("__bracket_glyph", bracket_glyph.lib)
-                # At this point we know that we want to turn this UFO glyph into
-                # a bracket layer on the Glyphs.app side.
-                # Previously, (v2) the name of the glyph was used to define the
-                # axis range of the bracket layer. Now, (v3) we want to generate
-                # instead a data structure. Example:
-                #   Before:
-                #       - layer.name = "[18]"  # Apply bracket from 18 and above on the first axis
-                #   After:
-                #       - layer.name = None  # Not relevant anymore
-                #       - layer.attributes = {
-                #             axisRules = {
-                #                 a01 = {
-                #                     min = 18;
-                #                 };
-                #             };
-                #         }
-                # TODO: Georg to implement
-                # Use self.designspace.rules
-
-                base_glyph, location = m.groups()
-                layer_name = bracket_glyph.lib.get(
-                    GLYPHLIB_PREFIX + "_originalLayerName"
-                )
-                if layer_name is None:
-                    # Determine layer name from location
-                    raise NotImplementedError
-                # _originalLayerName is an empty string for 'implicit' bracket layers;
-                # we don't import these since they were copies of master layers.
-                if layer_name not in source.font.layers:
-                    ufo_layer = source.font.newLayer(layer_name)
-                else:
-                    ufo_layer = source.font.layers[layer_name]
-                bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
-                bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
-
-                # strip '*.BRACKET.123' suffix from the components' glyph names
-                for comp in bracket_glyph_new.components:
-                    m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
-                    if m:
-                        comp.baseGlyph = m.group("glyph_name")
-
-                # Remove all freestanding bracket layer glyphs from all layers.
-                for layer in source.font.layers:
-                    if glyph_name in layer:
-                        del layer[glyph_name]
-
-            for layer in _sorted_backgrounds_last(source.font.layers):
-                self.to_glyphs_layer_lib(layer, master)
-                for glyph in layer:
-                    self.to_glyphs_glyph(glyph, layer, master)
+            self.source_layer_to_master(index, source)
 
         self.to_glyphs_features()
         self.to_glyphs_groups()
@@ -628,6 +554,84 @@ class GlyphsBuilder(LoggerMixin):
         self.to_glyphs_instances()
 
         return self._font
+
+    def source_layer_to_master(self, index: int, source: SourceDescriptor):
+        master = self.glyphs_module.GSFontMaster()
+
+        # Filter bracket glyphs out of public.glyphOrder.
+        if GLYPH_ORDER_KEY in source.font.lib:
+            source.font.lib[GLYPH_ORDER_KEY] = [
+                glyph_name
+                for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
+                if not BRACKET_GLYPH_RE.match(glyph_name)
+            ]
+        if source.copyInfo:
+            self._font.familyName = source.familyName
+        self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
+        self.to_glyphs_master_attributes(source, master)
+        self._font.masters.insert(len(self._font.masters), master)
+        self._sources[master.id] = source
+        _to_glyphs_source(self, master)
+        master.post_read()
+
+        # First, move free-standing bracket glyphs back to layers to avoid dealing
+        # with GSLayer transplantation.
+        for glyph_name in list(source.font.keys()):
+            m = BRACKET_GLYPH_RE.match(glyph_name)
+            if not m:
+                continue
+            bracket_glyph = source.font[glyph_name]
+            print("__bracket_glyph", bracket_glyph.lib)
+            # At this point we know that we want to turn this UFO glyph into
+            # a bracket layer on the Glyphs.app side.
+            # Previously, (v2) the name of the glyph was used to define the
+            # axis range of the bracket layer. Now, (v3) we want to generate
+            # instead a data structure. Example:
+            #   Before:
+            #       - layer.name = "[18]"  # Apply bracket from 18 and above on the first axis
+            #   After:
+            #       - layer.name = None  # Not relevant anymore
+            #       - layer.attributes = {
+            #             axisRules = {
+            #                 a01 = {
+            #                     min = 18;
+            #                 };
+            #             };
+            #         }
+            # TODO: Georg to implement
+            # Use self.designspace.rules
+
+            base_glyph, location = m.groups()
+            layer_name = bracket_glyph.lib.get(
+                GLYPHLIB_PREFIX + "_originalLayerName"
+            )
+            if layer_name is None:
+                # Determine layer name from location
+                raise NotImplementedError
+            # _originalLayerName is an empty string for 'implicit' bracket layers;
+            # we don't import these since they were copies of master layers.
+            if layer_name not in source.font.layers:
+                ufo_layer = source.font.newLayer(layer_name)
+            else:
+                ufo_layer = source.font.layers[layer_name]
+            bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
+            bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
+
+            # strip '*.BRACKET.123' suffix from the components' glyph names
+            for comp in bracket_glyph_new.components:
+                m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
+                if m:
+                    comp.baseGlyph = m.group("glyph_name")
+
+            # Remove all freestanding bracket layer glyphs from all layers.
+            for layer in source.font.layers:
+                if glyph_name in layer:
+                    del layer[glyph_name]
+
+        for layer in _sorted_backgrounds_last(source.font.layers):
+            self.to_glyphs_layer_lib(layer, master)
+            for glyph in layer:
+                self.to_glyphs_glyph(glyph, layer, master)
 
     def _valid_designspace(self, designspace, ufo_module):
         """Make sure that the user-provided designspace has loaded fonts and
