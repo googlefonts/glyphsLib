@@ -532,6 +532,8 @@ class GlyphsBuilder(LoggerMixin):
         self.to_glyphs_groups()
         self.to_glyphs_kerning()
 
+        self.check_axis_ranges()
+
         # Now that all GSGlyph are built, restore the glyph order
         if self.designspace.sources:
             first_ufo = self.designspace.sources[0].font
@@ -549,7 +551,7 @@ class GlyphsBuilder(LoggerMixin):
                 self.to_glyphs_layer_order(glyph)
 
         self.to_glyphs_family_user_data_from_designspace()
-        self.to_glyphs_axes()
+        # self.to_glyphs_axes()  # was called above already
         self.to_glyphs_sources()
         self.to_glyphs_instances()
 
@@ -756,6 +758,7 @@ class GlyphsBuilder(LoggerMixin):
     from .anchors import to_glyphs_glyph_anchors
     from .annotations import to_glyphs_annotations
     from .axes import to_glyphs_axes
+    from .axes import check_axis_ranges
     from .sources import to_glyphs_sources
     from .background_image import to_glyphs_background_image
     from .blue_values import to_glyphs_blue_values

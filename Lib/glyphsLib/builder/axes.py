@@ -18,9 +18,9 @@ import logging
 from fontTools.varLib.models import piecewiseLinearMap
 
 try:
-    from GlyphsApp import GSFontMaster, GSAxis, GSInstance
+    from GlyphsApp import GSFontMaster, GSAxis, GSInstance, GSCustomParameter
 except ImportError:
-    from glyphsLib.classes import GSFontMaster, GSAxis, GSInstance
+    from glyphsLib.classes import GSFontMaster, GSAxis, GSInstance, GSCustomParameter
 
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
@@ -274,23 +274,49 @@ def to_designspace_axes(self):
 
 def to_glyphs_axes(self):
     axes_parameter = []
-    for axis in self.designspace.axes:
-        if axis.tag == "wght":
+    for axis_def in self.designspace.axes:
+        if axis_def.tag == "wght":
             axes_parameter.append(
-                GSAxis(name=axis.name or "Weight", tag="wght")
+                GSAxis(name=axis_def.name or "Weight", tag="wght")
             )
-        elif axis.tag == "wdth":
-            axes_parameter.append(GSAxis(name=axis.name or "Width", tag="wdth"))
+        elif axis_def.tag == "wdth":
+            axes_parameter.append(GSAxis(name=axis_def.name or "Width", tag="wdth"))
         else:
-            axes_parameter.append(GSAxis(name=axis.name, tag=axis.tag))
+            axes_parameter.append(GSAxis(name=axis_def.name, tag=axis_def.tag))
     if axes_parameter:
         self._font.axes = axes_parameter
 
     if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
-            axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
+            axis_def.tag: {str(k): v for k, v in axis_def.map} for axis_def in self.designspace.axes
         }
         self._font.customParameters["Axis Mappings"] = mapping
+
+
+def check_axis_ranges(self):
+    for axis in self.font.axes:
+        axis_def = self.designspace.getAxisByTag(axis.axisTag)
+        assert axis_def
+        minimum = 10000
+        maximum = -10000
+        for master in self.font.masters:
+            designLoc = master.internalAxesValues[axis.axisId]
+            userLoc = master.externalAxesValues[axis.axisId]
+            minimum = min(userLoc or designLoc or 0, minimum)
+            maximum = max(userLoc or designLoc or 0, maximum)
+        for customParameter in self.font.customParameters:
+            if customParameter.name == "Virtual Master":
+                for location in customParameter.value:
+                    if location["Axis"] == axis.name:
+                        loc = location["Location"]
+                        minimum = min(loc, minimum)
+                        maximum = max(loc, maximum)
+
+        if axis_def.minimum < minimum:
+            self.font.customParameters.append(GSCustomParameter("Virtual Master", [{"Axis": axis.name, "Location": axis_def.minimum}]))
+
+        if axis_def.maximum > maximum:
+            self.font.customParameters.append(GSCustomParameter("Virtual Master", [{"Axis": axis.name, "Location": axis_def.maximum}]))
 
 
 class AxisDefinition:
