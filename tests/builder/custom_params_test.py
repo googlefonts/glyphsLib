@@ -805,3 +805,20 @@ def test_font_params_go_to_GSFont_instance_to_GSInstance():
     designspace. Same in the other direction.
     """
     assert True
+
+
+def test_multi_customparameter_rt(ufo_module):
+    """Test that new-style UFO_FILENAME_CUSTOM_PARAM is written instead of
+    (UFO_FILENAME_KEY|FULL_FILENAME_KEY)."""
+    font = glyphsLib.GSFont(os.path.join(DATA, "CustomParameterMultiple.glyphs"))
+    ds = glyphsLib.to_designspace(
+        font, minimize_glyphs_diffs=True, ufo_module=ufo_module
+    )
+
+    font_rt = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
+    assert len(font_rt.customParameters) == 2
+    assert len(font_rt.instances[0].customParameters) >= 2
+    assert len({(cp.name, cp.value) for cp in font_rt.instances[0].customParameters} & {
+        ('Filter', 'RemoveOverlap;'),
+        ('Filter', 'RoundedFont;20')
+    }) == 2
