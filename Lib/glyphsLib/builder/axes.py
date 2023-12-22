@@ -248,18 +248,12 @@ def to_designspace_axes(self):
         maximum = max(mapping)
         default = min(maximum, max(minimum, regularUserLoc))  # clamp
 
-        if (
-            minimum < maximum
-            or minimum != axis_def.default_user_loc
-            or not is_identity_map
-            or axis_wanted
-        ):
-            if not is_identity_map:
-                axisDescriptor.map = sorted(mapping.items())
-            axisDescriptor.minimum = minimum
-            axisDescriptor.maximum = maximum
-            axisDescriptor.default = default
-            self.designspace.addAxis(axisDescriptor)
+        if not is_identity_map:
+            axisDescriptor.map = sorted(mapping.items())
+        axisDescriptor.minimum = minimum
+        axisDescriptor.maximum = maximum
+        axisDescriptor.default = default
+        self.designspace.addAxis(axisDescriptor)
 
     # If there are no interesting axes, but only a single master at default location
     # along all 3 predefined axes, all with identity user:design mapping, we end up
