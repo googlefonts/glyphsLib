@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 class Writer:
 
-    def __init__(self, fp, formatVersion=2):
+    def __init__(self, fp, formatVersion=2, container="flat"):
         # figure out whether file object expects bytes or unicodes
         try:
             fp.write(b"")
@@ -49,6 +49,7 @@ class Writer:
 
             self.file = codecs.getwriter("utf-8")(fp)
         self.formatVersion = formatVersion
+        self.container = container
         self.allowTuple = False  # tuple means that certain lists (e.g. points, color values) are written in one line `(10, 10)`. This is activated/deactivated when needed.
 
     def write(self, rootObject):
