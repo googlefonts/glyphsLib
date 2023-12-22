@@ -23,6 +23,7 @@ from .constants import (
     UFO_FILENAME_CUSTOM_PARAM,
 )
 from glyphsLib.util import best_repr  # , best_repr_list
+
 # from glyphsLib.classes import GSCustomParameter
 
 
@@ -46,11 +47,11 @@ def to_ufo_master_attributes(self, ufo, master):
     year = userData.get(UFO_YEAR_KEY)
     if year is not None:
         ufo.info.year = year
-        del (userData[UFO_YEAR_KEY])
+        del userData[UFO_YEAR_KEY]
     note = userData.get(UFO_NOTE_KEY)
     if note is not None:
         ufo.info.note = note
-        del (userData[UFO_NOTE_KEY])
+        del userData[UFO_NOTE_KEY]
     # All of this will go into the designspace as well
     # "Native" designspace fonts will only have the designspace info
     if master.font.formatVersion >= 3:
@@ -90,7 +91,6 @@ def to_ufo_master_attributes(self, ufo, master):
     # for these.
     custom_params = list(master.customParameters)
     if self.is_vertical:
-
         font_upm = self.font.upm
         if not any(
             k in custom_params for k in ("vheaVertAscender", "vheaVertTypoAscender")
@@ -126,7 +126,8 @@ def to_glyphs_master_attributes(self, source, master):
 
     if source.filename is not None and self.minimize_ufo_diffs:
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = source.filename
-    elif ufo.path and self.minimize_ufo_diffs:        # Don't be smart, we don't know where the UFOs come from so we can't make them
+    elif ufo.path and self.minimize_ufo_diffs:
+        # Don't be smart, we don't know where the UFOs come from so we can't make them
         # relative to anything.
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = os.path.basename(ufo.path)
     if ufo.info.ascender is not None:

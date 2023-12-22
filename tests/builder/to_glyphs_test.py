@@ -447,7 +447,9 @@ def test_ufo_filename_is_kept_the_same(tmpdir, ufo_module):
     assert designspace.sources[1].filename == "subdir/bold.ufo"
 
 
-@pytest.mark.xfail(reason="GSLayer.background doesn’t store the width. it is always the same as the foreground")
+@pytest.mark.xfail(
+    reason="GSLayer.background doesn’t store the width. it is always the same as the foreground"
+)
 def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_module):
     ufo = ufo_module.Font()
     bg = ufo.newLayer("public.background")
@@ -584,7 +586,9 @@ def test_warn_diff_between_designspace_and_ufos(caplog, ufo_module):
     assert source.font.info.styleName == "UFO Style Name"
 
 
-@pytest.mark.xfail(reason="Doesn't make sense to use an instance-only param on a GSFont, wait for lib public.fontInfo support")
+@pytest.mark.xfail(
+    reason="Doesn't make sense to use an instance-only param on a GSFont, wait for lib public.fontInfo support"
+)
 def test_custom_stylemap_style_name(ufo_module):
     ufo = ufo_module.Font()
     ufo.info.styleMapStyleName = "bold"  # Not "regular"

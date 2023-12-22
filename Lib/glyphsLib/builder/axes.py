@@ -129,7 +129,9 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     )[0]
 
 
-def update_mapping_from_instances(mapping, instances, axis, minimize_glyphs_diffs, cp_only=False):
+def update_mapping_from_instances(
+    mapping, instances, axis, minimize_glyphs_diffs, cp_only=False
+):
     # Collect the axis mappings from instances and update the mapping dict.
     for instance in instances:
         if instance.type == InstanceType.VARIABLE:
@@ -276,9 +278,7 @@ def to_glyphs_axes(self):
     axes_parameter = []
     for axis_def in self.designspace.axes:
         if axis_def.tag == "wght":
-            axes_parameter.append(
-                GSAxis(name=axis_def.name or "Weight", tag="wght")
-            )
+            axes_parameter.append(GSAxis(name=axis_def.name or "Weight", tag="wght"))
         elif axis_def.tag == "wdth":
             axes_parameter.append(GSAxis(name=axis_def.name or "Width", tag="wdth"))
         else:
@@ -288,7 +288,8 @@ def to_glyphs_axes(self):
 
     if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
-            axis_def.tag: {str(k): v for k, v in axis_def.map} for axis_def in self.designspace.axes
+            axis_def.tag: {str(k): v for k, v in axis_def.map}
+            for axis_def in self.designspace.axes
         }
         self._font.customParameters["Axis Mappings"] = mapping
 
@@ -313,10 +314,20 @@ def check_axis_ranges(self):
                         maximum = max(loc, maximum)
 
         if axis_def.minimum < minimum:
-            self.font.customParameters.append(GSCustomParameter("Virtual Master", [{"Axis": axis.name, "Location": axis_def.minimum}]))
+            self.font.customParameters.append(
+                GSCustomParameter(
+                    "Virtual Master",
+                    [{"Axis": axis.name, "Location": axis_def.minimum}],
+                )
+            )
 
         if axis_def.maximum > maximum:
-            self.font.customParameters.append(GSCustomParameter("Virtual Master", [{"Axis": axis.name, "Location": axis_def.maximum}]))
+            self.font.customParameters.append(
+                GSCustomParameter(
+                    "Virtual Master",
+                    [{"Axis": axis.name, "Location": axis_def.maximum}],
+                )
+            )
 
 
 class AxisDefinition:
@@ -447,7 +458,9 @@ def _has_meaningful_map(axis, designspace):
             max_axis = loc
         else:
             max_axis = max(loc, max_axis)
-    if (min_axis and min_axis != axis.map[0][0]) or (max_axis and max_axis != axis.map[-1][0]):
+    if (min_axis and min_axis != axis.map[0][0]) or (
+        max_axis and max_axis != axis.map[-1][0]
+    ):
         return True
     return False
 

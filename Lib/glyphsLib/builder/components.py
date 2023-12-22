@@ -56,9 +56,7 @@ def to_ufo_components(self, ufo_glyph, layer):
             # fallback to the default layer. We try to do that here as well.
             font = layer.parent.parent
             component_glyph = font.glyphs[component_name]
-            color_layers = [
-                l for l in component_glyph.layers if l.isColorPaletteLayer
-            ]
+            color_layers = [l for l in component_glyph.layers if l.isColorPaletteLayer]
             for i, l in enumerate(color_layers):
                 if l._color_palette_index() == layer._color_palette_index():
                     if l.layerId != l.associatedMasterId:
