@@ -107,7 +107,6 @@ def to_glyphs_family_names(self, ufo, merge=False):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    name = ufo.info.styleName
     masterName = ufo.lib.get(GLYPHS_PREFIX + "master.name")
     if masterName is None:
         masterNames = []
