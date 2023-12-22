@@ -1198,23 +1198,11 @@ def _unset_default_params(glyphs):
             del glyphs.customParameters[glyphs_name]
 
 
-class GSFontParamHandler(ParamHandler):
-    def to_glyphs(self, glyphs, ufo):
-        if not glyphs.is_font():
-            return
-        super().to_glyphs(glyphs, ufo)
-
-    def to_ufo(self, builder, glyphs, ufo):
-        if not glyphs.is_font():
-            return
-        super().to_ufo(builder, glyphs, ufo)
-
-
 # 'Virtual Master' params are GSFont-only and multi-valued (i.e. there can be multiple
 # custom parameters named 'Virtual Master'); we know we want them stored in lib.plist
 # hence ufo_info=False
-register(
-    GSFontParamHandler(
-        "Virtual Master", ufo_info=False, ufo_default=[], glyphs_multivalued=True
+register_parameter_handler(
+    ParamHandler(
+        "Virtual Master", ufo_info=False, ufo_default=[], glyphs_multivalued=True, glyphs_owner_class=(GSFont)
     )
 )
