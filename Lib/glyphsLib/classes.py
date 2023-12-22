@@ -4937,7 +4937,7 @@ class GSLayer(GSBase):
                 minValue = rule.get("min", None)
                 maxValue = rule.get("max", None)
                 if minValue and maxValue:
-                    ruleStrings.append("%s‹%s‹%s", (floatToString3(minValue), axis.shortAxisTag, floatToString3(maxValue)))
+                    ruleStrings.append("%s‹%s‹%s" % (floatToString3(minValue), axis.shortAxisTag, floatToString3(maxValue)))
                 elif minValue:
                     ruleStrings.append("%s‹%s" % (floatToString3(minValue), axis.shortAxisTag))
                 elif maxValue:
