@@ -714,55 +714,10 @@ class FeatureFileProcessor:
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
-        if feature.automatic or True:  # TODO: why only extract feature names for automatic features?
-            # See if there is a feature names block in the code that should be
-            # written to the notes.
-            for i, statement in enumerate(contents):
-                if (
-                    isinstance(statement, ast.NestedBlock)
-                    and statement.block_name == "featureNames"
-                ):
-                    feature_names = contents[i]
-                    if feature_names.statements:
-                        # If there is only one name has default platformID,
-                        # platEncID and langID, write it using the simple
-                        # syntax. Otherwise write out the full featureNames
-                        # statement.
-                        if self._font.formatVersion == 2:
-                            name = feature_names.statements[0]
-                            if (
-                                len(feature_names.statements) == 1
-                                and name.platformID == 3
-                                and name.platEncID == 1
-                                and name.langID == 0x409
-                            ):
-                                name_text = f"Name: {name.string}"
-                            else:
-                                name_text = str(feature_names)
-                            notes_text = name_text + "\n" + notes_text
-                            notes = True
-                            contents.pop(i)
-                        elif self._font.formatVersion == 3:
-                            labels = []
-                            for name in feature_names.statements:
-                                language = "dflt"
-                                if name.platformID == 3 and name.platEncID == 1:
-                                    language = _to_glyphs_language(name.langID)
-                                elif name.platformID == 1 and name.platEncID == 0 and name.langID == 0:  # mostly to make the test work, Who is using apple names any more
-                                    language = "ENG"
-                                else:
-                                    self.logger.warning(
-                                        f"Unknown platform:{name.platformID}, enc:{name.platEncID}, lang:{name.langID} in featureNames. Defaulting to 'dflt'"
-                                    )
-                                labels.append(
-                                    dict(language=language, value=name.string)
-                                )
-                            if len(labels) == len(feature_names.statements):
-                                feature.labels = labels
-                                contents.pop(i)
-                    break
-        if notes:
-            feature.notes = notes_text
+
+        # See if there is a feature names block in the code
+        self.extract_feature_names(contents, feature)
+
         if disabled:
             feature.code = disabled_text
             feature.active = False
@@ -773,6 +728,40 @@ class FeatureFileProcessor:
             feature.code = self._rstrip_newlines(self.doc.text(contents))
         self._font.features.append(feature)
         return True
+
+    def extract_feature_names(self, contents, feature):
+        for idx, statement in enumerate(contents):
+            if not (
+                isinstance(statement, ast.NestedBlock)
+                and statement.block_name == "featureNames"
+            ):
+                continue
+
+            feature_names = contents[idx]
+            if not feature_names.statements:
+                break
+
+            # If there is only one name has default platformID,
+            # platEncID and langID, write it using the simple
+            # syntax. Otherwise write out the full featureNames
+            # statement.
+            labels = []
+            for name in feature_names.statements:
+                language = "dflt"
+                if name.platformID == 3 and name.platEncID == 1:
+                    language = _to_glyphs_language(name.langID)
+                elif name.platformID == 1 and name.platEncID == 0 and name.langID == 0:
+                    # mostly to make the test work, who is using apple names any more
+                    language = "ENG"
+                else:
+                    self.logger.warning(
+                        f"Unknown platform:{name.platformID}, enc:{name.platEncID}, lang:{name.langID} in featureNames. Defaulting to 'dflt'"
+                    )
+                labels.append(dict(language=language, value=name.string))
+            if len(labels) == len(feature_names.statements):
+                feature.labels = labels
+                contents.pop(idx)
+            break
 
     def _process_gdef_table_block(self):
         st = self.statements.peek()
