@@ -65,6 +65,35 @@ def test_glyphspackage_load(datadir):
     assert d1 == d2
 
 
+def compare_files(file_path1: str, file_path2: str):
+    file = open(file_path1)
+    file_content1 = file.read()
+    file.close()
+    file = open(file_path2)
+    file_content2 = file.read()
+    file.close()
+    if not file_content1 or len(file_content1) == 0:
+        return False
+    if not file_content2 or len(file_content2) == 0:
+        return False
+    return file_content1 == file_content2
+
+
+def test_glyphspackage_rt(datadir):
+    filename = str(datadir.join("GlyphsUnitTestSans3.glyphspackage"))
+    font = GSFont(filename)
+    filename_rt = filename.replace(".glyph", "_temp.glyph")
+    font.save(filename_rt)
+
+    fontinfo_file = os.path.join(filename, "fontinfo.plist")
+    fontinfo_file_rt = os.path.join(filename_rt, "fontinfo.plist")
+    assert compare_files(fontinfo_file, fontinfo_file_rt)
+
+    glyph_file = os.path.join(filename, "glyphs/A_.glyph")
+    glyph_file_rt = os.path.join(filename_rt, "glyphs/A_.glyph")
+    assert compare_files(glyph_file, glyph_file_rt)
+
+
 ''' #alignmentZones are read only
 def test_glyphs3_alignment_zones(datadir):
     font = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))

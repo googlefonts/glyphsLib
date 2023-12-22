@@ -32,6 +32,7 @@ from fontTools.pens.pointPen import (
     SegmentToPointPen,
 )
 
+from fontTools.ufoLib import filenames
 from glyphsLib.parser import load, Parser
 from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
@@ -5544,7 +5545,7 @@ class GSFont(GSBase):
         writer.writeKeyValue(".appVersion", self.appVersion)
         if writer.formatVersion > 2:
             writer.writeKeyValue(".formatVersion", self.formatVersion)
-        if self.displayStrings:
+        if self.displayStrings and writer.container == "flat":
             writer.writeKeyValue("DisplayStrings", self.displayStrings)
 
         customParameters = list(self.customParameters)
@@ -5590,7 +5591,9 @@ class GSFont(GSBase):
         if self.features:
             writer.writeObjectKeyValue(self, "features")
         writer.writeKeyValue("fontMaster", self.masters)
-        writer.writeObjectKeyValue(self, "glyphs")
+
+        if writer.container == "flat":
+            writer.writeObjectKeyValue(self, "glyphs")
 
         if writer.formatVersion == 2:
             if self.grid != 1:
@@ -5731,10 +5734,45 @@ class GSFont(GSBase):
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
+        if path.endswith('.glyphs'):
+            self.save_flat_file(path)
+        elif path.endswith('.glyphspackage'):
+            self.save_package_file(path)
+        else:
+            raise ValueError("unknown file extension on path:", path)
+
+    def save_flat_file(self, path):
         with open(path, "w", encoding="utf-8") as fp:
             w = Writer(fp, formatVersion=self.formatVersion)
             logger.info("Writing %r to .glyphs file", self)
             w.write(self)
+
+    def save_package_file(self, path):
+        os.makedirs(path, exist_ok=True)
+        glyphs_folder = os.path.join(path, "glyphs")
+        os.makedirs(glyphs_folder, exist_ok=True)
+        glyph_order = []
+        for glyph in self.glyphs:
+            name = glyph.name
+            glyph_order.append(name)
+            glyph_file_name = os.path.join(glyphs_folder, filenames.userNameToFileName(name) + ".glyph")
+            with open(glyph_file_name, "w", encoding="utf-8") as fp:
+                w = Writer(fp, formatVersion=self.formatVersion)
+                logger.info("Writing %r to .glyph file", glyph)
+                w.write(glyph)
+        glyph_order_file = os.path.join(path, "order.plist")
+        with open(glyph_order_file, "w", encoding="utf-8") as fp:
+            fp.write("(\n" + ",\n".join(glyph_order) + "\n)")
+        info_file = os.path.join(path, "fontinfo.plist")
+        with open(info_file, "w", encoding="utf-8") as fp:
+            w = Writer(fp, formatVersion=self.formatVersion, container="package")
+            w.write(self)
+        info_file = os.path.join(path, "fontinfo.plist")
+        if self.displayStrings:
+            uistate_file = os.path.join(path, "UIState.plist")
+            with open(uistate_file, "w", encoding="utf-8") as fp:
+                w = Writer(fp, formatVersion=self.formatVersion)
+                w.write({"displayStrings": self.displayStrings})
 
     def _getAxisCountFromMasters(self, masters):
         axisCount = 6
