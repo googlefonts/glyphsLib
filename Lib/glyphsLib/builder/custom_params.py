@@ -1196,13 +1196,3 @@ def _unset_default_params(glyphs):
             and glyphs.customParameters[glyphs_name] == default_value
         ):
             del glyphs.customParameters[glyphs_name]
-
-
-# 'Virtual Master' params are GSFont-only and multi-valued (i.e. there can be multiple
-# custom parameters named 'Virtual Master'); we know we want them stored in lib.plist
-# hence ufo_info=False
-register_parameter_handler(
-    ParamHandler(
-        "Virtual Master", ufo_info=False, ufo_default=[], glyphs_multivalued=True, glyphs_owner_class=(GSFont)
-    )
-)
