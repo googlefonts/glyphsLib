@@ -1209,8 +1209,8 @@ def test_glyph_color_palette_layers_no_unicode_mapping(ufo_module):
 
     color0 = GSLayer()
     color1 = GSLayer()
-    color0.name = "Color 0"
-    color1.name = "Color 1"
+    color0.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE] = 0
+    color1.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE] = 1
 
     glypha.layers.append(color0)
     glypha.layers.append(color1)

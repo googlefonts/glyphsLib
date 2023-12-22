@@ -622,7 +622,7 @@ def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
     for master in font.masters:
         assert "Axis Location" not in master.customParameters
         # all non-virtual masters are at the default Cap Height location
-        assert master.axes[0] == 700
+        assert master.internalAxesValues[0] == 700
 
     virtual_masters = [
         cp.value for cp in font.customParameters if cp.name == "Virtual Master"
