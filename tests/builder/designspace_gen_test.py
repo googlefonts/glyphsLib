@@ -374,7 +374,7 @@ def test_designspace_generation_bracket_unbalanced_brackets(datadir, ufo_module)
         font = glyphsLib.load(f)
 
     layer_names = {l.name for l in font.glyphs["C"].layers}
-    assert layer_names == {"Regular", "Bold", "Bold [600]"}
+    assert layer_names == {"Regular", "Bold", "[600‹wg]"}
 
     designspace = to_designspace(font, ufo_module=ufo_module)
 
@@ -425,7 +425,7 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
 
     g = font.glyphs["D"]
 
-    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g.layers)
+    assert {"[wg‹600]"}.intersection(l.name for l in g.layers)
 
     designspace = to_designspace(font, ufo_module=ufo_module)
 
@@ -449,7 +449,7 @@ def test_designspace_generation_reverse_bracket_roundtrip(datadir, ufo_module):
     assert "D" in font_rt.glyphs
 
     g2 = font_rt.glyphs["D"]
-    assert {"Regular ]600]", "Bold ]600]"}.intersection(l.name for l in g2.layers)
+    assert {"[wg‹600]"}.intersection(l.name for l in g2.layers)
 
     assert "D.BRACKET.wght_400_600" not in font_rt.glyphs
 
@@ -478,9 +478,9 @@ def test_designspace_generation_bracket_no_export_glyph(datadir, ufo_module):
     assert "E" in font_rt.glyphs
     assert {l.name for l in font_rt.glyphs["E"].layers} == {
         "Regular",
-        "Regular [630]",
+        "[630‹wg]",
         "Bold",
-        "Bold ]570]",
+        "[wg‹570]",
     }
 
 
