@@ -898,6 +898,23 @@ def test_glyph_lib_Export_GDEF(ufo_module):
     assert ufo2.lib["public.openTypeCategories"] == {"d": "base"}
 
 
+def test_glyph_lib_Export_feature_names(ufo_module):
+    font = generate_minimal_font()
+    add_glyph(font, "a")
+    add_glyph(font, "a.ss01")
+    ss01 = GSFeature(name="ss01", code="sub a by a.ss01;")
+    font.features.append(ss01)
+    ss01.labels = [
+        dict(language="dflt", value='Single\\storey "ä"'),
+    ]
+
+    ufos = to_ufos(font, ufo_module=ufo_module)
+    ufo = ufos[0]
+    assert r'name "Single\005cstorey \0022ä\0022";' in ufo.features.text
+    assert 'Name: Single\\storey "ä"' not in ufo.features.text
+
+
+@pytest.mark.xfail(reason="feature names are now stored in feature.labels")
 def test_glyph_lib_Export_feature_names_from_notes(ufo_module):
     font = generate_minimal_font()
     add_glyph(font, "a")
@@ -927,6 +944,7 @@ def test_glyph_lib_Export_feature_names_from_notes(ufo_module):
         assert r'name "Single\005cstorey \0022ä\0022";' not in ufo.features.text
 
 
+@pytest.mark.xfail(reason="feature names are now stored in feature.labels")
 def test_glyph_lib_Export_feature_names_long_from_notes(ufo_module):
     font = generate_minimal_font()
     add_glyph(font, "a")
@@ -952,6 +970,7 @@ def test_glyph_lib_Export_feature_names_long_from_notes(ufo_module):
         ) in ufo.features.text
 
 
+@pytest.mark.xfail(reason="feature names are now stored in feature.labels")
 def test_glyph_lib_Export_feature_names_long_escaped_from_notes(ufo_module):
     font = generate_minimal_font()
     add_glyph(font, "a")
