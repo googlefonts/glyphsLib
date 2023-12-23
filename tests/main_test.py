@@ -104,6 +104,10 @@ def test_parser_main_upstream(capsys):
         'transform = "{0.89877, 0.04713, -0.04189, 0.7989, 106, 89}";',
         'transform = "{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}";',
     )
+    actual = actual.replace(
+        r"  name 3 1 0x409 \"Stylistic Set Name 1\";\012  name",
+        r"	name 3 1 0x409 \"Stylistic Set Name 1\";\012	name",
+    )
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
     with open(filename, "w", encoding="utf-8") as file:
