@@ -181,8 +181,8 @@ def test_feature_names_format_2(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == ""  # "Name: Alternate g"
-    assert gs_feature.labels[0] == [{"language": "ENG", "value": "Alternate g"}]
+    assert gs_feature.notes.strip() == ""
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
         """\
@@ -260,7 +260,6 @@ def test_feature_names_notes(tmpdir, ufo_module):
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     assert gs_feature.notes.strip() == "foo"
-
     assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
@@ -269,7 +268,7 @@ def test_feature_names_notes(tmpdir, ufo_module):
         # notes:
         # foo
         featureNames {
-          name 3 1 0x409 "Alternate g";
+          name "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -300,18 +299,15 @@ def test_feature_names_full_format_2(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == dedent(
-        """\
-        featureNames {
-            name 1 "Alternate g";
-        };"""
-    )
+    assert gs_feature.notes.strip() == ""
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
+    # Glyphs doesn’t support mac names amy more. It can import `name 1 "foo"` but will
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         featureNames {
-            name 1 "Alternate g";
+          name "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -343,7 +339,6 @@ def test_feature_names_full_format_3(tmpdir, ufo_module):
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
     assert gs_feature.notes == ""
-
     assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     # this will be converted to platform:windows as Glyphs doesn’t handle apple names any more
@@ -351,7 +346,7 @@ def test_feature_names_full_format_3(tmpdir, ufo_module):
         """\
         feature ss01 {
         featureNames {
-          name 3 1 0x409 "Alternate g";
+          name "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -383,20 +378,14 @@ def test_feature_names_multi_format_2(tmpdir, ufo_module):
     gs_feature = font.features[0]
     assert gs_feature.automatic
     assert gs_feature.code.strip() == "sub g by g.ss01;"
-    assert gs_feature.notes.strip() == dedent(
-        """\
-        featureNames {
-            name "Alternate g";
-            name 1 "Alternate g";
-        };"""
-    )
+    assert gs_feature.notes.strip() == ""
+    assert gs_feature.labels == [{"language": "ENG", "value": "Alternate g"}]
 
     assert rtufo.features.text == dedent(
         """\
         feature ss01 {
         featureNames {
-            name "Alternate g";
-            name 1 "Alternate g";
+          name "Alternate g";
         };
         # automatic
         sub g by g.ss01;
