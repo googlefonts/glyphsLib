@@ -61,6 +61,7 @@ def to_ufo_master_features(self, ufo, master):
         )
 
 
+# is used in classes.py
 def _to_name_langID(language):
     if language not in LANGUAGE_MAPPING:
         raise ValueError(f"Unknown name language: {language}")
@@ -78,7 +79,7 @@ def _is_manual_kern_feature(feature):
     return feature.name == "kern" and not feature.automatic
 
 
-def _to_ufo_features(
+def _to_ufo_features(  # noqa: C901
     font: GSFont,
     ufo: Font | None = None,
     generate_GDEF: bool = False,
@@ -87,15 +88,30 @@ def _to_ufo_features(
 ) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
-    Optionally, build a GDEF table definiton, excluding 'skip_export_glyphs'.
+    Optionally, build a GDEF table definition, excluding 'skip_export_glyphs'.
     """
     if not master:
         expander = PassThruExpander()
     else:
         expander = TokenExpander(font, master)
 
+    class_defs = []
+    for class_ in font.classes:
+        if not class_.active:
+            continue
+        prefix = "@" if not class_.name.startswith("@") else ""
+        name = prefix + class_.name
+        class_defs.append(
+            "{}{} = [ {} ];".format(
+                autostr(class_.automatic), name, expander.expand(class_.code)
+            )
+        )
+    class_str = "\n\n".join(class_defs)
+
     prefixes = []
     for prefix in font.featurePrefixes:
+        if not prefix.active:
+            continue
         strings = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
             strings.append("# Prefix: %s\n" % prefix.name)
@@ -105,59 +121,20 @@ def _to_ufo_features(
 
     prefix_str = "\n\n".join(prefixes)
 
-    class_defs = []
-    for class_ in font.classes:
-        prefix = "@" if not class_.name.startswith("@") else ""
-        name = prefix + class_.name
-        class_defs.append(
-            "{}{} = [ {}\n];".format(
-                autostr(class_.automatic), name, expander.expand(class_.code)
-            )
-        )
-    class_str = "\n\n".join(class_defs)
-
     feature_defs = []
     for feature in font.features:
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
-        feature_names = None
-        if font.format_version == 2 and notes:
-            m = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
-            if m:
-                name = m.groups()[0]
-                # Remove the name from the note
-                notes = notes.replace(name, "").strip()
-                feature_names = name.splitlines()
-            else:
-                m = re.search(r"^(Name: (.+))", notes)
-                if m:
-                    line, name = m.groups()
-                    # Remove the name from the note
-                    notes = notes.replace(line, "").strip()
-                    # Replace special chars backslash and doublequote for AFDKO syntax
-                    name = name.replace("\\", r"\005c").replace('"', r"\0022")
-                    feature_names = ["featureNames {", f'  name "{name}";', "};"]
-        elif font.format_version == 3 and feature.labels:
-            feature_names = []
-            feature_names.append("featureNames {")
-            for label in feature.labels:
-                langID = _to_name_langID(label["language"])
-                name = label["value"]
-                name = name.replace("\\", r"\005c").replace('"', r"\0022")
-                if langID is None:
-                    feature_names.append(f'  name "{name}";')
-                else:
-                    feature_names.append(f'  name 3 1 0x{langID:X} "{name}";')
-            feature_names.append("};")
         if notes:
             lines.append("# notes:")
             lines.extend("# " + line for line in notes.splitlines())
+        feature_names = feature.featureNamesString()
         if feature_names:
-            lines.extend(feature_names)
+            lines.append(feature_names)
         if feature.automatic:
             lines.append("# automatic")
-        if feature.disabled:
+        if not feature.active:
             lines.append("# disabled")
             lines.extend("#" + line for line in code.splitlines())
         else:
@@ -710,51 +687,14 @@ class FeatureFileProcessor:
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
-        if feature.automatic:
-            # See if there is a feature names block in the code that should be
-            # written to the notes.
-            for i, statement in enumerate(contents):
-                if (
-                    isinstance(statement, ast.NestedBlock)
-                    and statement.block_name == "featureNames"
-                ):
-                    feature_names = contents[i]
-                    if feature_names.statements:
-                        # If there is only one name has default platformID,
-                        # platEncID and langID, write it using the simple
-                        # syntax. Otherwise write out the full featureNames
-                        # statement.
-                        if self._font.format_version == 2:
-                            name = feature_names.statements[0]
-                            if (
-                                len(feature_names.statements) == 1
-                                and name.platformID == 3
-                                and name.platEncID == 1
-                                and name.langID == 0x409
-                            ):
-                                name_text = f"Name: {name.string}"
-                            else:
-                                name_text = str(feature_names)
-                            notes_text = name_text + "\n" + notes_text
-                            notes = True
-                            contents.pop(i)
-                        elif self._font.format_version == 3:
-                            labels = []
-                            for name in feature_names.statements:
-                                if name.platformID == 3 and name.platEncID == 1:
-                                    language = _to_glyphs_language(name.langID)
-                                    labels.append(
-                                        dict(language=language, value=name.string)
-                                    )
-                            if len(labels) == len(feature_names.statements):
-                                feature.labels = labels
-                                contents.pop(i)
-                    break
-        if notes:
+        if notes_text:
             feature.notes = notes_text
+        # See if there is a feature names block in the code
+        self.extract_feature_names(contents, feature)
+
         if disabled:
             feature.code = disabled_text
-            feature.disabled = True
+            feature.active = False
             # FIXME: (jany) check that the user has not added more new code
             #    after the disabled comment. Maybe start by checking whether
             #    the block is only made of comments
@@ -762,6 +702,40 @@ class FeatureFileProcessor:
             feature.code = self._rstrip_newlines(self.doc.text(contents))
         self._font.features.append(feature)
         return True
+
+    def extract_feature_names(self, contents, feature):
+        for idx, statement in enumerate(contents):
+            if not (
+                isinstance(statement, ast.NestedBlock)
+                and statement.block_name == "featureNames"
+            ):
+                continue
+
+            feature_names = contents[idx]
+            if not feature_names.statements:
+                break
+
+            # If there is only one name has default platformID,
+            # platEncID and langID, write it using the simple
+            # syntax. Otherwise write out the full featureNames
+            # statement.
+            labels = []
+            for name in feature_names.statements:
+                language = "dflt"
+                if name.platformID == 3 and name.platEncID == 1:
+                    language = _to_glyphs_language(name.langID)
+                elif name.platformID == 1 and name.platEncID == 0 and name.langID == 0:
+                    # mostly to make the test work, who is using apple names any more
+                    language = "ENG"
+                else:
+                    self.logger.warning(
+                        f"Unknown platform:{name.platformID}, enc:{name.platEncID}, lang:{name.langID} in featureNames. Defaulting to 'dflt'"
+                    )
+                labels.append(dict(language=language, value=name.string))
+            if len(labels) == len(feature_names.statements):
+                feature.labels = labels
+                contents.pop(idx)
+            break
 
     def _process_gdef_table_block(self):
         st = self.statements.peek()

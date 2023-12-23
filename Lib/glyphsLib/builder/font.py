@@ -19,8 +19,14 @@ from .constants import (
     UFO2FT_FEATURE_WRITERS_KEY,
     UFO2FT_FILTERS_KEY,
     APP_VERSION_LIB_KEY,
+    FORMATVERSION_LIB_KEY,
     KEYBOARD_INCREMENT_KEY,
+    KEYBOARD_INCREMENT_BIG_KEY,
+    KEYBOARD_INCREMENT_HUGE_KEY,
+    GRID_SIZE_KEY,
+    GRID_SUBDIVISION_KEY,
     MASTER_ORDER_LIB_KEY,
+    GLYPHS_PREFIX,
 )
 
 
@@ -31,33 +37,61 @@ def to_ufo_font_attributes(self, family_name):
     """
 
     font = self.font
-
+    disableAllAutomaticBehaviour = False
+    disableAllAutomaticBehaviourParameter = font.customParameters[
+        "DisableAllAutomaticBehaviour"
+    ]
+    if disableAllAutomaticBehaviourParameter:
+        disableAllAutomaticBehaviour = disableAllAutomaticBehaviourParameter
     for index, master in enumerate(font.masters):
         ufo = self.ufo_module.Font()
 
-        fill_ufo_metadata(master, ufo)
+        to_ufo_metadata(master, ufo)
         if not self.minimal:
-            fill_ufo_metadata_roundtrip(master, ufo)
+            to_ufo_metadata_roundtrip(master, ufo)
 
         self.to_ufo_names(ufo, master, family_name)  # .names
         self.to_ufo_family_user_data(ufo)  # .user_data
 
-        if has_any_corner_components(font, master):
-            ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-                {
-                    "namespace": "glyphsLib.filters",
-                    "name": "cornerComponents",
-                    "pre": True,
-                }
-            )
-
-        ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
-            {"namespace": "glyphsLib.filters", "name": "eraseOpenCorners", "pre": True}
-        )
         ufo.lib[UFO2FT_FEATURE_WRITERS_KEY] = DEFAULT_FEATURE_WRITERS
 
-        self.to_ufo_custom_params(ufo, font)  # .custom_params
+        self.to_ufo_properties(ufo, font)
+        self.to_ufo_custom_params(ufo, font, "font")  # .custom_params
+        self.to_ufo_custom_params(ufo, master, "fontMaster")  # .custom_params
         self.to_ufo_master_attributes(ufo, master)  # .masters
+
+        # Extract nested lib keys to the top level
+        nestedUserData = ufo.lib.get("com.schriftgestaltung.fontMaster.userData", {})
+        if UFO2FT_FILTERS_KEY not in ufo.lib and UFO2FT_FILTERS_KEY in nestedUserData:
+            ufo.lib[UFO2FT_FILTERS_KEY] = nestedUserData[UFO2FT_FILTERS_KEY]
+
+            del nestedUserData[UFO2FT_FILTERS_KEY]
+            if not nestedUserData:
+                del ufo.lib["com.schriftgestaltung.fontMaster.userData"]
+
+        if not disableAllAutomaticBehaviour:
+            if UFO2FT_FILTERS_KEY not in ufo.lib:
+                ufo.lib[UFO2FT_FILTERS_KEY] = [
+                    {
+                        "namespace": "glyphsLib.filters",
+                        "name": "eraseOpenCorners",
+                        "pre": True,
+                    }
+                ]
+
+        if has_any_corner_components(font, master):
+            filters = ufo.lib.setdefault(UFO2FT_FILTERS_KEY, [])
+            if not any(
+                hasattr(f, "get") and f.get("name") == "cornerComponents"
+                for f in filters
+            ):
+                filters.append(
+                    {
+                        "namespace": "glyphsLib.filters",
+                        "name": "cornerComponents",
+                        "pre": True,
+                    }
+                )
 
         ufo.lib[MASTER_ORDER_LIB_KEY] = index
 
@@ -72,15 +106,35 @@ INFO_FIELDS = (
     ("unitsPerEm", "upm", True),
     ("versionMajor", "versionMajor", True),
     ("versionMinor", "versionMinor", True),
-    ("copyright", "copyright", False),
-    ("openTypeNameDesigner", "designer", False),
-    ("openTypeNameDesignerURL", "designerURL", False),
-    ("openTypeNameManufacturer", "manufacturer", False),
-    ("openTypeNameManufacturerURL", "manufacturerURL", False),
 )
 
+PROPERTIES_FIELDS = {
+    "compatibleFullNames": "openTypeNameCompatibleFullName",
+    "copyrights": "copyright",
+    "descriptions": "openTypeNameDescription",
+    "designers": "openTypeNameDesigner",
+    "designerURL": "openTypeNameDesignerURL",
+    # "familyNames": "familyName",
+    "preferredFamilyNames": "openTypeNamePreferredFamilyName",
+    "preferredSubfamilyNames": "openTypeNamePreferredSubfamilyName",
+    "licenses": "openTypeNameLicense",
+    "licenseURL": "openTypeNameLicenseURL",
+    "manufacturers": "openTypeNameManufacturer",
+    "manufacturerURL": "openTypeNameManufacturerURL",
+    "postscriptFontName": "postscriptFontName",
+    "postscriptFullNames": "postscriptFullName",
+    "sampleTexts": "openTypeNameSampleText",
+    "trademarks": "trademark",
+    "uniqueID": "openTypeNameUniqueID",
+    # "variationsPostScriptNamePrefix": "variationsPostScriptNamePrefix", # TODO: what is the correct ufo key?
+    "vendorID": "openTypeOS2VendorID",
+    "versionString": "openTypeNameVersion",
+    "WWSFamilyName": "openTypeNameWWSFamilyName",
+    "WWSSubfamilyName": "openTypeNameWWSSubfamilyName",
+}
 
-def fill_ufo_metadata(master, ufo):
+
+def to_ufo_metadata(master, ufo):
     font = master.font
 
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
@@ -96,17 +150,40 @@ def fill_ufo_metadata(master, ufo):
 
     if date_created is not None:
         ufo.info.openTypeHeadCreated = date_created
-
+    for infoValue in font.properties:
+        ufo_key = PROPERTIES_FIELDS[infoValue.key]
+        setattr(ufo.info, ufo_key, infoValue.value)
     # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
     # order of glyphs in the glyphs file, which can optionally be overwritten
     # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
     ufo.glyphOrder = list(glyph.name for glyph in font.glyphs)
 
 
-def fill_ufo_metadata_roundtrip(master, ufo):
+def to_glyphs_metadata(ufo, font):
+    for glyphs_key, ufo_key in PROPERTIES_FIELDS.items():
+        value = getattr(ufo.info, ufo_key)
+        if value:
+            font.properties[glyphs_key] = value
+
+
+def to_ufo_metadata_roundtrip(master, ufo):
     font = master.font
     ufo.lib[APP_VERSION_LIB_KEY] = font.appVersion
-    ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+    ufo.lib[FORMATVERSION_LIB_KEY] = font.formatVersion
+    if font._defaultsForName["keyboardIncrement"] != font.keyboardIncrement:
+        ufo.lib[KEYBOARD_INCREMENT_KEY] = font.keyboardIncrement
+    if font._defaultsForName["keyboardIncrementBig"] != font.keyboardIncrementBig:
+        ufo.lib[KEYBOARD_INCREMENT_BIG_KEY] = font.keyboardIncrementBig
+    if font._defaultsForName["keyboardIncrementHuge"] != font.keyboardIncrementHuge:
+        ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY] = font.keyboardIncrementHuge
+    if font._defaultsForName["keyboardIncrementHuge"] != font.keyboardIncrementHuge:
+        ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY] = font.keyboardIncrementHuge
+    if font._defaultsForName["grid"] != font.grid:
+        ufo.lib[GRID_SIZE_KEY] = font.grid
+    if font._defaultsForName["gridSubDivision"] != font.gridSubDivision:
+        ufo.lib[GRID_SUBDIVISION_KEY] = font.gridSubDivision
+    if font.customParameters["glyphOrder"] is None:
+        ufo.lib[GLYPHS_PREFIX + "useGlyphOrder"] = False
 
 
 # UFO to glyphs
@@ -120,7 +197,7 @@ def to_glyphs_font_attributes(self, source, master, is_initial):
     self -- The UFOBuilder
     ufo -- The current UFO being read
     master -- The current master being written
-    is_initial -- True iff this the first UFO that we process
+    is_initial -- True if this the first UFO that we process
     """
     if is_initial:
         _set_glyphs_font_attributes(self, source)
@@ -137,7 +214,14 @@ def _set_glyphs_font_attributes(self, source):
         font.appVersion = ufo.lib[APP_VERSION_LIB_KEY]
     if KEYBOARD_INCREMENT_KEY in ufo.lib:
         font.keyboardIncrement = ufo.lib[KEYBOARD_INCREMENT_KEY]
-
+    if KEYBOARD_INCREMENT_BIG_KEY in ufo.lib:
+        font.keyboardIncrementBig = ufo.lib[KEYBOARD_INCREMENT_BIG_KEY]
+    if KEYBOARD_INCREMENT_HUGE_KEY in ufo.lib:
+        font.keyboardIncrementHuge = ufo.lib[KEYBOARD_INCREMENT_HUGE_KEY]
+    if GRID_SIZE_KEY in ufo.lib:
+        font.grid = ufo.lib[GRID_SIZE_KEY]
+    if GRID_SUBDIVISION_KEY in ufo.lib:
+        font.gridSubDivision = ufo.lib[GRID_SUBDIVISION_KEY]
     if info.openTypeHeadCreated is not None:
         # FIXME: (jany) should wrap in glyphs_datetime? or maybe the GSFont
         #     should wrap in glyphs_datetime if needed?
@@ -149,20 +233,23 @@ def _set_glyphs_font_attributes(self, source):
     if info.versionMinor is not None:
         font.versionMinor = info.versionMinor
 
-    if info.copyright is not None:
-        font.copyright = info.copyright
-    if info.openTypeNameDesigner is not None:
-        font.designer = info.openTypeNameDesigner
-    if info.openTypeNameDesignerURL is not None:
-        font.designerURL = info.openTypeNameDesignerURL
-    if info.openTypeNameManufacturer is not None:
-        font.manufacturer = info.openTypeNameManufacturer
-    if info.openTypeNameManufacturerURL is not None:
-        font.manufacturerURL = info.openTypeNameManufacturerURL
+    # if info.copyright is not None:
+    #     font.copyright = info.copyright
+    # if info.trademark is not None:
+    #     font.trademark = info.trademark
+    # if info.openTypeNameDesigner is not None:
+    #     font.designer = info.openTypeNameDesigner
+    # if info.openTypeNameDesignerURL is not None:
+    #     font.designerURL = info.openTypeNameDesignerURL
+    # if info.openTypeNameManufacturer is not None:
+    #     font.manufacturer = info.openTypeNameManufacturer
+    # if info.openTypeNameManufacturerURL is not None:
+    #     font.manufacturerURL = info.openTypeNameManufacturerURL
 
+    to_glyphs_metadata(ufo, font)
     self.to_glyphs_family_names(ufo)
     self.to_glyphs_family_user_data_from_ufo(ufo)
-    self.to_glyphs_custom_params(ufo, font)
+    self.to_glyphs_custom_params(ufo, font, "font")
 
 
 def _compare_and_merge_glyphs_font_attributes(self, source):
@@ -186,13 +273,9 @@ def _original_master_order(source):
 
 def has_any_corner_components(font, master):
     for glyph in font.glyphs:
-        for layer in glyph.layers:
-            if (
-                layer.layerId != master.id
-                or layer.associatedMasterId != master.id
-                or not layer.hints
-            ):
+        for layerId, layer in glyph._layers.items():
+            if layer.associatedMasterId != master.id or not layer.hints:
                 continue
-            if any(h.type.upper() == "CORNER" for h in layer.hints):
+            if layer.hasCorners:
                 return True
     return False

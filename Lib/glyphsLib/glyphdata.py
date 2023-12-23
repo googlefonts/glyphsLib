@@ -36,6 +36,131 @@ Glyph = collections.namedtuple(
     "Glyph",
     "name, production_name, unicode, category, subCategory, script, description",
 )
+langTag2Name = {
+    "AFK": "Afrikaans",
+    "ARA": "Arabic",
+    "ARA-AE": "Arabic, UAE",
+    "ARA-BH": "Arabic, Bahrain",
+    "ARA-DZ": "Arabic, Algeria",
+    "ARA-EG": "Arabic, Egypt",
+    "ARA-IQ": "Arabic, Iraq",
+    "ARA-JO": "Arabic, Jordan",
+    "ARA-KW": "Arabic, Kuwait",
+    "ARA-LB": "Arabic, Lebanon",
+    "ARA-LY": "Arabic, Libya",
+    "ARA-MA": "Arabic, Morocco",
+    "ARA-OM": "Arabic, Oman",
+    "ARA-QA": "Arabic, Qatar",
+    "ARA-SA": "Arabic, Saudi Arabia",
+    "ARA-SY": "Arabic, Syria",
+    "ARA-TN": "Arabic, Tunisia",
+    "ARA-YE": "Arabic, Yemen",
+    "ASM": "Assamese",
+    "ATH": "Athapascan",
+    "AZE": "Azeri",
+    "BEL": "Belarusian",
+    "BEN": "Bengali",
+    "BGR": "Bulgarian",
+    "BHO": "Bhojpuri",
+    "BRE": "Breton",
+    "BRM": "Burmese",
+    "CAT": "Catalan",
+    "COP": "Coptic",
+    "CRT": "Crimean Tatar",
+    "CSY": "Czech",
+    "DAN": "Danish",
+    "DEU": "German",
+    "ELL": "Greek",
+    "ENG": "English",
+    "ESP": "Spanish",
+    "ESP_Mexico": "Spanish Mexico",
+    "ESP_Trad": "Spanish (Traditional Sort)",
+    "ETI": "Estonian",
+    "EUQ": "Basque",
+    "EWE": "Afro-Congo",
+    "FAR": "Persian",
+    "FIN": "Finnish",
+    "FLE": "Flemish",
+    "FOS": "Faroese",
+    "FRA": "French",
+    "FRA_Canada": "French Canada",
+    "FRI": "Frisian",
+    "GRN": "Greenlandic",
+    "GUA": "Guarani",
+    "GUJ": "Gujarati",
+    "Gur": "Gurmukhi",
+    "HAU": "Hausa",
+    "HIN": "Hindi",
+    "HRV": "Croatian",
+    "HUN": "Hungarian",
+    "HVE": "Armenian",
+    "IRI": "Irish",
+    "ISL": "Icelandic",
+    "ITA": "Italian",
+    "IWR": "Hebrew",
+    "JPN": "Japanese",
+    "KAN": "Kannada",
+    "KAT": "Georgian",
+    "KAZ": "Kazakh",
+    "KHM": "Khmer",
+    "KOK": "Konkani",
+    "KOR": "Korean",
+    "LAO": "Laotian",
+    "LAT": "Latin",
+    "LSB": "Lower Sorbian",
+    "LTH": "Lithuanian",
+    "LVI": "Latvian",
+    "MAR": "Marathi",
+    "MKD": "Macedonian",
+    "MLR": "Malayalam",
+    "MLY": "Malay",
+    "MNG": "Mongolian",
+    "MOL": "Moldavian",
+    "MOR": "Moroccan",
+    "MTS": "Maltese",
+    "NEP": "Nepali",
+    "NLD": "Dutch",
+    "NOB": "Norwegian (Bokmal)",
+    "NOR": "Norwegian",
+    "NTO": "Esperanto",
+    "ORI": "Oriya",
+    "PAN": "Punjabi",
+    "PAS": "Pashto",
+    "PLK": "Polish",
+    "PRO": "Provencal",
+    "PTG": "Portuguese",
+    "PTG-BR": "Portuguese, Brazil",
+    "RMS": "Rhaeto-Romanic",
+    "ROM": "Romanian",
+    "ROY": "Romany",
+    "RUS": "Russian",
+    "SAN": "Sanskrit",
+    "SKY": "Slovak",
+    "SLV": "Slovenian",
+    "SND": "Sindhi",
+    "SQI": "Albanian",
+    "SRB": "Serbian (Latin)",
+    "SVE": "Swedish",
+    "TAM": "Tamil",
+    "TAT": "Tatar",
+    "TEL": "Telugu",
+    "THA": "Thai",
+    "TIB": "Tibetan",
+    "TRK": "Turkish",
+    "UKR": "Ukrainian",
+    "URD": "Urdu",
+    "USB": "Upper Sorbian",
+    "UYG": "Uyghur",
+    "UZB": "Uzbek",
+    "VIT": "Vietnamese",
+    "WEL": "Welsh",
+    "XBD": "New Tai Lue",
+    "ZHH": "Chinese (Hong Kong)",
+    "ZHS": "Chinese (Simplified)",
+    "ZHT": "Chinese (Traditional)",
+}
+
+langName2Tag = {dl: ul for ul, dl in langTag2Name.items()}
 
 # Global variable holding the actual GlyphData data, assigned on first use.
 GLYPHDATA = None
@@ -103,11 +228,18 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     if data is None:
         global GLYPHDATA
         if GLYPHDATA is None:
-            from importlib.resources import open_binary
+            try:
+                from importlib.resources import files
+            except ImportError:
+                # Python 3.8
+                from importlib_resources import files
 
-            with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
-                with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
+            with (files("glyphsLib.data") / "GlyphData.xml").open("rb") as f1:
+                with (files("glyphsLib.data") / "GlyphData_Ideographs.xml").open(
+                    "rb"
+                ) as f2:
                     GLYPHDATA = GlyphData.from_files(f1, f2)
+            assert len(GLYPHDATA.names) > 20000
         data = GLYPHDATA
 
     # Look up data by full glyph name first.

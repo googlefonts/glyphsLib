@@ -1,0 +1,399 @@
+{
+.appVersion = "3039";
+.formatVersion = 3;
+axes = (
+{
+name = "Optical size";
+tag = opsz;
+},
+{
+name = Width;
+tag = wdth;
+}
+);
+date = "2020-12-18 14:26:24 +0000";
+familyName = "Neue Schrift";
+fontMaster = (
+{
+axesValues = (
+12,
+400
+);
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = -16;
+pos = 700;
+},
+{
+over = -16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+}
+);
+name = "Text Regular";
+},
+{
+axesValues = (
+12,
+700
+);
+id = "01470A13-0DFA-483E-8321-32012938E715";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = "Text Bold";
+},
+{
+axesValues = (
+20,
+400
+);
+id = "88B13F39-588F-4B14-AD4E-C4BBD5E5C719";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = "Display Regular";
+},
+{
+axesValues = (
+20,
+700
+);
+id = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = "Display Bold";
+}
+);
+glyphs = (
+{
+glyphname = "a-cy";
+lastChange = "2020-12-18 14:50:51 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(214,0,l),
+(300,0,l),
+(300,500,l),
+(214,500,l)
+);
+}
+);
+width = 600;
+},
+{
+layerId = "01470A13-0DFA-483E-8321-32012938E715";
+shapes = (
+{
+closed = 1;
+nodes = (
+(86,0,l),
+(546,0,l),
+(546,500,l),
+(86,500,l)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = m01;
+attr = {
+axisRules = (
+{
+min = 18;
+},
+{
+}
+);
+};
+layerId = "A6C125D6-6FEC-473F-8794-E7E873109100";
+name = "[18]";
+shapes = (
+{
+closed = 1;
+nodes = (
+(320,0,o),
+(354,137,o),
+(354,306,cs),
+(354,474,o),
+(320,500,o),
+(277,500,cs),
+(234,500,o),
+(200,474,o),
+(200,306,cs),
+(200,137,o),
+(234,0,o),
+(277,0,cs)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = "01470A13-0DFA-483E-8321-32012938E715";
+attr = {
+axisRules = (
+{
+min = 18;
+},
+{
+}
+);
+};
+layerId = "F9E2FD01-99EB-4401-82B9-7FE31E148F6F";
+name = "[18]";
+shapes = (
+{
+closed = 1;
+nodes = (
+(446,0,o),
+(544,121,o),
+(544,271,cs),
+(544,420,o),
+(446,500,o),
+(325,500,cs),
+(204,500,o),
+(106,420,o),
+(106,271,cs),
+(106,121,o),
+(204,0,o),
+(325,0,cs)
+);
+}
+);
+width = 600;
+},
+{
+layerId = "88B13F39-588F-4B14-AD4E-C4BBD5E5C719";
+shapes = (
+{
+closed = 1;
+nodes = (
+(232,0,l),
+(320,0,l),
+(320,800,l),
+(232,800,l)
+);
+}
+);
+width = 600;
+},
+{
+layerId = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
+shapes = (
+{
+closed = 1;
+nodes = (
+(28,0,l),
+(560,0,l),
+(560,800,l),
+(28,800,l)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = "88B13F39-588F-4B14-AD4E-C4BBD5E5C719";
+attr = {
+axisRules = (
+{
+min = 18;
+},
+{
+}
+);
+};
+layerId = "1A29DD32-77A4-4BD0-96CF-AD67E26D2CDF";
+name = "[18]";
+shapes = (
+{
+closed = 1;
+nodes = (
+(397,0,o),
+(436,179,o),
+(436,400,cs),
+(436,621,o),
+(397,800,o),
+(350,800,cs),
+(303,800,o),
+(264,621,o),
+(264,400,cs),
+(264,179,o),
+(303,0,o),
+(350,0,cs)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
+attr = {
+axisRules = (
+{
+min = 18;
+},
+{
+}
+);
+};
+layerId = "16961ECC-EBCA-47EC-AAB6-79F3559E9ED8";
+name = "[18]";
+shapes = (
+{
+closed = 1;
+nodes = (
+(440,0,o),
+(548,179,o),
+(548,400,cs),
+(548,621,o),
+(440,800,o),
+(307,800,cs),
+(174,800,o),
+(66,621,o),
+(66,400,cs),
+(66,179,o),
+(174,0,o),
+(307,0,cs)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 1072;
+},
+{
+glyphname = "a-cy.alt";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "01470A13-0DFA-483E-8321-32012938E715";
+width = 600;
+},
+{
+layerId = "88B13F39-588F-4B14-AD4E-C4BBD5E5C719";
+width = 600;
+},
+{
+layerId = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
+width = 600;
+}
+);
+},
+{
+glyphname = space;
+lastChange = "2020-12-18 15:06:07 +0000";
+layers = (
+{
+layerId = m01;
+width = 200;
+},
+{
+layerId = "01470A13-0DFA-483E-8321-32012938E715";
+width = 600;
+},
+{
+layerId = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
+width = 600;
+},
+{
+layerId = "88B13F39-588F-4B14-AD4E-C4BBD5E5C719";
+width = 600;
+}
+);
+unicode = 32;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

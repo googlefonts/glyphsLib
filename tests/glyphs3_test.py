@@ -1,6 +1,25 @@
+import os
+import tempfile
 import glyphsLib
-import pytest
-from glyphsLib.classes import GSFont, GSFontMaster, GSAlignmentZone, GSPath, GSComponent
+from glyphsLib.classes import GSFont, GSFontMaster, GSPath, GSComponent
+
+
+def test_round_tripping(datadir):
+    original_file_path = str(datadir.join("GlyphsUnitTestSans3.glyphs"))
+    with tempfile.TemporaryDirectory() as outputdir:
+        temp_dir = str(outputdir)
+        temp_file_path = os.path.join(temp_dir, "GlyphsUnitTestSans3.glyphs")
+        temp_file_path = str(datadir.join("GlyphsUnitTestSans3_temp.glyphs"))
+        font = glyphsLib.load(original_file_path)
+        font.save(temp_file_path)
+        original_file = open(original_file_path)
+        original_file_content = original_file.read()
+        original_file.close()
+
+        temp_file = open(temp_file_path)
+        temp_file_content = temp_file.read()
+        temp_file.close()
+        assert original_file_content == temp_file_content
 
 
 def test_metrics():
@@ -9,7 +28,7 @@ def test_metrics():
     font.masters.append(master)
     master.ascender = 400
     assert master.ascender == 400
-    assert master.metrics[0].position == 400
+    assert master.metrics[font.metrics[0].id].position == 400
 
 
 def test_glyphs3_italic_angle(datadir):
@@ -22,6 +41,7 @@ def test_glyphspackage_load(datadir):
     expected = [
         "A",
         "Adieresis",
+        "I",
         "a",
         "adieresis",
         "h",
@@ -40,9 +60,41 @@ def test_glyphspackage_load(datadir):
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font2 = GSFont(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected
-    assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
+    d1 = glyphsLib.dumps(font1)
+    d2 = glyphsLib.dumps(font2)
+    assert d1 == d2
 
 
+def compare_files(file_path1: str, file_path2: str):
+    file = open(file_path1)
+    file_content1 = file.read()
+    file.close()
+    file = open(file_path2)
+    file_content2 = file.read()
+    file.close()
+    if not file_content1 or len(file_content1) == 0:
+        return False
+    if not file_content2 or len(file_content2) == 0:
+        return False
+    return file_content1 == file_content2
+
+
+def test_glyphspackage_rt(datadir):
+    filename = str(datadir.join("GlyphsUnitTestSans3.glyphspackage"))
+    font = GSFont(filename)
+    filename_rt = filename.replace(".glyph", "_temp.glyph")
+    font.save(filename_rt)
+
+    fontinfo_file = os.path.join(filename, "fontinfo.plist")
+    fontinfo_file_rt = os.path.join(filename_rt, "fontinfo.plist")
+    assert compare_files(fontinfo_file, fontinfo_file_rt)
+
+    glyph_file = os.path.join(filename, "glyphs/A_.glyph")
+    glyph_file_rt = os.path.join(filename_rt, "glyphs/A_.glyph")
+    assert compare_files(glyph_file, glyph_file_rt)
+
+
+""" #alignmentZones are read only
 def test_glyphs3_alignment_zones(datadir):
     font = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     master = font.masters[0]
@@ -95,14 +147,16 @@ def test_glyphs3_alignment_zones(datadir):
 
     with pytest.raises(TypeError):
         master.alignmentZones = ["", ""]
+"""
 
-
+""" # this is tested in test_classes
 def test_glyphs3_stems(datadir):
     font = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     master = font.masters[0]
 
     assert master.verticalStems == [17, 19]
     assert master.horizontalStems == [16, 16, 18]
+"""
 
 
 def test_glyphs2_rtl_kerning(datadir, ufo_module):

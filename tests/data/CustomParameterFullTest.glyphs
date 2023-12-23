@@ -1,0 +1,1910 @@
+{
+.appVersion = "3231";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = glyphOrder;
+value = (
+a,
+b,
+c
+);
+},
+{
+name = "Family Alignment Zones";
+value = (
+{
+pos = 800;
+size = 16;
+},
+{
+pos = 700;
+size = 16;
+},
+{
+pos = 500;
+size = 16;
+},
+{
+pos = 0;
+size = -16;
+},
+{
+pos = -200;
+size = -16;
+}
+);
+},
+{
+name = panose;
+value = (
+2,
+3,
+6,
+4,
+0,
+0,
+0,
+0,
+0,
+0
+);
+},
+{
+name = fsType;
+value = (
+2,
+8
+);
+},
+{
+name = unicodeRanges;
+value = (
+0,
+1,
+4
+);
+},
+{
+name = codePageRanges;
+value = (
+"1252",
+"1250",
+"1254"
+);
+},
+{
+name = blueScale;
+value = 0.04;
+},
+{
+name = blueShift;
+value = 1;
+},
+{
+name = blueFuzz;
+value = 0;
+},
+{
+name = isFixedPitch;
+value = 1;
+},
+{
+name = uniqueID;
+value = abcde;
+},
+{
+name = "Instance Preview";
+value = (
+"Quick brown fox"
+);
+},
+{
+name = ROS;
+value = "Adobe-CNS1-6";
+},
+{
+name = "Export morx Table";
+value = 1;
+},
+{
+name = "EditView Line Height";
+value = 1000;
+},
+{
+name = "Compatible name Table";
+value = 1;
+},
+{
+name = "Name Table Entry";
+value = "1;foo";
+},
+{
+name = "Prevent Name ID";
+value = "25";
+},
+{
+name = "gasp Table";
+value = {
+};
+},
+{
+name = "meta Table";
+value = (
+{
+data = "123";
+tag = dlng;
+}
+);
+},
+{
+name = "TrueType Curve Error";
+value = 0.5;
+},
+{
+name = "TTFAutohint binary path";
+value = "/usr/local/bin/ttfautohint";
+},
+{
+name = TTFOvershootSuppressionBelowPPM;
+value = 40;
+},
+{
+name = TTFZoneRoundingThreshold;
+value = 0.125;
+},
+{
+name = TTFMinimumDistance;
+value = 0.25;
+},
+{
+name = TTFBlueFuzz;
+value = 1;
+},
+{
+name = "Export TrueType Hints";
+value = 1;
+},
+{
+name = "Export PostScript Hints";
+value = 1;
+},
+{
+name = "Disable autohinting for glyphs";
+value = (
+a,
+b,
+c
+);
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = "Has WWS Names";
+value = 1;
+},
+{
+name = "Use Extension Kerning";
+value = 1;
+},
+{
+name = "Don't use Production Names";
+value = 1;
+},
+{
+name = "Disable Subroutines";
+value = 1;
+},
+{
+name = "Write lastChange";
+value = 1;
+},
+{
+name = "Write DisplayStrings";
+value = 1;
+},
+{
+name = "Use Line Breaks";
+value = 1;
+},
+{
+name = "Variable Font Origin";
+value = m01;
+},
+{
+name = "Axis Mappings";
+value = {
+wght = {
+400 = 0;
+700 = 100;
+};
+};
+},
+{
+name = "Get Hints From Master";
+value = "68CF6B82-6FA3-4136-8880-7E84D6B03E48";
+},
+{
+name = TTFFamilyZonesThreshold;
+value = 24;
+},
+{
+name = "Disable Masters";
+value = (
+Bold
+);
+},
+{
+name = "Hangul Composition Groups";
+value = {
+Final = {
+Final = {
+11A8 = 1;
+11A9 = 1;
+11AA = 1;
+11AB = 1;
+11AC = 1;
+11AD = 1;
+11AE = 1;
+11AF = 1;
+11B0 = 1;
+11B1 = 1;
+11B2 = 1;
+11B3 = 1;
+11B4 = 1;
+11B5 = 1;
+11B6 = 1;
+11B7 = 1;
+11B8 = 1;
+11B9 = 1;
+11BA = 1;
+11BB = 1;
+11BC = 1;
+11BD = 1;
+11BE = 1;
+11BF = 1;
+11C0 = 1;
+11C1 = 1;
+11C2 = 1;
+};
+First = {
+"1100" = 1;
+"1101" = 1;
+"1102" = 1;
+"1103" = 1;
+"1104" = 1;
+"1105" = 1;
+"1106" = 1;
+"1107" = 1;
+"1108" = 1;
+"1109" = 1;
+110A = 1;
+110B = 1;
+110C = 1;
+110D = 1;
+110E = 1;
+110F = 1;
+"1110" = 1;
+"1111" = 1;
+"1112" = 1;
+};
+Vowel = {
+"1161" = 1;
+"1162" = 1;
+"1163" = 1;
+"1164" = 1;
+"1165" = 1;
+"1166" = 1;
+"1167" = 1;
+"1168" = 1;
+"1169" = 1;
+116A = 1;
+116B = 1;
+116C = 1;
+116D = 1;
+116E = 1;
+116F = 1;
+"1170" = 1;
+"1171" = 1;
+"1172" = 1;
+"1173" = 1;
+"1174" = 1;
+"1175" = 1;
+};
+};
+First = {
+Final = {
+11A8 = 1;
+11A9 = 1;
+11AA = 1;
+11AB = 1;
+11AC = 1;
+11AD = 1;
+11AE = 1;
+11AF = 1;
+11B0 = 1;
+11B1 = 1;
+11B2 = 1;
+11B3 = 1;
+11B4 = 1;
+11B5 = 1;
+11B6 = 1;
+11B7 = 1;
+11B8 = 1;
+11B9 = 1;
+11BA = 1;
+11BB = 1;
+11BC = 1;
+11BD = 1;
+11BE = 1;
+11BF = 1;
+11C0 = 1;
+11C1 = 1;
+11C2 = 1;
+};
+First = {
+"1100" = 1;
+"1101" = 1;
+"1102" = 1;
+"1103" = 1;
+"1104" = 1;
+"1105" = 1;
+"1106" = 1;
+"1107" = 1;
+"1108" = 1;
+"1109" = 1;
+110A = 1;
+110B = 1;
+110C = 1;
+110D = 1;
+110E = 1;
+110F = 1;
+"1110" = 1;
+"1111" = 1;
+"1112" = 1;
+};
+Vowel = {
+"1161" = 1;
+"1162" = 1;
+"1163" = 1;
+"1164" = 1;
+"1165" = 1;
+"1166" = 1;
+"1167" = 1;
+"1168" = 1;
+"1169" = 1;
+116A = 1;
+116B = 1;
+116C = 1;
+116D = 1;
+116E = 1;
+116F = 1;
+"1170" = 1;
+"1171" = 1;
+"1172" = 1;
+"1173" = 1;
+"1174" = 1;
+"1175" = 1;
+};
+};
+Vowel = {
+Final = {
+11A8 = 1;
+11A9 = 1;
+11AA = 1;
+11AB = 1;
+11AC = 1;
+11AD = 1;
+11AE = 1;
+11AF = 1;
+11B0 = 1;
+11B1 = 1;
+11B2 = 1;
+11B3 = 1;
+11B4 = 1;
+11B5 = 1;
+11B6 = 1;
+11B7 = 1;
+11B8 = 1;
+11B9 = 1;
+11BA = 1;
+11BB = 1;
+11BC = 1;
+11BD = 1;
+11BE = 1;
+11BF = 1;
+11C0 = 1;
+11C1 = 1;
+11C2 = 1;
+};
+First = {
+"1100" = 1;
+"1101" = 1;
+"1102" = 1;
+"1103" = 1;
+"1104" = 1;
+"1105" = 1;
+"1106" = 1;
+"1107" = 1;
+"1108" = 1;
+"1109" = 1;
+110A = 1;
+110B = 1;
+110C = 1;
+110D = 1;
+110E = 1;
+110F = 1;
+"1110" = 1;
+"1111" = 1;
+"1112" = 1;
+};
+Vowel = {
+"1161" = 1;
+"1162" = 1;
+"1163" = 1;
+"1164" = 1;
+"1165" = 1;
+"1166" = 1;
+"1167" = 1;
+"1168" = 1;
+"1169" = 1;
+116A = 1;
+116B = 1;
+116C = 1;
+116D = 1;
+116E = 1;
+116F = 1;
+"1170" = 1;
+"1171" = 1;
+"1172" = 1;
+"1173" = 1;
+"1174" = 1;
+"1175" = 1;
+};
+};
+};
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Weight;
+Location = 100;
+}
+);
+},
+{
+name = "Import Master";
+value = {
+Master = Regular;
+Path = "Neue Schrift.glyphs";
+};
+},
+{
+name = "Import Font";
+value = {
+Path = "Neue Schrift.glyphs";
+};
+},
+{
+name = "Enforce Compatibility Check";
+value = 1;
+},
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = "Point To Unit Ratio";
+value = 1;
+},
+{
+name = "Default Layer Width";
+value = "600";
+},
+{
+name = "Feature for Feature Variations";
+value = rlig;
+},
+{
+name = "Post Table Type";
+value = 3;
+},
+{
+name = DisableAllAutomaticBehaviour;
+value = 1;
+},
+{
+name = "MakeOTF Compatibility Mode";
+value = 1;
+},
+{
+name = "Color Palettes";
+value = (
+(
+(255,0,0,255),
+(0,36,255,255),
+(64,255,0,255)
+),
+(
+(196,46,49,255),
+(46,72,202,255),
+(44,201,51,255)
+)
+);
+},
+{
+name = "Propagate Anchors";
+value = 1;
+},
+{
+name = "Fit Curve Panel Settings";
+value = "New Value";
+},
+{
+name = "Export Mac Name Table Entries";
+value = 1;
+},
+{
+name = "Export vmtx Table";
+value = 1;
+},
+{
+name = "Export Folder";
+value = "Temp/";
+},
+{
+name = "Use Arabic Presentation Form Unicodes";
+value = 1;
+},
+{
+name = "Keep Kerning in one Lookup";
+value = 1;
+}
+);
+date = "2023-12-20 23:27:30 +0000";
+familyName = "Custom Parameter Full Test";
+fontMaster = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = typoAscender;
+value = 800;
+},
+{
+name = typoDescender;
+value = -200;
+},
+{
+name = typoLineGap;
+value = 100;
+},
+{
+name = winAscent;
+value = 1000;
+},
+{
+name = winDescent;
+value = -222;
+},
+{
+name = vheaVertAscender;
+value = 800;
+},
+{
+name = vheaVertDescender;
+value = -200;
+},
+{
+name = vheaVertLineGap;
+value = 100;
+},
+{
+name = hheaAscender;
+value = 800;
+},
+{
+name = hheaDescender;
+value = -200;
+},
+{
+name = hheaLineGap;
+value = 100;
+},
+{
+name = underlineThickness;
+value = 65;
+},
+{
+name = underlinePosition;
+value = 100;
+},
+{
+name = strikeoutPosition;
+value = 270;
+},
+{
+name = strikeoutSize;
+value = 64;
+},
+{
+name = subscriptXOffset;
+value = 10;
+},
+{
+name = subscriptXSize;
+value = 80;
+},
+{
+name = subscriptYOffset;
+value = -100;
+},
+{
+name = subscriptYSize;
+value = 80;
+},
+{
+name = superscriptXOffset;
+value = 10;
+},
+{
+name = superscriptXSize;
+value = 80;
+},
+{
+name = superscriptYOffset;
+value = 400;
+},
+{
+name = superscriptYSize;
+value = 80;
+},
+{
+name = "Master Icon Glyph Name";
+value = A;
+},
+{
+name = "Master Color";
+value = (44,200,50,255);
+},
+{
+name = "Master Color Dark";
+value = (44,126,198,255);
+},
+{
+name = "Master Stroke Color";
+value = (102,40,161,255);
+},
+{
+name = "Master Stroke Color Dark";
+value = (165,202,50,255);
+},
+{
+name = "Master Background Color";
+value = (210,234,208,255);
+},
+{
+name = "Master Background Color Dark";
+value = (72,255);
+},
+{
+name = "CJK Guide";
+value = "90";
+},
+{
+name = "CJK Grid";
+value = "8";
+},
+{
+name = "CJK Grid Vertical";
+value = "8";
+},
+{
+name = "CJK Grid Horizontal";
+value = "8";
+},
+{
+name = "Get Hints From Master";
+value = "68CF6B82-6FA3-4136-8880-7E84D6B03E48";
+},
+{
+name = TTFStems;
+value = (
+{
+horizontal = 1;
+name = "Stem:0";
+width = 80;
+},
+{
+horizontal = 0;
+name = "Stem:1";
+width = 90;
+}
+);
+},
+{
+name = TTFZones;
+value = (
+{
+name = Ascender;
+pos = 800;
+size = 16;
+},
+{
+filter = "case == 1";
+name = "Cap Height";
+pos = 700;
+size = 16;
+},
+{
+filter = "case == 2";
+name = "x-Height";
+pos = 500;
+size = 16;
+},
+{
+name = Baseline;
+pos = 0;
+size = -16;
+},
+{
+name = Descender;
+pos = -200;
+size = -16;
+}
+);
+},
+{
+name = TTFBlueFuzz;
+value = 1;
+},
+{
+name = "prep Table Assembly";
+value = "PUSH[ ]
+1";
+},
+{
+name = "fpgm Table Assembly";
+value = "PUSH[ ]
+0
+";
+},
+{
+name = "cvt Table";
+value = "10
+20
+30
+";
+},
+{
+name = "Preview Ascender";
+value = 1000;
+},
+{
+name = "Preview Descender";
+value = 1000;
+},
+{
+name = "Link Metrics With First Master";
+value = 1;
+},
+{
+name = "Link Metrics With Master";
+value = "";
+},
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 400;
+}
+);
+},
+{
+name = "Default Layer Width";
+value = "600";
+},
+{
+name = "Design Grid";
+value = "12";
+}
+);
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+}
+);
+name = Regular;
+},
+{
+axesValues = (
+100
+);
+iconName = SemiBold;
+id = "68CF6B82-6FA3-4136-8880-7E84D6B03E48";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+}
+);
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = A;
+lastChange = "2023-12-21 09:47:02 +0000";
+layers = (
+{
+layerId = m01;
+width = 600;
+},
+{
+layerId = "68CF6B82-6FA3-4136-8880-7E84D6B03E48";
+width = 600;
+}
+);
+unicode = 65;
+}
+);
+instances = (
+{
+customParameters = (
+{
+name = "Scale to UPM";
+value = 1000;
+},
+{
+name = Filter;
+value = "";
+},
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = "Keep Overlapping Components";
+value = 1;
+},
+{
+name = "Keep Transformed Components";
+value = 1;
+},
+{
+name = "Save as TrueType";
+value = 1;
+},
+{
+name = "Disable Subroutines";
+value = 1;
+},
+{
+name = "Don't use Production Names";
+value = 1;
+},
+{
+name = compatibleFullName;
+value = "";
+},
+{
+name = fsType;
+value = (
+3
+);
+},
+{
+name = panose;
+value = (
+2,
+3,
+6,
+0,
+0,
+0,
+0,
+0,
+8,
+5
+);
+},
+{
+name = unicodeRanges;
+value = (
+2,
+3,
+6
+);
+},
+{
+name = codePageRanges;
+value = (
+"1252",
+"1251",
+"1254"
+);
+},
+{
+name = unitsPerEm;
+value = 0;
+},
+{
+name = uniqueID;
+value = abcd;
+},
+{
+name = fileName;
+value = Filename;
+},
+{
+name = "Compatible name Table";
+value = 1;
+},
+{
+name = "Name Table Entry";
+value = "a; Foo";
+},
+{
+name = "Prevent Name ID";
+value = "25";
+},
+{
+name = "Grid Spacing";
+value = 1;
+},
+{
+name = "TrueType Curve Error";
+value = 0.5;
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = "Has WWS Names";
+value = 1;
+},
+{
+name = "Optical Size";
+value = "12";
+},
+{
+name = Autohint;
+value = 1;
+},
+{
+name = blueScale;
+value = 0.04;
+},
+{
+name = blueShift;
+value = 0;
+},
+{
+name = blueFuzz;
+value = 0;
+},
+{
+name = "Family Alignment Zones";
+value = (
+{
+pos = 800;
+size = 16;
+},
+{
+pos = 700;
+size = 16;
+},
+{
+pos = 500;
+size = 16;
+},
+{
+pos = 0;
+size = -16;
+},
+{
+pos = -200;
+size = -16;
+}
+);
+},
+{
+name = "Remove post names for webfonts";
+value = 1;
+},
+{
+name = "Post Table Type";
+value = 3;
+},
+{
+name = TTFZoneRoundingThreshold;
+value = 0.125;
+},
+{
+name = TTFMinimumDistance;
+value = 0.25;
+},
+{
+name = TTFBlueFuzz;
+value = 1;
+},
+{
+name = TTFIgnoreStems;
+value = 1;
+},
+{
+name = "Export TrueType Hints";
+value = 1;
+},
+{
+name = "gasp Table";
+value = {
+};
+},
+{
+name = "meta Table";
+value = (
+{
+data = asd;
+tag = dlng;
+}
+);
+},
+{
+name = PreFilter;
+value = "";
+},
+{
+name = "Disable Masters";
+value = (
+Bold
+);
+},
+{
+name = "Ignore out of bounds instances";
+value = 1;
+},
+{
+name = "Webfont Formats";
+value = (
+woff,
+woff2
+);
+},
+{
+name = "Webfont Only";
+value = 1;
+},
+{
+name = "Color Layers to SVG";
+value = 1;
+},
+{
+name = "Color Palette for SVG";
+value = 1;
+},
+{
+name = "Color Palette for CPAL";
+value = 1;
+},
+{
+name = "SBIX to SVG";
+value = 1;
+},
+{
+name = "Export COLR Table";
+value = 1;
+},
+{
+name = "Export SVG Table";
+value = 1;
+},
+{
+name = "Export sbix Table";
+value = 1;
+},
+{
+name = "Export STAT Table";
+value = 1;
+},
+{
+name = "Export morx Table";
+value = 1;
+},
+{
+name = "Export OpenType";
+value = 1;
+},
+{
+name = "Export AAT";
+value = 1;
+},
+{
+name = "Variable Font Origin";
+value = m01;
+},
+{
+name = "Axis Mappings";
+value = {
+wght = {
+0 = 0;
+277 = 55;
+400 = 100;
+};
+};
+},
+{
+name = "Feature for Feature Variations";
+value = "";
+},
+{
+name = "Export Folder";
+value = "";
+},
+{
+name = "Decompose Components";
+value = 1;
+},
+{
+name = "Optimize Variable Deltas";
+value = 1;
+},
+{
+name = "Italic Style Linking";
+value = 1;
+},
+{
+name = "Remove Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Rename Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Export Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Reencode Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Keep Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Decompose Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Remove Features";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Replace Feature";
+value = "liga;sub a by b;";
+},
+{
+name = "Add Feature";
+value = "liga;sub a by b;";
+},
+{
+name = "Remove Prefixes";
+value = (
+prefix
+);
+},
+{
+name = "Replace Prefix";
+value = "prefix;lookup a {
+sub a by b;
+} a;";
+},
+{
+name = "Add Prefix";
+value = "prefix;lookup a {
+sub a by b;
+} a;";
+},
+{
+name = "Remove Classes";
+value = (
+Uppercase
+);
+},
+{
+name = "Replace Class";
+value = "Uppercase;A B C";
+},
+{
+name = "Add Class";
+value = "Uppercase;A B C";
+},
+{
+name = typoAscender;
+value = 800;
+},
+{
+name = typoDescender;
+value = -200;
+},
+{
+name = typoLineGap;
+value = 100;
+},
+{
+name = winAscent;
+value = 1000;
+},
+{
+name = winDescent;
+value = -222;
+},
+{
+name = vheaVertAscender;
+value = 800;
+},
+{
+name = vheaVertDescender;
+value = -200;
+},
+{
+name = vheaVertLineGap;
+value = 100;
+},
+{
+name = hheaAscender;
+value = 800;
+},
+{
+name = hheaDescender;
+value = -200;
+},
+{
+name = hheaLineGap;
+value = 100;
+},
+{
+name = underlineThickness;
+value = 65;
+},
+{
+name = underlinePosition;
+value = 100;
+},
+{
+name = strikeoutPosition;
+value = 270;
+},
+{
+name = strikeoutSize;
+value = 64;
+},
+{
+name = subscriptXOffset;
+value = 10;
+},
+{
+name = subscriptXSize;
+value = 80;
+},
+{
+name = subscriptYOffset;
+value = -100;
+},
+{
+name = subscriptYSize;
+value = 80;
+},
+{
+name = superscriptXOffset;
+value = 10;
+},
+{
+name = superscriptXSize;
+value = 80;
+},
+{
+name = superscriptYOffset;
+value = 400;
+},
+{
+name = superscriptYSize;
+value = 80;
+}
+);
+name = Regular;
+type = variable;
+},
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = "Scale to UPM";
+value = 1000;
+},
+{
+name = Filter;
+value = "RemoveOverlap;";
+},
+{
+name = InterpolationWeightY;
+value = 1;
+},
+{
+name = "Remove Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Rename Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Export Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Reencode Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Keep Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Decompose Glyphs";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Remove Features";
+value = (
+A,
+B,
+C
+);
+},
+{
+name = "Replace Feature";
+value = "liga;sub a by b;";
+},
+{
+name = "Add Feature";
+value = "liga;sub a by b;";
+},
+{
+name = "Remove Prefixes";
+value = (
+prefix
+);
+},
+{
+name = "Replace Prefix";
+value = "prefix;lookup a {
+sub a by b;
+} a;";
+},
+{
+name = "Add Prefix";
+value = "prefix;lookup a {
+sub a by b;
+} a;";
+},
+{
+name = "Remove Classes";
+value = (
+Uppercase
+);
+},
+{
+name = "Replace Class";
+value = "Uppercase;A B C";
+},
+{
+name = "Add Class";
+value = "Uppercase;A B C";
+},
+{
+name = "Update Features";
+value = 1;
+},
+{
+name = "Keep Overlapping Components";
+value = 1;
+},
+{
+name = "Keep Transformed Components";
+value = 1;
+},
+{
+name = "Save as TrueType";
+value = 1;
+},
+{
+name = "Disable Subroutines";
+value = 1;
+},
+{
+name = "Don't use Production Names";
+value = 1;
+},
+{
+name = compatibleFullName;
+value = "";
+},
+{
+name = fsType;
+value = (
+3
+);
+},
+{
+name = panose;
+value = (
+);
+},
+{
+name = unicodeRanges;
+value = (
+);
+},
+{
+name = codePageRanges;
+value = (
+);
+},
+{
+name = unitsPerEm;
+value = 0;
+},
+{
+name = fileName;
+value = "";
+},
+{
+name = "Compatible name Table";
+value = 1;
+},
+{
+name = "Name Table Entry";
+value = "";
+},
+{
+name = "Grid Spacing";
+value = 1;
+},
+{
+name = "TrueType Curve Error";
+value = 0.5;
+},
+{
+name = "Use Typo Metrics";
+value = 1;
+},
+{
+name = "Has WWS Names";
+value = 1;
+},
+{
+name = "Optical Size";
+value = "";
+},
+{
+name = Autohint;
+value = 1;
+},
+{
+name = blueScale;
+value = 0.04;
+},
+{
+name = blueShift;
+value = 0;
+},
+{
+name = blueFuzz;
+value = 0;
+},
+{
+name = isFixedPitch;
+value = 0;
+},
+{
+name = "Family Alignment Zones";
+value = (
+);
+},
+{
+name = "Disable autohinting for glyphs";
+value = (
+);
+},
+{
+name = "Remove post names for webfonts";
+value = 1;
+},
+{
+name = "Post Table Type";
+value = 3;
+},
+{
+name = "TTFAutohint options";
+value = "";
+},
+{
+name = "TTFAutohint control instructions";
+value = "";
+},
+{
+name = TTFZoneRoundingThreshold;
+value = 0.125;
+},
+{
+name = TTFMinimumDistance;
+value = 0.25;
+},
+{
+name = TTFBlueFuzz;
+value = 1;
+},
+{
+name = TTFIgnoreStems;
+value = 1;
+},
+{
+name = "Export TrueType Hints";
+value = 1;
+},
+{
+name = "Export PostScript Hints";
+value = 1;
+},
+{
+name = "gasp Table";
+value = {
+};
+},
+{
+name = "meta Table";
+value = (
+{
+data = abc;
+tag = dlng;
+}
+);
+},
+{
+name = PreFilter;
+value = "RemoveOverlap;";
+},
+{
+name = "Disable Masters";
+value = (
+Bold
+);
+},
+{
+name = "Webfont Formats";
+value = (
+woff,
+woff2
+);
+},
+{
+name = "Webfont Only";
+value = 1;
+},
+{
+name = "Instance Preview";
+value = (
+"Jumps over"
+);
+},
+{
+name = "Local Interpolation";
+value = "123";
+},
+{
+name = "Color Layers to SVG";
+value = 1;
+},
+{
+name = "Color Layers to COLR";
+value = 1;
+},
+{
+name = "Color Palette for SVG";
+value = 1;
+},
+{
+name = "Color Palette for CPAL";
+value = 1;
+},
+{
+name = "SBIX to SVG";
+value = 1;
+},
+{
+name = "Export COLR Table";
+value = 1;
+},
+{
+name = "Export SVG Table";
+value = 1;
+},
+{
+name = "Export sbix Table";
+value = 1;
+},
+{
+name = "Export STAT Table";
+value = 1;
+},
+{
+name = "Export morx Table";
+value = 1;
+},
+{
+name = "Export vmtx Table";
+value = 1;
+},
+{
+name = "Style Name as STAT entry";
+value = wght;
+},
+{
+name = "Elidable STAT Axis Value Name";
+value = Foo;
+},
+{
+name = "Export OpenType";
+value = 1;
+},
+{
+name = "Export AAT";
+value = 1;
+},
+{
+name = "Propagate Anchors";
+value = 1;
+},
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 500;
+}
+);
+},
+{
+name = "Export Folder";
+value = "";
+},
+{
+name = "Keep Kerning in one Lookup";
+value = 1;
+},
+{
+name = typoAscender;
+value = 800;
+},
+{
+name = typoDescender;
+value = -200;
+},
+{
+name = typoLineGap;
+value = 100;
+},
+{
+name = winAscent;
+value = 1000;
+},
+{
+name = winDescent;
+value = -222;
+},
+{
+name = vheaVertAscender;
+value = 800;
+},
+{
+name = vheaVertDescender;
+value = -200;
+},
+{
+name = vheaVertLineGap;
+value = 100;
+},
+{
+name = hheaAscender;
+value = 800;
+},
+{
+name = hheaDescender;
+value = -200;
+},
+{
+name = hheaLineGap;
+value = 100;
+},
+{
+name = underlineThickness;
+value = 65;
+},
+{
+name = underlinePosition;
+value = 100;
+},
+{
+name = strikeoutPosition;
+value = 270;
+},
+{
+name = strikeoutSize;
+value = 64;
+},
+{
+name = subscriptXOffset;
+value = 10;
+},
+{
+name = subscriptXSize;
+value = 80;
+},
+{
+name = subscriptYOffset;
+value = -100;
+},
+{
+name = subscriptYSize;
+value = 80;
+},
+{
+name = superscriptXOffset;
+value = 10;
+},
+{
+name = superscriptXSize;
+value = 80;
+},
+{
+name = superscriptYOffset;
+value = 400;
+},
+{
+name = superscriptYSize;
+value = 80;
+}
+);
+name = Regular;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

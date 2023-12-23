@@ -136,6 +136,7 @@ def to_glyphs(
     ufo_module=None,
     minimize_ufo_diffs=False,
     expand_includes=False,
+    format_version=False,
 ):
     """
     Take a list of UFOs or a single DesignspaceDocument with attached UFOs
@@ -155,6 +156,7 @@ def to_glyphs(
             ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
             expand_includes=expand_includes,
+            format_version=format_version,
         )
     else:
         builder = GlyphsBuilder(
@@ -163,5 +165,6 @@ def to_glyphs(
             ufo_module=ufo_module,
             minimize_ufo_diffs=minimize_ufo_diffs,
             expand_includes=expand_includes,
+            format_version=format_version,
         )
     return builder.font

@@ -109,6 +109,26 @@ width = 600;
 );
 }
 );
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
 unitsPerEm = 1000;
 versionMajor = 1;
 versionMinor = 0;

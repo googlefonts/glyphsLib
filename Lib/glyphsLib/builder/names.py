@@ -19,11 +19,12 @@ from .constants import GLYPHS_PREFIX
 
 
 def to_ufo_names(self, ufo, master, family_name):
-    if not self.minimal:
-        to_ufo_names_roundtrip(master, ufo)
+    if not self.minimal and master.name != "Regular":
+        ufo.lib[GLYPHS_PREFIX + "master.name"] = master.name
 
     is_italic = bool(master.italicAngle)
 
+    # FIXME: (georg) Master names don’t mean anything. That is what instances are for
     styleName = master.name
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
@@ -41,19 +42,6 @@ def to_ufo_names(self, ufo, master, family_name):
         )
         ufo.info.styleMapFamilyName = styleMapFamilyName
         ufo.info.styleMapStyleName = styleMapStyleName
-
-
-def to_ufo_names_roundtrip(master, ufo):
-    width = master.width
-    weight = master.weight
-    custom = master.customName
-
-    if weight:
-        ufo.lib[GLYPHS_PREFIX + "weight"] = weight
-    if width:
-        ufo.lib[GLYPHS_PREFIX + "width"] = width
-    if custom:
-        ufo.lib[GLYPHS_PREFIX + "customName"] = master.customName
 
 
 def build_stylemap_names(
@@ -92,6 +80,8 @@ def build_stylemap_names(
 def _get_linked_style(style_name, is_bold, is_italic):
     # strip last occurrence of 'Regular', 'Bold', 'Italic' from style_name
     # depending on the values of is_bold and is_italic
+    if style_name is None or len(style_name) == 0:
+        return ""
     linked_style = deque()
     is_regular = not (is_bold or is_italic)
     for part in reversed(style_name.split()):
@@ -117,9 +107,20 @@ def to_glyphs_family_names(self, ufo, merge=False):
 
 
 def to_glyphs_master_names(self, ufo, master):
-    name = ufo.info.styleName
-    weight = ufo.lib.get(GLYPHS_PREFIX + "weight")
-    width = ufo.lib.get(GLYPHS_PREFIX + "width")
-    custom = ufo.lib.get(GLYPHS_PREFIX + "customName")
-
-    master.set_all_name_components(name, weight, width, custom)
+    masterName = ufo.lib.get(GLYPHS_PREFIX + "master.name")
+    if masterName is None:
+        masterNames = []
+        weight = ufo.lib.get(GLYPHS_PREFIX + "weight")
+        if weight:
+            masterNames.append(weight)
+        width = ufo.lib.get(GLYPHS_PREFIX + "width")
+        if width:
+            masterNames.append(width)
+        custom = ufo.lib.get(GLYPHS_PREFIX + "customName")
+        if custom:
+            masterNames.append(custom)
+        masterName = " ".join(masterNames)
+        masterName.strip(" ")
+    if len(masterName) == 0:
+        masterName = "Regular"
+    master.name = masterName

@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 class Parser:
     """Parses Python dictionaries from Glyphs files."""
 
-    def __init__(self, current_type=OrderedDict, format_version=2):
+    def __init__(self, current_type=OrderedDict, formatVersion=2):
         self.current_type = current_type
-        self.format_version = format_version
+        self.formatVersion = formatVersion
 
     def parse(self, d):
         try:
@@ -77,7 +77,7 @@ class Parser:
         if new_type is None:
             # customparameter.value needs to be set from the found value
             new_type = dict
-        elif type(new_type) == list:
+        elif isinstance(new_type, list):
             new_type = new_type[0]
         res = new_type()
         self._parse_dict_into_object(res, text)
@@ -87,8 +87,10 @@ class Parser:
     def _parse_dict_into_object(self, res, d):
         for name in d.keys():
             sane_name = name.replace(".", "__")
-            if hasattr(res, f"_parse_{sane_name}_dict"):
-                getattr(res, f"_parse_{sane_name}_dict")(self, d[name])
+
+            key = f"_parse_{sane_name}_dict"
+            if hasattr(res, key):
+                getattr(res, key)(self, d[name])
             elif isinstance(res, (dict, OrderedDict)):
                 result = self._parse(d[name])
                 try:
@@ -157,7 +159,9 @@ def load(file_or_path, font=None):
     else:
         fp = open(file_or_path, "r", encoding="utf-8")
         data = openstep_plist.load(fp, use_numbers=True)
+    font.formatVersion = 2  # default to 2, version 3+ is read from the file
     p.parse_into_object(font, data)
+    font.post_read()
     return font
 
 

@@ -20,7 +20,7 @@ from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
-
+from glyphsLib.classes import CORNER
 
 try:
     from math import dist
@@ -474,9 +474,7 @@ class CornerComponentsFilter(BaseFilter):
             return False
 
         corner_components = [
-            hint
-            for hint in glyph.lib[HINTS_LIB_KEY]
-            if hint.get("type").upper() == "CORNER"
+            hint for hint in glyph.lib[HINTS_LIB_KEY] if hint.get("type") == CORNER
         ]
 
         if not corner_components:

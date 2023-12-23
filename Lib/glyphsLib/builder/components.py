@@ -49,16 +49,14 @@ def to_ufo_components(self, ufo_glyph, layer):
     pen = ufo_glyph.getPointPen()
     for index, component in enumerate(layer.components):
         component_name = component.name
-        if layer._is_color_palette_layer():
+        if layer.isColorPaletteLayer:
             # Glyphs handles components for color layers in a special way. If
             # the component glyph has color layers of its own, the component
             # use the first color layer with the same color index, otherwise it
             # fallback to the default layer. We try to do that here as well.
             font = layer.parent.parent
             component_glyph = font.glyphs[component_name]
-            color_layers = [
-                l for l in component_glyph.layers if l._is_color_palette_layer()
-            ]
+            color_layers = [l for l in component_glyph.layers if l.isColorPaletteLayer]
             for i, l in enumerate(color_layers):
                 if l._color_palette_index() == layer._color_palette_index():
                     if l.layerId != l.associatedMasterId:

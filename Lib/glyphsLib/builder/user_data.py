@@ -15,6 +15,7 @@
 
 import os
 import posixpath
+import copy
 
 from .constants import (
     GLYPHS_PREFIX,
@@ -40,19 +41,23 @@ def to_designspace_family_user_data(self):
 
 def to_ufo_family_user_data(self, ufo):
     """Set family-wide user data as Glyphs does."""
-    if not self.use_designspace:
+    if not self.use_designspace and self.font.userData:
         ufo.lib[FONT_USER_DATA_KEY] = dict(self.font.userData)
 
 
-def to_ufo_master_user_data(self, ufo, master):
+def to_ufo_master_user_data(self, ufo, userData):
     """Set master-specific user data as Glyphs does."""
-    for key in master.userData.keys():
+    if not userData:
+        return
+    userdata_lib = {}
+    for key in userData.keys():
         if _user_data_has_no_special_meaning(key):
-            ufo.lib[key] = master.userData[key]
-
+            userdata_lib[key] = copy.copy(userData[key])
+    if userdata_lib:
+        ufo.lib[GLYPHS_PREFIX + "fontMaster.userData"] = userdata_lib
     # Restore UFO data files. This code assumes that all paths are POSIX paths.
-    if UFO_DATA_KEY in master.userData:
-        for filename, data in master.userData[UFO_DATA_KEY].items():
+    if UFO_DATA_KEY in userData:
+        for filename, data in userData[UFO_DATA_KEY].items():
             ufo.data[filename] = bytes(data)
 
 
@@ -68,8 +73,11 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
     # the GSFont useData under a key named after the layer.
     # When different original UFOs each had a layer with the same layer name,
     # only the layer lib of the last one was stored and was exported to UFOs
-    if key in self.font.userData.keys():
-        ufo_layer.lib.update(self.font.userData[key])
+
+    user_data = self.font.userData
+    if user_data:
+        if key in user_data.keys():
+            ufo_layer.lib.update(user_data[key])
     if key in master.userData.keys():
         ufo_layer.lib.update(master.userData[key])
         if LAYER_NAME_KEY in ufo_layer.lib:
@@ -84,6 +92,8 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
+    if not user_data:
+        return
     for key in user_data.keys():
         if _user_data_has_no_special_meaning(key):
             ufo_glyph.lib[key] = user_data[key]
@@ -98,24 +108,24 @@ def to_ufo_node_user_data(self, ufo_glyph, node, user_data: dict):
 
 def to_glyphs_family_user_data_from_designspace(self):
     """Set the GSFont userData from the designspace family-wide lib data."""
-    target_user_data = self.font.userData
+    target_user_data_proxy = self.font.userData
     for key, value in self.designspace.lib.items():
         if key == UFO2FT_FEATURE_WRITERS_KEY and value == DEFAULT_FEATURE_WRITERS:
             # if the designspace contains featureWriters settings that are the
             # same as glyphsLib default settings, there's no need to store them
             continue
         if _user_data_has_no_special_meaning(key):
-            target_user_data[key] = value
+            target_user_data_proxy[key] = value
 
 
 def to_glyphs_family_user_data_from_ufo(self, ufo):
     """Set the GSFont userData from the UFO family-wide lib data."""
-    target_user_data = self.font.userData
+    target_user_data_proxy = self.font.userData
     try:
         for key, value in ufo.lib[FONT_USER_DATA_KEY].items():
             # Existing values taken from the designspace lib take precedence
-            if key not in target_user_data.keys():
-                target_user_data[key] = value
+            if key not in target_user_data_proxy.keys():
+                target_user_data_proxy[key] = value
     except KeyError:
         # No FONT_USER_DATA in ufo.lib
         pass
@@ -123,11 +133,14 @@ def to_glyphs_family_user_data_from_ufo(self, ufo):
 
 def to_glyphs_master_user_data(self, ufo, master):
     """Set the GSFontMaster userData from the UFO master-specific lib data."""
-    target_user_data = master.userData
+    target_user_data_proxy = master.userData
     for key, value in ufo.lib.items():
         if _user_data_has_no_special_meaning(key):
-            target_user_data[key] = value
-
+            target_user_data_proxy[key] = value
+    if GLYPHS_PREFIX + "fontMaster.userData" in ufo.lib:
+        user_data = ufo.lib[GLYPHS_PREFIX + "fontMaster.userData"]
+        for key, value in user_data.items():
+            target_user_data_proxy[key] = value
     # Save UFO data files
     if ufo.data.fileNames:
         from glyphsLib.types import BinaryData

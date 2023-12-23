@@ -33,13 +33,13 @@ from glyphsLib.writer import Writer
 from ufonormalizer import normalizeUFO
 
 
-def write_to_lines(glyphs_object, format_version=2):
+def write_to_lines(glyphs_object, formatVersion=2):
     """
     Use the Writer to write the given object to a StringIO.
     Return an array of lines ready for diffing.
     """
     string = StringIO()
-    writer = Writer(string, format_version=format_version)
+    writer = Writer(string, formatVersion=formatVersion)
     writer.write(glyphs_object)
     return string.getvalue().splitlines()
 

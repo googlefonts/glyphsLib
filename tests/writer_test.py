@@ -23,20 +23,20 @@ from glyphsLib.types import parse_datetime, Point, Rect
 from glyphsLib.writer import dump, dumps
 
 from . import test_helpers
+from .builder import diff_lists
 
 
 class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
-    def assertWrites(self, glyphs_object, text, format_version=2):
+    def assertWrites(self, glyphs_object, text, formatVersion=2):
         """Assert that the given object, when given to the writer,
         produces the given text.
         """
         expected = text.splitlines()
-        actual = test_helpers.write_to_lines(glyphs_object, format_version)
-        self.assertLinesEqual(
-            expected, actual, "The writer has not produced the expected output"
-        )
+        actual = test_helpers.write_to_lines(glyphs_object, formatVersion)
+        diffs = diff_lists(actual, expected)
+        assert not diffs, "The writer has not produced the expected output:\n" + diffs
 
-    def assertWritesValue(self, glyphs_value, text, format_version=2):
+    def assertWritesValue(self, glyphs_value, text, formatVersion=2):
         """Assert that the writer produces the given text for the given value."""
         expected = (
             dedent(
@@ -51,11 +51,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         )
         # We wrap the value in a dict to use the same test helper
         actual = test_helpers.write_to_lines(
-            {"writtenValue": glyphs_value}, format_version
+            {"writtenValue": glyphs_value}, formatVersion
         )
-        self.assertLinesEqual(
-            expected, actual, "The writer has not produced the expected output"
-        )
+        assert (
+            len(diff_lists(actual, expected)) == 0
+        ), "The writer has not produced the expected output"
 
     def test_write_font_attributes(self):
         """Test the writer on all GSFont attributes"""
@@ -66,13 +66,24 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         m1 = classes.GSFontMaster()
         m1.id = "M1"
         font.masters.insert(0, m1)
+        # FIXME: (georg) should this be set by default?
+        m1.ascender = 800
+        m1.capHeight = 700
+        m1.xHeight = 500
+        m1.descender = -200
+        assert m1.font == font
         m2 = classes.GSFontMaster()
         m2.id = "M2"
         font.masters.insert(1, m2)
+        m2.ascender = 800
+        m2.capHeight = 700
+        m2.xHeight = 500
+        m2.descender = -200
         # instances
         i1 = classes.GSInstance()
         i1.name = "MuchBold"
         font.instances.append(i1)
+        assert i1.font == font
         # glyphs
         g1 = classes.GSGlyph()
         g1.name = "G1"
@@ -124,8 +135,8 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         }
         # grid -> gridLength
         font.grid = 35
-        # gridSubDivisions
-        font.gridSubDivisions = 5
+        # gridSubDivision
+        font.gridSubDivision = 5
         # keyboardIncrement
         font.keyboardIncrement = 1.2
         # disablesNiceNames
@@ -159,12 +170,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             copyright = "Copyright Bob";
             customParameters = (
             {
-            name = note;
-            value = "Was bored, made this";
-            },
-            {
             name = ascender;
             value = 300;
+            },
+            {
+            name = note;
+            value = "Was bored, made this";
             }
             );
             date = "2017-10-03 07:35:46 +0000";
@@ -259,28 +270,42 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
     def test_write_font_master_attributes(self):
         """Test the writer on all GSFontMaster attributes"""
         master = classes.GSFontMaster()
+        font = classes.GSFont()
+        font.masters.append(master)
+        font.axes.append(classes.GSAxis("Weight", "wght"))
+        font.axes.append(classes.GSAxis("Width", "wdth"))
+        font.axes.append(classes.GSAxis("Axis3", "AXS3"))
+        font.axes.append(classes.GSAxis("Axis4", "AXS4"))
+        font.axes.append(classes.GSAxis("Axis5", "AXS5"))
+        font.axes.append(classes.GSAxis("Axis6", "AXS6"))
         # List of properties from https://docu.glyphsapp.com/#gsfontmaster
         # id
         master.id = "MASTER-ID"
         # name
-        master._name = "Name Hairline Megawide"
+        master.name = "Name Hairline Megawide"
         master.customParameters["Master Name"] = "Param Hairline Megawide"
         # weight
-        master.weight = "Thin"
+        # master.weight = "Thin"
         # width
-        master.width = "Wide"
+        # master.width = "Wide"
         # weightValue
-        master.weightValue = 0.01
+        master.internalAxesValues[font.axes[0].axisId] = 0.01
+        # master.weightValue = 0.01
         # widthValue
-        master.widthValue = 0.99
+        master.internalAxesValues[font.axes[1].axisId] = 0.99
+        # master.widthValue = 0.99
         # customValue
         # customName
-        master.customName = "Overextended"
+        # master.customName = "Overextended"
         # A value of 0.0 is not written to the file.
-        master.customValue = 0.001
-        master.customValue1 = 0.1
-        master.customValue2 = 0.2
-        master.customValue3 = 0.3
+        master.internalAxesValues[font.axes[2].axisId] = 0.001
+        # master.customValue = 0.001
+        master.internalAxesValues[font.axes[3].axisId] = 0.1
+        # master.customValue1 = 0.1
+        master.internalAxesValues[font.axes[4].axisId] = 0.2
+        # master.customValue2 = 0.2
+        master.internalAxesValues[font.axes[5].axisId] = 0.3
+        # master.customValue3 = 0.3
         # ascender
         master.ascender = 234.5
         # capHeight
@@ -296,8 +321,9 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # horizontalStems
         master.horizontalStems = [4, 5, 6]
         # alignmentZones
-        zone = classes.GSAlignmentZone(0, -30)
-        master.alignmentZones = [zone]
+        # zone = classes.GSAlignmentZone(0, -30)
+        # master.alignmentZones = [zone]
+        master._set_metric(classes.GSMetricsKeyBaseline, position=0, overshoot=-30)
         # blueValues: not handled because it is read-only
         # otherBlues: not handled because it is read-only
         # guides
@@ -308,6 +334,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.userData["rememberToMakeTea"] = True
         # customParameters
         master.customParameters["underlinePosition"] = -135
+
         self.assertWrites(
             master,
             dedent(
@@ -318,7 +345,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             ascender = 234.5;
             capHeight = 200.6;
-            custom = Overextended;
+            custom = "Name Hairline Megawide";
             customValue = 0.001;
             customValue1 = 0.1;
             customValue2 = 0.2;
@@ -346,7 +373,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             id = "MASTER-ID";
             italicAngle = 12.2;
-            name = "Name Hairline Megawide";
             userData = {
             rememberToMakeTea = 1;
             };
@@ -355,20 +381,84 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             2,
             3
             );
-            weight = Thin;
             weightValue = 0.01;
-            width = Wide;
             widthValue = 0.99;
             xHeight = 59.1;
             }
         """
             ),
+            formatVersion=2,
         )
-
+        self.assertWrites(
+            master,
+            dedent(
+                """\
+            {
+            axesValues = (
+            0.01,
+            0.99,
+            0.001,
+            0.1,
+            0.2,
+            0.3
+            );
+            customParameters = (
+            {
+            name = "Master Name";
+            value = "Param Hairline Megawide";
+            },
+            {
+            name = underlinePosition;
+            value = -135;
+            }
+            );
+            guides = (
+            {
+            name = middle;
+            }
+            );
+            id = "MASTER-ID";
+            metricValues = (
+            {
+            pos = 234.5;
+            },
+            {
+            pos = 200.6;
+            },
+            {
+            pos = 59.1;
+            },
+            {
+            over = -30;
+            },
+            {
+            pos = -89.2;
+            },
+            {
+            pos = 12.2;
+            }
+            );
+            name = "Name Hairline Megawide";
+            stemValues = (
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+            );
+            userData = {
+            rememberToMakeTea = 1;
+            };
+            }
+        """,
+            ),
+            formatVersion=3,
+        )
         # Write the capHeight and xHeight even if they are "0"
         master.xHeight = 0
         master.capHeight = 0
-        written = test_helpers.write_to_lines(master)
+        written = test_helpers.write_to_lines(master, 2)
         self.assertIn("xHeight = 0;", written)
         self.assertIn("capHeight = 0;", written)
 
@@ -378,15 +468,22 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def test_write_instance(self):
         instance = classes.GSInstance()
+
+        font = classes.GSFont()
+        font.instances.append(instance)
+        font.axes.append(classes.GSAxis("Weight", "wght"))
+        font.axes.append(classes.GSAxis("Width", "wdth"))
+        font.axes.append(classes.GSAxis("Axis3", "AXS3"))
+
         # List of properties from https://docu.glyphsapp.com/#gsinstance
         # active
         instance.active = True
         # name
         instance.name = "SemiBoldCompressed (name)"
         # weight
-        instance.weight = "SemiBold (weight)"
+        # instance.weight = "SemiBold (weight)"
         # width
-        instance.width = "Compressed (width)"
+        # instance.width = "Compressed (width)"
         # weightValue
         instance.weightValue = 600
         # widthValue
@@ -430,11 +527,15 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             customParameters = (
             {
+            name = hheaLineGap;
+            value = 10;
+            },
+            {
             name = familyName;
             value = "Sans Rien (familyName)";
             },
             {
-            name = preferredFamily;
+            name = preferredFamilyName;
             value = "Sans Rien (preferredFamily)";
             },
             {
@@ -452,10 +553,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             {
             name = postscriptFullName;
             value = "Sans Rien Semi Bold Compressed (fullName)";
-            },
-            {
-            name = hheaLineGap;
-            value = 10;
             }
             );
             interpolationCustom = 0.4;
@@ -470,11 +567,87 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             linkStyle = "linked style value";
             manualInterpolation = 1;
             name = "SemiBoldCompressed (name)";
-            weightClass = "SemiBold (weight)";
-            widthClass = "Compressed (width)";
             }
         """
             ),
+            formatVersion=2,
+        )
+
+        self.assertWrites(
+            instance,
+            dedent(
+                """\
+            {
+            axesValues = (
+            600,
+            200,
+            0.4
+            );
+            customParameters = (
+            {
+            name = hheaLineGap;
+            value = 10;
+            }
+            );
+            instanceInterpolations = {
+            M1 = 0.2;
+            M2 = 0.8;
+            };
+            isBold = 1;
+            isItalic = 1;
+            linkStyle = "linked style value";
+            manualInterpolation = 1;
+            name = "SemiBoldCompressed (name)";
+            properties = (
+            {
+            key = familyNames;
+            values = (
+            {
+            language = dflt;
+            value = "Sans Rien (familyName)";
+            }
+            );
+            },
+            {
+            key = postscriptFontName;
+            value = "SansRien (fontName)";
+            },
+            {
+            key = postscriptFullName;
+            value = "Sans Rien Semi Bold Compressed (fullName)";
+            },
+            {
+            key = preferredFamilyNames;
+            values = (
+            {
+            language = dflt;
+            value = "Sans Rien (preferredFamily)";
+            }
+            );
+            },
+            {
+            key = preferredSubfamilyNames;
+            values = (
+            {
+            language = dflt;
+            value = "Semi Bold Compressed (preferredSubFamilyName)";
+            }
+            );
+            },
+            {
+            key = styleMapFamilyNames;
+            values = (
+            {
+            language = dflt;
+            value = "Sans Rien MS (windowsFamily)";
+            }
+            );
+            }
+            );
+            }
+        """
+            ),
+            formatVersion=3,
         )
 
     def test_write_custom_parameter(self):
@@ -512,6 +685,17 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         self.assertWritesValue(
             classes.GSCustomParameter("fsType", [1, 2]),
             "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}",
+        )
+        # Colors:
+        self.assertWritesValue(
+            classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
+            '{\nname = "Master Color";\nvalue = "130,189,158,255";\n}',
+            formatVersion=2,
+        )
+        self.assertWritesValue(
+            classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
+            '{\nname = "Master Color";\nvalue = (130,189,158,255);\n}',
+            formatVersion=3,
         )
 
     def test_write_class(self):
@@ -708,13 +892,76 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             partsSettings = (
             {
             name = crotchDepth;
+            bottomName = "";
             bottomValue = 0;
+            topName = "";
             topValue = 0;
             }
             );
             }
         """
             ),
+        )
+
+        self.assertWrites(
+            glyph,
+            dedent(
+                """\
+            {
+            category = Letter;
+            color = 11;
+            export = 0;
+            glyphname = Aacute;
+            kernLeft = A;
+            kernRight = A;
+            lastChange = "2017-10-03 07:35:46 +0000";
+            layers = (
+            {
+            associatedMasterId = "MASTER-ID";
+            layerId = "LAYER-ID";
+            name = L1;
+            width = 600;
+            }
+            );
+            metricLeft = A;
+            metricRight = A;
+            metricWidth = A;
+            note = "Stunning one-bedroom A with renovated acute accent";
+            script = latin;
+            subCategory = Uppercase;
+            unicode = 193;
+            userData = {
+            com.someoneelse.coolsoftware.customdata = (
+            {
+            zero = 0;
+            emptyList = (
+            );
+            emptyDict = {
+            };
+            emptyString = "";
+            },
+            (
+            ),
+            {
+            },
+            "",
+            hey,
+            0,
+            1
+            );
+            rememberToMakeCoffe = 1;
+            };
+            partsSettings = (
+            {
+            bottomValue = 0;
+            name = crotchDepth;
+            topValue = 0;
+            }
+            );
+            }
+        """
+            ),
+            formatVersion=3,
         )
 
         # Write the script even when it's an empty string
@@ -731,10 +978,12 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         glyph.unicodes = ["00C1", "E002"]
         written = test_helpers.write_to_lines(glyph)
         self.assertIn('unicode = "00C1,E002";', written)
+        written = test_helpers.write_to_lines(glyph, formatVersion=3)
+        self.assertIn("unicode = (193,57346);", written)
 
     def test_write_layer(self):
         font = classes.GSFont()
-        font.format_version = 2
+        font.formatVersion = 2
         master = classes.GSFontMaster()
         master.id = "M1"
         font.masters.append(master)
@@ -768,6 +1017,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # hints
         hint = classes.GSHint()
         hint.name = "hintName"
+        hint.type = classes.CORNER
         layer.hints.append(hint)
         # anchors
         anchor = classes.GSAnchor()
@@ -824,13 +1074,10 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
             );
             associatedMasterId = M1;
-            background = {
-            };
             backgroundImage = {
-            crop = "{{0, 0}, {0, 0}}";
             imagePath = "/path/to/file.jpg";
             };
-            color = (1, 2, 3, 4);
+            color = "1,2,3,4";
             components = (
             {
             name = glyphName;
@@ -843,6 +1090,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             );
             hints = (
             {
+            type = Corner;
             name = hintName;
             }
             );
@@ -867,6 +1115,65 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
         """
             ),
+        )
+
+        self.assertWrites(
+            layer,
+            dedent(
+                """\
+            {
+            anchors = (
+            {
+            name = top;
+            }
+            );
+            annotations = (
+            {
+            text = "Fuck, this curve is ugly!";
+            type = 1;
+            }
+            );
+            associatedMasterId = M1;
+            backgroundImage = {
+            imagePath = "/path/to/file.jpg";
+            };
+            color = (1,2,3,4);
+            guides = (
+            {
+            name = xheight;
+            }
+            );
+            hints = (
+            {
+            name = hintName;
+            type = Corner;
+            }
+            );
+            layerId = L1;
+            metricLeft = A;
+            metricRight = A;
+            metricWidth = A;
+            name = "{125, 100}";
+            partSelection = {
+            crotchDepth = 2;
+            shoulderWidth = 1;
+            };
+            shapes = (
+            {
+            ref = glyphName;
+            },
+            {
+            closed = 1;
+            }
+            );
+            userData = {
+            rememberToMakeCoffe = 1;
+            };
+            width = 890.4;
+            }
+        """
+            ),
+            formatVersion=3,
         )
 
         # Don't write a blank layer name
@@ -1109,10 +1416,31 @@ rememberToDownloadARealRemindersApp = 1;}"',
         hint.otherNode2 = node4
 
         hint.type = classes.CORNER
-        hint.options = classes.TTROUND | classes.TRIPLE
+        hint.options = classes.TTROUNDDOWN
         hint.horizontal = True
+        hint.scale = Point(0.9, 1.1)
         # selected: not written
         hint.name = "My favourite hint"
+
+        self.assertWrites(
+            hint,
+            dedent(
+                """\
+            {
+            horizontal = 1;
+            origin = "{0, 0}";
+            target = "{0, 1}";
+            other1 = "{0, 2}";
+            other2 = "{1, 0}";
+            scale = "{0.9, 1.1}";
+            type = Corner;
+            name = "My favourite hint";
+            options = 2;
+            }
+        """
+            ),
+        )
+
         self.assertWrites(
             hint,
             dedent(
@@ -1120,73 +1448,17 @@ rememberToDownloadARealRemindersApp = 1;}"',
             {
             horizontal = 1;
             name = "My favourite hint";
-            options = 128;
-            origin = "{0, 0}";
-            other1 = "{0, 2}";
-            other2 = "{1, 0}";
-            target = "{0, 1}";
-            type = 16;
+            options = 2;
+            origin = (0,0);
+            other1 = (0,2);
+            other2 = (1,0);
+            scale = (0.9,1.1);
+            target = (0,1);
+            type = Corner;
             }
         """
             ),
-        )
-
-        # FIXME: (jany) What about the undocumented scale & stem?
-        #   -> Add a test for that
-
-        # Test with target = "up"
-        # FIXME: (jany) what does target = "up" mean?
-        #   Is there an official python API to write that?
-        # hint.targetNode = 'up'
-        # written = test_helpers.write_to_lines(hint)
-        # self.assertIn('target = up;', written)
-
-    def test_write_hint_v3(self):
-        hint = classes.GSHint()
-        # http://docu.glyphsapp.com/#gshint
-        layer = classes.GSLayer()
-        path1 = classes.GSPath()
-        layer.paths.append(path1)
-        node1 = classes.GSNode(Point(100, 100))
-        path1.nodes.append(node1)
-        hint.originNode = node1
-
-        node2 = classes.GSNode(Point(200, 200))
-        path1.nodes.append(node2)
-        hint.targetNode = node2
-
-        node3 = classes.GSNode(Point(300, 300))
-        path1.nodes.append(node3)
-        hint.otherNode1 = node3
-
-        path2 = classes.GSPath()
-        layer.paths.append(path2)
-        node4 = classes.GSNode(Point(400, 400))
-        path2.nodes.append(node4)
-        hint.otherNode2 = node4
-
-        hint.type = classes.CORNER
-        hint.options = classes.TTROUND | classes.TRIPLE
-        hint.horizontal = True
-        # selected: not written
-        hint.name = "My favourite hint"
-        self.assertWrites(
-            hint,
-            dedent(
-                """\
-             {
-             horizontal = 1;
-             name = "My favourite hint";
-             options = 128;
-             origin = (0,0);
-             other1 = (0,2);
-             other2 = (1,0);
-             target = (0,1);
-             type = 16;
-             }
-         """,
-            ),
-            format_version=3,
+            formatVersion=3,
         )
 
         # FIXME: (jany) What about the undocumented scale & stem?
@@ -1219,11 +1491,28 @@ rememberToDownloadARealRemindersApp = 1;}"',
             alpha = 70;
             crop = "{{0, 10}, {500, 510}}";
             imagePath = "/tmp/img.jpg";
-            locked = 1;
+            locked = "1";
             transform = "{1.09998, 0.00576, -0.00628, 1.19998, 40, 90}";
             }
         """
             ),
+        )
+        self.assertWrites(
+            image,
+            dedent(
+                """\
+            {
+            alpha = 70;
+            angle = 0.3;
+            crop = (0,10,500,510);
+            imagePath = "/tmp/img.jpg";
+            locked = 1;
+            pos = (40,90);
+            scale = (1.1,1.2);
+            }
+        """
+            ),
+            formatVersion=3,
         )
 
 

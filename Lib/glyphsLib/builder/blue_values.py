@@ -18,15 +18,8 @@ from glyphsLib.util import pairs
 def to_ufo_blue_values(self, ufo, master):
     """Set postscript blue values from Glyphs alignment zones."""
 
-    alignment_zones = master.alignmentZones
-    blue_values = []
-    other_blues = []
-    for zone in sorted(alignment_zones):
-        pos = zone.position
-        size = zone.size
-        val_list = blue_values if pos == 0 or size >= 0 else other_blues
-        val_list.extend(sorted((pos, pos + size)))
-
+    blue_values = master.blueValues
+    other_blues = master.otherBlues
     if blue_values:
         ufo.info.postscriptBlueValues = blue_values
     if other_blues:

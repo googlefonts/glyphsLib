@@ -17,13 +17,16 @@ import itertools
 import logging
 
 import glyphsLib.glyphdata
+from glyphsLib.util import best_repr
 
-from .. import GSLayer, GSPath, GSComponent
-from .common import from_loose_ufo_time, to_ufo_time
+try:
+    from GlyphsApp import GSLayer, GSPath, GSComponent
+except ImportError:
+    from .. import GSLayer, GSPath, GSComponent
+from .common import from_loose_ufo_time, to_glyphs_time
 from .constants import (
     GLYPHLIB_PREFIX,
     GLYPHS_COLORS,
-    PUBLIC_PREFIX,
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
     BRACKET_GLYPH_RE,
     BRACKET_GLYPH_SUFFIX_RE,
@@ -31,7 +34,10 @@ from .constants import (
     SHAPE_ORDER_LIB_KEY,
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
+    POSTSCRIPT_NAMES_KEY,
 )
+from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
+from glyphsLib.types import floatToString3
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +62,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     if layer.layerId == layer.associatedMasterId and do_color_layers:
         self.to_ufo_glyph_color(ufo_glyph, layer, glyph)
-
-    ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
+    if glyph.unicodes:
+        ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
     export = glyph.export
     if not export:
@@ -103,10 +109,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     else:
         production_name = glyphinfo.production_name
     if production_name and production_name != ufo_glyph.name:
-        postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
-        if postscriptNamesKey not in ufo_font.lib:
-            ufo_font.lib[postscriptNamesKey] = dict()
-        ufo_font.lib[postscriptNamesKey][ufo_glyph.name] = production_name
+        if POSTSCRIPT_NAMES_KEY not in ufo_font.lib:
+            ufo_font.lib[POSTSCRIPT_NAMES_KEY] = dict()
+        ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name] = production_name
 
     if script:
         ufo_glyph.lib[SCRIPT_LIB_KEY] = script
@@ -158,7 +163,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         and glyph.parent.customParameters["Disable Last Change"] is not True
         and glyph.lastChange is not None
     ):
-        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_ufo_time(glyph.lastChange)
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_glyphs_time(glyph.lastChange)
 
     self.to_ufo_hints(ufo_glyph, layer)  # .hints
     self.to_ufo_paths(ufo_glyph, layer)  # .paths
@@ -194,8 +199,7 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
             and all(0 <= v < 256 for v in color_index)
         ):
             ufo_glyph.markColor = ",".join(
-                "0" if v == 0 else "1" if v == 255 else "{:.3f}".format(v / 255)
-                for v in color_index
+                floatToString3(v / 255.0) for v in color_index
             )
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]
@@ -212,7 +216,7 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
             ufo_glyph.lib[GLYPHLIB_PREFIX + "layer." + key] = value
         value = getattr(glyph, key, None)
         if value:
-            ufo_glyph.lib[GLYPHLIB_PREFIX + "glyph." + key] = value
+            ufo_glyph.lib[GLYPHLIB_PREFIX + key] = value
 
 
 def effective_width(layer, glyph):
@@ -234,7 +238,7 @@ def effective_width(layer, glyph):
                 )
         else:
             width = None
-    return width
+    return best_repr(width)
 
 
 def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
@@ -250,14 +254,15 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # When building minimal UFOs, we instead collect color layers and later
     # add them as separate glyphs to the UFO font.
 
+    masterId = layer.associatedMasterId
     if any(
-        l._is_color_palette_layer() and l.associatedMasterId == layer.associatedMasterId
-        for l in glyph.layers
+        l.associatedMasterId == masterId and l.isColorPaletteLayer
+        for layerId, l in glyph._layers.items()
     ):
         layerMapping = [
             (l.layerId, l._color_palette_index())
-            for l in glyph.layers
-            if l._is_color_palette_layer()
+            for layerId, l in glyph._layers.items()
+            if l.isColorPaletteLayer
             and l.associatedMasterId == layer.associatedMasterId
         ]
 
@@ -280,7 +285,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
         color_layers = [
             l
             for l in glyph.layers
-            if l.attributes.get("color")
+            if l.attributes.get(LAYER_ATTRIBUTE_COLOR)
             and l.associatedMasterId == layer.associatedMasterId
         ]
         if color_layers:
@@ -303,7 +308,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
                     for k, g in itertools.groupby(
                         color_layer.components,
                         key=lambda c: any(
-                            l.attributes.get("color")
+                            l.attributes.get(LAYER_ATTRIBUTE_COLOR)
                             for l in c.component.layers
                             if l.associatedMasterId == layer.associatedMasterId
                         ),
@@ -424,9 +429,12 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         glyph.export = False
 
     ufo_font = self._sources[master.id].font
-    ps_names_key = PUBLIC_PREFIX + "postscriptNames"
-    if ps_names_key in ufo_font.lib and ufo_glyph.name in ufo_font.lib[ps_names_key]:
-        glyph.production = ufo_font.lib[ps_names_key][ufo_glyph.name]
+
+    if (
+        POSTSCRIPT_NAMES_KEY in ufo_font.lib
+        and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]
+    ):
+        glyph.production = ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name]
         # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
         #        maybe don't write in glyph.production if glyphinfo already
         #        has something
@@ -444,8 +452,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # so it's easier to put it back on the most specific level, i.e. the
         # layer)
         for prefix, glyphs_object in (
-            ("glyph.", glyph),
-            ("", layer),
+            ("", glyph),
+            # ("", layer),
             ("layer.", layer),
         ):
             full_key = GLYPHLIB_PREFIX + prefix + key

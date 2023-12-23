@@ -18,6 +18,8 @@ PUBLIC_PREFIX = "public."
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 OBJECT_LIBS_KEY = PUBLIC_PREFIX + "objectLibs"
 
+POSTSCRIPT_NAMES_KEY = PUBLIC_PREFIX + "postscriptNames"
+
 GLYPHS_PREFIX = "com.schriftgestaltung."
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
 ROBOFONT_PREFIX = "com.typemytype.robofont."
@@ -36,7 +38,9 @@ BRACKET_GLYPH_TEMPLATE = "{glyph_name}.BRACKET.{description}"
 BRACKET_GLYPH_RE = re.compile(r"(?P<glyph_name>.+)\.BRACKET.(?P<box>.*)$")
 BRACKET_GLYPH_SUFFIX_RE = re.compile(r".*(\.BRACKET\..*)$")
 
+# legacy. Should use GLYPHS_PREFIX.fontMaster.customParameters > list of parameters
 MASTER_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFontMaster."
+# legacy. Should use GLYPHS_PREFIX.font.customParameters > list of parameters
 FONT_CUSTOM_PARAM_PREFIX = GLYPHS_PREFIX + "customParameter.GSFont."
 
 ANONYMOUS_FEATURE_PREFIX_NAME = "<anonymous>"
@@ -47,7 +51,12 @@ INSERT_FEATURE_MARKER_RE = r"\s*# Automatic Code.*"
 INSERT_FEATURE_MARKER_COMMENT = "# Automatic Code\n"
 
 APP_VERSION_LIB_KEY = GLYPHS_PREFIX + "appVersion"
+FORMATVERSION_LIB_KEY = GLYPHS_PREFIX + "formatVersion"
 KEYBOARD_INCREMENT_KEY = GLYPHS_PREFIX + "keyboardIncrement"
+KEYBOARD_INCREMENT_BIG_KEY = GLYPHS_PREFIX + "keyboardIncrementBig"
+KEYBOARD_INCREMENT_HUGE_KEY = GLYPHS_PREFIX + "keyboardIncrementHuge"
+GRID_SIZE_KEY = GLYPHS_PREFIX + "gridSize"
+GRID_SUBDIVISION_KEY = GLYPHS_PREFIX + "gridSubDivision"
 MASTER_ORDER_LIB_KEY = GLYPHS_PREFIX + "fontMasterOrder"
 
 SCRIPT_LIB_KEY = GLYPHLIB_PREFIX + "script"
@@ -66,17 +75,16 @@ SHAPE_ORDER_LIB_KEY = GLYPHLIB_PREFIX + "shapeOrder"
 SMART_COMPONENT_AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"
 
 EXPORT_KEY = GLYPHS_PREFIX + "export"
-WIDTH_KEY = GLYPHS_PREFIX + "width"
-WEIGHT_KEY = GLYPHS_PREFIX + "weight"
+WIDTH_KEY = GLYPHS_PREFIX + "widthClass"
+WEIGHT_KEY = GLYPHS_PREFIX + "weightClass"
 FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
 # Following typo kept for backwards compatibility
 INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
 
-CUSTOM_PARAMETERS_KEY = GLYPHS_PREFIX + "customParameters"
 CUSTOM_PARAMETERS_BLACKLIST = [
     # These are stored in the official descriptor attributes.
-    "familyName",
+    "familyNames",
     "postscriptFontName",
     "fileName",
     # These can be recovered by reading the mapping backward.
@@ -85,42 +93,15 @@ CUSTOM_PARAMETERS_BLACKLIST = [
     # These are artificial.
     FULL_FILENAME_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
+    "uniqueID",
+    "styleMapFamilyNames",
+    "styleMapStyleNames",
+    "Use Typo Metrics",
 ]
 
 # Reference:
 # https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616
 PROPERTIES_KEY = GLYPHS_PREFIX + "properties"
-PROPERTIES_WHITELIST = [
-    # This is stored in the official descriptor attributes.
-    # "familyNames",
-    "designers",
-    "designerURL",
-    "manufacturers",
-    "manufacturerURL",
-    "copyrights",
-    "versionString",
-    "vendorID",
-    "uniqueID",
-    "licenses",
-    "licenseURL",
-    "trademarks",
-    "descriptions",
-    "sampleTexts",
-    "postscriptFullNames",
-    "postscriptFullName",
-    # This is stored in the official descriptor attributes.
-    # "postscriptFontName",
-    "compatibleFullNames",
-    "styleNames",
-    "styleMapFamilyNames",
-    "styleMapStyleNames",
-    "preferredFamilyNames",
-    "preferredSubfamilyNames",
-    "variableStyleNames",
-    "WWSFamilyName",
-    "WWSSubfamilyName",
-    "variationsPostScriptNamePrefix",
-]
 
 LAYER_ID_KEY = GLYPHS_PREFIX + "layerId"
 LAYER_ORDER_PREFIX = GLYPHS_PREFIX + "layerOrderInGlyph."
@@ -132,7 +113,7 @@ UFO_YEAR_KEY = GLYPHLIB_PREFIX + "ufoYear"
 UFO_NOTE_KEY = GLYPHLIB_PREFIX + "ufoNote"
 
 UFO_DATA_KEY = GLYPHLIB_PREFIX + "ufoData"
-FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "fontUserData"
+FONT_USER_DATA_KEY = GLYPHLIB_PREFIX + "font.userData"
 LAYER_LIB_KEY = GLYPHLIB_PREFIX + "layerLib"
 LAYER_NAME_KEY = GLYPHLIB_PREFIX + "layerName"
 GLYPH_USER_DATA_KEY = GLYPHLIB_PREFIX + "glyphUserData"
@@ -140,59 +121,92 @@ NODE_USER_DATA_KEY = GLYPHLIB_PREFIX + "nodeUserData"
 
 
 GLYPHS_COLORS = (
-    "0.85,0.26,0.06,1",
-    "0.99,0.62,0.11,1",
-    "0.65,0.48,0.2,1",
-    "0.97,1,0,1",
-    "0.67,0.95,0.38,1",
-    "0.04,0.57,0.04,1",
-    "0,0.67,0.91,1",
-    "0.18,0.16,0.78,1",
-    "0.5,0.09,0.79,1",
-    "0.98,0.36,0.67,1",
+    "0.85,0.26,0.06,1",  # red
+    "0.99,0.62,0.11,1",  # orange
+    "0.65,0.48,0.2,1",  # brown
+    "0.97,0.9,0,1",  # yellow
+    "0.67,0.95,0.38,1",  # green
+    "0.04,0.57,0.04,1",  # dark green
+    "0.06,0.6,0.98,1",  # cyan
+    "0,0.2,0.88,1",  # blue
+    "0.5,0.09,0.79,1",  # violet
+    "0.98,0.36,0.67,1",  # pink
     "0.75,0.75,0.75,1",
     "0.25,0.25,0.25,1",
 )
 
 # https://www.microsoft.com/typography/otspec/os2.htm#cpr
 CODEPAGE_RANGES = {
-    1252: 0,
-    1250: 1,
-    1251: 2,
-    1253: 3,
-    1254: 4,
-    1255: 5,
-    1256: 6,
-    1257: 7,
-    1258: 8,
+    "1252": 0,
+    "1250": 1,
+    "1251": 2,
+    "1253": 3,
+    "1254": 4,
+    "1255": 5,
+    "1256": 6,
+    "1257": 7,
+    "1258": 8,
     # 9-15: Reserved for Alternate ANSI
-    874: 16,
-    932: 17,
-    936: 18,
-    949: 19,
-    950: 20,
-    1361: 21,
+    "bit 9": 9,
+    "bit 10": 10,
+    "bit 11": 11,
+    "bit 12": 12,
+    "bit 13": 13,
+    "bit 14": 14,
+    "bit 15": 15,
+    "874": 16,
+    "932": 17,
+    "936": 18,
+    "949": 19,
+    "950": 20,
+    "1361": 21,
     # 22-28: Reserved for Alternate ANSI and OEM
+    "bit 22": 22,
+    "bit 23": 23,
+    "bit 24": 24,
+    "bit 25": 25,
+    "bit 26": 26,
+    "bit 27": 27,
+    "bit 28": 28,
     # 29: Macintosh Character Set (US Roman)
+    "bit 29": 29,
     # 30: OEM Character Set
+    "bit 30": 30,
     # 31: Symbol Character Set
+    "bit 31": 31,
     # 32-47: Reserved for OEM
-    869: 48,
-    866: 49,
-    865: 50,
-    864: 51,
-    863: 52,
-    862: 53,
-    861: 54,
-    860: 55,
-    857: 56,
-    855: 57,
-    852: 58,
-    775: 59,
-    737: 60,
-    708: 61,
-    850: 62,
-    437: 63,
+    "bit 32": 32,
+    "bit 33": 33,
+    "bit 34": 34,
+    "bit 35": 35,
+    "bit 36": 36,
+    "bit 37": 37,
+    "bit 38": 38,
+    "bit 39": 39,
+    "bit 40": 40,
+    "bit 41": 41,
+    "bit 42": 42,
+    "bit 43": 43,
+    "bit 44": 44,
+    "bit 45": 45,
+    "bit 46": 46,
+    "bit 47": 47,
+    "869": 48,
+    "866": 49,
+    "865": 50,
+    "864": 51,
+    "863": 52,
+    "862": 53,
+    "861": 54,
+    "860": 55,
+    "857": 56,
+    "855": 57,
+    "852": 58,
+    "775": 59,
+    "737": 60,
+    "708": 61,
+    "850": 62,
+    "437": 63,
 }
 
 REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}
@@ -319,4 +333,4 @@ LANGUAGE_MAPPING = {
     "ZHT": 0x0404,
 }
 
-REVERSE_LANGUAGE_MAPPING = {v: k for v, k in LANGUAGE_MAPPING.items()}
+REVERSE_LANGUAGE_MAPPING = {v: k for k, v in LANGUAGE_MAPPING.items()}

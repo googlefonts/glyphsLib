@@ -22,11 +22,13 @@ from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import (
     CustomParametersProxy,
     GSCustomParameter,
+    GSInstance,
     InstanceType,
     PropertiesProxy,
     WEIGHT_CODES,
 )
 from .constants import (
+    GLYPHS_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     EXPORT_KEY,
     WIDTH_KEY,
@@ -34,20 +36,10 @@ from .constants import (
     FULL_FILENAME_KEY,
     MANUAL_INTERPOLATION_KEY,
     INSTANCE_INTERPOLATIONS_KEY,
-    CUSTOM_PARAMETERS_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
     PROPERTIES_KEY,
-    PROPERTIES_WHITELIST,
 )
 from .names import build_stylemap_names
-from .axes import (
-    get_axis_definitions,
-    is_instance_active,
-    WEIGHT_AXIS_DEF,
-    WIDTH_AXIS_DEF,
-    AxisDefinitionFactory,
-)
-from .custom_params import to_ufo_custom_params
 
 
 logger = logging.getLogger(__name__)
@@ -59,8 +51,7 @@ def to_designspace_instances(self):
         if instance.type == InstanceType.VARIABLE:
             continue
         if self.minimize_glyphs_diffs or (
-            is_instance_active(instance)
-            and _is_instance_included_in_family(self, instance)
+            instance.exports and _is_instance_included_in_family(self, instance)
         ):
             _to_designspace_instance(self, instance)
 
@@ -82,10 +73,10 @@ def _to_designspace_instance(self, instance):
 
     designspace_axis_tags = {a.tag for a in self.designspace.axes}
     location = {}
-    for axis_def in get_axis_definitions(self.font):
+    for axis_def in self.font.axes:
         # Only write locations along defined axes
-        if axis_def.tag in designspace_axis_tags:
-            location[axis_def.name] = axis_def.get_design_loc(instance)
+        if axis_def.axisTag in designspace_axis_tags:
+            location[axis_def.name] = instance.internalAxesValues[axis_def.axisId]
     ufo_instance.location = location
 
     # FIXME: (jany) should be the responsibility of ufo2ft?
@@ -102,25 +93,40 @@ def _to_designspace_instance(self, instance):
         )
         ufo_instance.styleMapFamilyName = styleMapFamilyName
         ufo_instance.styleMapStyleName = styleMapStyleName
+    smfm = instance.styleMapFamilyName
+    if smfm:
+        ufo_instance.styleMapFamilyName = smfm
+    smsm = instance.styleMapStyleName
+    if smsm:
+        ufo_instance.styleMapStyleName = smsm
 
     ufo_instance.name = " ".join(
         (ufo_instance.familyName or "", ufo_instance.styleName or "")
     )
 
-    if self.minimize_glyphs_diffs:
-        ufo_instance.lib[EXPORT_KEY] = instance.active
-        ufo_instance.lib[WEIGHT_KEY] = instance.weight
-        ufo_instance.lib[WIDTH_KEY] = instance.width
+    ufo_instance.lib["openTypeOS2WidthClass"] = instance.widthClass
+    ufo_instance.lib["openTypeOS2WeightClass"] = instance.weightClass
 
-        ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
-        ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
+    uniqueID = instance.customParameters["uniqueID"]
+    if uniqueID:
+        ufo_instance.lib["openTypeNameUniqueID"] = uniqueID
+
+    if self.minimize_glyphs_diffs:
+        if not instance.exports:
+            ufo_instance.lib[EXPORT_KEY] = False
+        if instance.instanceInterpolations:
+            ufo_instance.lib[
+                INSTANCE_INTERPOLATIONS_KEY
+            ] = instance.instanceInterpolations
+        if instance.manualInterpolation:
+            ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
     # Dump selected custom parameters and properties into the instance
     # descriptor. Later, when using `apply_instance_data`, we will dig out those
     # custom parameters and apply them to the UFO instance.
     parameters = _to_custom_parameters(instance)
     if parameters:
-        ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = parameters
+        ufo_instance.lib[GLYPHS_PREFIX + "customParameters"] = parameters
     properties = _to_properties(instance)
     if properties:
         ufo_instance.lib[PROPERTIES_KEY] = properties
@@ -163,11 +169,11 @@ def _to_properties(instance):
     return [
         (item.name, item.value)
         for item in instance.properties
-        if item.name in PROPERTIES_WHITELIST
+        if item.name not in CUSTOM_PARAMETERS_BLACKLIST
     ]
 
 
-def _is_instance_included_in_family(self, instance):
+def _is_instance_included_in_family(self, instance: GSInstance):
     if not self._do_filter_instances_by_family:
         return True
     return instance.familyName == self.family_name
@@ -189,28 +195,28 @@ def to_glyphs_instances(self):  # noqa: C901
 
         instance.name = ufo_instance.styleName
 
-        for axis_def in get_axis_definitions(self.font):
+        for axis_def in self.font.axes:
             design_loc = None
             try:
                 design_loc = ufo_instance.location[axis_def.name]
-                axis_def.set_design_loc(instance, design_loc)
+                instance.internalAxesValues[axis_def.axisId] = design_loc
             except KeyError:
                 # The location does not have this axis?
                 pass
 
-            if axis_def.tag in ("wght", "wdth"):
+            if axis_def.axisTag in ("wght", "wdth"):
                 # Retrieve the user location (weightClass/widthClass)
                 # Generic way: read the axis mapping backwards.
                 user_loc = design_loc
                 mapping = None
                 for axis in self.designspace.axes:
-                    if axis.tag == axis_def.tag:
+                    if axis.tag == axis_def.axisTag:
                         mapping = axis.map
                 if mapping:
                     reverse_mapping = {dl: ul for ul, dl in mapping}
                     user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
                 if user_loc is not None:
-                    axis_def.set_user_loc(instance, user_loc)
+                    instance.externalAxesValues[axis_def.axisId] = user_loc
 
         try:
             # Restore the original weight name when there is an ambiguity based
@@ -224,17 +230,17 @@ def to_glyphs_instances(self):  # noqa: C901
             #    user changes the instance location of the instance by hand but
             #    does not update the weight value in lib.
             if (
-                not instance.weight
-                or WEIGHT_CODES[instance.weight] == WEIGHT_CODES[weight]
+                not instance.weightClass
+                or WEIGHT_CODES[instance.weightClass] == WEIGHT_CODES[weight]
             ):
-                instance.weight = weight
+                instance.weightClass = weight
         except KeyError:
             # FIXME: what now
             pass
 
         try:
-            if not instance.width:
-                instance.width = ufo_instance.lib[WIDTH_KEY]
+            if not instance.widthClass:
+                instance.widthClass = ufo_instance.lib[WIDTH_KEY]
         except KeyError:
             # FIXME: what now
             pass
@@ -245,14 +251,16 @@ def to_glyphs_instances(self):  # noqa: C901
 
         smfn = ufo_instance.styleMapFamilyName
         if smfn is not None:
+            instance.styleMapFamilyName = smfn
             if smfn.startswith(ufo_instance.familyName):
                 smfn = smfn[len(ufo_instance.familyName) :].strip()
             instance.linkStyle = smfn
 
-        if ufo_instance.styleMapStyleName is not None:
-            style = ufo_instance.styleMapStyleName
-            instance.isBold = "bold" in style
-            instance.isItalic = "italic" in style
+        smsn = ufo_instance.styleMapStyleName
+        if smsn is not None:
+            instance.styleMapStyleName = smsn
+            instance.isBold = "bold" in smsn
+            instance.isItalic = "italic" in smsn
 
         if ufo_instance.postScriptFontName is not None:
             instance.fontName = ufo_instance.postScriptFontName
@@ -271,18 +279,27 @@ def to_glyphs_instances(self):  # noqa: C901
             # if instance.manualInterpolation: warn about data loss
             pass
 
-        if CUSTOM_PARAMETERS_KEY in ufo_instance.lib:
-            for name, value in ufo_instance.lib[CUSTOM_PARAMETERS_KEY]:
+        if GLYPHS_PREFIX + "customParameters" in ufo_instance.lib:
+            for name, value in ufo_instance.lib[GLYPHS_PREFIX + "customParameters"]:
                 instance.customParameters.append(GSCustomParameter(name, value))
 
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
-        # FIXME: (jany) cannot `.append()` because no proxy => no parent
-        self.font.instances = self.font.instances + [instance]
+        # some info that needs to be in a instance in Glyphs is stored in the sources. So we try to find a matching source (FIXME: (georg) not nice
+        for source in self.designspace.sources:
+            if source.location == ufo_instance.location:
+                instance.weightClass = source.font.info.openTypeOS2WeightClass or 400
+                instance.widthClass = source.font.info.openTypeOS2WidthClass or 5
+                if source.font.info.openTypeNameUniqueID:
+                    instance.properties[
+                        "uniqueID"
+                    ] = source.font.info.openTypeNameUniqueID
+        self.font.instances.append(instance)
 
 
 class InstanceDescriptorAsGSInstance:
+    # FIXME: (georg) find a better way
     """Wraps a designspace InstanceDescriptor and makes it behave like a
     GSInstance, just enough to use the descriptor as a source of custom
     parameters for `to_ufo_custom_parameters`
@@ -291,59 +308,14 @@ class InstanceDescriptorAsGSInstance:
     def __init__(self, descriptor):
         self._descriptor = descriptor
 
-        self.customParameters = CustomParametersProxy(None)
-        if CUSTOM_PARAMETERS_KEY in descriptor.lib:
-            for name, value in descriptor.lib[CUSTOM_PARAMETERS_KEY]:
+        self.customParameters = CustomParametersProxy(self)
+        if GLYPHS_PREFIX + "customParameters" in descriptor.lib:
+            for name, value in descriptor.lib[GLYPHS_PREFIX + "customParameters"]:
                 self.customParameters[name] = value
-        self.properties = PropertiesProxy(None)
+        self.properties = PropertiesProxy(self)
         if PROPERTIES_KEY in descriptor.lib:
             for name, value in descriptor.lib[PROPERTIES_KEY]:
                 self.properties[name] = value
-
-
-def _set_class_from_instance(ufo, designspace, instance, axis_tag):
-    # FIXME: (jany) copy-pasted from above, factor into method?
-    assert axis_tag in ("wght", "wdth")
-
-    factory = AxisDefinitionFactory()
-    for axis in designspace.axes:
-        if axis.tag == axis_tag:
-            axis_def = factory.get(axis.tag, axis.name)
-            mapping = axis.map
-            break
-    else:
-        # axis not found, try use the default axis definition
-        axis_def = WEIGHT_AXIS_DEF if axis_tag == "wght" else WIDTH_AXIS_DEF
-        mapping = []
-
-    try:
-        design_loc = instance.location[axis_def.name]
-    except KeyError:
-        user_loc = axis_def.default_user_loc
-    else:
-        if mapping:
-            # Retrieve the user location (weightClass/widthClass)
-            # by going through the axis mapping in reverse.
-            reverse_mapping = {dl: ul for ul, dl in mapping}
-            user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
-        else:
-            # no mapping means user space location is same as design space
-            user_loc = design_loc
-    axis_def.set_ufo_user_loc(ufo, user_loc)
-
-
-def set_weight_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WeightClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
-    _set_class_from_instance(ufo, designspace, instance, "wght")
-
-
-def set_width_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WidthClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
-    """
-    _set_class_from_instance(ufo, designspace, instance, "wdth")
 
 
 def apply_instance_data(designspace, include_filenames=None, Font=None):
@@ -412,10 +384,18 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     Returns:
         None.
     """
-    if any(axis.tag == "wght" for axis in designspace.axes):
-        set_weight_class(ufo, designspace, instance)
-    if any(axis.tag == "wdth" for axis in designspace.axes):
-        set_width_class(ufo, designspace, instance)
+    # Import here to prevent a cyclic import with custom_params
+    from .custom_params import to_ufo_custom_params, to_ufo_properties
+
+    try:
+        ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
+    except KeyError:
+        pass
+    try:
+        ufo.info.openTypeOS2WeightClass = instance.lib["openTypeOS2WeightClass"]
+    except KeyError:
+        pass
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
-    to_ufo_custom_params(None, ufo, glyphs_instance)
+    to_ufo_properties(None, ufo, glyphs_instance)
+    to_ufo_custom_params(None, ufo, glyphs_instance, "instance")

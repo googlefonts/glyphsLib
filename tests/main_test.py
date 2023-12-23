@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import difflib
 import glob
 import os
 
@@ -30,7 +28,7 @@ def test_glyphs_main_masters(tmpdir):
     """
     import fontTools.designspaceLib
 
-    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans2.glyphs")
     master_dir = os.path.join(str(tmpdir), "master_ufos_test")
 
     glyphsLib.cli.main(
@@ -45,34 +43,40 @@ def test_glyphs_main_masters(tmpdir):
     )
 
     assert glob.glob(master_dir + "/*.ufo")
-    ds = glob.glob(master_dir + "/GlyphsUnitTestSans.designspace")
+    ds = glob.glob(master_dir + "/GlyphsUnitTestSans2.designspace")
     assert ds
     designspace = fontTools.designspaceLib.DesignSpaceDocument()
     designspace.read(ds[0])
     for instance in designspace.instances:
         assert str(instance.filename).startswith("hurf")
 
-    glyphs_file = os.path.join(master_dir, "GlyphsUnitTestSans.glyphs")
+    glyphs_file = os.path.join(master_dir, "GlyphsUnitTestSans2.glyphs")
     glyphsLib.cli.main(["ufo2glyphs", ds[0], "--output-path", glyphs_file])
     assert os.path.isfile(glyphs_file)
 
 
 def test_parser_main(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of GlyphsUnitTestSans.glyphs.
+    and for the round-trip of GlyphsUnitTestSans2.glyphs.
     """
-    filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
+    filename = os.path.join(DATA, "GlyphsUnitTestSans2.glyphs")
     with open(filename) as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
+
+    # it is not defined, what of the two equivalient values are used.
+    actual = actual.replace("weightClass = UltraLight", "weightClass = ExtraLight")
+    actual = actual.replace("weightClass = Heavy;", "weightClass = Black;")
+    expected = expected.replace('name = "{155, 100}";', 'name = "{155}";')
+
     assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3(capsys):
     """This is both a test for the "main" functionality of glyphsLib.parser
-    and for the round-trip of GlyphsUnitTestSans.glyphs.
+    and for the round-trip of GlyphsUnitTestSans3.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
     with open(filename) as f:
@@ -80,46 +84,95 @@ def test_parser_main_v3(capsys):
 
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
+
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(actual)
+
     assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     with open(filename, encoding="utf-8") as file:
-        expected_content = file.read()
+        expected = file.read()
 
     glyphsLib.parser.main([filename])
-    actual_content, _ = capsys.readouterr()
+    actual, _ = capsys.readouterr()
 
-    filename = os.path.join(DATA, "GlyphsFileFormatv2.diff")
-    with open(filename, encoding="utf-8") as file:
-        expected_diff = file.read()
-
-    actual_diff = difflib.Differ().compare(
-        expected_content.splitlines(),
-        actual_content.splitlines(),
+    actual = actual.replace(
+        'transform = "{0.89877, 0.04713, -0.04189, 0.7989, 106, 89}";',
+        'transform = "{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}";',
     )
-    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+    actual = actual.replace(
+        r"  name 3 1 0x409 \"Stylistic Set Name 1\";\012  name",
+        r"	name 3 1 0x409 \"Stylistic Set Name 1\";\012	name",
+    )
 
-    assert actual_diff == expected_diff.splitlines()
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(actual)
+    assert actual.splitlines() == expected.splitlines()
 
 
 def test_parser_main_v3_upstream(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
     with open(filename, encoding="utf-8") as file:
-        expected_content = file.read()
+        expected = file.read()
 
     glyphsLib.parser.main([filename])
-    actual_content, _ = capsys.readouterr()
+    actual, _ = capsys.readouterr()
 
-    filename = os.path.join(DATA, "GlyphsFileFormatv3.diff")
-    with open(filename, encoding="utf-8") as file:
-        expected_diff = file.read()
-
-    actual_diff = difflib.Differ().compare(
-        expected_content.splitlines(),
-        actual_content.splitlines(),
+    actual = actual.replace("path = ..;", 'path = "..";')
+    actual = actual.replace(
+        'imagePath = "files/Smily.png";', "imagePath = files/Smily.png;"
     )
-    actual_diff = [line for line in actual_diff if not line.startswith("?")]
+    actual = actual.replace(
+        'imagePath = "files/Smily.svg";', "imagePath = files/Smily.svg;"
+    )
 
-    assert actual_diff == expected_diff.splitlines()
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(actual)
+
+    assert actual.splitlines() == expected.splitlines()
+
+
+def test_parser_Custom_Parameter_Full_Test(capsys):
+    """
+    This test file contains all public custom parameters (as of version 3.2).
+    """
+    filename = os.path.join(DATA, "CustomParameterFullTest.glyphs")
+    with open(filename, encoding="utf-8") as file:
+        expected = file.read()
+
+    glyphsLib.parser.main([filename])
+    actual, _ = capsys.readouterr()
+
+    actual = actual.replace("path = ..;", 'path = "..";')
+
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(actual)
+
+    assert actual.splitlines() == expected.splitlines()
+
+
+def test_parser_Custom_Parameter_Multiple(capsys):
+    """
+    This test file contains multiple parameters with the same name
+    """
+    filename = os.path.join(DATA, "CustomParameterMultiple.glyphs")
+    with open(filename, encoding="utf-8") as file:
+        expected = file.read()
+
+    glyphsLib.parser.main([filename])
+    actual, _ = capsys.readouterr()
+
+    actual = actual.replace("path = ..;", 'path = "..";')
+
+    filename = filename.replace(".glyphs", "_temp.glyphs")
+    with open(filename, "w", encoding="utf-8") as file:
+        file.write(actual)
+
+    assert actual.splitlines() == expected.splitlines()

@@ -34,4 +34,12 @@
       </location>
     </source>
   </sources>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.appVersion</key>
+      <string>895</string>
+      <key>com.schriftgestaltung.formatVersion</key>
+      <integer>3</integer>
+    </dict>
+  </lib>
 </designspace>

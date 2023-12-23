@@ -21,19 +21,19 @@ fontMaster = (
 {
 alignmentZones = (
 "{800, 16}",
-"{0, -16}",
-"{0, -16}",
+"{700, -16}",
+"{500, -16}",
 "{0, -16}",
 "{-200, -16}"
 );
 ascender = 800;
-capHeight = 0;
+capHeight = 700;
 custom = "Text Regular";
 descender = -200;
 id = m01;
 weightValue = 12;
 widthValue = 400;
-xHeight = 0;
+xHeight = 500;
 },
 {
 ascender = 800;
@@ -42,7 +42,7 @@ custom = Text;
 descender = -200;
 id = "01470A13-0DFA-483E-8321-32012938E715";
 name = "Text Bold";
-weight = "";
+weight = Bold;
 weightValue = 12;
 widthValue = 700;
 xHeight = 500;
@@ -64,7 +64,7 @@ custom = Display;
 descender = -200;
 id = "652EE2B0-9A71-4D0D-9D97-33D68002CEA4";
 name = "Display Bold";
-weight = "";
+weight = Bold;
 weightValue = 20;
 widthValue = 700;
 xHeight = 500;

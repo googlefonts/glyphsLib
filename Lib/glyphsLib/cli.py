@@ -95,6 +95,17 @@ def main(args=None):
             "full control over all anchors."
         ),
     )
+    group.add_argument(
+        "--no-propagate-anchors",
+        default=None,
+        action="store_false",
+        dest="propagate_anchors",
+        help=(
+            "Copy anchors from underlying components to actual "
+            "glyph. Glyphs would do this implicitly, only use if you need "
+            "full control over all anchors."
+        ),
+    )
     gdef_gen_group = group.add_mutually_exclusive_group()
     gdef_gen_group.add_argument(
         "--generate-GDEF",
@@ -217,6 +228,7 @@ def main(args=None):
     group.add_argument(
         "--enable-automatic-alignment",
         action="store_false",
+        default=None,
         help="Enable automatic alignment of components in glyphs.",
     )
     group.add_argument(
@@ -226,6 +238,13 @@ def main(args=None):
             "Expand include statements in the UFO features.fea and inline them in "
             "the exported .glyphs features."
         ),
+    )
+    group.add_argument(
+        "--format-version",
+        metavar="formatVersion",
+        choices=("2", "3"),
+        default="3",
+        help=("Set the file version for the .glyphs file."),
     )
 
     options = parser.parse_args(args)
@@ -316,12 +335,14 @@ def ufo2glyphs(options):
         ufo_module=ufo_module,
         minimize_ufo_diffs=options.no_preserve_glyphsapp_metadata,
         expand_includes=options.expand_includes,
+        format_version=options.format_version,
     )
 
     # Make the Glyphs file more suitable for roundtrip:
-    font.customParameters["Disable Last Change"] = options.enable_last_change
-    font.disablesAutomaticAlignment = options.enable_automatic_alignment
-
+    if not options.enable_last_change:
+        font.customParameters["Disable Last Change"] = True
+    if options.enable_automatic_alignment is not None:
+        font.disablesAutomaticAlignment = options.enable_automatic_alignment
     if options.output_path:
         font.save(options.output_path)
     else:

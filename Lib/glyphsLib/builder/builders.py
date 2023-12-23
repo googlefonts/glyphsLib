@@ -25,10 +25,13 @@ from .constants import (
     GLYPH_ORDER_KEY,
     GLYPHLIB_PREFIX,
     BRACKET_GLYPH_RE,
-    FONT_CUSTOM_PARAM_PREFIX,
+    GLYPHS_PREFIX,
 )
-from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
+from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
+from glyphsLib.classes import GSAxis
+from .sources import _to_glyphs_source
+from fontTools.designspaceLib import SourceDescriptor
 
 
 class UFOBuilder(LoggerMixin):
@@ -188,7 +191,7 @@ class UFOBuilder(LoggerMixin):
     def _is_vertical(self):
         master_ids = {m.id for m in self.font.masters}
         for glyph in self.font.glyphs:
-            for layer in glyph.layers:
+            for layer in glyph._layers.values():
                 if layer.layerId not in master_ids:
                     continue
                 if layer.vertWidth is not None or layer.vertOrigin is not None:
@@ -228,7 +231,7 @@ class UFOBuilder(LoggerMixin):
             # same time, to generate a GDEF table we first need to have defined the
             # glyphOrder, exported the glyphs and propagated anchors from components.
             self.to_ufo_master_features(ufo, master)  # .features
-            self.to_ufo_custom_params(ufo, master)  # .custom_params
+            self.to_ufo_custom_params(ufo, master, "fontMaster")  # .custom_params
 
             self.to_ufo_color_layers(ufo, master)  # .color_layers
 
@@ -262,15 +265,24 @@ class UFOBuilder(LoggerMixin):
         supplementary_layer_data = []
 
         # Generate the main (master) layers first.
+
+        # hasPathComponents = False
         for glyph in self.font.glyphs:
-            for layer in glyph.layers.values():
-                if layer.associatedMasterId != layer.layerId:
+            for layerId, layer in glyph._layers.items():
+                if layer.associatedMasterId != layerId:
                     # The layer is not the main layer of a master
                     # Store all layers, even the invalid ones, and just skip
                     # them and print a warning below.
                     supplementary_layer_data.append((glyph, layer))
                     continue
-
+                # if not hasPathComponents and layer.hasPathComponents:
+                #     ufo.lib.setdefault(UFO2FT_FILTERS_KEY, []).append(
+                #         {
+                #             "namespace": "glyphsLib.filters",
+                #             "name": "cornerComponents",
+                #             "pre": True,
+                #         }
+                #     )
                 ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
                 ufo_glyph = ufo_layer.newGlyph(glyph.name)
                 self.to_ufo_glyph(ufo_glyph, layer, glyph)  # .glyph
@@ -292,7 +304,7 @@ class UFOBuilder(LoggerMixin):
                     )
                 continue
 
-            if not layer.name and not layer._is_bracket_layer():
+            if not layer.name and not layer.isBracketLayer:
                 # Empty layer names are invalid according to the UFO spec.
                 if self.minimize_glyphs_diffs:
                     self.logger.warning(
@@ -306,7 +318,7 @@ class UFOBuilder(LoggerMixin):
             # set to non-export (in which case makes no sense to have Designspace rules
             # referencing non existent glyphs).
             if (
-                layer._is_bracket_layer()
+                layer.isBracketLayer
                 and glyph.export
                 and ".background" not in layer.name
             ):
@@ -314,7 +326,7 @@ class UFOBuilder(LoggerMixin):
             elif (
                 self.minimal
                 and layer.layerId not in master_layer_ids
-                and not layer._is_brace_layer()
+                and not layer.isBraceLayer
             ):
                 continue
             else:
@@ -348,6 +360,8 @@ class UFOBuilder(LoggerMixin):
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
 
+        self.designspace.lib[GLYPHS_PREFIX + "formatVersion"] = self.font.formatVersion
+        self.designspace.lib[GLYPHS_PREFIX + "appVersion"] = self.font.appVersion
         return self._designspace
 
     # DEPRECATED
@@ -358,14 +372,12 @@ class UFOBuilder(LoggerMixin):
             instances = list(filter_instances_by_family(instances, self.family_name))
         instance_data = {"data": instances, "designspace": self.designspace}
 
-        first_ufo = next(iter(self.masters))
+        # first_ufo = next(iter(self.masters))
 
         # the 'Variation Font Origin' is a font-wide custom parameter, thus it is
         # shared by all the master ufos; here we just get it from the first one
         varfont_origin_key = "Variation Font Origin"
-        varfont_origin = first_ufo.lib.get(
-            FONT_CUSTOM_PARAM_PREFIX + varfont_origin_key
-        )
+        varfont_origin = self.font.customParameters[varfont_origin_key]
         if varfont_origin:
             instance_data[varfont_origin_key] = varfont_origin
         return instance_data
@@ -381,7 +393,7 @@ class UFOBuilder(LoggerMixin):
     from .color_layers import to_ufo_color_layers
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
-    from .custom_params import to_ufo_custom_params
+    from .custom_params import to_ufo_custom_params, to_ufo_properties
     from .features import regenerate_gdef, to_ufo_master_features
     from .font import to_ufo_font_attributes
     from .groups import to_ufo_groups
@@ -429,6 +441,7 @@ class GlyphsBuilder(LoggerMixin):
         ufo_module=None,
         minimize_ufo_diffs=False,
         expand_includes=False,
+        format_version=False,
     ):
         """Create a builder that goes from UFOs + designspace to Glyphs.
 
@@ -463,6 +476,7 @@ class GlyphsBuilder(LoggerMixin):
         self.glyphs_module = glyphs_module
         self.minimize_ufo_diffs = minimize_ufo_diffs
         self.expand_includes = expand_includes
+        self.format_version = format_version
 
         if designspace is not None:
             if ufos:
@@ -498,66 +512,26 @@ class GlyphsBuilder(LoggerMixin):
         # are assumed to be sparse or "brace" layers and are ignored because Glyphs
         # considers them to be special layers and will handle them itself.
         self._font = self.glyphs_module.GSFont()
+
+        self.to_glyphs_axes()
+
+        lib = self.designspace.lib
+        if GLYPHS_PREFIX + "formatVersion" in lib:
+            self._font.formatVersion = lib[GLYPHS_PREFIX + "formatVersion"]
+        if self.format_version:
+            self._font.formatVersion = int(self.format_version)
+        if GLYPHS_PREFIX + "appVersion" in lib:
+            self._font.appVersion = lib[GLYPHS_PREFIX + "appVersion"]
+
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
-            master = self.glyphs_module.GSFontMaster()
-
-            # Filter bracket glyphs out of public.glyphOrder.
-            if GLYPH_ORDER_KEY in source.font.lib:
-                source.font.lib[GLYPH_ORDER_KEY] = [
-                    glyph_name
-                    for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
-                    if not BRACKET_GLYPH_RE.match(glyph_name)
-                ]
-
-            self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
-            self.to_glyphs_master_attributes(source, master)
-            self._font.masters.insert(len(self._font.masters), master)
-            self._sources[master.id] = source
-
-            # First, move free-standing bracket glyphs back to layers to avoid dealing
-            # with GSLayer transplantation.
-            for glyph_name in list(source.font.keys()):
-                m = BRACKET_GLYPH_RE.match(glyph_name)
-                if not m:
-                    continue
-                bracket_glyph = source.font[glyph_name]
-                base_glyph, location = m.groups()
-                layer_name = bracket_glyph.lib.get(
-                    GLYPHLIB_PREFIX + "_originalLayerName"
-                )
-                if layer_name is None:
-                    # Determine layer name from location
-                    raise NotImplementedError
-                # _originalLayerName is an empty string for 'implicit' bracket layers;
-                # we don't import these since they were copies of master layers.
-                if layer_name:
-                    if layer_name not in source.font.layers:
-                        ufo_layer = source.font.newLayer(layer_name)
-                    else:
-                        ufo_layer = source.font.layers[layer_name]
-                    bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
-                    bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
-
-                    # strip '*.BRACKET.123' suffix from the components' glyph names
-                    for comp in bracket_glyph_new.components:
-                        m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
-                        if m:
-                            comp.baseGlyph = m.group("glyph_name")
-
-                # Remove all freestanding bracket layer glyphs from all layers.
-                for layer in source.font.layers:
-                    if glyph_name in layer:
-                        del layer[glyph_name]
-
-            for layer in _sorted_backgrounds_last(source.font.layers):
-                self.to_glyphs_layer_lib(layer, master)
-                for glyph in layer:
-                    self.to_glyphs_glyph(glyph, layer, master)
+            self.source_layer_to_master(index, source)
 
         self.to_glyphs_features()
         self.to_glyphs_groups()
         self.to_glyphs_kerning()
+
+        self.check_axis_ranges()
 
         # Now that all GSGlyph are built, restore the glyph order
         if self.designspace.sources:
@@ -576,11 +550,87 @@ class GlyphsBuilder(LoggerMixin):
                 self.to_glyphs_layer_order(glyph)
 
         self.to_glyphs_family_user_data_from_designspace()
-        self.to_glyphs_axes()
+        # self.to_glyphs_axes()  # was called above already
         self.to_glyphs_sources()
         self.to_glyphs_instances()
 
         return self._font
+
+    def source_layer_to_master(self, index: int, source: SourceDescriptor):
+        master = self.glyphs_module.GSFontMaster()
+
+        # Filter bracket glyphs out of public.glyphOrder.
+        if GLYPH_ORDER_KEY in source.font.lib:
+            source.font.lib[GLYPH_ORDER_KEY] = [
+                glyph_name
+                for glyph_name in source.font.lib[GLYPH_ORDER_KEY]
+                if not BRACKET_GLYPH_RE.match(glyph_name)
+            ]
+        if source.copyInfo:
+            self._font.familyName = source.familyName
+        self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
+        self.to_glyphs_master_attributes(source, master)
+        self._font.masters.insert(len(self._font.masters), master)
+        self._sources[master.id] = source
+        _to_glyphs_source(self, master)
+        master.post_read()
+
+        # First, move free-standing bracket glyphs back to layers to avoid dealing
+        # with GSLayer transplantation.
+        for glyph_name in list(source.font.keys()):
+            m = BRACKET_GLYPH_RE.match(glyph_name)
+            if not m:
+                continue
+            bracket_glyph = source.font[glyph_name]
+            # At this point we know that we want to turn this UFO glyph into
+            # a bracket layer on the Glyphs.app side.
+            # Previously, (v2) the name of the glyph was used to define the
+            # axis range of the bracket layer. Now, (v3) we want to generate
+            # instead a data structure. Example:
+            #   Before:
+            #       - layer.name = "[18]"  # Apply bracket from 18 and above on the first axis
+            #   After:
+            #       - layer.name = None  # Not relevant anymore
+            #       - layer.attributes = {
+            #             axisRules = {
+            #                 a01 = {
+            #                     min = 18;
+            #                 };
+            #             };
+            #         }
+            # TODO: Georg to implement
+            # Use self.designspace.rules
+
+            base_glyph, location = m.groups()
+            layer_name = bracket_glyph.lib.get(GLYPHLIB_PREFIX + "_originalLayerName")
+            if layer_name is None:
+                # Determine layer name from location
+                raise NotImplementedError
+            # _originalLayerName is an empty string for 'implicit' bracket layers;
+            # we don't import these since they were copies of master layers.
+            if layer_name:
+                if layer_name not in source.font.layers:
+                    ufo_layer = source.font.newLayer(layer_name)
+                else:
+                    ufo_layer = source.font.layers[layer_name]
+                bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
+                bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
+
+                # strip '*.BRACKET.123' suffix from the components' glyph names
+                for comp in bracket_glyph_new.components:
+                    m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
+                    if m:
+                        comp.baseGlyph = m.group("glyph_name")
+
+            # Remove all freestanding bracket layer glyphs from all layers.
+            for layer in source.font.layers:
+                if glyph_name in layer:
+                    del layer[glyph_name]
+
+        for layer in _sorted_backgrounds_last(source.font.layers):
+            self.to_glyphs_layer_lib(layer, master)
+            for glyph in layer:
+                self.to_glyphs_glyph(glyph, layer, master)
 
     def _valid_designspace(self, designspace, ufo_module):
         """Make sure that the user-provided designspace has loaded fonts and
@@ -647,16 +697,17 @@ class GlyphsBuilder(LoggerMixin):
         # Make weight and width axis if relevant
         for info_key, axis_def in zip(
             ("openTypeOS2WeightClass", "openTypeOS2WidthClass"),
-            (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF),
+            (GSAxis("Weight", "wght"), GSAxis("Width", "wdth")),
         ):
             axis = designspace.newAxisDescriptor()
-            axis.tag = axis_def.tag
+            axis.tag = axis_def.axisTag
             axis.name = axis_def.name
             mapping = []
+            default_user_loc = getattr(ufos[0].info, info_key)
             for ufo in ufos:
                 user_loc = getattr(ufo.info, info_key)
                 if user_loc is not None:
-                    design_loc = class_to_value(axis_def.tag, user_loc)
+                    design_loc = class_to_value(axis_def.axisTag, user_loc)
                     mapping.append((user_loc, design_loc))
                     ufo_to_location[id(ufo)][axis_def.name] = design_loc
 
@@ -665,9 +716,7 @@ class GlyphsBuilder(LoggerMixin):
                 axis.map = mapping
                 axis.minimum = min([user_loc for user_loc, _ in mapping])
                 axis.maximum = max([user_loc for user_loc, _ in mapping])
-                axis.default = min(
-                    axis.maximum, max(axis.minimum, axis_def.default_user_loc)
-                )
+                axis.default = min(axis.maximum, max(axis.minimum, default_user_loc))
                 designspace.addAxis(axis)
 
         for ufo in ufos:
@@ -704,6 +753,8 @@ class GlyphsBuilder(LoggerMixin):
     from .anchors import to_glyphs_glyph_anchors
     from .annotations import to_glyphs_annotations
     from .axes import to_glyphs_axes
+    from .axes import check_axis_ranges
+    from .sources import to_glyphs_sources
     from .background_image import to_glyphs_background_image
     from .blue_values import to_glyphs_blue_values
     from .components import to_glyphs_components, to_glyphs_smart_component_axes
@@ -720,7 +771,6 @@ class GlyphsBuilder(LoggerMixin):
     from .masters import to_glyphs_master_attributes
     from .names import to_glyphs_family_names, to_glyphs_master_names
     from .paths import to_glyphs_paths
-    from .sources import to_glyphs_sources
     from .user_data import (
         to_glyphs_family_user_data_from_designspace,
         to_glyphs_family_user_data_from_ufo,

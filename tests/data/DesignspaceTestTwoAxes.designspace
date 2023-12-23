@@ -1,16 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <designspace format="5.0">
   <axes>
-    <axis tag="wght" name="Weight" minimum="100" maximum="900" default="400">
-      <map input="100" output="26"/>
-      <map input="400" output="90"/>
-      <map input="600" output="128"/>
-      <map input="900" output="190"/>
-    </axis>
-    <axis tag="wdth" name="Width" minimum="62.5" maximum="100" default="100">
-      <map input="62.5" output="70"/>
-      <map input="100" output="100"/>
-    </axis>
+    <axis tag="wght" name="Weight" minimum="26" maximum="190" default="90"/>
+    <axis tag="wdth" name="Width" minimum="70" maximum="100" default="100"/>
   </axes>
   <sources>
     <source filename="DesignspaceTestTwoAxes-Regular.ufo" name="DesignspaceTest TwoAxes Regular" familyname="DesignspaceTest TwoAxes" stylename="Regular">
@@ -60,42 +52,106 @@
         <dimension name="Weight" xvalue="26"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>100</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes Regular" familyname="DesignspaceTest TwoAxes" stylename="Regular" filename="out/DesignspaceTestTwoAxes-Regular.ufo" stylemapfamilyname="DesignspaceTest TwoAxes" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="90"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>400</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes Semibold" familyname="DesignspaceTest TwoAxes" stylename="Semibold" filename="out/DesignspaceTestTwoAxes-Semibold.ufo" stylemapfamilyname="DesignspaceTest TwoAxes Semibold" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="128"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>600</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes Black" familyname="DesignspaceTest TwoAxes" stylename="Black" filename="out/DesignspaceTestTwoAxes-Black.ufo" stylemapfamilyname="DesignspaceTest TwoAxes Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="190"/>
         <dimension name="Width" xvalue="100"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>900</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes ExtraCondensed Thin" familyname="DesignspaceTest TwoAxes" stylename="ExtraCondensed Thin" filename="out/DesignspaceTestTwoAxes-ExtraCondensedThin.ufo" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed Thin" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="26"/>
         <dimension name="Width" xvalue="70"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>100</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>2</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes ExtraCondensed" familyname="DesignspaceTest TwoAxes" stylename="ExtraCondensed" filename="out/DesignspaceTestTwoAxes-ExtraCondensed.ufo" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="90"/>
         <dimension name="Width" xvalue="70"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>400</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>2</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest TwoAxes ExtraCondensed Black" familyname="DesignspaceTest TwoAxes" stylename="ExtraCondensed Black" filename="out/DesignspaceTestTwoAxes-ExtraCondensedBlack.ufo" stylemapfamilyname="DesignspaceTest TwoAxes ExtraCondensed Black" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="190"/>
         <dimension name="Width" xvalue="70"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>900</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>2</integer>
+        </dict>
+      </lib>
     </instance>
   </instances>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.appVersion</key>
+      <string>895</string>
+      <key>com.schriftgestaltung.formatVersion</key>
+      <integer>3</integer>
+    </dict>
+  </lib>
 </designspace>

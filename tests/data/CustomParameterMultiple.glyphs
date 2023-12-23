@@ -1,0 +1,120 @@
+{
+.appVersion = "3231";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Weight;
+Location = 100;
+}
+);
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Weight;
+Location = 200;
+}
+);
+}
+);
+date = "2023-12-22 10:48:35 +0000";
+familyName = "Custom Parameter Multiple";
+fontMaster = (
+{
+axesValues = (
+0
+);
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = A;
+layers = (
+{
+layerId = m01;
+width = 600;
+}
+);
+unicode = 65;
+}
+);
+instances = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = Filter;
+value = "RemoveOverlap;";
+},
+{
+name = Filter;
+value = "RoundedFont;20";
+}
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

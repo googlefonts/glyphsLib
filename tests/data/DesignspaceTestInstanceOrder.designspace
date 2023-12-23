@@ -1,11 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <designspace format="5.0">
   <axes>
-    <axis tag="wght" name="Weight" minimum="400" maximum="900" default="400">
-      <map input="400" output="90"/>
-      <map input="700" output="151"/>
-      <map input="900" output="190"/>
-    </axis>
+    <axis tag="wght" name="Weight" minimum="90" maximum="190" default="90"/>
   </axes>
   <sources>
     <source filename="DesignspaceTestInstanceOrder-Regular.ufo" name="DesignspaceTest InstanceOrder Regular" familyname="DesignspaceTest InstanceOrder" stylename="Regular">
@@ -28,16 +24,48 @@
       <location>
         <dimension name="Weight" xvalue="190"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>900</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest InstanceOrder Regular" familyname="DesignspaceTest InstanceOrder" stylename="Regular" filename="out/DesignspaceTestInstanceOrder-Regular.ufo" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="regular">
       <location>
         <dimension name="Weight" xvalue="90"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>400</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
     <instance name="DesignspaceTest InstanceOrder Bold" familyname="DesignspaceTest InstanceOrder" stylename="Bold" filename="out/DesignspaceTestInstanceOrder-Bold.ufo" stylemapfamilyname="DesignspaceTest InstanceOrder" stylemapstylename="bold">
       <location>
         <dimension name="Weight" xvalue="151"/>
       </location>
+      <lib>
+        <dict>
+          <key>openTypeOS2WeightClass</key>
+          <integer>700</integer>
+          <key>openTypeOS2WidthClass</key>
+          <integer>5</integer>
+        </dict>
+      </lib>
     </instance>
   </instances>
+  <lib>
+    <dict>
+      <key>com.schriftgestaltung.appVersion</key>
+      <string>895</string>
+      <key>com.schriftgestaltung.formatVersion</key>
+      <integer>3</integer>
+    </dict>
+  </lib>
 </designspace>

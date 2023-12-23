@@ -145,7 +145,7 @@ def to_glyphs_groups(self):
                 gsclass = classes.GSClass(name, " ".join(glyphs))
                 self.font.classes.append(gsclass)
                 groups.append(name)
-        if self.minimize_ufo_diffs:
+        if self.minimize_ufo_diffs and len(groups) > 0:
             self.font.userData[UFO_GROUPS_NOT_IN_FEATURE_KEY] = groups
         break
 

@@ -23,10 +23,10 @@ import fontTools.designspaceLib
 from glyphsLib.util import build_ufo_path
 
 from .axes import (
-    get_axis_definitions,
     get_regular_master,
-    font_uses_axis_locations,
 )
+
+from glyphsLib.classes import LAYER_ATTRIBUTE_COORDINATES
 from .constants import UFO_FILENAME_CUSTOM_PARAM, UFO_FILENAME_KEY
 
 
@@ -54,7 +54,7 @@ def _warn_duplicate_master_locations(self):
         ]
         if any(s.layerName for s in designspace.sources):
             msg.append(
-                " Make sure that you used consistent 'brace layer' names"
+                " Make sure that you used consistent 'brace layer' coordinates"
                 " in all the glyph layers that share the same location."
             )
         for loc, sources in sorted(duplicates.items()):
@@ -128,10 +128,16 @@ def _to_designspace_source(self, master, is_regular):
 
     designspace_axis_tags = {a.tag for a in self.designspace.axes}
     location = {}
-    for axis_def in get_axis_definitions(self.font):
+    axis_idx = 0
+    for axis_def in self.font.axes:
         # Only write locations along defined axes
-        if axis_def.tag in designspace_axis_tags:
-            location[axis_def.name] = axis_def.get_design_loc(master)
+        if axis_def.axisTag in designspace_axis_tags:
+            value = master.internalAxesValues[axis_idx]
+            # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+            if value is None:
+                value = 0
+            location[axis_def.name] = value
+        axis_idx += 1
     source.location = location
 
 
@@ -155,8 +161,17 @@ def _to_designspace_source_layer(self):
     layer_to_glyph_names = collections.defaultdict(list)
     for glyph in self.font.glyphs:
         for layer in glyph.layers:
-            if layer._is_brace_layer():
-                key = (layer._brace_layer_name(), tuple(layer._brace_coordinates()))
+            if layer.isBraceLayer:
+                coordinates = layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
+                values = []
+                for axis in self.font.axes:
+                    value = coordinates.get(axis.axisId)
+                    if value is None:
+                        value = 0  # FIXME: (georg) get the default value for this axis
+                    values.append(value)
+
+                # TODO: the layer.name is calcualted from the attributes, so it should be good as the key. Then we can directly compute the `layer_coordinates_mapping`
+                key = (layer.name, tuple(values))
                 layer_to_master_ids[key].add(layer.associatedMasterId)
                 layer_to_glyph_names[key].append(glyph.name)
 
@@ -170,26 +185,13 @@ def _to_designspace_source_layer(self):
             # ... as they may need to be filled up with the values of the associated
             # master.
             master = self._sources[master_id]
-            master_coordinates = brace_coordinates
-            if len(master_coordinates) < len(designspace.axes):
-                master_locations = [master.location[a.name] for a in designspace.axes]
-                master_coordinates = (
-                    brace_coordinates + master_locations[len(brace_coordinates) :]
-                )
-            elif len(master_coordinates) > len(designspace.axes):
-                logger.warning(
-                    "Glyph(s) %s, brace layer '%s' defines more locations than "
-                    "there are design axes.",
-                    layer_to_glyph_names[key],
-                    layer_name,
-                )
 
+            assert len(brace_coordinates) == len(designspace.axes)
             # If we have more locations than axes, ignore the extra locations.
             layer_coordinates_mapping = collections.OrderedDict(
                 (axis.name, location)
-                for axis, location in zip(designspace.axes, master_coordinates)
+                for axis, location in zip(designspace.axes, brace_coordinates)
             )
-
             s = fontTools.designspaceLib.SourceDescriptor()
             s.filename = master.filename
             s.font = master.font
@@ -216,23 +218,19 @@ def to_glyphs_sources(self):
 
 def _to_glyphs_source(self, master):
     source = self._sources[master.id]
-
-    # Retrieve the master locations: weight, width, custom 0 - 1 - 2 - 3
-    for axis_def in get_axis_definitions(self.font):
+    for axis_def in self.font.axes:
         try:
             design_location = source.location[axis_def.name]
         except KeyError:
             # The location does not have this axis?
             continue
-
-        axis_def.set_design_loc(master, design_location)
-        if font_uses_axis_locations(self.font):
-            # The user location can be found by reading the mapping backwards
-            mapping = []
-            for axis in self.designspace.axes:
-                if axis.tag == axis_def.tag:
-                    mapping = axis.map
-                    break
-            reverse_mapping = {dl: ul for ul, dl in mapping}
-            user_location = piecewiseLinearMap(design_location, reverse_mapping)
-            axis_def.set_user_loc(master, user_location)
+        master.internalAxesValues[axis_def.axisId] = design_location
+        # The user location can be found by reading the mapping backwards
+        mapping = []
+        for axis in self.designspace.axes:
+            if axis.tag == axis_def.axisTag:
+                mapping = axis.map
+                break
+        reverse_mapping = {dl: ul for ul, dl in mapping}
+        user_location = piecewiseLinearMap(design_location, reverse_mapping)
+        master.externalAxesValues[axis_def.axisId] = user_location

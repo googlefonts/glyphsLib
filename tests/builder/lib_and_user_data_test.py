@@ -21,7 +21,6 @@ from glyphsLib import classes
 from glyphsLib.types import BinaryData
 from glyphsLib.builder.constants import (
     GLYPHLIB_PREFIX,
-    FONT_CUSTOM_PARAM_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,
 )
@@ -92,10 +91,10 @@ def test_font_user_data_to_ufo_lib():
 
     ufo1, ufo2 = to_ufos(font)
 
-    assert ufo1.lib[GLYPHLIB_PREFIX + "fontUserData"] == {
+    assert ufo1.lib[GLYPHLIB_PREFIX + "font.userData"] == {
         "fontUserDataKey": "fontUserDataValue"
     }
-    assert ufo2.lib[GLYPHLIB_PREFIX + "fontUserData"] == {
+    assert ufo2.lib[GLYPHLIB_PREFIX + "font.userData"] == {
         "fontUserDataKey": "fontUserDataValue"
     }
 
@@ -108,24 +107,24 @@ def test_DisplayStrings_ufo_lib():
     font = classes.GSFont()
     font.masters.append(classes.GSFontMaster())
     font.masters.append(classes.GSFontMaster())
-    font.DisplayStrings = ""
+    font.displayStrings = ""
 
     ufo1, ufo2 = to_ufos(font)
-    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo1.lib
-    assert FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings" not in ufo2.lib
+    assert "com.schriftgestaltung.DisplayStrings" not in ufo1.lib
+    assert "com.schriftgestaltung.DisplayStrings" not in ufo2.lib
 
     font = to_glyphs([ufo1, ufo2])
-    assert font.DisplayStrings == ""
+    assert font.displayStrings == ""
 
     # ---
-    font.DisplayStrings = "a"
+    font.displayStrings = "a"
 
     ufo1, ufo2 = to_ufos(font)
-    assert ufo1.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
-    assert ufo2.lib[FONT_CUSTOM_PARAM_PREFIX + "DisplayStrings"] == "a"
+    assert ufo1.lib["com.schriftgestaltung.DisplayStrings"] == "a"
+    assert ufo2.lib["com.schriftgestaltung.DisplayStrings"] == "a"
 
     font = to_glyphs([ufo1, ufo2])
-    assert font.DisplayStrings == "a"
+    assert font.displayStrings == "a"
 
 
 def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
@@ -140,9 +139,14 @@ def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
     assert font.masters[1].userData["ufoLibKey2"] == "ufoLibValue2"
 
     ufo1, ufo2 = to_ufos(font)
-
-    assert ufo1.lib["ufoLibKey1"] == "ufoLibValue1"
-    assert ufo2.lib["ufoLibKey2"] == "ufoLibValue2"
+    assert (
+        ufo1.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey1"]
+        == "ufoLibValue1"
+    )
+    assert (
+        ufo2.lib["com.schriftgestaltung.fontMaster.userData"]["ufoLibKey2"]
+        == "ufoLibValue2"
+    )
     assert "ufoLibKey2" not in ufo1.lib
     assert "ufoLibKey1" not in ufo2.lib
 
