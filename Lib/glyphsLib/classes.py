@@ -6067,6 +6067,8 @@ class GSFont(GSBase):
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
+        if not isinstance(path, str):  # sometime we get a Path
+            path = str(path)
         if path.endswith(".glyphs"):
             self.save_flat_file(path)
         elif path.endswith(".glyphspackage"):
