@@ -49,7 +49,6 @@ from glyphsLib.types import (
     readIntlist,
     NegateBool,
 )
-from glyphsLib.builder.constants import LANGUAGE_MAPPING
 
 from glyphsLib.util import isString, isList
 from glyphsLib.writer import Writer
@@ -3985,6 +3984,20 @@ GSHint._add_parsers(
     ]
 )
 
+FEATURENAMES_PATTERN = re.compile(
+    r"name\s+(?:(\d+)\s+(\d+)\s+(0x[0-9A-Fa-f]+)\s+)?\"([^\"]+)\"\;"
+)
+
+
+def extract_name_and_langId(s):
+    match = FEATURENAMES_PATTERN.search(s)
+    if match:
+        # Extracted numbers are in separate groups and the string is in the last group
+        numbers = [match.group(i) for i in range(1, 4) if match.group(i) is not None]
+        name_string = match.group(4)
+        return name_string, numbers
+    return None, None
+
 
 class GSFeature(GSBase):
     def _serialize_to_plist(self, writer):
@@ -4001,9 +4014,20 @@ class GSFeature(GSBase):
             writer.writeKeyValue("name", self.name)
             notes = self.notes
             if self.labels:
-                pass
+                feature_names = self.featureNamesString()
+                if feature_names:
+                    if notes:
+                        notes = feature_names + notes
+                    else:
+                        notes = feature_names
             if notes:
-                writer.writeKeyValue(self, "notes", notes)
+                writer.writeKeyValue("notes", notes)
+
+    def post_read(self):
+        if self.notes and len(self.notes) > 10:
+            remaining_note = self.loadLabelsFromNote(self.notes)
+            if remaining_note is not False:
+                self.notes = remaining_note
 
     def __init__(self, name="xxxx", code=""):
         self.active = True
@@ -4045,6 +4069,105 @@ class GSFeature(GSBase):
     @disabled.setter
     def disabled(self, _val):
         raise "Use .active = "
+
+    def featureNamesString(self):
+        if len(self.labels) == 0:
+            return None
+        feature_names = []
+        from glyphsLib.builder.features import _to_name_langID
+        for label in self.labels:
+            langID = _to_name_langID(label["language"])
+            name = label["value"]
+            if name == "":
+                continue
+            name = name.replace("\\", r"\005c").replace('"', r"\0022")
+            if langID is None:
+                feature_names.append(f'  name "{name}";')
+            else:
+                feature_names.append(f'  name 3 1 0x{langID:X} "{name}";')
+        if feature_names:
+            feature_names.insert(0, "featureNames {")
+            feature_names.append("};")
+
+    def loadLabelsFromNote(self, note):
+        remaining_note = note
+        if note.startswith("Name:"):
+            remaining_note = note
+            name = note
+            lineEnd = name.find("\n")
+            if lineEnd > 0:
+                name = name[:lineEnd]
+                remaining_note = note[lineEnd:]
+            else:
+                remaining_note = ""
+            name = name[5:]
+            name = name.strip()
+            if name:
+                self.labels.append(dict(language="dflt", value=name))
+                return remaining_note
+
+        elif note.startswith("featureNames {"):
+            lineEnd = note.find("};")
+            if lineEnd < 0:
+                return False
+            remaining_note = note[lineEnd + 2 :]
+            note = note[14:lineEnd]
+            note = note.strip()
+            if not note:
+                return False
+            """
+            featureNames {
+            name "Single Storey a"; # Windows (default)
+            name 3 1 0x0407 "Einstöckiges a"; # 3=Windows, 1=Unicode, 0407=German
+            name 1 "Single Storey a"; # 1=Mac
+            name 1 0 2 "Einst\9fckiges a"; # 1=Mac, 0=MacRoman, 2=German
+            };
+            """
+            lines = note.split("\n")
+            seenLanguage = set()
+            for line in lines:
+                code = line.strip()
+                if not code.startswith("name "):
+                    continue
+
+                name, langIDs = extract_name_and_langId(code)
+
+                if len(langIDs) == 0:
+                    platformID = 3
+                    platEncID = 1
+                    langID = 0x0409
+
+                elif len(langIDs) == 1:
+                    platformID = 3
+                    platEncID = 1
+                    langID = langIDs[0]
+                elif len(langIDs) == 3:
+                    platformID = int(langIDs[0])
+                    platEncID = int(langIDs[1])
+                    langID = langIDs[2]
+                    if langID.startswith("0x"):
+                        langID = int(langID, 16)
+                    else:
+                        langID = int(langID)
+
+                language = "dflt"
+                if platformID == 3 and platEncID == 1:
+                    from glyphsLib.builder.features import _to_glyphs_language
+
+                    language = _to_glyphs_language(langID)
+                elif platformID == 1 and platEncID == 0 and langID == 0:
+                    # mostly to make the test work, who is using apple names any more
+                    language = "ENG"
+                else:
+                    self.logger.warning(
+                        f"Unknown platform:{platformID}, enc:{platEncID}, lang:{langID} in featureNames. Defaulting to 'dflt'"
+                    )
+                if language in seenLanguage:
+                    continue
+                seenLanguage.add(language)
+                self.labels.append(dict(language=language, value=name))
+            return remaining_note
+        return False
 
 
 GSFeature._add_parsers(
@@ -6075,6 +6198,8 @@ class GSFont(GSBase):
             instance.post_read()
         for glyph in self.glyphs:
             glyph.post_read()
+        for feature in self.features:
+            feature.post_read()
         if self.customParameters["note"]:
             self.note = self.customParameters["note"]
             del self.customParameters["note"]

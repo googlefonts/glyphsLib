@@ -61,6 +61,7 @@ def to_ufo_master_features(self, ufo, master):
         )
 
 
+# is used in classes.py
 def _to_name_langID(language):
     if language not in LANGUAGE_MAPPING:
         raise ValueError(f"Unknown name language: {language}")
@@ -125,43 +126,12 @@ def _to_ufo_features(  # noqa: C901
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
-        feature_names = None
-        if font.formatVersion == 2 and notes:
-            m = re.search("(featureNames {.+};)", notes, flags=re.DOTALL)
-            if m:
-                name = m.groups()[0]
-                # Remove the name from the note
-                notes = notes.replace(name, "").strip()
-                feature_names = name.splitlines()
-            else:
-                m = re.search(r"^(Name: (.+))", notes)
-                if m:
-                    line, name = m.groups()
-                    # Remove the name from the note
-                    notes = notes.replace(line, "").strip()
-                    # Replace special chars backslash and doublequote for AFDKO syntax
-                    name = name.replace("\\", r"\005c").replace('"', r"\0022")
-                    feature_names = ["featureNames {", f'  name "{name}";', "};"]
-        elif font.formatVersion == 3 and feature.labels:
-            feature_names = []
-            for label in feature.labels:
-                langID = _to_name_langID(label["language"])
-                name = label["value"]
-                if name == "":
-                    continue
-                name = name.replace("\\", r"\005c").replace('"', r"\0022")
-                if langID is None:
-                    feature_names.append(f'  name "{name}";')
-                else:
-                    feature_names.append(f'  name 3 1 0x{langID:X} "{name}";')
-            if feature_names:
-                feature_names.insert(0, "featureNames {")
-                feature_names.append("};")
         if notes:
             lines.append("# notes:")
             lines.extend("# " + line for line in notes.splitlines())
+        feature_names = feature.featureNamesString()
         if feature_names:
-            lines.extend(feature_names)
+            lines.append(feature_names)
         if feature.automatic:
             lines.append("# automatic")
         if not feature.active:
@@ -717,7 +687,8 @@ class FeatureFileProcessor:
         feature = self.glyphs_module.GSFeature()
         feature.name = st.name
         feature.automatic = bool(automatic)
-
+        if notes_text:
+            feature.notes = notes_text
         # See if there is a feature names block in the code
         self.extract_feature_names(contents, feature)
 
