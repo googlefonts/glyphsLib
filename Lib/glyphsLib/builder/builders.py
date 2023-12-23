@@ -515,12 +515,13 @@ class GlyphsBuilder(LoggerMixin):
 
         self.to_glyphs_axes()
 
-        if GLYPHS_PREFIX + "formatVersion" in self.designspace.lib:
-            self._font.formatVersion = self.designspace.lib[GLYPHS_PREFIX + "formatVersion"]
+        lib = self.designspace.lib
+        if GLYPHS_PREFIX + "formatVersion" in lib:
+            self._font.formatVersion = lib[GLYPHS_PREFIX + "formatVersion"]
         if self.format_version:
             self._font.formatVersion = int(self.format_version)
-        if GLYPHS_PREFIX + "appVersion" in self.designspace.lib:
-            self._font.appVersion = self.designspace.lib[GLYPHS_PREFIX + "appVersion"]
+        if GLYPHS_PREFIX + "appVersion" in lib:
+            self._font.appVersion = lib[GLYPHS_PREFIX + "appVersion"]
 
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
@@ -581,7 +582,6 @@ class GlyphsBuilder(LoggerMixin):
             if not m:
                 continue
             bracket_glyph = source.font[glyph_name]
-            print("__bracket_glyph", bracket_glyph.lib)
             # At this point we know that we want to turn this UFO glyph into
             # a bracket layer on the Glyphs.app side.
             # Previously, (v2) the name of the glyph was used to define the
@@ -602,9 +602,7 @@ class GlyphsBuilder(LoggerMixin):
             # Use self.designspace.rules
 
             base_glyph, location = m.groups()
-            layer_name = bracket_glyph.lib.get(
-                GLYPHLIB_PREFIX + "_originalLayerName"
-            )
+            layer_name = bracket_glyph.lib.get(GLYPHLIB_PREFIX + "_originalLayerName")
             if layer_name is None:
                 # Determine layer name from location
                 raise NotImplementedError
@@ -717,9 +715,7 @@ class GlyphsBuilder(LoggerMixin):
                 axis.map = mapping
                 axis.minimum = min([user_loc for user_loc, _ in mapping])
                 axis.maximum = max([user_loc for user_loc, _ in mapping])
-                axis.default = min(
-                    axis.maximum, max(axis.minimum, default_user_loc)
-                )
+                axis.default = min(axis.maximum, max(axis.minimum, default_user_loc))
                 designspace.addAxis(axis)
 
         for ufo in ufos:
