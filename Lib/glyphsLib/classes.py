@@ -4081,7 +4081,7 @@ class GSFeature(GSBase):
             langID = _to_name_langID(label["language"])
             name = label["value"]
             name = name.replace("\\", r"\005c").replace('"', r"\0022")
-            if langID is None or langID == 1033:
+            if langID is None:
                 feature_names.append(f'  name "{name}";')
             else:
                 feature_names.append(f'  name 3 1 0x{langID:X} "{name}";')

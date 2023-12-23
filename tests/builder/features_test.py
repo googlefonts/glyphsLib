@@ -188,7 +188,7 @@ def test_feature_names_format_2(tmpdir, ufo_module):
         """\
         feature ss01 {
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -268,7 +268,7 @@ def test_feature_names_notes(tmpdir, ufo_module):
         # notes:
         # foo
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -307,7 +307,7 @@ def test_feature_names_full_format_2(tmpdir, ufo_module):
         """\
         feature ss01 {
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -346,7 +346,7 @@ def test_feature_names_full_format_3(tmpdir, ufo_module):
         """\
         feature ss01 {
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
@@ -385,7 +385,7 @@ def test_feature_names_multi_format_2(tmpdir, ufo_module):
         """\
         feature ss01 {
         featureNames {
-          name "Alternate g";
+          name 3 1 0x409 "Alternate g";
         };
         # automatic
         sub g by g.ss01;
