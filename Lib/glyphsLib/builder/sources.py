@@ -133,7 +133,8 @@ def _to_designspace_source(self, master, is_regular):
         # Only write locations along defined axes
         if axis_def.axisTag in designspace_axis_tags:
             value = master.internalAxesValues[axis_idx]
-            if value is None:  # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+            # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+            if value is None:
                 value = 0
             location[axis_def.name] = value
         axis_idx += 1
@@ -168,7 +169,9 @@ def _to_designspace_source_layer(self):
                     if value is None:
                         value = 0  # FIXME: (georg) get the default value for this axis
                     values.append(value)
-                key = (layer.name, tuple(values))  # TODO: the layer.name is calcualted from the attributes, so it should be good as the key. Then we can directly compute the `layer_coordinates_mapping`
+
+                # TODO: the layer.name is calcualted from the attributes, so it should be good as the key. Then we can directly compute the `layer_coordinates_mapping`
+                key = (layer.name, tuple(values))
                 layer_to_master_ids[key].add(layer.associatedMasterId)
                 layer_to_glyph_names[key].append(glyph.name)
 

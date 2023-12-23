@@ -94,7 +94,7 @@ def test_glyphspackage_rt(datadir):
     assert compare_files(glyph_file, glyph_file_rt)
 
 
-''' #alignmentZones are read only
+""" #alignmentZones are read only
 def test_glyphs3_alignment_zones(datadir):
     font = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     master = font.masters[0]
@@ -147,16 +147,16 @@ def test_glyphs3_alignment_zones(datadir):
 
     with pytest.raises(TypeError):
         master.alignmentZones = ["", ""]
-'''
+"""
 
-''' # this is tested in test_classes
+""" # this is tested in test_classes
 def test_glyphs3_stems(datadir):
     font = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     master = font.masters[0]
 
     assert master.verticalStems == [17, 19]
     assert master.horizontalStems == [16, 16, 18]
-'''
+"""
 
 
 def test_glyphs2_rtl_kerning(datadir, ufo_module):

@@ -65,7 +65,9 @@ def test_parser_main(capsys):
 
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
-    actual = actual.replace("weightClass = UltraLight", "weightClass = ExtraLight")  # it is not defined, what of the two equivalient values are used.
+
+    # it is not defined, what of the two equivalient values are used.
+    actual = actual.replace("weightClass = UltraLight", "weightClass = ExtraLight")
     actual = actual.replace("weightClass = Heavy;", "weightClass = Black;")
     expected = expected.replace('name = "{155, 100}";', 'name = "{155}";')
 
@@ -84,7 +86,7 @@ def test_parser_main_v3(capsys):
     actual, _ = capsys.readouterr()
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
-    with open(filename, 'w', encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()
@@ -99,12 +101,12 @@ def test_parser_main_upstream(capsys):
     actual, _ = capsys.readouterr()
 
     actual = actual.replace(
-        "transform = \"{0.89877, 0.04713, -0.04189, 0.7989, 106, 89}\";",
-        "transform = \"{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}\";"
+        'transform = "{0.89877, 0.04713, -0.04189, 0.7989, 106, 89}";',
+        'transform = "{0.89877, 0.04712, -0.04188, 0.7989, 106, 89}";',
     )
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
-    with open(filename, 'w', encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(actual)
     assert actual.splitlines() == expected.splitlines()
 
@@ -117,12 +119,16 @@ def test_parser_main_v3_upstream(capsys):
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
 
-    actual = actual.replace("path = ..;", "path = \"..\";")
-    actual = actual.replace("imagePath = \"files/Smily.png\";", "imagePath = files/Smily.png;")
-    actual = actual.replace("imagePath = \"files/Smily.svg\";", "imagePath = files/Smily.svg;")
+    actual = actual.replace("path = ..;", 'path = "..";')
+    actual = actual.replace(
+        'imagePath = "files/Smily.png";', "imagePath = files/Smily.png;"
+    )
+    actual = actual.replace(
+        'imagePath = "files/Smily.svg";', "imagePath = files/Smily.svg;"
+    )
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
-    with open(filename, 'w', encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()
@@ -139,10 +145,10 @@ def test_parser_Custom_Parameter_Full_Test(capsys):
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
 
-    actual = actual.replace("path = ..;", "path = \"..\";")
+    actual = actual.replace("path = ..;", 'path = "..";')
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
-    with open(filename, 'w', encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()
@@ -159,10 +165,10 @@ def test_parser_Custom_Parameter_Multiple(capsys):
     glyphsLib.parser.main([filename])
     actual, _ = capsys.readouterr()
 
-    actual = actual.replace("path = ..;", "path = \"..\";")
+    actual = actual.replace("path = ..;", 'path = "..";')
 
     filename = filename.replace(".glyphs", "_temp.glyphs")
-    with open(filename, 'w', encoding="utf-8") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()

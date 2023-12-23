@@ -49,8 +49,7 @@ def to_designspace_instances(self):
     """Write instance data from self.font to self.designspace."""
     for instance in self.font.instances:
         if self.minimize_glyphs_diffs or (
-            instance.exports
-            and _is_instance_included_in_family(self, instance)
+            instance.exports and _is_instance_included_in_family(self, instance)
         ):
             if instance.type == InstanceType.VARIABLE:
                 _to_designspace_varfont(self, instance)
@@ -157,7 +156,9 @@ def _to_designspace_instance(self, instance):
         if not instance.exports:
             ufo_instance.lib[EXPORT_KEY] = False
         if instance.instanceInterpolations:
-            ufo_instance.lib[INSTANCE_INTERPOLATIONS_KEY] = instance.instanceInterpolations
+            ufo_instance.lib[
+                INSTANCE_INTERPOLATIONS_KEY
+            ] = instance.instanceInterpolations
         if instance.manualInterpolation:
             ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
@@ -332,7 +333,9 @@ def to_glyphs_instances(self):  # noqa: C901
                 instance.weightClass = source.font.info.openTypeOS2WeightClass or 400
                 instance.widthClass = source.font.info.openTypeOS2WidthClass or 5
                 if source.font.info.openTypeNameUniqueID:
-                    instance.properties["uniqueID"] = source.font.info.openTypeNameUniqueID
+                    instance.properties[
+                        "uniqueID"
+                    ] = source.font.info.openTypeNameUniqueID
         self.font.instances.append(instance)
 
 

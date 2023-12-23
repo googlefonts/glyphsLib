@@ -172,7 +172,9 @@ class GlyphsBracketLayerTest(unittest.TestCase):
         for layer in glyph.layers:
             if layer.isMasterLayer:
                 continue
-            self.assertEqual(layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES], {"a01": {"min": 300}})
+            self.assertEqual(
+                layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES], {"a01": {"min": 300}}
+            )
             self.assertEqual(layer.name, "[300‹wg]")
 
 
@@ -560,7 +562,15 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
             value = master.metrics[metric.id]
             self.assertIsInstance(value, GSMetricValue)
             metrics.append((value.position, value.overshoot))
-        expected = [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10), (0, 0), (520, 10)]
+        expected = [
+            (800, 10),
+            (700, 10),
+            (470, 10),
+            (0, -10),
+            (-200, -10),
+            (0, 0),
+            (520, 10),
+        ]
         self.assertEqual(metrics, expected)
 
         stems = []
@@ -647,7 +657,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual(master.otherBlues, [-210, -200])
 
 
-''' .alignmentZones is readonly now.
+""" .alignmentZones is readonly now.
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()
@@ -671,7 +681,7 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
         self.assertEqual(master.alignmentZones[-1].size, 10)
         del master.alignmentZones[-1]
         self.assertEqual(len(master.alignmentZones), 0)
-'''
+"""
 
 
 class GSInstanceFromFileTest(GSObjectsTestCase):

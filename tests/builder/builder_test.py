@@ -35,7 +35,7 @@ from glyphsLib.classes import (
     GSNode,
     GSAlignmentZone,
     GSGuide,
-    LAYER_ATTRIBUTE_COLOR_PALETTE
+    LAYER_ATTRIBUTE_COLOR_PALETTE,
 )
 from glyphsLib.types import Point
 
@@ -624,7 +624,9 @@ def test_family_name_custom(ufo_module):
 def test_lib_no_name(ufo_module):
     font = generate_minimal_font()
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib.get(GLYPHS_PREFIX + "master.name") is None  # default master name is omitted
+    assert (
+        ufo.lib.get(GLYPHS_PREFIX + "master.name") is None
+    )  # default master name is omitted
 
 
 def test_lib_weight(ufo_module):
@@ -634,7 +636,7 @@ def test_lib_weight(ufo_module):
     assert ufo.lib[GLYPHS_PREFIX + "master.name"] == "Bold"
 
 
-'''  # the weight, width and custom settings is deprecated. use master.name
+"""  # the weight, width and custom settings is deprecated. use master.name
 def test_lib_no_width(ufo_module):
     font = generate_minimal_font()
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
@@ -659,7 +661,7 @@ def test_lib_custom(ufo_module):
     font.masters[0].customName = "FooBar"
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert ufo.lib[GLYPHS_PREFIX + "customName"] == "FooBar"
-'''
+"""
 
 
 def test_coerce_to_bool(ufo_module):
