@@ -608,18 +608,19 @@ class GlyphsBuilder(LoggerMixin):
                 raise NotImplementedError
             # _originalLayerName is an empty string for 'implicit' bracket layers;
             # we don't import these since they were copies of master layers.
-            if layer_name not in source.font.layers:
-                ufo_layer = source.font.newLayer(layer_name)
-            else:
-                ufo_layer = source.font.layers[layer_name]
-            bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
-            bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
+            if layer_name:
+                if layer_name not in source.font.layers:
+                    ufo_layer = source.font.newLayer(layer_name)
+                else:
+                    ufo_layer = source.font.layers[layer_name]
+                bracket_glyph_new = ufo_layer.newGlyph(base_glyph)
+                bracket_glyph_new.copyDataFromGlyph(bracket_glyph)
 
-            # strip '*.BRACKET.123' suffix from the components' glyph names
-            for comp in bracket_glyph_new.components:
-                m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
-                if m:
-                    comp.baseGlyph = m.group("glyph_name")
+                # strip '*.BRACKET.123' suffix from the components' glyph names
+                for comp in bracket_glyph_new.components:
+                    m = BRACKET_GLYPH_RE.match(comp.baseGlyph)
+                    if m:
+                        comp.baseGlyph = m.group("glyph_name")
 
             # Remove all freestanding bracket layer glyphs from all layers.
             for layer in source.font.layers:
