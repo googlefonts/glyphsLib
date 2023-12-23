@@ -689,13 +689,13 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # Colors:
         self.assertWritesValue(
             classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
-            "{\nname = \"Master Color\";\nvalue = \"130,189,158,255\";\n}",
-            formatVersion=2
+            '{\nname = "Master Color";\nvalue = "130,189,158,255";\n}',
+            formatVersion=2,
         )
         self.assertWritesValue(
             classes.GSCustomParameter("Master Color", [130, 189, 158, 255]),
-            "{\nname = \"Master Color\";\nvalue = (130,189,158,255);\n}",
-            formatVersion=3
+            '{\nname = "Master Color";\nvalue = (130,189,158,255);\n}',
+            formatVersion=3,
         )
 
     def test_write_class(self):
@@ -1512,7 +1512,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             }
         """
             ),
-            formatVersion=3
+            formatVersion=3,
         )
 
 

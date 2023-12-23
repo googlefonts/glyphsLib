@@ -818,7 +818,10 @@ def test_multi_customparameter_rt(ufo_module):
     font_rt = glyphsLib.to_glyphs(ds, minimize_ufo_diffs=True)
     assert len(font_rt.customParameters) == 2
     assert len(font_rt.instances[0].customParameters) >= 2
-    assert len({(cp.name, cp.value) for cp in font_rt.instances[0].customParameters} & {
-        ('Filter', 'RemoveOverlap;'),
-        ('Filter', 'RoundedFont;20')
-    }) == 2
+    assert (
+        len(
+            {(cp.name, cp.value) for cp in font_rt.instances[0].customParameters}
+            & {("Filter", "RemoveOverlap;"), ("Filter", "RoundedFont;20")}
+        )
+        == 2
+    )

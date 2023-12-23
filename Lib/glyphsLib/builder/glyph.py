@@ -38,6 +38,7 @@ from .constants import (
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3
+
 logger = logging.getLogger(__name__)
 
 
@@ -429,7 +430,10 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     ufo_font = self._sources[master.id].font
 
-    if POSTSCRIPT_NAMES_KEY in ufo_font.lib and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]:
+    if (
+        POSTSCRIPT_NAMES_KEY in ufo_font.lib
+        and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]
+    ):
         glyph.production = ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name]
         # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
         #        maybe don't write in glyph.production if glyphinfo already

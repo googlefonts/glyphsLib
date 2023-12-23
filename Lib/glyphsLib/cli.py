@@ -244,9 +244,7 @@ def main(args=None):
         metavar="formatVersion",
         choices=("2", "3"),
         default="3",
-        help=(
-            "Set the file version for the .glyphs file."
-        ),
+        help=("Set the file version for the .glyphs file."),
     )
 
     options = parser.parse_args(args)
