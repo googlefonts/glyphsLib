@@ -1219,7 +1219,7 @@ def _normalize_custom_param_value(value):
     try:
         # TODO: this is the plain Glyphs API. pythonize this
         return value.propertyListValueFormat_(3)
-    except:
+    except Exception:
         try:
             from objc._pythonify import OC_PythonLong, OC_PythonFloat
 
@@ -1227,7 +1227,7 @@ def _normalize_custom_param_value(value):
                 return int(value)
             elif isinstance(value, OC_PythonFloat):
                 return float(value)
-        except:
+        except Exception:
             pass
         return value
 

@@ -1157,7 +1157,8 @@ def test_glyph_lib_color_mapping_foreground_color(ufo_module):
     ]
 
 
-@pytest.mark.xfail  # FIXME: (georg) This crashes in _color_palette_index(). Not sure how to handle it
+# FIXME: (georg) This crashes in _color_palette_index(). Not sure how to handle it
+@pytest.mark.xfail
 def test_glyph_lib_color_mapping_invalid_index(ufo_module):
     font = generate_minimal_font()
     glyph = add_glyph(font, "a")

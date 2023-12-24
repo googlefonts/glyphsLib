@@ -199,7 +199,9 @@ def to_designspace_axes(self):
                 designLoc = master.internalAxesValues[axis.axisId]
                 userLoc = master.externalAxesValues[axis.axisId]
                 if designLoc is None:
-                    designLoc = 0  # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+                    # TODO: (georg) this is mostly happening in tests,
+                    # so better improve the test setup?
+                    designLoc = 0
                 if userLoc is None:
                     userLoc = designLoc
                 if userLoc in mapping and mapping[userLoc] != designLoc:
@@ -222,7 +224,9 @@ def to_designspace_axes(self):
 
             regularDesignLoc = regular_master.internalAxesValues[axis.axisId]
             if regularDesignLoc is None:
-                regularDesignLoc = 0  # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+                # TODO: (georg) this is mostly happening in tests,
+                # so better improve the test setup?
+                regularDesignLoc = 0
             regularUserLoc = regular_master.externalAxesValues[axis.axisId]
 
             if regularUserLoc is None:

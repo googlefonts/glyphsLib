@@ -4115,7 +4115,7 @@ class GSFeature(GSBase):
             note = note.strip()
             if not note:
                 return False
-            """
+            r"""
             featureNames {
             name "Single Storey a"; # Windows (default)
             name 3 1 0x0407 "Einstöckiges a"; # 3=Windows, 1=Unicode, 0407=German

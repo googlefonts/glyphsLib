@@ -327,7 +327,8 @@ def to_glyphs_instances(self):  # noqa: C901
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
-        # some info that needs to be in a instance in Glyphs is stored in the sources. So we try to find a matching source (FIXME: (georg) not nice
+        # some info that needs to be in a instance in Glyphs is stored in the sources.
+        # So we try to find a matching source (FIXME: (georg) not nice
         for source in self.designspace.sources:
             if source.location == ufo_instance.location:
                 instance.weightClass = source.font.info.openTypeOS2WeightClass or 400

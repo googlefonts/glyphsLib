@@ -133,7 +133,8 @@ def _to_designspace_source(self, master, is_regular):
         # Only write locations along defined axes
         if axis_def.axisTag in designspace_axis_tags:
             value = master.internalAxesValues[axis_idx]
-            # TODO: (georg) this is mostly happening in tests, so better improve the test setup?
+            # TODO: (georg) this is mostly happening in tests,
+            # so better improve the test setup?
             if value is None:
                 value = 0
             location[axis_def.name] = value
