@@ -2455,6 +2455,7 @@ class GSFontMaster(GSBase):
             metric = GSMetric()
             metric.type = metricType
             metric.filter = filter
+            metric.name = name
             self.font.metrics.append(metric)
         metricValue = self.metricValues.get(metric.id)
         if not metricValue:

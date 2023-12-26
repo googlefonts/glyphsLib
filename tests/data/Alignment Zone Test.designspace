@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="wght" name="weight" minimum="400" maximum="400" default="400"/>
+  </axes>
+  <sources>
+    <source filename="Alignment Zone Test.ufo" name="Alignment Zone Test" familyname="AlignmentZoneTest" stylename="Regular">
+      <lib copy="1"/>
+      <groups copy="1"/>
+      <features copy="1"/>
+      <info copy="1"/>
+      <location>
+        <dimension name="weight" xvalue="400"/>
+      </location>
+    </source>
+  </sources>
+</designspace>

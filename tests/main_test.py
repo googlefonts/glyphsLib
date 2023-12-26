@@ -19,6 +19,9 @@ import os
 import glyphsLib.cli
 import glyphsLib.parser
 
+from glyphsLib import to_glyphs
+import fontTools
+
 DATA = os.path.join(os.path.dirname(__file__), "data")
 
 
@@ -176,3 +179,26 @@ def test_parser_Custom_Parameter_Multiple(capsys):
         file.write(actual)
 
     assert actual.splitlines() == expected.splitlines()
+
+
+def test_read_postscriptBlueValues():
+    designspace_file = os.path.join(
+        os.path.dirname(__file__), "data", "Alignment Zone Test.designspace"
+    )
+    designspace = fontTools.designspaceLib.DesignSpaceDocument()
+    designspace.read(designspace_file)
+    font = to_glyphs(designspace, minimize_ufo_diffs=True)
+    assert len(font.metrics) == 10
+    assert font.metrics[0].name is None
+    assert font.metrics[0].type == "ascender"
+    assert font.metrics[5].name == "zone 1"
+    assert font.metrics[5].type is None
+    assert len(font.masters) == 1
+    master = font.masters[0]
+    assert len(master.metricValues) == 10
+    metricValue = master.metricValues[font.metrics[0].id]
+    assert metricValue.position == 2100
+    assert metricValue.overshoot is None  # should be zero?
+    metricValue = master.metricValues[font.metrics[5].id]
+    assert metricValue.position == 1600
+    assert metricValue.overshoot == 20
