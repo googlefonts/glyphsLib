@@ -50,7 +50,8 @@ def test_pen_roundtrip(datadir, ufo_module):
                 assert abs(comp_orig.rotation - comp_temp.rotation) < 0.3
                 assert equal_transform(
                     comp_orig.transform, comp_temp.transform
-                )  # the transform is computed back and forth, that introduces some rounding errors
+                )  # the transform is computed back and forth,
+                # that introduces some rounding errors
 
 
 def test_pen_recording_equivalent(datadir):
