@@ -1871,9 +1871,9 @@ GSCustomParameter._add_parsers(
 
 
 class GSMetric(GSBase):
-    def __init__(self, name=None, metricType=None):
+    def __init__(self, name=None, type=None):
         self.name = name
-        self.metricType = metricType
+        self.type = type
         self.id = str(uuid.uuid4()).upper()
         self.filter = None
         self.horizontal = False
@@ -1882,11 +1882,11 @@ class GSMetric(GSBase):
         writer.writeObjectKeyValue(self, "horizontal", "if_true")
         writer.writeObjectKeyValue(self, "filter", "if_true")
         writer.writeObjectKeyValue(self, "name", "if_true")
-        if self.metricType:
-            writer.writeKeyValue("type", self.metricType)
+        if self.type:
+            writer.writeKeyValue("type", self.type)
 
     def __repr__(self):
-        string = "<{} {} ({})".format(self.__class__.__name__, self.metricType, self.id)
+        string = "<{} {} ({})".format(self.__class__.__name__, self.type, self.id)
         if self.filter:
             string += self.filter
         string += ">"
@@ -1895,7 +1895,7 @@ class GSMetric(GSBase):
 
 GSMetric._add_parsers(
     [
-        {"plist_name": "type", "object_name": "metricType"},
+        {"plist_name": "type"},
     ]
 )
 
@@ -1915,7 +1915,7 @@ class GSMetricValue(GSBase):
     def __repr__(self):
         return "<{} {}: {}/{}>".format(
             self.__class__.__name__,
-            self.metric.metricType if self.metric else "-",
+            self.metric.type if self.metric else "-",
             self.position,
             self.overshoot,
         )
@@ -2141,11 +2141,11 @@ class GSFontMaster(GSBase):
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "italicAngle", "if_true")
         if writer.formatVersion >= 3:
-            metrics = []
+            metricValues = []
             for metric in self.font.metrics:
-                metricValue = self.metrics.get(metric.id)
-                metrics.append(metricValue)
-            writer.writeKeyValue("metricValues", metrics)
+                metricValue = self.metricValues.get(metric.id)
+                metricValues.append(metricValue)
+            writer.writeKeyValue("metricValues", metricValues)
 
         if writer.formatVersion > 2:
             writer.writeKeyValue("name", self.name)
@@ -2214,7 +2214,7 @@ class GSFontMaster(GSBase):
         self._verticalStems = None
         self._internalAxesValues = {}
         self._externalAxesValues = {}
-        self._metrics = {}
+        self._metricValues = {}
         self.font = None
         self.guides = []
         self.iconName = ""
@@ -2273,13 +2273,13 @@ class GSFontMaster(GSBase):
                         value = 100 if idx < 2 else 0
                     self.internalAxesValues[axis.axisId] = value
 
-        if isinstance(self._metrics, list):
-            metricValues = list(self._metrics)
-            self._metrics = {}
+        if isinstance(self._metricValues, list):
+            metricValues = list(self._metricValues)
+            self._metricValues = {}
             if metricValues:
                 for fontMetric, metricValue in zip(self.font.metrics, metricValues):
                     # TODO: use better accessor
-                    self._metrics[fontMetric.id] = metricValue
+                    self._metricValues[fontMetric.id] = metricValue
                     metricValue.metric = fontMetric
         else:
             for metricKey in (
@@ -2406,7 +2406,7 @@ class GSFontMaster(GSBase):
     def _get_metric_layer(self, metricType, layer=None):
         for metric in self.font.metrics:
             if (
-                metric.metricType == metricType
+                metric.type == metricType
                 and metric.filter
                 and metric.filter.evaluateWithObject(layer.parent)
             ):
@@ -2416,11 +2416,11 @@ class GSFontMaster(GSBase):
 
     def _get_metric(self, metricType, name=None, filter=None):
         for metric in self.font.metrics:
-            if metric.metricType == metricType and metric.filter == filter:
-                metricValue = self.metrics.get(metric.id)
+            if metric.type == metricType and metric.filter == filter:
+                metricValue = self.metricValues.get(metric.id)
                 if not metricValue:
                     metricValue = GSMetricValue()
-                    self.metrics[metric.id] = metricValue
+                    self.metricValues[metric.id] = metricValue
                 metricValue.metric = metric
                 return metricValue
         if metricType == GSMetricsKeyBodyHeight:
@@ -2444,7 +2444,7 @@ class GSFontMaster(GSBase):
         metric = None
         for currMetric in metrics:
             if (
-                metricType == currMetric.metricType
+                metricType == currMetric.type
                 and name == currMetric.name
                 and filter == currMetric.filter
                 and metricType != GSMetricsKeyUndefined
@@ -2453,13 +2453,13 @@ class GSFontMaster(GSBase):
                 break
         if not metric:
             metric = GSMetric()
-            metric.metricType = metricType
+            metric.type = metricType
             metric.filter = filter
             self.font.metrics.append(metric)
-        metricValue = self.metrics.get(metric.id)
+        metricValue = self.metricValues.get(metric.id)
         if not metricValue:
             metricValue = GSMetricValue(position=position, overshoot=overshoot)
-            self.metrics[metric.id] = metricValue
+            self.metricValues[metric.id] = metricValue
             metricValue.metric = metric
         else:
             if position is not None:
@@ -2468,7 +2468,7 @@ class GSFontMaster(GSBase):
                 metricValue.overshoot = overshoot
 
     def _import_alignmentZones_to_metrics(self):
-        for metricValue in self.metrics.values():
+        for metricValue in self.metricValues.values():
             for zone in list(self._alignmentZones):
                 if abs(zone.position - metricValue.position) <= 1:
                     end = zone.position + zone.size
@@ -2477,19 +2477,21 @@ class GSFontMaster(GSBase):
         if len(self._alignmentZones) > 0:
             zoneIdx = 1
             for zone in self._alignmentZones:
-                # zoneKey = "zone %d" % zoneIdx
-                self._set_metric(GSMetricsKeyUndefined, zone.position, zone.size)
+                zoneKey = "zone %d" % zoneIdx
+                self._set_metric(
+                    GSMetricsKeyUndefined, zone.position, zone.size, name=zoneKey
+                )
                 zoneIdx += 1
         self._alignmentZones = None
 
     @property
-    def metrics(self):
-        return self._metrics
+    def metricValues(self):
+        return self._metricValues
 
-    @metrics.setter
-    def metrics(self, metrics):
+    @metricValues.setter
+    def metricValues(self, metrics):
         assert isinstance(metrics, dict)
-        self._metrics = metrics
+        self._metricValues = metrics
 
     # Legacy accessors
     @property
@@ -2500,11 +2502,11 @@ class GSFontMaster(GSBase):
         zones = []
         for fontMetric in self.font.metrics:
             # Ignore the "italic angle" "metric", it is not an alignmentZone
-            if fontMetric.metricType == GSMetricsKeyItalicAngle or (
+            if fontMetric.type == GSMetricsKeyItalicAngle or (
                 fontMetric.filter and fontMetric.filter != "case == 3"
             ):
                 continue
-            metric = self.metrics.get(fontMetric.id)
+            metric = self.metricValues.get(fontMetric.id)
             if not metric:
                 continue
             # Ignore metric without overshoot, it is not an alignmentZone
@@ -2546,9 +2548,9 @@ class GSFontMaster(GSBase):
         blueValues = []
         for fontMetric in self.font.metrics:
             # Ignore the "italic angle" "metric", it is not an alignmentZone
-            if fontMetric.metricType == GSMetricsKeyItalicAngle or fontMetric.filter:
+            if fontMetric.type == GSMetricsKeyItalicAngle or fontMetric.filter:
                 continue
-            metric = self.metrics.get(fontMetric.id)
+            metric = self.metricValues.get(fontMetric.id)
             if not metric:
                 continue
             # Ignore metric without overshoot, it is not an alignmentZone
@@ -2573,9 +2575,9 @@ class GSFontMaster(GSBase):
         otherBlues = []
         for fontMetric in self.font.metrics:
             # Ignore the "italic angle" "metric", it is not an alignmentZone
-            if fontMetric.metricType == GSMetricsKeyItalicAngle or fontMetric.filter:
+            if fontMetric.type == GSMetricsKeyItalicAngle or fontMetric.filter:
                 continue
-            metric = self.metrics.get(fontMetric.id)
+            metric = self.metricValues.get(fontMetric.id)
             if not metric:
                 continue
             # Ignore metric without overshoot, it is not an alignmentZone
@@ -2611,7 +2613,7 @@ class GSFontMaster(GSBase):
             self.font.stems.append(stem)
         metricValue = GSMetricValue(position=size)
         metricValue.metric = stem
-        self.metrics[stem.id] = metricValue
+        self.metricValues[stem.id] = metricValue
 
     stems = property(
         lambda self: MasterStemsProxy(self),
@@ -2810,7 +2812,7 @@ GSFontMaster._add_parsers(
         {"plist_name": "stemValues", "object_name": "_stems"},  # v3
         {
             "plist_name": "metricValues",
-            "object_name": "_metrics",
+            "object_name": "_metricValues",
             "type": GSMetricValue,
         },  # v3
         # {"plist_name": "name", "object_name": "_name"},
@@ -5977,12 +5979,12 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMinor")
 
     _defaultMetrics = [
-        GSMetric(metricType=GSMetricsKeyAscender),
-        GSMetric(metricType=GSMetricsKeyCapHeight),
-        GSMetric(metricType=GSMetricsKeyxHeight),
-        GSMetric(metricType=GSMetricsKeyBaseline),
-        GSMetric(metricType=GSMetricsKeyDescender),
-        # GSMetric(metricType=GSMetricsKeyItalicAngle),
+        GSMetric(type=GSMetricsKeyAscender),
+        GSMetric(type=GSMetricsKeyCapHeight),
+        GSMetric(type=GSMetricsKeyxHeight),
+        GSMetric(type=GSMetricsKeyBaseline),
+        GSMetric(type=GSMetricsKeyDescender),
+        # GSMetric(type=GSMetricsKeyItalicAngle),
     ]
 
     def _parse_glyphs_dict(self, parser, value):
