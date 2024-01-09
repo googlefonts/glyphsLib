@@ -140,16 +140,19 @@ def _to_ufo_features(
                     feature_names = ["featureNames {", f'  name "{name}";', "};"]
         elif font.format_version == 3 and feature.labels:
             feature_names = []
-            feature_names.append("featureNames {")
             for label in feature.labels:
                 langID = _to_name_langID(label["language"])
                 name = label["value"]
                 name = name.replace("\\", r"\005c").replace('"', r"\0022")
+                if name == "":
+                    continue
                 if langID is None:
                     feature_names.append(f'  name "{name}";')
                 else:
                     feature_names.append(f'  name 3 1 0x{langID:X} "{name}";')
-            feature_names.append("};")
+            if feature_names:
+                feature_names.insert(0, "featureNames {")
+                feature_names.append("};")
         if notes:
             lines.append("# notes:")
             lines.extend("# " + line for line in notes.splitlines())
