@@ -24,28 +24,6 @@ def resolve_intermediate_components(font):
                 components_with_intermediate_layers.add(glyph.name)
                 all_intermediate_locations.add(tuple(layer.attributes["coordinates"]))
 
-    # It's not clear to me that this is needed... (See #954)
-
-    # for glyph in font.glyphs:
-    #     # Just peek at first layer, assume compatibility
-    #     if not any(c.name in components_with_intermediate_layers for c in glyph.layers[0].components):
-    #         continue
-    #     for location in all_intermediate_locations:
-    #         if not any(list(location) == l.attributes.get("coordinates") for l in glyph.layers):
-    #             import IPython; IPython.embed()
-    #             logger.info("Adding intermediate layer at %s to %s", location, glyph.name)
-    #             layer = GSLayer()
-    #             layer.attributes["coordinates"] = location
-    #             layer.layerId = str(uuid.uuid4())
-    #             layer.associatedMasterId = glyph.layers[0].associatedMasterId
-    #             layer.name = glyph.layers[0].name
-    #             for ix, shape in enumerate(glyph.layers[0].shapes):
-    #                 if isinstance(shape, GSPath):
-    #                     layer.shapes.append(shape.clone())
-    #                 else:
-    #                     layer.shapes.append(shape.clone())
-    #             glyph.layers.append(layer)
-
 
 def simple_variation_model(font):
     tags = [axis.axisTag for axis in font.axes]
