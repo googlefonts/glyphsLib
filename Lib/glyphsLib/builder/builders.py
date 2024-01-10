@@ -28,6 +28,7 @@ from .constants import (
     FONT_CUSTOM_PARAM_PREFIX,
 )
 from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
+from .transformations import TRANSFORMATIONS
 from glyphsLib.util import LoggerMixin
 
 
@@ -86,7 +87,7 @@ class UFOBuilder(LoggerMixin):
                    production, and unnecessary steps will be skipped.
         glyph_data -- A list of GlyphData.
         """
-        self.font = font
+        self.font = preflight_glyphs(font)
 
         if ufo_module is None:
             import ufoLib2 as ufo_module
@@ -409,6 +410,18 @@ class UFOBuilder(LoggerMixin):
         to_ufo_layer_user_data,
         to_ufo_node_user_data,
     )
+
+
+def preflight_glyphs(font):
+    # Run a set of transformations over a GSFont object to make
+    # it easier to convert to UFO; resolve all the "smart stuff".
+
+    # We could "font = copy.deepcopy(font)" here, since we'll be
+    # modifying the original. But that's a pain and we won't do it
+    # until someone complains.
+    for transform in TRANSFORMATIONS:
+        transform(font)
+    return font
 
 
 def filter_instances_by_family(instances, family_name=None):
