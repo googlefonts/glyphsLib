@@ -3699,7 +3699,7 @@ class GSLayer(GSBase):
         return f'<{self.__class__.__name__} "{name}" ({parent})>'
 
     def __lt__(self, other):
-        if self.master and other.master and self.associatedMasterId == self.layerId:
+        if self.master and other.master and self._is_master_layer:
             return (
                 self.master.weightValue < other.master.weightValue
                 or self.master.widthValue < other.master.widthValue
@@ -3735,12 +3735,12 @@ class GSLayer(GSBase):
             return master
 
     @property
+    def _is_master_layer(self):
+        return self.associatedMasterId == self.layerId
+
+    @property
     def name(self):
-        if (
-            self.associatedMasterId
-            and self.associatedMasterId == self.layerId
-            and self.parent
-        ):
+        if self.associatedMasterId and self._is_master_layer and self.parent:
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name
