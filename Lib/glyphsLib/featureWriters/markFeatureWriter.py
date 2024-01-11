@@ -10,8 +10,8 @@ from ufo2ft.featureWriters.markFeatureWriter import (
     MarkToBasePos,
     NamedAnchor,
     MarkFeatureWriter,
-    quantize,
 )
+from ufo2ft.util import quantize
 
 
 class ContextuallyAwareNamedAnchor(NamedAnchor):
