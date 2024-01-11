@@ -71,6 +71,8 @@ def check_component_has_sparse_layer(font, component, parent_layer):
     layer.layerId = str(uuid.uuid4())
     layer.associatedMasterId = parent_layer.associatedMasterId
     layer.name = parent_layer.name
+    all_widths = [l.width for l in componentglyph.layers if l._is_master_layer]
+    layer.width = model.interpolateFromMasters(normalized_location, all_widths)
     for ix, shape in enumerate(componentglyph.layers[0].shapes):
         all_shapes = [l.shapes[ix] for l in componentglyph.layers if l._is_master_layer]
         assert len(all_shapes) == len(font.masters)
