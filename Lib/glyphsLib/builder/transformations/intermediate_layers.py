@@ -18,7 +18,7 @@ def resolve_intermediate_components(font):
                 # First, let's find glyphs with intermediate layers
                 # which have components which don't have intermediate layers
                 for shape in layer.components:
-                    check_component_has_sparse_layer(font, shape, layer)
+                    ensure_component_has_sparse_layer(font, shape, layer)
                 # Later we will check if everyone who uses me as a component
                 # has the same intermediate layers as I do
                 components_with_intermediate_layers.add(glyph.name)
@@ -39,7 +39,7 @@ def simple_variation_model(font):
     return VariationModel(master_locations, axisOrder=tags), limits
 
 
-def check_component_has_sparse_layer(font, component, parent_layer):
+def ensure_component_has_sparse_layer(font, component, parent_layer):
     tags = [axis.axisTag for axis in font.axes]
     model, limits = simple_variation_model(font)
     location = parent_layer.attributes["coordinates"]
@@ -82,8 +82,7 @@ def check_component_has_sparse_layer(font, component, parent_layer):
                 interpolate_path(all_shapes, model, normalized_location)
             )
         else:
-            # We should really interpolate the transformation matrix here
-            check_component_has_sparse_layer(font, shape, parent_layer)
+            ensure_component_has_sparse_layer(font, shape, parent_layer)
             layer.shapes.append(
                 interpolate_component(all_shapes, model, normalized_location)
             )
