@@ -4,6 +4,7 @@ import uuid
 from fontTools.varLib.models import VariationModel, normalizeValue
 
 from glyphsLib.classes import GSLayer, GSNode, GSPath
+from glyphsLib.builder.axes import get_regular_master
 
 
 logger = logging.getLogger(__name__)
@@ -30,11 +31,14 @@ def simple_variation_model(font):
     locations = [x.axes for x in font.masters]
     limits = {tag: (min(x), max(x)) for tag, x in zip(tags, (zip(*locations)))}
     master_locations = []
+    default_location = get_regular_master(font).axes
     for loc in locations:
         this_loc = {}
         for ix, axisTag in enumerate(tags):
             axismin, axismax = limits[axisTag]
-            this_loc[axisTag] = normalizeValue(loc[ix], (axismin, axismin, axismax))
+            this_loc[axisTag] = normalizeValue(
+                loc[ix], (axismin, default_location[ix], axismax)
+            )
         master_locations.append(this_loc)
     return VariationModel(master_locations, axisOrder=tags), limits
 
