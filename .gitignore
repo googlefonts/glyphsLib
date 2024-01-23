@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -126,6 +125,9 @@ dmypy.json
 
 # Autosaved files
 *~
+*(Autosaved).*
+*(Automatisch gesichert).*
+*(guardado automáticamente).*
 
 # setuptools_scm
 _version.py

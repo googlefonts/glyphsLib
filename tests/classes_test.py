@@ -1618,6 +1618,33 @@ class GSPathFromFileTest(GSObjectsTestCase):
         ]
         self.assertEqual(len(p.segments), 6)
 
+    def test_segments_4(self):
+        p = GSPath()
+        p.nodes = [
+            GSNode((327, 185), "line"),
+            GSNode((297, 266), "line"),
+            GSNode((371, 185), "line"),
+        ]
+        self.assertEqual(len(p.segments), 3)
+        p.closed = False
+        self.assertEqual(len(p.segments), 2)
+        self.assertEqual(p.segments[0][0].x, 327)
+
+    def test_segments_5(self):
+        p = GSPath()
+        p.nodes = [
+            GSNode((250, 2000), "offcurve"),
+            GSNode((250, 1000), "offcurve"),
+            GSNode((250, 900), "curve"),
+            GSNode((250, 500), "offcurve"),
+            GSNode((250, 50), "offcurve"),
+            GSNode((250, 0), "curve"),
+            GSNode((250, 1700), "curve"),
+            # Yes, this is bad construction but we shouldn't
+            # infinite loop
+        ]
+        self.assertEqual(len(p.segments), 3)
+
     def test_bounds(self):
         bounds = self.path.bounds
         self.assertEqual(bounds.origin.x, 80)
