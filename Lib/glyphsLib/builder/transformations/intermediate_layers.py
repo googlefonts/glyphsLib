@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 def resolve_intermediate_components(font):
-    components_with_intermediate_layers = set()
-    all_intermediate_locations = set()
     for glyph in font.glyphs:
         for layer in glyph.layers:
             if layer._is_brace_layer():
@@ -20,10 +18,6 @@ def resolve_intermediate_components(font):
                 # which have components which don't have intermediate layers
                 for shape in layer.components:
                     ensure_component_has_sparse_layer(font, shape, layer)
-                # Later we will check if everyone who uses me as a component
-                # has the same intermediate layers as I do
-                components_with_intermediate_layers.add(glyph.name)
-                all_intermediate_locations.add(tuple(layer._brace_coordinates()))
 
 
 def variation_model(font, locations):
