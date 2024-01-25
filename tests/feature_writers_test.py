@@ -1,3 +1,4 @@
+from textwrap import dedent
 from glyphsLib import load_to_ufos
 from glyphsLib.featureWriters.markFeatureWriter import ContextualMarkFeatureWriter
 from ufo2ft.featureWriters import ast
@@ -17,7 +18,18 @@ def test_contextual_anchors(datadir):
 
         feature = feaFile.statements[-1]
         assert feature.name == "mark"
-        assert len(feature.statements) == 3
+        # note there are two mark2base lookups because ufo2ft v3 generates one lookup
+        # per mark class (previously 'top' and 'bottom' would go into one lookup)
+        assert str(feature) == dedent(
+            """\
+            feature mark {
+                lookup mark2base;
+                lookup mark2base_1;
+                lookup ContextualMarkDispatch_0;
+                lookup ContextualMarkDispatch_1;
+            } mark;
+            """
+        )
 
         lookup = feature.statements[-2].lookup
         assert str(lookup) == (

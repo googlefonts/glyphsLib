@@ -7,11 +7,10 @@ from ufo2ft.featureWriters.markFeatureWriter import (
     MARK_PREFIX,
     LIGA_SEPARATOR,
     LIGA_NUM_RE,
+    MarkFeatureWriter,
     MarkToBasePos,
     NamedAnchor,
-    MarkFeatureWriter,
 )
-from ufo2ft.util import quantize
 
 
 class ContextuallyAwareNamedAnchor(NamedAnchor):
@@ -140,8 +139,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                     self.log.warning(
                         "duplicate anchor '%s' in glyph '%s'", anchorName, glyphName
                     )
-                x = quantize(anchor.x, self.options.quantization)
-                y = quantize(anchor.y, self.options.quantization)
+                x, y = self._getAnchor(glyphName, anchorName)
                 libData = None
                 if anchor.identifier:
                     libData = glyph.lib[OBJECT_LIBS_KEY].get(anchor.identifier)
