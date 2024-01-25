@@ -489,7 +489,7 @@ class ListDictionaryProxy(Proxy):
         if isinstance(key, int):
             del self._items[key]
         elif isinstance(key, str):
-            for item in self._items:
+            for item in list(self._items):
                 if item.name == key:
                     self._items.remove(item)
         else:
@@ -636,7 +636,7 @@ class FontFontMasterProxy(Proxy):
     def remove(self, FontMaster):
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
-            for layer in glyph.layers:
+            for layer in list(glyph.layers):
                 if (
                     layer.associatedMasterId == FontMaster.id
                     or layer.layerId == FontMaster.id
