@@ -41,9 +41,10 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     master_locations = [x.axes for x in font.masters]
     _, limits = variation_model(font, master_locations)
     location = tuple(parent_layer._brace_coordinates())
+    default_location = get_regular_master(font).axes
     normalized_location = {
         axisTag: normalizeValue(
-            location[ix], (limits[axisTag][0], limits[axisTag][0], limits[axisTag][1])
+            location[ix], (limits[axisTag][0], default_location[ix], limits[axisTag][1])
         )
         for ix, axisTag in enumerate(tags)
     }
