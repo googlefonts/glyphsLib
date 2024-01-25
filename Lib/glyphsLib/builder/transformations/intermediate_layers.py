@@ -15,7 +15,7 @@ def resolve_intermediate_components(font):
     all_intermediate_locations = set()
     for glyph in font.glyphs:
         for layer in glyph.layers:
-            if "coordinates" in layer.attributes:
+            if layer._is_brace_layer():
                 # First, let's find glyphs with intermediate layers
                 # which have components which don't have intermediate layers
                 for shape in layer.components:
@@ -23,12 +23,11 @@ def resolve_intermediate_components(font):
                 # Later we will check if everyone who uses me as a component
                 # has the same intermediate layers as I do
                 components_with_intermediate_layers.add(glyph.name)
-                all_intermediate_locations.add(tuple(layer.attributes["coordinates"]))
+                all_intermediate_locations.add(tuple(layer._brace_coordinates()))
 
 
-def simple_variation_model(font):
+def variation_model(font, locations):
     tags = [axis.axisTag for axis in font.axes]
-    locations = [x.axes for x in font.masters]
     limits = {tag: (min(x), max(x)) for tag, x in zip(tags, (zip(*locations)))}
     master_locations = []
     default_location = get_regular_master(font).axes
@@ -45,8 +44,9 @@ def simple_variation_model(font):
 
 def ensure_component_has_sparse_layer(font, component, parent_layer):
     tags = [axis.axisTag for axis in font.axes]
-    model, limits = simple_variation_model(font)
-    location = parent_layer.attributes["coordinates"]
+    master_locations = [x.axes for x in font.masters]
+    _, limits = variation_model(font, master_locations)
+    location = tuple(parent_layer._brace_coordinates())
     normalized_location = {
         axisTag: normalizeValue(
             location[ix], (limits[axisTag][0], limits[axisTag][0], limits[axisTag][1])
@@ -57,10 +57,7 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     for layer in componentglyph.layers:
         if layer.layerId == parent_layer.layerId:
             return
-        if (
-            "coordinates" in layer.attributes
-            and layer.attributes["coordinates"] == location
-        ):
+        if "coordinates" in layer.attributes and layer._brace_coordinates() == location:
             return
 
     # We'll add the appropriate intermediate layer to the component, that'll fix it
@@ -75,20 +72,39 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     layer.layerId = str(uuid.uuid4())
     layer.associatedMasterId = parent_layer.associatedMasterId
     layer.name = parent_layer.name
-    all_widths = [l.width for l in componentglyph.layers if l._is_master_layer]
-    layer.width = model.interpolateFromMasters(normalized_location, all_widths)
+    # Create a glyph-level variation model for the component glyph,
+    # including any intermediate layers
+    interpolatable_layers = []
+    locations = []
+    for l in componentglyph.layers:
+        if l._is_brace_layer():
+            locations.append(l.attributes["coordinates"])
+            interpolatable_layers.append(l)
+        if l._is_master_layer:
+            locations.append(font.masters[l.associatedMasterId].axes)
+            interpolatable_layers.append(l)
+    glyph_level_model, _ = variation_model(font, locations)
+
+    # Interpolate new layer width
+    all_widths = [l.width for l in interpolatable_layers]
+    layer.width = glyph_level_model.interpolateFromMasters(
+        normalized_location, all_widths
+    )
+
+    # Interpolate layer shapes
     for ix, shape in enumerate(componentglyph.layers[0].shapes):
-        all_shapes = [l.shapes[ix] for l in componentglyph.layers if l._is_master_layer]
-        assert len(all_shapes) == len(font.masters)
+        all_shapes = [l.shapes[ix] for l in interpolatable_layers]
         if isinstance(shape, GSPath):
             # We are making big assumptions about compatibility here
             layer.shapes.append(
-                interpolate_path(all_shapes, model, normalized_location)
+                interpolate_path(all_shapes, glyph_level_model, normalized_location)
             )
         else:
             ensure_component_has_sparse_layer(font, shape, parent_layer)
             layer.shapes.append(
-                interpolate_component(all_shapes, model, normalized_location)
+                interpolate_component(
+                    all_shapes, glyph_level_model, normalized_location
+                )
             )
     componentglyph.layers.append(layer)
 
