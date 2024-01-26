@@ -11,6 +11,7 @@ from ufo2ft.featureWriters.markFeatureWriter import (
     MarkToBasePos,
     NamedAnchor,
 )
+from ufo2ft.util import quantize
 
 
 class ContextuallyAwareNamedAnchor(NamedAnchor):
@@ -115,6 +116,21 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
 class ContextualMarkFeatureWriter(MarkFeatureWriter):
     NamedAnchor = ContextuallyAwareNamedAnchor
 
+    def _getAnchor(self, glyphName, anchorName, anchor=None):
+        # the variable FEA aware method is defined with ufo2ft v3; make sure we don't
+        # fail but continue to work unchanged with older ufo2ft MarkFeatureWriter API.
+        try:
+            getter = super()._getAnchor
+        except AttributeError:
+            x = anchor.x
+            y = anchor.y
+            if hasattr(self.options, "quantization"):
+                x = quantize(x, self.options.quantization)
+                y = quantize(y, self.options.quantization)
+            return x, y
+        else:
+            return getter(glyphName, anchorName, anchor=anchor)
+
     def _getAnchorLists(self):
         gdefClasses = self.context.gdefClasses
         if gdefClasses.base is not None:
@@ -139,7 +155,7 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                     self.log.warning(
                         "duplicate anchor '%s' in glyph '%s'", anchorName, glyphName
                     )
-                x, y = self._getAnchor(glyphName, anchorName)
+                x, y = self._getAnchor(glyphName, anchorName, anchor=anchor)
                 libData = None
                 if anchor.identifier:
                     libData = glyph.lib[OBJECT_LIBS_KEY].get(anchor.identifier)
