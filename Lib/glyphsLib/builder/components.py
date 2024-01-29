@@ -58,6 +58,7 @@ def to_ufo_components(self, ufo_glyph, layer):
             component_glyph = font.glyphs[component_name]
             color_layers = [
                 l for l in component_glyph.layers if l._is_color_palette_layer()
+                and l.associatedMasterId == layer.associatedMasterId
             ]
             for i, l in enumerate(color_layers):
                 if l._color_palette_index() == layer._color_palette_index():
