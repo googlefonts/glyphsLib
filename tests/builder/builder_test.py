@@ -1210,6 +1210,26 @@ def test_glyph_color_palette_layers_no_unicode_mapping(ufo_module):
     assert ufo["a.color1"].unicode is None
 
 
+def test_glyph_color_layers_components_2(ufo_module):
+    filename = os.path.join(
+        os.path.dirname(__file__), "..", "data", "ColorComponents.glyphs"
+    )
+    with open(filename) as f:
+        font = glyphsLib.load(f)
+
+    ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
+    bold_layer0 = ds.sources[1].font.layers["color.0"]
+    bold_layer1 = ds.sources[1].font.layers["color.1"]
+    assert [c.baseGlyph for c in bold_layer0["Aacute"].components] == [
+        "A.color0",
+        "acutecomb.color0",
+    ]
+    assert [c.baseGlyph for c in bold_layer1["Aacute"].components] == [
+        "A.color1",
+        "acutecomb.color1",
+    ]
+
+
 def test_glyph_color_palette_layers_explode(ufo_module):
     font = generate_minimal_font()
     glypha = add_glyph(font, "a")
