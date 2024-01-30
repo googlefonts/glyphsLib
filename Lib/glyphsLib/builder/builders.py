@@ -54,7 +54,9 @@ class UFOBuilder(LoggerMixin):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
         Keyword arguments:
-        font -- The GSFont object to transform into UFOs
+        font -- The GSFont object to transform into UFOs. We expect this GSFont
+                object to have been pre-processed with
+                ``glyphsLib.builder.preflight_glyphs``.
         ufo_module -- A Python module to use to build UFO objects (you can pass
                       a custom module that has the same classes as ufoLib2 or
                       defcon to get instances of your own classes). Default: ufoLib2
