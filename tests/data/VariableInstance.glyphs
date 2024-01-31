@@ -1,5 +1,5 @@
 {
-.appVersion = "3139";
+.appVersion = "3234";
 .formatVersion = 3;
 axes = (
 {
@@ -777,13 +777,6 @@ name = "ExtraBlack Slant Left";
 weightClass = 1000;
 },
 {
-axesValues = (
-0,
-0
-);
-instanceInterpolations = {
-"459CA063-FA7D-4205-A795-7B6CE244EAAB" = 1;
-};
 name = Regular;
 type = variable;
 }
@@ -832,19 +825,6 @@ key = designerURL;
 value = "https://gaber.design";
 },
 {
-key = manufacturers;
-values = (
-{
-language = dflt;
-value = "Kief Type Foundry, Accademia di Belle Arti di Urbino";
-}
-);
-},
-{
-key = manufacturerURL;
-value = "https://gaber.design";
-},
-{
 key = licenses;
 values = (
 {
@@ -858,8 +838,21 @@ key = licenseURL;
 value = "http://scripts.sil.org/OFL";
 },
 {
+key = manufacturers;
+values = (
+{
+language = dflt;
+value = "Kief Type Foundry, Accademia di Belle Arti di Urbino";
+}
+);
+},
+{
+key = manufacturerURL;
+value = "https://gaber.design";
+},
+{
 key = vendorID;
-value = "1KTF";
+value = 1KTF;
 }
 );
 settings = {
