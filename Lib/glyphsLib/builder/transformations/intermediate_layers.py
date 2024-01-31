@@ -63,7 +63,7 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
         parent_layer.name,
     )
     layer = GSLayer()
-    layer.attributes["coordinates"] = location
+    layer.attributes["coordinates"] = parent_layer.attributes["coordinates"]
     layer.layerId = str(uuid.uuid4())
     layer.associatedMasterId = parent_layer.associatedMasterId
     layer.name = parent_layer.name
