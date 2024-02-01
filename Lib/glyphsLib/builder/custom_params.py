@@ -1062,7 +1062,7 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
 register(RenameGlyphsParamHandler())
 
 
-def to_ufo_custom_params(self, ufo, glyphs_object):
+def to_ufo_custom_params(self, ufo, glyphs_object, set_default_params=True):
     # glyphs_module=None because we shouldn't instanciate any Glyphs classes
     glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
     ufo_proxy = UFOProxy(ufo)
@@ -1076,7 +1076,8 @@ def to_ufo_custom_params(self, ufo, glyphs_object):
         name = _normalize_custom_param_name(param.name)
         ufo.lib[CUSTOM_PARAM_PREFIX + glyphs_proxy.sub_key + name] = param.value
 
-    _set_default_params(ufo)
+    if set_default_params:
+        _set_default_params(ufo)
 
 
 def to_glyphs_custom_params(self, ufo, glyphs_object):

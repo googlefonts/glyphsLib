@@ -56,13 +56,41 @@ logger = logging.getLogger(__name__)
 def to_designspace_instances(self):
     """Write instance data from self.font to self.designspace."""
     for instance in self.font.instances:
-        if instance.type == InstanceType.VARIABLE:
-            continue
         if self.minimize_glyphs_diffs or (
             is_instance_active(instance)
             and _is_instance_included_in_family(self, instance)
         ):
-            _to_designspace_instance(self, instance)
+            if instance.type == InstanceType.VARIABLE:
+                _to_designspace_varfont(self, instance)
+            else:
+                _to_designspace_instance(self, instance)
+
+
+def _to_designspace_varfont(self, instance):
+    from fontTools.designspaceLib import RangeAxisSubsetDescriptor
+    from fontTools.ufoLib import fontInfoAttributesVersion3
+
+    ds = self.designspace
+    ufo_varfont = self.designspace.addVariableFontDescriptor(
+        name=instance.name,
+        filename=instance.customParameters["fileName"],
+        axisSubsets=[RangeAxisSubsetDescriptor(name=axis.name) for axis in ds.axes],
+    )
+
+    # to_ufo_custom_params() wants a UFO, create a dummy one
+    ufo = self.ufo_module.Font()
+    to_ufo_custom_params(self, ufo, instance, set_default_params=False)
+
+    info = {}
+    for attr in fontInfoAttributesVersion3:
+        if (value := getattr(ufo.info, attr, None)) is not None:
+            info[attr] = value
+
+    if info:
+        ufo_varfont.lib["public.fontInfo"] = info
+
+    for key in ufo.lib:
+        ufo_varfont.lib[key] = ufo.lib[key]
 
 
 def _to_designspace_instance(self, instance):

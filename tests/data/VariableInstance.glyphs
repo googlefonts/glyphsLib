@@ -777,7 +777,24 @@ name = "ExtraBlack Slant Left";
 weightClass = 1000;
 },
 {
-name = Regular;
+customParameters = (
+{
+name = "Name Table Entry";
+value = "1 1 0 0; Variable";
+}
+);
+name = Variable;
+properties = (
+{
+key = preferredFamilyNames;
+values = (
+{
+language = dflt;
+value = "Cairo Variable";
+}
+);
+}
+);
 type = variable;
 }
 );
