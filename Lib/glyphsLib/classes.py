@@ -3372,6 +3372,8 @@ class GSInstance(GSBase):
 
     # v2 compatibility
     def _get_axis_value(self, index):
+        if self.type == InstanceType.VARIABLE:
+            return None
         if index < len(self.axes):
             return self.axes[index]
         if index < len(self._axis_defaults):

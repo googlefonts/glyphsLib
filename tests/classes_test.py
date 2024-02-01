@@ -40,6 +40,7 @@ from glyphsLib.classes import (
     GSPath,
     GSSmartComponentAxis,
     GSBackgroundImage,
+    InstanceType,
     segment,
     LayerComponentsProxy,
     LayerGuideLinesProxy,
@@ -185,6 +186,20 @@ class GSFontTest(unittest.TestCase):
         master = GSFontMaster()
         font.masters.append(master)
         self.assertEqual(master.font, font)
+
+
+class GSInstanceTest(unittest.TestCase):
+    def test_variable_instance(self):
+        instance = GSInstance()
+        instance.name = "Variable"
+        instance.type = InstanceType.VARIABLE
+
+        assert instance.weightValue is None
+        assert instance.widthValue is None
+        assert instance.customValue is None
+        assert instance.customValue1 is None
+        assert instance.customValue2 is None
+        assert instance.customValue3 is None
 
 
 class GSObjectsTestCase(unittest.TestCase):
