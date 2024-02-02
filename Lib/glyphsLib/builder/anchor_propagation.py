@@ -101,25 +101,33 @@ def _componentAnchorFromLib(_glyph, _targetComponent):
                 and _anchorLib["name"] == _targetComponent.baseGlyph
                 and _anchorLib["index"] == _glyph.components.index(_targetComponent)
             ):
-                return _anchorLib["anchor"]
+                return _anchorLib["anchor"] or None
+    return None
 
 
 def _adjust_anchors(anchor_data, ufo, parent, component):
     """Adjust anchors to which a mark component may have been attached."""
     glyph = ufo[component.baseGlyph]
+    anchor_names = {a.name for a in glyph.anchors}
     t = Transform(*component.transformation)
-    _componentAnchor = _componentAnchorFromLib(parent, component)
-    for anchor in glyph.anchors:
+    component_anchor = _componentAnchorFromLib(parent, component)
+    # ignore the component's named anchor if we don't have it
+    if component_anchor not in anchor_data:
+        component_anchor = None
+    # For each base anchor in the mark component glyph
+    for anchor in (a for a in glyph.anchors if not a.name.startswith("_")):
         # adjust either if component is attached to a specific named anchor
         # (e.g. top_2 for a ligature glyph)
         # rather than to the standard anchors (top/bottom)
-        if _componentAnchor and _componentAnchor in anchor_data:
-            anchor_data[_componentAnchor] = t.transformPoint((anchor.x, anchor.y))
+        if (
+            component_anchor
+            and component_anchor.startswith(anchor.name + "_")
+            and "_" + anchor.name in anchor_names
+        ):
+            anchor_data[component_anchor] = t.transformPoint((anchor.x, anchor.y))
         # ... or this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top") ...
-        elif anchor.name in anchor_data and any(
-            a.name == "_" + anchor.name for a in glyph.anchors
-        ):
+        elif anchor.name in anchor_data and "_" + anchor.name in anchor_names:
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
