@@ -85,15 +85,25 @@ def main(args=None):
             "roundtripping between Glyphs and UFOs."
         ),
     )
-    group.add_argument(
+    anchor_group = group.add_mutually_exclusive_group()
+    anchor_group.add_argument(
         "--propagate-anchors",
         default=None,
         action="store_true",
         help=(
-            "Copy anchors from underlying components to actual "
-            "glyph. Glyphs would do this implicitly, only use if you need "
-            "full control over all anchors."
+            "Copy anchors from underlying components to actual glyph "
+            "(Glyphs would do this implicitly upon export). By default, if this option "
+            "is not explicitly used, glyphs2ufo checks the 'Propagate Anchors' font "
+            "custom parameter and if unset or set to 1 (true) then the anchors get "
+            "propagated. Pass this option to enable this overriding the parameter."
         ),
+    )
+    anchor_group.add_argument(
+        "--no-propagate-anchors",
+        dest="propagate_anchors",
+        default=None,
+        action="store_false",
+        help="Disable anchor propagation regardless of any custom parameter.",
     )
     gdef_gen_group = group.add_mutually_exclusive_group()
     gdef_gen_group.add_argument(
