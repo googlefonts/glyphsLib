@@ -28,6 +28,8 @@ from .constants import (
     LAYER_NAME_KEY,
     GLYPH_USER_DATA_KEY,
     NODE_USER_DATA_KEY,
+    GLYPHS_MATH_VARIANTS_KEY,
+    GLYPHS_MATH_EXTENDED_SHAPE_KEY,
 )
 
 
@@ -59,7 +61,18 @@ def to_ufo_master_user_data(self, ufo, master):
 def to_ufo_glyph_user_data(self, ufo, glyph):
     key = GLYPH_USER_DATA_KEY + "." + glyph.name
     if glyph.userData:
-        ufo.lib[key] = dict(glyph.userData)
+        # Convert MATH userData to top-level keys and group them under the same
+        # key so that they are in a more usable/compact form.
+        if GLYPHS_MATH_EXTENDED_SHAPE_KEY in glyph.userData:
+            ufo.lib.setdefault(GLYPHS_MATH_EXTENDED_SHAPE_KEY, []).append(glyph.name)
+            del glyph.userData[GLYPHS_MATH_EXTENDED_SHAPE_KEY]
+        if GLYPHS_MATH_VARIANTS_KEY in glyph.userData:
+            ufo.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {})[glyph.name] = dict(
+                glyph.userData[GLYPHS_MATH_VARIANTS_KEY]
+            )
+            del glyph.userData[GLYPHS_MATH_VARIANTS_KEY]
+        if glyph.userData:
+            ufo.lib[key] = dict(glyph.userData)
 
 
 def to_ufo_layer_lib(self, master, ufo, ufo_layer):
@@ -143,6 +156,14 @@ def to_glyphs_glyph_user_data(self, ufo, glyph):
     key = GLYPH_USER_DATA_KEY + "." + glyph.name
     if key in ufo.lib:
         glyph.userData = ufo.lib[key]
+
+    key = GLYPHS_MATH_EXTENDED_SHAPE_KEY
+    if key in ufo.lib and glyph.name in ufo.lib[key]:
+        glyph.userData[key] = True
+
+    key = GLYPHS_MATH_VARIANTS_KEY
+    if key in ufo.lib and glyph.name in ufo.lib[key]:
+        glyph.userData[key] = ufo.lib[key][glyph.name]
 
 
 def to_glyphs_layer_lib(self, ufo_layer, master):
