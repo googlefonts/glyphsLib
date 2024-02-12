@@ -82,6 +82,7 @@ def _to_designspace_varfont(self, instance):
         if instance.name != "Regular":
             filename += "-" + instance.name
         filename += "VF"
+        filename = filename.replace(" ", "")
 
     ufo_varfont = self.designspace.addVariableFontDescriptor(
         name=instance.name,
