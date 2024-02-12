@@ -3948,9 +3948,6 @@ class GSLayer(GSBase):
                     axis_min = float(axis_min)
                 if isinstance(axis_max, str):
                     axis_max = float(axis_max)
-                if axis_max == axis.minimum and axis_max == axis.maximum:
-                    # It's full range, ignore it.
-                    continue
                 info[axis.tag] = (axis_min, axis_max)
             return info
 
