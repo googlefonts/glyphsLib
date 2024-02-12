@@ -783,7 +783,7 @@ name = "Name Table Entry";
 value = "1 1 0 0; Variable";
 }
 );
-name = Variable;
+name = "Variable Foo Bar";
 properties = (
 {
 key = preferredFamilyNames;

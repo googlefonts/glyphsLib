@@ -71,9 +71,22 @@ def _to_designspace_varfont(self, instance):
     from fontTools.ufoLib import fontInfoAttributesVersion3
 
     ds = self.designspace
+
+    # unless the `fileName` custom parameter was explicitly set, do like Glyphs.app
+    # and concatenate the family, instance (style) names and "VF" to form a filename;
+    # the default 'Regular' is omitted by Glyphs.app.
+    # https://github.com/googlefonts/glyphsLib/issues/981
+    filename = instance.customParameters["fileName"]
+    if not filename:
+        filename = self.font.familyName
+        if instance.name != "Regular":
+            filename += "-" + instance.name
+        filename += "VF"
+        filename = filename.replace(" ", "")
+
     ufo_varfont = self.designspace.addVariableFontDescriptor(
         name=instance.name,
-        filename=instance.customParameters["fileName"],
+        filename=filename,
         axisSubsets=[RangeAxisSubsetDescriptor(name=axis.name) for axis in ds.axes],
     )
 
