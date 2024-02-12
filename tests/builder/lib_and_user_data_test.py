@@ -24,6 +24,9 @@ from glyphsLib.builder.constants import (
     FONT_CUSTOM_PARAM_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
     DEFAULT_FEATURE_WRITERS,
+    GLYPHS_MATH_CONSTANTS_KEY,
+    GLYPHS_MATH_EXTENDED_SHAPE_KEY,
+    GLYPHS_MATH_VARIANTS_KEY,
 )
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 
@@ -259,6 +262,49 @@ def test_glyph_user_data_into_ufo_lib():
     font = to_glyphs([ufo])
 
     assert font.glyphs["a"].userData["glyphUserDataKey"] == "glyphUserDataValue"
+
+
+def test_math_user_data_into_ufo_lib(datadir):
+    font = classes.GSFont(str(datadir.join("Math.glyphs")))
+
+    ufos = to_ufos(font)
+
+    math_glyphs = ["parenleft", "parenright"]
+
+    for ufo, master in zip(ufos, font.masters):
+        assert ufo.lib[GLYPHS_MATH_EXTENDED_SHAPE_KEY] == math_glyphs
+
+        glyphs = [font.glyphs[n] for n in math_glyphs]
+        assert ufo.lib[GLYPHS_MATH_VARIANTS_KEY] == {
+            g.name: g.userData[GLYPHS_MATH_VARIANTS_KEY] for g in glyphs
+        }
+        assert (
+            ufo.lib[GLYPHS_MATH_CONSTANTS_KEY]
+            == master.userData[GLYPHS_MATH_CONSTANTS_KEY]
+        )
+        for name in math_glyphs:
+            assert (
+                ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY]
+                == font.glyphs[name]
+                .layers[master.id]
+                .userData[GLYPHS_MATH_VARIANTS_KEY]
+            )
+
+    font2 = to_glyphs(ufos)
+    for master, ufo in zip(font2.masters, ufos):
+        assert (
+            master.userData[GLYPHS_MATH_CONSTANTS_KEY]
+            == ufo.lib[GLYPHS_MATH_CONSTANTS_KEY]
+        )
+        for name in math_glyphs:
+            assert (
+                font2.glyphs[name].userData[GLYPHS_MATH_VARIANTS_KEY]
+                == ufo.lib[GLYPHS_MATH_VARIANTS_KEY][name]
+            )
+            assert (
+                font2.glyphs[name].layers[master.id].userData[GLYPHS_MATH_VARIANTS_KEY]
+                == ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY]
+            )
 
 
 def test_glif_lib_equivalent_to_layer_user_data(ufo_module):
