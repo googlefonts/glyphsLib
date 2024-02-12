@@ -140,8 +140,9 @@ def to_glyphs_family_user_data_from_ufo(self, ufo):
 def to_glyphs_master_user_data(self, ufo, master):
     """Set the GSFontMaster userData from the UFO master-specific lib data."""
     target_user_data = master.userData
+    special_math_keys = {GLYPHS_MATH_VARIANTS_KEY, GLYPHS_MATH_EXTENDED_SHAPE_KEY}
     for key, value in ufo.lib.items():
-        if _user_data_has_no_special_meaning(key):
+        if _user_data_has_no_special_meaning(key) and key not in special_math_keys:
             target_user_data[key] = value
 
     # Save UFO data files

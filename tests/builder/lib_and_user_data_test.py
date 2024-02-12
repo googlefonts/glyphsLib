@@ -292,6 +292,8 @@ def test_math_user_data_into_ufo_lib(datadir):
 
     font2 = to_glyphs(ufos)
     for master, ufo in zip(font2.masters, ufos):
+        assert font2.userData[GLYPHS_MATH_EXTENDED_SHAPE_KEY] is None
+        assert font2.userData[GLYPHS_MATH_CONSTANTS_KEY] is None
         assert (
             master.userData[GLYPHS_MATH_CONSTANTS_KEY]
             == ufo.lib[GLYPHS_MATH_CONSTANTS_KEY]
