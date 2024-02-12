@@ -30,6 +30,7 @@ from .constants import (
     NODE_USER_DATA_KEY,
     GLYPHS_MATH_VARIANTS_KEY,
     GLYPHS_MATH_EXTENDED_SHAPE_KEY,
+    GLYPHS_MATH_PREFIX,
 )
 
 
@@ -59,20 +60,22 @@ def to_ufo_master_user_data(self, ufo, master):
 
 
 def to_ufo_glyph_user_data(self, ufo, glyph):
-    key = GLYPH_USER_DATA_KEY + "." + glyph.name
-    if glyph.userData:
+    math_data = {
+        k: v for k, v in glyph.userData.items() if k.startswith(GLYPHS_MATH_PREFIX)
+    }
+    if math_data:
         # Convert MATH userData to top-level keys and group them under the same
         # key so that they are in a more usable/compact form.
-        if GLYPHS_MATH_EXTENDED_SHAPE_KEY in glyph.userData:
+        if GLYPHS_MATH_EXTENDED_SHAPE_KEY in math_data:
             ufo.lib.setdefault(GLYPHS_MATH_EXTENDED_SHAPE_KEY, []).append(glyph.name)
-            del glyph.userData[GLYPHS_MATH_EXTENDED_SHAPE_KEY]
-        if GLYPHS_MATH_VARIANTS_KEY in glyph.userData:
+        if GLYPHS_MATH_VARIANTS_KEY in math_data:
             ufo.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {})[glyph.name] = dict(
-                glyph.userData[GLYPHS_MATH_VARIANTS_KEY]
+                math_data[GLYPHS_MATH_VARIANTS_KEY]
             )
-            del glyph.userData[GLYPHS_MATH_VARIANTS_KEY]
-        if glyph.userData:
-            ufo.lib[key] = dict(glyph.userData)
+    other_data = {k: v for k, v in glyph.userData.items() if k not in math_data}
+    key = GLYPH_USER_DATA_KEY + "." + glyph.name
+    if other_data:
+        ufo.lib[key] = dict(other_data)
 
 
 def to_ufo_layer_lib(self, master, ufo, ufo_layer):
