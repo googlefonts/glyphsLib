@@ -682,6 +682,8 @@ def test_variable_instance(ufo_module):
     assert len(doc.variableFonts) == 1
 
     varfont = doc.variableFonts[0]
+    assert varfont.name == "Variable"
+    assert varfont.filename == "Cairo-VariableVF"
     assert len(varfont.axisSubsets) == len(doc.axes)
     assert "public.fontInfo" in varfont.lib
 
