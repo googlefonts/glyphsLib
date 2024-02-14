@@ -16,6 +16,8 @@
 import os
 from collections import OrderedDict
 
+import pytest
+
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib import classes
 from glyphsLib.types import BinaryData
@@ -264,10 +266,11 @@ def test_glyph_user_data_into_ufo_lib():
     assert font.glyphs["a"].userData["glyphUserDataKey"] == "glyphUserDataValue"
 
 
-def test_math_user_data_into_ufo_lib(datadir):
+@pytest.mark.parametrize("minimal", [True, False])
+def test_math_user_data_into_ufo_lib(datadir, minimal):
     font = classes.GSFont(str(datadir.join("Math.glyphs")))
 
-    ufos = to_ufos(font)
+    ufos = to_ufos(font, minimal=minimal)
 
     math_glyphs = ["parenleft", "parenright"]
 

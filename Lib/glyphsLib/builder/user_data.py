@@ -72,6 +72,8 @@ def to_ufo_glyph_user_data(self, ufo, glyph):
             ufo.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {})[glyph.name] = dict(
                 math_data[GLYPHS_MATH_VARIANTS_KEY]
             )
+    if self.minimal:
+        return
     other_data = {k: v for k, v in glyph.userData.items() if k not in math_data}
     key = GLYPH_USER_DATA_KEY + "." + glyph.name
     if other_data:
@@ -101,6 +103,8 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
     for key in user_data.keys():
+        if self.minimal and not key.startswith(GLYPHS_MATH_PREFIX):
+            continue
         if _user_data_has_no_special_meaning(key):
             ufo_glyph.lib[key] = user_data[key]
 
