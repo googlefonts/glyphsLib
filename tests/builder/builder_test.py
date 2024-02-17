@@ -2390,16 +2390,16 @@ def test_load_kerning_bracket(ufo_module):
 
 
 class _PointDataPen:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.contours = []
 
     def addPoint(self, pt, segmentType=None, smooth=False, **kwargs):
         self.contours[-1].append((pt[0], pt[1], segmentType, smooth))
 
-    def beginPath(self):
+    def beginPath(self, **kwargs):
         self.contours.append([])
 
-    def endPath(self):
+    def endPath(self, **kwargs):
         if not self.contours[-1]:
             self.contours.pop()
 
