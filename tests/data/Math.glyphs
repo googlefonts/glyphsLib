@@ -1,0 +1,1043 @@
+{
+.appVersion = "3239";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = "Don't use Production Names";
+value = 1;
+},
+{
+name = "Enforce Compatibility Check";
+value = 0;
+},
+{
+name = "Write lastChange";
+value = 0;
+},
+{
+name = "Write DisplayStrings";
+value = 0;
+},
+{
+name = "Use Line Breaks";
+value = 1;
+}
+);
+date = "2024-02-12 18:20:25 +0000";
+familyName = "Test Math Font";
+featurePrefixes = (
+{
+code = "languagesystem DFLT dflt;
+languagesystem math dflt;
+";
+name = Languagesystems;
+}
+);
+fontMaster = (
+{
+axesValues = (
+400
+);
+customParameters = (
+{
+name = underlinePosition;
+value = -150;
+}
+);
+id = m01;
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 656;
+},
+{
+pos = 449;
+},
+{
+over = -18;
+},
+{
+over = -1;
+pos = -200;
+},
+{
+}
+);
+name = Regular;
+userData = {
+GSCornerRadius = 13;
+GSOffsetHorizontal = 23;
+GSOffsetMakeStroke = 1;
+GSOffsetVertical = 23;
+com.nagwa.MATHPlugin.constants = {
+AccentBaseHeight = 449;
+AxisHeight = 250;
+DelimitedSubFormulaMinHeight = 1010;
+DisplayOperatorMinHeight = 2260;
+FlattenedAccentBaseHeight = 656;
+FractionDenomDisplayStyleGapMin = 137;
+FractionDenominatorDisplayStyleShiftDown = 685;
+FractionDenominatorGapMin = 45;
+FractionDenominatorShiftDown = 345;
+FractionNumDisplayStyleGapMin = 137;
+FractionNumeratorDisplayStyleShiftUp = 677;
+FractionNumeratorGapMin = 45;
+FractionNumeratorShiftUp = 394;
+FractionRuleThickness = 45;
+LowerLimitBaselineDropMin = 600;
+LowerLimitGapMin = 166;
+MinConnectorOverlap = 20;
+OverbarExtraAscender = 45;
+OverbarRuleThickness = 45;
+OverbarVerticalGap = 137;
+RadicalDegreeBottomRaisePercent = 60;
+RadicalDisplayStyleVerticalGap = 158;
+RadicalExtraAscender = 70;
+RadicalKernAfterDegree = -400;
+RadicalKernBeforeDegree = 277;
+RadicalRuleThickness = 45;
+RadicalVerticalGap = 57;
+ScriptPercentScaleDown = 70;
+ScriptScriptPercentScaleDown = 50;
+SkewedFractionHorizontalGap = 400;
+SkewedFractionVerticalGap = 60;
+SpaceAfterScript = 50;
+StackBottomDisplayStyleShiftDown = 685;
+StackBottomShiftDown = 345;
+StackDisplayStyleGapMin = 321;
+StackGapMin = 137;
+StackTopDisplayStyleShiftUp = 677;
+StackTopShiftUp = 444;
+StretchStackBottomShiftDown = 600;
+StretchStackGapAboveMin = 111;
+StretchStackGapBelowMin = 166;
+StretchStackTopShiftUp = 199;
+SubSuperscriptGapMin = 183;
+SubscriptBaselineDropMin = 50;
+SubscriptShiftDown = 149;
+SubscriptTopMax = 359;
+SuperscriptBaselineDropMax = 385;
+SuperscriptBottomMaxWithSubscript = 359;
+SuperscriptBottomMin = 112;
+SuperscriptShiftUp = 362;
+SuperscriptShiftUpCramped = 289;
+UnderbarExtraDescender = 45;
+UnderbarRuleThickness = 45;
+UnderbarVerticalGap = 137;
+UpperLimitBaselineRiseMin = 199;
+UpperLimitGapMin = 111;
+};
+};
+},
+{
+axesValues = (
+700
+);
+customParameters = (
+{
+name = underlinePosition;
+value = -150;
+}
+);
+iconName = Bold;
+id = "4D0E0118-C279-48A5-9553-358ED916F647";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 658;
+},
+{
+pos = 450;
+},
+{
+over = -19;
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Bold;
+userData = {
+GSCornerRadius = 75;
+GSOffsetHorizontal = 40;
+GSOffsetMakeStroke = 1;
+GSOffsetProportional = 1;
+GSOffsetVertical = 23;
+com.nagwa.MATHPlugin.constants = {
+AccentBaseHeight = 449;
+AxisHeight = 250;
+DelimitedSubFormulaMinHeight = 1010;
+DisplayOperatorMinHeight = 2260;
+FlattenedAccentBaseHeight = 658;
+FractionDenomDisplayStyleGapMin = 137;
+FractionDenominatorDisplayStyleShiftDown = 685;
+FractionDenominatorGapMin = 45;
+FractionDenominatorShiftDown = 345;
+FractionNumDisplayStyleGapMin = 137;
+FractionNumeratorDisplayStyleShiftUp = 677;
+FractionNumeratorGapMin = 45;
+FractionNumeratorShiftUp = 394;
+FractionRuleThickness = 45;
+LowerLimitBaselineDropMin = 600;
+LowerLimitGapMin = 166;
+MinConnectorOverlap = 20;
+OverbarExtraAscender = 45;
+OverbarRuleThickness = 45;
+OverbarVerticalGap = 137;
+RadicalDegreeBottomRaisePercent = 60;
+RadicalDisplayStyleVerticalGap = 158;
+RadicalExtraAscender = 70;
+RadicalKernAfterDegree = -400;
+RadicalKernBeforeDegree = 277;
+RadicalRuleThickness = 90;
+RadicalVerticalGap = 57;
+ScriptPercentScaleDown = 70;
+ScriptScriptPercentScaleDown = 50;
+SkewedFractionHorizontalGap = 400;
+SkewedFractionVerticalGap = 120;
+SpaceAfterScript = 50;
+StackBottomDisplayStyleShiftDown = 685;
+StackBottomShiftDown = 345;
+StackDisplayStyleGapMin = 321;
+StackGapMin = 137;
+StackTopDisplayStyleShiftUp = 677;
+StackTopShiftUp = 444;
+StretchStackBottomShiftDown = 600;
+StretchStackGapAboveMin = 111;
+StretchStackGapBelowMin = 166;
+StretchStackTopShiftUp = 199;
+SubSuperscriptGapMin = 183;
+SubscriptBaselineDropMin = 50;
+SubscriptShiftDown = 149;
+SubscriptTopMax = 359;
+SuperscriptBaselineDropMax = 385;
+SuperscriptBottomMaxWithSubscript = 359;
+SuperscriptBottomMin = 112;
+SuperscriptShiftUp = 362;
+SuperscriptShiftUpCramped = 289;
+UnderbarExtraDescender = 45;
+UnderbarRuleThickness = 45;
+UnderbarVerticalGap = 137;
+UpperLimitBaselineRiseMin = 199;
+UpperLimitGapMin = 111;
+};
+};
+}
+);
+glyphs = (
+{
+glyphname = parenleft;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(143,529,o),
+(90,381,o),
+(90,232,cs),
+(90,83,o),
+(143,-65,o),
+(249,-173,c),
+(281,-141,l),
+(185,-41,o),
+(136,93,o),
+(136,232,cs),
+(136,371,o),
+(185,505,o),
+(281,605,c),
+(249,637,l)
+);
+}
+);
+userData = {
+com.nagwa.MATHPlugin.variants = {
+vAssembly = (
+(
+parenleft.bot,
+0,
+0,
+314
+),
+(
+parenleft.ext,
+1,
+630,
+630
+),
+(
+parenleft.top,
+0,
+314,
+0
+)
+);
+};
+};
+width = 331;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(145,537,o),
+(90,385,o),
+(90,232,cs),
+(90,79,o),
+(145,-73,o),
+(253,-185,c),
+(311,-129,l),
+(217,-33,o),
+(170,97,o),
+(170,232,cs),
+(170,367,o),
+(217,497,o),
+(311,593,c),
+(253,649,l)
+);
+}
+);
+userData = {
+com.nagwa.MATHPlugin.variants = {
+vAssembly = (
+(
+parenleft.bot,
+0,
+0,
+314
+),
+(
+parenleft.ext,
+1,
+1000,
+1000
+),
+(
+parenleft.top,
+0,
+314,
+0
+)
+);
+};
+};
+width = 361;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+unicode = 40;
+userData = {
+com.nagwa.MATHPlugin.extendedShape = 1;
+com.nagwa.MATHPlugin.variants = {
+vVariants = (
+parenleft,
+parenleft.size1,
+parenleft.size2,
+parenleft.size3,
+parenleft.size4
+);
+};
+};
+},
+{
+glyphname = parenleft.bot;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(291,-729,o),
+(136,-184,o),
+(136,373,cs),
+(136,687,l),
+(90,687,l),
+(90,373,ls),
+(90,-192,o),
+(247,-749,o),
+(559,-1157,c),
+(595,-1129,l)
+);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(90,365,ls),
+(90,-203,o),
+(248,-764,o),
+(562,-1175,c),
+(626,-1127,l),
+(324,-730,o),
+(170,-189,o),
+(170,365,cs),
+(170,679,l),
+(90,679,l)
+);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+},
+{
+glyphname = parenleft.ext;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(136,800,l),
+(90,800,l),
+(90,0,l),
+(136,0,l)
+);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(170,800,l),
+(90,800,l),
+(90,-200,l),
+(170,-200,l)
+);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=90";
+metricWidth = "=parenleft.top";
+},
+{
+glyphname = parenleft.size1;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(171,521,o),
+(90,294,o),
+(90,65,cs),
+(90,-164,o),
+(171,-391,o),
+(332,-557,c),
+(366,-525,l),
+(213,-367,o),
+(136,-154,o),
+(136,65,cs),
+(136,284,o),
+(213,497,o),
+(366,655,c),
+(332,687,l)
+);
+}
+);
+width = 416;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(173,529,o),
+(90,298,o),
+(90,65,cs),
+(90,-168,o),
+(173,-399,o),
+(337,-569,c),
+(395,-513,l),
+(245,-359,o),
+(170,-150,o),
+(170,65,cs),
+(170,280,o),
+(245,489,o),
+(395,643,c),
+(337,699,l)
+);
+}
+);
+width = 445;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+},
+{
+glyphname = parenleft.size2;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(192,437,o),
+(90,100,o),
+(90,-241,cs),
+(90,-582,o),
+(192,-919,o),
+(393,-1167,c),
+(429,-1137,l),
+(234,-899,o),
+(136,-574,o),
+(136,-241,cs),
+(136,92,o),
+(234,417,o),
+(429,657,c),
+(393,685,l)
+);
+}
+);
+width = 479;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(193,445,o),
+(90,104,o),
+(90,-241,cs),
+(90,-586,o),
+(193,-927,o),
+(397,-1177,c),
+(459,-1127,l),
+(267,-891,o),
+(170,-570,o),
+(170,-241,cs),
+(170,88,o),
+(267,409,o),
+(459,646,c),
+(397,696,l)
+);
+}
+);
+width = 509;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+},
+{
+glyphname = parenleft.size3;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(220,354,o),
+(90,-96,o),
+(90,-552,cs),
+(90,-1008,o),
+(220,-1458,o),
+(475,-1788,c),
+(511,-1760,l),
+(262,-1438,o),
+(136,-1000,o),
+(136,-552,cs),
+(136,-104,o),
+(262,334,o),
+(511,657,c),
+(475,685,l)
+);
+}
+);
+width = 561;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(221,361,o),
+(90,-93,o),
+(90,-552,cs),
+(90,-1011,o),
+(221,-1465,o),
+(478,-1798,c),
+(542,-1750,l),
+(295,-1431,o),
+(170,-997,o),
+(170,-552,cs),
+(170,-107,o),
+(295,327,o),
+(542,647,c),
+(478,695,l)
+);
+}
+);
+width = 592;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+},
+{
+glyphname = parenleft.size4;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(248,275,o),
+(90,-282,o),
+(90,-847,cs),
+(90,-1412,o),
+(247,-1969,o),
+(559,-2377,c),
+(595,-2349,l),
+(291,-1949,o),
+(136,-1404,o),
+(136,-847,cs),
+(136,-290,o),
+(290,255,o),
+(595,657,c),
+(559,685,l)
+);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+closed = 1;
+nodes = (
+(248,282,o),
+(90,-279,o),
+(90,-847,cs),
+(90,-1415,o),
+(248,-1976,o),
+(562,-2387,c),
+(626,-2339,l),
+(324,-1942,o),
+(170,-1401,o),
+(170,-847,cs),
+(170,-293,o),
+(324,248,o),
+(626,647,c),
+(562,695,l)
+);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=90";
+metricRight = "=50";
+},
+{
+glyphname = parenleft.top;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (0,-496);
+ref = parenleft.bot;
+scale = (1,-1);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (0,-496);
+ref = parenleft.bot;
+scale = (1,-1);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=parenleft.bot";
+metricRight = "=parenleft.bot";
+},
+{
+glyphname = parenright;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (331,0);
+ref = parenleft;
+scale = (-1,1);
+}
+);
+userData = {
+com.nagwa.MATHPlugin.variants = {
+vAssembly = (
+(
+parenright.bot,
+0,
+0,
+314
+),
+(
+parenright.ext,
+1,
+630,
+630
+),
+(
+parenright.top,
+0,
+314,
+0
+)
+);
+};
+};
+width = 331;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (361,0);
+ref = parenleft;
+scale = (-1,1);
+}
+);
+userData = {
+com.nagwa.MATHPlugin.variants = {
+vAssembly = (
+(
+parenright.bot,
+0,
+0,
+314
+),
+(
+parenright.ext,
+1,
+1000,
+1000
+),
+(
+parenright.top,
+0,
+314,
+0
+)
+);
+};
+};
+width = 361;
+}
+);
+metricLeft = "=|parenleft";
+metricRight = "=|parenleft";
+unicode = 41;
+userData = {
+com.nagwa.MATHPlugin.extendedShape = 1;
+com.nagwa.MATHPlugin.variants = {
+vVariants = (
+parenright,
+parenright.size1,
+parenright.size2,
+parenright.size3,
+parenright.size4
+);
+};
+};
+},
+{
+glyphname = parenright.bot;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (645,0);
+ref = parenleft.bot;
+scale = (-1,1);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (676,0);
+ref = parenleft.bot;
+scale = (-1,1);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=|parenleft.bot";
+metricRight = "=|parenleft.bot";
+},
+{
+glyphname = parenright.ext;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (419,0);
+ref = parenleft.ext;
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (416,0);
+ref = parenleft.ext;
+}
+);
+width = 676;
+}
+);
+metricRight = "=parenright.top";
+metricWidth = "=parenright.top";
+},
+{
+glyphname = parenright.size1;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (416,0);
+ref = parenleft.size1;
+scale = (-1,1);
+}
+);
+width = 416;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (445,0);
+ref = parenleft.size1;
+scale = (-1,1);
+}
+);
+width = 445;
+}
+);
+metricLeft = "=|parenleft.alt1";
+metricRight = "=|parenleft.alt1";
+},
+{
+glyphname = parenright.size2;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (479,0);
+ref = parenleft.size2;
+scale = (-1,1);
+}
+);
+width = 479;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (509,0);
+ref = parenleft.size2;
+scale = (-1,1);
+}
+);
+width = 509;
+}
+);
+metricLeft = "=|parenleft.alt2";
+metricRight = "=|parenleft.alt2";
+},
+{
+glyphname = parenright.size3;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (561,0);
+ref = parenleft.size3;
+scale = (-1,1);
+}
+);
+width = 561;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (592,0);
+ref = parenleft.size3;
+scale = (-1,1);
+}
+);
+width = 592;
+}
+);
+metricLeft = "=|parenleft.alt3";
+metricRight = "=|parenleft.alt3";
+},
+{
+glyphname = parenright.size4;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (645,0);
+ref = parenleft.size4;
+scale = (-1,1);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (676,0);
+ref = parenleft.size4;
+scale = (-1,1);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=|parenleft.alt4";
+metricRight = "=|parenleft.alt4";
+},
+{
+glyphname = parenright.top;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+pos = (645,0);
+ref = parenleft.top;
+scale = (-1,1);
+}
+);
+width = 645;
+},
+{
+layerId = "4D0E0118-C279-48A5-9553-358ED916F647";
+shapes = (
+{
+pos = (676,0);
+ref = parenleft.top;
+scale = (-1,1);
+}
+);
+width = 676;
+}
+);
+metricLeft = "=|parenleft.top";
+metricRight = "=|parenleft.top";
+}
+);
+instances = (
+{
+axesValues = (
+400
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+},
+{
+axesValues = (
+700
+);
+instanceInterpolations = {
+"4D0E0118-C279-48A5-9553-358ED916F647" = 1;
+};
+isBold = 1;
+linkStyle = Regular;
+name = Bold;
+weightClass = 700;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+settings = {
+disablesAutomaticAlignment = 1;
+keepAlternatesTogether = 1;
+};
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
