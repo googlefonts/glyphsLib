@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import logging
 import os
 import posixpath
 
@@ -32,6 +33,8 @@ from .constants import (
     GLYPHS_MATH_EXTENDED_SHAPE_KEY,
     GLYPHS_MATH_PREFIX,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def to_designspace_family_user_data(self):
@@ -59,7 +62,7 @@ def to_ufo_master_user_data(self, ufo, master):
             ufo.data[filename] = bytes(data)
 
 
-def to_ufo_glyph_user_data(self, ufo, glyph):
+def to_ufo_glyph_user_data(self, ufo, ufo_glyph, glyph):
     math_data = {
         k: v for k, v in glyph.userData.items() if k.startswith(GLYPHS_MATH_PREFIX)
     }
@@ -69,8 +72,8 @@ def to_ufo_glyph_user_data(self, ufo, glyph):
         if GLYPHS_MATH_EXTENDED_SHAPE_KEY in math_data:
             ufo.lib.setdefault(GLYPHS_MATH_EXTENDED_SHAPE_KEY, []).append(glyph.name)
         if GLYPHS_MATH_VARIANTS_KEY in math_data:
-            ufo.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {})[glyph.name] = dict(
-                math_data[GLYPHS_MATH_VARIANTS_KEY]
+            ufo_glyph.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {}).update(
+                dict(math_data[GLYPHS_MATH_VARIANTS_KEY])
             )
     if self.minimal:
         return
@@ -102,11 +105,18 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
-    for key in user_data.keys():
-        if self.minimal and not key.startswith(GLYPHS_MATH_PREFIX):
-            continue
+    math_data = {k: v for k, v in user_data.items() if k.startswith(GLYPHS_MATH_PREFIX)}
+    if math_data:
+        if GLYPHS_MATH_VARIANTS_KEY in math_data:
+            ufo_glyph.lib.setdefault(GLYPHS_MATH_VARIANTS_KEY, {}).update(
+                dict(math_data[GLYPHS_MATH_VARIANTS_KEY])
+            )
+    if self.minimal:
+        return
+    other_data = {k: v for k, v in user_data.items() if k not in math_data}
+    for key in other_data.keys():
         if _user_data_has_no_special_meaning(key):
-            ufo_glyph.lib[key] = user_data[key]
+            ufo_glyph.lib[key] = other_data[key]
 
 
 def to_ufo_node_user_data(self, ufo_glyph, node, user_data: dict):
@@ -197,7 +207,27 @@ def to_glyphs_layer_lib(self, ufo_layer, master):
 def to_glyphs_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
     for key, value in ufo_glyph.lib.items():
-        if _user_data_has_no_special_meaning(key):
+        if key == GLYPHS_MATH_VARIANTS_KEY:
+            glyph_user_data = layer.parent.userData
+            for sub_key, sub_value in value.items():
+                if sub_key in {"vVariants", "hVariants"}:
+                    if key not in glyph_user_data:
+                        glyph_user_data[key] = {}
+                    print(sub_value, glyph_user_data[key].get(sub_key))
+                    if (
+                        sub_key in glyph_user_data[key]
+                        and glyph_user_data[key][sub_key] != sub_value
+                    ):
+                        logger.warning(
+                            f"Glyph '{layer.parent.name}' already has different "
+                            f"'{sub_key}' in userData['{key}']. Overwriting it."
+                        )
+                    glyph_user_data[key][sub_key] = sub_value
+                else:
+                    if key not in user_data:
+                        user_data[key] = {}
+                    user_data[key][sub_key] = sub_value
+        elif _user_data_has_no_special_meaning(key):
             user_data[key] = value
 
 

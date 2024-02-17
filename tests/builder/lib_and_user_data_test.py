@@ -267,7 +267,7 @@ def test_glyph_user_data_into_ufo_lib():
 
 
 @pytest.mark.parametrize("minimal", [True, False])
-def test_math_user_data_into_ufo_lib(datadir, minimal):
+def test_math_user_data_into_ufo_lib(datadir, minimal, caplog):
     font = classes.GSFont(str(datadir.join("Math.glyphs")))
 
     ufos = to_ufos(font, minimal=minimal)
@@ -276,24 +276,28 @@ def test_math_user_data_into_ufo_lib(datadir, minimal):
 
     for ufo, master in zip(ufos, font.masters):
         assert ufo.lib[GLYPHS_MATH_EXTENDED_SHAPE_KEY] == math_glyphs
-
-        glyphs = [font.glyphs[n] for n in math_glyphs]
-        assert ufo.lib[GLYPHS_MATH_VARIANTS_KEY] == {
-            g.name: g.userData[GLYPHS_MATH_VARIANTS_KEY] for g in glyphs
-        }
         assert (
             ufo.lib[GLYPHS_MATH_CONSTANTS_KEY]
             == master.userData[GLYPHS_MATH_CONSTANTS_KEY]
         )
         for name in math_glyphs:
-            assert (
-                ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY]
-                == font.glyphs[name]
-                .layers[master.id]
-                .userData[GLYPHS_MATH_VARIANTS_KEY]
-            )
+            for key in {"vVariants", "hVariants"}:
+                result = ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                expected = font.glyphs[name].userData[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                assert result == expected
+            for key in {"vAssembly", "hAssembly"}:
+                result = ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                expected = (
+                    font.glyphs[name]
+                    .layers[master.id]
+                    .userData[GLYPHS_MATH_VARIANTS_KEY]
+                    .get(key)
+                )
+                assert result == expected
 
     font2 = to_glyphs(ufos)
+    assert "already has different 'vVariants'" not in caplog.text
+
     for master, ufo in zip(font2.masters, ufos):
         assert font2.userData[GLYPHS_MATH_EXTENDED_SHAPE_KEY] is None
         assert font2.userData[GLYPHS_MATH_CONSTANTS_KEY] is None
@@ -302,14 +306,43 @@ def test_math_user_data_into_ufo_lib(datadir, minimal):
             == ufo.lib[GLYPHS_MATH_CONSTANTS_KEY]
         )
         for name in math_glyphs:
-            assert (
-                font2.glyphs[name].userData[GLYPHS_MATH_VARIANTS_KEY]
-                == ufo.lib[GLYPHS_MATH_VARIANTS_KEY][name]
-            )
-            assert (
-                font2.glyphs[name].layers[master.id].userData[GLYPHS_MATH_VARIANTS_KEY]
-                == ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY]
-            )
+            for key in {"vVariants", "hVariants"}:
+                result = font2.glyphs[name].userData[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                expected = ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                assert result == expected
+            for key in {"vAssembly", "hAssembly"}:
+                result = (
+                    font2.glyphs[name]
+                    .layers[master.id]
+                    .userData[GLYPHS_MATH_VARIANTS_KEY]
+                    .get(key)
+                )
+                expected = ufo[name].lib[GLYPHS_MATH_VARIANTS_KEY].get(key)
+                assert result == expected
+
+
+@pytest.mark.parametrize("minimal", [True, False])
+def test_math_user_data_into_ufo_lib_warn(datadir, minimal, caplog):
+    import copy
+
+    font = classes.GSFont(str(datadir.join("Math.glyphs")))
+
+    ufos = to_ufos(font, minimal=minimal)
+    ufos[0]["parenleft"] = copy.deepcopy(ufos[0]["parenleft"])
+    ufos[0]["parenleft"].lib[GLYPHS_MATH_VARIANTS_KEY]["vVariants"].pop()
+
+    assert (
+        ufos[0]["parenleft"].lib[GLYPHS_MATH_VARIANTS_KEY]["vVariants"]
+        != ufos[1]["parenleft"].lib[GLYPHS_MATH_VARIANTS_KEY]["vVariants"]
+    )
+
+    to_glyphs(ufos)
+
+    assert any(record.levelname == "WARNING" for record in caplog.records)
+    assert (
+        "Glyph 'parenleft' already has different 'vVariants' in "
+        "userData['com.nagwa.MATHPlugin.variants']. Overwriting it." in caplog.text
+    )
 
 
 def test_glif_lib_equivalent_to_layer_user_data(ufo_module):
