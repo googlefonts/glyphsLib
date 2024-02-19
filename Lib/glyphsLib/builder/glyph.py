@@ -50,6 +50,25 @@ def _clone_layer(layer, paths=None, components=None):
     return new_layer
 
 
+# Map of ".uvNNN" extensions to Unicode Variation Selector code points.
+# If a glyph name ends with ".uvNNN" with NNN ranging from 001 to 256, then it
+# is a variation sequence with uv001 being U+0xFE00 and uv256 being U+0xE01EF.
+#
+# The only documentation for this is the "More Improvements" section in Glyphs
+# 2.6.1 announcement:
+# https://glyphsapp.com/news/glyphs-2-6-1-released
+# And this forum post:
+# https://forum.glyphsapp.com/t/unicode-variation-selector-u-fe01/21701
+USV_MAP = {
+    f".uv{i+1:03}": f"{c:04X}"
+    for i, c in enumerate(
+        itertools.chain(range(0xFE00, 0xFE0F + 1), range(0xE0100, 0xE01EF + 1))
+    )
+}
+
+USV_EXTENSIONS = tuple(USV_MAP.keys())
+
+
 def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
@@ -67,6 +86,18 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
         else:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
+
+    # If glyph name ends with ".uvNNN" find and the font has a glyph with the
+    # same name without the ".uvNNN", then add a Unicode Variation Sequence
+    # entry with the Unicode Variation Selector corresponding to the extension
+    # and the unicode of the base glyph.
+    if export and "." in glyph.name and glyph.name.endswith(USV_EXTENSIONS):
+        base_name, ext = glyph.name.rsplit(".", 1)
+        if base_name in glyph.parent.glyphs and glyph.parent.glyphs[base_name].unicode:
+            uni = glyph.parent.glyphs[base_name].unicode
+            usv = USV_MAP[f".{ext}"]
+            USV_KEY = PUBLIC_PREFIX + "unicodeVariationSequences"
+            ufo_font.lib.setdefault(USV_KEY, {}).setdefault(usv, {})[uni] = glyph.name
 
     # FIXME: (jany) next line should be an API of GSGlyph?
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)

@@ -2389,6 +2389,25 @@ def test_load_kerning_bracket(ufo_module):
     assert ds2.sources[3].font.kerning == {}
 
 
+def test_unicode_variation_sequences(ufo_module):
+    font = generate_minimal_font()
+    add_glyph(font, "zero")["unicode"] = f"{ord('0'):04x}"
+    add_glyph(font, "zero.uv001")
+    add_glyph(font, "zero.uv255")
+    add_glyph(font, "u1F170")["unicode"] = "1F170"
+    add_glyph(font, "u1F170.uv015")
+    add_glyph(font, "u2EA41")["unicode"] = "2EA41"
+    add_glyph(font, "u2EA41.uv019")
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+    unicodeVariationSequences = ufo.lib.get("public.unicodeVariationSequences")
+    assert unicodeVariationSequences == {
+        "FE00": {"0030": "zero.uv001"},
+        "FE0E": {"1F170": "u1F170.uv015"},
+        "E0102": {"2EA41": "u2EA41.uv019"},
+        "E01EE": {"0030": "zero.uv255"},
+    }
+
+
 class _PointDataPen:
     def __init__(self, **kwargs):
         self.contours = []
