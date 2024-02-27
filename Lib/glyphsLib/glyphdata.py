@@ -115,10 +115,6 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     # Look up data by full glyph name first.
     attributes = _lookup_attributes(glyph_name, data)
 
-    # If we are using custom GlyphData, fallback to default GlyphData
-    if attributes == {} and data is not GLYPHDATA:
-        attributes = _lookup_attributes(glyph_name, GLYPHDATA)
-
     # Look up by unicode
     if attributes == {} and unicodes is not None:
         for unicode in unicodes:
@@ -165,6 +161,9 @@ def _lookup_attributes(glyph_name, data):
         or data.production_names.get(glyph_name)
         or {}
     )
+    # If we are using custom GlyphData, fallback to default GlyphData
+    if not attributes and data is not GLYPHDATA:
+        attributes = _lookup_attributes(glyph_name, GLYPHDATA)
     return attributes
 
 
