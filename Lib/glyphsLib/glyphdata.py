@@ -102,7 +102,11 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     # Read data on first use.
     global GLYPHDATA
     if GLYPHDATA is None:
-        from importlib.resources import files
+        try:
+            from importlib.resources import files
+        except ImportError:
+            # Python <= 3.8 backport
+            from importlib_resources import files
 
         data_dir = files("glyphsLib.data")
         with (data_dir / "GlyphData.xml").open("rb") as f1:
