@@ -100,20 +100,24 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     """
 
     # Read data on first use.
+    global GLYPHDATA
+    if GLYPHDATA is None:
+        from importlib.resources import open_binary
+
+        with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
+            with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
+                GLYPHDATA = GlyphData.from_files(f1, f2)
+                assert len(GLYPHDATA.names) > 30000
+
     if data is None:
-        global GLYPHDATA
-        if GLYPHDATA is None:
-            from importlib.resources import open_binary
-
-            with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
-                with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
-                    GLYPHDATA = GlyphData.from_files(f1, f2)
         data = GLYPHDATA
-
-        assert len(data.names) > 30000
 
     # Look up data by full glyph name first.
     attributes = _lookup_attributes(glyph_name, data)
+
+    # If we are using custom GlyphData, fallback to default GlyphData
+    if attributes == {} and data is not GLYPHDATA:
+        attributes = _lookup_attributes(glyph_name, GLYPHDATA)
 
     # Look up by unicode
     if attributes == {} and unicodes is not None:
