@@ -110,6 +110,8 @@ def get_glyph(glyph_name, data=None, unicodes=None):
                     GLYPHDATA = GlyphData.from_files(f1, f2)
         data = GLYPHDATA
 
+        assert len(data.names) > 30000
+
     # Look up data by full glyph name first.
     attributes = _lookup_attributes(glyph_name, data)
 
@@ -257,11 +259,11 @@ def _translate_category(glyph_name, unicode_category):
         "Cf": ("Separator", "Format"),
         "Cn": ("Symbol", None),
         "Co": ("Letter", "Compatibility"),
-        "Ll": ("Letter", "Lowercase"),
+        "Ll": ("Letter", None),
         "Lm": ("Letter", "Modifier"),
         "Lo": ("Letter", None),
-        "Lt": ("Letter", "Uppercase"),
-        "Lu": ("Letter", "Uppercase"),
+        "Lt": ("Letter", None),
+        "Lu": ("Letter", None),
         "Mc": ("Mark", "Spacing Combining"),
         "Me": ("Mark", "Enclosing"),
         "Mn": ("Mark", "Nonspacing"),
