@@ -2282,7 +2282,7 @@ def test_unique_masterid(ufo_module):
 
 def test_custom_glyph_data(ufo_module):
     font = generate_minimal_font()
-    for glyph_name in ("A", "Aitalic-math", "foo", "bar", "baz"):
+    for glyph_name in ("A", "Aitalic-math", "Aitalic-math.ssty1", "foo", "bar", "baz"):
         add_glyph(font, glyph_name)
     font.glyphs["baz"].production = "bazglyph"
     font.glyphs["baz"].category = "Number"
@@ -2306,6 +2306,7 @@ def test_custom_glyph_data(ufo_module):
     assert lib.get(scriptKey) is None
 
     assert postscriptNames.get("Aitalic-math") == "u1D434"
+    assert postscriptNames.get("Aitalic-math.ssty1") == "u1D434.ssty1"
 
     # from customGlyphData.xml
     lib = ufo["foo"].lib
