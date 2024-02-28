@@ -102,10 +102,15 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     # Read data on first use.
     global GLYPHDATA
     if GLYPHDATA is None:
-        from importlib.resources import open_binary
+        try:
+            from importlib.resources import files
+        except ImportError:
+            # Python <= 3.8 backport
+            from importlib_resources import files
 
-        with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
-            with open_binary("glyphsLib.data", "GlyphData_Ideographs.xml") as f2:
+        data_dir = files("glyphsLib.data")
+        with (data_dir / "GlyphData.xml").open("rb") as f1:
+            with (data_dir / "GlyphData_Ideographs.xml").open("rb") as f2:
                 GLYPHDATA = GlyphData.from_files(f1, f2)
                 assert len(GLYPHDATA.names) > 30000
 
