@@ -394,9 +394,9 @@ class AxisDefinition:
                 if self.user_loc_param is not None and value != value_for_code:
                     try:
                         class_ = user_loc_value_to_class(self.tag, value)
-                        master_or_instance.customParameters[
-                            self.user_loc_param
-                        ] = class_
+                        master_or_instance.customParameters[self.user_loc_param] = (
+                            class_
+                        )
                     except NotImplementedError:
                         # user_loc_value_to_class only works for weight & width
                         pass
