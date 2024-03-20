@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def resolve_intermediate_components(font):
     for glyph in font.glyphs:
         for layer in glyph.layers:
-            if layer._is_brace_layer():
+            if layer.isBraceLayer():
                 # First, let's find glyphs with intermediate layers
                 # which have components which don't have intermediate layers
                 for shape in layer.components:
@@ -71,13 +71,13 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     # including any intermediate layers
     interpolatable_layers = []
     locations = []
-    for l in componentglyph.layers:
-        if l._is_brace_layer():
-            locations.append(l.attributes["coordinates"])
-            interpolatable_layers.append(l)
-        if l._is_master_layer:
-            locations.append(font.masters[l.associatedMasterId].axes)
-            interpolatable_layers.append(l)
+    for layer in componentglyph.layers:
+        if layer.isBraceLayer():
+            locations.append(layer.attributes["coordinates"])
+            interpolatable_layers.append(layer)
+        if layer.isMasterLayer:
+            locations.append(font.masters[layer.associatedMasterId].axes)
+            interpolatable_layers.append(layer)
     glyph_level_model, _ = variation_model(font, locations)
 
     # Interpolate new layer width
