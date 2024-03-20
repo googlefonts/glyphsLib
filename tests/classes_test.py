@@ -607,9 +607,9 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         # self.assertIsNone(master.userData["TestData"])
 
         # customParameters
-        master.customParameters[
-            "trademark"
-        ] = "ThisFont is a trademark by MyFoundry.com"
+        master.customParameters["trademark"] = (
+            "ThisFont is a trademark by MyFoundry.com"
+        )
         self.assertGreaterEqual(len(master.customParameters), 1)
         del master.customParameters["trademark"]
 
@@ -847,9 +847,9 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
                     print(value, type(value))
 
         # customParameters
-        instance.customParameters[
-            "trademark"
-        ] = "ThisFont is a trademark by MyFoundry.com"
+        instance.customParameters["trademark"] = (
+            "ThisFont is a trademark by MyFoundry.com"
+        )
         self.assertGreaterEqual(len(instance.customParameters), 1)
         del instance.customParameters["trademark"]
 
