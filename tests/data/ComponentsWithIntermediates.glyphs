@@ -353,6 +353,14 @@ type = "x-height";
 type = "italic angle";
 }
 );
+stems = (
+{
+name = "Stem 1";
+},
+{
+name = "Stem 2";
+}
+);
 unitsPerEm = 1000;
 versionMajor = 2;
 versionMinor = 13;
