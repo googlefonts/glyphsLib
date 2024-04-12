@@ -325,9 +325,9 @@ def structure(contour):
     return [x.segmentType for x in contour]
 
 
-def test_compatibility():
-    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
-    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+def test_compatibility(datadir):
+    font1 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-One.ufo"))
+    font2 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-Two.ufo"))
     philter = EraseOpenCornersFilter(include={"incompatible"})
     assert philter(font1)
     assert philter(font2)
@@ -337,9 +337,9 @@ def test_compatibility():
     assert structure(newcontour1) == structure(newcontour2)
 
 
-def test_compatibility2():
-    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
-    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+def test_compatibility2(datadir):
+    font1 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-One.ufo"))
+    font2 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-Two.ufo"))
     philter = EraseOpenCornersFilter(include={"incompatible2"})
     assert philter(font1)
     newcontour1 = font1["incompatible2"][0]
@@ -349,9 +349,9 @@ def test_compatibility2():
     assert structure(newcontour1) == structure(newcontour2)
 
 
-def test_compatibility3():
-    font1 = Font("tests/data/EraseOpenCornersIncompatibilityTest-One.ufo")
-    font2 = Font("tests/data/EraseOpenCornersIncompatibilityTest-Two.ufo")
+def test_compatibility3(datadir):
+    font1 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-One.ufo"))
+    font2 = Font(datadir.join("EraseOpenCornersIncompatibilityTest-Two.ufo"))
     philter = EraseOpenCornersFilter(include={"incompatible3"})
 
     assert philter(font1)
