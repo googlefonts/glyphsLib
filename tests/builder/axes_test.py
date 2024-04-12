@@ -390,12 +390,12 @@ def test_mapping_using_axis_location_cp_on_instances_none(ufo_module):
     assert doc.axes[1].map == [(50, 224), (100, 448)]
 
 
-def test_custom_parameter_vfo_current():
+def test_custom_parameter_vfo_current(datadir):
     """Tests get_regular_master when 'Variable Font Origin' custom parameter name
     is used with master set to 'Regular Text'.  This is the current default
     custom parameter name in the Glyphs editor / glyphs source file specification."""
-    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
-    font = GSFont(source_path)
+
+    font = GSFont(datadir.join("CustomParameterVFO.glyphs"))
     assert font.customParameters["Variation Font Origin"] is None
     test_id = font.customParameters["Variable Font Origin"]
     assert test_id == "ACC63F3E-1323-486A-94AF-B18797A154CE"
@@ -409,12 +409,11 @@ def test_custom_parameter_vfo_current():
     assert default_master.name == "Regular Text"
 
 
-def test_custom_parameter_vfo_old_name():
+def test_custom_parameter_vfo_old_name(datadir):
     """Tests get_regular_master when 'Variation Font Origin' custom parameter name
     is used with master set to 'Regular Text'.  This custom parameter name is not
     used in current releases of the Glyphs editor / glyphs source file specification."""
-    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
-    font = GSFont(source_path)
+    font = GSFont(datadir.join("CustomParameterVFO.glyphs"))
 
     # mock up source for this test with a source file from another test
     del font.customParameters["Variable Font Origin"]
@@ -431,11 +430,10 @@ def test_custom_parameter_vfo_old_name():
     assert default_master.name == "Regular Text"
 
 
-def test_custom_parameter_vfo_not_set():
+def test_custom_parameter_vfo_not_set(datadir):
     """Tests default behavior of get_regular_master when Variable Font Origin custom
     parameter is not set"""
-    source_path = os.path.join("tests", "data", "CustomParameterVFO.glyphs")
-    font = GSFont(source_path)
+    font = GSFont(datadir.join("CustomParameterVFO.glyphs"))
 
     # mock up source for this test with a source file from another test
     del font.customParameters["Variable Font Origin"]
@@ -584,12 +582,11 @@ def test_axis_with_no_mapping_does_not_error_in_roundtrip_with_2_axes(ufo_module
     assert doc_rt.axes[1].serialize() == doc.axes[1].serialize()
 
 
-def test_variable_instance(ufo_module):
+def test_variable_instance(ufo_module, datadir):
     """Glyphs 3 introduced a "variable" instance which is a special instance
     that holds various VF settings. We export it to Design Space variable-font.
     """
-    source_path = os.path.join("tests", "data", "VariableInstance.glyphs")
-    font = GSFont(source_path)
+    font = GSFont(datadir.join("VariableInstance.glyphs"))
     assert len(font.instances) == 28  # Including the VF setting
     doc = to_designspace(font)
     # assert doc.axes[0].map[2] == (400, 80)  # FIXME: (georg) the file doesn’t contain any mapping (it was implied from instance.weight/widthClass)
