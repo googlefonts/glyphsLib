@@ -73,9 +73,6 @@ pos = -200;
 );
 name = Regular;
 userData = {
-GSCornerRadius = 13;
-GSOffsetHorizontal = 23;
-GSOffsetMakeStroke = 1;
 GSOffsetVertical = 23;
 com.nagwa.MATHPlugin.constants = {
 AccentBaseHeight = 449;
@@ -170,10 +167,6 @@ pos = -200;
 );
 name = Bold;
 userData = {
-GSCornerRadius = 75;
-GSOffsetHorizontal = 40;
-GSOffsetMakeStroke = 1;
-GSOffsetProportional = 1;
 GSOffsetVertical = 23;
 com.nagwa.MATHPlugin.constants = {
 AccentBaseHeight = 449;
