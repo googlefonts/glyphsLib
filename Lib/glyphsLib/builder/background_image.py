@@ -25,7 +25,8 @@ def to_ufo_background_image(self, ufo_glyph, layer):
     ufo_image = ufo_glyph.image
     ufo_image.fileName = image.path
     ufo_image.transformation = image.transform
-    ufo_glyph.lib[CROP_KEY] = list(image.crop)
+    if image.crop:
+        ufo_glyph.lib[CROP_KEY] = list(image.crop)
     ufo_glyph.lib[LOCKED_KEY] = image.locked
     ufo_glyph.lib[ALPHA_KEY] = image.alpha
 
