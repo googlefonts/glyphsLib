@@ -99,7 +99,7 @@ def _get_linked_style(style_name, is_bold, is_italic):
             is_regular = False
         elif part == "Bold" and is_bold:
             is_bold = False
-        elif part == "Italic" and is_italic:
+        elif (part == "Italic" or part == "Oblique") and is_italic:
             is_italic = False
         else:
             linked_style.appendleft(part)
