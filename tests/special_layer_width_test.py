@@ -81,7 +81,7 @@ def test_intermediate_layer_width_with_metrics_source_on_parent():
         if intermediate_round.getFullDesignLocation(doc) == {"Weight": 500, "ROUND": 1}:
             break
     else:
-        assert False, "Can't find intermediate layer in the desigspace"
+        raise AssertionError("Can't find intermediate layer in the desigspace")
     assert (
         intermediate_round.font.layers[intermediate_round.layerName]["a"].width == 200
     )
