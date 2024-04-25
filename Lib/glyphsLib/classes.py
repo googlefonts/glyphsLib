@@ -4636,27 +4636,6 @@ class GSInstance(GSBase):
     def fullName(self, value):
         self.properties["postscriptFullName"] = value
 
-    # v2 compatibility
-    def _get_axis_value(self, index):
-        if self.type == InstanceType.VARIABLE:
-            return None
-        if index < len(self.axes):
-            return self.axes[index]
-        if index < len(self._axis_defaults):
-            return self._axis_defaults[index]
-        return 0
-
-    def _set_axis_value(self, index, value):
-        if index < len(self.axes):
-            self.axes[index] = value
-            return
-        for j in range(len(self.axes), index):
-            if j < len(self._axis_defaults):
-                self.axes.append(self._axis_defaults[j])
-            else:
-                self.axes.append(0)
-        self.axes.append(value)
-
     internalAxesValues = property(
         lambda self: InternalAxesProxy(self),
         lambda self, value: InternalAxesProxy(self).setter(value),
