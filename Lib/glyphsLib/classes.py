@@ -656,7 +656,7 @@ class LayersIterator:
                 if m.id in intersectedLayerIds
             ]
             orderedLayers += [
-                self._owner._layers[l.layerId]
+                l
                 for l in self._owner._layers.values()
                 if l.layerId not in intersectedLayerIds
             ]
