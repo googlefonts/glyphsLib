@@ -41,7 +41,7 @@ from glyphsLib.classes import (
     GSSmartComponentAxis,
     GSBackgroundImage,
     InstanceType,
-    segment,
+    GSPathSegment,
     LayerComponentsProxy,
     LayerGuideLinesProxy,
     GSMetricValue,
@@ -1698,9 +1698,9 @@ class GSBackgroundLayerTest(unittest.TestCase):
             self.bg.foreground = GSLayer()
 
 
-class segmentTest(unittest.TestCase):
+class SegmentTest(unittest.TestCase):
     def test_bbox_bug(self):
-        seg = segment(
+        seg = GSPathSegment(
             [Point(529, 223), Point(447, 456), Point(285, 177), Point(521, 367)]
         )
         bbox = seg.bbox()

@@ -3133,7 +3133,7 @@ class GSPath(GSBase):
                 count = 1
             else:
                 continue
-            newSegment = segment()
+            newSegment = GSPathSegment()
             newSegment.parent = self
             newSegment.index = len(self._segments)
             for ix in range(-count, 1):
@@ -3299,7 +3299,7 @@ GSPath._add_parsers(
 _UFO_NODE_TYPES = {"line", "curve", "qcurve"}
 
 
-class segment(list):
+class GSPathSegment(list):
     def appendNode(self, node):
         if not hasattr(
             self, "nodes"
@@ -3334,84 +3334,16 @@ class segment(list):
             top = max(self[0].y, self[1].y)
             return left, bottom, right, top
         elif len(self) == 4:
-            left, bottom, right, top = self.bezierMinMax(
-                self[0].x,
-                self[0].y,
-                self[1].x,
-                self[1].y,
-                self[2].x,
-                self[2].y,
-                self[3].x,
-                self[3].y,
+            from fontTools.misc.bezierTools import calcCubicBounds
+            left, bottom, right, top = calcCubicBounds(
+                self[0],
+                self[1],
+                self[2],
+                self[3],
             )
             return left, bottom, right, top
         else:
             raise ValueError
-
-    def bezierMinMax(self, x0, y0, x1, y1, x2, y2, x3, y3):
-        tvalues = []
-        xvalues = []
-        yvalues = []
-
-        for i in range(2):
-            if i == 0:
-                b = 6 * x0 - 12 * x1 + 6 * x2
-                a = -3 * x0 + 9 * x1 - 9 * x2 + 3 * x3
-                c = 3 * x1 - 3 * x0
-            else:
-                b = 6 * y0 - 12 * y1 + 6 * y2
-                a = -3 * y0 + 9 * y1 - 9 * y2 + 3 * y3
-                c = 3 * y1 - 3 * y0
-
-            if abs(a) < 1e-12:
-                if abs(b) < 1e-12:
-                    continue
-                t = -c / b
-                if 0 < t < 1:
-                    tvalues.append(t)
-                continue
-
-            b2ac = b * b - 4 * c * a
-            if b2ac < 0:
-                continue
-            sqrtb2ac = math.sqrt(b2ac)
-            t1 = (-b + sqrtb2ac) / (2 * a)
-            if 0 < t1 < 1:
-                tvalues.append(t1)
-            t2 = (-b - sqrtb2ac) / (2 * a)
-            if 0 < t2 < 1:
-                tvalues.append(t2)
-
-        for j in range(len(tvalues) - 1, -1, -1):
-            t = tvalues[j]
-            mt = 1 - t
-            newxValue = (
-                (mt * mt * mt * x0)
-                + (3 * mt * mt * t * x1)
-                + (3 * mt * t * t * x2)
-                + (t * t * t * x3)
-            )
-            if len(xvalues) > j:
-                xvalues[j] = newxValue
-            else:
-                xvalues.append(newxValue)
-            newyValue = (
-                (mt * mt * mt * y0)
-                + (3 * mt * mt * t * y1)
-                + (3 * mt * t * t * y2)
-                + (t * t * t * y3)
-            )
-            if len(yvalues) > j:
-                yvalues[j] = newyValue
-            else:
-                yvalues.append(newyValue)
-
-        xvalues.append(x0)
-        xvalues.append(x3)
-        yvalues.append(y0)
-        yvalues.append(y3)
-
-        return min(xvalues), min(yvalues), max(xvalues), max(yvalues)
 
 
 class GSTransformable(GSBase):
