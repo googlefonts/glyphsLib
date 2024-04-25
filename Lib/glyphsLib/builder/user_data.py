@@ -57,7 +57,9 @@ def to_ufo_master_user_data(self, ufo, userData):
         return
     userdata_lib = {}
     for key in userData.keys():
-        if _user_data_has_no_special_meaning(key):
+        if key.startswith(GLYPHS_MATH_PREFIX):
+            ufo.lib[key] = userData[key]
+        elif _user_data_has_no_special_meaning(key):
             userdata_lib[key] = copy.copy(userData[key])
     if userdata_lib:
         ufo.lib[GLYPHS_PREFIX + "fontMaster.userData"] = userdata_lib
