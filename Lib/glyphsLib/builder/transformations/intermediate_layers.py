@@ -3,7 +3,7 @@ import uuid
 
 from fontTools.varLib.models import VariationModel, normalizeValue
 
-from glyphsLib.classes import GSLayer, GSNode, GSPath
+from glyphsLib.classes import GSLayer, GSNode, GSPath, LAYER_ATTRIBUTE_COORDINATES
 from glyphsLib.builder.axes import get_regular_master
 
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def resolve_intermediate_components(font):
     for glyph in font.glyphs:
         for layer in glyph.layers:
-            if layer.isBraceLayer():
+            if layer.isBraceLayer:
                 # First, let's find glyphs with intermediate layers
                 # which have components which don't have intermediate layers
                 for shape in layer.components:
@@ -24,7 +24,7 @@ def variation_model(font, locations):
     tags = [axis.axisTag for axis in font.axes]
     limits = {tag: (min(x), max(x)) for tag, x in zip(tags, (zip(*locations)))}
     master_locations = []
-    default_location = get_regular_master(font).axes
+    default_location = get_regular_master(font).internalAxesValues
     for loc in locations:
         this_loc = {}
         for ix, axisTag in enumerate(tags):
@@ -37,22 +37,21 @@ def variation_model(font, locations):
 
 
 def ensure_component_has_sparse_layer(font, component, parent_layer):
-    tags = [axis.axisTag for axis in font.axes]
-    master_locations = [x.axes for x in font.masters]
+    master_locations = [x.internalAxesValues for x in font.masters]
     _, limits = variation_model(font, master_locations)
-    location = parent_layer._brace_coordinates()
-    default_location = get_regular_master(font).axes
+    location = parent_layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
+    default_location = get_regular_master(font).internalAxesValues
     normalized_location = {
-        axisTag: normalizeValue(
-            location[ix], (limits[axisTag][0], default_location[ix], limits[axisTag][1])
+        axis.axisTag: normalizeValue(
+            location[axis.axisId], (limits[axis.axisTag][0], default_location[ix], limits[axis.axisTag][1])
         )
-        for ix, axisTag in enumerate(tags)
+        for ix, axis in enumerate(font.axes)
     }
     componentglyph = component.component
     for layer in componentglyph.layers:
         if layer.layerId == parent_layer.layerId:
             return
-        if "coordinates" in layer.attributes and layer._brace_coordinates() == location:
+        if "coordinates" in layer.attributes and layer.attributes[LAYER_ATTRIBUTE_COORDINATES] == location:
             return
 
     # We'll add the appropriate intermediate layer to the component, that'll fix it
@@ -72,7 +71,7 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     interpolatable_layers = []
     locations = []
     for layer in componentglyph.layers:
-        if layer.isBraceLayer():
+        if layer.isBraceLayer:
             locations.append(layer.attributes["coordinates"])
             interpolatable_layers.append(layer)
         if layer.isMasterLayer:

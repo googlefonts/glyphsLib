@@ -217,12 +217,7 @@ class GSInstanceTest(unittest.TestCase):
         instance.name = "Variable"
         instance.type = InstanceType.VARIABLE
 
-        assert instance.weightValue is None
-        assert instance.widthValue is None
-        assert instance.customValue is None
-        assert instance.customValue1 is None
-        assert instance.customValue2 is None
-        assert instance.customValue3 is None
+        assert len(instance.internalAxesValues) == 0
 
 
 class GSObjectsTestCase(unittest.TestCase):
@@ -559,7 +554,7 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
 
         metrics = []
         for metric in self.font.metrics:
-            value = master.metrics[metric.id]
+            value = master.metricValues[metric.id]
             self.assertIsInstance(value, GSMetricValue)
             metrics.append((value.position, value.overshoot))
         expected = [

@@ -1287,7 +1287,7 @@ class ExternalAxesProxy(Proxy):
             return 0
         return self._owner.font.countOfAxes()
 
-    def setterMethod(self, values):
+    def _setterMethod(self, values):
         if self._owner.font is None:
             return
         idx = 0
@@ -1324,16 +1324,16 @@ class MasterStemsProxy(Proxy):
         return self._owner._stems[stem.id]
 
     def __setitem__(self, key, value):
-        stem = self._owner.font._stemForKey(key)
+        stem = self._owner.font.stemForKey(key)
         if stem is None:
             if isString(key):
                 name = key
             else:
                 name = "stem%s" % key
-            stem = GSMetric.new()
-            stem.setName_(name)
-            stem.setHorizontal_(True)
-            self._owner.font.addStem_(stem)
+            stem = GSMetric()
+            stem.name = name
+            stem.horizontal = True
+            self._owner.font.stems.append(stem)
         self._owner._stems[stem.id] = value
 
     def values(self):
@@ -1534,7 +1534,7 @@ class PropertiesProxy(ListDictionaryProxy):
         if infoValue is None or not isinstance(infoValue, GSFontInfoValue):
             infoValue = GSFontInfoValue(key)
             infoValue.parent = self._owner
-            self._owner.properties.append(infoValue)
+            self._owner._properties.append(infoValue)
         if key.endswith("s"):
             infoValue.setLocalizedValue(value, "dflt")
         else:
@@ -1556,7 +1556,7 @@ class PropertiesProxy(ListDictionaryProxy):
         infoValue = GSFontInfoValue(key)
         infoValue.setLocalizedValue(value, language)
         infoValue.parent = self._owner
-        self._owner.properties.append(infoValue)
+        self._owner._properties.append(infoValue)
 
 
 class UserDataProxy(Proxy):
@@ -2400,7 +2400,7 @@ class GSFontMaster(GSBase):
                 and metric.filter
                 and metric.filter.evaluateWithObject(layer.parent)
             ):
-                metricValue = self.metric[metric.id]
+                metricValue = self.metricValues[metric.id]
                 return metricValue
         return self._get_metric(metricType)
 
@@ -4442,7 +4442,7 @@ class GSInstance(GSBase):
         self.linkStyle = ""
         self.manualInterpolation = False
         self.name = name
-        self.properties = []
+        self._properties = []
         self.visible = True
         self.weightClass = self._defaultsForName["weightClass"]
         self.widthClass = self._defaultsForName["widthClass"]
@@ -4450,7 +4450,6 @@ class GSInstance(GSBase):
         self.readBuffer = {}
         self._axesValues = None
         self._userData = None
-        self.userData
 
     def __repr__(self):
         return f'<{self.__class__.__name__} "{self.name}">'

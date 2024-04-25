@@ -28,7 +28,7 @@ def test_metrics():
     font.masters.append(master)
     master.ascender = 400
     assert master.ascender == 400
-    assert master.metrics[font.metrics[0].id].position == 400
+    assert master.metricValues[font.metrics[0].id].position == 400
 
 
 def test_glyphs3_italic_angle(datadir):
