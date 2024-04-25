@@ -35,6 +35,7 @@ from .constants import (
     ORIGINAL_WIDTH_KEY,
     BACKGROUND_WIDTH_KEY,
     POSTSCRIPT_NAMES_KEY,
+    PUBLIC_PREFIX,
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3

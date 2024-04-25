@@ -129,6 +129,7 @@ __all__ = [
     "GSBottomRight",
     "WEIGHT_CODES",
     "WIDTH_CODES",
+    "LAYER_ATTRIBUTE_COORDINATES",
 ]
 
 # CONSTANTS
@@ -523,6 +524,18 @@ class Proxy:
             method(list())
         else:
             raise TypeError
+
+    def __getitem__(self, item):
+        raise NotImplementedError("Should be implemented in a subclass")
+
+    def __delitem__(self, item):
+        raise NotImplementedError("Should be implemented in a subclass")
+
+    def values(self):
+        raise NotImplementedError("Should be implemented in a subclass")
+
+    def setterMethod(self):
+        raise NotImplementedError("Should be implemented in a subclass")
 
 
 class ListDictionaryProxy(Proxy):
@@ -1157,6 +1170,8 @@ class LayerAnchorsProxy(Proxy):
 
 
 class IndexedObjectsProxy(Proxy):
+    _objects_name = None
+
     def __getitem__(self, key):
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
@@ -1610,10 +1625,10 @@ class UserDataProxy(Proxy):
             return []
         return self._owner._userData.items()
 
-    def get(self, key):
+    def get(self, key, default=None):
         if self._owner._userData is None:
             return None
-        return self._owner._userData.get(key)
+        return self._owner._userData.get(key, default)
 
     def setter(self, values):
         self._owner._userData = values
@@ -2888,6 +2903,7 @@ class GSNode(GSBase):
                 content,
             )
         else:
+            content = ""
             if self.type == CURVE:
                 content = "c"
             elif self.type == QCURVE:
@@ -4013,6 +4029,7 @@ class GSFeature(GSBase):
         if feature_names:
             feature_names.insert(0, "featureNames {")
             feature_names.append("};")
+        return "\n".join(feature_names)
 
     def loadLabelsFromNote(self, note):
         remaining_note = note
