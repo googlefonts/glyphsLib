@@ -79,10 +79,11 @@ def _to_designspace_varfont(self, instance):
         filename=filename,
         axisSubsets=[RangeAxisSubsetDescriptor(name=axis.name) for axis in ds.axes],
     )
-
+    from .custom_params import to_ufo_properties
     # to_ufo_custom_params() wants a UFO, create a dummy one
     ufo = self.ufo_module.Font()
-    to_ufo_custom_params(self, ufo, instance, set_default_params=False)
+    to_ufo_properties(self, ufo, instance)
+    to_ufo_custom_params(self, ufo, instance, "instance", set_default_params=False)
 
     info = {}
     for attr in fontInfoAttributesVersion3:
