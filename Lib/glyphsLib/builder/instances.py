@@ -40,7 +40,7 @@ from .constants import (
     PROPERTIES_KEY,
 )
 from .names import build_stylemap_names
-
+from .custom_params import to_ufo_custom_params, InstanceDescriptorAsGSInstance
 
 logger = logging.getLogger(__name__)
 
@@ -338,26 +338,6 @@ def to_glyphs_instances(self):  # noqa: C901
                         "uniqueID"
                     ] = source.font.info.openTypeNameUniqueID
         self.font.instances.append(instance)
-
-
-class InstanceDescriptorAsGSInstance:
-    # FIXME: (georg) find a better way
-    """Wraps a designspace InstanceDescriptor and makes it behave like a
-    GSInstance, just enough to use the descriptor as a source of custom
-    parameters for `to_ufo_custom_parameters`
-    """
-
-    def __init__(self, descriptor):
-        self._descriptor = descriptor
-
-        self.customParameters = CustomParametersProxy(self)
-        if GLYPHS_PREFIX + "customParameters" in descriptor.lib:
-            for name, value in descriptor.lib[GLYPHS_PREFIX + "customParameters"]:
-                self.customParameters[name] = value
-        self.properties = PropertiesProxy(self)
-        if PROPERTIES_KEY in descriptor.lib:
-            for name, value in descriptor.lib[PROPERTIES_KEY]:
-                self.properties[name] = value
 
 
 def apply_instance_data(designspace, include_filenames=None, Font=None):

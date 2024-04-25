@@ -31,10 +31,11 @@ from .constants import (
     # PUBLIC_PREFIX,
     UFO2FT_META_TABLE_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
+    PROPERTIES_KEY,
 )
 from .features import replace_feature, replace_prefixes
-from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance
-from .instances import InstanceDescriptorAsGSInstance
+from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance, CustomParametersProxy, PropertiesProxy
+
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -237,6 +238,26 @@ class ParamHandler(AbstractParamHandler):
             if ufo_prefix == CUSTOM_PARAM_PREFIX:
                 ufo_prefix += glyphs._owner.__class__.__name__ + "."
             ufo.set_lib_value(ufo_prefix + self.ufo_name, value)
+
+
+class InstanceDescriptorAsGSInstance:
+    # FIXME: (georg) find a better way
+    """Wraps a designspace InstanceDescriptor and makes it behave like a
+    GSInstance, just enough to use the descriptor as a source of custom
+    parameters for `to_ufo_custom_params`
+    """
+
+    def __init__(self, descriptor):
+        self._descriptor = descriptor
+
+        self.customParameters = CustomParametersProxy(self)
+        if GLYPHS_PREFIX + "customParameters" in descriptor.lib:
+            for name, value in descriptor.lib[GLYPHS_PREFIX + "customParameters"]:
+                self.customParameters[name] = value
+        self.properties = PropertiesProxy(self)
+        if PROPERTIES_KEY in descriptor.lib:
+            for name, value in descriptor.lib[PROPERTIES_KEY]:
+                self.properties[name] = value
 
 
 KNOWN_PARAM_HANDLERS = []
