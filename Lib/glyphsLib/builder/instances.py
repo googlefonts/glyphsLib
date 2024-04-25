@@ -294,7 +294,7 @@ def to_glyphs_instances(self):  # noqa: C901
         if smfn is not None:
             instance.styleMapFamilyName = smfn
             if smfn.startswith(ufo_instance.familyName):
-                smfn = smfn[len(ufo_instance.familyName) :].strip()
+                smfn = smfn[len(ufo_instance.familyName):].strip()
             instance.linkStyle = smfn
 
         smsn = ufo_instance.styleMapStyleName

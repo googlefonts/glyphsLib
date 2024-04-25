@@ -33,7 +33,7 @@ class TokenExpander:
 
     def _consume_match(self, m):
         self.position += len(m[0])
-        self.featurecode = self.featurecode[len(m[0]) :]
+        self.featurecode = self.featurecode[len(m[0]):]
 
     def parse_token(self):
         for regexp, parser in [
@@ -94,7 +94,7 @@ class TokenExpander:
                     expression += self.parse_bare_number_value(m[1])
             else:
                 expression += self.parse_bare_number_value(m[1])
-            token = token[len(m[0]) :]
+            token = token[len(m[0]):]
         # This expression is now just numbers and operators - safe to eval,
         # but needs to be an integer
         return "%i" % eval(expression)
@@ -215,7 +215,7 @@ class TokenExpander:
     def _parse_optional_not(self):
         m = re.match(r"(?i)^\s*(not|!)\s+", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return True
         return False
 
@@ -230,7 +230,7 @@ class TokenExpander:
         m = re.match(
             self.gsglyph_predicate_object_re, self.glyph_predicate
         ) or self._parse_error_in_predicate("known glyph predicate object")
-        self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+        self.glyph_predicate = self.glyph_predicate[len(m[0]):]
         return m[1]
 
     def _parse_comparator(self):
@@ -238,7 +238,7 @@ class TokenExpander:
             self.comparators_re, self.glyph_predicate
         ) or self._parse_error_in_predicate("comparator")
         normalize_comparators = {"=": "==", "=>": ">=", "=<": "<=", "<>": "!="}
-        self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+        self.glyph_predicate = self.glyph_predicate[len(m[0]):]
         return normalize_comparators.get(m[1], m[1]).lower()
 
     def _parse_value(self):
@@ -246,26 +246,26 @@ class TokenExpander:
             r"\s*'([^']+)'", self.glyph_predicate
         )  # Doesn't handle string escapes
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return m[1]
         m = re.match(r"(?i)\s*(yes|true)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return True
         m = re.match(r"(?i)\s*(no|false)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return False
         # The tutorial says number values can be floats, but I don't think they can
         m = re.match(r"\s*(\d+)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return int(m[1])
 
         # Keyword constants
         m = re.match(r"\s*(\w+)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return m[1]
         self._parse_error_in_predicate("value")
 
@@ -335,12 +335,12 @@ class TokenExpander:
     def _parse_compound(self):
         m = re.match(r"(?i)\s*(and|&&)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return "AND"
 
         m = re.match(r"(?i)\s*(or|\|\|)", self.glyph_predicate)
         if m:
-            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return "OR"
 
         return False

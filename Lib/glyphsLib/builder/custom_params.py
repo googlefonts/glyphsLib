@@ -122,11 +122,11 @@ class AbstractParamHandler:
     glyphs_owner_class = None
 
     # @abstractmethod
-    def to_glyphs(self):
+    def to_glyphs(self, glyphs, ufo):
         pass
 
     # @abstractmethod
-    def to_ufo(self):
+    def to_ufo(self, builder, glyphs, ufo):
         pass
 
 
@@ -195,7 +195,6 @@ class ParamHandler(AbstractParamHandler):
             self._write_to_ufo(glyphs, ufo, ufo_value)
 
     def _read_from_glyphs(self, glyphs):
-        value = None
         # Try to read from the properties first.
         if self.glyphs3_property is not None:
             value = glyphs[self.glyphs3_property]
@@ -1187,7 +1186,7 @@ def to_glyphs_custom_params(self, ufo, glyphs_object, class_key):
         name = _normalize_custom_param_name(name)
         if not name.startswith(prefix):
             continue
-        name = name[len(prefix) :]
+        name = name[len(prefix):]
         parameter = GSCustomParameter(name, value)
         glyphs_proxy.append(parameter)
 

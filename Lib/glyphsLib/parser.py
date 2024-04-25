@@ -96,8 +96,7 @@ class Parser:
                 try:
                     res[name] = result
                 except (TypeError, KeyError):  # hmmm...
-                    res = {}  # ugly, this fixes nested dicts in customparameters
-                    res[name] = result
+                    res = {name: result}  # ugly, this fixes nested dicts in customparameters
             else:
                 res[name] = d[name]
 

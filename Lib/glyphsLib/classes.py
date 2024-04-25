@@ -46,7 +46,7 @@ from glyphsLib.types import (
     floatToString3,
     parse_datetime,
     parse_float_or_int,
-    readIntlist,
+    readIntList,
     NegateBool,
 )
 
@@ -78,7 +78,6 @@ __all__ = [
     "GSHint",
     "GSBackgroundImage",
     # Constants
-    "__all__",
     "MOVE",
     "LINE",
     "CURVE",
@@ -294,13 +293,6 @@ GSCenterRight = 5
 GSBottomLeft = 0
 GSBottomCenter = 1
 GSBottomRight = 2
-
-# Writing direction
-LTR = 0
-RTL = 1
-LTRTTB = 3
-RTLTTB = 2
-
 
 WEIGHT_CODES = {
     "Thin": 100,
@@ -1839,7 +1831,7 @@ class GSCustomParameter(GSBase):
         elif self.name in self._CUSTOM_BOOL_PARAMS:
             value = bool(value)
         elif self.name in self._CUSTOM_INTLIST_PARAMS:
-            value = readIntlist(value)
+            value = readIntList(value)
         elif self.name in self._CUSTOM_DICT_PARAMS:
             parser = Parser()
             value = parser.parse(value)
@@ -2031,35 +2023,33 @@ MASTER_AXIS_VALUE_KEYS = (
     "customValue2",
     "customValue3",
 )
-MASTER_ICON_NAMES = set(
-    (
-        "Light_Condensed",
-        "Light_SemiCondensed",
-        "Light",
-        "Light_SemiExtended",
-        "Light_Extended",
-        "SemiLight_Condensed",
-        "SemiLight_SemiCondensed",
-        "SemiLight",
-        "SemiLight_SemiExtended",
-        "SemiLight_Extended",
-        "Condensed",
-        "SemiCondensed",
-        "Regular",
-        "SemiExtended",
-        "Extended",
-        "SemiBold_Condensed",
-        "SemiBold_SemiCondensed",
-        "SemiBold",
-        "SemiBold_SemiExtended",
-        "SemiBold_Extended",
-        "Bold_Condensed",
-        "Bold_SemiCondensed",
-        "Bold",
-        "Bold_SemiExtended",
-        "Bold_Extended",
-    )
-)
+MASTER_ICON_NAMES = {
+    "Light_Condensed",
+    "Light_SemiCondensed",
+    "Light",
+    "Light_SemiExtended",
+    "Light_Extended",
+    "SemiLight_Condensed",
+    "SemiLight_SemiCondensed",
+    "SemiLight",
+    "SemiLight_SemiExtended",
+    "SemiLight_Extended",
+    "Condensed",
+    "SemiCondensed",
+    "Regular",
+    "SemiExtended",
+    "Extended",
+    "SemiBold_Condensed",
+    "SemiBold_SemiCondensed",
+    "SemiBold",
+    "SemiBold_SemiExtended",
+    "SemiBold_Extended",
+    "Bold_Condensed",
+    "Bold_SemiCondensed",
+    "Bold",
+    "Bold_SemiExtended",
+    "Bold_Extended",
+}
 
 
 class GSFontMaster(GSBase):
@@ -3007,7 +2997,7 @@ class GSNode(GSBase):
             raise ValueError("Off-curve points cannot become start points.")
         nodes = self.parent.nodes
         index = self.index
-        newNodes = nodes[index : len(nodes)] + nodes[0:index]
+        newNodes = nodes[index:len(nodes)] + nodes[0:index]
         self.parent.nodes = newNodes
 
     def toggleConnection(self):
@@ -4162,7 +4152,7 @@ class GSFeature(GSBase):
                     # mostly to make the test work, who is using apple names any more
                     language = "ENG"
                 else:
-                    self.logger.warning(
+                    logger.warning(
                         f"Unknown platform:{platformID}, enc:{platEncID}, lang:{langID} in featureNames. Defaulting to 'dflt'"
                     )
                 if language in seenLanguage:
@@ -4388,15 +4378,14 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                     customParameters.append(parameter)
 
         if defaultValue:
-            nativeDefaultKeys = set(
-                (
-                    "designer",
-                    "designerURL",
-                    "manufacturer",
-                    "manufacturerURL",
-                    "copyright",
-                )
-            )
+            nativeDefaultKeys = {
+                "designer",
+                "designerURL",
+                "manufacturer",
+                "manufacturerURL",
+                "copyright"
+            }
+
             if parameterKey in nativeDefaultKeys and isinstance(
                 infoValue.parent, GSFont
             ):

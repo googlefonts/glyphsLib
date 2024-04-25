@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import os
 import re
+import logging
 from textwrap import dedent
 from io import StringIO
 from typing import TYPE_CHECKING
@@ -34,6 +35,8 @@ from .constants import (
     INSERT_FEATURE_MARKER_COMMENT,
 )
 from .tokens import TokenExpander, PassThruExpander
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from ufoLib2 import Font
@@ -451,11 +454,11 @@ class FeaDocument:
     def _statement_text(self, statement):
         _, begin_line, begin_char = statement.location
         _, end_line, end_char = statement.end_location
-        lines = self._lines[begin_line - 1 : end_line]
+        lines = self._lines[begin_line - 1: end_line]
         if lines:
             # In case it's the same line, we need to trim the end first
             lines[-1] = lines[-1][:end_char]
-            lines[0] = lines[0][begin_char - 1 :]
+            lines[0] = lines[0][begin_char - 1:]
         return "".join(lines)
 
     def _build_end_locations(self):

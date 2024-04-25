@@ -89,7 +89,7 @@ class Writer:
             and length < 5
             and all(isinstance(e, (int, float)) for e in arrayValue)
         ):
-            self.writeTupel(arrayValue)
+            self.writeTuple(arrayValue)
         else:
             self.file.write("(\n")
             idx = 0
@@ -102,7 +102,7 @@ class Writer:
                 idx += 1
             self.file.write(")")
 
-    def writeTupel(self, arrayValue):
+    def writeTuple(self, arrayValue):
         if self.formatVersion == 2:
             self.file.write("{")
         else:

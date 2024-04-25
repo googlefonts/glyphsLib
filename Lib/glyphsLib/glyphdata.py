@@ -16,8 +16,7 @@
 """This module holds internally-used functions to determine various properties
 of a glyph.
 
-These properties assist in applying automatisms to glyphs when round-
-tripping.
+These properties assist in applying automatisms to glyphs when round-tripping.
 """
 
 

@@ -121,7 +121,7 @@ class EraseOpenCornersPen(BasePen):
                 )
                 # Ensure the ends match up
                 segs[next_ix] = (segs[ix - 1][-1],) + segs[next_ix][1:]
-                segs[ix : ix + 1] = []
+                segs[ix: ix + 1] = []
                 self.affected = True
                 # Start again!
                 if logger.isEnabledFor(logging.DEBUG):

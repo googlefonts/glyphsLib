@@ -78,7 +78,7 @@ class ContextuallyAwareNamedAnchor(NamedAnchor):
             if number is not None:
                 raise ValueError("mark anchor cannot be numbered: %r" % anchorName)
             isMark = True
-            key = key[len(markPrefix) :]
+            key = key[len(markPrefix):]
             if not key:
                 raise ValueError("mark anchor key is nil: %r" % anchorName)
         else:

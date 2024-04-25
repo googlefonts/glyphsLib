@@ -115,7 +115,6 @@ def user_loc_value_to_instance_string(axis_tag, user_loc):
     >>> user_loc_value_to_instance_string('wdth', 150)
     'Extra Expanded'
     """
-    codes = {}
     if axis_tag == "wght":
         codes = WEIGHT_CODES
     elif axis_tag == "wdth":

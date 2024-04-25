@@ -681,7 +681,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             classes.GSCustomParameter("isFixedPitch", True),
             "{\nname = isFixedPitch;\nvalue = 1;\n}",
         )
-        # Intlist param: should map list of int to list of strings
+        # IntList param: should map list of int to list of strings
         self.assertWritesValue(
             classes.GSCustomParameter("fsType", [1, 2]),
             "{\nname = fsType;\nvalue = (\n1,\n2\n);\n}",

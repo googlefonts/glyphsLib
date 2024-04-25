@@ -35,7 +35,9 @@ __all__ = [
     "parse_color",
     "parse_datetime",
     "parse_float_or_int",
-    "readIntlist",
+    "readIntList",
+    "NegateBool",
+    "OneLineList",
 ]
 
 
@@ -369,11 +371,11 @@ def _mutate_list(fn, l):
     return l
 
 
-def readIntlist(src):
+def readIntList(src):
     return _mutate_list(int, src)
 
 
-def writeIntlist(val):
+def writeIntList(val):
     return _mutate_list(str, val)
 
 

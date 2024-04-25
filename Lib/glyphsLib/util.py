@@ -143,7 +143,7 @@ def tostr(s, encoding="ascii", errors="strict"):
 
 def pairs(list):
     "s -> (s0,s1), (s2,s3), (s4, s5), ..."
-    return [list[i : i + 2] for i in range(0, len(list), 2)]
+    return [list[i: i + 2] for i in range(0, len(list), 2)]
 
 
 def freezedict(dct):
