@@ -6091,7 +6091,6 @@ class GSFont(GSBase):
         assert self.axes is not None
         for master in self.masters:
             assert master.font == self
-            master.font = self
             master.post_read()
         for instance in self.instances:
             assert instance.font == self
