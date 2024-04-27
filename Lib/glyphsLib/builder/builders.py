@@ -555,7 +555,6 @@ class GlyphsBuilder(LoggerMixin):
         # self.to_glyphs_axes()  # was called above already
         self.to_glyphs_sources()
         self.to_glyphs_instances()
-
         return self._font
 
     def source_layer_to_master(self, index: int, source: SourceDescriptor):

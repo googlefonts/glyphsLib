@@ -124,6 +124,7 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
             layer.layerId = ufo_layer.lib[LAYER_ID_KEY]
         layer.name = ufo_layer.name
         glyph.layers.append(layer)
+        layer.layer_name_to_atributes()
     order_key = LAYER_ORDER_PREFIX + glyph.name
     if order_key in ufo_layer.lib:
         order = ufo_layer.lib[order_key]

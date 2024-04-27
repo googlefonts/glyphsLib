@@ -4951,23 +4951,87 @@ class GSLayer(GSBase):
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
 
-    BRACKET_LAYER_RE = re.compile(
+    BRACKET_LAYER_RE_V2 = re.compile(
         r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*"
+    )
+    BRACKET_LAYER_RE_V3 = re.compile(
+        r'\[(\s*\d+‹[a-zA-Z]+(?:‹\d+)?\s*(?:,\s*\d+‹[a-zA-Z]+(?:‹\d+)?\s*)*)\]'
     )
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
-    def layer_name_to_atributes(self):
-        name = self.name
-        m = re.match(self.BRACKET_LAYER_RE, name)
-        font = self.parent.parent
-        assert font
+    def _parse_layer_bracket_name_v3(self, name, font):
+        """
+        when importing form ufo
+        """
+        def if_number(s):
+            try:
+                float(s)
+                return True
+            except ValueError:
+                return False
+
+        m = re.search(self.BRACKET_LAYER_RE_V3, name)
+        if m:
+            bracket_rule = {}
+            content = m.group(1)
+            groups = [group.strip().split('‹') for group in content.split(',')]
+            for rule in groups:
+                firstNumber = None
+                short_axis_tag = None
+                secondNumber = None
+                if if_number(rule[0]):
+                    firstNumber = float(rule[0])
+                else:
+                    short_axis_tag = rule[0]
+                if if_number(rule[1]):
+                    secondNumber = float(rule[1])
+                else:
+                    short_axis_tag = rule[1]
+                if len(rule) > 2 and if_number(rule[2]):
+                    secondNumber = float(rule[2])
+                axis_id = None
+                for axis in font.axes:
+                    if axis.shortAxisTag == short_axis_tag:
+                        axis_id = axis.axisId
+                        break
+                ruleDict = {}
+                if firstNumber:
+                    ruleDict["min"] = firstNumber
+                if secondNumber:
+                    ruleDict["max"] = secondNumber
+                if axis_id:
+                    bracket_rule[axis_id] = ruleDict
+            name = name.replace(m.group(0), "")
+            name = name.replace("  ", " ")
+            name = name.strip()
+            return bracket_rule, name
+        return None, name
+
+    def _parse_layer_bracket_name_v2(self, name, font):
+        m = re.match(self.BRACKET_LAYER_RE_V2, name)
         if m:
             axis = font.axes[0]  # For glyphs 2
             reverse = m.group("first_bracket") == "]"
             bracket_crossover = int(m.group("value"))
-            rule = {axis.axisId: {"max" if reverse else "min": bracket_crossover}}
-            self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = rule
-        elif "{" in name and "}" in name and ".background" not in self.name:
+            name = name.replace(m.group(0), "")
+            name = name.replace("  ", " ")
+            name = name.strip()
+            bracket_rule = {axis.axisId: {"max" if reverse else "min": bracket_crossover}}
+            return bracket_rule, name
+        return None, name
+
+    def layer_name_to_atributes(self):
+        name = self.name
+        font = self.parent.parent
+        assert font
+        if "]" in name:
+            if "‹" in name:
+                rule, name = self._parse_layer_bracket_name_v3(name, font)
+            else:
+                rule, name = self._parse_layer_bracket_name_v2(name, font)
+            if rule:
+                self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = rule
+        if "{" in name and "}" in name and ".background" not in self.name:
             coordinatesString = name[name.index("{") + 1 : name.index("}")]
             coordinatesMap = {}
             for c, axis in zip(coordinatesString.split(","), font.axes):
@@ -4980,7 +5044,8 @@ class GSLayer(GSBase):
                     value = master.internalAxesValues[axis.axisId]
                     coordinatesMap[axis.axisId] = value
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
-
+        if self.name != name:
+            self.name = name
     def post_read(self):  # GSLayer
         assert self.parent
         font = self.parent.parent
