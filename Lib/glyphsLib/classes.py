@@ -6148,21 +6148,20 @@ class GSFont(GSBase):
 
     def post_read(self):  # GSFont
         if self.formatVersion < 3:
-            axesParameter = self.customParameters["Axes"]
-            if axesParameter:
-                for axisDict in axesParameter:
-                    axis = GSAxis()
-                    axis.name = axisDict["Name"]
-                    axis.axisTag = axisDict["Tag"]
-                    axis.hidden = axisDict.get("Hidden", False)
-                    axis.axisId = "a%02d" % (len(self.axes) + 1)
-                    self.axes.append(axis)
-                del self.customParameters["Axes"]
-            else:
-                self.axes = self._getLegacyAxes()
-
-            GSFontInfoValue.propertiesFromLegacyCustomParameters(self)
-
+            if not self.axes:
+                axesParameter = self.customParameters["Axes"]
+                if axesParameter:
+                    for axisDict in axesParameter:
+                        axis = GSAxis()
+                        axis.name = axisDict["Name"]
+                        axis.axisTag = axisDict["Tag"]
+                        axis.hidden = axisDict.get("Hidden", False)
+                        axis.axisId = "a%02d" % (len(self.axes) + 1)
+                        self.axes.append(axis)
+                    del self.customParameters["Axes"]
+                else:
+                    self.axes = self._getLegacyAxes()
+                GSFontInfoValue.propertiesFromLegacyCustomParameters(self)
         else:
             idx = 1
             for axis in self.axes:
