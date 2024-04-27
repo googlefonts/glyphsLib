@@ -5022,7 +5022,7 @@ class GSLayer(GSBase):
 
     def layer_name_to_atributes(self):
         name = self.name
-        font = self.parent.parent
+        font = self.font
         assert font
         if "]" in name:
             if "‹" in name:
@@ -5425,10 +5425,9 @@ class GSLayer(GSBase):
         return LAYER_ATTRIBUTE_COLOR_PALETTE in self.attributes
 
     def _color_palette_index(self):
-        if not self.isColorPaletteLayer:
+        index = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
+        if index is None:
             return None
-        # Glyphs 3
-        index = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
         if index == "*":
             return 0xFFFF
         return int(index)
