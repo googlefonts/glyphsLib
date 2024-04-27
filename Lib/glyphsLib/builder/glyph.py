@@ -438,7 +438,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
             break
     if glyph is None:
         glyph = self.glyphs_module.GSGlyph(name=ufo_glyph_name)
-        # FIXME: (jany) ordering?
+        # FIXME: (jany) ordering? gs: sort after loading from 'public.glyphOrder'
         self.font.glyphs.append(glyph)
 
     if ufo_glyph.unicodes:
@@ -473,7 +473,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
         # production_name = glyph.production or glyphinfo.production_name
 
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)  # FIXME: load glyphInfo at the end, not for each layer?
 
     layer = self.to_glyphs_layer(ufo_layer, glyph, master)
 
