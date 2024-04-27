@@ -443,7 +443,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     if ufo_glyph.unicodes:
         glyph.unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
-    glyph.note = ufo_glyph.note or ""
+    glyph.note = ufo_glyph.note or None
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
         # We cannot be strict about the dateformat because it's not an official
