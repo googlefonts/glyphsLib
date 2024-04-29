@@ -72,10 +72,14 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     locations = []
     for layer in componentglyph.layers:
         if layer.isBraceLayer:
-            locations.append(layer.attributes["coordinates"])
+            locationList = []
+            location = layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
+            for axis in font.axes:
+                locationList.append(location.get(axis.axisId, 0))
+            locations.append(locationList)
             interpolatable_layers.append(layer)
         if layer.isMasterLayer:
-            locations.append(font.masters[layer.associatedMasterId].axes)
+            locations.append(list(font.masters[layer.associatedMasterId].internalAxesValues))
             interpolatable_layers.append(layer)
     glyph_level_model, _ = variation_model(font, locations)
 
