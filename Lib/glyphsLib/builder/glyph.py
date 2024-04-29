@@ -80,7 +80,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
-    if layer.layerId == layer.associatedMasterId and do_color_layers:
+    if layer.isMasterLayer and do_color_layers:
         self.to_ufo_glyph_color(ufo_glyph, layer, glyph)
     if glyph.unicodes:
         ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
