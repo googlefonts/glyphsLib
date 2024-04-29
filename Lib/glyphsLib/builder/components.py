@@ -59,15 +59,16 @@ def to_ufo_components(self, ufo_glyph, layer):
             color_layers = [
                 l
                 for l in component_glyph.layers
-                if l.associatedMasterId == layer.associatedMasterId
+                if l.isColorPaletteLayer
+                and l.associatedMasterId == layer.associatedMasterId
             ]
-            for i, l in enumerate(color_layers):
-                if l._color_palette_index() == layer._color_palette_index():
-                    if l.layerId != l.associatedMasterId:
+            for color_layer_idx, color_layer in enumerate(color_layers):
+                if color_layer._color_palette_index() == layer._color_palette_index():
+                    if not color_layer.isMasterLayer:
                         # If it is not a master layer, we rename it in
                         # _to_ufo_color_palette_layers(), so we reference the
                         # same name here.
-                        component_name += f".color{i}"
+                        component_name += f".color{color_layer_idx}"
                     break
         # XXX We may also want to test here if we're compiling a font (and decompose
         # if so) or changing the representation format (in which case we leave it
