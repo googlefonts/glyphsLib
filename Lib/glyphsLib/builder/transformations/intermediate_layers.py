@@ -51,7 +51,7 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     for layer in componentglyph.layers:
         if layer.layerId == parent_layer.layerId:
             return
-        if "coordinates" in layer.attributes and layer.attributes[LAYER_ATTRIBUTE_COORDINATES] == location:
+        if LAYER_ATTRIBUTE_COORDINATES in layer.attributes and layer.attributes[LAYER_ATTRIBUTE_COORDINATES] == location:
             return
 
     # We'll add the appropriate intermediate layer to the component, that'll fix it
@@ -61,11 +61,10 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
         parent_layer.parent.name,
         parent_layer.name,
     )
-    layer = GSLayer()
-    layer.attributes["coordinates"] = parent_layer.attributes["coordinates"]
-    layer.layerId = str(uuid.uuid4())
-    layer.associatedMasterId = parent_layer.associatedMasterId
-    layer.name = parent_layer.name
+    interpolated_layer = GSLayer()
+    interpolated_layer.attributes[LAYER_ATTRIBUTE_COORDINATES] = parent_layer.attributes[LAYER_ATTRIBUTE_COORDINATES]
+    interpolated_layer.layerId = str(uuid.uuid4())
+    interpolated_layer.associatedMasterId = parent_layer.associatedMasterId
     # Create a glyph-level variation model for the component glyph,
     # including any intermediate layers
     interpolatable_layers = []
@@ -84,8 +83,8 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
     glyph_level_model, _ = variation_model(font, locations)
 
     # Interpolate new layer width
-    all_widths = [l.width for l in interpolatable_layers]
-    layer.width = glyph_level_model.interpolateFromMasters(
+    all_widths = [layer.width for layer in interpolatable_layers]
+    interpolated_layer.width = glyph_level_model.interpolateFromMasters(
         normalized_location, all_widths
     )
 
@@ -94,17 +93,17 @@ def ensure_component_has_sparse_layer(font, component, parent_layer):
         all_shapes = [l.shapes[ix] for l in interpolatable_layers]
         if isinstance(shape, GSPath):
             # We are making big assumptions about compatibility here
-            layer.shapes.append(
+            interpolated_layer.shapes.append(
                 interpolate_path(all_shapes, glyph_level_model, normalized_location)
             )
         else:
             ensure_component_has_sparse_layer(font, shape, parent_layer)
-            layer.shapes.append(
+            interpolated_layer.shapes.append(
                 interpolate_component(
                     all_shapes, glyph_level_model, normalized_location
                 )
             )
-    componentglyph.layers.append(layer)
+    componentglyph.layers.append(interpolated_layer)
 
 
 def interpolate_path(paths, model, location):
