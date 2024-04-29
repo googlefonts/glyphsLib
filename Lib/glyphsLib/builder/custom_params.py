@@ -254,6 +254,7 @@ class InstanceDescriptorAsGSInstance:
         if GLYPHS_PREFIX + "customParameters" in descriptor.lib:
             for name, value in descriptor.lib[GLYPHS_PREFIX + "customParameters"]:
                 self.customParameters[name] = value
+        self._properties = []
         self.properties = PropertiesProxy(self)
         if PROPERTIES_KEY in descriptor.lib:
             for name, value in descriptor.lib[PROPERTIES_KEY]:
