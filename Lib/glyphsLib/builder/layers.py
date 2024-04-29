@@ -20,7 +20,7 @@ from .constants import (
 )
 
 
-def to_ufo_color_layer_names(self, master, ufo):
+def to_ufo_color_layer_names(self, ufo):
     for glyph in ufo.layers.defaultLayer:
         if UFO2FT_COLOR_LAYER_MAPPING_KEY in glyph.lib:
             glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [

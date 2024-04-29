@@ -226,7 +226,7 @@ class UFOBuilder(LoggerMixin):
 
             # Color layer mapping is stored using layer IDs, we now rewrite it
             # to use the final UFO layer names.
-            self.to_ufo_color_layer_names(master, ufo)  # .layers
+            self.to_ufo_color_layer_names(ufo)  # .layers
 
             # to_ufo_custom_params may apply "Replace Features" or "Replace Prefix"
             # parameters so it requires UFOs have their features set first; at the
