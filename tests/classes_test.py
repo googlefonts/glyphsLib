@@ -55,6 +55,7 @@ from glyphsLib.classes import (
     CURVE,
     OFFCURVE,
 )
+
 from glyphsLib.types import Point, Transform, Rect
 from glyphsLib.classes import LAYER_ATTRIBUTE_AXIS_RULES
 
@@ -64,9 +65,8 @@ TESTFILE_PATHV2 = os.path.join(
 TESTFILE_PATHV3 = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans3.glyphs")
 )
-TESTFILE_BRACKETV2 = os.path.join(
-    os.path.dirname(__file__), os.path.join("data", "BracketTestFont.glyphs")
-)
+
+pytestmark = pytest.mark.parametrize("file_path", [TESTFILE_PATHV2, TESTFILE_PATHV3])
 
 
 def generate_minimal_font(formatVersion=2):
@@ -165,17 +165,15 @@ class GlyphLayersTest(unittest.TestCase):
         assert len({m.id for m in font.masters}) == 2
 
 
-class GlyphsBracketLayerTest(unittest.TestCase):
-    def test_read_glyphs_2(self):
-        font = GSFont(TESTFILE_BRACKETV2)
-        glyph = font.glyphs["a"]
-        for layer in glyph.layers:
-            if layer.isMasterLayer:
-                continue
-            self.assertEqual(
-                layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES], {"a01": {"min": 300}}
-            )
-            self.assertEqual(layer.name, "[300‹wg]")
+# GlyphsBracketLayerTest
+def test_bracket_layers(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["cent"]
+    for layer in glyph.layers:
+        if layer.isMasterLayer:
+            continue
+        assert layer.attributes[LAYER_ATTRIBUTE_AXIS_RULES] == {"a01": {"min": 120}}
+        assert layer.name == "[120‹wg]"
 
 
 class GSFontTest(unittest.TestCase):
