@@ -1,6 +1,7 @@
 import os
 import tempfile
 import glyphsLib
+import difflib
 from glyphsLib.classes import GSFont, GSFontMaster, GSPath, GSComponent
 
 
@@ -56,7 +57,11 @@ def test_glyphspackage_load(datadir):
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font2 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected
-    assert glyphsLib.dumps(font1) == glyphsLib.dumps(font2)
+    font1_dump = glyphsLib.dumps(font1)
+    font2_dump = glyphsLib.dumps(font2)
+    diff_dump = difflib.unified_diff(font1_dump, font2_dump)
+    assert len("".join(diff_dump)) == 0
+
 
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font2 = GSFont(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))

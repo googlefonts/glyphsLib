@@ -15,7 +15,7 @@
 
 import glob
 import os
-
+import difflib
 import glyphsLib.cli
 import glyphsLib.parser
 
@@ -73,8 +73,8 @@ def test_parser_main(capsys):
     actual = actual.replace("weightClass = UltraLight", "weightClass = ExtraLight")
     actual = actual.replace("weightClass = Heavy;", "weightClass = Black;")
     expected = expected.replace('name = "{155, 100}";', 'name = "{155}";')
-
-    assert actual.splitlines() == expected.splitlines()
+    diff_dump = difflib.unified_diff(actual, expected)
+    assert "".join(diff_dump) == ""
 
 
 def test_parser_main_v3(capsys):
