@@ -5281,26 +5281,27 @@ class GSLayer(GSBase):
         ruleStrings = []
         for axis in self.font.axes:
             rule = axisRules.get(axis.axisId, None)
-            if rule:
-                minValue = rule.get("min", None)
-                maxValue = rule.get("max", None)
-                if minValue and maxValue:
-                    ruleStrings.append(
-                        "%s‹%s‹%s"
-                        % (
-                            floatToString3(minValue),
-                            axis.shortAxisTag,
-                            floatToString3(maxValue),
-                        )
+            if rule is None:
+                continue
+            minValue = rule.get("min", None)
+            maxValue = rule.get("max", None)
+            if minValue and maxValue:
+                ruleStrings.append(
+                    "%s‹%s‹%s"
+                    % (
+                        floatToString3(minValue),
+                        axis.shortAxisTag,
+                        floatToString3(maxValue),
                     )
-                elif minValue:
-                    ruleStrings.append(
-                        "%s‹%s" % (floatToString3(minValue), axis.shortAxisTag)
-                    )
-                elif maxValue:
-                    ruleStrings.append(
-                        "%s‹%s" % (axis.shortAxisTag, floatToString3(maxValue))
-                    )
+                )
+            elif minValue:
+                ruleStrings.append(
+                    "%s‹%s" % (floatToString3(minValue), axis.shortAxisTag)
+                )
+            elif maxValue:
+                ruleStrings.append(
+                    "%s‹%s" % (axis.shortAxisTag, floatToString3(maxValue))
+                )
         if ruleStrings:
             return "[%s]" % ", ".join(ruleStrings)
         return "[]"
