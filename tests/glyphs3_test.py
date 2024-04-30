@@ -48,6 +48,7 @@ def test_glyphspackage_load(datadir):
         "m",
         "n",
         "a.sc",
+        "cent",
         "dieresis",
         "_part.shoulder",
         "_part.stem",  # Deliberately removed from glyph order file
