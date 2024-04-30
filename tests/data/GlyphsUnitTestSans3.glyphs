@@ -136,10 +136,10 @@ over = -10;
 pos = -200;
 },
 {
-},
-{
 over = 10;
 pos = 520;
+},
+{
 }
 );
 name = Light;
@@ -234,6 +234,8 @@ over = -12;
 pos = -200;
 },
 {
+over = 12;
+pos = 530;
 },
 {
 }
@@ -321,6 +323,8 @@ over = -15;
 pos = -200;
 },
 {
+over = 15;
+pos = 540;
 },
 {
 }
@@ -3670,11 +3674,11 @@ type = baseline;
 type = descender;
 },
 {
-type = "italic angle";
-},
-{
 filter = "case == 3";
 type = "x-height";
+},
+{
+type = "italic angle";
 }
 );
 note = "Bla bla";

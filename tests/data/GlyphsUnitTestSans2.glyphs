@@ -68,6 +68,7 @@ fontMaster = (
 alignmentZones = (
 "{800, 10}",
 "{700, 10}",
+"{520, 10}",
 "{470, 10}",
 "{0, -10}",
 "{-200, -10}"
@@ -94,6 +95,10 @@ name = Uppercase;
 width = 18;
 }
 );
+},
+{
+name = smallCapHeight;
+value = 520;
 }
 );
 descender = -200;
@@ -143,6 +148,7 @@ xHeight = 470;
 alignmentZones = (
 "{800, 12}",
 "{700, 12}",
+"{530, 12}",
 "{480, 12}",
 "{0, -12}",
 "{-200, -12}"
@@ -169,6 +175,10 @@ name = Uppercase;
 width = 91;
 }
 );
+},
+{
+name = smallCapHeight;
+value = 530;
 }
 );
 descender = -200;
@@ -218,6 +228,7 @@ xHeight = 480;
 alignmentZones = (
 "{800, 15}",
 "{700, 15}",
+"{540, 15}",
 "{490, 15}",
 "{0, -15}",
 "{-200, -15}"
@@ -244,6 +255,10 @@ name = Uppercase;
 width = 215;
 }
 );
+},
+{
+name = smallCapHeight;
+value = 540;
 }
 );
 descender = -200;
