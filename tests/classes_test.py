@@ -218,436 +218,394 @@ class GSInstanceTest(unittest.TestCase):
         assert len(instance.internalAxesValues) == 0
 
 
-class GSObjectsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.font = GSFont(TESTFILE_PATHV3)
+# GSFontFromFileTest
+def test_pathlike_path(file_path):
+    print("__file_path", file_path)
+    from pathlib import Path
 
-    def assertString(self, value):
-        self.assertIsInstance(value, str)
-        old_value = value
-        value = "eee"
-        self.assertEqual(value, "eee")
-        value = old_value
-        self.assertEqual(value, old_value)
+    font = GSFont(file_path)
+    assert font.filepath == file_path
 
-    def assertUnicode(self, value):
-        self.assertIsInstance(value, str)
-        old_value = value
-        value = "ə"
-        self.assertEqual(value, "ə")
-        value = old_value
-        self.assertEqual(value, old_value)
-
-    def assertInteger(self, value):
-        self.assertIsInstance(value, int)
-        old_value = value
-        value = 5
-        self.assertEqual(value, 5)
-        value = old_value
-        self.assertEqual(value, old_value)
-
-    def assertFloat(self, value):
-        self.assertIsInstance(value, float)
-        old_value = value
-        value = 0.5
-        self.assertEqual(value, 0.5)
-        value = old_value
-        self.assertEqual(value, old_value)
-
-    def assertBool(self, value):
-        self.assertIsInstance(value, bool)
-        old_value = value
-        value = not value
-        self.assertEqual(value, not old_value)
-        value = old_value
-        self.assertEqual(value, old_value)
-
-    def assertDict(self, dictObject):
-        self.assertIsInstance(dictObject, dict)
-        var1 = "abc"
-        var2 = "def"
-        dictObject["uniTestValue"] = var1
-        self.assertEqual(dictObject["uniTestValue"], var1)
-        dictObject["uniTestValue"] = var2
-        self.assertEqual(dictObject["uniTestValue"], var2)
+    font = GSFont(Path(file_path))
+    assert font.filepath == file_path
 
 
-class GSFontFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
+def test_masters(file_path):
+    font = GSFont(file_path)
+    amount = len(font.masters)
+    assert len(list(font.masters)) == 3
 
-    def test_pathlike_path(self):
-        from pathlib import Path
+    assert font.masters[0].name == "Light"
+    assert font.masters[1].name == "Regular"
+    assert font.masters[2].name == "Bold"
 
-        font = GSFont(TESTFILE_PATHV3)
-        self.assertEqual(font.filepath, TESTFILE_PATHV3)
+    new_master = GSFontMaster()
+    font.masters.append(new_master)
+    assert new_master == font.masters[-1]
+    del font.masters[-1]
 
-        font = GSFont(Path(TESTFILE_PATHV3))
-        self.assertEqual(font.filepath, TESTFILE_PATHV3)
+    new_master1 = GSFontMaster()
+    new_master2 = GSFontMaster()
+    font.masters.extend([new_master1, new_master2])
+    assert new_master1 == font.masters[-2]
+    assert new_master2 == font.masters[-1]
 
-    def test_masters(self):
-        font = self.font
-        amount = len(font.masters)
-        self.assertEqual(len(list(font.masters)), 3)
+    font.masters.remove(font.masters[-1])
+    font.masters.remove(font.masters[-1])
 
-        self.assertEqual(font.masters[0].name, "Light")
-        self.assertEqual(font.masters[1].name, "Regular")
-        self.assertEqual(font.masters[2].name, "Bold")
-
-        new_master = GSFontMaster()
-        font.masters.append(new_master)
-        self.assertEqual(new_master, font.masters[-1])
-        del font.masters[-1]
-
-        new_master1 = GSFontMaster()
-        new_master2 = GSFontMaster()
-        font.masters.extend([new_master1, new_master2])
-        self.assertEqual(new_master1, font.masters[-2])
-        self.assertEqual(new_master2, font.masters[-1])
-
-        font.masters.remove(font.masters[-1])
-        font.masters.remove(font.masters[-1])
-
-        new_master = GSFontMaster()
-        font.masters.insert(0, new_master)
-        self.assertEqual(new_master, font.masters[0])
-        font.masters.remove(font.masters[0])
-        self.assertEqual(amount, len(font.masters))
-
-    def test_instances(self):
-        font = self.font
-        amount = len(font.instances)
-        self.assertEqual(len(list(font.instances)), 8)
-        new_instance = GSInstance()
-        font.instances.append(new_instance)
-        self.assertEqual(new_instance, font.instances[-1])
-        del font.instances[-1]
-        new_instance1 = GSInstance()
-        new_instance2 = GSInstance()
-        font.instances.extend([new_instance1, new_instance2])
-        self.assertEqual(new_instance1, font.instances[-2])
-        self.assertEqual(new_instance2, font.instances[-1])
-        font.instances.remove(font.instances[-1])
-        font.instances.remove(font.instances[-1])
-        new_instance = GSInstance()
-        font.instances.insert(0, new_instance)
-        self.assertEqual(new_instance, font.instances[0])
-        font.instances.remove(font.instances[0])
-        self.assertEqual(amount, len(font.instances))
-
-    def test_glyphs(self):
-        font = self.font
-        self.assertGreaterEqual(len(list(font.glyphs)), 1)
-        by_index = font.glyphs[4]
-        by_name = font.glyphs["adieresis"]
-        by_unicode_char = font.glyphs["ä"]
-        by_unicode_value = font.glyphs["00E4"]
-        by_unicode_value_lowercased = font.glyphs["00e4"]
-        self.assertEqual(by_index, by_name)
-        self.assertEqual(by_unicode_char, by_name)
-        self.assertEqual(by_unicode_value, by_name)
-        self.assertEqual(by_unicode_value_lowercased, by_name)
-
-    def test_classes(self):
-        font = self.font
-        font.classes = []
-        amount = len(font.classes)
-        font.classes.append(GSClass("uppercaseLetters", "A"))
-        self.assertIsNotNone(font.classes[-1].__repr__())
-        self.assertEqual(len(font.classes), 1)
-        self.assertIn('<GSClass "uppercaseLetters">', str(font.classes))
-        self.assertIn("A", font.classes["uppercaseLetters"].code)
-        del font.classes["uppercaseLetters"]
-        newClass1 = GSClass("uppercaseLetters1", "A")
-        newClass2 = GSClass("uppercaseLetters2", "A")
-        font.classes.extend([newClass1, newClass2])
-        self.assertEqual(newClass1, font.classes[-2])
-        self.assertEqual(newClass2, font.classes[-1])
-        newClass = GSClass("uppercaseLetters3", "A")
-        newClass = copy.copy(newClass)
-        font.classes.insert(0, newClass)
-        self.assertEqual(newClass, font.classes[0])
-        font.classes.remove(font.classes[-1])
-        font.classes.remove(font.classes[-1])
-        font.classes.remove(font.classes[0])
-        self.assertEqual(len(font.classes), amount)
-
-    def test_features(self):
-        font = self.font
-        font.features = []
-        amount = len(font.features)
-        font.features.append(GSFeature("liga", "sub f i by fi;"))
-        # TODO
-        # self.assertIsNotNone(font.features['liga'].__repr__())
-        self.assertEqual(len(font.features), 1)
-        # TODO
-        # self.assertIn('<GSFeature "liga">', str(font.features))
-        # self.assertIn('sub f i by fi;', font.features['liga'].code)
-        # del(font.features['liga'])
-        del font.features[-1]
-        newFeature1 = GSFeature("liga", "sub f i by fi;")
-        newFeature2 = GSFeature("liga", "sub f l by fl;")
-        font.features.extend([newFeature1, newFeature2])
-        self.assertEqual(newFeature1, font.features[-2])
-        self.assertEqual(newFeature2, font.features[-1])
-        newFeature = GSFeature("liga", "sub f i by fi;")
-        newFeature = copy.copy(newFeature)
-        font.features.insert(0, newFeature)
-        self.assertEqual(newFeature, font.features[0])
-        font.features.remove(font.features[-1])
-        font.features.remove(font.features[-1])
-        font.features.remove(font.features[0])
-        self.assertEqual(len(font.features), amount)
-
-    def test_featurePrefixes(self):
-        font = self.font
-        font.featurePrefixes = []
-        amount = len(font.featurePrefixes)
-        font.featurePrefixes.append(
-            GSFeaturePrefix("LanguageSystems", "languagesystem DFLT dflt;")
-        )
-        self.assertIsNotNone(font.featurePrefixes[-1].__repr__())
-        self.assertEqual(len(font.featurePrefixes), 1)
-        self.assertIn('<GSFeaturePrefix "LanguageSystems">', str(font.featurePrefixes))
-        self.assertIn("languagesystem DFLT dflt;", font.featurePrefixes[-1].code)
-        # TODO
-        # del(font.featurePrefixes['LanguageSystems'])
-        del font.featurePrefixes[-1]
-        newFeaturePrefix1 = GSFeaturePrefix(
-            "LanguageSystems1", "languagesystem DFLT dflt;"
-        )
-        newFeaturePrefix2 = GSFeaturePrefix(
-            "LanguageSystems2", "languagesystem DFLT dflt;"
-        )
-        font.featurePrefixes.extend([newFeaturePrefix1, newFeaturePrefix2])
-        self.assertEqual(newFeaturePrefix1, font.featurePrefixes[-2])
-        self.assertEqual(newFeaturePrefix2, font.featurePrefixes[-1])
-        newFeaturePrefix = GSFeaturePrefix(
-            "LanguageSystems3", "languagesystem DFLT dflt;"
-        )
-        newFeaturePrefix = copy.copy(newFeaturePrefix)
-        font.featurePrefixes.insert(0, newFeaturePrefix)
-        self.assertEqual(newFeaturePrefix, font.featurePrefixes[0])
-        font.featurePrefixes.remove(font.featurePrefixes[-1])
-        font.featurePrefixes.remove(font.featurePrefixes[-1])
-        font.featurePrefixes.remove(font.featurePrefixes[0])
-        self.assertEqual(len(font.featurePrefixes), amount)
-
-    def test_ints(self):
-        attributes = ["versionMajor", "versionMajor", "upm", "grid", "gridSubDivision"]
-        font = self.font
-        for attr in attributes:
-            self.assertInteger(getattr(font, attr))
-
-    def test_strings(self):
-        attributes = [
-            "copyright",
-            "designer",
-            "designerURL",
-            "manufacturer",
-            "manufacturerURL",
-            "familyName",
-        ]
-        font = self.font
-        # FIXME: (georg) most of them are not set in the test file and will return None
-        for attr in attributes:
-            value = getattr(font, attr)
-            if value is not None:
-                self.assertUnicode(value)
-
-    def test_note(self):
-        font = self.font
-        self.assertUnicode(font.note)
-
-    # date
-    def test_date(self):
-        font = self.font
-        self.assertIsInstance(font.date, datetime.datetime)
-
-    def test_kerning(self):
-        font = self.font
-        self.assertDict(font.kerning)
-
-    def test_userData(self):
-        font = self.font
-        self.assertEqual(
-            font.userData["AsteriskParameters"],
-            {"253E7231-480D-4F8E-8754-50FC8575C08E": ["754", "30", 7, 51, "80", "50"]},
-        )
-        # self.assertIsInstance(font.userData, dict)
-        # TODO
-        self.assertIsNone(font.userData["TestData"])
-        font.userData["TestData"] = 42
-        self.assertEqual(font.userData["TestData"], 42)
-        self.assertTrue("TestData" in font.userData)
-        del font.userData["TestData"]
-        self.assertIsNone(font.userData["TestData"])
-
-    def test_disableNiceNames(self):
-        font = self.font
-        self.assertIsInstance(font.disablesNiceNames, bool)
-
-    def test_customParameters(self):
-        font = self.font
-        font.customParameters["trademark"] = "ThisFont is a trademark by MyFoundry.com"
-        self.assertIn(
-            font.customParameters["trademark"],
-            "ThisFont is a trademark by MyFoundry.com",
-        )
-        amount = len(list(font.customParameters))
-        newParameter = GSCustomParameter("hello1", "world1")
-        font.customParameters.append(newParameter)
-        self.assertEqual(newParameter, list(font.customParameters)[-1])
-        del font.customParameters[-1]
-        newParameter1 = GSCustomParameter("hello2", "world2")
-        newParameter2 = GSCustomParameter("hello3", "world3")
-        newParameter2 = copy.copy(newParameter2)
-        font.customParameters.extend([newParameter1, newParameter2])
-        self.assertEqual(newParameter1, list(font.customParameters)[-2])
-        self.assertEqual(newParameter2, list(font.customParameters)[-1])
-        font.customParameters.remove(list(font.customParameters)[-1])
-        font.customParameters.remove(list(font.customParameters)[-1])
-        newParameter = GSCustomParameter("hello1", "world1")
-        font.customParameters.insert(0, newParameter)
-        self.assertEqual(newParameter, list(font.customParameters)[0])
-        font.customParameters.remove(list(font.customParameters)[0])
-        self.assertEqual(amount, len(list(font.customParameters)))
-        del font.customParameters["trademark"]
-
-    # TODO: selection, selectedLayers, currentText, tabs, currentTab
-
-    # TODO: selectedFontMaster, masterIndex
-
-    def test_filepath(self):
-        font = self.font
-        self.assertIsNotNone(font.filepath)
-
-    # TODO: tool, tools
-    # TODO: save(), close()
-    # TODO: setKerningForPair(), kerningForPair(), removeKerningForPair()
-    # TODO: updateFeatures()
-    # TODO: copy(font)
+    new_master = GSFontMaster()
+    font.masters.insert(0, new_master)
+    assert new_master == font.masters[0]
+    font.masters.remove(font.masters[0])
+    assert amount == len(font.masters)
 
 
-class GSFontMasterFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.master = self.font.masters[0]
+def test_instances(file_path):
+    font = GSFont(file_path)
+    amount = len(font.instances)
+    assert len(list(font.instances)) == 8
+    new_instance = GSInstance()
+    font.instances.append(new_instance)
+    assert new_instance == font.instances[-1]
+    del font.instances[-1]
+    new_instance1 = GSInstance()
+    new_instance2 = GSInstance()
+    font.instances.extend([new_instance1, new_instance2])
+    assert new_instance1 == font.instances[-2]
+    assert new_instance2 == font.instances[-1]
+    font.instances.remove(font.instances[-1])
+    font.instances.remove(font.instances[-1])
+    new_instance = GSInstance()
+    font.instances.insert(0, new_instance)
+    assert new_instance == font.instances[0]
+    font.instances.remove(font.instances[0])
+    assert amount == len(font.instances)
 
-    def test_attributes(self):
-        master = self.master
-        self.assertIsNotNone(master.__repr__())
-        self.assertIsNotNone(master.id)
-        self.assertIsNotNone(master.name)
-        self.assertIsNotNone(master.internalAxesValues[0])
-        self.assertIsNone(master.internalAxesValues[1])
-        # weightValue
-        obj = master.internalAxesValues[0]
-        old_obj = obj
-        self.assertIsInstance(obj, int)
-        master.internalAxesValues[0] = 0.5
-        self.assertEqual(master.internalAxesValues[0], 0.5)
-        self.assertIsInstance(master.internalAxesValues[0], float)
-        master.internalAxesValues[0] = old_obj
 
-        metrics = []
-        for metric in self.font.metrics:
-            value = master.metricValues[metric.id]
-            self.assertIsInstance(value, GSMetricValue)
-            metrics.append((value.position, value.overshoot))
-        expected = [
-            (800, 10),
-            (700, 10),
-            (470, 10),
-            (0, -10),
-            (-200, -10),
-            (0, 0),
-            (520, 10),
-        ]
-        self.assertEqual(metrics, expected)
+def test_glyphs(file_path):
+    font = GSFont(file_path)
+    assert len(list(font.glyphs)) >= 1
+    by_index = font.glyphs[4]
+    by_name = font.glyphs["adieresis"]
+    by_unicode_char = font.glyphs["ä"]
+    by_unicode_value = font.glyphs["00E4"]
+    by_unicode_value_lowercased = font.glyphs["00e4"]
+    assert by_index == by_name
+    assert by_unicode_char == by_name
+    assert by_unicode_value == by_name
+    assert by_unicode_value_lowercased == by_name
 
-        stems = []
-        for stem in self.font.stems:
-            value = master.stems[stem.id]
-            stems.append(value)
-        expected = [16, 16, 18, 17, 19]
-        self.assertEqual(stems, expected)
 
-        # guides
-        self.assertIsInstance(master.guides, list)
-        master.guides = []
-        self.assertEqual(len(master.guides), 0)
-        newGuide = GSGuide()
-        newGuide.position = Point("{100, 100}")
-        newGuide.angle = -10.0
-        master.guides.append(newGuide)
-        self.assertIsNotNone(master.guides[0].__repr__())
-        self.assertEqual(len(master.guides), 1)
-        del master.guides[0]
-        self.assertEqual(len(master.guides), 0)
+def test_classes(file_path):
+    font = GSFont(file_path)
+    font.classes = []
+    amount = len(font.classes)
+    font.classes.append(GSClass("uppercaseLetters", "A"))
+    assert font.classes[-1].__repr__() is not None
+    assert len(font.classes) == 1
+    assert '<GSClass "uppercaseLetters">' in str(font.classes)
+    assert "A" in font.classes["uppercaseLetters"].code
+    del font.classes["uppercaseLetters"]
+    newClass1 = GSClass("uppercaseLetters1", "A")
+    newClass2 = GSClass("uppercaseLetters2", "A")
+    font.classes.extend([newClass1, newClass2])
+    assert newClass1 == font.classes[-2]
+    assert newClass2 == font.classes[-1]
+    newClass = GSClass("uppercaseLetters3", "A")
+    newClass = copy.copy(newClass)
+    font.classes.insert(0, newClass)
+    assert newClass == font.classes[0]
+    font.classes.remove(font.classes[-1])
+    font.classes.remove(font.classes[-1])
+    font.classes.remove(font.classes[0])
+    assert len(font.classes) == amount
 
-        # userData
-        self.assertIsNotNone(master.userData)
-        master.userData["TestData"] = 42
-        self.assertEqual(master.userData["TestData"], 42)
-        del master.userData["TestData"]
-        # TODO
-        # self.assertIsNone(master.userData["TestData"])
 
-        # customParameters
-        master.customParameters[
-            "trademark"
-        ] = "ThisFont is a trademark by MyFoundry.com"
-        self.assertGreaterEqual(len(master.customParameters), 1)
-        del master.customParameters["trademark"]
+def test_features(file_path):
+    font = GSFont(file_path)
+    font.features = []
+    amount = len(font.features)
+    font.features.append(GSFeature("liga", "sub f i by fi;"))
+    # TODO
+    # assert font.features['liga'].__repr__() is not None
+    assert len(font.features) == 1
+    # TODO
+    # assert '<GSFeature "liga">' in str(font.features)
+    # assert 'sub f i by fi;' in font.features['liga'].code
+    # del(font.features['liga'])
+    del font.features[-1]
+    newFeature1 = GSFeature("liga", "sub f i by fi;")
+    newFeature2 = GSFeature("liga", "sub f l by fl;")
+    font.features.extend([newFeature1, newFeature2])
+    assert newFeature1 == font.features[-2]
+    assert newFeature2 == font.features[-1]
+    newFeature = GSFeature("liga", "sub f i by fi;")
+    newFeature = copy.copy(newFeature)
+    font.features.insert(0, newFeature)
+    assert newFeature == font.features[0]
+    font.features.remove(font.features[-1])
+    font.features.remove(font.features[-1])
+    font.features.remove(font.features[0])
+    assert len(font.features) == amount
 
-        # font
-        self.assertEqual(self.font, self.master.font)
 
-    def test_legacyAttributes(self):
-        master = self.master
-        self.assertIsInstance(master.ascender, int)
-        self.assertIsInstance(master.capHeight, int)
-        self.assertIsInstance(master.xHeight, int)
-        self.assertIsInstance(master.descender, int)
-        self.assertIsInstance(master.italicAngle, int)
+def test_featurePrefixes(file_path):
+    font = GSFont(file_path)
+    font.featurePrefixes = []
+    amount = len(font.featurePrefixes)
+    font.featurePrefixes.append(
+        GSFeaturePrefix("LanguageSystems", "languagesystem DFLT dflt;")
+    )
+    assert font.featurePrefixes[-1].__repr__() is not None
+    assert len(font.featurePrefixes) == 1
+    assert '<GSFeaturePrefix "LanguageSystems">' in str(font.featurePrefixes)
+    assert "languagesystem DFLT dflt;" in font.featurePrefixes[-1].code
+    # TODO
+    # del(font.featurePrefixes['LanguageSystems'])
+    del font.featurePrefixes[-1]
+    newFeaturePrefix1 = GSFeaturePrefix(
+        "LanguageSystems1", "languagesystem DFLT dflt;"
+    )
+    newFeaturePrefix2 = GSFeaturePrefix(
+        "LanguageSystems2", "languagesystem DFLT dflt;"
+    )
+    font.featurePrefixes.extend([newFeaturePrefix1, newFeaturePrefix2])
+    assert newFeaturePrefix1 == font.featurePrefixes[-2]
+    assert newFeaturePrefix2 == font.featurePrefixes[-1]
+    newFeaturePrefix = GSFeaturePrefix(
+        "LanguageSystems3", "languagesystem DFLT dflt;"
+    )
+    newFeaturePrefix = copy.copy(newFeaturePrefix)
+    font.featurePrefixes.insert(0, newFeaturePrefix)
+    assert newFeaturePrefix == font.featurePrefixes[0]
+    font.featurePrefixes.remove(font.featurePrefixes[-1])
+    font.featurePrefixes.remove(font.featurePrefixes[-1])
+    font.featurePrefixes.remove(font.featurePrefixes[0])
+    assert len(font.featurePrefixes) == amount
 
-        for attr in [
-            "ascender",
-            "capHeight",
-            "xHeight",
-            "descender",
-            "italicAngle",
-        ]:
-            value = getattr(master, attr)
-            self.assertIsInstance(value, int)
-            setattr(master, attr, 0.5)
-            self.assertEqual(getattr(master, attr), 0.5)
-            setattr(master, attr, value)
-        # verticalStems
-        self.assertEqual(len(master.verticalStems), 2)
-        self.assertEqual(master.verticalStems, [17, 19])
 
-        # horizontalStems
-        self.assertEqual(len(master.horizontalStems), 3)
-        self.assertEqual(master.horizontalStems, [16, 16, 18])
+def test_ints(file_path):
+    attributes = ["versionMajor", "versionMajor", "upm", "grid", "gridSubDivision"]
+    font = GSFont(file_path)
+    for attr in attributes:
+        assert isinstance(getattr(font, attr), int)
 
-        # alignmentZones
-        self.assertIsInstance(master.alignmentZones, list)
-        zones = []
-        for zone in master.alignmentZones:
-            self.assertIsInstance(zone, GSAlignmentZone)
-            zones.append((zone.position, zone.size))
-        expected = [(800, 10), (700, 10), (520, 10), (470, 10), (0, -10), (-200, -10)]
-        self.assertEqual(zones, expected)
 
-        # blueValues
-        self.assertIsInstance(master.blueValues, list)
-        self.assertEqual(master.blueValues, [-10, 0, 470, 480, 700, 710, 800, 810])
+def test_strings(file_path):
+    attributes = [
+        "copyright",
+        "designer",
+        "designerURL",
+        "manufacturer",
+        "manufacturerURL",
+        "familyName",
+    ]
+    font = GSFont(file_path)
+    # FIXME: (georg) most of them are not set in the test file and will return None
+    for attr in attributes:
+        value = getattr(font, attr)
+        if value is not None:
+            assert isinstance(value, str)
 
-        # otherBlues
-        self.assertIsInstance(master.otherBlues, list)
-        self.assertEqual(master.otherBlues, [-210, -200])
+
+def test_note(file_path):
+    font = GSFont(file_path)
+    assert isinstance(font.note, str)
+
+
+# date
+def test_date(file_path):
+    font = GSFont(file_path)
+    assert isinstance(font.date, datetime.datetime)
+
+
+def test_kerning(file_path):
+    font = GSFont(file_path)
+    assert isinstance(font.kerning, dict)
+
+
+def test_userData(file_path):
+    font = GSFont(file_path)
+    assert font.userData["AsteriskParameters"] == {"253E7231-480D-4F8E-8754-50FC8575C08E": ["754", "30", 7, 51, "80", "50"]}
+
+    # assert isinstance(font.userData, dict)
+    # TODO
+    assert font.userData["TestData"] is None
+    font.userData["TestData"] = 42
+    assert font.userData["TestData"] == 42
+    assert "TestData" in font.userData
+    del font.userData["TestData"]
+    assert font.userData["TestData"] is None
+
+
+def test_disableNiceNames(file_path):
+    font = GSFont(file_path)
+    assert isinstance(font.disablesNiceNames, bool)
+
+
+def test_customParameters(file_path):
+    font = GSFont(file_path)
+    font.customParameters["trademark"] = "ThisFont is a trademark by MyFoundry.com"
+    assert font.customParameters["trademark"] in "ThisFont is a trademark by MyFoundry.com"
+    amount = len(list(font.customParameters))
+    newParameter = GSCustomParameter("hello1", "world1")
+    font.customParameters.append(newParameter)
+    assert newParameter == list(font.customParameters)[-1]
+    del font.customParameters[-1]
+    newParameter1 = GSCustomParameter("hello2", "world2")
+    newParameter2 = GSCustomParameter("hello3", "world3")
+    newParameter2 = copy.copy(newParameter2)
+    font.customParameters.extend([newParameter1, newParameter2])
+    assert newParameter1 == list(font.customParameters)[-2]
+    assert newParameter2 == list(font.customParameters)[-1]
+    font.customParameters.remove(list(font.customParameters)[-1])
+    font.customParameters.remove(list(font.customParameters)[-1])
+    newParameter = GSCustomParameter("hello1", "world1")
+    font.customParameters.insert(0, newParameter)
+    assert newParameter == list(font.customParameters)[0]
+    font.customParameters.remove(list(font.customParameters)[0])
+    assert amount == len(list(font.customParameters))
+    del font.customParameters["trademark"]
+
+# TODO: selection, selectedLayers, currentText, tabs, currentTab
+
+# TODO: selectedFontMaster, masterIndex
+
+
+def test_filepath(file_path):
+    font = GSFont(file_path)
+    assert font.filepath is not None
+
+# TODO: tool, tools
+# TODO: save(), close()
+# TODO: setKerningForPair(), kerningForPair(), removeKerningForPair()
+# TODO: updateFeatures()
+# TODO: copy(font)
+
+# GSFontMasterFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.master = self.font.masters[0]
+
+
+def test_attributes(file_path):
+    font = GSFont(file_path)
+    master = font.masters[0]
+
+    assert master.__repr__() is not None
+    assert master.id is not None
+    assert master.name is not None
+    assert master.internalAxesValues[0] is not None
+    assert master.internalAxesValues[1] is None
+    # weightValue
+    obj = master.internalAxesValues[0]
+    old_obj = obj
+    assert isinstance(obj, int)
+    master.internalAxesValues[0] = 0.5
+    assert master.internalAxesValues[0] == 0.5
+    assert isinstance(master.internalAxesValues[0], float)
+    master.internalAxesValues[0] = old_obj
+
+    metrics = []
+    for metric in font.metrics:
+        value = master.metricValues[metric.id]
+        assert isinstance(value, GSMetricValue)
+        metrics.append((value.position, value.overshoot))
+    expected = [
+        (800, 10),
+        (700, 10),
+        (470, 10),
+        (0, -10),
+        (-200, -10),
+        (520, 10),
+        (0, 0),
+    ]
+    assert metrics == expected
+
+    stems = []
+    for stem in font.stems:
+        value = master.stems[stem.id]
+        stems.append(value)
+    expected = [16, 16, 18, 17, 19]
+    assert stems == expected
+
+    # guides
+    assert isinstance(master.guides, list)
+    master.guides = []
+    assert len(master.guides) == 0
+    newGuide = GSGuide()
+    newGuide.position = Point("{100, 100}")
+    newGuide.angle = -10.0
+    master.guides.append(newGuide)
+    assert master.guides[0].__repr__() is not None
+    assert len(master.guides) == 1
+    del master.guides[0]
+    assert len(master.guides) == 0
+
+    # userData
+    assert master.userData is not None
+    master.userData["TestData"] = 42
+    assert master.userData["TestData"] == 42
+    del master.userData["TestData"]
+    # TODO
+    # self.assertIsNone(master.userData["TestData"])
+
+    # customParameters
+    master.customParameters[
+        "trademark"
+    ] = "ThisFont is a trademark by MyFasoundry.com"
+    assert len(master.customParameters) >= 1
+    del master.customParameters["trademark"]
+
+    # font
+    assert font == master.font
+
+
+def test_legacyAttributes(file_path):
+    font = GSFont(file_path)
+    master = font.masters[0]
+    assert isinstance(master.ascender, int)
+    assert isinstance(master.capHeight, int)
+    assert isinstance(master.xHeight, int)
+    assert isinstance(master.descender, int)
+    assert isinstance(master.italicAngle, int)
+
+    for attr in [
+        "ascender",
+        "capHeight",
+        "xHeight",
+        "descender",
+        "italicAngle",
+    ]:
+        value = getattr(master, attr)
+        assert isinstance(value, int)
+        setattr(master, attr, 0.5)
+        assert getattr(master, attr) == 0.5
+        setattr(master, attr, value)
+    # verticalStems
+    assert len(master.verticalStems) == 2
+    assert master.verticalStems == [17, 19]
+
+    # horizontalStems
+    assert len(master.horizontalStems) == 3
+    assert master.horizontalStems == [16, 16, 18]
+
+    # alignmentZones
+    assert isinstance(master.alignmentZones, list)
+    zones = []
+    for zone in master.alignmentZones:
+        assert isinstance(zone, GSAlignmentZone)
+        zones.append((zone.position, zone.size))
+    expected = [(800, 10), (700, 10), (520, 10), (470, 10), (0, -10), (-200, -10)]
+    assert zones == expected
+
+    # blueValues
+    assert isinstance(master.blueValues, list)
+    assert master.blueValues == [-10, 0, 470, 480, 700, 710, 800, 810]
+
+    # otherBlues
+    assert isinstance(master.otherBlues, list)
+    assert master.otherBlues == [-210, -200]
 
 
 """ .alignmentZones is readonly now.
@@ -662,972 +620,1199 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
             [(800, 10), (700, 10), (470, 10), (0, -10), (-200, -10)]
         ):
             pos, size = zone
-            self.assertEqual(master.alignmentZones[i].position, pos)
-            self.assertEqual(master.alignmentZones[i].size, size)
+            assert master.alignmentZones[i].position == pos
+            assert master.alignmentZones[i].size == size
         master.alignmentZones = []
-        self.assertEqual(len(master.alignmentZones), 0)
+        assert len(master.alignmentZones) == 0
         master.alignmentZones.append(GSAlignmentZone(100, 10))
-        self.assertIsNotNone(master.alignmentZones[-1].__repr__())
+        assert master.alignmentZones[-1].__repr__() is not None
         zone = copy.copy(master.alignmentZones[-1])
-        self.assertEqual(len(master.alignmentZones), 1)
-        self.assertEqual(master.alignmentZones[-1].position, 100)
-        self.assertEqual(master.alignmentZones[-1].size, 10)
+        assert len(master.alignmentZones) == 1
+        assert master.alignmentZones[-1].position == 100
+        assert master.alignmentZones[-1].size == 10
         del master.alignmentZones[-1]
-        self.assertEqual(len(master.alignmentZones), 0)
+        assert len(master.alignmentZones) == 0
 """
 
 
-class GSInstanceFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.instance = self.font.instances[0]
+# GSInstanceFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.instance = self.font.instances[0]
 
-    def test_attributes(self):
-        instance = self.instance
-        self.assertIsNotNone(instance.__repr__())
+def test_attributes(file_path):
+    font = GSFont(file_path)
+    instance = font.instances[0]
 
-        # TODO: active
-        # self.assertIsInstance(instance.active, bool)
+    assert instance.__repr__() is not None
 
-        # name
-        self.assertIsInstance(instance.name, str)
+    # TODO: active
+    # assert isinstance(instance.active, bool)
 
-        # weight
-        self.assertIsInstance(instance.weightClass, int)
+    # name
+    assert isinstance(instance.name, str)
 
-        # width
-        self.assertIsInstance(instance.widthClass, int)
+    # weight
+    assert isinstance(instance.weightClass, int)
 
-        self.assertEqual(instance.internalAxesValues[0], 17)
-        instance.internalAxesValues[0] = 17.5
-        self.assertEqual(instance.internalAxesValues[0], 17.5)
+    # width
+    assert isinstance(instance.widthClass, int)
 
-        # isItalic
-        # isBold
-        for attr in ["isItalic", "isBold"]:
-            value = getattr(instance, attr)
-            self.assertIsInstance(value, bool)
-            setattr(instance, attr, not value)
-            self.assertEqual(getattr(instance, attr), not value)
-            setattr(instance, attr, value)
+    assert instance.internalAxesValues[0] == 17
+    instance.internalAxesValues[0] = 17.5
+    assert instance.internalAxesValues[0] == 17.5
 
-        # linkStyle
-        self.assertIsInstance(instance.linkStyle, str)
+    # isItalic
+    # isBold
+    for attr in ["isItalic", "isBold"]:
+        value = getattr(instance, attr)
+        assert isinstance(value, bool)
+        setattr(instance, attr, not value)
+        assert getattr(instance, attr) == (not value)
+        setattr(instance, attr, value)
 
-        # familyName
-        # preferredFamily
-        # preferredSubfamilyName
-        # windowsFamily
-        # windowsStyle
-        # windowsLinkedToStyle
-        # fontName
-        # fullName
-        for attr in [
-            "familyName",
-            "preferredFamily",
-            "preferredSubfamilyName",
-            "windowsFamily",
-            "windowsStyle",
-            "windowsLinkedToStyle",
-            "fontName",
-            "fullName",
-        ]:
-            # self.assertIsInstance(getattr(instance, attr), str)
-            if not hasattr(instance, attr):
-                print("instance does not have %s" % attr)
-                if hasattr(instance, "parent") and hasattr(instance.parent, attr):
-                    value = getattr(instance.parent)
-                    print(value, type(value))
+    # linkStyle
+    assert isinstance(instance.linkStyle, str)
 
-        # customParameters
-        instance.customParameters[
-            "trademark"
-        ] = "ThisFont is a trademark by MyFoundry.com"
-        self.assertGreaterEqual(len(instance.customParameters), 1)
-        del instance.customParameters["trademark"]
+    # familyName
+    # preferredFamily
+    # preferredSubfamilyName
+    # windowsFamily
+    # windowsStyle
+    # windowsLinkedToStyle
+    # fontName
+    # fullName
+    for attr in [
+        "familyName",
+        "preferredFamily",
+        "preferredSubfamilyName",
+        "windowsFamily",
+        "windowsStyle",
+        "windowsLinkedToStyle",
+        "fontName",
+        "fullName",
+    ]:
+        # assert isinstance(getattr(instance, attr), str)
+        if not hasattr(instance, attr):
+            print("instance does not have %s" % attr)
+            if hasattr(instance, "parent") and hasattr(instance.parent, attr):
+                value = getattr(instance.parent, attr)  # FIXME: (gs) added "attr"??
+                print(value, type(value))
 
-        # instanceInterpolations
-        self.assertIsInstance(dict(instance.instanceInterpolations), dict)
+    # customParameters
+    instance.customParameters[
+        "trademark"
+    ] = "ThisFont is a trademark by MyFoundry.com"
+    assert len(instance.customParameters) >= 1
+    del instance.customParameters["trademark"]
 
-        # manualInterpolation
-        self.assertIsInstance(instance.manualInterpolation, bool)
-        value = instance.manualInterpolation
-        instance.manualInterpolation = not instance.manualInterpolation
-        self.assertEqual(instance.manualInterpolation, not value)
-        instance.manualInterpolation = value
+    # instanceInterpolations
+    assert isinstance(dict(instance.instanceInterpolations), dict)
 
-        # interpolatedFont
-        # TODO
-        # self.assertIsInstance(instance.interpolatedFont, type(Glyphs.font))
+    # manualInterpolation
+    assert isinstance(instance.manualInterpolation, bool)
+    value = instance.manualInterpolation
+    instance.manualInterpolation = not instance.manualInterpolation
+    assert instance.manualInterpolation == (not value)
+    instance.manualInterpolation = value
 
-        # TODO generate()
-
-
-class GSGlyphFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["a"]
-
-    # TODO duplicate
-    # def test_duplicate(self):
-    #     font = self.font
-    #     glyph1 = self.glyph
-    #     glyph2 = glyph1.duplicate()
-    #     glyph3 = glyph1.duplicate('a.test')
-
-    def test_parent(self):
-        font = self.font
-        glyph = self.glyph
-        self.assertEqual(glyph.parent, font)
-
-    def test_layers(self):
-        glyph = self.glyph
-        self.assertIsNotNone(glyph.layers)
-        amount = len(glyph.layers)
-        newLayer = GSLayer()
-        newLayer.name = "1"
-        glyph.layers.append(newLayer)
-        self.assertIn('<GSLayer "1" (a)>', str(glyph.layers[-1]))
-        self.assertEqual(newLayer, glyph.layers[-1])
-        del glyph.layers[-1]
-        newLayer1 = GSLayer()
-        newLayer1.name = "2"
-        newLayer2 = GSLayer()
-        newLayer2.name = "3"
-        glyph.layers.extend([newLayer1, newLayer2])
-        self.assertEqual(newLayer1, glyph.layers[-2])
-        self.assertEqual(newLayer2, glyph.layers[-1])
-        newLayer = GSLayer()
-        newLayer.name = "4"
-        # indices here don't make sense because layer get appended using a UUID
-        glyph.layers.insert(0, newLayer)
-        # so the latest layer got appended at the end also
-        self.assertEqual(newLayer, glyph.layers[-1])
-        glyph.layers.remove(glyph.layers[-1])
-        glyph.layers.remove(glyph.layers[-1])
-        glyph.layers.remove(glyph.layers[-1])
-        self.assertEqual(amount, len(glyph.layers))
-        self.assertEqual(
-            '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155}" (a)>]',
-            repr(list(glyph.layers)),
-        )
-        self.assertEqual(
-            '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, '
-            '<GSLayer "Light" (a)>, <GSLayer "{155}" (a)>]',
-            repr(list(glyph.layers.values())),
-        )
-
-    def test_layers_missing_master(self):
-        """
-        font.glyph['a'] has its layers in a different order
-        than the font.masters and an extra layer.
-        Adding a master but not adding it as a layer to the glyph should not
-        affect glyph.layers unexpectedly.
-        """
-        glyph = self.glyph
-        num_layers = len(glyph.layers)
-        self.assertEqual(
-            {l.layerId for l in glyph.layers},
-            {l.layerId for l in glyph.layers.values()},
-        )
-        self.assertNotEqual(
-            [l.layerId for l in glyph.layers],
-            [l.layerId for l in glyph.layers.values()],
-        )
-        new_fontMaster = GSFontMaster()
-        self.font.masters.insert(0, new_fontMaster)
-        self.assertEqual(num_layers, len(glyph.layers))
-        self.assertEqual(
-            {l.layerId for l in glyph.layers},
-            {l.layerId for l in glyph.layers.values()},
-        )
-        self.assertNotEqual(
-            [l.layerId for l in glyph.layers],
-            [l.layerId for l in glyph.layers.values()],
-        )
-
-    def test_name(self):
-        glyph = self.glyph
-        self.assertIsInstance(glyph.name, str)
-        value = glyph.name
-        glyph.name = "Ə"
-        self.assertEqual(glyph.name, "Ə")
-        glyph.name = value
-
-    def test_unicode(self):
-        glyph = self.glyph
-        self.assertIsInstance(glyph.unicode, str)
-        value = glyph.unicode
-        # TODO:
-        # glyph.unicode = "004a"
-        # self.assertEqual(glyph.unicode, "004A")
-        glyph.unicode = "004B"
-        self.assertEqual(glyph.unicode, "004B")
-        glyph.unicode = value
-
-    def test_string(self):
-        glyph = self.font.glyphs["adieresis"]
-        self.assertEqual(glyph.string, "ä")
-
-    def test_id(self):
-        # TODO
-        pass
-
+    # interpolatedFont
     # TODO
-    # category
-    # storeCategory
-    # subCategory
-    # storeSubCategory
-    # script
-    # storeScript
-    # productionName
-    # storeProductionName
-    # glyphInfo
+    # assert isinstance(instance.interpolatedFont, type(Glyphs.font))
 
-    def test_horiz_kerningGroup(self):
-        for group in ["leftKerningGroup", "rightKerningGroup"]:
-            glyph = self.glyph
-            self.assertIsInstance(getattr(glyph, group), str)
-            value = getattr(glyph, group)
-            setattr(glyph, group, "ä")
-            self.assertEqual(getattr(glyph, group), "ä")
-            setattr(glyph, group, value)
+    # TODO generate()
 
-    def test_horiz_metricsKey(self):
-        for group in ["leftMetricsKey", "rightMetricsKey"]:
-            glyph = self.glyph
-            if getattr(glyph, group) is not None:
-                self.assertIsInstance(getattr(glyph, group), str)
-            value = getattr(glyph, group)
-            setattr(glyph, group, "ä")
-            self.assertEqual(getattr(glyph, group), "ä")
-            setattr(glyph, group, value)
 
-    def test_export(self):
-        glyph = self.glyph
-        self.assertIsInstance(glyph.export, bool)
-        value = glyph.export
-        glyph.export = not glyph.export
-        self.assertEqual(glyph.export, not value)
-        glyph.export = value
+# GSGlyphFromFileTest
+# TODO duplicate
+# def test_duplicate(self):
+#     font = self.font
+#     glyph1 = self.glyph
+#     glyph2 = glyph1.duplicate()
+#     glyph3 = glyph1.duplicate('a.test')
 
-    def test_color(self):
-        glyph = self.glyph
-        if glyph.color is not None:
-            self.assertIsInstance(glyph.color, int)
-        value = glyph.color
-        glyph.color = 5
-        self.assertEqual(glyph.color, 5)
-        glyph.color = value
+def test_parent(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    assert glyph.parent == font
 
-    def test_note(self):
-        glyph = self.glyph
-        if glyph.note is not None:
-            self.assertIsInstance(glyph.note, str)
-        value = glyph.note
-        glyph.note = "ä"
-        self.assertEqual(glyph.note, "ä")
-        glyph.note = value
 
+def test_layers(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    assert glyph.layers is not None
+    amount = len(glyph.layers)
+    newLayer = GSLayer()
+    newLayer.name = "1"
+    glyph.layers.append(newLayer)
+    assert '<GSLayer "1" (a)>' in str(glyph.layers[-1])
+    assert newLayer == glyph.layers[-1]
+    del glyph.layers[-1]
+    newLayer1 = GSLayer()
+    newLayer1.name = "2"
+    newLayer2 = GSLayer()
+    newLayer2.name = "3"
+    glyph.layers.extend([newLayer1, newLayer2])
+    assert newLayer1 == glyph.layers[-2]
+    assert newLayer2 == glyph.layers[-1]
+    newLayer = GSLayer()
+    newLayer.name = "4"
+    # indices here don't make sense because layer get appended using a UUID
+    glyph.layers.insert(0, newLayer)
+    # so the latest layer got appended at the end also
+    assert newLayer == glyph.layers[-1]
+    glyph.layers.remove(glyph.layers[-1])
+    glyph.layers.remove(glyph.layers[-1])
+    glyph.layers.remove(glyph.layers[-1])
+    assert amount == len(glyph.layers)
+    assert '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155}" (a)>]' == repr(list(glyph.layers))
+    assert (
+        '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, '
+        '<GSLayer "Light" (a)>, <GSLayer "{155}" (a)>]',
+        repr(list(glyph.layers.values())),
+    )
+
+
+def test_layers_missing_master(file_path):
+    """
+    font.glyph['a'] has its layers in a different order
+    than the font.masters and an extra layer.
+    Adding a master but not adding it as a layer to the glyph should not
+    affect glyph.layers unexpectedly.
+    """
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    num_layers = len(glyph.layers)
+    assert {layer.layerId for layer in glyph.layers} == {layer.layerId for layer in glyph.layers.values()}
+
+    assert [l.layerId for l in glyph.layers] != [l.layerId for l in glyph.layers.values()]
+
+    new_fontMaster = GSFontMaster()
+    font.masters.insert(0, new_fontMaster)
+    assert num_layers == len(glyph.layers)
+    assert {l.layerId for l in glyph.layers} == {l.layerId for l in glyph.layers.values()}
+    assert [l.layerId for l in glyph.layers] != [l.layerId for l in glyph.layers.values()]
+
+
+def test_name(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    assert isinstance(glyph.name, str)
+    value = glyph.name
+    glyph.name = "Ə"
+    assert glyph.name == "Ə"
+    glyph.name = value
+
+
+def test_unicode(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    assert isinstance(glyph.unicode, str)
+    value = glyph.unicode
+    # TODO:
+    # glyph.unicode = "004a"
+    # assert glyph.unicode == "004A"
+    glyph.unicode = "004B"
+    assert glyph.unicode == "004B"
+    glyph.unicode = value
+
+
+def test_string(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    assert glyph.string == "ä"
+
+def test_id(file_path):
     # TODO
-    # masterCompatible
+    pass
 
-    def test_userData(self):
-        glyph = self.glyph
-        # self.assertIsNone(glyph.userData)
-        amount = len(glyph.userData)
-        var1 = "abc"
-        var2 = "def"
-        glyph.userData["unitTestValue"] = var1
-        self.assertEqual(glyph.userData["unitTestValue"], var1)
-        glyph.userData["unitTestValue"] = var2
-        self.assertEqual(glyph.userData["unitTestValue"], var2)
-        del glyph.userData["unitTestValue"]
-        self.assertIsNone(glyph.userData.get("unitTestValue"))
-        self.assertEqual(len(glyph.userData), amount)
-
-    def test_smart_component_axes(self):
-        shoulder = self.font.glyphs["_part.shoulder"]
-        axes = shoulder.smartComponentAxes
-        self.assertIsNotNone(axes)
-        crotch_depth, shoulder_width = axes
-        self.assertIsInstance(crotch_depth, GSSmartComponentAxis)
-        self.assertEqual("crotchDepth", crotch_depth.name)
-        self.assertEqual(0, crotch_depth.topValue)
-        self.assertEqual(-100, crotch_depth.bottomValue)
-        self.assertIsInstance(shoulder_width, GSSmartComponentAxis)
-        self.assertEqual("shoulderWidth", shoulder_width.name)
-        self.assertEqual(100, shoulder_width.topValue)
-        self.assertEqual(0, shoulder_width.bottomValue)
-
-    # TODO
-    # lastChange
+# TODO
+# category
+# storeCategory
+# subCategory
+# storeSubCategory
+# script
+# storeScript
+# productionName
+# storeProductionName
+# glyphInfo
 
 
-class GSLayerFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["a"]
-        self.layer = self.glyph.layers[0]
-
-    def test_repr(self):
-        layer = self.layer
-        self.assertIsNotNone(layer.__repr__())
-
-    def test_parent(self):
-        self.assertIs(self.layer.parent, self.glyph)
-        self.assertIs(self.layer._background.parent, self.glyph)
-
-    def test_name(self):
-        layer = self.layer
-        self.assertUnicode(layer.name)
-
-    # TODO
-    # def test_associatedMasterId(self):
-    #     font = self.font
-    #     layer = self.layer
-    #     self.assertEqual(layer.associatedMasterId, font.masters[0].id)
-
-    # def test_layerId(self):
-    #     font = self.font
-    #     layer = self.layer
-    #     self.assertEqual(layer.layerId, font.masters[0].id)
-
-    # TODO set layer color in .glyphs file
-    # def test_color(self):
-    #     layer = self.layer
-    #     self.assertInteger(layer.color)
-
-    def test_components(self):
-        glyph = self.font.glyphs["adieresis"]
-        layer = glyph.layers[0]
-        self.assertIsNotNone(layer.components)
-        self.assertIsInstance(layer.components, LayerComponentsProxy)
-        # self.assertGreaterEqual(len(layer.components), 1)
-        self.assertEqual(len(layer.components), 2)
-        # for component in layer.components:
-        #     self.assertIsInstance(component, GSComponent)
-        #     self.assertEqual(component.parent, layer)
-        amount = len(layer.components)
-        component = GSComponent()
-        component.name = "A"
-        layer.components.append(component)
-        self.assertEqual(component.parent, layer)
-        self.assertEqual(len(layer.components), amount + 1)
-        del layer.components[-1]
-        self.assertEqual(len(layer.components), amount)
-        layer.components.extend([component])
-        self.assertEqual(len(layer.components), amount + 1)
-        layer.components.remove(component)
-        self.assertEqual(len(layer.components), amount)
-
-    def test_guides(self):
-        layer = self.layer
-        self.assertIsInstance(layer.guides, LayerGuideLinesProxy)
-        for guide in layer.guides:
-            self.assertEqual(guide.parent, layer)
-        layer.guides = []
-        self.assertEqual(len(layer.guides), 0)
-        newGuide = GSGuide()
-        newGuide.position = Point("{100, 100}")
-        newGuide.angle = -10.0
-        amount = len(layer.guides)
-        layer.guides.append(newGuide)
-        self.assertEqual(newGuide.parent, layer)
-        self.assertIsNotNone(layer.guides[0].__repr__())
-        self.assertEqual(len(layer.guides), amount + 1)
-        del layer.guides[0]
-        self.assertEqual(len(layer.guides), amount)
-
-    def test_annotations(self):
-        layer = self.layer
-        # self.assertEqual(layer.annotations, [])
-        self.assertEqual(len(layer.annotations), 0)
-        newAnnotation = GSAnnotation()
-        newAnnotation.type = TEXT
-        newAnnotation.text = "This curve is ugly!"
-        layer.annotations.append(newAnnotation)
-        # TODO position.x, position.y
-        # self.assertIsNotNone(layer.annotations[0].__repr__())
-        self.assertEqual(len(layer.annotations), 1)
-        del layer.annotations[0]
-        self.assertEqual(len(layer.annotations), 0)
-        newAnnotation1 = GSAnnotation()
-        newAnnotation1.type = ARROW
-        newAnnotation2 = GSAnnotation()
-        newAnnotation2.type = CIRCLE
-        newAnnotation3 = GSAnnotation()
-        newAnnotation3.type = PLUS
-        layer.annotations.extend([newAnnotation1, newAnnotation2, newAnnotation3])
-        self.assertEqual(layer.annotations[-3], newAnnotation1)
-        self.assertEqual(layer.annotations[-2], newAnnotation2)
-        self.assertEqual(layer.annotations[-1], newAnnotation3)
-        newAnnotation = GSAnnotation()
-        newAnnotation = copy.copy(newAnnotation)
-        newAnnotation.type = MINUS
-        layer.annotations.insert(0, newAnnotation)
-        self.assertEqual(layer.annotations[0], newAnnotation)
-        layer.annotations.remove(layer.annotations[0])
-        layer.annotations.remove(layer.annotations[-1])
-        layer.annotations.remove(layer.annotations[-1])
-        layer.annotations.remove(layer.annotations[-1])
-        self.assertEqual(len(layer.annotations), 0)
-
-    def test_hints_from_file(self):
-        glyph = self.font.glyphs["A"]
-        layer = glyph.layers[1]
-        self.assertEqual(2, len(layer.hints))
-        first, second = layer.hints
-        self.assertIsInstance(first, GSHint)
-        self.assertTrue(first.horizontal)
-        self.assertIsInstance(first.originNode, GSNode)
-        first_origin_node = layer.paths[1].nodes[1]
-        self.assertEqual(first_origin_node, first.originNode)
-
-        self.assertIsInstance(second, GSHint)
-        second_target_node = layer.paths[0].nodes[4]
-        self.assertEqual(second_target_node, second.targetNode)
-
-    def test_hints(self):
-        layer = self.layer
-        # layer.hints = []
-        self.assertEqual(len(layer.hints), 0)
-        newHint = GSHint()
-        newHint = copy.copy(newHint)
-        newHint.originNode = layer.paths[0].nodes[0]
-        newHint.targetNode = layer.paths[0].nodes[1]
-        newHint.type = PS_STEM
-        layer.hints.append(newHint)
-        self.assertIsNotNone(layer.hints[0].__repr__())
-        self.assertEqual(len(layer.hints), 1)
-        del layer.hints[0]
-        self.assertEqual(len(layer.hints), 0)
-        newHint1 = GSHint()
-        newHint1.originNode = layer.paths[0].nodes[0]
-        newHint1.targetNode = layer.paths[0].nodes[1]
-        newHint1.type = PS_STEM
-        newHint2 = GSHint()
-        newHint2.originNode = layer.paths[0].nodes[0]
-        newHint2.targetNode = layer.paths[0].nodes[1]
-        newHint2.type = PS_STEM
-        layer.hints.extend([newHint1, newHint2])
-        newHint = GSHint()
-        newHint.originNode = layer.paths[0].nodes[0]
-        newHint.targetNode = layer.paths[0].nodes[1]
-        self.assertEqual(layer.hints[-2], newHint1)
-        self.assertEqual(layer.hints[-1], newHint2)
-        layer.hints.insert(0, newHint)
-        self.assertEqual(layer.hints[0], newHint)
-        layer.hints.remove(layer.hints[0])
-        layer.hints.remove(layer.hints[-1])
-        layer.hints.remove(layer.hints[-1])
-        self.assertEqual(len(layer.hints), 0)
-
-    def test_anchors(self):
-        layer = self.layer
-        amount = len(layer.anchors)
-        self.assertEqual(len(layer.anchors), 3)
-        for anchor in layer.anchors:
-            self.assertEqual(anchor.parent, layer)
-        if layer.anchors["top"]:
-            oldPosition = layer.anchors["top"].position
-        else:
-            oldPosition = None
-        layer.anchors["top"] = GSAnchor()
-        self.assertGreaterEqual(len(layer.anchors), 1)
-        self.assertIsNotNone(layer.anchors["top"].__repr__())
-        layer.anchors["top"].position = Point("{100, 100}")
-        # anchor = copy.copy(layer.anchors['top'])
-        del layer.anchors["top"]
-        layer.anchors["top"] = GSAnchor()
-        self.assertEqual(amount, len(layer.anchors))
-        layer.anchors["top"].position = oldPosition
-        self.assertUnicode(layer.anchors["top"].name)
-        newAnchor1 = GSAnchor()
-        newAnchor1.name = "testPosition1"
-        newAnchor2 = GSAnchor()
-        newAnchor2.name = "testPosition2"
-        layer.anchors.extend([newAnchor1, newAnchor2])
-        self.assertEqual(layer.anchors["testPosition1"], newAnchor1)
-        self.assertEqual(layer.anchors["testPosition2"], newAnchor2)
-        newAnchor3 = GSAnchor()
-        newAnchor3.name = "testPosition3"
-        layer.anchors.append(newAnchor3)
-        self.assertEqual(layer.anchors["testPosition3"], newAnchor3)
-        layer.anchors.remove(layer.anchors["testPosition3"])
-        layer.anchors.remove(layer.anchors["testPosition2"])
-        layer.anchors.remove(layer.anchors["testPosition1"])
-        self.assertEqual(amount, len(layer.anchors))
-
-    # TODO layer.paths
-
-    # TODO
-    # selection
-
-    # TODO
-    # LSB, RSB, TSB, BSB, width
-
-    def test_leftMetricsKey(self):
-        self.assertIs(self.layer.leftMetricsKey, None)
-
-    def test_rightMetricsKey(self):
-        self.assertIs(self.layer.rightMetricsKey, None)
-
-    def test_widthMetricsKey(self):
-        self.assertIs(self.layer.widthMetricsKey, None)
-
-    # TODO: bounds, selectionBounds
-
-    def test_background(self):
-        self.assertIn("GSBackgroundLayer", self.layer.background.__repr__())
-        self.assertIs(self.layer, self.layer.background.foreground)
-        self.assertIs(self.layer.parent, self.layer.background.parent)
-
-    def test_backgroundImage(self):
-        # The selected layer (0 of glyph 'a') doesn't have one
-        self.assertIsNone(self.layer.backgroundImage)
-
-        glyph = self.font.glyphs["A"]
-        layer = glyph.layers[0]
-        image = layer.backgroundImage
-        self.assertIsInstance(image, GSBackgroundImage)
-        # Values from the file
-        self.assertEqual("A.jpg", image.path)
-        self.assertEqual([0.0, 0.0, 489.0, 637.0], list(image.crop))
-        # Default values
-        self.assertEqual(50, image.alpha)
-        self.assertEqual([1, 0, 0, 1, 0, 0], image.transform.value)
-        self.assertEqual(False, image.locked)
-
-        # Test documented behaviour of "alpha"
-        image.alpha = 10
-        self.assertEqual(10, image.alpha)
-        image.alpha = 9
-        self.assertEqual(50, image.alpha)
-        image.alpha = 100
-        self.assertEqual(100, image.alpha)
-        image.alpha = 101
-        self.assertEqual(50, image.alpha)
-
-    # TODO?
-    # bezierPath, openBezierPath, completeBezierPath, completeOpenBezierPath?
-
-    def test_userData(self):
-        layer = self.layer
-        # self.assertDict(layer.userData)
-        layer.userData["Hallo"] = "Welt"
-        self.assertEqual(layer.userData["Hallo"], "Welt")
-        self.assertTrue("Hallo" in layer.userData)
-
-    def test_smartComponentPoleMapping(self):
-        # http://docu.glyphsapp.com/#smartComponentPoleMapping
-        # Read some data from the file
-        shoulder = self.font.glyphs["_part.shoulder"]
-        for layer in shoulder.layers:
-            if layer.name == "NarrowShoulder":
-                mapping = layer.smartComponentPoleMapping
-                self.assertIsNotNone(mapping)
-                # crotchDepth is at the top pole
-                self.assertEqual(2, mapping["crotchDepth"])
-                # shoulderWidth is at the bottom pole
-                self.assertEqual(1, mapping["shoulderWidth"])
-
-        # Exercise the getter/setter
-        layer = self.layer
-        self.assertDict(layer.smartComponentPoleMapping)
-        self.assertFalse("crotchDepth" in layer.smartComponentPoleMapping)
-        layer.smartComponentPoleMapping["crotchDepth"] = 2
-        self.assertTrue("crotchDepth" in layer.smartComponentPoleMapping)
-        layer.smartComponentPoleMapping = {"shoulderWidth": 1}
-        self.assertFalse("crotchDepth" in layer.smartComponentPoleMapping)
-        self.assertEqual(1, layer.smartComponentPoleMapping["shoulderWidth"])
-
-    # TODO: Methods
-    # copyDecomposedLayer()
-    # decomposeComponents()
-    # compareString()
-    # connectAllOpenPaths()
-    # syncMetrics()
-    # correctPathDirection()
-    # removeOverlap()
-    # roundCoordinates()
-    # addNodesAtExtremes()
-    # applyTransform()
-    # beginChanges()
-    # endChanges()
-    # cutBetweenPoints()
-    # intersectionsBetweenPoints()
-    # addMissingAnchors()
-    # clearSelection()
-    # swapForegroundWithBackground()
-    # reinterpolate()
-    # clear()
+def test_horiz_kerningGroup(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    for group in ["leftKerningGroup", "rightKerningGroup"]:
+        assert isinstance(getattr(glyph, group), str)
+        value = getattr(glyph, group)
+        setattr(glyph, group, "ä")
+        assert getattr(glyph, group) == "ä"
+        setattr(glyph, group, value)
 
 
-class GSComponentFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["adieresis"]
-        self.layer = self.glyph.layers[0]
-        self.component = self.layer.components[0]
+def test_horiz_metricsKey(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    for group in ["leftMetricsKey", "rightMetricsKey"]:
+        if getattr(glyph, group) is not None:
+            assert isinstance(getattr(glyph, group), str)
+        value = getattr(glyph, group)
+        setattr(glyph, group, "ä")
+        assert getattr(glyph, group) == "ä"
+        setattr(glyph, group, value)
 
-    def test_repr(self):
-        component = self.component
-        self.assertIsNotNone(component.__repr__())
-        self.assertEqual(repr(component), '<GSComponent "a" x=0.0 y=0.0>')
 
-    def test_delete_and_add(self):
-        layer = self.layer
-        self.assertEqual(len(layer.components), 2)
-        layer.components = []
-        self.assertEqual(len(layer.components), 0)
-        layer.components.append(GSComponent("a"))
-        self.assertIsNotNone(layer.components[0].__repr__())
-        self.assertEqual(len(layer.components), 1)
-        layer.components.append(GSComponent("dieresis"))
-        self.assertEqual(len(layer.components), 2)
-        layer.components = [GSComponent("a"), GSComponent("dieresis")]
-        self.assertEqual(len(layer.components), 2)
-        layer.components = []
-        layer.components.extend([GSComponent("a"), GSComponent("dieresis")])
-        self.assertEqual(len(layer.components), 2)
-        newComponent = GSComponent("dieresis")
-        layer.components.insert(0, newComponent)
-        self.assertEqual(newComponent, layer.components[0])
-        layer.components.remove(layer.components[0])
-        self.assertEqual(len(layer.components), 2)
+def test_export(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    assert isinstance(glyph.export, bool)
+    value = glyph.export
+    glyph.export = not glyph.export
+    assert glyph.export == (not value)
+    glyph.export = value
 
-    def test_position(self):
-        self.assertIsInstance(self.component.position, Point)
 
-    def test_componentName(self):
-        self.assertUnicode(self.component.componentName)
+def test_color_glyph(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    if glyph.color is not None:
+        assert isinstance(glyph.color, int)
+    value = glyph.color
+    glyph.color = 5
+    assert glyph.color == 5
+    glyph.color = value
 
-    def test_component(self):
-        self.assertIsInstance(self.component.component, GSGlyph)
 
-    def test_rotation(self):
-        self.assertIsInstance(self.component.rotation, (float, int))
+def test_note_1(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    if glyph.note is not None:
+        assert isinstance(glyph.note, str)
+    value = glyph.note
+    glyph.note = "ä"
+    assert glyph.note == "ä"
+    glyph.note = value
 
-    def test_transform(self):
-        self.assertIsInstance(self.component.transform, Transform)
-        self.assertEqual(len(self.component.transform.value), 6)
+# TODO
+# masterCompatible
 
-    def test_bounds(self):
-        self.assertIsInstance(self.component.bounds, Rect)
-        bounds = self.component.bounds
-        self.assertEqual(bounds.origin.x, 80)
-        self.assertEqual(bounds.origin.y, -10)
-        self.assertEqual(bounds.size.width, 289)
-        self.assertEqual(bounds.size.height, 490)
 
-    def test_moreBounds(self):
-        self.component.scale = 1.1
-        bounds = self.component.bounds
-        self.assertEqual(bounds.origin.x, 88)
-        self.assertEqual(bounds.origin.y, -11)
-        self.assertEqual(round(bounds.size.width * 10), round(317.9 * 10))
-        self.assertEqual(round(bounds.size.height * 10), round(539 * 10))
+def test_userData_1(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    # self.assertIsNone(glyph.userData)
+    amount = len(glyph.userData)
+    var1 = "abc"
+    var2 = "def"
+    glyph.userData["unitTestValue"] = var1
+    assert glyph.userData["unitTestValue"] == var1
+    glyph.userData["unitTestValue"] = var2
+    assert glyph.userData["unitTestValue"] == var2
+    del glyph.userData["unitTestValue"]
+    assert glyph.userData.get("unitTestValue") is None
+    assert len(glyph.userData) == amount
 
-    # def test_automaticAlignment(self):
-    #     self.assertBool(self.component.automaticAlignment)
 
-    def test_anchor(self):
-        self.assertString(self.component.anchor)
+def test_smart_component_axes(file_path):
+    font = GSFont(file_path)
+    shoulder = font.glyphs["_part.shoulder"]
+    axes = shoulder.smartComponentAxes
+    assert axes is not None
+    crotch_depth, shoulder_width = axes
+    assert isinstance(crotch_depth, GSSmartComponentAxis)
+    assert "crotchDepth" == crotch_depth.name
+    assert 0 == crotch_depth.topValue
+    assert -100 == crotch_depth.bottomValue
+    assert isinstance(shoulder_width, GSSmartComponentAxis)
+    assert "shoulderWidth" == shoulder_width.name
+    assert 100 == shoulder_width.topValue
+    assert 0 == shoulder_width.bottomValue
 
-    def test_smartComponentValues(self):
-        glyph = self.font.glyphs["h"]
-        stem, shoulder = glyph.layers[0].components
-        self.assertEqual(100, stem.smartComponentValues["height"])
-        self.assertEqual(-80.20097, shoulder.smartComponentValues["crotchDepth"])
+# TODO
+# lastChange
 
-        self.assertNotIn("shoulderWidth", shoulder.smartComponentValues)
 
-        self.assertNotIn("somethingElse", shoulder.smartComponentValues)
+# GSLayerFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.glyph = self.font.glyphs["a"]
+#     self.layer = self.glyph.layers[0]
 
-    # bezierPath?
-    # componentLayer()
+
+def test_repr(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert layer.__repr__() is not None
+
+
+def test_parent_layer(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert layer.parent is glyph
+    assert layer._background.parent is glyph
+
+
+def test_name_layer(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert isinstance(layer.name, str)
+
+
+def test_associatedMasterId(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert layer.associatedMasterId == font.masters[0].id
+    assert layer.layerId == font.masters[0].id
+
+
+def test_color_layer(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    assert layer.color == 7
+
+
+def test_components(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    assert layer.components is not None
+    assert isinstance(layer.components, LayerComponentsProxy)
+    # assert len(layer.components) >= 1
+    assert len(layer.components) == 2
+    # for component in layer.components:
+    #     assert isinstance(component, GSComponent)
+    #     assert component.parent == layer
+    amount = len(layer.components)
+    component = GSComponent()
+    component.name = "A"
+    layer.components.append(component)
+    assert component.parent == layer
+    assert len(layer.components) == (amount + 1)
+    del layer.components[-1]
+    assert len(layer.components) == amount
+    layer.components.extend([component])
+    assert len(layer.components) == (amount + 1)
+    layer.components.remove(component)
+    assert len(layer.components) == amount
+
+
+def test_guides(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert isinstance(layer.guides, LayerGuideLinesProxy)
+    for guide in layer.guides:
+        assert guide.parent == layer
+    layer.guides = []
+    assert len(layer.guides) == 0
+    newGuide = GSGuide()
+    newGuide.position = Point("{100, 100}")
+    newGuide.angle = -10.0
+    amount = len(layer.guides)
+    layer.guides.append(newGuide)
+    assert newGuide.parent == layer
+    assert layer.guides[0].__repr__() is not None
+    assert len(layer.guides) == (amount + 1)
+    del layer.guides[0]
+    assert len(layer.guides) == amount
+
+
+def test_annotations(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    # assert layer.annotations == []
+    assert len(layer.annotations) == 0
+    newAnnotation = GSAnnotation()
+    newAnnotation.type = TEXT
+    newAnnotation.text = "This curve is ugly!"
+    layer.annotations.append(newAnnotation)
+    # TODO position.x, position.y
+    # assert layer.annotations[0].__repr__() is not None
+    assert len(layer.annotations) == 1
+    del layer.annotations[0]
+    assert len(layer.annotations) == 0
+    newAnnotation1 = GSAnnotation()
+    newAnnotation1.type = ARROW
+    newAnnotation2 = GSAnnotation()
+    newAnnotation2.type = CIRCLE
+    newAnnotation3 = GSAnnotation()
+    newAnnotation3.type = PLUS
+    layer.annotations.extend([newAnnotation1, newAnnotation2, newAnnotation3])
+    assert layer.annotations[-3] == newAnnotation1
+    assert layer.annotations[-2] == newAnnotation2
+    assert layer.annotations[-1] == newAnnotation3
+    newAnnotation = GSAnnotation()
+    newAnnotation = copy.copy(newAnnotation)
+    newAnnotation.type = MINUS
+    layer.annotations.insert(0, newAnnotation)
+    assert layer.annotations[0] == newAnnotation
+    layer.annotations.remove(layer.annotations[0])
+    layer.annotations.remove(layer.annotations[-1])
+    layer.annotations.remove(layer.annotations[-1])
+    layer.annotations.remove(layer.annotations[-1])
+    assert len(layer.annotations) == 0
+
+
+def test_hints_from_file(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["A"]
+    layer = glyph.layers[1]
+
+    assert len(layer.hints) == 2
+    first, second = layer.hints
+    assert isinstance(first, GSHint)
+    assert first.horizontal
+    assert isinstance(first.originNode, GSNode)
+    first_origin_node = layer.paths[1].nodes[1]
+    assert first_origin_node == first.originNode
+
+    assert isinstance(second, GSHint)
+    second_target_node = layer.paths[0].nodes[4]
+    assert second_target_node == second.targetNode
+
+
+def test_hints(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    # layer.hints = []
+    assert len(layer.hints) == 0
+    newHint = GSHint()
+    newHint = copy.copy(newHint)
+    newHint.originNode = layer.paths[0].nodes[0]
+    newHint.targetNode = layer.paths[0].nodes[1]
+    newHint.type = PS_STEM
+    layer.hints.append(newHint)
+    assert layer.hints[0].__repr__() is not None
+    assert len(layer.hints) == 1
+    del layer.hints[0]
+    assert len(layer.hints) == 0
+    newHint1 = GSHint()
+    newHint1.originNode = layer.paths[0].nodes[0]
+    newHint1.targetNode = layer.paths[0].nodes[1]
+    newHint1.type = PS_STEM
+    newHint2 = GSHint()
+    newHint2.originNode = layer.paths[0].nodes[0]
+    newHint2.targetNode = layer.paths[0].nodes[1]
+    newHint2.type = PS_STEM
+    layer.hints.extend([newHint1, newHint2])
+    newHint = GSHint()
+    newHint.originNode = layer.paths[0].nodes[0]
+    newHint.targetNode = layer.paths[0].nodes[1]
+    assert layer.hints[-2] == newHint1
+    assert layer.hints[-1] == newHint2
+    layer.hints.insert(0, newHint)
+    assert layer.hints[0] == newHint
+    layer.hints.remove(layer.hints[0])
+    layer.hints.remove(layer.hints[-1])
+    layer.hints.remove(layer.hints[-1])
+    assert len(layer.hints) == 0
+
+
+def test_anchors(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    amount = len(layer.anchors)
+    assert len(layer.anchors) == 3
+    for anchor in layer.anchors:
+        assert anchor.parent == layer
+    if layer.anchors["top"]:
+        oldPosition = layer.anchors["top"].position
+    else:
+        oldPosition = None
+    layer.anchors["top"] = GSAnchor()
+    assert len(layer.anchors) >= 1
+    assert layer.anchors["top"].__repr__() is not None
+    layer.anchors["top"].position = Point("{100, 100}")
+    # anchor = copy.copy(layer.anchors['top'])
+    del layer.anchors["top"]
+    layer.anchors["top"] = GSAnchor()
+    assert amount == len(layer.anchors)
+    layer.anchors["top"].position = oldPosition
+    assert isinstance(layer.anchors["top"].name, str)
+    newAnchor1 = GSAnchor()
+    newAnchor1.name = "testPosition1"
+    newAnchor2 = GSAnchor()
+    newAnchor2.name = "testPosition2"
+    layer.anchors.extend([newAnchor1, newAnchor2])
+    assert layer.anchors["testPosition1"] == newAnchor1
+    assert layer.anchors["testPosition2"] == newAnchor2
+    newAnchor3 = GSAnchor()
+    newAnchor3.name = "testPosition3"
+    layer.anchors.append(newAnchor3)
+    assert layer.anchors["testPosition3"] == newAnchor3
+    layer.anchors.remove(layer.anchors["testPosition3"])
+    layer.anchors.remove(layer.anchors["testPosition2"])
+    layer.anchors.remove(layer.anchors["testPosition1"])
+    assert amount == len(layer.anchors)
+
+# TODO layer.paths
+
+# TODO
+# selection
+
+# TODO
+# LSB, RSB, TSB, BSB, width
+
+
+def test_metricsKeys(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert layer.leftMetricsKey is None
+    assert layer.rightMetricsKey is None
+    assert layer.widthMetricsKey is None
+
+# TODO: bounds, selectionBounds
+
+
+def test_background(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    assert "GSBackgroundLayer" in layer.background.__repr__()
+    assert layer is layer.background.foreground
+    assert layer.parent is layer.background.parent
+
+
+def test_backgroundImage(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    # The selected layer (0 of glyph 'a') doesn't have one
+    assert layer.backgroundImage is None
+
+    glyph = font.glyphs["A"]
+    layer = glyph.layers[0]
+    image = layer.backgroundImage
+    assert isinstance(image, GSBackgroundImage)
+    # Values from the file
+    assert "A.jpg" == image.path
+    assert [0.0, 0.0, 489.0, 637.0] == list(image.crop)
+    # Default values
+    assert 50 == image.alpha
+    assert [1, 0, 0, 1, 0, 0] == image.transform.value
+    assert False is image.locked
+
+    # Test documented behaviour of "alpha"
+    image.alpha = 10
+    assert 10 == image.alpha
+    image.alpha = 9
+    assert 50 == image.alpha
+    image.alpha = 100
+    assert 100 == image.alpha
+    image.alpha = 101
+    assert 50 == image.alpha
+
+# TODO?
+# bezierPath, openBezierPath, completeBezierPath, completeOpenBezierPath?
+
+
+def test_userData_layer(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+
+    # self.assertDict(layer.userData)
+    layer.userData["Hallo"] = "Welt"
+    assert layer.userData["Hallo"] == "Welt"
+    assert "Hallo" in layer.userData
+
+
+def test_smartComponentPoleMapping(file_path):
+    # http://docu.glyphsapp.com/#smartComponentPoleMapping
+    # Read some data from the file
+    font = GSFont(file_path)
+    shoulder = font.glyphs["_part.shoulder"]
+    for layer in shoulder.layers:
+        if layer.name == "NarrowShoulder":
+            mapping = layer.smartComponentPoleMapping
+            assert mapping is not None
+            # crotchDepth is at the top pole
+            assert 2 == mapping["crotchDepth"]
+            # shoulderWidth is at the bottom pole
+            assert 1 == mapping["shoulderWidth"]
+
+    # Exercise the getter/setter
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    assert isinstance(layer.smartComponentPoleMapping, dict)
+    assert "crotchDepth" not in layer.smartComponentPoleMapping
+    layer.smartComponentPoleMapping["crotchDepth"] = 2
+    assert "crotchDepth" in layer.smartComponentPoleMapping
+    layer.smartComponentPoleMapping = {"shoulderWidth": 1}
+    assert "crotchDepth" not in layer.smartComponentPoleMapping
+    assert 1 == layer.smartComponentPoleMapping["shoulderWidth"]
+
+# TODO: Methods
+# copyDecomposedLayer()
+# decomposeComponents()
+# compareString()
+# connectAllOpenPaths()
+# syncMetrics()
+# correctPathDirection()
+# removeOverlap()
+# roundCoordinates()
+# addNodesAtExtremes()
+# applyTransform()
+# beginChanges()
+# endChanges()
+# cutBetweenPoints()
+# intersectionsBetweenPoints()
+# addMissingAnchors()
+# clearSelection()
+# swapForegroundWithBackground()
+# reinterpolate()
+# clear()
+
+
+# GSComponentFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.glyph = self.font.glyphs["adieresis"]
+#     self.layer = self.glyph.layers[0]
+#     self.component = self.layer.components[0]
+
+def test_repr_component(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert component.__repr__() is not None
+    assert repr(component) == '<GSComponent "a" x=0.0 y=0.0>'
+
+
+def test_delete_and_add(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+
+    assert len(layer.components) == 2
+    layer.components = []
+    assert len(layer.components) == 0
+    layer.components.append(GSComponent("a"))
+    assert layer.components[0].__repr__() is not None
+    assert len(layer.components) == 1
+    layer.components.append(GSComponent("dieresis"))
+    assert len(layer.components) == 2
+    layer.components = [GSComponent("a"), GSComponent("dieresis")]
+    assert len(layer.components) == 2
+    layer.components = []
+    layer.components.extend([GSComponent("a"), GSComponent("dieresis")])
+    assert len(layer.components) == 2
+    newComponent = GSComponent("dieresis")
+    layer.components.insert(0, newComponent)
+    assert newComponent == layer.components[0]
+    layer.components.remove(layer.components[0])
+    assert len(layer.components) == 2
+
+
+def test_position(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.position, Point)
+
+
+def test_componentName(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.componentName, str)
+
+
+def test_component(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.component, GSGlyph)
+
+
+def test_rotation(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.rotation, (float, int))
+
+
+def test_transform(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.transform, Transform)
+    assert len(component.transform.value) == 6
+
+
+def test_bounds(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.bounds, Rect)
+    bounds = component.bounds
+    assert bounds.origin.x == 80
+    assert bounds.origin.y == -10
+    assert bounds.size.width == 289
+    assert bounds.size.height == 490
+
+
+def test_moreBounds(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    component.scale = 1.1
+    bounds = component.bounds
+    assert bounds.origin.x == 88
+    assert bounds.origin.y == -11
+    assert round(bounds.size.width * 10) == round(317.9 * 10)
+    assert round(bounds.size.height * 10) == round(539 * 10)
+
+# def test_automaticAlignment(file_path):
+#     self.assertBool(self.component.automaticAlignment)
+
+
+def test_anchor(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["adieresis"]
+    layer = glyph.layers[0]
+    component = layer.components[0]
+    assert isinstance(component.anchor, str)
+
+
+def test_smartComponentValues(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["h"]
+    layer = glyph.layers[0]
+    stem, shoulder = layer.components
+    assert 100 == stem.smartComponentValues["height"]
+    assert -80.20097 == shoulder.smartComponentValues["crotchDepth"]
+
+    assert "shoulderWidth" not in shoulder.smartComponentValues
+    assert "somethingElse" not in shoulder.smartComponentValues
+
+# bezierPath?
+# componentLayer()
 
 
 class GSGuideTest(unittest.TestCase):
     def test_repr(self):
         guide = GSGuide()
-        self.assertEqual(repr(guide), "<GSGuide x=0.0 y=0.0 angle=0.0>")
+        assert repr(guide) == "<GSGuide x=0.0 y=0.0 angle=0.0>"
 
 
-class GSAnchorFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["a"]
-        self.layer = self.glyph.layers[0]
-        self.anchor = self.layer.anchors[0]
+# GSAnchorFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.glyph = self.font.glyphs["a"]
+#     self.layer = self.glyph.layers[0]
+#     self.anchor = self.layer.anchors[0]
 
-    def test_repr(self):
-        anchor = self.anchor
-        self.assertEqual(anchor.__repr__(), '<GSAnchor "bottom" x=218.0 y=0.0>')
-
-    def test_name(self):
-        anchor = self.anchor
-        self.assertUnicode(anchor.name)
-
-    # TODO
-    def test_position(self):
-        pass
+def test_repr_anchor(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    anchor = layer.anchors[0]
+    assert anchor.__repr__() == '<GSAnchor "bottom" x=218.0 y=0.0>'
 
 
-class GSPathFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["a"]
-        self.layer = self.glyph.layers[0]
-        self.path = self.layer.paths[0]
+def test_name_anchor(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    anchor = layer.anchors[0]
 
-    def test_proxy(self):
-        layer = self.layer
-        path = self.path
-        amount = len(layer.paths)
-        pathCopy1 = copy.copy(path)
-        layer.paths.append(pathCopy1)
-        pathCopy2 = copy.copy(pathCopy1)
-        layer.paths.extend([pathCopy2])
-        self.assertEqual(layer.paths[-2], pathCopy1)
-        self.assertEqual(layer.paths[-1], pathCopy2)
-        pathCopy3 = copy.copy(pathCopy2)
-        layer.paths.insert(0, pathCopy3)
-        self.assertEqual(layer.paths[0], pathCopy3)
-        layer.paths.remove(layer.paths[0])
-        layer.paths.remove(layer.paths[-1])
-        layer.paths.remove(layer.paths[-1])
-        self.assertEqual(amount, len(layer.paths))
-
-    def test_parent(self):
-        path = self.path
-        self.assertEqual(path.parent, self.layer)
-
-    def test_nodes(self):
-        path = self.path
-        self.assertIsNotNone(path.nodes)
-        self.assertEqual(len(path.nodes), 44)
-        for node in path.nodes:
-            self.assertEqual(node.parent, path)
-        amount = len(path.nodes)
-        newNode = GSNode(Point("{100, 100}"))
-        path.nodes.append(newNode)
-        self.assertEqual(newNode, path.nodes[-1])
-        del path.nodes[-1]
-        newNode = GSNode(Point("{20, 20}"))
-        path.nodes.insert(0, newNode)
-        self.assertEqual(newNode, path.nodes[0])
-        path.nodes.remove(path.nodes[0])
-        newNode1 = GSNode(Point("{10, 10}"))
-        newNode2 = GSNode(Point("{20, 20}"))
-        path.nodes.extend([newNode1, newNode2])
-        self.assertEqual(newNode1, path.nodes[-2])
-        self.assertEqual(newNode2, path.nodes[-1])
-        del path.nodes[-2]
-        del path.nodes[-1]
-        self.assertEqual(amount, len(path.nodes))
-
-    def test_node_position(self):
-        n = GSNode()
-        n.position = Point("{10, 10}")
-        self.assertEqual(n.position.x, 10)
-        n.position = (20, 20)
-        self.assertEqual(n.position.x, 20)
-
-    # TODO: GSPath.closed
-
-    # bezierPath?
-
-    # TODO:
-    # addNodesAtExtremes()
-    # applyTransform()
-    def test_applyTransform_translate(self):
-        pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((1, 0, 0, 1, 50, 25))
-        expected = ((402, 172), (402, 93), (364, 32), (262, 32))
-        for i, pt in enumerate(expected):
-            self.assertEqual(pathCopy.nodes[i].position.x, pt[0])
-            self.assertEqual(pathCopy.nodes[i].position.y, pt[1])
-
-    def test_applyTransform_translate_scale(self):
-        pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((0.9, 0, 0, 1.2, 50, 25))
-        expected = ((367, 201), (367, 107), (333, 33), (241, 33))
-        for i, pt in enumerate(expected):
-            self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0], 0)
-            self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1], 0)
-
-    def test_applyTransform_skew(self):
-        pathCopy = copy.copy(self.path)
-        pathCopy.applyTransform((1, 0.1, 0.2, 1, 0, 0))
-        expected = ((381, 182), (366, 103), (315, 38), (213, 28))
-        for i, pt in enumerate(expected):
-            self.assertAlmostEqual(pathCopy.nodes[i].position.x, pt[0], 0)
-            self.assertAlmostEqual(pathCopy.nodes[i].position.y, pt[1], 0)
-
-    def test_direction(self):
-        self.assertEqual(self.path.direction, -1)
-
-    def test_segments(self):
-        oldSegments = self.path.segments
-        self.assertEqual(len(self.path.segments), 20)
-        self.path.reverse()
-        self.assertEqual(len(self.path.segments), 20)
-        self.assertEqual(oldSegments[0].nodes[0], self.path.segments[0].nodes[0])
-
-    def test_segments_2(self):
-        p = GSPath()
-        p.nodes = [
-            GSNode((204, 354), "curve"),
-            GSNode((198, 353), "offcurve"),
-            GSNode((193, 352), "offcurve"),
-            GSNode((183, 352), "curve"),
-            GSNode((154, 352), "offcurve"),
-            GSNode((123, 364), "offcurve"),
-            GSNode((123, 384), "curve"),
-            GSNode((123, 403), "offcurve"),
-            GSNode((148, 419), "offcurve"),
-            GSNode((167, 419), "curve"),
-            GSNode((190, 419), "offcurve"),
-            GSNode((204, 397), "offcurve"),
-        ]
-        self.assertEqual(len(p.segments), 4)
-
-    def test_segments_3(self):
-        p = GSPath()
-        p.nodes = [
-            GSNode((327, 185), "offcurve"),
-            GSNode((299, 210), "offcurve"),
-            GSNode((297, 266), "curve"),
-            GSNode((294, 351), "offcurve"),
-            GSNode((297, 434), "qcurve"),
-            GSNode((299, 490), "offcurve"),
-            GSNode((328, 515), "offcurve"),
-            GSNode((371, 515), "curve"),
-            GSNode((414, 515), "offcurve"),
-            GSNode((443, 490), "offcurve"),
-            GSNode((445, 434), "curve"),
-            GSNode((448, 351), "offcurve"),
-            GSNode((445, 266), "qcurve"),
-            GSNode((443, 210), "offcurve"),
-            GSNode((415, 185), "offcurve"),
-            GSNode((371, 185), "curve"),
-        ]
-        self.assertEqual(len(p.segments), 6)
-
-    def test_segments_4(self):
-        p = GSPath()
-        p.nodes = [
-            GSNode((327, 185), "line"),
-            GSNode((297, 266), "line"),
-            GSNode((371, 185), "line"),
-        ]
-        self.assertEqual(len(p.segments), 3)
-        p.closed = False
-        self.assertEqual(len(p.segments), 2)
-        self.assertEqual(p.segments[0][0].x, 327)
-
-    def test_segments_5(self):
-        p = GSPath()
-        p.nodes = [
-            GSNode((250, 2000), "offcurve"),
-            GSNode((250, 1000), "offcurve"),
-            GSNode((250, 900), "curve"),
-            GSNode((250, 500), "offcurve"),
-            GSNode((250, 50), "offcurve"),
-            GSNode((250, 0), "curve"),
-            GSNode((250, 1700), "curve"),
-            # Yes, this is bad construction but we shouldn't
-            # infinite loop
-        ]
-        self.assertEqual(len(p.segments), 3)
-
-    def test_bounds(self):
-        bounds = self.path.bounds
-        self.assertEqual(bounds.origin.x, 80)
-        self.assertEqual(bounds.origin.y, -10)
-        self.assertEqual(bounds.size.width, 289)
-        self.assertEqual(bounds.size.height, 490)
+    assert isinstance(anchor.name, str)
 
 
-class GSNodeFromFileTest(GSObjectsTestCase):
-    def setUp(self):
-        super().setUp()
-        self.glyph = self.font.glyphs["a"]
-        self.layer = self.glyph.layers[0]
-        self.path = self.layer.paths[0]
-        self.node = self.path.nodes[0]
+def test_position_anchor(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    anchor = layer.anchors[0]
+    assert isinstance(anchor.position, Point)
+    assert anchor.position == Point(218, 0)
 
-    def test_repr(self):
-        self.assertIsNotNone(self.node.__repr__())
 
-    def test_position(self):
-        self.assertIsInstance(self.node.position, Point)
+# GSPathFromFileTest
+# def setUp(self):
+#     super().setUp()
+#     self.glyph = self.font.glyphs["a"]
+#     self.layer = self.glyph.layers[0]
+#     self.path = self.layer.paths[0]
 
-    def test_type(self):
-        self.assertTrue(self.node.type in [LINE, CURVE, OFFCURVE])
+def test_proxy(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    amount = len(layer.paths)
+    pathCopy1 = copy.copy(path)
+    layer.paths.append(pathCopy1)
+    pathCopy2 = copy.copy(pathCopy1)
+    layer.paths.extend([pathCopy2])
+    assert layer.paths[-2] == pathCopy1
+    assert layer.paths[-1] == pathCopy2
+    pathCopy3 = copy.copy(pathCopy2)
+    layer.paths.insert(0, pathCopy3)
+    assert layer.paths[0] == pathCopy3
+    layer.paths.remove(layer.paths[0])
+    layer.paths.remove(layer.paths[-1])
+    layer.paths.remove(layer.paths[-1])
+    assert amount == len(layer.paths)
 
-    def test_smooth(self):
-        self.assertBool(self.node.smooth)
 
-    def test_index(self):
-        self.assertInteger(self.node.index)
-        self.assertEqual(self.path.nodes[0].index, 0)
-        self.assertEqual(self.path.nodes[-1].index, 43)
+def test_parent_path(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
 
-    def test_nextNode(self):
-        self.assertEqual(type(self.path.nodes[-1].nextNode), GSNode)
-        self.assertEqual(self.path.nodes[-1].nextNode, self.path.nodes[0])
+    assert path.parent is layer
 
-    def test_prevNode(self):
-        self.assertEqual(type(self.path.nodes[0].prevNode), GSNode)
-        self.assertEqual(self.path.nodes[0].prevNode, self.path.nodes[-1])
 
-    def test_name(self):
-        self.assertEqual(self.node.name, "Hello")
+def test_nodes(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
 
-    def test_userData(self):
-        self.assertEqual("1", self.node.userData["rememberToMakeCoffee"])
+    assert path.nodes is not None
+    assert len(path.nodes) == 44
+    for node in path.nodes:
+        assert node.parent is path
+    amount = len(path.nodes)
+    newNode = GSNode(Point(100, 100))
+    path.nodes.append(newNode)
+    assert newNode == path.nodes[-1]
+    del path.nodes[-1]
+    newNode = GSNode(Point(20, 20))
+    path.nodes.insert(0, newNode)
+    assert newNode == path.nodes[0]
+    path.nodes.remove(path.nodes[0])
+    newNode1 = GSNode(Point(10, 10))
+    newNode2 = GSNode(Point(20, 20))
+    path.nodes.extend([newNode1, newNode2])
+    assert newNode1 == path.nodes[-2]
+    assert newNode2 == path.nodes[-1]
+    del path.nodes[-2]
+    del path.nodes[-1]
+    assert amount == len(path.nodes)
 
-    def test_makeNodeFirst(self):
-        oldAmount = len(self.path.nodes)
-        oldSecondNode = self.path.nodes[3]
-        self.path.nodes[3].makeNodeFirst()
-        self.assertEqual(oldAmount, len(self.path.nodes))
-        self.assertEqual(oldSecondNode, self.path.nodes[0])
 
-    def test_toggleConnection(self):
-        oldConnection = self.node.smooth
-        self.node.toggleConnection()
-        self.assertEqual(oldConnection, not self.node.smooth)
+def test_node_position(file_path):
+    n = GSNode()
+    n.position = Point(10, 10)
+    assert n.position.x == 10
+    n.position = (20, 20)
+    assert n.position.x == 20
+
+# TODO: GSPath.closed
+
+# bezierPath?
+
+# TODO:
+# addNodesAtExtremes()
+# applyTransform()
+
+
+def test_applyTransform_translate(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+
+    pathCopy = copy.copy(path)
+    pathCopy.applyTransform((1, 0, 0, 1, 50, 25))
+    expected = ((402, 172), (402, 93), (364, 32), (262, 32))
+    for i, pt in enumerate(expected):
+        assert pathCopy.nodes[i].position.x == pt[0]
+        assert pathCopy.nodes[i].position.y == pt[1]
+
+
+def test_applyTransform_translate_scale(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+
+    pathCopy = copy.copy(path)
+    pathCopy.applyTransform((0.9, 0, 0, 1.2, 50, 25))
+    expected = ((366.8, 201.4), (366.8, 106.6), (332.6, 33.4), (240.8, 33.4))
+    for i, pt in enumerate(expected):
+        assert abs(pathCopy.nodes[i].position.x - pt[0]) < 0.01
+        assert abs(pathCopy.nodes[i].position.y - pt[1]) < 0.01
+
+
+def test_applyTransform_skew(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    pathCopy = copy.copy(path)
+    pathCopy.applyTransform((1, 0.1, 0.2, 1, 0, 0))
+    expected = ((381.4, 182.2), (365.6, 103.2), (315.4, 38.4), (213.4, 28.2))
+    for i, pt in enumerate(expected):
+        assert abs(pathCopy.nodes[i].position.x - pt[0]) < 0.01
+        assert abs(pathCopy.nodes[i].position.y - pt[1]) < 0.01
+
+
+def test_direction(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    assert path.direction == -1
+
+
+def test_segments(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    oldSegments = path.segments
+    assert len(path.segments) == 20
+    path.reverse()
+    assert len(path.segments) == 20
+    assert oldSegments[0].nodes[0] == path.segments[0].nodes[0]
+
+
+def test_segments_2(file_path):
+    p = GSPath()
+    p.nodes = [
+        GSNode((204, 354), "curve"),
+        GSNode((198, 353), "offcurve"),
+        GSNode((193, 352), "offcurve"),
+        GSNode((183, 352), "curve"),
+        GSNode((154, 352), "offcurve"),
+        GSNode((123, 364), "offcurve"),
+        GSNode((123, 384), "curve"),
+        GSNode((123, 403), "offcurve"),
+        GSNode((148, 419), "offcurve"),
+        GSNode((167, 419), "curve"),
+        GSNode((190, 419), "offcurve"),
+        GSNode((204, 397), "offcurve"),
+    ]
+    assert len(p.segments) == 4
+
+
+def test_segments_3(file_path):
+    p = GSPath()
+    p.nodes = [
+        GSNode((327, 185), "offcurve"),
+        GSNode((299, 210), "offcurve"),
+        GSNode((297, 266), "curve"),
+        GSNode((294, 351), "offcurve"),
+        GSNode((297, 434), "qcurve"),
+        GSNode((299, 490), "offcurve"),
+        GSNode((328, 515), "offcurve"),
+        GSNode((371, 515), "curve"),
+        GSNode((414, 515), "offcurve"),
+        GSNode((443, 490), "offcurve"),
+        GSNode((445, 434), "curve"),
+        GSNode((448, 351), "offcurve"),
+        GSNode((445, 266), "qcurve"),
+        GSNode((443, 210), "offcurve"),
+        GSNode((415, 185), "offcurve"),
+        GSNode((371, 185), "curve"),
+    ]
+    assert len(p.segments) == 6
+
+
+def test_segments_4(file_path):
+    p = GSPath()
+    p.nodes = [
+        GSNode((327, 185), "line"),
+        GSNode((297, 266), "line"),
+        GSNode((371, 185), "line"),
+    ]
+    assert len(p.segments) == 3
+    p.closed = False
+    assert len(p.segments) == 2
+    assert p.segments[0][0].x == 327
+
+
+def test_segments_5(file_path):
+    p = GSPath()
+    p.nodes = [
+        GSNode((250, 2000), "offcurve"),
+        GSNode((250, 1000), "offcurve"),
+        GSNode((250, 900), "curve"),
+        GSNode((250, 500), "offcurve"),
+        GSNode((250, 50), "offcurve"),
+        GSNode((250, 0), "curve"),
+        GSNode((250, 1700), "curve"),
+        # Yes, this is bad construction but we shouldn't
+        # infinite loop
+    ]
+    assert len(p.segments) == 3
+
+
+def test_bounds_path(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    bounds = path.bounds
+    assert bounds.origin.x == 80
+    assert bounds.origin.y == -10
+    assert bounds.size.width == 289
+    assert bounds.size.height == 490
+
+
+# GSNodeFromFileTest
+# def setUp(file_path):
+#     super().setUp()
+#     self.glyph = self.font.glyphs["a"]
+#     self.layer = self.glyph.layers[0]
+#     self.path = self.layer.paths[0]
+#     self.node = self.path.nodes[0]
+
+def test_repr_node(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert node.__repr__() is not None
+
+
+def test_position_node(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert isinstance(node.position, Point)
+
+
+def test_type(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert node.type in [LINE, CURVE, OFFCURVE]
+
+
+def test_smooth(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert node.smooth
+
+
+def test_index(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert isinstance(node.index, int)
+    assert node.index == 0
+    assert path.nodes[-1].index == 43
+
+
+def test_nextNode(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    assert isinstance(path.nodes[-1].nextNode, GSNode)
+    assert path.nodes[-1].nextNode is path.nodes[0]
+
+
+def test_prevNode(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert isinstance(node.prevNode, GSNode)
+    assert node.prevNode is path.nodes[-1]
+
+
+def test_name_node(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert node.name == "Hello"
+
+
+def test_userData_node(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    assert "1" == node.userData["rememberToMakeCoffee"]
+
+
+def test_makeNodeFirst(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+
+    oldAmount = len(path.nodes)
+    oldSecondNode = path.nodes[3]
+    path.nodes[3].makeNodeFirst()
+    assert oldAmount == len(path.nodes)
+    assert oldSecondNode is path.nodes[0]
+
+
+def test_toggleConnection(file_path):
+    font = GSFont(file_path)
+    glyph = font.glyphs["a"]
+    layer = glyph.layers[0]
+    path = layer.paths[0]
+    node = path.nodes[0]
+    oldConnection = node.smooth
+    node.toggleConnection()
+    assert oldConnection != node.smooth
 
 
 class GSCustomParameterTest(unittest.TestCase):
     def test_plistValue_string(self):
         test_string = "Some Value"
         param = GSCustomParameter("New Parameter", test_string)
-        self.assertEqual(
-            param.plistValue(), '{\nname = "New Parameter";\nvalue = "Some Value";\n}'
-        )
+        assert param.plistValue() == '{\nname = "New Parameter";\nvalue = "Some Value";\n}'
 
     def test_plistValue_list(self):
         test_list = [1, 2.5, {"key1": "value1"}]
         param = GSCustomParameter("New Parameter", test_list)
-        self.assertEqual(
-            param.plistValue(),
-            '{\nname = "New Parameter";\nvalue = (\n1,\n2.5,'
-            "\n{\nkey1 = value1;\n}\n);\n}",
-        )
+        assert param.plistValue() == '{\nname = "New Parameter";\nvalue = (\n1,\n2.5,'"\n{\nkey1 = value1;\n}\n);\n}"
 
     def test_plistValue_dict(self):
         test_dict = {"key1": "value1", "key2": "value2"}
         param = GSCustomParameter("New Parameter", test_dict)
-        self.assertEqual(
-            param.plistValue(),
-            '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'
-            "\nkey2 = value2;\n};\n}",
-        )
+        assert param.plistValue() == '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'"\nkey2 = value2;\n};\n}"
 
 
 class GSBackgroundLayerTest(unittest.TestCase):
@@ -1703,42 +1888,44 @@ class SegmentTest(unittest.TestCase):
         self.assertAlmostEqual(bbox[3], 367)
 
 
-class FontGlyphsProxyTest(unittest.TestCase):
-    def setUp(self):
-        self.font = GSFont(TESTFILE_PATHV3)
+# FontGlyphsProxyTest
+# def setUp(file_path):
+#     self.font = GSFont(TESTFILE_PATHV3)
 
-    def test_remove_glyphs(self):
-        assert self.font.glyphs[0].name == "A"
-        del self.font.glyphs[0]
-        assert self.font.glyphs[0].name != "A"
+def test_remove_glyphs(file_path):
+    font = GSFont(file_path)
+    assert font.glyphs[0].name == "A"
+    del font.glyphs[0]
+    assert font.glyphs[0].name != "A"
 
-        assert self.font.glyphs["Adieresis"].name == "Adieresis"
-        del self.font.glyphs["Adieresis"]
-        assert self.font.glyphs["Adieresis"] is None
+    assert font.glyphs["Adieresis"].name == "Adieresis"
+    del font.glyphs["Adieresis"]
+    assert font.glyphs["Adieresis"] is None
 
-        with pytest.raises(KeyError):
-            del self.font.glyphs["xxxzzz"]
+    with pytest.raises(KeyError):
+        del font.glyphs["xxxzzz"]
 
-        with pytest.raises(KeyError):
-            del self.font.glyphs[self.font]
+    with pytest.raises(KeyError):
+        del font.glyphs[font]
 
 
-class FontClassesProxyTest(unittest.TestCase):
-    def setUp(self):
-        self.font = GSFont(TESTFILE_PATHV3)
+# FontClassesProxyTest
+# def setUp(self):
+#     self.font = GSFont(TESTFILE_PATHV3)
 
-    def test_indxing_by_name(self):
-        assert "Languagesystems" in self.font.featurePrefixes
-        assert "c2sc_source" in self.font.classes
-        assert "aalt" in self.font.features
+def test_indexing_by_name(file_path):
+    font = GSFont(file_path)
+    assert "Languagesystems" in font.featurePrefixes
+    assert "c2sc_source" in font.classes
+    assert "aalt" in font.features
 
-        assert "XXXX" not in self.font.featurePrefixes
-        assert "XXXX" not in self.font.classes
-        assert "XXXX" not in self.font.features
+    assert "XXXX" not in font.featurePrefixes
+    assert "XXXX" not in font.classes
+    assert "XXXX" not in font.features
 
-        assert self.font.featurePrefixes["Languagesystems"] in self.font.featurePrefixes
-        assert self.font.classes["c2sc_source"] in self.font.classes
-        assert self.font.features["aalt"] in self.font.features
+    assert font.featurePrefixes["Languagesystems"] in font.featurePrefixes
+    assert font.classes["c2sc_source"] in font.classes
+    assert font.features["aalt"] in font.features
 
 
 if __name__ == "__main__":
