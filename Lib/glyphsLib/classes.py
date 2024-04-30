@@ -4922,11 +4922,16 @@ class GSLayer(GSBase):
             writer.writeObjectKeyValue(self, "metricLeft")
             writer.writeObjectKeyValue(self, "metricRight")
             writer.writeObjectKeyValue(self, "metricWidth")
-        if self._name is not None and len(self._name) > 0 and not self.isMasterLayer:
-            if writer.formatVersion > 2:
+        if writer.formatVersion > 2:
+            if self._name is not None and len(self._name) > 0 and not self.isMasterLayer:
                 writer.writeKeyValue("name", self._name)
-            else:
-                writer.writeKeyValue("name", self.name)
+        else:
+            if ((self._name is not None and len(self._name) > 0) or len(self.attributes) > 0) and not self.isMasterLayer:
+                legacyName = self._legacyName()
+                if legacyName:
+                    writer.writeKeyValue("name", legacyName)
+                elif self._name:
+                    writer.writeKeyValue("name", self._name)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(
                 self, "smartComponentPoleMapping", "if_true", keyName="partSelection"
@@ -5193,6 +5198,11 @@ class GSLayer(GSBase):
             name = f"color.{self._color_palette_index()}"
             if name:
                 nameStrings.append(name)
+        elif self.isAppleColorLayer:
+            sbixSize = self.attributes["LAYER_ATTRIBUTE_SBIX_SIZE"]
+            name = f"iColor {sbixSize}"
+            if name:
+                nameStrings.append(name)
         if self.isBracketLayer:
             name = self._bracket_layer_name()
             if name:
@@ -5204,6 +5214,58 @@ class GSLayer(GSBase):
         if len(nameStrings):
             return " ".join(nameStrings)
         return None
+
+    def _colorNameString(self):
+        if self.isFullColorLayer:
+            return "Color"
+
+        colorPalette = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
+        if colorPalette:
+            return f"Color {colorPalette}"
+
+        sbixSize = self.attributes.get(LAYER_ATTRIBUTE_SBIX_SIZE, None)
+        if sbixSize:
+            return f"iColor {sbixSize}"
+
+        if self.isSVGColorLayer:
+            return "svg"
+        return None
+
+    def _legacyName(self):
+        """
+        The layer name to write it to a glyphs 2 file.
+        """
+        if self.font is None:
+            return self._name
+
+        nameStrings = []
+
+        colorNameString = self._colorNameString()
+        if colorNameString:
+            nameStrings.append(colorNameString)
+
+        axisRules = self.attributes.get(LAYER_ATTRIBUTE_AXIS_RULES, None)
+        if axisRules:
+            axis = self.font.axes[0]
+            rule = axisRules.get(axis.axisId, None)
+            if rule is None:
+                raise ValueError("Glyphs 2 can obly handle axis rules for the first axis")
+            minValue = rule.get("min", None)
+            maxValue = rule.get("max", None)
+            if minValue and maxValue or len(axisRules) > 1:
+                raise ValueError("Glyphs 2 can’t handle ranges in axis rules")
+            if minValue:
+                nameStrings.append(f"[{minValue}]")
+            elif maxValue:
+                nameStrings.append(f"]{maxValue}]")
+            else:
+                nameStrings.append("[]")
+
+        if self.isBraceLayer:
+            brace_layer_name = self._brace_layer_name()
+            if brace_layer_name:
+                nameStrings.append(brace_layer_name)
+        return " ".join(nameStrings)
 
     def _brace_layer_name(self):
         if not self.isBraceLayer:
@@ -5421,8 +5483,16 @@ class GSLayer(GSBase):
         return LAYER_ATTRIBUTE_COORDINATES in self.attributes
 
     @property
+    def isFullColorLayer(self):
+        return LAYER_ATTRIBUTE_COLOR in self.attributes
+
+    @property
     def isColorPaletteLayer(self):
         return LAYER_ATTRIBUTE_COLOR_PALETTE in self.attributes
+
+    @property
+    def isSVGColorLayer(self):
+        return LAYER_ATTRIBUTE_SVG in self.attributes
 
     def _color_palette_index(self):
         index = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
@@ -5431,6 +5501,10 @@ class GSLayer(GSBase):
         if index == "*":
             return 0xFFFF
         return int(index)
+
+    @property
+    def isAppleColorLayer(self):
+        return LAYER_ATTRIBUTE_SBIX_SIZE in self.attributes
 
     @property
     def hasPathComponents(self):
