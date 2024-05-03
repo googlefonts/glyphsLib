@@ -1237,6 +1237,14 @@ def _normalize_custom_param_value(value):
             new_item = _normalize_custom_param_value(item)
             new_value.append(new_item)
         return new_value
+    if isinstance(value, dict):
+        new_value = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                key = str(key)
+            new_item = _normalize_custom_param_value(item)
+            new_value[key] = new_item
+        return new_value
     try:
         # TODO: this is the plain Glyphs API. pythonize this
         return value.propertyListValueFormat_(3)
