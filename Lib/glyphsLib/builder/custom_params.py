@@ -987,10 +987,14 @@ class FilterParamHandler(AbstractParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         if not isinstance(glyphs._owner, GSFont):
             ufo_filters = []
-            for pre_filter in glyphs.get_custom_values("PreFilter"):
-                ufo_filters.append(parse_glyphs_filter(pre_filter, is_pre=True))
-            for filter in glyphs.get_custom_values("Filter"):
-                ufo_filters.append(parse_glyphs_filter(filter, is_pre=False))
+
+            for parameter in glyphs:
+                if not parameter.active:
+                    continue
+                if parameter.name =="PreFilter":
+                    ufo_filters.append(parse_glyphs_filter(parameter.value, is_pre=True))
+                if parameter.name =="Filter":
+                    ufo_filters.append(parse_glyphs_filter(parameter.value, is_pre=False))
 
             if not ufo_filters:
                 return
@@ -1009,11 +1013,12 @@ class ReplacePrefixParamHandler(AbstractParamHandler):
 
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
-        for value in glyphs.get_custom_values(self.glyphs_name):
-            prefix_name, prefix_code = re.split(r"\s*;\s*", value, 1)
-            # if multiple 'Replace Prefix' custom params replace the same
-            # prefix, the last wins
-            repl_map[prefix_name] = prefix_code
+        for parameter in glyphs:
+            if parameter.active and parameter.name == self.glyphs_name:
+                prefix_name, prefix_code = re.split(r"\s*;\s*", parameter.value, 1)
+                # if multiple 'Replace Prefix' custom params replace the same
+                # prefix, the last wins
+                repl_map[prefix_name] = prefix_code
 
         features_text = ufo._owner.features.text
 
@@ -1039,11 +1044,12 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
     ufo_name = None
 
     def to_ufo(self, builder, glyphs, ufo):
-        for value in glyphs.get_custom_values(self.glyphs_name):
-            tag, repl = re.split(r"\s*;\s*", value, 1)
-            ufo._owner.features.text = replace_feature(
-                tag, repl, ufo._owner.features.text or ""
-            )
+        for parameter in glyphs:
+            if parameter.active and parameter.name == self.glyphs_name:
+                tag, repl = re.split(r"\s*;\s*", parameter.value, 1)
+                ufo._owner.features.text = replace_feature(
+                    tag, repl, ufo._owner.features.text or ""
+                )
 
     def to_glyphs(self, glyphs, ufo):
         # TODO: (jany) The "Replace Feature" custom parameter can be used to

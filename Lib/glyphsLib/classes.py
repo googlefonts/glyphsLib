@@ -1512,32 +1512,6 @@ class CustomParametersProxy(ListDictionaryProxy):
             if params is None:
                 self._lookup[param.name] = param.value  # the first wins
 
-    def __CustomParametersProxy_get_custom_values__(self, key):
-        parameters = []
-        for parameter in self:
-            if not parameter.active:
-                continue
-            if parameter.name == key:
-                parameters.append(parameter)
-        return parameters
-
-    def get_custom_value(self, key):
-        for parameter in self:
-            if not parameter.active:
-                continue
-            if parameter.name == key:
-                return parameter.value
-        return None
-
-    def get_custom_values(self, key):
-        parameters = []
-        for parameter in self:
-            if not parameter.active:
-                continue
-            if parameter.name == key:
-                parameters.append(parameter.value)
-        return parameters
-
 
 class PropertiesProxy(ListDictionaryProxy):
     def __init__(self, owner):
