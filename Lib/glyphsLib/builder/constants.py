@@ -23,8 +23,14 @@ POSTSCRIPT_NAMES_KEY = PUBLIC_PREFIX + "postscriptNames"
 GLYPHS_PREFIX = "com.schriftgestaltung."
 GLYPHLIB_PREFIX = GLYPHS_PREFIX + "Glyphs."
 ROBOFONT_PREFIX = "com.typemytype.robofont."
-UFO2FT_FILTERS_KEY = "com.github.googlei18n.ufo2ft.filters"
-UFO2FT_USE_PROD_NAMES_KEY = "com.github.googlei18n.ufo2ft.useProductionNames"
+UFO2F_PREFIX = "com.github.googlei18n.ufo2ft."
+UFO2FT_FILTERS_KEY = UFO2F_PREFIX + "filters"
+UFO2FT_USE_PROD_NAMES_KEY = UFO2F_PREFIX + "useProductionNames"
+UFO2FT_FEATURE_WRITERS_KEY = UFO2F_PREFIX + "featureWriters"
+UFO2FT_COLOR_PALETTES_KEY = UFO2F_PREFIX + "colorPalettes"
+UFO2FT_COLOR_LAYER_MAPPING_KEY = UFO2F_PREFIX + "colorLayerMapping"
+UFO2FT_COLOR_LAYERS_KEY = UFO2F_PREFIX + "colorLayers"
+
 ANNOTATIONS_LIB_KEY = GLYPHS_PREFIX + "annotations"
 COMPONENT_INFO_KEY = GLYPHLIB_PREFIX + "ComponentInfo"
 UFO_FILENAME_CUSTOM_PARAM = "UFO Filename"
@@ -210,12 +216,6 @@ CODEPAGE_RANGES = {
 }
 
 REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}
-
-UFO2FT_FEATURE_WRITERS_KEY = "com.github.googlei18n.ufo2ft.featureWriters"
-
-UFO2FT_COLOR_PALETTES_KEY = "com.github.googlei18n.ufo2ft.colorPalettes"
-UFO2FT_COLOR_LAYER_MAPPING_KEY = "com.github.googlei18n.ufo2ft.colorLayerMapping"
-UFO2FT_COLOR_LAYERS_KEY = "com.github.googlei18n.ufo2ft.colorLayers"
 
 UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 
