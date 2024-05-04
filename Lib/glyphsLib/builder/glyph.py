@@ -214,6 +214,8 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below
 
+    if layer.attributes.get("hasOverlap", False):
+        ufo_glyph.lib["public.truetype.overlap"] = True
 
 def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
     note = glyph.note
@@ -522,6 +524,10 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
             layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
             # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
+
+    hasOverlap = ufo_glyph.lib.get("public.truetype.overlap", None)
+    if hasOverlap is not None:
+        layer.attributes["hasOverlap"] = hasOverlap
 
     self.to_glyphs_background_image(ufo_glyph, layer)
     self.to_glyphs_guidelines(ufo_glyph, layer)
