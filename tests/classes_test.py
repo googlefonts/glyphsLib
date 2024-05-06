@@ -220,7 +220,6 @@ class GSInstanceTest(unittest.TestCase):
 
 # GSFontFromFileTest
 def test_pathlike_path(file_path):
-    print("__file_path", file_path)
     from pathlib import Path
 
     font = GSFont(file_path)
