@@ -1,0 +1,55 @@
+{
+.appVersion = "3305";
+.formatVersion = 3;
+date = "2020-02-14 13:24:41 +0000";
+familyName = "No Axes";
+fontMaster = (
+{
+id = "35BEE313-1FD1-491B-9B8D-FF684D71037F";
+metricValues = (
+{
+pos = 800;
+},
+{
+pos = 700;
+},
+{
+pos = 500;
+},
+{
+},
+{
+pos = -200;
+},
+{
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

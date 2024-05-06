@@ -444,6 +444,11 @@ def test_custom_parameter_vfo_not_set(datadir):
     assert default_master.name == "Regular Text"
 
 
+def test_no_axes(datadir):
+    font1 = GSFont(datadir.join("NoAxes.glyphs"))
+    doc1 = to_designspace(font1)
+    assert len(doc1.axes) == 0
+
 def test_wheres_ma_axis(datadir):
     font1 = GSFont(datadir.join("AxesWdth.glyphs"))
     doc1 = to_designspace(font1)
