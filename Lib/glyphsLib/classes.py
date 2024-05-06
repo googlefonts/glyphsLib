@@ -417,7 +417,7 @@ class GSBase:
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
-        return f"<{self.__class__.__name__} {content}>"
+        return f"<{self.__class__.__name__} {hex(id(self))}> {content}"
 
     # Note:
     # The dictionary API exposed by GS* classes is "private" in the sense that:
@@ -472,6 +472,14 @@ class Proxy:
         self._owner = owner
 
     def __repr__(self):
+        """Return class name, id() and list-lookalike of representation string of objects"""
+        strings = []
+        for currItem in self:
+            strings.append("%s" % currItem)
+        content = ", ".join(strings)
+        return f"<{self.__class__.__name__} {hex(id(self))}> ({content})"
+
+    def __str__(self):
         """Return list-lookalike of representation string of objects"""
         strings = []
         for currItem in self:
@@ -1580,8 +1588,9 @@ class UserDataProxy(Proxy):
 
     def __repr__(self):
         strings = []
-        for key, item in self._owner._userData.items():
-            strings.append("%s:%s" % (key, item))
+        if self._owner._userData is not None:
+            for key, item in self._owner._userData.items():
+                strings.append("%s:%s" % (key, item))
         return "(%s)" % (", ".join(strings))
 
     def values(self):
@@ -1627,6 +1636,9 @@ class GSAxis(GSBase):
         self.hidden = hidden
 
     def __repr__(self):
+        return f"<{self.__class__.__name__} {hex(id(self))}> {self.name}: {self.axisTag}"
+
+    def __str__(self):
         return f"<{self.__class__.__name__} {self.name}: {self.axisTag}>"
 
     def __eq__(self, other):
@@ -1800,6 +1812,9 @@ class GSCustomParameter(GSBase):
         self.active = True
 
     def __repr__(self):
+        return f"<{self.__class__.__name__} {hex(id(self))}> {self.name}: {self._value}"
+
+    def __str__(self):
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
 
     def plistValue(self, formatVersion=2):
@@ -1867,7 +1882,13 @@ class GSMetric(GSBase):
             writer.writeKeyValue("type", self.type)
 
     def __repr__(self):
-        string = "<{} {} ({})".format(self.__class__.__name__, self.type, self.id)
+        string = f"<{self.__class__.__name__} {hex(id(self))}> {self.type}"
+        if self.filter:
+            string += self.filter
+        return string
+
+    def __str__(self):
+        string = f"<{self.__class__.__name__} {self.type}"
         if self.filter:
             string += self.filter
         string += ">"
@@ -1894,6 +1915,14 @@ class GSMetricValue(GSBase):
             writer.writeKeyValue("pos", self.position)
 
     def __repr__(self):
+        return "<{} {}> {}: {}/{}".format(
+            self.__class__.__name__,
+            hex(id(self)),
+            self.metric.type if self.metric else "-",
+            self.position,
+            self.overshoot,
+        )
+    def __str__(self):
         return "<{} {}: {}/{}>".format(
             self.__class__.__name__,
             self.metric.type if self.metric else "-",
@@ -1923,6 +1952,11 @@ class GSAlignmentZone(GSBase):
         return self
 
     def __repr__(self):
+        return "<{} {}> pos:{} size:{}".format(
+            self.__class__.__name__, hex(id(self)), self.position, self.size
+        )
+
+    def __str__(self):
         return "<{} pos:{} size:{}>".format(
             self.__class__.__name__, self.position, self.size
         )
@@ -1978,6 +2012,11 @@ class GSGuide(GSBase):
         self.orientation = None
 
     def __repr__(self):
+        return "<{} {}> x={:.1f} y={:.1f} angle={:.1f}".format(
+            self.__class__.__name__, hex(id(self)), self.position.x, self.position.y, self.angle
+        )
+
+    def __str__(self):
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
             self.__class__.__name__, self.position.x, self.position.y, self.angle
         )
@@ -2210,6 +2249,11 @@ class GSFontMaster(GSBase):
         self._alignmentZones = None
 
     def __repr__(self):
+        return '<GSFontMaster {}> "{}" {}'.format(
+            hex(id(self)), self.name, self.internalAxesValues.values()
+        )
+
+    def __str__(self):
         return '<GSFontMaster "{}" {}>'.format(
             self.name, self.internalAxesValues.values()
         )
@@ -2835,6 +2879,14 @@ class GSNode(GSBase):
         content = self.type
         if self.smooth:
             content += " smooth"
+        return "<{} {}> {:g} {:g} {}".format(
+            self.__class__.__name__, hex(id(self)), self.position.x, self.position.y, content
+        )
+
+    def __str__(self):
+        content = self.type
+        if self.smooth:
+            content += " smooth"
         return "<{} {:g} {:g} {}>".format(
             self.__class__.__name__, self.position.x, self.position.y, content
         )
@@ -3079,11 +3131,10 @@ class GSPath(GSBase):
         return cloned
 
     def __repr__(self):
-        return "<%s 0x%X nodes:%d>" % (
-            self.__class__.__name__,
-            id(self),
-            len(self.nodes),
-        )
+        return f"<{self.__class__.__name__} {hex(id(self))}> nodes:{len(self.nodes)}"
+
+    def __str__(self):
+        return f"<{self.__class__.__name__} nodes:{len(self.nodes)}>"
 
     @property
     def parent(self):
@@ -3479,6 +3530,11 @@ class GSComponent(GSTransformable):
         return GSComponent(self.name, transform=copy.deepcopy(self.transform))
 
     def __repr__(self):
+        return '<GSComponent {}> "{}" x={:.1f} y={:.1f}'.format(
+            hex(id(self)), self.name, self.transform[4], self.transform[5]
+        )
+
+    def __str__(self):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
             self.name, self.transform[4], self.transform[5]
         )
@@ -3610,6 +3666,11 @@ class GSAnchor(GSBase):
             self.position = position
 
     def __repr__(self):
+        return '<{} {}> "{}" x={:.1f} y={:.1f}>'.format(
+            self.__class__.__name__, hex(id(self)), self.name, self.position[0], self.position[1]
+        )
+
+    def __str__(self):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
             self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
@@ -3744,21 +3805,27 @@ class GSHint(GSBase):
                 return self.targetNode.position.x
         return self.width
 
-    def __repr__(self):
+    def _str(self):
         if self.horizontal:
             direction = "horizontal"
         else:
             direction = "vertical"
         if self.type == PS_BOTTOM_GHOST or self.type == PS_TOP_GHOST:
-            return "<GSHint {} origin=({})>".format(self.type, self._origin_pos())
+            return "{} origin=({})".format(self.type, self._origin_pos())
         elif self.type == PS_STEM:
-            return "<GSHint {} Stem origin=({}) target=({})>".format(
+            return "{} Stem origin=({}) target=({})".format(
                 direction, self.origin, self.width
             )
         elif self.type == CORNER or self.type == CAP:
-            return f"<GSHint {self.type} {self.name}>"
+            return f"{self.type} {self.name}"
         else:
-            return f"<GSHint {self.type} {direction}>"
+            return f"{self.type} {direction}"
+
+    def __repr__(self):
+        return f"<GSHint {hex(id(self))}> {self._str()}"
+
+    def __str__(self):
+        return f"<GSHint {self._str()}>"
 
     @property
     def parent(self):
@@ -3971,6 +4038,9 @@ class GSFeature(GSBase):
     code = property(getCode, setCode)
 
     def __repr__(self):
+        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.name}"'
+
+    def __str__(self):
         return f'<{self.__class__.__name__} "{self.name}">'
 
     @property
@@ -4189,7 +4259,10 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
             writer.writeObjectKeyValue(self, "value")
 
     def __repr__(self):
-        return "<%s '%s'>" % (self.__class__.__name__, self.key)
+        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.key}"'
+
+    def __str__(self):
+        return f'<{self.__class__.__name__} "{self.key}">'
 
     @property
     def name(self):
@@ -4443,6 +4516,9 @@ class GSInstance(GSBase):
         self._userData = None
 
     def __repr__(self):
+        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.name}"'
+
+    def __str__(self):
         return f'<{self.__class__.__name__} "{self.name}">'
 
     customParameters = property(
@@ -4787,7 +4863,10 @@ class GSBackgroundImage(GSTransformable):
         self.locked = False
 
     def __repr__(self):
-        return "<GSBackgroundImage '%s'>" % self.imagePath
+        return f"<{self.__class__.__name__} {hex(id(self))}> '{self.imagePath}'"
+
+    def __str__(self):
+        return f"<{self.__class__.__name__} '{self.imagePath}'>"
 
     # .path
     @property
@@ -5104,7 +5183,7 @@ class GSLayer(GSBase):
         self.width = self._defaultsForName["width"]
         self.metricWidth = self._defaultsForName["metricWidth"]
 
-    def __repr__(self):
+    def _str(self):
         name = self.name
         try:
             # assert self.name
@@ -5116,7 +5195,13 @@ class GSLayer(GSBase):
             parent = self.parent.name
         except (AttributeError, AssertionError):
             parent = "orphan"
-        return f'<{self.__class__.__name__} "{name}" ({parent})>'
+        return f'"{name}" ({parent})'
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__} {hex(id(self))}> {self._str()}'
+
+    def __str__(self):
+        return f'<{self.__class__.__name__} {self._str()}>'
 
     def __lt__(self, other):
         if self.master and other.master and self.isMasterLayer:
@@ -5742,7 +5827,10 @@ class GSGlyph(GSBase):
         self.direction = None
 
     def __repr__(self):
-        return '<GSGlyph "{}" with {} layers>'.format(self.name, len(self.layers))
+        return f'<GSGlyph {hex(id(self))}> "{self.name}" with {len(self.layers)} layers'
+
+    def __str__(self):
+        return f'<GSGlyph "{self.name}" with {len(self.layers)} layers>'
 
     layers = property(
         lambda self: GlyphLayerProxy(self),
@@ -6086,8 +6174,10 @@ class GSFont(GSBase):
             load(path, self)
 
     def __repr__(self):
-        adress = id(self)
-        return f'<{self.__class__.__name__} "{self.familyName}" at 0x{adress}>'
+        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.familyName}"'
+
+    def __str__(self):
+        return f'<{self.__class__.__name__} "{self.familyName}">'
 
     def save(self, path=None):
         if path is None:
