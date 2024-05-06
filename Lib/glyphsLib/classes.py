@@ -5625,12 +5625,12 @@ class GSBackgroundLayer(GSLayer):
         return self._foreground
 
     # The width property of this class behaves like this in Glyphs:
-    #  - Always returns 600.0
+    #  - Always return the width of the foreground
     #  - Settable but does not remember the value (basically useless)
     # Reproduce this behaviour here so that the roundtrip does not rely on it.
     @property
     def width(self):
-        return 600
+        return self._foreground.width
 
     @width.setter
     def width(self, whatever):
