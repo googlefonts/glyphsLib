@@ -259,32 +259,8 @@ def to_glyphs_instances(self):  # noqa: C901
                 if user_loc is not None:
                     instance.externalAxesValues[axis_def.axisId] = user_loc
 
-        try:
-            # Restore the original weight name when there is an ambiguity based
-            # on the value, e.g. Thin, ExtraLight, UltraLight all map to 250.
-            # No problem with width, because 1:1 mapping in WIDTH_CODES.
-            weight = ufo_instance.lib[WEIGHT_KEY]
-            # Only use the lib value if:
-            # 1. we don't have a weight for the instance already
-            # 2. the value from lib is not "stale", i.e. it still maps to
-            #    the current userLocation of the instance. This is in case the
-            #    user changes the instance location of the instance by hand but
-            #    does not update the weight value in lib.
-            if (
-                not instance.weightClass
-                or WEIGHT_CODES[instance.weightClass] == WEIGHT_CODES[weight]
-            ):
-                instance.weightClass = weight
-        except KeyError:
-            # FIXME: what now
-            pass
-
-        try:
-            if not instance.widthClass:
-                instance.widthClass = ufo_instance.lib[WIDTH_KEY]
-        except KeyError:
-            # FIXME: what now
-            pass
+        instance.weightClass = ufo_instance.lib.get("openTypeOS2WeightClass", 400)
+        instance.widthClass = ufo_instance.lib.get("openTypeOS2WidthClass", 5)
 
         if ufo_instance.familyName is not None:
             if ufo_instance.familyName != self.font.familyName:
@@ -327,16 +303,6 @@ def to_glyphs_instances(self):  # noqa: C901
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
-        # some info that needs to be in a instance in Glyphs is stored in the sources.
-        # So we try to find a matching source (FIXME: (georg) not nice
-        for source in self.designspace.sources:
-            if source.location == ufo_instance.location:
-                instance.weightClass = source.font.info.openTypeOS2WeightClass or 400
-                instance.widthClass = source.font.info.openTypeOS2WidthClass or 5
-                if source.font.info.openTypeNameUniqueID:
-                    instance.properties[
-                        "uniqueID"
-                    ] = source.font.info.openTypeNameUniqueID
         self.font.instances.append(instance)
 
 
