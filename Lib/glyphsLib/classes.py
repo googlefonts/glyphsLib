@@ -5104,6 +5104,7 @@ class GSLayer(GSBase):
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
         if self.name != name:
             self.name = name
+
     def post_read(self):  # GSLayer
         assert self.parent
         font = self.parent.parent
