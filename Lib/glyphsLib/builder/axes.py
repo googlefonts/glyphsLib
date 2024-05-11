@@ -266,7 +266,7 @@ def to_designspace_axes(self):
     # do-nothing Weight axis (the default axis when no "Axes" custom parameter is
     # defined) where default==min==max==400.
     # https://github.com/googlefonts/fontmake/issues/644
-    if not self.designspace.axes:
+    if not self.designspace.axes and self.font.formatVersion < 3:
         self.designspace.addAxisDescriptor(
             name="Weight",
             tag="wght",
