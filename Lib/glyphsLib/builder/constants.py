@@ -86,7 +86,7 @@ WEIGHT_KEY = GLYPHS_PREFIX + "weightClass"
 FULL_FILENAME_KEY = GLYPHLIB_PREFIX + "fullFilename"
 MANUAL_INTERPOLATION_KEY = GLYPHS_PREFIX + "manualInterpolation"
 # Following typo kept for backwards compatibility
-INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "intanceInterpolations"
+INSTANCE_INTERPOLATIONS_KEY = GLYPHS_PREFIX + "instanceInterpolations"
 
 CUSTOM_PARAMETERS_BLACKLIST = [
     # These are stored in the official descriptor attributes.
