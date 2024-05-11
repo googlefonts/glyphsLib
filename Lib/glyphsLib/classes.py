@@ -5992,7 +5992,7 @@ class GSFont(GSBase):
     def _serialize_to_plist(self, writer):  # noqa: C901
         writer.writeKeyValue(".appVersion", self.appVersion)
         if writer.formatVersion > 2:
-            writer.writeKeyValue(".formatVersion", self.formatVersion)
+            writer.writeKeyValue(".formatVersion", writer.formatVersion)
         if self.displayStrings and writer.container == "flat":
             writer.writeKeyValue("DisplayStrings", self.displayStrings)
 

@@ -71,10 +71,10 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
             expected = f.read().splitlines()
             f.seek(0, 0)
             font = glyphsLib.load(f)
-        actual = write_to_lines(font)
+        actual = write_to_lines(font, font.formatVersion)
         # Roundtrip again to check idempotence
         font = glyphsLib.loads("\n".join(actual))
-        actual_idempotent = write_to_lines(font)
+        actual_idempotent = write_to_lines(font, font.formatVersion)
         with open("expected.txt", "w") as f:
             f.write("\n".join(expected))
         with open("actual.txt", "w") as f:
@@ -132,7 +132,7 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
 
     def assertUFORoundtrip(self, font):
         self._normalize(font)
-        expected = write_to_lines(font)
+        expected = write_to_lines(font, font.formatVersion)
         # Don't propagate anchors nor generate GDEF when intending to round-trip
         designspace = self.to_designspace(
             font,
@@ -144,7 +144,7 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
         # Check that round-tripping in memory is the same as writing on disk
         roundtrip_in_mem = to_glyphs(designspace, ufo_module=self.ufo_module)
         self._normalize(roundtrip_in_mem)
-        actual_in_mem = write_to_lines(roundtrip_in_mem)
+        actual_in_mem = write_to_lines(roundtrip_in_mem, font.formatVersion)
 
         directory = tempfile.mkdtemp()
         path = os.path.join(directory, font.familyName + ".designspace")
@@ -153,7 +153,7 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
         designspace_roundtrip.read(path)
         roundtrip = to_glyphs(designspace_roundtrip, ufo_module=self.ufo_module)
         self._normalize(roundtrip)
-        actual = write_to_lines(roundtrip)
+        actual = write_to_lines(roundtrip, font.formatVersion)
 
         with open("expected.txt", "w") as f:
             f.write("\n".join(expected))
