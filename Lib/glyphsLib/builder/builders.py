@@ -26,6 +26,8 @@ from .constants import (
     GLYPHLIB_PREFIX,
     BRACKET_GLYPH_RE,
     GLYPHS_PREFIX,
+    FORMATVERSION_LIB_KEY,
+    APP_VERSION_LIB_KEY,
 )
 from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin
@@ -362,8 +364,8 @@ class UFOBuilder(LoggerMixin):
         name = (base_family + base_style).replace(" ", "") + ".designspace"
         self.designspace.filename = name
 
-        self.designspace.lib[GLYPHS_PREFIX + "formatVersion"] = self.font.formatVersion
-        self.designspace.lib[GLYPHS_PREFIX + "appVersion"] = self.font.appVersion
+        self.designspace.lib[FORMATVERSION_LIB_KEY] = self.font.formatVersion
+        self.designspace.lib[APP_VERSION_LIB_KEY] = self.font.appVersion
         return self._designspace
 
     # DEPRECATED
@@ -518,12 +520,12 @@ class GlyphsBuilder(LoggerMixin):
         self.to_glyphs_axes()
 
         lib = self.designspace.lib
-        if GLYPHS_PREFIX + "formatVersion" in lib:
-            self._font.formatVersion = lib[GLYPHS_PREFIX + "formatVersion"]
+        if FORMATVERSION_LIB_KEY in lib:
+            self._font.formatVersion = lib[FORMATVERSION_LIB_KEY]
         if self.format_version:
             self._font.formatVersion = int(self.format_version)
-        if GLYPHS_PREFIX + "appVersion" in lib:
-            self._font.appVersion = lib[GLYPHS_PREFIX + "appVersion"]
+        if APP_VERSION_LIB_KEY in lib:
+            self._font.appVersion = lib[APP_VERSION_LIB_KEY]
 
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
