@@ -24,15 +24,39 @@ from glyphsLib import classes
 from .. import test_helpers
 
 
-class UFORoundtripTest(test_helpers.AssertUFORoundtrip):
+class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
     def test_empty_font(self):
         empty_font = classes.GSFont()
         empty_font.masters.append(classes.GSFontMaster())
         self.assertUFORoundtrip(empty_font)
 
-    def test_GlyphsUnitTestSans(self):
+    def test_GlyphsUnitTestSans2(self):
         filename = os.path.join(
             os.path.dirname(__file__), "../data/GlyphsUnitTestSans2.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+        self.assertUFORoundtrip(font)
+
+    def test_GlyphsUnitTestSans3(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "../data/GlyphsUnitTestSans3.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+        self.assertUFORoundtrip(font)
+
+    def test_GlyphsFileFormatv2(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "../data/GlyphsFileFormatv2.glyphs"
+        )
+        with open(filename) as f:
+            font = glyphsLib.load(f)
+        self.assertUFORoundtrip(font)
+
+    def test_GlyphsFileFormatv3(self):
+        filename = os.path.join(
+            os.path.dirname(__file__), "../data/GlyphsFileFormatv3.glyphs"
         )
         with open(filename) as f:
             font = glyphsLib.load(f)
