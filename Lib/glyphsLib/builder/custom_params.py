@@ -824,16 +824,16 @@ register_parameter_handler(
         ufo_prefix=GLYPHS_PREFIX,
     )
 )
-
+# Only keep them to load stuff from old files
 for number in ("", "1", "2", "3"):
     register_parameter_handler(
-        MiscParamHandler("customValue" + number, ufo_info=False, ufo_default=0)
+        MiscParamHandler("customValue" + number, ufo_info=False, ufo_default=0, write_to_glyphs=False, write_to_ufo=False)
     )
 register_parameter_handler(
-    MiscParamHandler("weightValue", ufo_info=False, ufo_default=100)
+    MiscParamHandler("weightValue", ufo_info=False, ufo_default=100, write_to_glyphs=False, write_to_ufo=False)
 )
 register_parameter_handler(
-    MiscParamHandler("widthValue", ufo_info=False, ufo_default=100)
+    MiscParamHandler("widthValue", ufo_info=False, ufo_default=100, write_to_glyphs=False, write_to_ufo=False)
 )
 
 
