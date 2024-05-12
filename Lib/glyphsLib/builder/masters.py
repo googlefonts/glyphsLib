@@ -153,7 +153,7 @@ def to_glyphs_master_attributes(self, source, master):
 
     if ufo.info.year is not None:
         master.userData[UFO_YEAR_KEY] = ufo.info.year
-    if ufo.info.note is not None:
+    if ufo.info.note is not None and self._font.note != ufo.info.note:
         master.userData[UFO_NOTE_KEY] = ufo.info.note
 
     self.to_glyphs_blue_values(ufo, master)
