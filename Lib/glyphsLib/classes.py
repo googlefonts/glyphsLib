@@ -2437,20 +2437,20 @@ class GSFontMaster(GSBase):
                 return metricValue
         return self._get_metric(metricType)
 
-    def _get_metric(self, metricType, name=None, filter=None):
-        for metric in self.font.metrics:
-            if metric.type == metricType and metric.filter == filter:
-                metricValue = self.metricValues.get(metric.id)
-                if not metricValue:
-                    metricValue = GSMetricValue()
-                    self.metricValues[metric.id] = metricValue
-                metricValue.metric = metric
-                return metricValue
+    def _get_metric(self, metricType, filter=None, name=None):
+        metric = self.font.metricFor(metricType, name, filter)
+        if metric:
+            metricValue = self.metricValues.get(metric.id)
+            if not metricValue:
+                metricValue = GSMetricValue()
+                self.metricValues[metric.id] = metricValue
+            metricValue.metric = metric
+            return metricValue
         if metricType == GSMetricsKeyBodyHeight:
             return self._get_metric(GSMetricsKeyAscender)
         return None
 
-    def _get_metric_position(self, metricType, name=None, filter=None):
+    def _get_metric_position(self, metricType, filter=None, name=None):
         metricValue = self._get_metric(metricType, name, filter)
         if metricValue:
             return metricValue.position
@@ -6365,6 +6365,23 @@ class GSFont(GSBase):
         for master in self._masters:
             if master.id == key:
                 return master
+        return None
+
+    def metricFor(self, metricType, filter=None, name=None, add_if_missing=False):
+        for metric in self.metrics:
+            if (
+                metric.type == metricType
+                and metric.filter == filter
+                and metric.name == name
+            ):
+                return metric
+        if add_if_missing:
+            metric = GSMetric()
+            metric.type = metricType
+            metric.filter = filter
+            metric.name = name
+            self.metrics.append(metric)
+            return metric
         return None
 
     instances = property(
