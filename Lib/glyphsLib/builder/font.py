@@ -106,6 +106,7 @@ INFO_FIELDS = (
     ("unitsPerEm", "upm", True),
     ("versionMajor", "versionMajor", True),
     ("versionMinor", "versionMinor", True),
+    ("note", "note", False),
 )
 
 PROPERTIES_FIELDS = {
@@ -232,6 +233,8 @@ def _set_glyphs_font_attributes(self, source):
         font.versionMajor = info.versionMajor
     if info.versionMinor is not None:
         font.versionMinor = info.versionMinor
+    if info.note:
+        font.note = info.note
 
     # if info.copyright is not None:
     #     font.copyright = info.copyright
