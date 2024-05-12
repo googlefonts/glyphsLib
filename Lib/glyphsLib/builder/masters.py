@@ -22,6 +22,10 @@ from .constants import (
     UFO_NOTE_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
 )
+from glyphsLib.classes import (
+    GSMetricValue,
+    GSMetricsKeyItalicAngle,
+)
 from glyphsLib.util import best_repr  # , best_repr_list
 
 # from glyphsLib.classes import GSCustomParameter
@@ -66,6 +70,28 @@ def to_ufo_master_attributes(self, ufo, master):
     if axes and axesValues:
         ufo.lib[GLYPHS_PREFIX + "axes"] = axes
         ufo.lib[GLYPHS_PREFIX + "axesValues"] = axesValues
+
+    filteredMetrics = []
+    for metric in master.font.metrics:
+        if not metric.filter:
+            continue
+        metricValue = master.metricValues.get(metric.id)
+        if not metricValue:
+            continue
+
+        filteredMetric = {
+            "type": metric.type,
+            "filter": metric.filter,
+        }
+        if metricValue.position:
+            filteredMetric["pos"] = metricValue.position
+        if metric.type != GSMetricsKeyItalicAngle and metricValue.overshoot:
+            filteredMetric["over"] = metricValue.overshoot
+        if metric.name:
+            filteredMetric["name"] = metric.name
+        filteredMetrics.append(filteredMetric)
+    if filteredMetrics:
+        ufo.lib[GLYPHS_PREFIX + "filteredMetrics"] = filteredMetrics
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
@@ -120,6 +146,13 @@ def to_glyphs_master_attributes(self, source, master):
         master.descender = ufo.info.descender
     if ufo.info.xHeight is not None:
         master.xHeight = ufo.info.xHeight
+    filteredMetrics = ufo.lib.get(GLYPHS_PREFIX + "filteredMetrics")
+    if filteredMetrics:
+        for metricDict in filteredMetrics:
+            metric = self._font.metricFor(metricDict["type"], name=metricDict.get("name"), filter=metricDict["filter"], add_if_missing=True)
+            metricValue = GSMetricValue(position=metricDict.get("pos"), overshoot=metricDict.get("over"))
+            master.metricValues[metric.id] = metricValue
+            metricValue.metric = metric
 
     horizontal_stems = ufo.info.postscriptStemSnapH
     vertical_stems = ufo.info.postscriptStemSnapV
