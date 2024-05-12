@@ -1161,7 +1161,7 @@ def to_ufo_properties(self, ufo, glyphs_object):
 
 
 def to_ufo_custom_params(self, ufo, glyphs_object, class_key, set_default_params=True):
-    # glyphs_module=None because we shouldn't instanciate any Glyphs classes
+    # glyphs_module=None because we shouldn't instantiate any Glyphs classes
     handled_parameters = set()
     glyphs_parameters_proxy = glyphs_object.customParameters
     ufo_proxy = UFOProxy(ufo)
