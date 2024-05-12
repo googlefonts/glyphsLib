@@ -145,16 +145,16 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             ufo_font.lib[POSTSCRIPT_NAMES_KEY] = dict()
         ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name] = production_name
 
-    if script:
+    if script is not None:
         ufo_glyph.lib[SCRIPT_LIB_KEY] = script
 
     # if glyph contains custom 'category' and 'subCategory' overrides, store
     # them in the UFO glyph's lib
-    if category:
+    if category is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "category"] = category
     else:
         category = glyphinfo.category
-    if subCategory:
+    if subCategory is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "subCategory"] = subCategory
     else:
         subCategory = glyphinfo.subCategory
