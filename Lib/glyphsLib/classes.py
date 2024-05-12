@@ -6335,14 +6335,6 @@ class GSFont(GSBase):
 
     @property
     def formatVersion(self):
-        raise "not implemented"
-
-    @formatVersion.setter
-    def formatVersion(self, value):
-        raise "not implemented"
-
-    @property
-    def formatVersion(self):
         return self._formatVersion
 
     @formatVersion.setter
