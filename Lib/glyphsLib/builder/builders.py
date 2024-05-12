@@ -529,7 +529,7 @@ class GlyphsBuilder(LoggerMixin):
 
         self._sources = OrderedDict()  # Same as in UFOBuilder
         for index, source in enumerate(s for s in sorted_sources if not s.layerName):
-            self.source_layer_to_master(index, source)
+            self.source_layer_to_master(source)
 
         self.to_glyphs_features()
         self.to_glyphs_groups()
@@ -559,7 +559,7 @@ class GlyphsBuilder(LoggerMixin):
         self.to_glyphs_instances()
         return self._font
 
-    def source_layer_to_master(self, index: int, source: SourceDescriptor):
+    def source_layer_to_master(self, source: SourceDescriptor):
         master = self.glyphs_module.GSFontMaster()
 
         # Filter bracket glyphs out of public.glyphOrder.
@@ -571,9 +571,9 @@ class GlyphsBuilder(LoggerMixin):
             ]
         if source.copyInfo:
             self._font.familyName = source.familyName
-        self.to_glyphs_font_attributes(source, master, is_initial=(index == 0))
+        self.to_glyphs_font_attributes(source, master, is_initial=(len(self._font.masters) == 0))
         self.to_glyphs_master_attributes(source, master)
-        self._font.masters.insert(len(self._font.masters), master)
+        self._font.masters.append(master)
         self._sources[master.id] = source
         _to_glyphs_source(self, master)
         master.post_read()
