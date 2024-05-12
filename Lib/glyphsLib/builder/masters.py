@@ -52,38 +52,20 @@ def to_ufo_master_attributes(self, ufo, master):
     if note is not None:
         ufo.info.note = note
         del userData[UFO_NOTE_KEY]
-    # All of this will go into the designspace as well
-    # "Native" designspace fonts will only have the designspace info
-    if master.font.formatVersion >= 3:
-        axesValues = []
-        axes = []
-        for axis in master.font.axes:
-            value = master.internalAxesValues[axis.axisId]
-            axesValues.append(value)
-            axesDict = {"name": axis.name, "tag": axis.axisTag}
-            if axis.hidden:
-                axesDict["hidden"] = True
-            axes.append(axesDict)
-        if axes and axesValues:
-            ufo.lib[GLYPHS_PREFIX + "axes"] = axes
-            ufo.lib[GLYPHS_PREFIX + "axesValues"] = axesValues
-    else:
-        legacyNames = [
-            "weightValue",
-            "widthValue",
-            "customValue",
-            "customValue1",
-            "customValue2",
-            "customValue3",
-        ]
-        idx = -1
-        for axis in master.font.axes:
-            idx += 1
-            value = master.internalAxesValues[axis.axisId]
-            lib_key = legacyNames[idx]
-            if master._defaultsForName.get(lib_key, 0) == value:
-                continue
-            ufo.lib[GLYPHS_PREFIX + lib_key] = value
+    # All of this will also be in the designspace, Just to be sure we store it here to
+    # TODO: (gs) do we really need this
+    axesValues = []
+    axes = []
+    for axis in master.font.axes:
+        value = master.internalAxesValues[axis.axisId]
+        axesValues.append(value)
+        axesDict = {"name": axis.name, "tag": axis.axisTag}
+        if axis.hidden:
+            axesDict["hidden"] = True
+        axes.append(axesDict)
+    if axes and axesValues:
+        ufo.lib[GLYPHS_PREFIX + "axes"] = axes
+        ufo.lib[GLYPHS_PREFIX + "axesValues"] = axesValues
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
