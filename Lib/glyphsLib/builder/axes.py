@@ -278,16 +278,17 @@ def to_designspace_axes(self):
 
 
 def to_glyphs_axes(self):
-    axes_parameter = []
+    axes = []
     for axis_def in self.designspace.axes:
         if axis_def.tag == "wght":
-            axes_parameter.append(GSAxis(name=axis_def.name or "Weight", tag="wght"))
+            axis = GSAxis(name=axis_def.name or "Weight", tag="wght")
         elif axis_def.tag == "wdth":
-            axes_parameter.append(GSAxis(name=axis_def.name or "Width", tag="wdth"))
+            axis = GSAxis(name=axis_def.name or "Width", tag="wdth")
         else:
-            axes_parameter.append(GSAxis(name=axis_def.name, tag=axis_def.tag))
-    if axes_parameter:
-        self._font.axes = axes_parameter
+            axis = GSAxis(name=axis_def.name, tag=axis_def.tag)
+        axes.append(axis)
+    if axes:
+        self._font.axes = axes
 
     if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
