@@ -173,6 +173,7 @@ def to_designspace_axes(self):
         axisDescriptor.tag = axis.axisTag
         axisDescriptor.name = axis.name
         axisDescriptor.axisId = axis.axisId
+        axisDescriptor.hidden = axis.hidden
         # TODO add support for localised axis.labelNames when Glyphs.app does
 
         # See https://github.com/googlefonts/glyphsLib/issues/568
@@ -286,6 +287,8 @@ def to_glyphs_axes(self):
             axis = GSAxis(name=axis_def.name or "Width", tag="wdth")
         else:
             axis = GSAxis(name=axis_def.name, tag=axis_def.tag)
+        if axis_def.hidden:
+            axis.hidden = True
         axes.append(axis)
     if axes:
         self._font.axes = axes
