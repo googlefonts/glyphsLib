@@ -1533,7 +1533,7 @@ class PropertiesProxy(ListDictionaryProxy):
             infoValue.parent = self._owner
             self._owner._properties.append(infoValue)
         if key.endswith("s"):
-            infoValue.setLocalizedValue(value, "dflt")
+            infoValue.defaultValue = value
         else:
             infoValue.value = value
 
@@ -4272,22 +4272,35 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def name(self, value):
         self.key = value
 
+    # this is only for properties that don’t have localizations.
     @property
     def value(self):
-        if not self._localized_values:
-            return self._value
-        for key in ["dflt", "ENG"]:
-            if key in self._localized_values:
-                return self._localized_values[key]
-        return list(self._localized_values.values())[0]
+        return self._value
 
     @value.setter
     def value(self, value):
         self._value = value
 
+    @property
+    def values(self):
+        return self._localized_values
+
+    @values.setter
+    def values(self, values):
+        self._localized_values = values
+
+    @property
+    def defaultValue(self):
+        for key in ["dflt", "ENG"]:
+            if key in self._localized_values:
+                return self._localized_values[key]
+        return list(self._localized_values.values())[0]
+
+    @defaultValue.setter
+    def defaultValue(self, value):
+        self.setLocalizedValue(value)
+
     def localizedValue(self, language="dflt"):
-        if not self._localized_values:
-            return self._value
         if language in ["dflt", "ENG"]:
             if language in self._localized_values:
                 value = self._localized_values[language]

@@ -332,6 +332,65 @@ LANGUAGE_MAPPING = {
     "ZHT": 0x0404,
 }
 
+GLYPHS_PROPERTIES_2_UFO_FIELDS = {
+    "compatibleFullNames": "openTypeNameCompatibleFullName",
+    "copyrights": "copyright",
+    "descriptions": "openTypeNameDescription",
+    "designers": "openTypeNameDesigner",
+    "designerURL": "openTypeNameDesignerURL",
+    # "familyNames": "familyName",
+    "preferredFamilyNames": "openTypeNamePreferredFamilyName",
+    "preferredSubfamilyNames": "openTypeNamePreferredSubfamilyName",
+    "licenses": "openTypeNameLicense",
+    "licenseURL": "openTypeNameLicenseURL",
+    "manufacturers": "openTypeNameManufacturer",
+    "manufacturerURL": "openTypeNameManufacturerURL",
+    "postscriptFontName": "postscriptFontName",
+    "postscriptFullNames": "postscriptFullName",
+    "sampleTexts": "openTypeNameSampleText",
+    "styleMapFamilyNames": "styleMapFamilyName",
+    "styleMapStyleNames": "styleMapStyleName",
+    "trademarks": "trademark",
+    "uniqueID": "openTypeNameUniqueID",
+    # "variationsPostScriptNamePrefix": "variationsPostScriptNamePrefix", # TODO: what is the correct ufo key?
+    "vendorID": "openTypeOS2VendorID",
+    "versionString": "openTypeNameVersion",
+    "WWSFamilyName": "openTypeNameWWSFamilyName",
+    "WWSSubfamilyName": "openTypeNameWWSSubfamilyName",
+}
+
+GLYPHS_NAME_MAPPING = {
+    "copyrights": 0,
+    "styleMapFamilyNames": 1,
+    "styleMapStyleNames": 2,
+    "uniqueID": 3,
+    "postscriptFullNames": 4,
+    "versionString": 5,
+    "postscriptFontName": 6,
+    "trademarks": 7,
+    "manufacturers": 8,
+    "designers": 9,
+    "descriptions": 10,
+    "manufacturerURL": 11,
+    "designerURL": 12,
+    "licenses": 13,
+    "licenseURL": 14,
+    "preferredFamilyNames": 16,
+    "preferredSubfamilyNames": 17,
+    "compatibleFullNames": 18,
+    "sampleTexts": 19,
+    "WWSFamilyName": 21,
+    "WWSSubfamilyName": 22,
+}
+
+REVERSE_GLYPHS_NAME_MAPPING = {v: k for k, v in GLYPHS_NAME_MAPPING.items()}
+
+UFO_NAME_MAPPING = {}
+for glyphs_name, name_id in GLYPHS_NAME_MAPPING.items():
+	ufo_name = GLYPHS_PROPERTIES_2_UFO_FIELDS[glyphs_name]
+	UFO_NAME_MAPPING[ufo_name] = name_id
+
+
 REVERSE_LANGUAGE_MAPPING = {v: k for k, v in LANGUAGE_MAPPING.items()}
 
 GLYPHS_MATH_PREFIX = "com.nagwa.MATHPlugin."

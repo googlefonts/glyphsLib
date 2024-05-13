@@ -32,9 +32,11 @@ from .constants import (
     UFO2FT_META_TABLE_KEY,
     CUSTOM_PARAMETERS_BLACKLIST,
     PROPERTIES_KEY,
+    REVERSE_GLYPHS_NAME_MAPPING,
+    REVERSE_LANGUAGE_MAPPING,
 )
 from .features import replace_feature, replace_prefixes
-from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance, CustomParametersProxy, PropertiesProxy
+from glyphsLib.classes import GSCustomParameter, GSFont, GSFontMaster, GSInstance, GSFontInfoValue, CustomParametersProxy, PropertiesProxy
 
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
@@ -665,6 +667,19 @@ class NameRecordParamHandler(AbstractParamHandler):
 
         return f"{encoding}; {string}"
 
+    def to_glyphs_property(selfs, record):
+        nameID = record["nameID"]
+        assert record["platformID"] == 3
+        assert record["encodingID"] == 1
+        languageID = record["languageID"]
+        propertyKey = REVERSE_GLYPHS_NAME_MAPPING.get(nameID)
+        languageKey = REVERSE_LANGUAGE_MAPPING.get(languageID)
+        if propertyKey and languageKey:
+            fontInfoValue = GSFontInfoValue(propertyKey)
+            fontInfoValue.setLocalizedValue(record["string"], languageKey)
+            return fontInfoValue
+        return None
+
     def parse_decimal(self, string):
         # In Python octal strings must start with a prefix. Glyphs
         # uses AFDKO decimal number specification which allows
@@ -725,8 +740,14 @@ class NameRecordParamHandler(AbstractParamHandler):
         if glyphs.is_font():
             records = ufo.get_info_value(self.ufo_name)
             if records:
-                entries = [self.to_entry(record) for record in records]
-                for entry in entries:
+                entries = []
+                for record in records:
+                    if record["platformID"] == 3 and record["encodingID"] == 1:
+                        property = self.to_glyphs_property(record)
+                        if property:
+                            glyphs._owner.properties.append(property)
+                            continue  # was able to convert to property, otherwise fall through to GSCustomParameter
+                    entry = self.to_entry(record)
                     glyphs.append(GSCustomParameter(self.glyphs_name, entry))
 
     def to_ufo(self, builder, glyphs, ufo):

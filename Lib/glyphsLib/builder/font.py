@@ -27,6 +27,9 @@ from .constants import (
     GRID_SUBDIVISION_KEY,
     MASTER_ORDER_LIB_KEY,
     GLYPHS_PREFIX,
+    UFO_NAME_MAPPING,
+    LANGUAGE_MAPPING,
+    GLYPHS_PROPERTIES_2_UFO_FIELDS,
 )
 
 
@@ -109,32 +112,6 @@ INFO_FIELDS = (
     ("note", "note", False),
 )
 
-PROPERTIES_FIELDS = {
-    "compatibleFullNames": "openTypeNameCompatibleFullName",
-    "copyrights": "copyright",
-    "descriptions": "openTypeNameDescription",
-    "designers": "openTypeNameDesigner",
-    "designerURL": "openTypeNameDesignerURL",
-    # "familyNames": "familyName",
-    "preferredFamilyNames": "openTypeNamePreferredFamilyName",
-    "preferredSubfamilyNames": "openTypeNamePreferredSubfamilyName",
-    "licenses": "openTypeNameLicense",
-    "licenseURL": "openTypeNameLicenseURL",
-    "manufacturers": "openTypeNameManufacturer",
-    "manufacturerURL": "openTypeNameManufacturerURL",
-    "postscriptFontName": "postscriptFontName",
-    "postscriptFullNames": "postscriptFullName",
-    "sampleTexts": "openTypeNameSampleText",
-    "trademarks": "trademark",
-    "uniqueID": "openTypeNameUniqueID",
-    # "variationsPostScriptNamePrefix": "variationsPostScriptNamePrefix", # TODO: what is the correct ufo key?
-    "vendorID": "openTypeOS2VendorID",
-    "versionString": "openTypeNameVersion",
-    "WWSFamilyName": "openTypeNameWWSFamilyName",
-    "WWSSubfamilyName": "openTypeNameWWSSubfamilyName",
-}
-
-
 def to_ufo_metadata(master, ufo):
     font = master.font
 
@@ -151,9 +128,34 @@ def to_ufo_metadata(master, ufo):
 
     if date_created is not None:
         ufo.info.openTypeHeadCreated = date_created
+
+    openTypeNameRecords = ufo.info.openTypeNameRecords
+    if not openTypeNameRecords:
+        openTypeNameRecords = []
     for infoValue in font.properties:
-        ufo_key = PROPERTIES_FIELDS[infoValue.key]
-        setattr(ufo.info, ufo_key, infoValue.value)
+        ufo_key = GLYPHS_PROPERTIES_2_UFO_FIELDS[infoValue.key]
+        if infoValue.value:
+            setattr(ufo.info, ufo_key, infoValue.value)
+        elif infoValue.values:
+            defaultValue = None
+            nameID = UFO_NAME_MAPPING[ufo_key]
+            for script_key in infoValue.values.keys():
+                if script_key in ["dflt", "ENG"]:
+                    defaultValue = infoValue.values[script_key]
+                else:
+                    languageID = LANGUAGE_MAPPING[script_key]
+                    nameRecord = {
+                        "nameID": nameID,
+                        "platformID": 3,
+                        "encodingID": 1,
+                        "languageID": languageID,
+                        "string": infoValue.values[script_key]
+                    }
+                    openTypeNameRecords.append(nameRecord)
+            if defaultValue:
+                setattr(ufo.info, ufo_key, defaultValue)
+            if openTypeNameRecords:
+                ufo.info.openTypeNameRecords = openTypeNameRecords
     # NOTE: glyphs2ufo will *always* set a UFO public.glyphOrder equal to the
     # order of glyphs in the glyphs file, which can optionally be overwritten
     # by a glyphOrder custom parameter below in `to_ufo_custom_params`.
@@ -161,7 +163,7 @@ def to_ufo_metadata(master, ufo):
 
 
 def to_glyphs_metadata(ufo, font):
-    for glyphs_key, ufo_key in PROPERTIES_FIELDS.items():
+    for glyphs_key, ufo_key in GLYPHS_PROPERTIES_2_UFO_FIELDS.items():
         value = getattr(ufo.info, ufo_key)
         if value:
             font.properties[glyphs_key] = value
