@@ -378,8 +378,8 @@ class AxisDefinition:
 
             # Try to set the key if possible, i.e. if there is a key, and
             # if there exists a code that can represent the given value, e.g.
-            # for "weight": 600 can be represented by SemiBold so we use that,
-            # but for 550 there is no code so we will have to set the custom
+            # for "weight": 600 can be represented by SemiBold, so we use that,
+            # but for 550 there is no code, so we will have to set the custom
             # parameter as well.
             if self.user_loc_key is not None and hasattr(
                 master_or_instance, self.user_loc_key
