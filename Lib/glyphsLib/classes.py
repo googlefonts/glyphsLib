@@ -5328,9 +5328,9 @@ class GSLayer(GSBase):
             if minValue and maxValue or len(axisRules) > 1:
                 raise ValueError("Glyphs 2 can’t handle ranges in axis rules")
             if minValue:
-                nameStrings.append(f"[{minValue}]")
+                nameStrings.append(f"[{floatToString3(minValue)}]")
             elif maxValue:
-                nameStrings.append(f"]{maxValue}]")
+                nameStrings.append(f"]{floatToString3(maxValue)}]")
             else:
                 nameStrings.append("[]")
 
