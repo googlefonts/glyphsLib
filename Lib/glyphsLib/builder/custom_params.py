@@ -785,9 +785,9 @@ class MiscParamHandler(ParamHandler):
             return getattr(glyphs._owner, self.glyphs_name)
         return None
 
-    def to_glyphs(self, glyphs, ufo):
-        if hasattr(glyphs, self.glyphs_name):
-            setattr(glyphs, self.glyphs_name, ufo)
+    def _write_to_glyphs(self, glyphs, value):
+        if hasattr(glyphs._owner, self.glyphs_name):
+            setattr(glyphs._owner, self.glyphs_name, value)
 
 
 register_parameter_handler(
