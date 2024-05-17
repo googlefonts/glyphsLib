@@ -317,7 +317,7 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
     ("superscriptXOffset", "openTypeOS2SuperscriptXOffset"),
     ("superscriptYOffset", "openTypeOS2SuperscriptYOffset"),
     # These can be recovered by reading the mapping backward.
-    # These are processed separatedly down below.
+    # These are processed separately down below.
     # ("winAscent", "openTypeOS2WinAscent"),
     # ("winDescent", "openTypeOS2WinDescent"),
     ("vheaVertAscender", "openTypeVheaVertTypoAscender"),
