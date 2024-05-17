@@ -32,7 +32,7 @@ name = AllLetters;
 },
 {
 automatic = 1;
-code = "A A.ss01 Ä B C D alef-ar uni56FD one space dieresiscomb Smily";
+code = "A A.ss01 Adieresis B C D alef-ar uni56FD one space dieresiscomb Smily";
 name = All;
 }
 );
@@ -591,8 +591,8 @@ width = 600;
 );
 },
 {
-glyphname = "Ä";
-lastChange = "2023-02-25 14:36:02 +0000";
+glyphname = Adieresis;
+lastChange = "2024-05-17 09:46:10 +0000";
 layers = (
 {
 layerId = m01;
@@ -624,7 +624,7 @@ ref = dieresiscomb;
 width = 459;
 }
 );
-unicode = 196;
+unicode = (196,228);
 },
 {
 glyphname = B;
