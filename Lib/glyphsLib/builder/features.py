@@ -812,7 +812,7 @@ class FeatureFileProcessor:
         # Keep the rest of the statements
         res.extend(list(st_iter))
         # Inside the comment block, drop the pound sign and any common indent
-        return match, dedent("".join(c.text[1:] + "\n" for c in comments)), res
+        return match, dedent("\n".join(c.text[1:] for c in comments)), res
 
     # Strip up to the given number of newlines from the right end of the string
     def _rstrip_newlines(self, string, number=1):
