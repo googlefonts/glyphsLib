@@ -803,9 +803,9 @@ register_parameter_handler(
         value_to_ufo=lambda value: value
         if value is not None and len(value) > 0 and value != "Regular"
         else None,
+        glyphs_owner_class=GSFontMaster,
     )
 )
-register_parameter_handler(MiscParamHandler(glyphs_name="iconName", write_to_ufo=False))
 
 
 class DisplayStringsParamHandler(MiscParamHandler):
@@ -843,6 +843,7 @@ register_parameter_handler(
         value_to_ufo=lambda value: bool(not value),
         value_to_glyphs=lambda value: not bool(value),
         ufo_prefix=GLYPHS_PREFIX,
+        glyphs_owner_class=GSFont,
     )
 )
 # Only keep them to load stuff from old files
