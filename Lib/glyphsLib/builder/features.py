@@ -100,27 +100,42 @@ def _to_ufo_features(  # noqa: C901
 
     class_defs = []
     for class_ in font.classes:
-        if not class_.active:
+        if not class_.active:  # TODO: (gs) write them commented out as with the features to be able to round trip
             continue
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
-        class_defs.append(
-            "{}{} = [ {} ];".format(
-                autostr(class_.automatic), name, expander.expand(class_.code)
-            )
-        )
+        lines = []
+        if class_.automatic:
+            lines.append("# automatic")
+        # if class_.notes:  # TODO: (gs) disabled for now, as it messes with the parsing > .glyphs
+        #     lines.append("# notes:")
+        #     lines.extend("# " + line for line in class_.notes.splitlines())
+        lines.append("{} = [ {} ];".format(
+            name, expander.expand(class_.code)
+        ))
+        class_defs.append("\n".join(lines))
     class_str = "\n\n".join(class_defs)
 
     prefixes = []
     for prefix in font.featurePrefixes:
         if not prefix.active:
             continue
-        strings = []
+        lines = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
-            strings.append("# Prefix: %s\n" % prefix.name)
-        strings.append(autostr(prefix.automatic))
-        strings.append(expander.expand(prefix.code))
-        prefixes.append("".join(strings))
+            lines.append("# Prefix: %s" % prefix.name)
+        notes = prefix.notes
+        if notes:
+            lines.append("# notes:")
+            lines.extend("# " + line for line in notes.splitlines())
+        if prefix.automatic:
+            lines.append("# automatic")
+        code = expander.expand(prefix.code)
+        if not prefix.active:
+            lines.append("# disabled")
+            lines.extend("#" + line for line in code.splitlines())
+        else:
+            lines.append(code)
+        prefixes.append("\n".join(lines))
 
     prefix_str = "\n\n".join(prefixes)
 
