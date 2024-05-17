@@ -452,7 +452,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
         # We cannot be strict about the dateformat because it's not an official
-        # UFO field mentioned in the spec so it could happen to have a timezone
+        # UFO field mentioned in the spec, so it could happen to have a timezone
         glyph.lastChange = from_loose_ufo_time(last_change)
     if ufo_glyph.markColor:
         glyph.color = _to_glyphs_color(ufo_glyph.markColor)
