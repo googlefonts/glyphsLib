@@ -180,9 +180,22 @@ def test_glyphs3_names():
         actual = [getattr(instance, name) for instance in font.instances]
         assert expected == actual, name
 
+def test_glyphs2_mapping():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs2Instances.glyphs"))
+    master = font.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] is None
+    master = font.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] is None
 
-def test_glyphs3_mapping():
-    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3Instances.glyphs"))
+    instance = font.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] is None
+    instance = font.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] is None
+
     # Instance1: designspace 200 -> userspace 400
     # Instance2: designspace 800 -> userspace 900
     # Instance2: designspace 600 -> userspace 650
@@ -193,9 +206,78 @@ def test_glyphs3_mapping():
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
 
+    font_rt = glyphsLib.to_glyphs(doc)
+    master = font_rt.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] is None
+    master = font_rt.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] is None
 
-def test_glyphs3_mapping_AxisLocation():
-    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3InstancesAxisLocation.glyphs"))
+    instance = font_rt.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] is None
+    instance = font_rt.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] is None
+
+def test_glyphs3_mapping():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3Instances.glyphs"))
+    master = font.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] is None
+    master = font.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] is None
+
+    instance = font.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] is None
+    instance = font.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] is None
+
+    # Instance1: designspace 200 -> userspace 400
+    # Instance2: designspace 800 -> userspace 900
+    # Instance2: designspace 600 -> userspace 650
+    doc = glyphsLib.to_designspace(font)
+    # FIXME: (georg) mapping is not implied from the weightClass any more
+    # assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    assert doc.instances[0].location == {"Weight": 200}
+    assert doc.instances[1].location == {"Weight": 800}
+    assert doc.instances[2].location == {"Weight": 650}
+
+    font_rt = glyphsLib.to_glyphs(doc)
+    master = font_rt.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] is None
+    master = font_rt.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] is None
+
+    instance = font_rt.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] is None
+    instance = font_rt.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] is None
+
+def test_glyphs2_mapping_AxisLocation():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs2InstancesAxisLocation.glyphs"))
+    master = font.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] == 400
+    master = font.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] == 900
+
+    instance = font.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] == 400
+    instance = font.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] == 600
+
     # Instance1: designspace 200 -> userspace 400
     # Instance2: designspace 800 -> userspace 900
     # Instance2: designspace 600 -> userspace 650
@@ -204,6 +286,63 @@ def test_glyphs3_mapping_AxisLocation():
     assert doc.instances[0].location == {"Weight": 200}
     assert doc.instances[1].location == {"Weight": 800}
     assert doc.instances[2].location == {"Weight": 650}
+
+    font_rt = glyphsLib.to_glyphs(doc)
+    master = font_rt.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] == 400
+    master = font_rt.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] == 900
+
+    instance = font_rt.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] == 400
+    instance = font_rt.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] == 600
+
+
+def test_glyphs3_mapping_AxisLocation():
+    font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3InstancesAxisLocation.glyphs"))
+
+    master = font.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] == 400
+    master = font.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] == 900
+
+    instance = font.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] == 400
+    instance = font.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] == 600
+
+    # Instance1: designspace 200 -> userspace 400
+    # Instance2: designspace 800 -> userspace 900
+    # Instance2: designspace 600 -> userspace 650
+    doc = glyphsLib.to_designspace(font)
+    assert doc.axes[0].map == [(400, 200), (600, 650), (900, 800)]
+    assert doc.instances[0].location == {"Weight": 200}
+    assert doc.instances[1].location == {"Weight": 800}
+    assert doc.instances[2].location == {"Weight": 650}
+
+    font_rt = glyphsLib.to_glyphs(doc)
+    master = font_rt.masters[0]
+    assert master.internalAxesValues[0] == 200
+    assert master.externalAxesValues[0] == 400
+    master = font_rt.masters[1]
+    assert master.internalAxesValues[0] == 800
+    assert master.externalAxesValues[0] == 900
+
+    instance = font_rt.instances[0]
+    assert instance.internalAxesValues[0] == 200
+    assert instance.externalAxesValues[0] == 400
+    instance = font_rt.instances[2]
+    assert instance.internalAxesValues[0] == 650
+    assert instance.externalAxesValues[0] == 600
 
 
 def test_glyphs3_instance_filtering():

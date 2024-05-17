@@ -234,4 +234,5 @@ def _to_glyphs_source(self, master):
                 break
         reverse_mapping = {dl: ul for ul, dl in mapping}
         user_location = piecewiseLinearMap(design_location, reverse_mapping)
-        master.externalAxesValues[axis_def.axisId] = user_location
+        if user_location != design_location:
+            master.externalAxesValues[axis_def.axisId] = user_location

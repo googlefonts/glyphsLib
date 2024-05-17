@@ -2278,6 +2278,8 @@ class GSFontMaster(GSBase):
             axesCount = len(axes)
             for idx in range(axesCount):
                 axis = axes[idx]
+                if axis.axisId in self._internalAxesValues:  # (gs) e.g. when loading from designspace, this is properly set already
+                    continue
                 value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                 self.internalAxesValues[axis.axisId] = value
             if axes and len(self._internalAxesValues) == 0:
@@ -4553,6 +4555,8 @@ class GSInstance(GSBase):
                 axesCount = len(axes)
                 for idx in range(axesCount):
                     axis = axes[idx]
+                    if axis.axisId in self._internalAxesValues:  # (gs) e.g. when loading from designspace, this is properly set already
+                        continue
                     value = axesValues.get(idx, DefaultAxisValuesV2[idx])
                     self.internalAxesValues[axis.axisId] = value
                 if axes and len(self._internalAxesValues) == 0:

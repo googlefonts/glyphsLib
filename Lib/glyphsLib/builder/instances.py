@@ -256,7 +256,7 @@ def to_glyphs_instances(self):  # noqa: C901
                 if mapping:
                     reverse_mapping = {dl: ul for ul, dl in mapping}
                     user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
-                if user_loc is not None:
+                if user_loc is not None and user_loc != design_loc:
                     instance.externalAxesValues[axis_def.axisId] = user_loc
 
         instance.weightClass = ufo_instance.lib.get("openTypeOS2WeightClass", 400)
