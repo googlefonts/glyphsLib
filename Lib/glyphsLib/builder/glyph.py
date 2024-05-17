@@ -243,6 +243,9 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
                     glyph.name, layer.name, color_index
                 )
             )
+    color_index = layer.color
+    if color_index is not None:
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "ColorIndexLayer"] = color_index
 
     for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
         value = getattr(layer, key, None)
@@ -528,6 +531,10 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     hasOverlap = ufo_glyph.lib.get("public.truetype.overlap", None)
     if hasOverlap is not None:
         layer.attributes["hasOverlap"] = hasOverlap
+
+    color_index = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "ColorIndexLayer")
+    if color_index:
+        layer.color = color_index
 
     self.to_glyphs_background_image(ufo_glyph, layer)
     self.to_glyphs_guidelines(ufo_glyph, layer)
