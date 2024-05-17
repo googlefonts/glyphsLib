@@ -1670,9 +1670,18 @@ class GSCustomParameter(GSBase):
             writer.writeKeyValue("disabled", True)
         writer.writeKeyValue("name", self.name)
         if self.name == "Color Palettes":
-            writer.allowTuple = True
-            writer.writeKeyValue("value", self.value)
-            writer.allowTuple = False
+            if writer.formatVersion >= 3:
+                writer.allowTuple = True
+                writer.writeKeyValue("value", self.value)
+                writer.allowTuple = False
+            else:
+                palettes = []
+                for palette in self.value:
+                    colorStrings = []
+                    for color in palette:
+                        colorStrings.append(",".join(str(v) for v in color))
+                    palettes.append(colorStrings)
+                writer.writeKeyValue("value", palettes)
         elif self.name in self._CUSTOM_COLOR_PARAMS:
             writer.writeKey("value")
             writer.writeValue(self.value, forKey="color")
@@ -1822,6 +1831,16 @@ class GSCustomParameter(GSBase):
         writer = Writer(string, formatVersion=formatVersion)
         self._serialize_to_plist(writer)
         return "{\n" + string.getvalue() + "}"
+
+    def post_read(self, formatVersion):  # GSCustomParameter
+        if self.name == "Color Palettes" and formatVersion < 3:
+            palettes = []
+            for palette in self.value:
+                colors = []
+                for color in palette:
+                    colors.append([int(v) for v in color.split(',')])
+                palettes.append(colors)
+            self.value = palettes
 
     def getValue(self):
         return self._value
@@ -2356,6 +2375,8 @@ class GSFontMaster(GSBase):
         if not self.name:
             self.name = self._defaultsForName["name"]
         axisLocationToAxesValue(self)
+        for customParameter in self.customParameters:
+            customParameter.post_read(self.font.formatVersion)
 
     @property
     def metricsSource(self):
@@ -4595,6 +4616,9 @@ class GSInstance(GSBase):
 
         axisLocationToAxesValue(self)
 
+        for customParameter in self.customParameters:
+            customParameter.post_read(self.font.formatVersion)
+
     @property
     def exports(self):
         """Deprecated alias for `active`, which is in the documentation."""
@@ -6336,6 +6360,8 @@ class GSFont(GSBase):
             glyph.post_read()
         for feature in self.features:
             feature.post_read()
+        for customParameter in self.customParameters:
+            customParameter.post_read(self.formatVersion)
         if self.customParameters["note"]:
             self.note = self.customParameters["note"]
             del self.customParameters["note"]

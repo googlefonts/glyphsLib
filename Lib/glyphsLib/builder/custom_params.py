@@ -629,7 +629,7 @@ def to_ufo_color_palettes(value):
 def _to_glyphs_color(color):
     if color[0] == color[1] == color[2]:
         color = [color[0], color[3]]
-    return ",".join(str(round(v * 255)) for v in color)
+    return [round(v * 255) for v in color]
 
 
 def to_glyphs_color_palettes(value):
@@ -644,6 +644,7 @@ register_parameter_handler(
         ufo_prefix="",
         value_to_ufo=to_ufo_color_palettes,
         value_to_glyphs=to_glyphs_color_palettes,
+        glyphs_owner_class=GSFont,
     )
 )
 
