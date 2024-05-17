@@ -29,6 +29,11 @@ automatic = 1;
 code = "A B C D";
 disabled = 1;
 name = AllLetters;
+},
+{
+automatic = 1;
+code = "A A.ss01 Ä B C D alef-ar uni56FD one space dieresiscomb Smily";
+name = All;
 }
 );
 customParameters = (
