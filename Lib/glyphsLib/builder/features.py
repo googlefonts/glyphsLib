@@ -613,7 +613,7 @@ class FeatureFileProcessor:
                 st, (ast.GlyphClassDefinition, ast.FeatureBlock, ast.TableBlock)
             ):
                 break
-            # Don't comsume a comment if it is the start of another prefix...
+            # Don't consume a comment if it is the start of another prefix...
             if isinstance(st, ast.Comment):
                 if self.PREFIX_RE.match(st.text):
                     break
@@ -795,7 +795,7 @@ class FeatureFileProcessor:
             if isinstance(st, ast.Comment):
                 match = header_re.match(st.text)
                 if match:
-                    # Drop this comment an move on to consuming the block
+                    # Drop this comment a move on to consuming the block
                     break
                 else:
                     res.append(st)
