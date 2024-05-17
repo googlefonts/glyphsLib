@@ -4343,11 +4343,11 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
     def legacyCustomParametersFromProperties(cls, properties, obj):
         customParameters = []
         for infoValue in properties:
-            newparameter = cls.legacyCustomParametersFromInfoValue(infoValue)
+            newParameter = cls.legacyCustomParametersFromInfoValue(infoValue)
             # first check for nil as that is a error condition
-            if newparameter is not None:
-                if len(newparameter) > 0:  # this means we did find something
-                    customParameters.extend(newparameter)
+            if newParameter is not None:
+                if len(newParameter) > 0:  # this means we did find something
+                    customParameters.extend(newParameter)
             else:
                 raise "problem converting infoValue %s in %s" % (infoValue, obj)
                 return None
