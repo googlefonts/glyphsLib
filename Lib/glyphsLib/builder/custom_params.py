@@ -323,9 +323,6 @@ GLYPHS_MASTER_UFO_CUSTOM_PARAMS = (
     ("vheaVertAscender", "openTypeVheaVertTypoAscender"),
     ("vheaVertDescender", "openTypeVheaVertTypoDescender"),
     ("vheaVertLineGap", "openTypeVheaVertTypoLineGap"),
-    ("vheaVertTypoAscender", "openTypeVheaVertTypoAscender"),
-    ("vheaVertTypoDescender", "openTypeVheaVertTypoDescender"),
-    ("vheaVertTypoLineGap", "openTypeVheaVertTypoLineGap"),
     # PostScript parameters
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
