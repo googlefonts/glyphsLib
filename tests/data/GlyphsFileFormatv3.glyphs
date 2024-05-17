@@ -73,7 +73,8 @@ features = (
 {
 code = "sub C by D;
 ";
-notes = "a feature note.";
+notes = "a feature note.
+and one more line";
 tag = test;
 },
 {
