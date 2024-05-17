@@ -24,12 +24,14 @@ def _is_ligature_sub_category(glyph):
     return subCategory == "Ligature"
 
 
-def _propagate_glyph_anchors(self, ufo, parent, processed):
+def _propagate_glyph_anchors(self, ufo, parent, processed, parent_is_liga=False):
     """Propagate anchors for a single parent glyph."""
 
     if parent.name in processed:
         return
     processed.add(parent.name)
+
+    parent_is_liga |= _is_ligature_sub_category(parent)
 
     base_components = []
     mark_components = []
@@ -45,7 +47,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
                 )
             )
         else:
-            _propagate_glyph_anchors(self, ufo, glyph, processed)
+            _propagate_glyph_anchors(self, ufo, glyph, processed, parent_is_liga)
             if any(a.name.startswith("_") for a in glyph.anchors):
                 mark_components.append(component)
             else:
@@ -72,7 +74,6 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
         # don't add if parent already contains this anchor OR any associated
         # ligature anchors (e.g. "top_1, top_2" for "top")
         if not any(a.name.startswith(anchor_name) for a in parent.anchors):
-            parent_is_liga = _is_ligature_sub_category(parent)
             _get_anchor_data(to_add, ufo, base_components, anchor_name, parent_is_liga)
 
     for component in mark_components:
