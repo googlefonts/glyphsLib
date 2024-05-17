@@ -135,7 +135,7 @@ def to_glyphs_master_attributes(self, source, master):
     if source.filename is not None and self.minimize_ufo_diffs:
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = source.filename
     elif ufo.path and self.minimize_ufo_diffs:
-        # Don't be smart, we don't know where the UFOs come from so we can't make them
+        # Don't be smart, we don't know where the UFOs come from, so we can't make them
         # relative to anything.
         master.customParameters[UFO_FILENAME_CUSTOM_PARAM] = os.path.basename(ufo.path)
     if ufo.info.ascender is not None:
