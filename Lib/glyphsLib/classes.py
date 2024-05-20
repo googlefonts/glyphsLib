@@ -2892,11 +2892,14 @@ class GSNode(GSBase):
 
     def copy(self):
         """Clones the node (does not clone attributes)"""
-        return GSNode(
+        node = GSNode(
             position=(self._position.x, self._position.y),
             type=self.type,
             smooth=self.smooth,
         )
+        if self._userData:
+            node._userData = copy.deepcopy(self._userData)
+        return node
 
     def __repr__(self):
         content = self.type
