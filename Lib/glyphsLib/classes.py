@@ -5789,21 +5789,7 @@ class GSGlyph(GSBase):
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
 
     _defaultsForName = {
-        "category": None,
-        "color": None,
         "export": True,
-        "lastChange": None,
-        "leftKerningGroup": None,
-        "metricLeft": None,
-        "name": None,
-        "note": None,
-        "rightKerningGroup": None,
-        "metricRight": None,
-        "script": None,
-        "subCategory": None,
-        "userData": None,
-        "metricWidth": None,
-        "metricVertWidth": None,
     }
 
     def _parse_unicode_dict(self, parser, value):
@@ -5835,35 +5821,35 @@ class GSGlyph(GSBase):
     def __init__(self, name=None):
         self._layers = OrderedDict()
         self._unicodes = []
-        self.bottomKerningGroup = ""
-        self.bottomMetricsKey = ""
-        self.category = self._defaultsForName["category"]
+        self.bottomKerningGroup = None
+        self.bottomMetricsKey = None
+        self.category = None
         self.case = None
-        self.color = self._defaultsForName["color"]
+        self.color = None
         self.export = self._defaultsForName["export"]
-        self.lastChange = self._defaultsForName["lastChange"]
-        self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
-        self.leftKerningKey = ""
-        self.metricLeft = self._defaultsForName["metricLeft"]
+        self.lastChange = None
+        self.leftKerningGroup = None
+        self.leftKerningKey = None
+        self.metricLeft = None
         self.name = name
-        self._note = None
+        self.note = None
         self.locked = False
         self.parent = None
         self.partsSettings = []
         self.production = ""
-        self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
+        self.rightKerningGroup = None
         self.rightKerningKey = ""
-        self.metricRight = self._defaultsForName["metricRight"]
-        self.script = self._defaultsForName["script"]
+        self.metricRight = None
+        self.script = None
         self.selected = False
-        self.subCategory = self._defaultsForName["subCategory"]
+        self.subCategory = None
         self.tags = []
-        self.topKerningGroup = ""
-        self.topMetricsKey = ""
-        self.userData = self._defaultsForName["userData"]
-        self.vertWidthMetricsKey = ""
-        self.metricVertWidth = self._defaultsForName["metricVertWidth"]
-        self.metricWidth = self._defaultsForName["metricWidth"]
+        self.topKerningGroup = None
+        self.topMetricsKey = None
+        self.userData = None
+        self.vertWidthMetricsKey = None
+        self.metricVertWidth = None
+        self.metricWidth = None
         self.vertOriginMetricsKey = None
         self.vertWidthMetricsKey = None
 
