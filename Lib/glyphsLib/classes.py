@@ -4031,7 +4031,7 @@ class GSFeature(GSBase):
             if notes:
                 writer.writeKeyValue("notes", notes)
 
-    def post_read(self):
+    def post_read(self):  # GSFeature
         if self.notes and len(self.notes) > 10:
             remaining_note = self.loadLabelsFromNote(self.notes)
             if remaining_note is not False:
