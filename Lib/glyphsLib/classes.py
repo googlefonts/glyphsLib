@@ -5846,7 +5846,7 @@ class GSGlyph(GSBase):
         self.leftKerningKey = ""
         self.metricLeft = self._defaultsForName["metricLeft"]
         self.name = name
-        self.note = self._defaultsForName["note"]
+        self._note = None
         self.locked = False
         self.parent = None
         self.partsSettings = []
