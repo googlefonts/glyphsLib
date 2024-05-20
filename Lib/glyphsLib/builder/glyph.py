@@ -180,6 +180,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         self.to_ufo_glyph_background(ufo_glyph, layer)  # below
         self.to_ufo_annotations(ufo_glyph, layer)  # .annotations
         self.to_ufo_smart_component_axes(ufo_glyph, glyph)  # .components
+
+        if glyph.tags:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "tags"] = glyph.tags
+
     self.to_ufo_glyph_user_data(ufo_font, ufo_glyph, glyph)  # .user_data
     self.to_ufo_layer_user_data(ufo_glyph, layer)  # .user_data
 
@@ -448,7 +452,8 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     if ufo_glyph.unicodes:
         glyph.unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
-    glyph.note = ufo_glyph.note or None
+    if ufo_glyph.note:
+        glyph.note = ufo_glyph.note
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
         last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
         # We cannot be strict about the dateformat because it's not an official
@@ -543,7 +548,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_glyph_user_data(ufo_font, glyph)
     self.to_glyphs_layer_user_data(ufo_glyph, layer)
     self.to_glyphs_smart_component_axes(ufo_glyph, glyph)
-
+    tags = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "tags")
+    if tags:
+        glyph.tags = tags
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
 
