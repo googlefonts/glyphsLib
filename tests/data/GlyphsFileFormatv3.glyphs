@@ -163,7 +163,7 @@ stemValues = (
 234
 );
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some master Value";
 };
 visible = 1;
 },
@@ -251,7 +251,7 @@ pos = (413,10);
 name = top;
 pos = (230,700);
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some anchor Value";
 };
 },
 {
@@ -315,7 +315,7 @@ Welt";
 }
 );
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some layer Value";
 };
 width = 459;
 },
@@ -444,7 +444,7 @@ tag2
 );
 unicode = (65,97);
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some glyph Value";
 };
 },
 {
@@ -1575,7 +1575,7 @@ value = "Instance Familienname";
 }
 );
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some instance Value";
 };
 },
 {
@@ -1727,7 +1727,7 @@ name = "Stem numbers";
 );
 unitsPerEm = 1000;
 userData = {
-"Some Key" = "Some Value";
+"Some Key" = "Some font Value";
 };
 versionMajor = 1;
 versionMinor = 0;
