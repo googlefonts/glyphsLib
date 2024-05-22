@@ -1393,17 +1393,23 @@ class MasterNumbersProxy(Proxy):
         return self._owner._numbers[number.id]
 
     def __setitem__(self, key, value):
-        number = self._owner.font.numberForKey(key)
-        if number is None:
-            if isString(key):
-                name = key
-            else:
-                name = "number%s" % key
-            number = GSMetric()
-            number.name = name
-            number.horizontal = True
-            self._owner.font.numbers.append(number)
-        self._owner._numbers[number.id] = value
+        if self._owner.font:
+            number = self._owner.font.numberForKey(key)
+            if number is None:
+                if isString(key):
+                    name = key
+                else:
+                    name = "number%s" % key
+                number = GSMetric()
+                number.name = name
+                number.horizontal = True
+                self._owner.font.numbers.append(number)
+            numberId = number.id
+        elif isinstance(key, str):
+            numberId = key
+        else:
+            raise KeyError
+        self._owner._numbers[numberId] = value
 
     def values(self):
         values = []
@@ -5837,6 +5843,7 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "subCategory")
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "tags", "if_true")
+
         if self.unicodes and writer.formatVersion > 2:
             count_of_unicodes = len(self.unicodes)
             if count_of_unicodes == 1:
@@ -6032,7 +6039,15 @@ class GSGlyph(GSBase):
     @vertWidthMetricsKey.setter
     def vertWidthMetricsKey(self, value):
         self.metricVertWidth = value
+    '''
+    @property
+    def note(self):
+        return self._note
 
+    @note.setter
+    def note(self, value):
+        self._note = value
+    '''
 
 GSGlyph._add_parsers(
     [
@@ -6228,7 +6243,7 @@ class GSFont(GSBase):
         self._userData = None
         self._versionMinor = 0
         self.formatVersion = 3
-        self.appVersion = "895"  # minimum required version
+        self.appVersion = "3260"  # minimum required version
         self.classes = copy.copy(self._defaultsForName["classes"])
         self.features = copy.copy(self._defaultsForName["features"])
         self.featurePrefixes = copy.copy(self._defaultsForName["featurePrefixes"])

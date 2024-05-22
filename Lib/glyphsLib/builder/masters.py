@@ -23,6 +23,7 @@ from .constants import (
     UFO_FILENAME_CUSTOM_PARAM,
 )
 from glyphsLib.classes import (
+    GSMetric,
     GSMetricValue,
     GSMetricsKeyItalicAngle,
 )
@@ -92,6 +93,17 @@ def to_ufo_master_attributes(self, ufo, master):
         filteredMetrics.append(filteredMetric)
     if filteredMetrics:
         ufo.lib[GLYPHS_PREFIX + "filteredMetrics"] = filteredMetrics
+
+    if len(master.font.numbers) > 0:
+        numberDicts = []
+        for number in master.font.numbers:
+            numberValue = master.numbers[number.id]
+            numberDict = {
+                "name": number.name,
+                "value": numberValue,
+            }
+            numberDicts.append(numberDict)
+        ufo.lib[GLYPHS_PREFIX + "numbers"] = numberDicts
 
     # Set vhea values to glyphsapp defaults if they haven't been declared.
     # ufo2ft needs these set in order for a ufo to be recognised as
@@ -165,6 +177,17 @@ def to_glyphs_master_attributes(self, source, master):
         master.verticalStems = vertical_stems
     if italic_angle:
         master.italicAngle = italic_angle
+
+    numberDicts = ufo.lib.get(GLYPHS_PREFIX + "numbers")
+    if numberDicts and isinstance(numberDicts, list):
+        numberValues = []
+        for numberDict in numberDicts:
+            number = self.font.numberForName(numberDict["name"])
+            if not number:
+                number = GSMetric(numberDict["name"])
+                self.font.numbers.append(number)
+            numberValues.append(numberDict["value"])
+        master._numbers = numberValues
 
     if ufo.info.year is not None:
         master.userData[UFO_YEAR_KEY] = ufo.info.year
