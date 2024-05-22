@@ -1715,7 +1715,7 @@ class GSFontMaster(GSBase):
         if self.italicAngle:
             if names == ["Regular"]:
                 return "Italic"
-            if "Italic" not in self.customName:
+            if "Italic" not in self.customName and "Oblique" not in self.customName:
                 names.append("Italic")
         return " ".join(names)
 
@@ -3320,7 +3320,14 @@ class GSInstance(GSBase):
         value = self.customParameters["styleMapFamilyName"]
         if value:
             return value
-        if self.name not in ("Regular", "Bold", "Italic", "Bold Italic"):
+        if self.name not in (
+            "Regular",
+            "Bold",
+            "Italic",
+            "Oblique",
+            "Bold Italic",
+            "Bold Oblique",
+        ):
             return self.familyName + " " + self.name
         else:
             return self.familyName
@@ -3331,7 +3338,14 @@ class GSInstance(GSBase):
 
     @property
     def windowsStyle(self):
-        if self.name in ("Regular", "Bold", "Italic", "Bold Italic"):
+        if self.name in (
+            "Regular",
+            "Bold",
+            "Italic",
+            "Oblique",
+            "Bold Italic",
+            "Bold Oblique",
+        ):
             return self.name
         else:
             return "Regular"
@@ -3340,7 +3354,14 @@ class GSInstance(GSBase):
     def windowsLinkedToStyle(self):
         value = self.linkStyle
         return value
-        if self.name in ("Regular", "Bold", "Italic", "Bold Italic"):
+        if self.name in (
+            "Regular",
+            "Bold",
+            "Italic",
+            "Oblique",
+            "Bold Italic",
+            "Bold Oblique",
+        ):
             return self.name
         else:
             return "Regular"
