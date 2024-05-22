@@ -1383,6 +1383,52 @@ class MasterStemsProxy(Proxy):
     def setterMethod(self):
         return self._setterMethod
 
+class MasterNumbersProxy(Proxy):
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return [self.__getitem__(i) for i in range(*key.indices(self.__len__()))]
+        number = self._owner.font.numberForKey(key)
+        if number is None:
+            raise KeyError("No number for %s" % key)
+        return self._owner._numbers[number.id]
+
+    def __setitem__(self, key, value):
+        number = self._owner.font.numberForKey(key)
+        if number is None:
+            if isString(key):
+                name = key
+            else:
+                name = "number%s" % key
+            number = GSMetric()
+            number.name = name
+            number.horizontal = True
+            self._owner.font.numbers.append(number)
+        self._owner._numbers[number.id] = value
+
+    def values(self):
+        values = []
+        for number in self._owner.font.numbers:
+            values.append(self._owner._numbers.get(number.id, None))
+        return values
+
+    def __len__(self):
+        if self._owner.font is None:
+            return 0
+        return len(self._owner.font.numbers)
+
+    def _setterMethod(self, values):
+        if self._owner.font is None:
+            return
+        if self.__len__() != len(values):
+            raise ValueError("Count of values doesn’t match numbers")
+        idx = 0
+        for number in self._owner.font.numbers:
+            self._owner.numbers[number.id] = values[idx]
+            idx += 1
+
+    def setterMethod(self):
+        return self._setterMethod
+
 
 class LayerShapesProxy(IndexedObjectsProxy):
     _objects_name = "_shapes"
@@ -2256,7 +2302,7 @@ class GSFontMaster(GSBase):
         self.guides = []
         self.iconName = ""
         self.id = str(uuid.uuid4()).upper()
-        self.numbers = []
+        self._numbers = {}
         self._stems = {}
         self.visible = False
         self.weight = None
@@ -2264,7 +2310,6 @@ class GSFontMaster(GSBase):
         self.customName = None
         self.readBuffer = {}  # temp storage while reading
         self._axesValues = None
-        self._stems = None
         self._alignmentZones = None
 
     def __repr__(self):
@@ -2365,6 +2410,14 @@ class GSFontMaster(GSBase):
                 self._import_stem_list(self._horizontalStems, True)
             if self._verticalStems:
                 self._import_stem_list(self._verticalStems, False)
+
+        if self._numbers:
+            assert len(self.font.numbers) == len(self._numbers)
+            numbers = {}
+            for idx, number in enumerate(self.font.numbers):
+                numbers[number.id] = self._numbers[idx]
+            self._numbers = numbers
+
         if self.font.formatVersion < 3 and (
             self.weight or self.width or self.customName
         ):
@@ -2702,6 +2755,11 @@ class GSFontMaster(GSBase):
         else:
             self._verticalStems = value
 
+    numbers = property(
+        lambda self: MasterNumbersProxy(self),
+        lambda self, value: MasterNumbersProxy(self).setter(value),
+    )
+
     @property
     def ascender(self):
         return self._get_metric_position(GSMetricsKeyAscender)
@@ -2855,7 +2913,7 @@ GSFontMaster._add_parsers(
         {"plist_name": "guides", "object_name": "guides", "type": GSGuide},  # v3
         {"plist_name": "custom", "object_name": "customName"},
         {"plist_name": "axesValues", "object_name": "_axesValues"},  # v3
-        {"plist_name": "numberValues", "object_name": "numbers"},  # v3
+        {"plist_name": "numberValues", "object_name": "_numbers"},  # v3
         {"plist_name": "stemValues", "object_name": "_stems"},  # v3
         {
             "plist_name": "metricValues",
@@ -6187,7 +6245,7 @@ class GSFont(GSBase):
         self._kerningRTL = OrderedDict()
         self._kerningVertical = OrderedDict()
         self.metrics = copy.copy(self._defaultMetrics)
-        self.numbers = []
+        self._numbers = []
         self._properties = []
         self._stems = []
         self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
@@ -6485,6 +6543,42 @@ class GSFont(GSBase):
         for stem in self._stems:
             if stem.id == key:
                 return stem
+        return None
+
+    @property
+    def numbers(self):
+        return self._numbers
+
+    @numbers.setter
+    def numbers(self, numbers):
+        assert not numbers or isinstance(numbers[0], GSMetric)
+        self._numbers = numbers
+
+    def numberForKey(self, key):
+        if isinstance(key, int):
+            if key < 0:
+                key += self.__len__()
+            number = self.numbers[key]
+        elif isString(key):
+            number = self.numberForName(key)
+            if number is None:
+                number = self.numberForId(key)
+        else:
+            raise TypeError(
+                "list indices must be integers or strings, not %s" % type(key).__name__
+            )
+        return number
+
+    def numberForName(self, key):
+        for number in self._numbers:
+            if number.name == key:
+                return number
+        return None
+
+    def numberForId(self, key):
+        for number in self._numbers:
+            if number.id == key:
+                return number
         return None
 
     @property
