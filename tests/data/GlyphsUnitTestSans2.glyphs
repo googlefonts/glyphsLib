@@ -490,7 +490,7 @@ leftKerningGroup = A;
 rightKerningGroup = A;
 unicode = 0041;
 script = "";
-category = "";
+category = "foo";
 subCategory = "";
 },
 {
