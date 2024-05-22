@@ -218,8 +218,15 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below
 
+    # TODO: (gs) those should be stored in groups.plist but there is no public format to specify vertical kerning groups
+    if glyph.bottomKerningGroup:
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "kernBottom"] = glyph.bottomKerningGroup
+    if glyph.topKerningGroup:
+        ufo_glyph.lib[GLYPHLIB_PREFIX + "kernTop"] = glyph.topKerningGroup
+
     if layer.attributes.get("hasOverlap", False):
         ufo_glyph.lib["public.truetype.overlap"] = True
+
 
 def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
     note = glyph.note
@@ -569,6 +576,12 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
             else:
                 raise ValueError("Unknown shape type %s" % sign)
         layer.shapes = new_shapes
+    kernBottom = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernBottom")
+    if kernBottom is not None and not glyph.bottomKerningGroup:
+        glyph.bottomKerningGroup = kernBottom
+    kernTop = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernTop")
+    if kernTop is not None and not glyph.topKerningGroup:
+        glyph.topKerningGroup = kernTop
 
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
