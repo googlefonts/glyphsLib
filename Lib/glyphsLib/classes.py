@@ -1949,7 +1949,9 @@ class GSMetric(GSBase):
     def __repr__(self):
         string = f"<{self.__class__.__name__} {hex(id(self))}> {self.type}"
         if self.filter:
-            string += self.filter
+            string += " " + self.filter
+        if self.name:
+            string += " " + self.name
         return string
 
     def __str__(self):
