@@ -36,7 +36,7 @@ def to_ufo_names(self, ufo, master, family_name):
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=family_name,
             style_name=styleName,
-            is_bold=("Bold" in styleName),
+            is_bold=(styleName == "Bold" or styleName == "Bold Italic"),
             is_italic=is_italic,
         )
         ufo.info.styleMapFamilyName = styleMapFamilyName
