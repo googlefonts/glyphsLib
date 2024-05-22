@@ -1,0 +1,241 @@
+{
+.appVersion = "3259";
+.formatVersion = 3;
+DisplayStrings = (
+a
+);
+axes = (
+{
+name = Weight;
+tag = wght;
+},
+{
+name = ROUND;
+tag = ROND;
+}
+);
+date = "2024-04-22 16:44:09 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+axesValues = (
+400,
+0
+);
+id = "m-400-0";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+}
+);
+name = Regular;
+},
+{
+axesValues = (
+700,
+0
+);
+iconName = SemiBold;
+id = "m-700-0";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+}
+);
+name = Bold;
+},
+{
+axesValues = (
+400,
+1
+);
+customParameters = (
+{
+name = "Link Metrics With Master";
+value = "m-400-0";
+}
+);
+id = "m-400-1";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+}
+);
+name = "Regular ROUND";
+},
+{
+axesValues = (
+700,
+1
+);
+customParameters = (
+{
+name = "Link Metrics With Master";
+value = "m-700-0";
+}
+);
+iconName = SemiBold;
+id = "m-700-1";
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+}
+);
+name = "Bold ROUND";
+}
+);
+glyphs = (
+{
+glyphname = a;
+lastChange = "2024-04-23 07:38:25 +0000";
+layers = (
+{
+layerId = "m-400-1";
+width = 100;
+},
+{
+layerId = "m-400-0";
+width = 100;
+},
+{
+layerId = "m-700-1";
+width = 300;
+},
+{
+associatedMasterId = "m-400-0";
+attr = {
+coordinates = (
+500,
+0
+);
+};
+layerId = "m-500-0";
+name = "Intermediate 500 0";
+width = 200;
+},
+{
+layerId = "m-700-0";
+width = 300;
+},
+{
+associatedMasterId = "m-400-1";
+attr = {
+coordinates = (
+500,
+1
+);
+};
+layerId = "m-500-1";
+name = "Intermediate 500 1";
+width = 200;
+}
+);
+unicode = 97;
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = "m-400-1";
+width = 200;
+}
+);
+unicode = 32;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

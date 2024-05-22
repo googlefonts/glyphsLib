@@ -141,6 +141,12 @@ class GlyphDataTest(unittest.TestCase):
         self.assertEqual(cat("_aaa"), (None, None))
         self.assertEqual(cat("dal_alef-ar"), ("Letter", "Ligature"))
         self.assertEqual(cat("dal_lam-ar.dlig"), ("Letter", "Ligature"))
+        self.assertEqual(cat("po-khmer"), ("Letter", None))
+        self.assertEqual(cat("po-khmer.below"), ("Mark", "Nonspacing"))
+        # see https://github.com/googlefonts/glyphsLib/commit/68e4e9cf44c9919de
+        # this glyph is not in the data, and we want fallback to find po-khmer.below
+        # before po-khmer
+        self.assertEqual(cat("po-khmer.below.ro"), ("Mark", "Nonspacing"))
 
     def test_category_buy_unicode(self):
         def cat(n, u):
