@@ -2546,7 +2546,7 @@ class GSFontMaster(GSBase):
                 metricType == currMetric.type
                 and name == currMetric.name
                 and filter == currMetric.filter
-                and metricType != GSMetricsKeyUndefined
+                and (metricType != GSMetricsKeyUndefined or name is not None)
             ):
                 metric = currMetric
                 break
