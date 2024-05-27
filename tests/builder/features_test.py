@@ -19,6 +19,7 @@ from textwrap import dedent
 
 import glyphsLib
 from glyphsLib import to_glyphs, to_ufos, classes, to_designspace
+from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.builder.features import _build_public_opentype_categories
 
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -156,6 +157,15 @@ def test_feature_names_from_glyph_2_file():
         {"language": "dflt", "value": "Feature Name dflt"},
         {"language": "DEU", "value": "Feature Name DEU"},
     ]
+
+def test_upgrade_layer_attributes_from_glyph_2_file():
+    filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
+    font = glyphsLib.load(filename)
+
+    A = font.glyphs["A"]
+    layer = A.layers[1]
+    assert not layer.isMasterLayer
+    assert LAYER_ATTRIBUTE_COLOR in layer.attributes
 
 
 def test_feature_names_format_2(tmpdir, ufo_module):
