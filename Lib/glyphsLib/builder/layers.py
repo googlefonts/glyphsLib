@@ -137,7 +137,6 @@ def _get_or_make_foreground(self, glyph, master):
     if layer is None:
         layer = glyph.layers[master.id] = self.glyphs_module.GSLayer()
     layer.layerId = master.id
-    layer.name = master.name
     return layer
 
 
