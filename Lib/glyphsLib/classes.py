@@ -1603,7 +1603,10 @@ class PropertiesProxy(ListDictionaryProxy):
             infoValue.setLocalizedValue(value, language)
             return
         infoValue = GSFontInfoValue(key)
-        infoValue.setLocalizedValue(value, language)
+        if key.endswith("s"):
+            infoValue.setLocalizedValue(value, language)
+        else:
+            infoValue.value = value
         infoValue.parent = self._owner
         self._owner._properties.append(infoValue)
 
