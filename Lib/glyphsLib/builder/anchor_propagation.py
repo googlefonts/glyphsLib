@@ -1,7 +1,9 @@
 from fontTools.misc.transform import Transform
 import fontTools.pens.boundsPen
 
-from .constants import COMPONENT_INFO_KEY
+from glyphsLib import glyphdata
+
+from .constants import COMPONENT_INFO_KEY, GLYPHLIB_PREFIX
 
 
 def to_ufo_propagate_font_anchors(self, ufo):
@@ -12,12 +14,24 @@ def to_ufo_propagate_font_anchors(self, ufo):
         _propagate_glyph_anchors(self, ufo, glyph, processed)
 
 
-def _propagate_glyph_anchors(self, ufo, parent, processed):
+def _is_ligature_sub_category(glyph):
+    # copied from glyphsLib.builder.features._build_public_opentype_categories
+    subCategory_key = GLYPHLIB_PREFIX + "subCategory"
+    glyphinfo = glyphdata.get_glyph(
+        glyph.name, unicodes=[f"{c:04X}" for c in glyph.unicodes]
+    )
+    subCategory = glyph.lib.get(subCategory_key) or glyphinfo.subCategory
+    return subCategory == "Ligature"
+
+
+def _propagate_glyph_anchors(self, ufo, parent, processed, parent_is_liga=False):
     """Propagate anchors for a single parent glyph."""
 
     if parent.name in processed:
         return
     processed.add(parent.name)
+
+    parent_is_liga |= _is_ligature_sub_category(parent)
 
     base_components = []
     mark_components = []
@@ -33,7 +47,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
                 )
             )
         else:
-            _propagate_glyph_anchors(self, ufo, glyph, processed)
+            _propagate_glyph_anchors(self, ufo, glyph, processed, parent_is_liga)
             if any(a.name.startswith("_") for a in glyph.anchors):
                 mark_components.append(component)
             else:
@@ -60,7 +74,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
         # don't add if parent already contains this anchor OR any associated
         # ligature anchors (e.g. "top_1, top_2" for "top")
         if not any(a.name.startswith(anchor_name) for a in parent.anchors):
-            _get_anchor_data(to_add, ufo, base_components, anchor_name)
+            _get_anchor_data(to_add, ufo, base_components, anchor_name, parent_is_liga)
 
     for component in mark_components:
         _adjust_anchors(to_add, ufo, parent, component)
@@ -71,7 +85,7 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
         parent.appendAnchor(anchor_dict)
 
 
-def _get_anchor_data(anchor_data, ufo, components, anchor_name):
+def _get_anchor_data(anchor_data, ufo, components, anchor_name, parent_is_liga):
     """Get data for an anchor from a list of components."""
 
     anchors = []
@@ -81,10 +95,21 @@ def _get_anchor_data(anchor_data, ufo, components, anchor_name):
                 anchors.append((anchor, component))
                 break
     if len(anchors) > 1:
-        for i, (anchor, component) in enumerate(anchors):
+        if parent_is_liga:
+            # if the parent composite glyph is classed as a 'ligature',
+            # enumerate anchors and append _1, _2, suffixes.
+            # TODO: naive enumeration won't work all the time (e.g. imagine
+            # a ligature which uses multiple other ligature as components)
+            for i, (anchor, component) in enumerate(anchors):
+                t = Transform(*component.transformation)
+                name = "%s_%d" % (anchor.name, i + 1)
+                anchor_data[name] = t.transformPoint((anchor.x, anchor.y))
+        else:
+            # not a ligature, the last wins:
+            # https://github.com/googlefonts/glyphsLib/issues/368#issuecomment-2103376997
+            anchor, component = anchors[-1]
             t = Transform(*component.transformation)
-            name = "%s_%d" % (anchor.name, i + 1)
-            anchor_data[name] = t.transformPoint((anchor.x, anchor.y))
+            anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
     elif anchors:
         anchor, component = anchors[0]
         t = Transform(*component.transformation)
