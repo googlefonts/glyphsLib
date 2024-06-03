@@ -54,10 +54,17 @@ def _propagate_glyph_anchors(self, ufo, parent, processed, parent_is_liga=False)
                 base_components.append(component)
                 anchor_names |= {a.name for a in glyph.anchors}
 
-    if mark_components and not base_components and _is_ligature_mark(parent):
-        # The composite is a mark that is composed of other marks (E.g.
-        # "circumflexcomb_tildecomb"). Promote the mark that is positioned closest
-        # to the origin to a base.
+    if not base_components and (
+        len(mark_components) == 1
+        or (len(mark_components) > 1 and _is_ligature_mark(parent))
+    ):
+        # The composite is a mark that is composed of one or more mark components:
+        # "cedilla" <- "cedillacomb", or a 'ligature mark' (sic) such as
+        # "circumflexcomb_tildecomb".
+        # Promote the mark that is positioned closest to the origin to a base.
+        # TODO: Double-check if Glyphs.app actually cares about the component closer
+        # to origin, I suspect it just takes the first one whatever that is. Do we care
+        # to keep this closest-to-origin logic or should simply match Glyphs.app?
         try:
             component = _component_closest_to_origin(mark_components, ufo)
         except Exception as e:
@@ -167,6 +174,8 @@ def _component_closest_to_origin(components, glyph_set):
     actually recognized as such. Looking only at the transformation
     offset can be misleading.
     """
+    if len(components) == 1:
+        return components[0]
     return min(components, key=lambda comp: _distance((0, 0), _bounds(comp, glyph_set)))
 
 
