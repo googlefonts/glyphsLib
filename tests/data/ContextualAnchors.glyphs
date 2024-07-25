@@ -1,5 +1,5 @@
 {
-.appVersion = "3208";
+.appVersion = "3311";
 .formatVersion = 3;
 axes = (
 {
@@ -584,6 +584,13 @@ GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar
 };
 },
 {
+name = "*bottom.vtwodots";
+pos = (25,-159);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
+};
+},
+{
 name = bottom;
 pos = (25,-85);
 }
@@ -622,6 +629,13 @@ GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar
 };
 },
 {
+name = "*bottom.vtwodots";
+pos = (55,-259);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
+};
+},
+{
 name = bottom;
 pos = (55,-100);
 }
@@ -657,6 +671,112 @@ name = "*bottom.twodots";
 pos = (105,-226);
 userData = {
 GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotshorizontalbelow]; reh-ar * behDotess-ar.medi &";
+};
+},
+{
+name = "*bottom.vtwodots";
+pos = (105,-309);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
+};
+},
+{
+name = bottom;
+pos = (105,-100);
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+metricRight = "=100";
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,0,l),
+(200,521,l),
+(0,321,l),
+(0,200,l),
+(-40,200,l),
+(-40,0,l)
+);
+}
+);
+width = 300;
+}
+);
+metricRight = "=0";
+},
+{
+glyphname = "behDotless-ar.init.alt";
+layers = (
+{
+anchors = (
+{
+name = "*bottom.vtwodots";
+pos = (25,-159);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
+};
+},
+{
+name = bottom;
+pos = (25,-85);
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+metricRight = "=20";
+shapes = (
+{
+closed = 1;
+nodes = (
+(42,0,l),
+(42,148,l),
+(2,108,l),
+(2,40,l),
+(-30,40,l),
+(-30,0,l)
+);
+}
+);
+width = 62;
+},
+{
+anchors = (
+{
+name = "*bottom.vtwodots";
+pos = (55,-259);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
+};
+},
+{
+name = bottom;
+pos = (55,-100);
+}
+);
+layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
+metricRight = "=50";
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,300,l),
+(0,200,l),
+(0,100,l),
+(-90,100,l),
+(-90,0,l)
+);
+}
+);
+width = 150;
+},
+{
+anchors = (
+{
+name = "*bottom.vtwodots";
+pos = (105,-309);
+userData = {
+GPOS_Context = "lookupflag UseMarrkFilteringSet [twodotsverticalbelow]; reh-ar *";
 };
 },
 {
@@ -1002,6 +1122,151 @@ nodes = (
 width = 400;
 }
 );
+},
+{
+glyphname = "twodotsverticalbelow-ar";
+layers = (
+{
+anchors = (
+{
+name = _bottom;
+pos = (115,15);
+}
+);
+layerId = "C4872ECA-A3A9-40AB-960A-1DB2202F16DE";
+shapes = (
+{
+closed = 1;
+nodes = (
+(123,-15,o),
+(130,-8,o),
+(130,0,cs),
+(130,8,o),
+(123,15,o),
+(115,15,cs),
+(107,15,o),
+(100,8,o),
+(100,0,cs),
+(100,-8,o),
+(107,-15,o),
+(115,-15,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(123,-55,o),
+(130,-48,o),
+(130,-40,cs),
+(130,-32,o),
+(123,-25,o),
+(115,-25,cs),
+(107,-25,o),
+(100,-32,o),
+(100,-40,cs),
+(100,-48,o),
+(107,-55,o),
+(115,-55,cs)
+);
+}
+);
+width = 230;
+},
+{
+anchors = (
+{
+name = _bottom;
+pos = (150,50);
+}
+);
+layerId = "3E7589AA-8194-470F-8E2F-13C1C581BE24";
+shapes = (
+{
+closed = 1;
+nodes = (
+(178,-50,o),
+(200,-28,o),
+(200,0,cs),
+(200,28,o),
+(178,50,o),
+(150,50,cs),
+(122,50,o),
+(100,28,o),
+(100,0,cs),
+(100,-28,o),
+(122,-50,o),
+(150,-50,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(178,-170,o),
+(200,-148,o),
+(200,-120,cs),
+(200,-92,o),
+(178,-70,o),
+(150,-70,cs),
+(122,-70,o),
+(100,-92,o),
+(100,-120,cs),
+(100,-148,o),
+(122,-170,o),
+(150,-170,cs)
+);
+}
+);
+width = 300;
+},
+{
+anchors = (
+{
+name = _bottom;
+pos = (200,100);
+}
+);
+layerId = "BFFFD157-90D3-4B85-B99D-9A2F366F03CA";
+shapes = (
+{
+closed = 1;
+nodes = (
+(255,-100,o),
+(300,-55,o),
+(300,0,cs),
+(300,55,o),
+(255,100,o),
+(200,100,cs),
+(145,100,o),
+(100,55,o),
+(100,0,cs),
+(100,-55,o),
+(145,-100,o),
+(200,-100,cs)
+);
+},
+{
+closed = 1;
+nodes = (
+(255,-310,o),
+(300,-265,o),
+(300,-210,cs),
+(300,-155,o),
+(255,-110,o),
+(200,-110,cs),
+(145,-110,o),
+(100,-155,o),
+(100,-210,cs),
+(100,-265,o),
+(145,-310,o),
+(200,-310,cs)
+);
+}
+);
+width = 400;
+}
+);
+metricLeft = "=dotbelow-ar";
+metricRight = "=dotbelow-ar";
 },
 {
 glyphname = "twodotshorizontalbelow-ar";
