@@ -1,3 +1,11 @@
+"""This module is DEPRECATED and will be removed in a future release.
+
+For anchor propagation on GSFont objects, you can use the
+`glyphsLib.builder.transformations.propagate_anchors` module.
+For anchor propagation on UFO font objects, you can try the
+`ufo2ft.filters.propagateAnchors` filter.
+"""
+
 from fontTools.misc.transform import Transform
 import fontTools.pens.boundsPen
 

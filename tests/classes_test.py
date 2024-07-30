@@ -115,7 +115,7 @@ def add_anchor(font, glyphname, anchorname, x, y):
                 layer.anchors = getattr(layer, "anchors", [])
                 anchor = GSAnchor()
                 anchor.name = anchorname
-                anchor.position = (x, y)
+                anchor.position = Point(x, y)
                 layer.anchors.append(anchor)
 
 

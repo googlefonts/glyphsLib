@@ -18,7 +18,7 @@ import logging
 from glyphsLib import classes
 
 from .builders import UFOBuilder, GlyphsBuilder
-from .transformations import TRANSFORMATIONS
+from .transformations import TRANSFORMATIONS, TRANSFORMATION_CUSTOM_PARAMS
 
 logger = logging.getLogger(__name__)
 
@@ -64,11 +64,13 @@ def to_ufos(
     """
     if preserve_original:
         font = copy.deepcopy(font)
+    font = preflight_glyphs(
+        font, glyph_data=glyph_data, do_propagate_all_anchors=propagate_anchors
+    )
     builder = UFOBuilder(
-        preflight_glyphs(font),
+        font,
         ufo_module=ufo_module,
         family_name=family_name,
-        propagate_anchors=propagate_anchors,
         minimize_glyphs_diffs=minimize_glyphs_diffs,
         generate_GDEF=generate_GDEF,
         store_editor_state=store_editor_state,
@@ -129,13 +131,14 @@ def to_designspace(
     """
     if preserve_original:
         font = copy.deepcopy(font)
-
+    font = preflight_glyphs(
+        font, glyph_data=glyph_data, do_propagate_all_anchors=propagate_anchors
+    )
     builder = UFOBuilder(
-        preflight_glyphs(font),
+        font,
         ufo_module=ufo_module,
         family_name=family_name,
         instance_dir=instance_dir,
-        propagate_anchors=propagate_anchors,
         use_designspace=True,
         minimize_glyphs_diffs=minimize_glyphs_diffs,
         generate_GDEF=generate_GDEF,
@@ -148,12 +151,49 @@ def to_designspace(
     return builder.designspace
 
 
-def preflight_glyphs(font):
+def preflight_glyphs(font, *, glyph_data=None, **todos):
     """Run a set of transformations over a GSFont object to make
-    it easier to convert to UFO; resolve all the "smart stuff"."""
+    it easier to convert to UFO; resolve all the "smart stuff".
+
+    Currently, the transformations are:
+        - `propagate_all_anchors`: copy anchors from components to their parent
+
+    More transformations may be added in the future.
+
+    Some transformations may have custom parameters that can be set in the
+    font. For example, the `propagate_all_anchors` transformation can be
+    disabled by setting the custom parameter "Propagate Anchors" to False
+    (see `TRANSFORMATION_CUSTOM_PARAMS`).
+
+    Args:
+        font: a GSFont object
+        glyph_data: an optional GlyphData object associating various properties to
+            glyph names (e.g. category) that overrides the default one
+        **todos: a set of boolean flags to enable/disable specific transformations,
+            named `do_<transformation_name>`, e.g. `do_propagate_all_anchors=False`
+            will disable the propagation of anchors.
+
+    Returns:
+        the modified GSFont object
+    """
 
     for transform in TRANSFORMATIONS:
-        transform(font)
+        do_transform = todos.pop("do_" + transform.__name__, None)
+        if do_transform is True:
+            pass
+        elif do_transform is False:
+            continue
+        elif do_transform is None:
+            if transform in TRANSFORMATION_CUSTOM_PARAMS:
+                param = TRANSFORMATION_CUSTOM_PARAMS[transform]
+                if not font.customParameters.get(param.name, param.default):
+                    continue
+        else:
+            raise ValueError(f"Invalid value for do_{transform.__name__}")
+        logger.info(f"Running '{transform.__name__}' transformation")
+        transform(font, glyph_data=glyph_data)
+    if todos:
+        logger.warning(f"preflight_glyphs has unused `todos` arguments: {todos}")
     return font
 
 
