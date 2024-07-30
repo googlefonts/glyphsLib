@@ -136,7 +136,8 @@ def test_propagate_anchors_on(ufo_module):
         ("dad", [("sad", 0, 0), ("dotabove", 50, 50)], []),
         ("dadDotbelow", [("dad", 0, 0), ("dotbelow", 50, -50)], []),
         ("yod", [], [("bottom", 50, -50)]),
-        ("yodyod", [("yod", 0, 0), ("yod", 100, 0)], []),
+        ("yod_yod", [("yod", 0, 0), ("yod", 100, 0)], []),  # ligature
+        ("yodyod", [("yod", 0, 0), ("yod", 100, 0)], []),  # not a ligature
     )
     for name, component_data, anchor_data in glyphs:
         add_glyph(font, name)
@@ -160,7 +161,20 @@ def test_propagate_anchors_on(ufo_module):
             assert anchor.name == "top"
             assert anchor.y == 200
 
+    # 'yodyod' isn't explicitly classified as a 'ligature' hence it will NOT
+    # inherit two 'bottom_1' and 'bottom_2' anchors from each 'yod' component,
+    # but only one 'bottom' anchor from the last component.
+    # https://github.com/googlefonts/glyphsLib/issues/368#issuecomment-2103376997
     glyph = ufo["yodyod"]
+    assert len(glyph.anchors) == 1
+    for anchor in glyph.anchors:
+        assert anchor.name == "bottom"
+        assert anchor.y == -50
+        assert anchor.x == 150
+
+    # 'yod_yod' is a ligature hence will inherit two 'bottom_{1,2}' anchors
+    # from each 'yod' component
+    glyph = ufo["yod_yod"]
     assert len(glyph.anchors) == 2
     for anchor in glyph.anchors:
         assert anchor.y == -50
