@@ -28,6 +28,7 @@ from glyphsLib import to_designspace, to_glyphs
 from glyphsLib.util import open_ufo
 from glyphsLib.builder.bracket_layers import _bracket_info
 from . import diff_files
+from glyphsLib.types import Point
 
 
 def test_designspace_generation_regular_same_family_name(tmpdir, ufo_module):
@@ -508,7 +509,7 @@ def test_designspace_generation_bracket_GDEF(datadir, ufo_module):
     for layer in font.glyphs["x"].layers:
         anchor = glyphsLib.classes.GSAnchor()
         anchor.name = "top"
-        anchor.position = (0, 0)
+        anchor.position = Point(0, 0)
         layer.anchors.append(anchor)
 
     designspace = to_designspace(font, ufo_module=ufo_module, generate_GDEF=True)

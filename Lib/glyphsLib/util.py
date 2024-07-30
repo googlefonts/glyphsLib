@@ -210,3 +210,7 @@ def isString(value):
 
 def isList(value):
     return isinstance(value, listClasses)
+
+
+# sentinel object to indicate a deprecated argument
+_DeprecatedArgument = object()
