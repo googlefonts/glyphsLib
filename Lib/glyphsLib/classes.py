@@ -520,12 +520,13 @@ class ListDictionaryProxy(Proxy):
 
 
 class LayersIterator:
-    __slots__ = "curInd", "_owner", "_orderedLayers"
+    __slots__ = ("_layers",)
 
     def __init__(self, owner):
-        self.curInd = 0
-        self._owner = owner
-        self._orderedLayers = None
+        if owner.parent:
+            self._layers = self.orderedLayers(owner)
+        else:
+            self._layers = iter(owner._layers.values())
 
     def __iter__(self):
         return self
@@ -534,39 +535,28 @@ class LayersIterator:
         return self.__next__()
 
     def __next__(self):
-        if self._owner.parent:
-            if self.curInd >= len(self._owner.layers):
-                raise StopIteration
-            item = self.orderedLayers[self.curInd]
-        else:
-            if self.curInd >= len(self._owner._layers):
-                raise StopIteration
-            item = self._owner._layers[self.curInd]
-        self.curInd += 1
-        return item
+        return next(self._layers)
 
-    @property
-    def orderedLayers(self):
-        if not self._orderedLayers:
-            glyphLayerIds = [
-                l.associatedMasterId
-                for l in self._owner._layers.values()
-                if l.associatedMasterId == l.layerId
-            ]
-            masterIds = [m.id for m in self._owner.parent.masters]
-            intersectedLayerIds = set(glyphLayerIds) & set(masterIds)
-            orderedLayers = [
-                self._owner._layers[m.id]
-                for m in self._owner.parent.masters
-                if m.id in intersectedLayerIds
-            ]
-            orderedLayers += [
-                self._owner._layers[l.layerId]
-                for l in self._owner._layers.values()
-                if l.layerId not in intersectedLayerIds
-            ]
-            self._orderedLayers = orderedLayers
-        return self._orderedLayers
+    @staticmethod
+    def orderedLayers(glyph):
+        font = glyph.parent
+        assert font is not None
+        glyphLayerIds = {
+            l.associatedMasterId
+            for l in glyph._layers.values()
+            if l.associatedMasterId == l.layerId
+        }
+        masterIds = {m.id for m in font.masters}
+        intersectedLayerIds = glyphLayerIds & masterIds
+        orderedLayers = [
+            glyph._layers[m.id] for m in font.masters if m.id in intersectedLayerIds
+        ]
+        orderedLayers.extend(
+            glyph._layers[l.layerId]
+            for l in glyph._layers.values()
+            if l.layerId not in intersectedLayerIds
+        )
+        return iter(orderedLayers)
 
 
 class FontFontMasterProxy(Proxy):

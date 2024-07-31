@@ -154,6 +154,17 @@ class GlyphLayersTest(unittest.TestCase):
         font.masters.append(master2)
         assert len({m.id for m in font.masters}) == 2
 
+    def test_iterate_layers_of_orphan_glyph(self):
+        # https://github.com/googlefonts/glyphsLib/issues/1013
+        glyph = GSGlyph()
+        assert glyph.parent is None
+        layer = GSLayer()
+        glyph.layers.append(layer)
+        assert layer.parent is glyph
+        # this ought not to raise a `KeyError: 0` exception
+        layers = list(glyph.layers)
+        assert layers[0] is layer
+
 
 class GSFontTest(unittest.TestCase):
     def test_init(self):
