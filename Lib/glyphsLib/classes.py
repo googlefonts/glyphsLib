@@ -3742,7 +3742,12 @@ class GSLayer(GSBase):
 
     @property
     def name(self):
-        if self.associatedMasterId and self._is_master_layer and self.parent:
+        if (
+            self.associatedMasterId
+            and self._is_master_layer
+            and self.parent
+            and self.parent.parent
+        ):
             master = self.parent.parent.masterForId(self.associatedMasterId)
             if master:
                 return master.name
