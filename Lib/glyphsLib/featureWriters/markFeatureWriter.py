@@ -230,18 +230,27 @@ class ContextualMarkFeatureWriter(MarkFeatureWriter):
                 lookup.statements.append(MarkToBasePos(glyph, [anchor]).asAST())
             lookups.append(lookup)
 
+            # Insert mark glyph names after base glyph names if not specified otherwise.
+            if "&" not in after:
+                after = after.replace("*", "* &")
+
+            # Group base glyphs by anchor
+            glyphs = {}
             for glyph, anchor in glyph_anchor_pair:
+                glyphs.setdefault(anchor.key, [anchor, []])[1].append(glyph)
+
+            for anchor, bases in glyphs.values():
+                bases = " ".join(bases)
                 marks = ast.GlyphClass(
                     self.context.markClasses[anchor.key].glyphs.keys()
                 ).asFea()
-                if "&" not in after:
-                    after = after.replace("*", "* &")
-                # Replace & with mark name if present
-                contextual = after.replace("*", f"{glyph}")
+
+                # Replace * with base glyph names
+                contextual = after.replace("*", f"[{bases}]")
+
+                # Replace & with mark glyph names
                 contextual = contextual.replace("&", f"{marks}' lookup {lookupname}")
-                lkp.statements.append(
-                    ast.Comment(f"pos {contextual}; # {glyph}/{anchor.name}")
-                )
+                lkp.statements.append(ast.Comment(f"pos {contextual}; # {anchor.name}"))
 
         lookups.extend(dispatch_lookups.values())
 

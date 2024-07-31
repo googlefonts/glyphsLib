@@ -27,28 +27,41 @@ def test_contextual_anchors(datadir):
                 lookup mark2base_1;
                 lookup ContextualMarkDispatch_0;
                 lookup ContextualMarkDispatch_1;
+                lookup ContextualMarkDispatch_2;
             } mark;
             """
         )
 
-        lookup = feature.statements[-2].lookup
+        lookup = feature.statements[-3].lookup
         assert str(lookup) == (
             "lookup ContextualMarkDispatch_0 {\n"
             "    lookupflag UseMarrkFilteringSet [twodotshorizontalbelow];\n"
             "    # reh-ar * behDotess-ar.medi &\n"
-            "    pos reh-ar behDotless-ar.init behDotess-ar.medi"
-            " [dotbelow-ar twodotshorizontalbelow-ar]'"
-            " lookup ContextualMark_0; # behDotless-ar.init/*bottom.twodots\n"
+            "    pos reh-ar [behDotless-ar.init] behDotess-ar.medi"
+            " [dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
+            " lookup ContextualMark_0; # *bottom.twodots\n"
             "} ContextualMarkDispatch_0;\n"
+        )
+
+        lookup = feature.statements[-2].lookup
+        assert str(lookup) == (
+            "lookup ContextualMarkDispatch_1 {\n"
+            "    lookupflag UseMarrkFilteringSet [twodotsverticalbelow];\n"
+            "    # reh-ar *\n"
+            "    pos reh-ar [behDotless-ar.init behDotless-ar.init.alt]"
+            " [dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
+            " lookup ContextualMark_1; # *bottom.vtwodots\n"
+            "} ContextualMarkDispatch_1;\n"
         )
 
         lookup = feature.statements[-1].lookup
         assert str(lookup) == (
-            "lookup ContextualMarkDispatch_1 {\n"
+            "lookup ContextualMarkDispatch_2 {\n"
             "    # reh-ar *\n"
-            "    pos reh-ar behDotless-ar.init [dotbelow-ar twodotshorizontalbelow-ar]'"
-            " lookup ContextualMark_1; # behDotless-ar.init/*bottom\n"
-            "} ContextualMarkDispatch_1;\n"
+            "    pos reh-ar [behDotless-ar.init] "
+            "[dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
+            " lookup ContextualMark_2; # *bottom\n"
+            "} ContextualMarkDispatch_2;\n"
         )
 
 
