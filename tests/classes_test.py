@@ -939,6 +939,26 @@ def test_repr(file_path):
 
     assert layer.__repr__() is not None
 
+def test_repr_orphan_glyph(self):
+    # https://github.com/googlefonts/glyphsLib/issues/1014
+    layer = GSLayer()
+    self.assertIsNone(layer.parent)  # orphan layer
+
+    expected = '<GSLayer "" (orphan)>'
+    self.assertEqual(repr(layer), expected)
+
+    layer.layerId = layer.associatedMasterId = "layer-0"
+    self.assertTrue(layer._is_master_layer)
+    self.assertEqual(repr(layer), expected)
+
+    parent = GSGlyph()
+    parent.layers.append(layer)
+    self.assertEqual(layer.parent, parent)  # no longer orphan layer
+    self.assertIsNone(parent.parent)  # but still orphan glyph
+
+    # this should not crash with
+    #   AttributeError: 'NoneType' object has no attribute 'masterForId'
+    self.assertEqual(repr(layer), expected)
 
 def test_parent_layer(file_path):
     font = GSFont(file_path)
