@@ -164,6 +164,17 @@ class GlyphLayersTest(unittest.TestCase):
         font.masters.append(master2)
         assert len({m.id for m in font.masters}) == 2
 
+    def test_iterate_layers_of_orphan_glyph(self):
+        # https://github.com/googlefonts/glyphsLib/issues/1013
+        glyph = GSGlyph()
+        assert glyph.parent is None
+        layer = GSLayer()
+        glyph.layers.append(layer)
+        assert layer.parent is glyph
+        # this ought not to raise a `KeyError: 0` exception
+        layers = list(glyph.layers)
+        assert layers[0] is layer
+
 
 # GlyphsBracketLayerTest
 def test_bracket_layers(file_path):
@@ -939,7 +950,7 @@ def test_repr(file_path):
 
     assert layer.__repr__() is not None
 
-def test_repr_orphan_glyph(self):
+def test_repr_orphan_glyph(file_path):
     # https://github.com/googlefonts/glyphsLib/issues/1014
     layer = GSLayer()
     self.assertIsNone(layer.parent)  # orphan layer
