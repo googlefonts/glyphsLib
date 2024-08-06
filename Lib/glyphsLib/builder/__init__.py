@@ -151,7 +151,7 @@ def to_designspace(
     return builder.designspace
 
 
-def preflight_glyphs(font, *, glyph_data=None, **todos):
+def preflight_glyphs(font, *, glyph_data=None, **flags):
     """Run a set of transformations over a GSFont object to make
     it easier to convert to UFO; resolve all the "smart stuff".
 
@@ -169,7 +169,7 @@ def preflight_glyphs(font, *, glyph_data=None, **todos):
         font: a GSFont object
         glyph_data: an optional GlyphData object associating various properties to
             glyph names (e.g. category) that overrides the default one
-        **todos: a set of boolean flags to enable/disable specific transformations,
+        **flags: a set of boolean flags to enable/disable specific transformations,
             named `do_<transformation_name>`, e.g. `do_propagate_all_anchors=False`
             will disable the propagation of anchors.
 
@@ -178,7 +178,7 @@ def preflight_glyphs(font, *, glyph_data=None, **todos):
     """
 
     for transform in TRANSFORMATIONS:
-        do_transform = todos.pop("do_" + transform.__name__, None)
+        do_transform = flags.pop("do_" + transform.__name__, None)
         if do_transform is True:
             pass
         elif do_transform is False:
@@ -192,8 +192,8 @@ def preflight_glyphs(font, *, glyph_data=None, **todos):
             raise ValueError(f"Invalid value for do_{transform.__name__}")
         logger.info(f"Running '{transform.__name__}' transformation")
         transform(font, glyph_data=glyph_data)
-    if todos:
-        logger.warning(f"preflight_glyphs has unused `todos` arguments: {todos}")
+    if flags:
+        logger.warning(f"preflight_glyphs has unused `flags` arguments: {flags}")
     return font
 
 
