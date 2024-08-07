@@ -694,81 +694,81 @@ class FontFontMasterProxy(Proxy):
             ...
     """
 
-    def __getitem__(self, Key):
-        if isinstance(Key, str):
+    def __getitem__(self, key):
+        if isinstance(key, str):
             # UUIDs are case-sensitive in Glyphs.app.
-            return next((master for master in self.values() if master.id == Key), None)
-        if isinstance(Key, slice):
-            return self.values().__getitem__(Key)
-        if isinstance(Key, int):
-            if Key < 0:
-                Key = self.__len__() + Key
-            return self.values()[Key]
-        raise KeyError(Key)
+            return next((master for master in self.values() if master.id == key), None)
+        if isinstance(key, slice):
+            return self.values().__getitem__(key)
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
+            return self.values()[key]
+        raise KeyError(key)
 
-    def __setitem__(self, Key, FontMaster):
-        FontMaster.font = self._owner
-        if isinstance(Key, int):
-            OldFontMaster = self.__getitem__(Key)
-            if Key < 0:
-                Key = self.__len__() + Key
-            FontMaster.id = OldFontMaster.id
-            self._owner._masters[Key] = FontMaster
-        elif isinstance(Key, str):
-            OldFontMaster = self.__getitem__(Key)
-            FontMaster.id = OldFontMaster.id
-            Index = self._owner._masters.index(OldFontMaster)
-            self._owner._masters[Index] = FontMaster
+    def __setitem__(self, key, fontMaster):
+        fontMaster.font = self._owner
+        if isinstance(key, int):
+            oldFontMaster = self.__getitem__(key)
+            if key < 0:
+                key = self.__len__() + key
+            fontMaster.id = oldFontMaster.id
+            self._owner._masters[key] = fontMaster
+        elif isinstance(key, str):
+            oldFontMaster = self.__getitem__(key)
+            fontMaster.id = oldFontMaster.id
+            idx = self._owner._masters.index(oldFontMaster)
+            self._owner._masters[idx] = fontMaster
         else:
             raise KeyError
 
-    def __delitem__(self, Key):
-        if isinstance(Key, int):
-            if Key < 0:
-                Key = self.__len__() + Key
-            return self.remove(self._owner._masters[Key])
+    def __delitem__(self, key):
+        if isinstance(key, int):
+            if key < 0:
+                key = self.__len__() + key
+            return self.remove(self._owner._masters[key])
         else:
-            OldFontMaster = self.__getitem__(Key)
-            return self.remove(OldFontMaster)
+            oldFontMaster = self.__getitem__(key)
+            return self.remove(oldFontMaster)
 
     def values(self):
         return self._owner._masters
 
-    def append(self, FontMaster):
-        FontMaster.font = self._owner
+    def append(self, fontMaster):
+        fontMaster.font = self._owner
         # If the master to be appended has no ID yet or it's a duplicate,
         # make up a new one.
-        if not FontMaster.id or self[FontMaster.id]:
-            FontMaster.id = str(uuid.uuid4()).upper()
-        self._owner._masters.append(FontMaster)
+        if not fontMaster.id or self[fontMaster.id]:
+            fontMaster.id = str(uuid.uuid4()).upper()
+        self._owner._masters.append(fontMaster)
 
         # Cycle through all glyphs and append layer
         for glyph in self._owner.glyphs:
-            if not glyph.layers[FontMaster.id]:
+            if not glyph.layers[fontMaster.id]:
                 newLayer = GSLayer()
-                glyph._setupLayer(newLayer, FontMaster.id)
+                glyph._setupLayer(newLayer, fontMaster.id)
                 glyph.layers.append(newLayer)
 
-    def remove(self, FontMaster):
+    def remove(self, fontMaster):
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
             for layer in list(glyph.layers):
                 if (
-                    layer.associatedMasterId == FontMaster.id
-                    or layer.layerId == FontMaster.id
+                    layer.associatedMasterId == fontMaster.id
+                    or layer.layerId == fontMaster.id
                 ):
                     glyph.layers.remove(layer)
 
-        self._owner._masters.remove(FontMaster)
+        self._owner._masters.remove(fontMaster)
 
-    def insert(self, Index, FontMaster):
-        FontMaster.font = self._owner
-        self._owner._masters.insert(Index, FontMaster)
+    def insert(self, Index, fontMaster):
+        fontMaster.font = self._owner
+        self._owner._masters.insert(Index, fontMaster)
 
-    def extend(self, FontMasters):
-        for FontMaster in FontMasters:
-            FontMaster.font = self._owner
-            self.append(FontMaster)
+    def extend(self, fontMasters):
+        for fontMaster in fontMasters:
+            fontMaster.font = self._owner
+            self.append(fontMaster)
 
     def setter(self, values):
         if isinstance(values, Proxy):
