@@ -32,7 +32,7 @@ from glyphsLib.util import best_repr  # , best_repr_list
 # from glyphsLib.classes import GSCustomParameter
 
 
-def to_ufo_master_attributes(self, ufo, master):
+def to_ufo_master_attributes(self, ufo, master):  # noqa: C901
     ufo.info.ascender = master.ascender
     ufo.info.capHeight = master.capHeight
     ufo.info.descender = master.descender
@@ -135,7 +135,7 @@ def to_ufo_master_attributes(self, ufo, master):
         ufo.lib[MASTER_ID_LIB_KEY] = master.id
 
 
-def to_glyphs_master_attributes(self, source, master):
+def to_glyphs_master_attributes(self, source, master):  # noqa: C901
     ufo = source.font
 
     # Glyphs ensures that the master ID is unique by simply making up a new one when

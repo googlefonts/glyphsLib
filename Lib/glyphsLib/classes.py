@@ -2348,7 +2348,8 @@ class GSFontMaster(GSBase):
                 self.font.stems.append(metric)
             self._stems[metric.id] = stems[idx]
 
-    def post_read(self):  # GSFontMaster
+    # GSFontMaster
+    def post_read(self):  # noqa: C901
         axes = self.font.axes
         if self.font.formatVersion < 3:
             axesValues = self.readBuffer.get("axesValues", {})
@@ -5052,7 +5053,7 @@ class GSLayer(GSBase):
             attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
         return attributes
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer):  # noqa: C901
         # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "anchors", "if_true")
         writer.writeObjectKeyValue(self, "annotations", "if_true")
