@@ -1383,6 +1383,7 @@ class MasterStemsProxy(Proxy):
     def setterMethod(self):
         return self._setterMethod
 
+
 class MasterNumbersProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -1998,6 +1999,7 @@ class GSMetricValue(GSBase):
             self.position,
             self.overshoot,
         )
+
     def __str__(self):
         return "<{} {}: {}/{}>".format(
             self.__class__.__name__,
@@ -6051,6 +6053,7 @@ class GSGlyph(GSBase):
     def note(self, value):
         self._note = value
     '''
+
 
 GSGlyph._add_parsers(
     [

@@ -738,7 +738,6 @@ class NameRecordParamHandler(AbstractParamHandler):
         if glyphs.is_font():
             records = ufo.get_info_value(self.ufo_name)
             if records:
-                entries = []
                 for record in records:
                     if record["platformID"] == 3 and record["encodingID"] == 1:
                         property = self.to_glyphs_property(record)
@@ -1011,9 +1010,9 @@ class FilterParamHandler(AbstractParamHandler):
             for parameter in glyphs:
                 if not parameter.active:
                     continue
-                if parameter.name =="PreFilter":
+                if parameter.name == "PreFilter":
                     ufo_filters.append(parse_glyphs_filter(parameter.value, is_pre=True))
-                if parameter.name =="Filter":
+                if parameter.name == "Filter":
                     ufo_filters.append(parse_glyphs_filter(parameter.value, is_pre=False))
 
             if not ufo_filters:

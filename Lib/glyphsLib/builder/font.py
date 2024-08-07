@@ -112,6 +112,7 @@ INFO_FIELDS = (
     ("note", "note", False),
 )
 
+
 def to_ufo_metadata(master, ufo):
     font = master.font
 

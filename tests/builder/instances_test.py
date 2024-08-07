@@ -180,6 +180,7 @@ def test_glyphs3_names():
         actual = [getattr(instance, name) for instance in font.instances]
         assert expected == actual, name
 
+
 def test_glyphs2_mapping():
     font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs2Instances.glyphs"))
     master = font.masters[0]
@@ -221,6 +222,7 @@ def test_glyphs2_mapping():
     assert instance.internalAxesValues[0] == 650
     assert instance.externalAxesValues[0] is None
 
+
 def test_glyphs3_mapping():
     font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs3Instances.glyphs"))
     master = font.masters[0]
@@ -261,6 +263,7 @@ def test_glyphs3_mapping():
     instance = font_rt.instances[2]
     assert instance.internalAxesValues[0] == 650
     assert instance.externalAxesValues[0] is None
+
 
 def test_glyphs2_mapping_AxisLocation():
     font = glyphsLib.GSFont(os.path.join(DATA, "Glyphs2InstancesAxisLocation.glyphs"))

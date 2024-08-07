@@ -639,7 +639,7 @@ class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
 #     super().setUp()
 #     self.instance = self.font.instances[0]
 
-def test_attributes(file_path):
+def test_Instance_attributes(file_path):
     font = GSFont(file_path)
     instance = font.instances[0]
 
@@ -699,9 +699,7 @@ def test_attributes(file_path):
                 print(value, type(value))
 
     # customParameters
-    instance.customParameters[
-        "trademark"
-    ] = "ThisFont is a trademark by MyFoundry.com"
+    instance.customParameters["trademark"] = "ThisFont is a trademark by MyFoundry.com"
     assert len(instance.customParameters) >= 1
     del instance.customParameters["trademark"]
 
@@ -765,11 +763,7 @@ def test_layers(file_path):
     glyph.layers.remove(glyph.layers[-1])
     assert amount == len(glyph.layers)
     assert '[<GSLayer "Light" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Bold" (a)>, <GSLayer "{155}" (a)>]' == repr(list(glyph.layers))
-    assert (
-        '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, '
-        '<GSLayer "Light" (a)>, <GSLayer "{155}" (a)>]',
-        repr(list(glyph.layers.values())),
-    )
+    assert '[<GSLayer "Bold" (a)>, <GSLayer "Regular" (a)>, <GSLayer "Light" (a)>, <GSLayer "{155}" (a)>]' == repr(list(glyph.layers.values()))
 
 
 def test_layers_missing_master(file_path):
@@ -820,6 +814,7 @@ def test_string(file_path):
     font = GSFont(file_path)
     glyph = font.glyphs["adieresis"]
     assert glyph.string == "ä"
+
 
 def test_id(file_path):
     # TODO

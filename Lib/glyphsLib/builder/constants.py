@@ -387,8 +387,8 @@ REVERSE_GLYPHS_NAME_MAPPING = {v: k for k, v in GLYPHS_NAME_MAPPING.items()}
 
 UFO_NAME_MAPPING = {}
 for glyphs_name, name_id in GLYPHS_NAME_MAPPING.items():
-	ufo_name = GLYPHS_PROPERTIES_2_UFO_FIELDS[glyphs_name]
-	UFO_NAME_MAPPING[ufo_name] = name_id
+    ufo_name = GLYPHS_PROPERTIES_2_UFO_FIELDS[glyphs_name]
+    UFO_NAME_MAPPING[ufo_name] = name_id
 
 
 REVERSE_LANGUAGE_MAPPING = {v: k for k, v in LANGUAGE_MAPPING.items()}

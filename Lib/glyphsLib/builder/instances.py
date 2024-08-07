@@ -23,15 +23,15 @@ from glyphsLib.classes import (
     GSCustomParameter,
     GSInstance,
     InstanceType,
-    WEIGHT_CODES,
+    # WEIGHT_CODES,
 )
 
 from .constants import (
     GLYPHS_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     EXPORT_KEY,
-    WIDTH_KEY,
-    WEIGHT_KEY,
+    # WIDTH_KEY,
+    # WEIGHT_KEY,
     FULL_FILENAME_KEY,
     MANUAL_INTERPOLATION_KEY,
     INSTANCE_INTERPOLATIONS_KEY,

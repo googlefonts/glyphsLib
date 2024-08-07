@@ -62,7 +62,6 @@ def test_glyphspackage_load(datadir):
     diff_dump = difflib.unified_diff(font1_dump, font2_dump)
     assert len("".join(diff_dump)) == 0
 
-
     font1 = glyphsLib.load(str(datadir.join("GlyphsUnitTestSans3.glyphs")))
     font2 = GSFont(str(datadir.join("GlyphsUnitTestSans3.glyphspackage")))
     assert [glyph.name for glyph in font2.glyphs] == expected

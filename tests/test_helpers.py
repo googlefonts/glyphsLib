@@ -155,11 +155,11 @@ class AssertUFORoundtrip(AssertLinesEqual, ParametrizedUfoModuleTestMixin):
         self._normalize(roundtrip)
         actual = write_to_lines(roundtrip, font.formatVersion)
 
-        with open(directory+"/expected.glyphs", "w") as f:
+        with open(directory + "/expected.glyphs", "w") as f:
             f.write("\n".join(expected))
-        with open(directory+"/actual_in_mem.glyphs", "w") as f:
+        with open(directory + "/actual_in_mem.glyphs", "w") as f:
             f.write("\n".join(actual_in_mem))
-        with open(directory+"/actual.glyphs", "w") as f:
+        with open(directory + "/actual.glyphs", "w") as f:
             f.write("\n".join(actual))
         self.assertLinesEqual(
             actual_in_mem,
