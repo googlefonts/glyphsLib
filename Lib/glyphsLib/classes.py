@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
 import copy
 import logging
@@ -40,6 +41,7 @@ from glyphsLib.types import (
     Rect,
     Transform,
     UnicodesList,
+    floatToString2,
     floatToString5,
     parse_datetime,
     parse_float_or_int,
@@ -3747,6 +3749,64 @@ class GSLayer(GSBase):
     def name(self, value):
         self._name = value
 
+    def layerKey(self) -> str | None:
+        """Return a string that identifies a special layer with given attributes.
+
+        In Glyphs.app's Python interface, this is a private method used to match and
+        look up special layers by their attributes when their layerId isn't enough
+        (only 'master' layers have the same layerId across all the glyphs, for other
+        layers it's unique). The layerKey string is used as the first parameter of
+        the GSGlyph.layerForKey_masterId_ method, e.g. to resolve component references
+        in the componentLayer property (not implemented yet in glyphsLib): see
+        https://github.com/googlefonts/glyphsLib/pull/853#issuecomment-1403454327
+        """
+        parts = []
+        # An optional prefix defines whether the layer contains any color information.
+        # While a layer could in theory contain all four different types of color
+        # attributes (even though it makes no sense to mix vector & bitmap formats!),
+        # there seem to be some sort of hierarchy or implicit order between them when
+        # composing the layerKey: COLRv0 > COLRv1 > SBIX > SVG
+        if self._is_color_palette_layer() or self._is_color_layer():
+            parts.append("Color")
+            if self._is_color_palette_layer():
+                index = self._color_palette_index()
+                if index == 0xFFFF:
+                    index = "*"
+                parts.append(str(index))
+        elif self._is_sbix_color_layer():
+            parts.extend(["iColor", str(self._sbix_strike())])
+        elif self._is_svg_layer():
+            parts.append("svg")
+        # The rest of the layerKey optionally defines the associated master name and
+        # axis range for alternate layers, and/or the intermediate layer coordinates.
+        # Numbers are normalized and rounded to 2 decimals.
+        ntos = floatToString2  # for brevity
+        if self._is_bracket_layer():
+            axes = self.parent.parent.axes
+            master = self.master
+            if master is None:
+                # no/invalid associated master id? no layerKey
+                return None
+            parts.append(master.name)
+            bracket_ranges = ",".join(
+                (
+                    (f"{ntos(axis_min)}‹{axis.axisTag}‹{ntos(axis_max)}")
+                    if axis_min is not None and axis_max is not None
+                    else (
+                        f"{ntos(axis_min)}‹{axis.axisTag}"
+                        if axis_min is not None
+                        else f"{axis.axisTag}‹{ntos(axis_max)}"
+                    )
+                )
+                for axis, (axis_min, axis_max) in zip(axes, self._bracket_axis_rules())
+                if axis_min is not None or axis_max is not None
+            )
+            parts.append(f"[{bracket_ranges}]")
+        if self._is_brace_layer():
+            parts.append(f"{{{', '.join(ntos(v) for v in self._brace_coordinates())}}}")
+        # if neither of the above, the layer's got no layerKey
+        return " ".join(parts) or None
+
     anchors = property(
         lambda self: LayerAnchorsProxy(self),
         lambda self, value: LayerAnchorsProxy(self).setter(value),
@@ -3922,40 +3982,42 @@ class GSLayer(GSBase):
             return "axisRules" in self.attributes  # Glyphs 3
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
-    def _bracket_info(self, axes):
-        # Returns a region expressed as a {axis_tag: (min, max)} box
-        # (dictionary), once the axes have been computed
+    def _bracket_axis_rules(self):
         if not self._is_bracket_layer():
-            return {}
-
+            return
         if self.parent.parent.format_version > 2:
             # Glyphs 3
-            info = {}
-            for axis, rule in zip(axes, self.attributes["axisRules"]):
-                if "min" not in rule and "max" not in rule:
-                    continue
-                # Rules are expressed in designspace coordinates,
-                # so map appropriately.
-                designspace_min, designspace_max = designspace_min_max(axis)
-                axis_min = rule.get("min", designspace_min)
-                axis_max = rule.get("max", designspace_max)
+            for rule in self.attributes["axisRules"]:
+                axis_min = rule.get("min")
+                axis_max = rule.get("max")
                 if isinstance(axis_min, str):
                     axis_min = float(axis_min)
                 if isinstance(axis_max, str):
                     axis_max = float(axis_max)
-                info[axis.tag] = (axis_min, axis_max)
-            return info
+                yield (axis_min, axis_max)
+            return
 
         # Glyphs 2
         m = re.match(self.BRACKET_LAYER_RE, self.name)
-        axis = axes[0]  # For glyphs 2
-        designspace_min, designspace_max = designspace_min_max(axis)
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return {axis.tag: (designspace_min, bracket_crossover)}
+            yield (None, bracket_crossover)
         else:
-            return {axis.tag: (bracket_crossover, designspace_max)}
+            yield (bracket_crossover, None)
+
+    def _bracket_info(self, axes):
+        # Returns a region expressed as a {axis_tag: (min, max)} box
+        # (dictionary), once the axes have been computed
+        info = {}
+        for axis, (axis_min, axis_max) in zip(axes, self._bracket_axis_rules()):
+            # Rules are expressed in designspace coordinates,
+            # so map appropriately.
+            designspace_min, designspace_max = designspace_min_max(axis)
+            axis_min = axis_min if axis_min is not None else designspace_min
+            axis_max = axis_max if axis_max is not None else designspace_max
+            info[axis.tag] = (axis_min, axis_max)
+        return info
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:
@@ -3989,6 +4051,35 @@ class GSLayer(GSBase):
             return f"{{{', '.join(str(v) for v in self.attributes['coordinates'])}}}"
         # Glyphs 2
         return self.name
+
+    ICOLOR_LAYER_RE = re.compile(r"^iColor (?P<strike>\d+)$")
+
+    def _is_sbix_color_layer(self):
+        if self.parent.parent.format_version > 2:
+            return "sbixStrike" in self.attributes  # Glyphs 3
+        return re.match(self.ICOLOR_LAYER_RE, self.name.strip())  # Glyphs 2
+
+    def _sbix_strike(self):
+        if not self._is_sbix_color_layer():
+            return None
+
+        if self.parent.parent.format_version > 2:
+            # Glyphs 3
+            return int(self.attributes["sbixStrike"])
+
+        # Glyphs 2
+        m = re.match(self.ICOLOR_LAYER_RE, self.name)
+        strike = m.group("strike")
+        return int(strike)
+
+    def _is_svg_layer(self):
+        # Glyphs 3 only; not even sure if Glyphs 2 ever supported SVG layers
+        return bool(self.attributes.get("svg"))
+
+    def _is_color_layer(self):
+        # COLRv1-style gradients etc. Glyph 3 only, no Glyphs 2 equivalent.
+        # Not to be confused with so-called "color palette layers" (COLRv0).
+        return bool(self.attributes.get("color"))
 
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
