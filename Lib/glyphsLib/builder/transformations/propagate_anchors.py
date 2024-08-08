@@ -168,7 +168,7 @@ def anchors_traversing_components(
         # referenced have already been propagated
         anchors = get_component_layer_anchors(component, layer, glyphs, done_anchors)
         if anchors is None:
-            logger.warning(
+            logger.debug(
                 "could not get layer '%s' for component '%s' of glyph '%s'",
                 layer.layerId,
                 component.name,
