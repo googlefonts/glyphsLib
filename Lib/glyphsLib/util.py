@@ -176,3 +176,7 @@ class PeekableIterator:
 
     def peek(self, n=0):
         return self.list[self.index + n]
+
+
+# sentinel object to indicate a deprecated argument
+_DeprecatedArgument = object()
