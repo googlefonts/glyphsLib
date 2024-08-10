@@ -5392,15 +5392,10 @@ class GSLayer(GSBase):
         # https://github.com/googlefonts/glyphsLib/issues/851
         nameStrings = []
 
-        if self.isColorPaletteLayer:
-            name = f"color.{self._color_palette_index()}"
-            if name:
-                nameStrings.append(name)
-        elif self.isAppleColorLayer:
-            sbixSize = self.attributes[LAYER_ATTRIBUTE_SBIX_SIZE]
-            name = f"iColor {sbixSize}"
-            if name:
-                nameStrings.append(name)
+        name = self._colorNameString()
+        if name:
+            nameStrings.append(name)
+
         if self.isBracketLayer:
             name = self._bracket_layer_name()
             if name:
@@ -5413,16 +5408,70 @@ class GSLayer(GSBase):
             return " ".join(nameStrings)
         return None
 
+    def layerKey(self):
+        if not self.font:
+            return self._name
+
+        if self.isMasterLayer:
+            master = self.font.masters[self.associatedMasterId]
+            name = "-"
+            if master:
+                name = master.name
+            if self.isBracketLayer:
+                rule_name = self._bracket_layer_name()
+                if len(rule_name) > 0:
+                    name = f"{name} {rule_name}"
+            return name
+
+        name_strings = []
+        name = self._colorNameString()
+        if name:
+            """
+            There can be more than one layer with the same palette index.
+            So we need to add a counter suffix to distinguish them.
+            """
+            if self.isColorPaletteLayer:
+                color_palette_layer_counter = 0
+                color_idx = int(self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE])
+                for layer in self.parent.layers:
+                    if layer == self:
+                        break
+                    if layer.associatedMasterId != self.associatedMasterId:
+                        continue
+                    other_color_idx = layer.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
+                    if other_color_idx is not None and int(other_color_idx) == color_idx:
+                        color_palette_layer_counter += 1
+                if color_palette_layer_counter > 0:
+                    name = f"{name}_{color_palette_layer_counter}"
+            name_strings.append(name)
+
+        if self.isBracketLayer:
+            font_master = self.font.masters[self.associatedMasterId]
+            if font_master:
+                name_strings.append(font_master.name)
+            name = self._bracket_layer_name()
+            if len(name) > 0:
+                name_strings.append(name)
+
+        if self.isBraceLayer:
+            name = self._brace_layer_name()
+            if len(name) > 0:
+                name_strings.append(name)
+
+        if len(name_strings) > 0:
+            return " ".join(name_strings)
+        return self._name
+
     def _colorNameString(self):
         if self.isFullColorLayer:
             return "Color"
 
         colorPalette = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
-        if colorPalette:
+        if colorPalette is not None:
             return f"Color {colorPalette}"
 
         sbixSize = self.attributes.get(LAYER_ATTRIBUTE_SBIX_SIZE, None)
-        if sbixSize:
+        if sbixSize is not None:
             return f"iColor {sbixSize}"
 
         if self.isSVGColorLayer:
@@ -5503,6 +5552,18 @@ class GSLayer(GSBase):
         if ruleStrings:
             return "[%s]" % ", ".join(ruleStrings)
         return "[]"
+
+    def _COLR_layer_name(self):
+        palette = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
+        return f"Color {palette}"
+
+    def _sbix_layer_name(self):
+        sbixSize = self.attributes[LAYER_ATTRIBUTE_SBIX_SIZE]
+        return f"iColor {sbixSize}"
+
+    def _svg_layer_name(self):
+        svg = self.attributes[LAYER_ATTRIBUTE_SVG]
+        return "svg" if svg else None
 
     @property
     def name(self):

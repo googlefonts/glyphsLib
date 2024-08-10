@@ -244,3 +244,57 @@ def test_glyphs3_shape_order(datadir, ufo_module):
     glyph_b = round_trip.glyphs["B"].layers[0]
     assert isinstance(glyph_a.shapes[0], GSPath)
     assert isinstance(glyph_b.shapes[0], GSComponent)
+
+
+def test_glyphs3_layer_keys(datadir):
+    file = "LayerKeysTestv3.glyphs"
+    with open(str(datadir.join(file)), encoding="utf-8") as f:
+        font = glyphsLib.load(f)
+    glyph = font.glyphs["grinningFace"]
+    layer = glyph.layers[0]
+
+    assert isinstance(layer.name, str)
+    assert isinstance(layer.layerKey(), str)
+    layer = glyph.layers[1]
+    assert layer.name == "Regular"
+    assert layer.layerKey() == "Regular"
+    layer = glyph.layers[2]
+    assert layer.name == "Color 1"
+    assert layer.layerKey() == "Color 1"
+    layer = glyph.layers[3]
+    assert layer.name == "Color 0"
+    assert layer.layerKey() == "Color 0"
+    layer = glyph.layers[4]
+    assert layer.name == "Color 2"
+    assert layer.layerKey() == "Color 2"
+    layer = glyph.layers[5]
+    assert layer.name == "Color 0"
+    assert layer.layerKey() == "Color 0_1"
+
+    glyph = font.glyphs["grinningFaceWithSmilingEyes"]
+    layer = glyph.layers[0]
+
+    assert isinstance(layer.name, str)
+    assert isinstance(layer.layerKey(), str)
+    layer = glyph.layers[1]
+    assert layer.layerKey() == "Regular"
+    layer = glyph.layers[2]
+    assert layer.layerKey() == "Color 1"
+    layer = glyph.layers[3]
+    assert layer.layerKey() == "Color 1"
+    layer = glyph.layers[4]
+    assert layer.layerKey() == "Color 1_1 {45}"
+    layer = glyph.layers[5]
+    assert layer.layerKey() == "{45}"
+
+    glyph = font.glyphs["dollar"]
+    layer = glyph.layers[0]
+    assert layer.layerKey() == "Light"
+    layer = glyph.layers[1]
+    assert layer.layerKey() == "Regular [45‹wg]"
+    assert layer.layerKey() == "Regular [45‹wg]"
+    layer = glyph.layers[2]
+    assert layer.name == "[45‹wg]"
+    assert layer.layerKey() == "Light [45‹wg]"
+    layer = glyph.layers[3]
+    assert layer.layerKey() == "Regular []"
