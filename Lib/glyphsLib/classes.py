@@ -5397,7 +5397,7 @@ class GSLayer(GSBase):
             if name:
                 nameStrings.append(name)
         elif self.isAppleColorLayer:
-            sbixSize = self.attributes["LAYER_ATTRIBUTE_SBIX_SIZE"]
+            sbixSize = self.attributes[LAYER_ATTRIBUTE_SBIX_SIZE]
             name = f"iColor {sbixSize}"
             if name:
                 nameStrings.append(name)
