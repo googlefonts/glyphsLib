@@ -788,11 +788,11 @@ class FontInstanceProxy(Proxy):
 
     def __getitem__(self, key):
         if isinstance(key, slice):
-            return self.values().__getitem__(key)
+            return self._owner._instances.__getitem__(key)
         if isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
-            return self.values()[key]
+            return self._owner._instances[key]
         raise KeyError(key)
 
     def __setitem__(self, key, instance):
@@ -1579,6 +1579,9 @@ class PropertiesProxy(ListDictionaryProxy):
         assert owner
         super().__init__(owner, "_properties", GSFontInfoValue)
 
+    def __getitem__(self, key):
+        return self.getProperty(key, language="dflt") or self.getProperty(key, language="ENG")
+
     def __setitem__(self, key, value):
         infoValue = self[key]
         if infoValue is None or not isinstance(infoValue, GSFontInfoValue):
@@ -1594,7 +1597,10 @@ class PropertiesProxy(ListDictionaryProxy):
         for infoValue in self:
             if infoValue.name != key:
                 continue
-            return infoValue.localizedValue(language)
+            if key.endswith("s"):
+                return infoValue.localizedValue(language)
+            else:
+                return infoValue.value
 
     def setProperty(self, key, value, language="dflt"):
         for infoValue in self:
@@ -4462,7 +4468,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
         isLocalizedParameter = True
         if locParameterKey not in LOCALIZED_PARAMETERS:  # e.g. for trademark
             isLocalizedParameter = False
-            defaultValue = infoValue.value
+            defaultValue = infoValue.value or infoValue.defaultValue
             # TODO: check if it is a valid parameter altogether
             # if (![GSGlyphsInfo customParameterTypes][parameterKey]) {
             #     return None
