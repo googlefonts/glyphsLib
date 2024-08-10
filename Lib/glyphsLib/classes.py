@@ -5218,6 +5218,22 @@ class GSLayer(GSBase):
                     value = master.internalAxesValues[axis.axisId]
                     coordinatesMap[axis.axisId] = value
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
+        if "Color" in name:
+            m = re.match(self.COLOR_PALETTE_LAYER_RE, self.name.strip())
+            if m and m.group("index"):
+                palette = m.group("index")
+                if palette != "*":
+                    palette = int(palette)
+                name = name.replace(m.group(0), "")
+                name = name.replace("  ", " ")
+                name = name.strip()
+                self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE] = palette
+            elif name.startswith("Color"):
+                name = name.replace("Color", "")
+                name = name.replace("  ", " ")
+                name = name.strip()
+                self.attributes[LAYER_ATTRIBUTE_COLOR] = True
+
         if self.name != name:
             self.name = name
 
