@@ -1247,6 +1247,17 @@ class GSAxis(GSBase):
     def __eq__(self, other):
         return self.name == other.name and self.axisTag == other.axisTag
 
+    @property
+    def shortAxisTag(self):
+        shortAxisTagMapping = {
+            "ital": "it",
+            "opsz": "oz",
+            "slnt": "sl",
+            "wdth": "wd",
+            "wght": "wg",
+        }
+        return shortAxisTagMapping.get(self.axisTag, self.axisTag)
+
 
 GSAxis._add_parsers(
     [
@@ -3772,7 +3783,22 @@ class GSLayer(GSBase):
                 index = self._color_palette_index()
                 if index == 0xFFFF:
                     index = "*"
-                parts.append(str(index))
+                color_key = str(index)
+                # There can be more than one layer with the same palette index that
+                # are associated with the same master, so we need to add a counter
+                # suffix to distinguish them.
+                count = 0
+                for layer in self.parent.layers:
+                    if layer is self:
+                        break
+                    if (
+                        layer.associatedMasterId == self.associatedMasterId
+                        and layer._color_palette_index() == index
+                    ):
+                        count += 1
+                if count > 0:
+                    color_key = f"{color_key}_{count}"
+                parts.append(color_key)
         elif self._is_sbix_color_layer():
             parts.extend(["iColor", str(self._sbix_strike())])
         elif self._is_svg_layer():
@@ -3790,12 +3816,12 @@ class GSLayer(GSBase):
             parts.append(master.name)
             bracket_ranges = ",".join(
                 (
-                    (f"{ntos(axis_min)}‹{axis.axisTag}‹{ntos(axis_max)}")
+                    (f"{ntos(axis_min)}‹{axis.shortAxisTag}‹{ntos(axis_max)}")
                     if axis_min is not None and axis_max is not None
                     else (
-                        f"{ntos(axis_min)}‹{axis.axisTag}"
+                        f"{ntos(axis_min)}‹{axis.shortAxisTag}"
                         if axis_min is not None
-                        else f"{axis.axisTag}‹{ntos(axis_max)}"
+                        else f"{axis.shortAxisTag}‹{ntos(axis_max)}"
                     )
                 )
                 for axis, (axis_min, axis_max) in zip(axes, self._bracket_axis_rules())
