@@ -2298,6 +2298,8 @@ def test_custom_glyph_data(ufo_module):
     font = generate_minimal_font()
     for glyph_name in ("A", "Aitalic-math", "Aitalic-math.ssty1", "foo", "bar", "baz"):
         add_glyph(font, glyph_name)
+    # add a composite glyph to trigger propagate_anchors
+    add_component(font, "bar", "baz", (1, 0, 0, 1, 0, 0))
     font.glyphs["baz"].production = "bazglyph"
     font.glyphs["baz"].category = "Number"
     font.glyphs["baz"].subCategory = "Decimal Digit"
