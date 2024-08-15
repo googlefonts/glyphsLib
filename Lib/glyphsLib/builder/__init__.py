@@ -15,7 +15,7 @@
 import copy
 import logging
 
-from glyphsLib import classes
+from glyphsLib import classes, glyphdata
 
 from .builders import UFOBuilder, GlyphsBuilder
 from .transformations import TRANSFORMATIONS, TRANSFORMATION_CUSTOM_PARAMS
@@ -61,9 +61,14 @@ def to_ufos(
 
     If preserve_original is True, this works on a copy of the font object
     to avoid modifying the original object.
+
+    The optional glyph_data parameter takes a list of GlyphData.xml paths or
+    a pre-parsed GlyphData object that overrides the default one.
     """
     if preserve_original:
         font = copy.deepcopy(font)
+    if glyph_data is not None and not isinstance(glyph_data, glyphdata.GlyphData):
+        glyph_data = glyphdata.GlyphData.from_files(*glyph_data)
     font = preflight_glyphs(
         font, glyph_data=glyph_data, do_propagate_all_anchors=propagate_anchors
     )
@@ -128,9 +133,14 @@ def to_designspace(
 
     If preserve_original is True, this works on a copy of the font object
     to avoid modifying the original object.
+
+    The optional glyph_data parameter takes a list of GlyphData.xml paths or
+    a pre-parsed GlyphData object that overrides the default one.
     """
     if preserve_original:
         font = copy.deepcopy(font)
+    if glyph_data is not None and not isinstance(glyph_data, glyphdata.GlyphData):
+        glyph_data = glyphdata.GlyphData.from_files(*glyph_data)
     font = preflight_glyphs(
         font, glyph_data=glyph_data, do_propagate_all_anchors=propagate_anchors
     )
