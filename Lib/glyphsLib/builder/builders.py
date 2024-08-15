@@ -184,16 +184,9 @@ class UFOBuilder(LoggerMixin):
             # instances with matching 'familyName' custom parameter
             self._do_filter_instances_by_family = True
 
-        if glyph_data:
-            from io import BytesIO
-
-            glyphdata_files = []
-            for path in glyph_data:
-                with open(path, "rb") as fp:
-                    glyphdata_files.append(BytesIO(fp.read()))
-            self.glyphdata = glyphdata.GlyphData.from_files(*glyphdata_files)
-        else:
-            self.glyphdata = None
+        if glyph_data is not None and not isinstance(glyph_data, glyphdata.GlyphData):
+            glyph_data = glyphdata.GlyphData.from_files(*glyph_data)
+        self.glyphdata = glyph_data
 
     def _is_vertical(self):
         master_ids = {m.id for m in self.font.masters}
