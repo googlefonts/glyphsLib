@@ -375,6 +375,27 @@ def test_propagate_across_layers():
                 .add_component("acutecomb", (-45, 188))
             ),
         )
+        .add_glyph(
+            "acutecomb.case",
+            lambda glyph: (
+                glyph.add_component("acutecomb", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb", (0, 0))
+                # this backup layer contains a cyclical component reference
+                # as the component's base glyph in turn points back at self;
+                # this should not trigger an infinite loop!
+                .add_backup_layer()
+                .add_component("acute", (0, 0))
+            ),
+        )
+        .add_glyph(
+            "acute",
+            lambda glyph: (
+                glyph.add_component("acutecomb.case", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb.case", (0, 0))
+            ),
+        )
         .build()
     )
     propagate_all_anchors_impl(glyphs)
