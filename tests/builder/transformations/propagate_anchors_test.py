@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import math
 import os.path
+import uuid
 
 from copy import deepcopy
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform as Affine
@@ -55,17 +57,30 @@ class GlyphBuilder:
         glyph.unicode = info.unicode
         glyph.category = info.category
         glyph.subCategory = info.subCategory
-        self.add_layer()
+        self.num_masters = 0
+        self.add_master_layer()
 
     def build(self) -> GSGlyph:
         return self.glyph
 
-    def add_layer(self) -> Self:
+    def add_master_layer(self) -> Self:
         layer = GSLayer()
         layer.name = layer.layerId = layer.associatedMasterId = (
-            f"layer-{len(self.glyph.layers)}"
+            f"master-{self.num_masters}"
         )
+        self.num_masters += 1
         self.glyph.layers.append(layer)
+        self.current_layer = layer
+        return self
+
+    def add_backup_layer(self, associated_master_idx=0):
+        layer = GSLayer()
+        layer.name = datetime.now().isoformat()
+        layer.layerId = str(uuid.uuid4()).upper()
+        master_layer = self.glyph.layers[associated_master_idx]
+        layer.associatedMasterId = master_layer.layerId
+        self.glyph.layers.append(layer)
+        self.current_layer = layer
         return self
 
     def set_category(self, category: str) -> Self:
@@ -78,12 +93,12 @@ class GlyphBuilder:
 
     def add_component(self, name: str, pos: tuple[float, float]) -> Self:
         component = GSComponent(name, offset=pos)
-        self.glyph.layers[-1].components.append(component)
+        self.current_layer.components.append(component)
         return self
 
     def rotate_component(self, degrees: float) -> Self:
         # Set an explicit translate + rotation for the component
-        component = self.glyph.layers[-1].components[-1]
+        component = self.current_layer.components[-1]
         component.transform = Transform(
             *Affine(*component.transform).rotate(math.radians(degrees))
         )
@@ -91,13 +106,13 @@ class GlyphBuilder:
 
     def add_component_anchor(self, name: str) -> Self:
         # add an explicit anchor to the last added component
-        component = self.glyph.layers[-1].components[-1]
+        component = self.current_layer.components[-1]
         component.anchor = name
         return self
 
     def add_anchor(self, name: str, pos: tuple[float, float]) -> Self:
         anchor = GSAnchor(name, Point(*pos))
-        self.glyph.layers[-1].anchors.append(anchor)
+        self.current_layer.anchors.append(anchor)
         return self
 
 
@@ -327,10 +342,12 @@ def test_propagate_across_layers():
                 glyph.add_anchor("bottom", (290, 10))
                 .add_anchor("ogonek", (490, 3))
                 .add_anchor("top", (290, 690))
-                .add_layer()
+                .add_master_layer()
                 .add_anchor("bottom", (300, 0))
                 .add_anchor("ogonek", (540, 10))
                 .add_anchor("top", (300, 700))
+                .add_backup_layer()
+                .add_anchor("top", (290, 690))
             ),
         )
         .add_glyph(
@@ -338,9 +355,11 @@ def test_propagate_across_layers():
             lambda glyph: (
                 glyph.add_anchor("_top", (335, 502))
                 .add_anchor("top", (353, 721))
-                .add_layer()
+                .add_master_layer()
                 .add_anchor("_top", (366, 500))
                 .add_anchor("top", (366, 765))
+                .add_backup_layer()
+                .add_anchor("_top", (335, 502))
             ),
         )
         .add_glyph(
@@ -348,9 +367,12 @@ def test_propagate_across_layers():
             lambda glyph: (
                 glyph.add_component("A", (0, 0))
                 .add_component("acutecomb", (-45, 188))
-                .add_layer()
+                .add_master_layer()
                 .add_component("A", (0, 0))
                 .add_component("acutecomb", (-66, 200))
+                .add_backup_layer()
+                .add_component("A", (0, 0))
+                .add_component("acutecomb", (-45, 188))
             ),
         )
         .build()
@@ -375,6 +397,10 @@ def test_propagate_across_layers():
             ("top", (300, 965)),
         ],
     )
+
+    # non-master (e.g. backup) layers are skipped
+    assert not new_glyph.layers[2]._is_master_layer
+    assert_anchors(new_glyph.layers[2].anchors, [])
 
 
 def test_remove_exit_anchor_on_component():
