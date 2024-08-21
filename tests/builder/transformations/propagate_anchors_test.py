@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import math
 import os.path
 import uuid
@@ -16,6 +17,7 @@ from glyphsLib.types import Point, Transform
 from glyphsLib.writer import dumps
 
 from glyphsLib.builder.transformations.propagate_anchors import (
+    compute_max_component_depths,
     get_xy_rotation,
     propagate_all_anchors,
     propagate_all_anchors_impl,
@@ -136,7 +138,27 @@ def test_components_by_depth():
             ("Aacute", ["A", "acutecomb"]),
             ("Aacutebreve", ["A", "brevecomb_acutecomb"]),
             ("AEacutebreve", ["AE", "brevecomb_acutecomb"]),
+            ("acute", ["acutecomb.case"]),
+            ("acutecomb.case", ["acutecomb.alt"]),
+            ("acutecomb.alt", ["acute"]),
+            ("grave", ["grave"]),
         ]
+    }
+
+    assert compute_max_component_depths(glyphs) == {
+        "A": 0,
+        "E": 0,
+        "acutecomb": 0,
+        "brevecomb": 0,
+        "brevecomb_acutecomb": 1,
+        "AE": 1,
+        "Aacute": 1,
+        "Aacutebreve": 2,
+        "AEacutebreve": 2,
+        "acute": float("inf"),
+        "acutecomb.case": float("inf"),
+        "acutecomb.alt": float("inf"),
+        "grave": float("inf"),
     }
 
     assert depth_sorted_composite_glyphs(glyphs) == [
@@ -149,6 +171,7 @@ def test_components_by_depth():
         "brevecomb_acutecomb",
         "AEacutebreve",
         "Aacutebreve",
+        # cyclical composites are skipped
     ]
 
 
@@ -332,7 +355,7 @@ def test_digraphs_arent_ligatures():
     )
 
 
-def test_propagate_across_layers():
+def test_propagate_across_layers(caplog):
     # derived from the observed behaviour of glyphs 3.2.2 (3259)
     glyphs = (
         GlyphSetBuilder()
@@ -399,7 +422,8 @@ def test_propagate_across_layers():
         )
         .build()
     )
-    propagate_all_anchors_impl(glyphs)
+    with caplog.at_level(logging.WARNING):
+        propagate_all_anchors_impl(glyphs)
 
     new_glyph = glyphs["Aacute"]
     assert_anchors(
@@ -420,9 +444,55 @@ def test_propagate_across_layers():
         ],
     )
 
-    # non-master (e.g. backup) layers are skipped
+    # non-master (e.g. backup) layers are silently skipped
     assert not new_glyph.layers[2]._is_master_layer
     assert_anchors(new_glyph.layers[2].anchors, [])
+
+    assert len(caplog.records) == 0
+
+
+def test_propagate_across_layers_with_circular_reference(caplog):
+    glyphs = (
+        GlyphSetBuilder()
+        # acutecomb.alt contains a cyclical reference to itself in its master layer
+        # test that this doesn't cause an infinite loop
+        .add_glyph(
+            "acutecomb.alt",
+            lambda glyph: (
+                glyph.add_component("acutecomb.alt", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb.alt", (0, 0))
+            ),
+        )
+        # gravecomb and grave contain cyclical component references to one another
+        # in their master layers; test that this doesn't cause an infinite loop either
+        .add_glyph(
+            "gravecomb",
+            lambda glyph: (
+                glyph.add_component("grave", (0, 0))
+                .add_master_layer()
+                .add_component("grave", (0, 0))
+            ),
+        )
+        .add_glyph(
+            "grave",
+            lambda glyph: (
+                glyph.add_component("gravecomb", (0, 0))
+                .add_master_layer()
+                .add_component("gravecomb", (0, 0))
+            ),
+        )
+        .build()
+    )
+
+    with caplog.at_level(logging.WARNING):
+        propagate_all_anchors_impl(glyphs)
+
+    assert len(caplog.records) == 2
+    assert (
+        caplog.records[0].message == "Cycle detected in composite glyph 'acutecomb.alt'"
+    )
+    assert caplog.records[1].message == "Cycle detected in composite glyph 'gravecomb'"
 
 
 def test_remove_exit_anchor_on_component():

@@ -14,9 +14,8 @@ shared with us privately.
 from __future__ import annotations
 
 import logging
-from collections import deque
 from itertools import chain
-from math import atan2, degrees
+from math import atan2, degrees, isinf
 from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform
@@ -393,15 +392,8 @@ def get_component_layer_anchors(
     layer_anchors = None
     for comp_layer in _interesting_layers(glyph):
         if comp_layer.layerId == layer.layerId and component.name in anchors:
-            try:
-                layer_anchors = anchors[component.name][comp_layer.layerId]
-                break
-            except KeyError:
-                if component.name == layer.parent.name:
-                    # cyclic reference? ignore
-                    break
-                else:
-                    raise
+            layer_anchors = anchors[component.name][comp_layer.layerId]
+            break
     if layer_anchors is not None:
         # return a copy as they may be modified in place
         layer_anchors = [
@@ -411,42 +403,71 @@ def get_component_layer_anchors(
     return layer_anchors
 
 
-def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
-    queue = deque()
-    # map of the maximum component depth of a glyph.
+def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]:
+    # Returns a map of the maximum component depth of each glyph.
     # - a glyph with no components has depth 0,
     # - a glyph with a component has depth 1,
     # - a glyph with a component that itself has a component has depth 2, etc
+    # - a glyph with a cyclical component reference has infinite depth, which is
+    #   technically a source error
     depths = {}
-    component_buf = []
-    for name, glyph in glyphs.items():
-        if _has_components(glyph):
-            queue.append(glyph)
-        else:
-            depths[name] = 0
 
-    while queue:
-        next_glyph = queue.popleft()
-        # put all components from this glyph to our reuseable buffer
-        component_buf.clear()
-        component_buf.extend(
+    def component_names(glyph):
+        return {
             comp.name
             for comp in chain.from_iterable(
-                l.components for l in _interesting_layers(next_glyph)
+                l.components for l in _interesting_layers(glyph)
             )
             if comp.name in glyphs  # ignore missing components
-        )
-        if not component_buf:
-            # all components missing?! this is not actually a composite glyph
-            depths[next_glyph.name] = 0
-        elif all(comp in depths for comp in component_buf):
-            # increment max depth but only if all components have been seen
-            depth = max(depths[comp] for comp in component_buf)
-            depths[next_glyph.name] = depth + 1
-        else:
-            # else push to the back to try again after we've done the rest
-            # (including the currently missing components)
-            queue.append(next_glyph)
+        }
 
-    by_depth = sorted((depth, name) for name, depth in depths.items())
+    # we depth-first traverse the component trees so we can detect cycles as they
+    # happen, but we do it iteratively with an explicit stack to avoid recursion
+    for name, glyph in glyphs.items():
+        if name in depths:
+            continue
+        stack = [(glyph, False)]
+        # set to track the currently visiting glyphs for cycle detection
+        visiting = set()
+        while stack:
+            glyph, is_backtracking = stack.pop()
+            if is_backtracking:
+                # All dependencies have been processed: calculate depth and remove
+                # from the visiting set
+                depths[glyph.name] = (
+                    max((depths[c] for c in component_names(glyph)), default=-1) + 1
+                )
+                visiting.remove(glyph.name)
+            else:
+                if glyph.name in depths:
+                    # Already visited and processed
+                    continue
+
+                if glyph.name in visiting:
+                    # Already visiting? It's a cycle!
+                    logger.warning("Cycle detected in composite glyph '%s'", glyph.name)
+                    depths[glyph.name] = float("inf")
+                    continue
+
+                # Neither visited nor visiting: mark as visiting and re-add to the
+                # stack so it will get processed _after_ its components
+                # (is_backtracking == True)
+                visiting.add(glyph.name)
+                stack.append((glyph, True))
+                # Add all its components (if any) to the stack
+                for comp_name in component_names(glyph):
+                    if comp_name not in depths:
+                        stack.append((glyphs[comp_name], False))
+        assert not visiting
+    assert len(depths) == len(glyphs)
+
+    return depths
+
+
+def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
+    depths = compute_max_component_depths(glyphs)
+    # skip glyphs with infinite depth (cyclic dependencies)
+    by_depth = sorted(
+        (depth, name) for name, depth in depths.items() if not isinf(depth)
+    )
     return [name for _, name in by_depth]
