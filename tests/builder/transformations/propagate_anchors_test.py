@@ -381,9 +381,10 @@ def test_propagate_across_layers():
                 glyph.add_component("acutecomb", (0, 0))
                 .add_master_layer()
                 .add_component("acutecomb", (0, 0))
-                # this backup layer contains a cyclical component reference
+                # this backup layer contains a potentially cyclical reference
                 # as the component's base glyph in turn points back at self;
-                # this should not trigger an infinite loop!
+                # this doesn't trigger an infinite loop because backup layers
+                # are skipped when propagating anchors
                 .add_backup_layer()
                 .add_component("acute", (0, 0))
             ),

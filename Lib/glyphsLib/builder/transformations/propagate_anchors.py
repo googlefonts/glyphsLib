@@ -60,10 +60,10 @@ def propagate_all_anchors_impl(
     # anchors, but we only *set* those anchors on glyphs that have components.
     # to make this work, we write the anchors to a separate data structure, and
     # then only update the actual glyphs after we've done all the work.
-    all_anchors: dict[str, list[list[GSAnchor]]] = {}
+    all_anchors: dict[str, dict[str, list[GSAnchor]]] = {}
     for name in todo:
         glyph = glyphs[name]
-        for layer in glyph.layers:
+        for layer in _interesting_layers(glyph):
             anchors = anchors_traversing_components(
                 glyph,
                 layer,
@@ -73,15 +73,14 @@ def propagate_all_anchors_impl(
                 glyph_data,
             )
             maybe_log_new_anchors(anchors, glyph, layer)
-            all_anchors.setdefault(name, []).append(anchors)
+            all_anchors.setdefault(name, {})[layer.layerId] = anchors
 
     # finally update our glyphs with the new anchors, where appropriate
     for name, layers in all_anchors.items():
         glyph = glyphs[name]
         if _has_components(glyph):
-            assert len(layers) == len(glyph.layers)
-            for i, layer_anchors in enumerate(layers):
-                glyph.layers[i].anchors = layer_anchors
+            for layer_id, layer_anchors in layers.items():
+                glyph.layers[layer_id].anchors = layer_anchors
 
 
 def maybe_log_new_anchors(
@@ -100,8 +99,21 @@ def maybe_log_new_anchors(
         )
 
 
+def _interesting_layers(glyph):  # TODO: (gs) relpace with GSLayer.isSpecialLayer of GSLayer.isAnySpecialLayer
+    # only master layers are currently supported for anchor propagation:
+    # https://github.com/googlefonts/glyphsLib/issues/1017
+    return (
+        l
+        for l in glyph.layers
+        if l.isMasterLayer
+        # or l._is_brace_layer
+        # or l._is_bracket_layer
+        # etc.
+    )
+
+
 def _has_components(glyph: GSGlyph) -> bool:
-    return any(layer.components for layer in glyph.layers if layer.isMasterLayer)
+    return any(layer.components for layer in _interesting_layers(glyph))
 
 
 def _get_category(  # TODO: remove this. Should be handled internally (gs)
@@ -132,7 +144,7 @@ def anchors_traversing_components(
     glyph: GSGlyph,
     layer: GSLayer,
     glyphs: dict[str, GSGlyph],
-    done_anchors: dict[str, list[list[GSAnchor]]],
+    done_anchors: dict[str, dict[str, list[GSAnchor]]],
     base_glyph_counts: dict[(str, str), int],
     glyph_data: glyphdata.GlyphData | None = None,
 ) -> list[GSAnchor]:
@@ -370,7 +382,7 @@ def get_component_layer_anchors(
     component: GSComponent,
     layer: GSLayer,
     glyphs: dict[str, GSGlyph],
-    anchors: dict[str, list[list[GSAnchor]]],
+    anchors: dict[str, dict[str, list[GSAnchor]]],
 ) -> list[GSAnchor] | None:
     glyph = glyphs.get(component.name)
     if glyph is None:
@@ -379,12 +391,12 @@ def get_component_layer_anchors(
     # if it is missing. glyphsLib does not have that yet, so for now we
     # only support the corresponding 'master' layer of a component's base glyph.
     layer_anchors = None
-    for layer_idx, comp_layer in enumerate(glyph.layers):
+    for comp_layer in _interesting_layers(glyph):
         if comp_layer.layerId == layer.layerId and component.name in anchors:
             try:
-                layer_anchors = anchors[component.name][layer_idx]
+                layer_anchors = anchors[component.name][comp_layer.layerId]
                 break
-            except IndexError:
+            except KeyError:
                 if component.name == layer.parent.name:
                     # cyclic reference? ignore
                     break
@@ -419,7 +431,9 @@ def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
         component_buf.clear()
         component_buf.extend(
             comp.name
-            for comp in chain.from_iterable(l.components for l in next_glyph.layers)
+            for comp in chain.from_iterable(
+                l.components for l in _interesting_layers(next_glyph)
+            )
             if comp.name in glyphs  # ignore missing components
         )
         if not component_buf:
