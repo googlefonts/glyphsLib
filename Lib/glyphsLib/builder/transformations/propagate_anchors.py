@@ -14,6 +14,7 @@ shared with us privately.
 from __future__ import annotations
 
 import logging
+from collections import deque
 from itertools import chain
 from math import atan2, degrees, isinf
 from typing import TYPE_CHECKING
@@ -404,6 +405,7 @@ def get_component_layer_anchors(
 
 
 def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]:
+    queue = deque()
     # Returns a map of the maximum component depth of each glyph.
     # - a glyph with no components has depth 0,
     # - a glyph with a component has depth 1,
@@ -412,53 +414,47 @@ def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]
     #   technically a source error
     depths = {}
 
-    def component_names(glyph):
-        return {
+    # for cycle detection; anytime a glyph is waiting for components (and so is
+    # pushed to the back of the queue) we record its name and the length of the queue.
+    # If we process the same glyph twice without the queue having gotten smaller
+    # (meaning we have gone through everything in the queue) that means we aren't
+    # making progress, and have a cycle.
+    waiting_for_components = {}
+
+    for name, glyph in glyphs.items():
+        if _has_components(glyph):
+            queue.append(glyph)
+        else:
+            depths[name] = 0
+
+    while queue:
+        next_glyph = queue.popleft()
+        comp_names = {
             comp.name
             for comp in chain.from_iterable(
-                l.components for l in _interesting_layers(glyph)
+                l.components for l in _interesting_layers(next_glyph)
             )
             if comp.name in glyphs  # ignore missing components
         }
-
-    # we depth-first traverse the component trees so we can detect cycles as they
-    # happen, but we do it iteratively with an explicit stack to avoid recursion
-    for name, glyph in glyphs.items():
-        if name in depths:
-            continue
-        stack = [(glyph, False)]
-        # set to track the currently visiting glyphs for cycle detection
-        visiting = set()
-        while stack:
-            glyph, is_backtracking = stack.pop()
-            if is_backtracking:
-                # All dependencies have been processed: calculate depth and remove
-                # from the visiting set
-                depths[glyph.name] = (
-                    max((depths[c] for c in component_names(glyph)), default=-1) + 1
-                )
-                visiting.remove(glyph.name)
+        if all(comp in depths for comp in comp_names):
+            depths[next_glyph.name] = (
+                max((depths[c] for c in comp_names), default=-1) + 1
+            )
+            waiting_for_components.pop(next_glyph.name, None)
+        else:
+            # else push to the back to try again after we've done the rest
+            # (including the currently missing components)
+            last_queue_len = waiting_for_components.get(next_glyph.name)
+            waiting_for_components[next_glyph.name] = len(queue)
+            if last_queue_len != len(queue):
+                logger.debug("glyph '%s' is waiting for components", next_glyph.name)
+                queue.append(next_glyph)
             else:
-                if glyph.name in depths:
-                    # Already visited and processed
-                    continue
+                depths[next_glyph.name] = float("inf")
+                waiting_for_components.pop(next_glyph.name, None)
+                logger.warning("glyph '%s' has cyclical components", next_glyph.name)
 
-                if glyph.name in visiting:
-                    # Already visiting? It's a cycle!
-                    logger.warning("Cycle detected in composite glyph '%s'", glyph.name)
-                    depths[glyph.name] = float("inf")
-                    continue
-
-                # Neither visited nor visiting: mark as visiting and re-add to the
-                # stack so it will get processed _after_ its components
-                # (is_backtracking == True)
-                visiting.add(glyph.name)
-                stack.append((glyph, True))
-                # Add all its components (if any) to the stack
-                for comp_name in component_names(glyph):
-                    if comp_name not in depths:
-                        stack.append((glyphs[comp_name], False))
-        assert not visiting
+    assert not waiting_for_components
     assert len(depths) == len(glyphs)
 
     return depths
