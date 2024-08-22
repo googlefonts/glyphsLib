@@ -489,10 +489,8 @@ def test_propagate_across_layers_with_circular_reference(caplog):
         propagate_all_anchors_impl(glyphs)
 
     assert len(caplog.records) == 2
-    assert (
-        caplog.records[0].message == "Cycle detected in composite glyph 'acutecomb.alt'"
-    )
-    assert caplog.records[1].message == "Cycle detected in composite glyph 'gravecomb'"
+    assert caplog.records[0].message == "glyph 'acutecomb.alt' has cyclical components"
+    assert caplog.records[1].message == "glyph 'gravecomb' has cyclical components"
 
 
 def test_remove_exit_anchor_on_component():
