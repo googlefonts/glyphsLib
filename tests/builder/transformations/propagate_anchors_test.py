@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import math
 import os.path
+import uuid
 
 from copy import deepcopy
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform as Affine
@@ -14,6 +17,7 @@ from glyphsLib.types import Point, Transform
 from glyphsLib.writer import dumps
 
 from glyphsLib.builder.transformations.propagate_anchors import (
+    compute_max_component_depths,
     get_xy_rotation,
     propagate_all_anchors,
     propagate_all_anchors_impl,
@@ -55,17 +59,30 @@ class GlyphBuilder:
         glyph.unicode = info.unicode
         glyph.category = info.category
         glyph.subCategory = info.subCategory
-        self.add_layer()
+        self.num_masters = 0
+        self.add_master_layer()
 
     def build(self) -> GSGlyph:
         return self.glyph
 
-    def add_layer(self) -> Self:
+    def add_master_layer(self) -> Self:
         layer = GSLayer()
         layer.name = layer.layerId = layer.associatedMasterId = (
-            f"layer-{len(self.glyph.layers)}"
+            f"master-{self.num_masters}"
         )
+        self.num_masters += 1
         self.glyph.layers.append(layer)
+        self.current_layer = layer
+        return self
+
+    def add_backup_layer(self, associated_master_idx=0):
+        layer = GSLayer()
+        layer.name = datetime.now().isoformat()
+        layer.layerId = str(uuid.uuid4()).upper()
+        master_layer = self.glyph.layers[associated_master_idx]
+        layer.associatedMasterId = master_layer.layerId
+        self.glyph.layers.append(layer)
+        self.current_layer = layer
         return self
 
     def set_category(self, category: str) -> Self:
@@ -78,12 +95,12 @@ class GlyphBuilder:
 
     def add_component(self, name: str, pos: tuple[float, float]) -> Self:
         component = GSComponent(name, offset=pos)
-        self.glyph.layers[-1].components.append(component)
+        self.current_layer.components.append(component)
         return self
 
     def rotate_component(self, degrees: float) -> Self:
         # Set an explicit translate + rotation for the component
-        component = self.glyph.layers[-1].components[-1]
+        component = self.current_layer.components[-1]
         component.transform = Transform(
             *Affine(*component.transform).rotate(math.radians(degrees))
         )
@@ -91,13 +108,13 @@ class GlyphBuilder:
 
     def add_component_anchor(self, name: str) -> Self:
         # add an explicit anchor to the last added component
-        component = self.glyph.layers[-1].components[-1]
+        component = self.current_layer.components[-1]
         component.anchor = name
         return self
 
     def add_anchor(self, name: str, pos: tuple[float, float]) -> Self:
         anchor = GSAnchor(name, Point(*pos))
-        self.glyph.layers[-1].anchors.append(anchor)
+        self.current_layer.anchors.append(anchor)
         return self
 
 
@@ -121,7 +138,27 @@ def test_components_by_depth():
             ("Aacute", ["A", "acutecomb"]),
             ("Aacutebreve", ["A", "brevecomb_acutecomb"]),
             ("AEacutebreve", ["AE", "brevecomb_acutecomb"]),
+            ("acute", ["acutecomb.case"]),
+            ("acutecomb.case", ["acutecomb.alt"]),
+            ("acutecomb.alt", ["acute"]),
+            ("grave", ["grave"]),
         ]
+    }
+
+    assert compute_max_component_depths(glyphs) == {
+        "A": 0,
+        "E": 0,
+        "acutecomb": 0,
+        "brevecomb": 0,
+        "brevecomb_acutecomb": 1,
+        "AE": 1,
+        "Aacute": 1,
+        "Aacutebreve": 2,
+        "AEacutebreve": 2,
+        "acute": float("inf"),
+        "acutecomb.case": float("inf"),
+        "acutecomb.alt": float("inf"),
+        "grave": float("inf"),
     }
 
     assert depth_sorted_composite_glyphs(glyphs) == [
@@ -134,6 +171,7 @@ def test_components_by_depth():
         "brevecomb_acutecomb",
         "AEacutebreve",
         "Aacutebreve",
+        # cyclical composites are skipped
     ]
 
 
@@ -317,7 +355,7 @@ def test_digraphs_arent_ligatures():
     )
 
 
-def test_propagate_across_layers():
+def test_propagate_across_layers(caplog):
     # derived from the observed behaviour of glyphs 3.2.2 (3259)
     glyphs = (
         GlyphSetBuilder()
@@ -327,10 +365,12 @@ def test_propagate_across_layers():
                 glyph.add_anchor("bottom", (290, 10))
                 .add_anchor("ogonek", (490, 3))
                 .add_anchor("top", (290, 690))
-                .add_layer()
+                .add_master_layer()
                 .add_anchor("bottom", (300, 0))
                 .add_anchor("ogonek", (540, 10))
                 .add_anchor("top", (300, 700))
+                .add_backup_layer()
+                .add_anchor("top", (290, 690))
             ),
         )
         .add_glyph(
@@ -338,9 +378,11 @@ def test_propagate_across_layers():
             lambda glyph: (
                 glyph.add_anchor("_top", (335, 502))
                 .add_anchor("top", (353, 721))
-                .add_layer()
+                .add_master_layer()
                 .add_anchor("_top", (366, 500))
                 .add_anchor("top", (366, 765))
+                .add_backup_layer()
+                .add_anchor("_top", (335, 502))
             ),
         )
         .add_glyph(
@@ -348,14 +390,40 @@ def test_propagate_across_layers():
             lambda glyph: (
                 glyph.add_component("A", (0, 0))
                 .add_component("acutecomb", (-45, 188))
-                .add_layer()
+                .add_master_layer()
                 .add_component("A", (0, 0))
                 .add_component("acutecomb", (-66, 200))
+                .add_backup_layer()
+                .add_component("A", (0, 0))
+                .add_component("acutecomb", (-45, 188))
+            ),
+        )
+        .add_glyph(
+            "acutecomb.case",
+            lambda glyph: (
+                glyph.add_component("acutecomb", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb", (0, 0))
+                # this backup layer contains a potentially cyclical reference
+                # as the component's base glyph in turn points back at self;
+                # this doesn't trigger an infinite loop because backup layers
+                # are skipped when propagating anchors
+                .add_backup_layer()
+                .add_component("acute", (0, 0))
+            ),
+        )
+        .add_glyph(
+            "acute",
+            lambda glyph: (
+                glyph.add_component("acutecomb.case", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb.case", (0, 0))
             ),
         )
         .build()
     )
-    propagate_all_anchors_impl(glyphs)
+    with caplog.at_level(logging.WARNING):
+        propagate_all_anchors_impl(glyphs)
 
     new_glyph = glyphs["Aacute"]
     assert_anchors(
@@ -375,6 +443,54 @@ def test_propagate_across_layers():
             ("top", (300, 965)),
         ],
     )
+
+    # non-master (e.g. backup) layers are silently skipped
+    assert not new_glyph.layers[2]._is_master_layer
+    assert_anchors(new_glyph.layers[2].anchors, [])
+
+    assert len(caplog.records) == 0
+
+
+def test_propagate_across_layers_with_circular_reference(caplog):
+    glyphs = (
+        GlyphSetBuilder()
+        # acutecomb.alt contains a cyclical reference to itself in its master layer
+        # test that this doesn't cause an infinite loop
+        .add_glyph(
+            "acutecomb.alt",
+            lambda glyph: (
+                glyph.add_component("acutecomb.alt", (0, 0))
+                .add_master_layer()
+                .add_component("acutecomb.alt", (0, 0))
+            ),
+        )
+        # gravecomb and grave contain cyclical component references to one another
+        # in their master layers; test that this doesn't cause an infinite loop either
+        .add_glyph(
+            "gravecomb",
+            lambda glyph: (
+                glyph.add_component("grave", (0, 0))
+                .add_master_layer()
+                .add_component("grave", (0, 0))
+            ),
+        )
+        .add_glyph(
+            "grave",
+            lambda glyph: (
+                glyph.add_component("gravecomb", (0, 0))
+                .add_master_layer()
+                .add_component("gravecomb", (0, 0))
+            ),
+        )
+        .build()
+    )
+
+    with caplog.at_level(logging.WARNING):
+        propagate_all_anchors_impl(glyphs)
+
+    assert len(caplog.records) == 2
+    assert caplog.records[0].message == "glyph 'acutecomb.alt' has cyclical components"
+    assert caplog.records[1].message == "glyph 'gravecomb' has cyclical components"
 
 
 def test_remove_exit_anchor_on_component():

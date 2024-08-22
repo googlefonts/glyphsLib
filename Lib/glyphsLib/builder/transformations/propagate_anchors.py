@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 from collections import deque
 from itertools import chain
-from math import atan2, degrees
+from math import atan2, degrees, isinf
 from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform
@@ -60,10 +60,10 @@ def propagate_all_anchors_impl(
     # anchors, but we only *set* those anchors on glyphs that have components.
     # to make this work, we write the anchors to a separate data structure, and
     # then only update the actual glyphs after we've done all the work.
-    all_anchors: dict[str, list[list[GSAnchor]]] = {}
+    all_anchors: dict[str, dict[str, list[GSAnchor]]] = {}
     for name in todo:
         glyph = glyphs[name]
-        for layer in glyph.layers:
+        for layer in _interesting_layers(glyph):
             anchors = anchors_traversing_components(
                 glyph,
                 layer,
@@ -73,15 +73,14 @@ def propagate_all_anchors_impl(
                 glyph_data,
             )
             maybe_log_new_anchors(anchors, glyph, layer)
-            all_anchors.setdefault(name, []).append(anchors)
+            all_anchors.setdefault(name, {})[layer.layerId] = anchors
 
     # finally update our glyphs with the new anchors, where appropriate
     for name, layers in all_anchors.items():
         glyph = glyphs[name]
         if _has_components(glyph):
-            assert len(layers) == len(glyph.layers)
-            for i, layer_anchors in enumerate(layers):
-                glyph.layers[i].anchors = layer_anchors
+            for layer_id, layer_anchors in layers.items():
+                glyph.layers[layer_id].anchors = layer_anchors
 
 
 def maybe_log_new_anchors(
@@ -100,8 +99,21 @@ def maybe_log_new_anchors(
         )
 
 
+def _interesting_layers(glyph):
+    # only master layers are currently supported for anchor propagation:
+    # https://github.com/googlefonts/glyphsLib/issues/1017
+    return (
+        l
+        for l in glyph.layers
+        if l._is_master_layer
+        # or l._is_brace_layer
+        # or l._is_bracket_layer
+        # etc.
+    )
+
+
 def _has_components(glyph: GSGlyph) -> bool:
-    return any(layer.components for layer in glyph.layers if layer._is_master_layer)
+    return any(layer.components for layer in _interesting_layers(glyph))
 
 
 def _get_category(
@@ -132,7 +144,7 @@ def anchors_traversing_components(
     glyph: GSGlyph,
     layer: GSLayer,
     glyphs: dict[str, GSGlyph],
-    done_anchors: dict[str, list[list[GSAnchor]]],
+    done_anchors: dict[str, dict[str, list[GSAnchor]]],
     base_glyph_counts: dict[(str, str), int],
     glyph_data: glyphdata.GlyphData | None = None,
 ) -> list[GSAnchor]:
@@ -370,7 +382,7 @@ def get_component_layer_anchors(
     component: GSComponent,
     layer: GSLayer,
     glyphs: dict[str, GSGlyph],
-    anchors: dict[str, list[list[GSAnchor]]],
+    anchors: dict[str, dict[str, list[GSAnchor]]],
 ) -> list[GSAnchor] | None:
     glyph = glyphs.get(component.name)
     if glyph is None:
@@ -379,17 +391,10 @@ def get_component_layer_anchors(
     # if it is missing. glyphsLib does not have that yet, so for now we
     # only support the corresponding 'master' layer of a component's base glyph.
     layer_anchors = None
-    for layer_idx, comp_layer in enumerate(glyph.layers):
+    for comp_layer in _interesting_layers(glyph):
         if comp_layer.layerId == layer.layerId and component.name in anchors:
-            try:
-                layer_anchors = anchors[component.name][layer_idx]
-                break
-            except IndexError:
-                if component.name == layer.parent.name:
-                    # cyclic reference? ignore
-                    break
-                else:
-                    raise
+            layer_anchors = anchors[component.name][comp_layer.layerId]
+            break
     if layer_anchors is not None:
         # return a copy as they may be modified in place
         layer_anchors = [
@@ -399,14 +404,23 @@ def get_component_layer_anchors(
     return layer_anchors
 
 
-def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
+def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]:
     queue = deque()
-    # map of the maximum component depth of a glyph.
+    # Returns a map of the maximum component depth of each glyph.
     # - a glyph with no components has depth 0,
     # - a glyph with a component has depth 1,
     # - a glyph with a component that itself has a component has depth 2, etc
+    # - a glyph with a cyclical component reference has infinite depth, which is
+    #   technically a source error
     depths = {}
-    component_buf = []
+
+    # for cycle detection; anytime a glyph is waiting for components (and so is
+    # pushed to the back of the queue) we record its name and the length of the queue.
+    # If we process the same glyph twice without the queue having gotten smaller
+    # (meaning we have gone through everything in the queue) that means we aren't
+    # making progress, and have a cycle.
+    waiting_for_components = {}
+
     for name, glyph in glyphs.items():
         if _has_components(glyph):
             queue.append(glyph)
@@ -415,24 +429,41 @@ def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
 
     while queue:
         next_glyph = queue.popleft()
-        # put all components from this glyph to our reuseable buffer
-        component_buf.clear()
-        component_buf.extend(
+        comp_names = {
             comp.name
-            for comp in chain.from_iterable(l.components for l in next_glyph.layers)
+            for comp in chain.from_iterable(
+                l.components for l in _interesting_layers(next_glyph)
+            )
             if comp.name in glyphs  # ignore missing components
-        )
-        if not component_buf:
-            # all components missing?! this is not actually a composite glyph
-            depths[next_glyph.name] = 0
-        elif all(comp in depths for comp in component_buf):
-            # increment max depth but only if all components have been seen
-            depth = max(depths[comp] for comp in component_buf)
-            depths[next_glyph.name] = depth + 1
+        }
+        if all(comp in depths for comp in comp_names):
+            depths[next_glyph.name] = (
+                max((depths[c] for c in comp_names), default=-1) + 1
+            )
+            waiting_for_components.pop(next_glyph.name, None)
         else:
             # else push to the back to try again after we've done the rest
             # (including the currently missing components)
-            queue.append(next_glyph)
+            last_queue_len = waiting_for_components.get(next_glyph.name)
+            waiting_for_components[next_glyph.name] = len(queue)
+            if last_queue_len != len(queue):
+                logger.debug("glyph '%s' is waiting for components", next_glyph.name)
+                queue.append(next_glyph)
+            else:
+                depths[next_glyph.name] = float("inf")
+                waiting_for_components.pop(next_glyph.name, None)
+                logger.warning("glyph '%s' has cyclical components", next_glyph.name)
 
-    by_depth = sorted((depth, name) for name, depth in depths.items())
+    assert not waiting_for_components
+    assert len(depths) == len(glyphs)
+
+    return depths
+
+
+def depth_sorted_composite_glyphs(glyphs: dict[str, GSGlyph]) -> list[str]:
+    depths = compute_max_component_depths(glyphs)
+    # skip glyphs with infinite depth (cyclic dependencies)
+    by_depth = sorted(
+        (depth, name) for name, depth in depths.items() if not isinf(depth)
+    )
     return [name for _, name in by_depth]
