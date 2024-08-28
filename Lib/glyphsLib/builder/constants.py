@@ -220,13 +220,13 @@ REVERSE_CODEPAGE_RANGES = {value: key for key, value in CODEPAGE_RANGES.items()}
 UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 
 DEFAULT_FEATURE_WRITERS = [
+    {"class": "CursFeatureWriter"},
     {"class": "KernFeatureWriter"},
     {
         "module": "glyphsLib.featureWriters.markFeatureWriter",
         "class": "ContextualMarkFeatureWriter",
     },
     {"class": "GdefFeatureWriter"},
-    {"class": "CursFeatureWriter"},
 ]
 
 DEFAULT_LAYER_NAME = PUBLIC_PREFIX + "default"
