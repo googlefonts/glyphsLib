@@ -98,6 +98,8 @@ def _to_ufo_features(  # noqa: C901
 
     prefixes = []
     for prefix in font.featurePrefixes:
+        if prefix.disabled and minimal:
+            continue
         strings = []
         if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
             strings.append("# Prefix: %s\n" % prefix.name)
@@ -109,6 +111,8 @@ def _to_ufo_features(  # noqa: C901
 
     class_defs = []
     for class_ in font.classes:
+        if class_.disabled and minimal:
+            continue
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
         class_defs.append(
