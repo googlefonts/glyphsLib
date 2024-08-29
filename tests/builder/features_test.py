@@ -600,6 +600,25 @@ def test_roundtrip_feature_prefix_with_only_a_comment(ufo_module):
     assert prefix_r.code == "#include(../family.fea)"
 
 
+def test_drop_disabled_feature(ufo_module):
+    font = to_glyphs([ufo_module.Font()])
+    feature = classes.GSFeature(name="ccmp", code="sub a by a.ccmp1 a.ccmp2;")
+    feature.disabled = True
+    font.features.append(feature)
+
+    feature = classes.GSFeature(name="liga", code="sub f i by f_i;")
+    font.features.append(feature)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module, minimal=True)
+    assert ufo.features.text == dedent(
+        """\
+        feature liga {
+        sub f i by f_i;
+        } liga;
+    """
+    )
+
+
 @pytest.fixture
 def ufo_with_GDEF(ufo_module):
     ufo = ufo_module.Font()
