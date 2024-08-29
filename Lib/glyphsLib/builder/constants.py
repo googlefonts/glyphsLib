@@ -206,13 +206,13 @@ UFO2FT_COLOR_LAYERS_KEY = "com.github.googlei18n.ufo2ft.colorLayers"
 UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 
 DEFAULT_FEATURE_WRITERS = [
+    {"class": "CursFeatureWriter"},
     {"class": "KernFeatureWriter"},
     {
         "module": "glyphsLib.featureWriters.markFeatureWriter",
         "class": "ContextualMarkFeatureWriter",
     },
     {"class": "GdefFeatureWriter"},
-    {"class": "CursFeatureWriter"},
 ]
 
 DEFAULT_LAYER_NAME = PUBLIC_PREFIX + "default"
