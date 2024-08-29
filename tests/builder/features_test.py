@@ -600,6 +600,61 @@ def test_roundtrip_feature_prefix_with_only_a_comment(ufo_module):
     assert prefix_r.code == "#include(../family.fea)"
 
 
+def test_drop_disabled_class(ufo_module):
+    font = to_glyphs([ufo_module.Font()])
+    class_ = classes.GSClass(name="Class1", code="a b")
+    class_.disabled = True
+    font.classes.append(class_)
+
+    class_ = classes.GSClass(name="Class2", code="c d")
+    font.classes.append(class_)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module, minimal=True)
+    assert ufo.features.text == dedent(
+        """\
+        @Class2 = [ c d
+        ];
+    """
+    )
+
+
+def test_drop_disabled_prefix(ufo_module):
+    font = to_glyphs([ufo_module.Font()])
+    prefix = classes.GSFeaturePrefix(name="Prefix1", code="# test 1")
+    prefix.disabled = True
+    font.featurePrefixes.append(prefix)
+
+    prefix = classes.GSFeaturePrefix(name="Prefix2", code="# test 2")
+    font.featurePrefixes.append(prefix)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module, minimal=True)
+    assert ufo.features.text == dedent(
+        """\
+        # Prefix: Prefix2
+        # test 2
+    """
+    )
+
+
+def test_drop_disabled_feature(ufo_module):
+    font = to_glyphs([ufo_module.Font()])
+    feature = classes.GSFeature(name="ccmp", code="sub a by a.ccmp1 a.ccmp2;")
+    feature.disabled = True
+    font.features.append(feature)
+
+    feature = classes.GSFeature(name="liga", code="sub f i by f_i;")
+    font.features.append(feature)
+
+    (ufo,) = to_ufos(font, ufo_module=ufo_module, minimal=True)
+    assert ufo.features.text == dedent(
+        """\
+        feature liga {
+        sub f i by f_i;
+        } liga;
+    """
+    )
+
+
 @pytest.fixture
 def ufo_with_GDEF(ufo_module):
     ufo = ufo_module.Font()
