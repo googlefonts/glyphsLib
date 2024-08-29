@@ -100,9 +100,22 @@ def _to_ufo_features(  # noqa: C901
     else:
         expander = TokenExpander(font, master)
 
+    prefixes = []
+    for prefix in font.featurePrefixes:
+        if prefix.disabled and minimal:
+            continue
+        strings = []
+        if prefix.name != ANONYMOUS_FEATURE_PREFIX_NAME:
+            strings.append("# Prefix: %s\n" % prefix.name)
+        strings.append(autostr(prefix.automatic))
+        strings.append(expander.expand(prefix.code))
+        prefixes.append("".join(strings))
+
+    prefix_str = "\n\n".join(prefixes)
+
     class_defs = []
     for class_ in font.classes:
-        if not class_.active:  # TODO: (gs) write them commented out as with the features to be able to round trip
+        if class_.disabled and minimal:
             continue
         prefix = "@" if not class_.name.startswith("@") else ""
         name = prefix + class_.name
