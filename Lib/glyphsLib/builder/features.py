@@ -61,6 +61,7 @@ def to_ufo_master_features(self, ufo, master):
             generate_GDEF=self.generate_GDEF,
             master=master,
             expand_includes=self.expand_includes,
+            minimal=self.minimal,
         )
 
 
@@ -88,6 +89,7 @@ def _to_ufo_features(  # noqa: C901
     generate_GDEF: bool = False,
     master: GSFontMaster | None = None,
     expand_includes: bool = False,
+    minimal: bool = False,
 ) -> str:
     """Convert GSFont features, including prefixes and classes, to UFO.
 
@@ -141,6 +143,8 @@ def _to_ufo_features(  # noqa: C901
 
     feature_defs = []
     for feature in font.features:
+        if feature.disabled and minimal:
+            continue
         code = expander.expand(feature.code)
         lines = ["feature %s {" % feature.name]
         notes = feature.notes
