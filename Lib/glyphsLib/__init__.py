@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
 from io import open
 import collections
@@ -78,7 +79,7 @@ def load_to_ufos(
 
 
 def build_masters(
-    filename,
+    filename: str | bytes | os.PathLike[str] | os.PathLike[bytes] | GSFont,
     master_dir,
     designspace_instance_dir=None,
     designspace_path=None,
@@ -99,6 +100,7 @@ def build_masters(
     .glyphs file.
 
     Args:
+        filename: Path to Glyphs sources, or GSFont object (may be mutated)
         master_dir: Directory where masters are written.
         designspace_instance_dir: If provided, a designspace document will be
             written alongside the master UFOs though no instances will be built.
@@ -110,7 +112,12 @@ def build_masters(
         file (`designspace_path`).
     """
 
-    font = GSFont(filename)
+    # Either use 'filename' as a loaded font, or interpret it as a path.
+    # (variable name is 'filename' in both cases for backwards compatibility)
+    if isinstance(filename, GSFont):
+        font = filename
+    else:
+        font = GSFont(filename)
 
     if not os.path.isdir(master_dir):
         os.mkdir(master_dir)
