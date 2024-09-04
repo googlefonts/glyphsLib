@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
 import copy
 import logging
@@ -6312,7 +6313,9 @@ class GSFont(GSBase):
     def _parse___formatVersion_dict(self, parser, val):
         self.formatVersion = parser.formatVersion = val
 
-    def __init__(self, path=None):
+    def __init__(
+        self, path: str | bytes | os.PathLike[str] | os.PathLike[bytes] | None = None
+    ):
         self.displayStrings = ""
         self.familyName = "Unnamed font"
         self.fontType = FontType.DEFAULT
