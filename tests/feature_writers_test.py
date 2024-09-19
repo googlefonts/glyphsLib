@@ -38,8 +38,7 @@ def test_contextual_anchors(datadir):
             "    lookupflag UseMarrkFilteringSet [twodotshorizontalbelow];\n"
             "    # reh-ar * behDotess-ar.medi &\n"
             "    pos reh-ar [behDotless-ar.init] behDotess-ar.medi"
-            " [dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
-            " lookup ContextualMark_0; # *bottom.twodots\n"
+            " @MC_bottom' lookup ContextualMark_0;\n"
             "} ContextualMarkDispatch_0;\n"
         )
 
@@ -49,8 +48,7 @@ def test_contextual_anchors(datadir):
             "    lookupflag UseMarrkFilteringSet [twodotsverticalbelow];\n"
             "    # reh-ar *\n"
             "    pos reh-ar [behDotless-ar.init behDotless-ar.init.alt]"
-            " [dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
-            " lookup ContextualMark_1; # *bottom.vtwodots\n"
+            " @MC_bottom' lookup ContextualMark_1;\n"
             "} ContextualMarkDispatch_1;\n"
         )
 
@@ -58,9 +56,7 @@ def test_contextual_anchors(datadir):
         assert str(lookup) == (
             "lookup ContextualMarkDispatch_2 {\n"
             "    # reh-ar *\n"
-            "    pos reh-ar [behDotless-ar.init] "
-            "[dotbelow-ar twodotsverticalbelow-ar twodotshorizontalbelow-ar]'"
-            " lookup ContextualMark_2; # *bottom\n"
+            "    pos reh-ar [behDotless-ar.init] @MC_bottom' lookup ContextualMark_2;\n"
             "} ContextualMarkDispatch_2;\n"
         )
 

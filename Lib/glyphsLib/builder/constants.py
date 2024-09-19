@@ -208,10 +208,7 @@ UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 DEFAULT_FEATURE_WRITERS = [
     {"class": "CursFeatureWriter"},
     {"class": "KernFeatureWriter"},
-    {
-        "module": "glyphsLib.featureWriters.markFeatureWriter",
-        "class": "ContextualMarkFeatureWriter",
-    },
+    {"class": "MarkFeatureWriter"},
     {"class": "GdefFeatureWriter"},
 ]
 
