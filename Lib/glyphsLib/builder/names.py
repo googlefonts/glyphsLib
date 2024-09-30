@@ -37,7 +37,7 @@ def to_ufo_names(self, ufo, master, family_name):
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=family_name,
             style_name=styleName,
-            is_bold=(styleName == "Bold"),
+            is_bold=(styleName in ("Bold", "Bold Italic", "Bold Oblique")),
             is_italic=is_italic,
         )
         ufo.info.styleMapFamilyName = styleMapFamilyName
@@ -89,7 +89,7 @@ def _get_linked_style(style_name, is_bold, is_italic):
             is_regular = False
         elif part == "Bold" and is_bold:
             is_bold = False
-        elif part == "Italic" and is_italic:
+        elif (part == "Italic" or part == "Oblique") and is_italic:
             is_italic = False
         else:
             linked_style.appendleft(part)

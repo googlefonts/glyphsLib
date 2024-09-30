@@ -618,6 +618,14 @@ def test_legacyAttributes(file_path):
     assert master.otherBlues == [-210, -200]
 
 
+def test_loadLegacy_name(file_path):
+    font = GSFont(file_path)
+    master = font.masters[0]
+    master.italicAngel = 10
+    name = master._joinNames("Bold", "Regular", None)
+    assert name == "Bold"
+
+
 """ .alignmentZones is readonly now.
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
     def setUp(self):
