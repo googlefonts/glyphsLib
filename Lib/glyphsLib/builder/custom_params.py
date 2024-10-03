@@ -84,7 +84,7 @@ def identity(value):
 class GlyphsObjectProxy:
     """Accelerate and record access to the glyphs object's custom parameters"""
 
-    def __init__(self, glyphs_object, glyphs_module):
+    def __init__(self, glyphs_object, glyphs_module, ignore_disabled=False):
         self._owner = glyphs_object
         # This is a key part to be used in UFO lib keys to be able to choose
         # between master and font attributes during roundtrip
@@ -92,6 +92,8 @@ class GlyphsObjectProxy:
         self._glyphs_module = glyphs_module
         self._lookup = defaultdict(list)
         for param in glyphs_object.customParameters:
+            if ignore_disabled and param.disabled:
+                continue
             self._lookup[param.name].append(param.value)
         self._handled = set()
 
@@ -1063,8 +1065,25 @@ register(RenameGlyphsParamHandler())
 
 
 def to_ufo_custom_params(self, ufo, glyphs_object, set_default_params=True):
-    # glyphs_module=None because we shouldn't instanciate any Glyphs classes
-    glyphs_proxy = GlyphsObjectProxy(glyphs_object, glyphs_module=None)
+    # glyphs_module=None because we shouldn't instanciate any Glyphs classes.
+
+    # In 'minimal' mode (enabled e.g. by fontmake when converting .glyphs => .ufo
+    # for compiling OpenType fonts) we treat disabled custom parameters as if
+    # they are absent.
+    # Note that the custom parameters' 'disabled' status is still not saved in the
+    # UFO so converting back to .glyphs will mark them as enabled.
+    # https://github.com/googlefonts/glyphsLib/issues/905
+
+    # `self` is normally a UFOBuilder instance, but it can be None when this
+    # is called by `glyphsLib.builder.instances.apply_instance_data_to_ufo`.
+    # The latter function is only ever used by fontmake (to apply instance custom
+    # parameters to interpolated instance UFOs) and never in glyphsLib's own
+    # glyphs=>ufo=>glyphs code, therefore we assume that when self is None,
+    # a 'minimal' build is desired.
+    ignore_disabled = getattr(self, "minimal", True)
+    glyphs_proxy = GlyphsObjectProxy(
+        glyphs_object, glyphs_module=None, ignore_disabled=ignore_disabled
+    )
     ufo_proxy = UFOProxy(ufo)
 
     glyphs_proxy.mark_handled(UFO_FILENAME_CUSTOM_PARAM)
