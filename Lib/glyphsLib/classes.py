@@ -1868,10 +1868,10 @@ class GSCustomParameter(GSBase):
 
     _CUSTOM_DICT_PARAMS = frozenset("GASP Table")
 
-    def __init__(self, name="New Value", value="New Parameter"):
+    def __init__(self, name="New Value", value="New Parameter", active=True):
         self.name = name
         self.value = value
-        self.active = True
+        self.active = active
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {hex(id(self))}> {self.name}: {self._value}"

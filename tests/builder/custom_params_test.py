@@ -49,6 +49,9 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import parse_datetime
 
+import pytest
+
+
 DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
@@ -825,3 +828,28 @@ def test_multi_customparameter_rt(ufo_module):
         )
         == 2
     )
+
+
+@pytest.mark.parametrize("active", [True, False])
+def test_disabled_glyphOrder_custom_params(ufo_module, active):
+    # With minimal=True, 'disabled' custom parameters should be ignored
+    # https://github.com/googlefonts/glyphsLib/issues/905
+    # https://github.com/googlefonts/fontc/issues/985
+    font = GSFont()
+    font.masters.append(GSFontMaster())
+
+    implicit_glyph_order = [".notdef", "A", "B", "C"]
+    for glyph_name in implicit_glyph_order:
+        font.glyphs.append(GSGlyph(glyph_name))
+
+    custom_glyph_order = [".notdef", "C", "B", "A"]
+    font.customParameters.append(
+        GSCustomParameter("glyphOrder", custom_glyph_order, active=active)
+    )
+
+    ufo = to_ufos(font, ufo_module=ufo_module, minimal=True)[0]
+
+    if active:
+        assert ufo.lib["public.glyphOrder"] == custom_glyph_order
+    else:
+        assert ufo.lib["public.glyphOrder"] == implicit_glyph_order
