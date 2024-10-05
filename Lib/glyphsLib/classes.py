@@ -2787,13 +2787,15 @@ class GSAnchor(GSBase):
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
 
-    def __init__(self, name=None, position=None):
+    def __init__(self, name=None, position=None, userData=None):
         self.name = "" if name is None else name
-        self._userData = None
         if position is None:
             self.position = copy.deepcopy(self._defaultsForName["position"])
         else:
             self.position = position
+        self._userData = None
+        if userData is not None:
+            self.userData = userData
 
     def __repr__(self):
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(

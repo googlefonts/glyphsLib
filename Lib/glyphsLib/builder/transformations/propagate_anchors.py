@@ -211,6 +211,9 @@ def anchors_traversing_components(
         component_transform = Transform(*component.transform)
         xscale, yscale = get_xy_rotation(component_transform)
         for anchor in anchors:
+            # skip contextual anchors
+            if anchor.name.startswith("*") and "GPOS_Context" in anchor.userData:
+                continue
             new_has_underscore = anchor.name.startswith("_")
             if (component_idx > 0 or has_underscore) and new_has_underscore:
                 continue
@@ -299,6 +302,7 @@ def origin_adjusted_anchors(anchors: list[GSAnchor]) -> Iterable[GSAnchor]:
         GSAnchor(
             name=a.name,
             position=Point(a.position.x - origin.x, a.position.y - origin.y),
+            userData=dict(a.userData),
         )
         for a in anchors
         if a.name != "*origin"
@@ -398,7 +402,11 @@ def get_component_layer_anchors(
     if layer_anchors is not None:
         # return a copy as they may be modified in place
         layer_anchors = [
-            GSAnchor(name=a.name, position=Point(a.position.x, a.position.y))
+            GSAnchor(
+                name=a.name,
+                position=Point(a.position.x, a.position.y),
+                userData=dict(a.userData),
+            )
             for a in layer_anchors
         ]
     return layer_anchors
