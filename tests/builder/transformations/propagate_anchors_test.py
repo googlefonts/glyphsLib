@@ -655,8 +655,8 @@ def test_contextual_anchors():
         new_glyph.layers[0].anchors,
         [
             ("bottom", (50, 0)),
-            ("top", (35, 229)),
             ("*bottom", (95, 0), {"GPOS_Context": "* behDotless-ar.fina"}),
+            ("top", (35, 229)),
         ],
     )
 
@@ -665,6 +665,7 @@ def test_contextual_anchors():
         new_glyph.layers[0].anchors,
         [
             ("bottom", (50, 0)),
+            ("*bottom", (95, 0), {"GPOS_Context": "* behDotless-ar.medi"}),
             ("top", (35, 229)),
         ],
     )
