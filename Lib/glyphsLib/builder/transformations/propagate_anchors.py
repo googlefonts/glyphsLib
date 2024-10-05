@@ -211,9 +211,6 @@ def anchors_traversing_components(
         component_transform = Transform(*component.transform)
         xscale, yscale = get_xy_rotation(component_transform)
         for anchor in anchors:
-            # skip contextual anchors
-            if anchor.name.startswith("*") and "GPOS_Context" in anchor.userData:
-                continue
             new_has_underscore = anchor.name.startswith("_")
             if (component_idx > 0 or has_underscore) and new_has_underscore:
                 continue
