@@ -299,6 +299,7 @@ def origin_adjusted_anchors(anchors: list[GSAnchor]) -> Iterable[GSAnchor]:
         GSAnchor(
             name=a.name,
             position=Point(a.position.x - origin.x, a.position.y - origin.y),
+            userData=dict(a.userData),
         )
         for a in anchors
         if a.name != "*origin"
@@ -398,7 +399,11 @@ def get_component_layer_anchors(
     if layer_anchors is not None:
         # return a copy as they may be modified in place
         layer_anchors = [
-            GSAnchor(name=a.name, position=Point(a.position.x, a.position.y))
+            GSAnchor(
+                name=a.name,
+                position=Point(a.position.x, a.position.y),
+                userData=dict(a.userData),
+            )
             for a in layer_anchors
         ]
     return layer_anchors

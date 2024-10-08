@@ -112,8 +112,13 @@ class GlyphBuilder:
         component.anchor = name
         return self
 
-    def add_anchor(self, name: str, pos: tuple[float, float]) -> Self:
-        anchor = GSAnchor(name, Point(*pos))
+    def add_anchor(
+        self,
+        name: str,
+        pos: tuple[float, float],
+        userData: dict | None = None,
+    ) -> Self:
+        anchor = GSAnchor(name, Point(*pos), userData=userData)
         self.current_layer.anchors.append(anchor)
         return self
 
@@ -193,6 +198,7 @@ def assert_anchors(actual, expected):
     for a, e in zip(actual, expected):
         assert a.name == e[0]
         assert a.position == Point(*e[1])
+        assert dict(a.userData) == (e[2] if len(e) > 2 else {})
 
 
 def test_no_components_anchors_are_unchanged():
@@ -607,6 +613,60 @@ def test_origin_anchor():
             ("bottom", (262, 7)),
             ("ogonek", (422, 9)),
             ("top", (286, 760)),
+        ],
+    )
+
+
+def test_contextual_anchors():
+    glyphs = (
+        GlyphSetBuilder()
+        .add_glyph(
+            "behDotless-ar.init",
+            lambda glyph: (
+                glyph.add_anchor("bottom", (50, 0))
+                .add_anchor(
+                    "*bottom",
+                    (95, 0),
+                    userData={"GPOS_Context": "* behDotless-ar.medi"},
+                )
+                .add_anchor("top", (35, 229))
+            ),
+        )
+        .add_glyph(
+            "behDotless-ar.medi",
+            lambda glyph: (
+                glyph.add_component("behDotless-ar.init", (0, 0)).add_anchor(
+                    "*bottom",
+                    (95, 0),
+                    userData={"GPOS_Context": "* behDotless-ar.fina"},
+                )
+            ),
+        )
+        .add_glyph(
+            "behDotless-ar.fina",
+            lambda glyph: glyph.add_component("behDotless-ar.init", (0, 0)),
+        )
+        .build()
+    )
+    propagate_all_anchors_impl(glyphs)
+
+    new_glyph = glyphs["behDotless-ar.medi"]
+    assert_anchors(
+        new_glyph.layers[0].anchors,
+        [
+            ("bottom", (50, 0)),
+            ("*bottom", (95, 0), {"GPOS_Context": "* behDotless-ar.fina"}),
+            ("top", (35, 229)),
+        ],
+    )
+
+    new_glyph = glyphs["behDotless-ar.fina"]
+    assert_anchors(
+        new_glyph.layers[0].anchors,
+        [
+            ("bottom", (50, 0)),
+            ("*bottom", (95, 0), {"GPOS_Context": "* behDotless-ar.medi"}),
+            ("top", (35, 229)),
         ],
     )
 
