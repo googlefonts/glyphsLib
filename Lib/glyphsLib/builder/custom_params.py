@@ -21,13 +21,13 @@ from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
 from .common import to_ufo_color
 from .constants import (
+    GLYPH_ORDER_KEY,
     GLYPHS_PREFIX,
     UFO2FT_COLOR_PALETTES_KEY,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,
     REVERSE_CODEPAGE_RANGES,
-    PUBLIC_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     UFO2FT_META_TABLE_KEY,
 )
@@ -842,7 +842,7 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 
     def to_glyphs(self, glyphs, ufo):
         if glyphs.is_font():
-            ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+            ufo_glyphOrder = ufo.get_lib_value(GLYPH_ORDER_KEY)
             if ufo_glyphOrder:
                 glyphs.set_custom_value("glyphOrder", ufo_glyphOrder)
 
@@ -850,13 +850,33 @@ class GlyphOrderParamHandler(AbstractParamHandler):
         if glyphs.is_font():
             glyphs_glyphOrder = glyphs.get_custom_value("glyphOrder")
             if glyphs_glyphOrder:
-                ufo_glyphOrder = ufo.get_lib_value(PUBLIC_PREFIX + "glyphOrder")
+                ufo_glyphOrder = ufo.get_lib_value(GLYPH_ORDER_KEY)
                 # If the custom parameter provides partial coverage we want to
                 # append the original glyph order for uncovered glyphs.
                 glyphs_glyphOrder += [
                     g for g in ufo_glyphOrder if g not in glyphs_glyphOrder
                 ]
-                ufo.set_lib_value(PUBLIC_PREFIX + "glyphOrder", glyphs_glyphOrder)
+                ufo.set_lib_value(GLYPH_ORDER_KEY, glyphs_glyphOrder)
+
+            # if "Keep GlyphOrder" is not set, we reorder ".notdef"
+            # and "space" to the beginning of the glyph order.
+            #
+            # There is an older "TrueType Keep GlyphOrder" that is specific to
+            # TrueType export, but we don't know what the export format is so we
+            # treat it the same as "Keep GlyphOrder".
+            keep_glyphOrder = glyphs.get_custom_value(
+                "Keep GlyphOrder"
+            ) or glyphs.get_custom_value("TrueType Keep GlyphOrder")
+            ufo_glyphOrder = ufo.get_lib_value(GLYPH_ORDER_KEY)
+            if not keep_glyphOrder and ufo_glyphOrder:
+                space_index = 0
+                if ".notdef" in ufo_glyphOrder:
+                    ufo_glyphOrder.remove(".notdef")
+                    ufo_glyphOrder.insert(0, ".notdef")
+                    space_index = 1
+                if "space" in ufo_glyphOrder:
+                    ufo_glyphOrder.remove("space")
+                    ufo_glyphOrder.insert(space_index, "space")
 
 
 register(GlyphOrderParamHandler())
