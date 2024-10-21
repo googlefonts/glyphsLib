@@ -858,6 +858,26 @@ class GlyphOrderParamHandler(AbstractParamHandler):
                 ]
                 ufo.set_lib_value(GLYPH_ORDER_KEY, glyphs_glyphOrder)
 
+            # if "Keep GlyphOrder" is not set, we reorder ".notdef"
+            # and "space" to the beginning of the glyph order.
+            #
+            # There is an older "TrueType Keep GlyphOrder" that is specific to
+            # TrueType export, but we don't know what the export format is so we
+            # treat it the same as "Keep GlyphOrder".
+            keep_glyphOrder = glyphs.get_custom_value(
+                "Keep GlyphOrder"
+            ) or glyphs.get_custom_value("TrueType Keep GlyphOrder")
+            ufo_glyphOrder = ufo.get_lib_value(GLYPH_ORDER_KEY)
+            if not keep_glyphOrder and ufo_glyphOrder:
+                space_index = 0
+                if ".notdef" in ufo_glyphOrder:
+                    ufo_glyphOrder.remove(".notdef")
+                    ufo_glyphOrder.insert(0, ".notdef")
+                    space_index = 1
+                if "space" in ufo_glyphOrder:
+                    ufo_glyphOrder.remove("space")
+                    ufo_glyphOrder.insert(space_index, "space")
+
 
 register(GlyphOrderParamHandler())
 
