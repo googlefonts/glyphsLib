@@ -156,7 +156,8 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
 def to_glyphs_components(self, ufo_glyph, layer):
     for comp in ufo_glyph.components:
         component = self.glyphs_module.GSComponent(comp.baseGlyph)
-        component.transform = Transform(*comp.transformation)
+        if comp.transformation:  # TODO: (gs) why is that check needed now
+            component.transform = Transform(*comp.transformation)
         layer.components.append(component)
 
     for key in ["alignment", "locked", "smartComponentValues"]:
