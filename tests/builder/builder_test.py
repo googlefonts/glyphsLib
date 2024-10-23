@@ -2680,7 +2680,7 @@ class TestSkipDanglingAndNamelessLayers:
 
     def test_dangling_layer(self, caplog, ufo_module):
         layer = self.font.glyphs[0].layers[0]
-        layer.layerId = "yyy"
+        # layer.layerId = "yyy" # (gs) changing .layerId will not change glyph.layers mapping any more. Needs to be done manually.
         layer.associatedMasterId = "xxx"
 
         to_ufos(self.font, ufo_module=ufo_module, minimize_glyphs_diffs=True)
