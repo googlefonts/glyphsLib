@@ -929,15 +929,19 @@ class GlyphOrderParamHandler(AbstractParamHandler):
 
     def to_ufo(self, builder, glyphs, ufo):
         if isinstance(glyphs._owner, GSFont):
-            glyphs_glyphOrder = glyphs[self.glyphs_name]
-            if glyphs_glyphOrder:
-                ufo_glyphOrder = ufo.get_lib_value(self.ufo_name)
-                # If the custom parameter provides partial coverage we want to
-                # append the original glyph order for uncovered glyphs.
-                glyphs_glyphOrder += [
-                    g for g in ufo_glyphOrder if g not in glyphs_glyphOrder
-                ]
-                ufo.set_lib_value(self.ufo_name, glyphs_glyphOrder)
+            glyphs_glyphOrder_parameter = glyphs._get_by_name(self.glyphs_name)
+            if not glyphs_glyphOrder_parameter:
+                return
+            if builder.minimal and not glyphs_glyphOrder_parameter.active:
+                return
+            glyphs_glyphOrder = glyphs_glyphOrder_parameter.value
+            ufo_glyphOrder = ufo.get_lib_value(self.ufo_name)
+            # If the custom parameter provides partial coverage we want to
+            # append the original glyph order for uncovered glyphs.
+            glyphs_glyphOrder += [
+                g for g in ufo_glyphOrder if g not in glyphs_glyphOrder
+            ]
+            ufo.set_lib_value(self.ufo_name, glyphs_glyphOrder)
 
 
 register_parameter_handler(GlyphOrderParamHandler())
