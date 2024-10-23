@@ -104,7 +104,7 @@ def _has_components(glyph: GSGlyph) -> bool:
     return any(layer.components for layer in glyph.layers if layer.isMasterLayer)
 
 
-def _get_category(
+def _get_category(  # TODO: remove this. Should be handled internally (gs)
     glyph: GSGlyph,
     glyph_data: glyphdata.GlyphData | None = None,
 ) -> str:
@@ -116,7 +116,7 @@ def _get_category(
     )
 
 
-def _get_subCategory(
+def _get_subCategory(  # TODO: remove this. Should be handled internally (gs)
     glyph: GSGlyph,
     glyph_data: glyphdata.GlyphData | None = None,
 ) -> str:
