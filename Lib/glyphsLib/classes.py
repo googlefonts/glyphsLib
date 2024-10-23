@@ -1571,7 +1571,12 @@ class PropertiesProxy(ListDictionaryProxy):
         super().__init__(owner, "_properties", GSFontInfoValue)
 
     def __getitem__(self, key):
-        return self.getProperty(key, language="dflt") or self.getProperty(key, language="ENG")
+        if isinstance(key, slice):
+            return self.values().__getitem__(key)
+        elif isinstance(key, int):
+            return self.values()[key]
+        elif isinstance(key, str):
+            return self.getProperty(key, language="dflt") or self.getProperty(key, language="ENG")
 
     def __setitem__(self, key, value):
         infoValue = self[key]
