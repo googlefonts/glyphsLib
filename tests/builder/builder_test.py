@@ -575,7 +575,7 @@ def test_family_name_none(ufo_module):
     assert len(instances[0].properties) == 0
     assert len(instances[1].customParameters) == 0
     assert len(instances[1].properties) == 1
-    assert instances[1].properties[0].value == "CustomFamily"
+    assert instances[1].properties[0].values == {'dflt': 'CustomFamily'}
 
     # the masters' family name is unchanged
     for ufo in ufos:
@@ -628,7 +628,7 @@ def test_family_name_custom(ufo_module):
     assert instances[0].name == "Regular2"
     assert len(instances[0].customParameters) == 0
     assert len(instances[0].properties) == 1
-    assert instances[0].properties[0].value == "CustomFamily"
+    assert instances[0].properties[0].localizedValue("dflt") == "CustomFamily"
 
     # the masters' family is also modified to use custom 'family_name'
     for ufo in ufos:
@@ -1267,8 +1267,8 @@ def test_glyph_color_layers_components_2(ufo_module):
         font = glyphsLib.load(f)
 
     ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
-    bold_layer0 = ds.sources[1].font.layers["color.0"]
-    bold_layer1 = ds.sources[1].font.layers["color.1"]
+    bold_layer0 = ds.sources[1].font.layers["Color 0"]
+    bold_layer1 = ds.sources[1].font.layers["Color 1"]
     assert [c.baseGlyph for c in bold_layer0["Aacute"].components] == [
         "A.color0",
         "acutecomb.color0",
