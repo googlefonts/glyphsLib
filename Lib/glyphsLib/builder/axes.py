@@ -347,16 +347,17 @@ def _potentially_invert_mapping(self, mapping, instance_mapping):
             "and save in a recent version of Glyphs to avoid this warning."
         )
         return mapping
-    if min(mapping.keys()) == min(instance_mapping.keys()) and max(
-        mapping.keys()
-    ) == max(instance_mapping.keys()):
-        # Looks like userspace->designspace
-        return mapping
-    if min(mapping.keys()) == min(instance_mapping.values()) and max(
-        mapping.values()
-    ) == max(instance_mapping.keys()):
-        # Looks like designspace->userspace
-        return inverted
+    if instance_mapping:
+        if min(mapping.keys()) == min(instance_mapping.keys()) and max(
+            mapping.keys()
+        ) == max(instance_mapping.keys()):
+            # Looks like userspace->designspace
+            return mapping
+        if min(mapping.keys()) == min(instance_mapping.values()) and max(
+            mapping.values()
+        ) == max(instance_mapping.keys()):
+            # Looks like designspace->userspace
+            return inverted
     # No idea
     logger.warning(
         "Axis %s: The Axis Mappings custom parameter is ambiguous, "
