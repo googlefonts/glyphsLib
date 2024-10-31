@@ -131,18 +131,34 @@ def test_glyphs3_rtl_kerning(datadir, ufo_module):
     designspace = glyphsLib.to_designspace(original_glyphs_font, ufo_module=ufo_module)
     first_derivative_ufos = [source.font for source in designspace.sources]
 
-    print(first_derivative_ufos[0].groups)
-    assert first_derivative_ufos[0].groups["public.kern1.reh-ar"] == ["reh-ar"]
-    assert first_derivative_ufos[0].groups["public.kern2.hah-ar.init.swsh"] == [
-        "hah-ar.init.swsh"
-    ]
-    assert (
-        first_derivative_ufos[0].kerning[
-            ("public.kern1.reh-ar", "public.kern2.hah-ar.init.swsh")
-        ]
-        == -50
-    )
-    assert first_derivative_ufos[0].kerning[("he-hb", "he-hb")] == -21
+    assert first_derivative_ufos[0].groups == {
+        "public.kern1.A": ["A"],
+        "public.kern2.A": ["A"],
+        "public.kern1.quotesingle": ["quotesingle"],
+        "public.kern2.quotesingle": ["quotesingle"],
+        "public.kern1.hah-ar.init": ["hah-ar.init"],
+        "public.kern2.hah-ar.init.swsh": ["hah-ar.init.swsh"],
+        "public.kern2.left-one-ar": ["one-ar", "one-ar.wide"],
+        "public.kern1.reh-ar": ["reh-ar"],
+        "public.kern1.leftAlef": ["alef-hb"],
+        "public.kern1.leftBet": ["bet-hb"],
+        "public.kern2.rightBet": ["bet-hb"],
+    }
+    assert first_derivative_ufos[0].kerning == {
+        ("public.kern1.A", "public.kern2.quotesingle"): -49,
+        # the (@quotesingle, @A) pair should not be overwritten by the
+        # (@quotesingle, @rightBet), both can co-exist in the combined kerning
+        # https://github.com/googlefonts/glyphsLib/issues/1039
+        ("public.kern1.quotesingle", "public.kern2.A"): -49,
+        ("public.kern1.quotesingle", "public.kern2.rightBet"): -20,
+        ("public.kern1.leftBet", "public.kern2.quotesingle"): -30,
+        ("public.kern1.leftBet", "public.kern2.rightAlef"): 20,
+        ("public.kern1.leftAlef", "public.kern2.rightBet"): -20,
+        ("public.kern1.leftAlef", "he-hb"): 4,
+        ("public.kern1.reh-ar", "public.kern2.hah-ar.init.swsh"): -50,
+        ("he-hb", "public.kern2.rightAlef"): -2,
+        ("he-hb", "he-hb"): -21,
+    }
 
     # Round-tripping back to Glyphs
     round_tripped_glyphs_font = glyphsLib.to_glyphs(first_derivative_ufos)
