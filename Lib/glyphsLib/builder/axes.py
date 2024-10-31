@@ -333,9 +333,6 @@ def _potentially_invert_mapping(self, mapping, instance_mapping):
 
     # We want to return a userspace->designspace map for our purposes
     inverted = {v: k for k, v in mapping.items()}
-    if int(self.font.appVersion) >= 3168:
-        # Mapping is *definitely* designspace->userspace, invert
-        return inverted
     if self.font.format_version != 3:
         # Glyphs wasn't using this custom parameter, only we were
         return mapping
