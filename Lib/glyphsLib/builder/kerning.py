@@ -43,9 +43,15 @@ def to_ufo_kerning(self):
             combined_kerning = deepcopy(kerning) if both_directions else kerning
         if kerning_source.id in self.font.kerningRTL:
             for kern1, subtable in self.font.kerningRTL[kerning_source.id].items():
-                combined_kerning[flip_class_side(kern1)] = {
-                    flip_class_side(kern2): v for kern2, v in subtable.items()
-                }
+                # flip RTL sides and combine with existing LTR dicts, but take care
+                # not to overwrite whole kern2 subtable when the flipped kern1
+                # coincides with an existing LTR kern1
+                # https://github.com/googlefonts/glyphsLib/issues/1039
+                kern1_key = flip_class_side(kern1)
+                existing_kern2 = combined_kerning.setdefault(kern1_key, {})
+                new_kern2 = {flip_class_side(kern2): v for kern2, v in subtable.items()}
+                # TODO: use 3.9+ dict.update() or | operator after we drop python3.8
+                combined_kerning[kern1_key] = {**existing_kern2, **new_kern2}
         if combined_kerning:
             _to_ufo_kerning(self, self._sources[master.id].font, combined_kerning)
 
