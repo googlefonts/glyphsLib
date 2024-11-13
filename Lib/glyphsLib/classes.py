@@ -4151,11 +4151,11 @@ class GSFeature(GSBase):
 
     @property
     def disabled(self):
-        raise "Use .active"
+        raise Exception("Use .active")
 
     @disabled.setter
     def disabled(self, _val):
-        raise "Use .active = "
+        raise Exception("Use .active = ")
 
     def featureNamesString(self):
         if len(self.labels) == 0:
