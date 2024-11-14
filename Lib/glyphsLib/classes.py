@@ -2079,7 +2079,7 @@ class GSNode(GSBase):
             )
 
     @classmethod
-    def read(cls, line):
+    def read(cls, line, parent=None):
         """Parse a Glyphs node string into a GSNode.
 
         The format of a Glyphs node string (`line`) is:
@@ -2105,10 +2105,11 @@ class GSNode(GSBase):
             parser = Parser()
             node._userData = parser.parse(value)
 
+        node._parent = parent
         return node
 
     @classmethod
-    def read_v3(cls, lst):
+    def read_v3(cls, lst, parent=None):
         position = (lst[0], lst[1])
         smooth = lst[2].endswith("s")
         if lst[2][0] == "c":
@@ -2124,6 +2125,8 @@ class GSNode(GSBase):
         node = cls(position=position, type=node_type, smooth=smooth)
         if len(lst) > 3:
             node._userData = lst[3]
+
+        node._parent = parent
         return node
 
     @property
@@ -2241,10 +2244,7 @@ class GSPath(GSBase):
             read_node = GSNode.read_v3
         else:
             read_node = GSNode.read
-        for x in d:
-            node = read_node(x)
-            node._parent = self
-            self._nodes.append(node)
+        self.nodes.extend(read_node(x, self) for x in d)
 
     def __init__(self):
         self.closed = self._defaultsForName["closed"]
