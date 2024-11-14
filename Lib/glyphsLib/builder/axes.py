@@ -210,7 +210,8 @@ def to_designspace_axes(self):
                         f"the mapping for user location {userLoc} "
                         f"from {mapping[userLoc]} to {designLoc}"
                     )
-                mapping[userLoc] = designLoc
+                # sometimes userLoc is a str, so we need to convert it to float 🤷‍♂️
+                mapping[float(userLoc)] = designLoc
 
             update_mapping_from_instances(
                 mapping,
