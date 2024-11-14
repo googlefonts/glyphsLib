@@ -533,6 +533,23 @@ class SetCustomParamsTestBase(object):
         font = glyphsLib.to_glyphs([self.ufo])
         self.assertEqual(font.customParameters["meta Table"], glyphs_meta)
 
+    def test_name_unique_id_as_property(self):
+        uniqueID = "Foo Bar: Version 1.234"
+        self.font.properties["uniqueID"] = uniqueID
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeNameUniqueID, uniqueID)
+        # we currently do not round-trip properties
+        # font = glyphsLib.to_glyphs([self.ufo])
+        # self.assertEqual(font.properties["uniqueID"], uniqueID)
+
+    def test_name_unique_id_as_custom_parameter(self):
+        uniqueID = "Foo Bar: Version 1.234"
+        self.font.customParameters["uniqueID"] = uniqueID
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.openTypeNameUniqueID, uniqueID)
+        font = glyphsLib.to_glyphs([self.ufo])
+        self.assertEqual(font.customParameters["uniqueID"], uniqueID)
+
     def test_name_table_entry(self):
         self.font.customParameters.append(
             GSCustomParameter("Name Table Entry", "1024; FOO; BAZ")
