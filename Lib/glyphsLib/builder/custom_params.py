@@ -376,8 +376,7 @@ GLYPHS_UFO_CUSTOM_PARAMS_GLYPHS3_PROPERTIES = (
     # "copyrights",
     ("versionString", "openTypeNameVersion", "versionString"),
     ("vendorID", "openTypeOS2VendorID", "vendorID"),
-    # TODO: Map this property to a custom parameter if applicable.
-    # "uniqueID",
+    ("uniqueID", "openTypeNameUniqueID", "uniqueID"),
     ("license", "openTypeNameLicense", "licenses"),
     ("licenseURL", "openTypeNameLicenseURL", "licenseURL"),
     ("trademark", "trademark", "trademarks"),
