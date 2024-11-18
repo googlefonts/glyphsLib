@@ -3560,11 +3560,11 @@ class GSTransformable(GSBase):
         affine = (
             Affine()
             .translate(self.position.x, self.position.y)
+            .skew(math.radians(self._slant.x), math.radians(self._slant.y))
             .rotate(math.radians(self._rotation))
             .scale(self._scale.x, self._scale.y)
-            .skew(self._slant.x, self._slant.y)
         )
-        return Transform(*affine)
+        return Transform(affine.xx, affine.xy, affine.yx, affine.yy, affine.dx, affine.dy)
 
     @transform.setter
     def transform(self, value):
