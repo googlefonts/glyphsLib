@@ -4451,7 +4451,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 if len(newParameter) > 0:  # this means we did find something
                     customParameters.extend(newParameter)
             else:
-                raise "problem converting infoValue %s in %s" % (infoValue, obj)
+                raise Exception("problem converting infoValue %s in %s" % (infoValue, obj))
                 return None
         return customParameters
 
