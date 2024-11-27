@@ -8,7 +8,7 @@ from fontTools.varLib import FEAVAR_FEATURETAG_LIB_KEY
 from fontTools.varLib.featureVars import overlayFeatureVariations
 
 from glyphsLib import util
-from glyphsLib.classes import LAYER_ATTRIBUTE_AXIS_RULES
+from glyphsLib.classes import GSLayer, LAYER_ATTRIBUTE_AXIS_RULES
 from glyphsLib.util import designspace_min_max
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
@@ -135,7 +135,17 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
             for layer in layers:
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
-                ufo_layer = ufo_font.layers.defaultLayer
+                layer_dummy = GSLayer()
+                layer_dummy.attributes = copy.copy(layer.attributes)
+                del layer_dummy.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
+                if len(layer_dummy.attributes) > 0:
+                    layer_name = layer_dummy.name
+                    if layer_name not in ufo_font.layers:
+                        ufo_layer = ufo_font.newLayer(layer_name)
+                    else:
+                        ufo_layer = ufo_font.layers[layer_name]
+                else:
+                    ufo_layer = ufo_font.layers.defaultLayer
                 ufo_glyph_name = _bracket_glyph_name(self, glyph_name, box)
                 ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
