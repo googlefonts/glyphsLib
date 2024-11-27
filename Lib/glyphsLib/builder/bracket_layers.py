@@ -90,7 +90,7 @@ def to_designspace_bracket_layers(self):
 
     # Set feature for rules
     feat = self.font.customParameters["Feature for Feature Variations"]
-    if feat == "rclt":
+    if feat == "rclt" or feat == "rlig":
         self._designspace.rulesProcessingLast = True
     elif feat and feat != "rvrn":
         self._designspace.lib[FEAVAR_FEATURETAG_LIB_KEY] = feat
