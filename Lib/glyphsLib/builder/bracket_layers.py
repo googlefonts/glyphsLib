@@ -153,9 +153,7 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 # implicit bracket layers have no distinct name, they are simply
                 # references to master layers; the empty string is a signal when
                 # roundtripping back to Glyphs to skip the duplicate layers.
-                ufo_glyph.lib[GLYPHLIB_PREFIX + "_originalLayerName"] = (
-                    "" if id(layer) in implicit_bracket_layers else layer.name
-                )
+                ufo_glyph.lib[GLYPHLIB_PREFIX + "layer.attributes"] = dict(layer.attributes)
                 # swap components if base glyph contains matching bracket layers.
                 for comp in ufo_glyph.components:
                     bracket_comp_name = _bracket_glyph_name(self, comp.baseGlyph, box)
