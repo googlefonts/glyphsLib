@@ -5341,6 +5341,34 @@ class GSLayer(GSBase):
         self.width = self._defaultsForName["width"]
         self.metricWidth = self._defaultsForName["metricWidth"]
 
+    def __copy__(self):
+        new_obj = self.__class__()
+        new_obj._anchors = copy.copy(self._anchors)
+        new_obj._annotations = copy.copy(self._annotations)
+        new_obj._background = copy.copy(self._background)
+        # new_obj._foreground = None
+        new_obj._guides = copy.copy(self._guides)
+        new_obj._hints = copy.copy(self._hints)
+        new_obj._layerId = self._layerId  # immutable?
+        new_obj._name = copy.copy(self._name)
+        # new_obj._selection = []
+        new_obj._shapes = copy.copy(self._shapes)
+        new_obj._userData = copy.copy(self._userData)
+        new_obj.attributes = copy.copy(self.attributes)
+        new_obj.smartComponentPoleMapping = copy.copy(self.smartComponentPoleMapping)
+        new_obj.associatedMasterId = self.associatedMasterId
+        new_obj.backgroundImage = copy.copy(self.backgroundImage)
+        new_obj.color = copy.copy(self.color)
+        # new_obj.parent = None
+        new_obj.metricWidth = self.metricWidth
+        new_obj.metricLeft = self.metricLeft
+        new_obj.metricRight = self.metricRight
+        new_obj.vertOrigin = self.vertOrigin
+        new_obj.vertWidth = self.vertWidth
+        new_obj.visible = self.visible
+        new_obj.width = self.width
+        return new_obj
+
     def _str(self):
         name = self.name
         try:

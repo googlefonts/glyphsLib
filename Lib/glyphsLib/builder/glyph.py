@@ -78,6 +78,7 @@ USV_EXTENSIONS = tuple(USV_MAP.keys())
 
 def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
+    assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
     if layer.isMasterLayer and do_color_layers:

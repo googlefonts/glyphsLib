@@ -274,8 +274,8 @@ class UFOBuilder(LoggerMixin):
 
         # hasPathComponents = False
         for glyph in self.font.glyphs:
-            for layerId, layer in glyph._layers.items():
-                if layer.associatedMasterId != layerId:
+            for layer in glyph._layers.values():
+                if not layer.isMasterLayer:
                     # The layer is not the main layer of a master
                     # Store all layers, even the invalid ones, and just skip
                     # them and print a warning below.

@@ -30,11 +30,12 @@ def to_ufo_color_layer_names(self, ufo):
 
 
 def to_ufo_layer(self, glyph, layer):
+    assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
     layer_name = layer.name
 
-    if layer.associatedMasterId == layer.layerId:
+    if layer.isMasterLayer:
         ufo_layer = ufo_font.layers.defaultLayer
     elif layer_name not in ufo_font.layers:
         ufo_layer = ufo_font.newLayer(layer_name)
@@ -64,6 +65,7 @@ def to_ufo_layer(self, glyph, layer):
 
 
 def to_ufo_background_layer(self, layer):
+    assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
     if layer.associatedMasterId == layer.layerId:
         layer_name = "public.background"

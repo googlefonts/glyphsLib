@@ -133,8 +133,9 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
         for frozenbox, layers in glyph_bracket_layers.items():
             box = dict(frozenbox)
             for layer in layers:
-                layer_id = layer.associatedMasterId or layer.layerId
-                ufo_font = self._sources[layer_id].font
+                assert layer.associatedMasterId  # gs
+                master_id = layer.associatedMasterId or layer.layerId
+                ufo_font = self._sources[master_id].font
                 layer_dummy = GSLayer()
                 layer_dummy.attributes = copy.copy(layer.attributes)
                 del layer_dummy.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
