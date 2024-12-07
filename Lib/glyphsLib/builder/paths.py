@@ -66,7 +66,7 @@ def to_ufo_paths(self, ufo_glyph, layer):
                     for k, v in node.userData.items()
                     if k not in ("UFO.identifier", "name")
                 }
-            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+                self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
         pen.endPath()
 
 
