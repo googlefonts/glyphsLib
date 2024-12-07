@@ -40,6 +40,7 @@ def to_ufo_paths(self, ufo_glyph, layer):
                 best_repr_list(tuple(node.position)),
                 segmentType="move",
                 name=node.userData.get("name"),
+                identifier=node.userData.get("UFO.identifier"),
             )
         else:
             # In Glyphs.app, the starting node of a closed contour is always
@@ -53,14 +54,19 @@ def to_ufo_paths(self, ufo_glyph, layer):
                 segmentType=node_type,
                 smooth=node.smooth,
                 name=node.userData.get("name"),
+                identifier=node.userData.get("UFO.identifier"),
             )
             # NOTE: Can't do path_index, node_index through enumeration here because we
             # might have changed node order.
             # A node's name will be stored as a UFO point's name attribute, so filter
             # it from the Glyph node user data to avoid storing duplicate information.
             if node.userData:
-                node_user_data = {k: v for k, v in node.userData.items() if k != "name"}
-                self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+                node_user_data = {
+                    k: v
+                    for k, v in node.userData.items()
+                    if k not in ("UFO.identifier", "name")
+                }
+            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
         pen.endPath()
 
 
@@ -75,6 +81,8 @@ def to_glyphs_paths(self, ufo_glyph, layer):
             node.type = _to_glyphs_node_type(point.segmentType)
             node.smooth = point.smooth
             node.name = point.name
+            if point.identifier is not None:
+                node.userData["UFO.identifier"] = point.identifier
             path.nodes.append(node)
         path.closed = not contour.open
         if not contour.open:
