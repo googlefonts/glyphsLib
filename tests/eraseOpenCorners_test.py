@@ -158,6 +158,18 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                {
+                    "name": "curveAsLastSegment",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((100, 100),)),
+                        ("lineTo", ((10, 110),)),
+                        ("lineTo", ((15, 120),)),
+                        ("lineTo", ((60, 30),)),
+                        ("curveTo", ((80, 30), (100, 80), (100, 100))),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -319,6 +331,15 @@ def test_large_crossing(font):
     assert philter(font)
     newcontour = font["largeCrossing"][0]
     assert len(newcontour) == 3
+
+
+# there was an issue where we would generate an extra lineto if we erased
+# corners on an outline where the last segment was a curve
+def test_curve_as_last_segment(font):
+    philter = EraseOpenCornersFilter(include={"curveAsLastSegment"})
+    assert philter(font)
+    newcontour = font["curveAsLastSegment"][0]
+    assert structure(newcontour) == ["curve", "line", "line", None, None]
 
 
 def structure(contour):
