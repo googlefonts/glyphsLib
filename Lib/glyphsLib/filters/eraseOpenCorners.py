@@ -54,7 +54,8 @@ class EraseOpenCornersPen(BasePen):
             )
             logger.debug("Segments: %s", segs)
 
-        while ix < len(segs):
+        # we need at least two segments to find a corner
+        while len(segs) > 2 and ix < len(segs):
             next_ix = (ix + 1) % len(segs)
 
             # Am I a line segment?
