@@ -345,7 +345,7 @@ def test_large_crossing(font):
     newcontour = font["largeCrossing"][0]
     assert len(newcontour) == 3
 
-    
+
 # there was an issue where we would generate an extra lineto if we erased
 # corners on an outline where the last segment was a curve
 def test_curve_as_last_segment(font):
@@ -354,7 +354,7 @@ def test_curve_as_last_segment(font):
     newcontour = font["curveAsLastSegment"][0]
     assert structure(newcontour) == ["curve", "line", "line", None, None]
 
-    
+
 def test_only_two_segments(font):
     philter = EraseOpenCornersFilter(include={"justTwoSegments"})
     assert not philter(font)
