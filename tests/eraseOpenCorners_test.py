@@ -170,6 +170,19 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                # a pathological case, where a curve has two segments.
+                # the naive logic treats this as an open corner, treating the
+                # same curve segment as the 'prev' and 'next'.
+                {
+                    "name": "justTwoSegments",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((10, 10),)),
+                        ("lineTo", ((13, 10),)),
+                        ("curveTo", ((11, 8), (11, 8), (10, 10))),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
@@ -332,7 +345,7 @@ def test_large_crossing(font):
     newcontour = font["largeCrossing"][0]
     assert len(newcontour) == 3
 
-
+    
 # there was an issue where we would generate an extra lineto if we erased
 # corners on an outline where the last segment was a curve
 def test_curve_as_last_segment(font):
@@ -340,6 +353,11 @@ def test_curve_as_last_segment(font):
     assert philter(font)
     newcontour = font["curveAsLastSegment"][0]
     assert structure(newcontour) == ["curve", "line", "line", None, None]
+
+    
+def test_only_two_segments(font):
+    philter = EraseOpenCornersFilter(include={"justTwoSegments"})
+    assert not philter(font)
 
 
 def structure(contour):
