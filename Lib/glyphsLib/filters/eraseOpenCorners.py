@@ -35,7 +35,9 @@ class EraseOpenCornersPen(BasePen):
     _qCurveTo = _curveTo = _lineTo = _qCurveToOne = _curveToOne = _operate
 
     def closePath(self):
-        self.segments.append((self._getCurrentPoint(), self.segments[0][0]))
+        # only add a line segment here if the current first and last point aren't equal
+        if self._getCurrentPoint() != self.segments[0][0]:
+            self.segments.append((self._getCurrentPoint(), self.segments[0][0]))
         self.is_closed = True
         self.endPath()
 
