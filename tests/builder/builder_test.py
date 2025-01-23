@@ -353,6 +353,19 @@ def test_mark_nonspacing_zero_width(ufo_module):
     assert originalWidth_key not in ufo["bar"].lib
 
 
+# with an unknown glyph name we should get the correct category/subcategory
+# using the unicode value, and so should zero the width of the glyph
+# https://github.com/googlefonts/glyphsLib/issues/1059
+def test_nonspacing_zero_width_from_unicode(ufo_module):
+    font = generate_minimal_font()
+    glyph = add_glyph(font, "unknownName")
+    glyph.layers[0].width = 200
+    glyph.unicodes = ["0315"]  # combining comma above, a nonspacing mark
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+    ufo_glyph = ufo["unknownName"]
+    assert ufo_glyph.width == 0
+
+
 def test_GDEF(ufo_module):
     font = generate_minimal_font()
     for glyph in (

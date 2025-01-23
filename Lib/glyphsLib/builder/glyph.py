@@ -107,10 +107,16 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             USV_KEY = PUBLIC_PREFIX + "unicodeVariationSequences"
             ufo_font.lib.setdefault(USV_KEY, {}).setdefault(usv, {})[uni] = glyph.name
 
+    # we can't use use the glyphs.unicodes values since they aren't always
+    # correctly padded
+    unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, unicodes=unicodes)
+
     if self.glyphdata is not None:
-        custom = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, self.glyphdata)
+        custom = glyphsLib.glyphdata.get_glyph(
+            ufo_glyph.name, self.glyphdata, unicodes=unicodes
+        )
         production_name = glyph.production or (
             custom.production_name
             if custom.production_name != glyphinfo.production_name
