@@ -131,14 +131,14 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
             glyph.script,
         )
 
+    production_name = production_name or glyphinfo.production_name
+
     if production_name:
         # Make sure production names of bracket glyphs also get a BRACKET suffix.
         bracket_glyph_name = BRACKET_GLYPH_RE.match(ufo_glyph.name)
         prod_bracket_glyph_name = BRACKET_GLYPH_RE.match(production_name)
         if bracket_glyph_name and not prod_bracket_glyph_name:
             production_name += BRACKET_GLYPH_SUFFIX_RE.match(ufo_glyph.name).group(1)
-    else:
-        production_name = glyphinfo.production_name
     if production_name and production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
         if postscriptNamesKey not in ufo_font.lib:
