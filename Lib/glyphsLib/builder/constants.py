@@ -262,7 +262,6 @@ LANGUAGE_MAPPING = {
     "IRI": 0x083C,
     "ISL": 0x040F,
     "ITA": 0x0410,
-    "ITA": 0x0410,
     "IWR": 0x040D,
     "JPN": 0x0411,
     "KAN": 0x044B,

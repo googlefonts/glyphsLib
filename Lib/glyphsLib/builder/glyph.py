@@ -60,7 +60,7 @@ def _clone_layer(layer, paths=None, components=None):
 # And this forum post:
 # https://forum.glyphsapp.com/t/unicode-variation-selector-u-fe01/21701
 USV_MAP = {
-    f".uv{i+1:03}": f"{c:04X}"
+    f".uv{i + 1:03}": f"{c:04X}"
     for i, c in enumerate(
         itertools.chain(range(0xFE00, 0xFE0F + 1), range(0xE0100, 0xE01EF + 1))
     )
