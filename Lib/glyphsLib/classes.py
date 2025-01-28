@@ -1850,14 +1850,12 @@ class GSCustomParameter(GSBase):
     _CUSTOM_INTLIST_PARAMS = frozenset(
         (
             "fsType",
-            "openTypeOS2CodePageRanges",
             "openTypeOS2FamilyClass",
             "openTypeOS2Panose",
             "openTypeOS2Type",
             "openTypeOS2UnicodeRanges",
             "panose",
             "unicodeRanges",
-            # "codePageRanges",
             "openTypeHeadFlags",
             # "Color Palettes",
         )
