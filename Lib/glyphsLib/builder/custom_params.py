@@ -492,7 +492,7 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             if codepages is None:
                 return
 
-        ufo_codepage_bits = [CODEPAGE_RANGES[v] for v in codepages]
+        ufo_codepage_bits = self._convert_to_bits(codepages)
         unsupported_codepage_bits = glyphs.get_custom_value(
             "codePageRangesUnsupportedBits"
         )
@@ -500,6 +500,34 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
             ufo_codepage_bits.extend(unsupported_codepage_bits)
 
         ufo.set_info_value("openTypeOS2CodePageRanges", sorted(ufo_codepage_bits))
+
+    @staticmethod
+    def _convert_to_bits(codepages):
+        ufo_codepage_bits = []
+        for codepage in codepages:
+            if isinstance(codepage, int):
+                ufo_codepage_bits.append(CODEPAGE_RANGES[codepage])
+
+            elif isinstance(codepage, str):
+                if codepage.isdigit():
+                    ufo_codepage_bits.append(CODEPAGE_RANGES[int(codepage)])
+                elif codepage.startswith("bit "):
+                    try:
+                        ufo_codepage_bits.append(int(codepage[4:]))
+                    except ValueError as err:
+                        raise ValueError(
+                            f"'{codepage}' is not in correct format. "
+                            "A number must follow after 'bit '."
+                        ) from err
+                else:
+                    raise ValueError(
+                        f"'{codepage}'is neither a number nor 'bit ' format."
+                    )
+
+            else:
+                raise TypeError(f"Unsupported type: {type(codepage)}")
+
+        return ufo_codepage_bits
 
 
 register(OS2CodePageRangesParamHandler())
