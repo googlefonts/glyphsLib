@@ -229,6 +229,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         if glyph.tags:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "tags"] = glyph.tags
 
+        if layer.smartComponentPoleMapping:
+            ufo_glyph.lib[GLYPHLIB_PREFIX + "smartComponentPoleMapping"] = dict(layer.smartComponentPoleMapping)
+
         if not layer.isMasterLayer:
             ufo_glyph.lib[LAYER_ID_KEY] = layer.layerId
         if layer.attributes:
@@ -623,6 +626,10 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
+
+    smartComponentPoleMapping = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "smartComponentPoleMapping")
+    if smartComponentPoleMapping:
+        layer.smartComponentPoleMapping = smartComponentPoleMapping
 
 
 def _to_glyphs_color(color):
