@@ -600,6 +600,9 @@ layerId = m01;
 shapes = (
 {
 ref = A;
+userData = {
+foo.bar = bar;
+};
 },
 {
 anchor = top.alt;
