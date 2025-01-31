@@ -628,6 +628,43 @@ width = 459;
 unicode = (196,228);
 },
 {
+glyphname = Agrave;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(159,656,l),
+(346,656,l),
+(346,785,l),
+(159,785,l)
+);
+},
+{
+ref = A;
+},
+{
+closed = 1;
+nodes = (
+(420,653,l),
+(650,653,l),
+(650,786,l),
+(420,786,l)
+);
+}
+);
+width = 459;
+},
+{
+layerId = "C2ECF50A-02EF-4989-A14C-AF8E838D1105";
+width = 600;
+}
+);
+unicode = 192;
+},
+{
 glyphname = B;
 lastChange = "2023-02-25 14:51:46 +0000";
 layers = (
