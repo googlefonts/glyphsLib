@@ -398,7 +398,7 @@ class UFOBuilder(LoggerMixin):
     from .blue_values import to_ufo_blue_values
     from .color_layers import to_ufo_color_layers
     from .common import to_ufo_time
-    from .components import to_ufo_components, to_ufo_smart_component_axes
+    from .components import to_ufo_component, to_ufo_smart_component_axes
     from .custom_params import to_ufo_custom_params, to_ufo_properties
     from .features import regenerate_gdef, to_ufo_master_features
     from .font import to_ufo_font_attributes
@@ -410,13 +410,14 @@ class UFOBuilder(LoggerMixin):
     from .layers import to_ufo_layer, to_ufo_background_layer, to_ufo_color_layer_names
     from .masters import to_ufo_master_attributes
     from .names import to_ufo_names
-    from .paths import to_ufo_paths
+    from .paths import to_ufo_path
     from .sources import to_designspace_sources
     from .glyph import (
         to_ufo_glyph,
         to_ufo_glyph_color,
         to_ufo_glyph_background,
         to_ufo_glyph_height_and_vertical_origin,
+        to_ufo_shapes,
     )
     from .user_data import (
         to_designspace_family_user_data,

@@ -18,56 +18,55 @@ from glyphsLib.pens import _to_glyphs_node_type, _to_ufo_node_type
 from glyphsLib.util import best_repr_list
 
 
-def to_ufo_paths(self, ufo_glyph, layer):
+def to_ufo_path(self, ufo_glyph, path):
     """Draw .glyphs paths onto a pen."""
     pen = ufo_glyph.getPointPen()
 
-    for path in layer.paths:
-        # the list is changed below, otherwise you can't draw more than once
-        # per session.
-        nodes = list(path.nodes)
+    # the list is changed below, otherwise you can't draw more than once
+    # per session.
+    nodes = list(path.nodes)
 
-        pen.beginPath()
+    pen.beginPath()
 
-        if not nodes:
-            pen.endPath()
-            continue
-
-        if not path.closed:
-            node = nodes.pop(0)
-            assert node.type == "line", "Open path starts with off-curve points"
-            pen.addPoint(
-                best_repr_list(tuple(node.position)),
-                segmentType="move",
-                name=node.userData.get("name"),
-                identifier=node.userData.get("UFO.identifier"),
-            )
-        else:
-            # In Glyphs.app, the starting node of a closed contour is always
-            # stored at the end of the nodes list.
-            nodes.insert(0, nodes.pop())
-
-        for node in nodes:
-            node_type = _to_ufo_node_type(node.type)
-            pen.addPoint(
-                tuple(best_repr_list(node.position)),
-                segmentType=node_type,
-                smooth=node.smooth,
-                name=node.userData.get("name"),
-                identifier=node.userData.get("UFO.identifier"),
-            )
-            # NOTE: Can't do path_index, node_index through enumeration here because we
-            # might have changed node order.
-            # A node's name will be stored as a UFO point's name attribute, so filter
-            # it from the Glyph node user data to avoid storing duplicate information.
-            if node.userData:
-                node_user_data = {
-                    k: v
-                    for k, v in node.userData.items()
-                    if k not in ("UFO.identifier", "name")
-                }
-                self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+    if not nodes:
         pen.endPath()
+        return
+
+    if not path.closed:
+        node = nodes.pop(0)
+        assert node.type == "line", "Open path starts with off-curve points"
+        pen.addPoint(
+            best_repr_list(tuple(node.position)),
+            segmentType="move",
+            name=node.userData.get("name"),
+            identifier=node.userData.get("UFO.identifier"),
+        )
+    else:
+        # In Glyphs.app, the starting node of a closed contour is always
+        # stored at the end of the nodes list.
+        nodes.insert(0, nodes.pop())
+
+    for node in nodes:
+        node_type = _to_ufo_node_type(node.type)
+        pen.addPoint(
+            tuple(best_repr_list(node.position)),
+            segmentType=node_type,
+            smooth=node.smooth,
+            name=node.userData.get("name"),
+            identifier=node.userData.get("UFO.identifier"),
+        )
+        # NOTE: Can't do path_index, node_index through enumeration here because we
+        # might have changed node order.
+        # A node's name will be stored as a UFO point's name attribute, so filter
+        # it from the Glyph node user data to avoid storing duplicate information.
+        if node.userData:
+            node_user_data = {
+                k: v
+                for k, v in node.userData.items()
+                if k not in ("UFO.identifier", "name")
+            }
+            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+    pen.endPath()
 
 
 def to_glyphs_paths(self, ufo_glyph, layer):

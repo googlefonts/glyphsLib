@@ -78,6 +78,42 @@ USV_MAP = {
 USV_EXTENSIONS = tuple(USV_MAP.keys())
 
 
+def to_ufo_shapes(self, ufo_glyph, layer):
+
+    # NOTE: The UFO v3 and Glyphs data model have incompatible component reference
+    # semantics. UFO components always point to a glyph in the same layer, Glyphs
+    # components in a ...:
+    #  - master layer: point to glyphs in the same master layer.
+    #  - non-master layer: point to glyphs in the layer with the same layerKey and fall
+    #    back to glyphs in the associated master layer
+    # There are some valid use-cases for components in non-master layers, and doing it
+    # thoroughly correctly is time-consuming, so we're decomposing just the background
+    # layer components as a band-aid.
+    if layer.components and isinstance(layer, GSBackgroundLayer):
+        logger.warning(
+            f"Glyph '{ufo_glyph.name}': All components of the background layer of "
+            f"'{layer.foreground.name}' will be decomposed."
+        )
+        self.to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
+        return
+
+    # Store shape order for mixed glyphs
+    shape_order_lib_key = ""
+
+    for shape in layer.shapes:
+        if isinstance(shape, GSPath):
+            self.to_ufo_path(ufo_glyph, shape)  # .path
+            shape_order_lib_key += "P"
+        elif isinstance(shape, GSComponent):
+            self.to_ufo_component(ufo_glyph, shape)  # .component
+            shape_order_lib_key += "C"
+        else:
+            raise ValueError("Unknown shape type %s" % shape)
+
+    if "P" in shape_order_lib_key and "C" in shape_order_lib_key:
+        ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = shape_order_lib_key
+
+
 def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
@@ -216,18 +252,9 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"] = to_glyphs_time(glyph.lastChange)
 
     self.to_ufo_hints(ufo_glyph, layer)  # .hints
-    self.to_ufo_paths(ufo_glyph, layer)  # .paths
-    self.to_ufo_components(ufo_glyph, layer)  # .components
-    # Store shape order for mixed glyphs
-    if layer.paths and layer.components:
-        ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = ""
-        for shape in layer.shapes:
-            if isinstance(shape, GSPath):
-                ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] += "P"
-            elif isinstance(shape, GSComponent):
-                ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] += "C"
-            else:
-                raise ValueError("Unknown shape type %s" % shape)
+
+    self.to_ufo_shapes(ufo_glyph, layer)
+
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)  # .anchors
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below
@@ -427,17 +454,16 @@ def to_ufo_glyph_background(self, glyph, layer):
 
     background = layer.background
     ufo_layer = self.to_ufo_background_layer(layer)
-    new_glyph = ufo_layer.newGlyph(glyph.name)
+    ufo_glyph = ufo_layer.newGlyph(glyph.name)
 
     width = background.userData[BACKGROUND_WIDTH_KEY]
     if width is not None:
-        new_glyph.width = width
+        ufo_glyph.width = width
 
-    self.to_ufo_background_image(new_glyph, background)
-    self.to_ufo_paths(new_glyph, background)
-    self.to_ufo_components(new_glyph, background)
-    self.to_ufo_glyph_anchors(new_glyph, background.anchors)
-    self.to_ufo_guidelines(new_glyph, background)
+    self.to_ufo_background_image(ufo_glyph, background)
+    self.to_ufo_shapes(ufo_glyph, background)
+    self.to_ufo_glyph_anchors(ufo_glyph, background.anchors)
+    self.to_ufo_guidelines(ufo_glyph, background)
 
 
 # UFO to Glyphs

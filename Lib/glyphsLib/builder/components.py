@@ -14,10 +14,10 @@
 
 
 import logging
-
+import uuid
 from fontTools.pens.basePen import MissingComponentError
 from fontTools.pens.recordingPen import DecomposingRecordingPen
-from glyphsLib.classes import GSBackgroundLayer
+from glyphsLib.classes import GSBackgroundLayer, GSComponent
 from glyphsLib.types import Transform
 
 from .smart_components import to_ufo_smart_component
@@ -26,71 +26,62 @@ from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_L
 logger = logging.getLogger(__name__)
 
 
-def to_ufo_components(self, ufo_glyph, layer):
+def to_ufo_component(self, ufo_glyph, component: GSComponent):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
 
-    # NOTE: The UFO v3 and Glyphs data model have incompatible component reference
-    # semantics. UFO components always point to a glyph in the same layer, Glyphs
-    # components in a ...:
-    #  - master layer: point to glyphs in the same master layer.
-    #  - non-master layer: point to glyphs in the layer with the same name and fall
-    #    back to glyphs in the associated master layer
-    # There are some valid use-cases for components in non-master layers, and doing it
-    # thoroughly correctly is time-consuming, so we're decomposing just the background
-    # layer components as a band-aid.
-    if layer.components and isinstance(layer, GSBackgroundLayer):
-        logger.warning(
-            f"Glyph '{ufo_glyph.name}': All components of the background layer of "
-            f"'{layer.foreground.name}' will be decomposed."
-        )
-        to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
-        return
-
     pen = ufo_glyph.getPointPen()
-    for index, component in enumerate(layer.components):
-        component_name = component.name
-        if layer.isColorPaletteLayer:
-            # Glyphs handles components for color layers in a special way. If
-            # the component glyph has color layers of its own, the component
-            # use the first color layer with the same color index, otherwise it
-            # fallback to the default layer. We try to do that here as well.
-            font = layer.parent.parent
-            component_glyph = font.glyphs[component_name]
-            color_layers = [
-                l
-                for l in component_glyph.layers
-                if l.isColorPaletteLayer
-                and l.associatedMasterId == layer.associatedMasterId
-            ]
-            for color_layer_idx, color_layer in enumerate(color_layers):
-                if color_layer._color_palette_index() == layer._color_palette_index():
-                    if not color_layer.isMasterLayer:
-                        # If it is not a master layer, we rename it in
-                        # _to_ufo_color_palette_layers(), so we reference the
-                        # same name here.
-                        component_name += f".color{color_layer_idx}"
-                    break
-        # XXX We may also want to test here if we're compiling a font (and decompose
-        # if so) or changing the representation format (in which case we leave it
-        # as a component and save the smart component values).
-        # See https://github.com/googlefonts/glyphsLib/pull/822
-        if component.smartComponentValues and component.component.smartComponentAxes:
-            to_ufo_smart_component(self, layer, component, pen)
-        else:
-            pen.addComponent(component_name, component.transform)
+    # for index, component in enumerate(layer.components):
+    layer = component.parent
 
-        if not (component.anchor or component.alignment):
-            continue
+    component_name = component.name
+    if layer.isColorPaletteLayer:
+        # Glyphs handles components for color layers in a special way. If
+        # the component glyph has color layers of its own, the component
+        # use the first color layer with the same color index, otherwise it
+        # fallback to the default layer. We try to do that here as well.
+        font = layer.parent.parent
+        component_glyph = font.glyphs[component_name]
+        color_layers = [
+            l
+            for l in component_glyph.layers
+            if l.isColorPaletteLayer
+            and l.associatedMasterId == layer.associatedMasterId
+        ]
+        for color_layer_idx, color_layer in enumerate(color_layers):
+            if color_layer._color_palette_index() == layer._color_palette_index():
+                if not color_layer.isMasterLayer:
+                    # If it is not a master layer, we rename it in
+                    # _to_ufo_color_palette_layers(), so we reference the
+                    # same name here.
+                    component_name += f".color{color_layer_idx}"
+                break
 
-        component_info = {"name": component.name, "index": index}
+    if component.anchor or component.alignment or component.userData:
+        component_info = {}
         if component.anchor:
-            component_info["anchor"] = component.anchor
+            component_info[GLYPHS_PREFIX + "anchor"] = component.anchor
         if component.alignment:
-            component_info["alignment"] = component.alignment
+            component_info[GLYPHS_PREFIX + "alignment"] = component.alignment
+        if component.userData:
+            component_info[GLYPHS_PREFIX + "userData"] = dict(component.userData)
+        identifier = component.userData.get("UFO.identifier")
+        if not identifier:
+            identifier = str(uuid.uuid4()).upper()
+            component.userData["UFO.identifier"] = identifier
+        objectLibs = ufo_glyph.lib.get("public.objectLibs")
+        if objectLibs is None:
+            objectLibs = {}
+            ufo_glyph.lib["public.objectLibs"] = objectLibs
+        objectLibs[identifier] = component_info
 
-        if COMPONENT_INFO_KEY not in ufo_glyph.lib:
-            ufo_glyph.lib[COMPONENT_INFO_KEY] = []
-        ufo_glyph.lib[COMPONENT_INFO_KEY].append(component_info)
+    # XXX We may also want to test here if we're compiling a font (and decompose
+    # if so) or changing the representation format (in which case we leave it
+    # as a component and save the smart component values).
+    # See https://github.com/googlefonts/glyphsLib/pull/822
+    if component.smartComponentValues and component.component.smartComponentAxes and self.minimal:
+        to_ufo_smart_component(self, layer, component, pen)
+    else:
+        pen.addComponent(component_name, component.transform, identifier=component.userData.get("UFO.identifier"))
 
     # data related to components that is not stored in ComponentInfo is
     # stored in lists of booleans. each list's elements correspond to the

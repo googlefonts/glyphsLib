@@ -41,7 +41,7 @@ from glyphsLib.types import Point
 
 from glyphsLib.builder import to_glyphs, to_designspace, to_ufos
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
-from glyphsLib.builder.paths import to_ufo_paths
+from glyphsLib.builder.paths import to_ufo_path
 from glyphsLib.builder.constants import (
     COMPONENT_INFO_KEY,
     GLYPHS_PREFIX,
@@ -2511,10 +2511,11 @@ class _UFOBuilder:
 
 def test_to_ufo_draw_paths_empty_nodes(ufo_module):
     layer = GSLayer()
-    layer.paths.append(GSPath())
+    layer.shapes.append(GSPath())
 
     glyph = _Glyph()
-    to_ufo_paths(_UFOBuilder(), glyph, layer)
+    for path in layer.shapes:
+        to_ufo_path(_UFOBuilder(), glyph, path)
 
     assert glyph.pen.contours == []
 
@@ -2529,9 +2530,10 @@ def test_to_ufo_draw_paths_open(ufo_module):
         GSNode(position=(3, 3), nodetype="curve", smooth=True),
     ]
     path.closed = False
-    layer.paths.append(path)
+    layer.shapes.append(path)
     glyph = _Glyph()
-    to_ufo_paths(_UFOBuilder(), glyph, layer)
+    for path in layer.shapes:
+        to_ufo_path(_UFOBuilder(), glyph, path)
 
     assert glyph.pen.contours == [
         [
@@ -2555,10 +2557,11 @@ def test_to_ufo_draw_paths_closed(ufo_module):
         GSNode(position=(5, 5), nodetype="curve", smooth=True),
     ]
     path.closed = True
-    layer.paths.append(path)
+    layer.shapes.append(path)
 
     glyph = _Glyph()
-    to_ufo_paths(_UFOBuilder(), glyph, layer)
+    for path in layer.shapes:
+        to_ufo_path(_UFOBuilder(), glyph, path)
 
     points = glyph.pen.contours[0]
 
@@ -2580,10 +2583,11 @@ def test_to_ufo_draw_paths_qcurve(ufo_module):
         GSNode(position=(223, 334), nodetype="qcurve", smooth=True),
     ]
     path.closed = True
-    layer.paths.append(path)
+    layer.shapes.append(path)
 
     glyph = _Glyph()
-    to_ufo_paths(_UFOBuilder(), glyph, layer)
+    for path in layer.shapes:
+        to_ufo_path(_UFOBuilder(), glyph, path)
 
     points = glyph.pen.contours[0]
 
