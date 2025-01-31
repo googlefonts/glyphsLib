@@ -95,7 +95,7 @@ def test_parser_main_v3(capsys):
     assert actual.splitlines() == expected.splitlines()
 
 
-def test_parser_main_upstream(capsys):
+def test_parser_GlyphsFileFormatv2(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     with open(filename, encoding="utf-8") as file:
         expected = file.read()
@@ -118,7 +118,7 @@ def test_parser_main_upstream(capsys):
     assert actual.splitlines() == expected.splitlines()
 
 
-def test_parser_main_v3_upstream(capsys):
+def test_parser_GlyphsFileFormatv3(capsys):
     filename = os.path.join(DATA, "GlyphsFileFormatv3.glyphs")
     with open(filename, encoding="utf-8") as file:
         expected = file.read()
