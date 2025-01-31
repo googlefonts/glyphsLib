@@ -119,7 +119,7 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
             # Is a master layer.
             layers = self._glyph_sets[layer_id] = {
                 g.name: l
-                for g in layer.parent.parent.glyphs
+                for g in layer.font.glyphs
                 for l in g.layers
                 if l.layerId == layer_id
             }
@@ -127,13 +127,13 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
             # Is a non-master layer.
             layers_nonmaster = {
                 g.name: l
-                for g in layer.parent.parent.glyphs
+                for g in layer.font.glyphs
                 for l in g.layers
                 if l.name == layer.name
             }
             layers_master = {
                 g.name: l
-                for g in layer.parent.parent.glyphs
+                for g in layer.font.glyphs
                 for l in g.layers
                 if l.layerId == layer_master_id
             }
