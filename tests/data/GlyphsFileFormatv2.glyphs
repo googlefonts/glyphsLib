@@ -123,6 +123,7 @@ xHeight = 500;
 );
 glyphs = (
 {
+color = 1;
 glyphname = A;
 lastChange = "2020-10-28 19:17:01 +0000";
 layers = (
@@ -177,6 +178,7 @@ glyphname = B;
 lastChange = "2020-01-04 22:33:44 +0000";
 layers = (
 {
+color = 5;
 components = (
 {
 name = A;
