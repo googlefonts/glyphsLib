@@ -174,7 +174,7 @@ def _bracket_glyph_name(self, glyph_name, box):
 
 def _make_designspace_rule(box, mapping):
     description = ".".join(
-        f"{name}_{min}_{max}" for name, (min, max) in sorted(box.items())
+        f"{name}_{min:.3g}_{max:.3g}" for name, (min, max) in sorted(box.items())
     )
     rule = designspaceLib.RuleDescriptor()
     rule.name = "BRACKET." + description
