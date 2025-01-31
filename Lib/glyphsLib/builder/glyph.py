@@ -36,6 +36,8 @@ from .constants import (
     BACKGROUND_WIDTH_KEY,
     POSTSCRIPT_NAMES_KEY,
     PUBLIC_PREFIX,
+    LAYER_ID_KEY,
+    GLYPHS_PREFIX,
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3
@@ -190,6 +192,11 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
         if glyph.tags:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "tags"] = glyph.tags
+
+        if not layer.isMasterLayer:
+            ufo_glyph.lib[LAYER_ID_KEY] = layer.layerId
+        if layer.attributes:
+            ufo_glyph.lib[GLYPHS_PREFIX + "layer.attributes"] = dict(layer.attributes)
 
     self.to_ufo_glyph_user_data(ufo_font, ufo_glyph, glyph)  # .user_data
     self.to_ufo_layer_user_data(ufo_glyph, layer)  # .user_data
