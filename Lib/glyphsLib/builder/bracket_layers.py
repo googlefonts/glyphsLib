@@ -13,6 +13,7 @@ from glyphsLib.util import designspace_min_max
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
     GLYPHLIB_PREFIX,
+    LAYER_ID_KEY,
 )
 
 
@@ -134,11 +135,12 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
             box = dict(frozenbox)
             for layer in layers:
                 assert layer.associatedMasterId  # gs
-                master_id = layer.associatedMasterId or layer.layerId
+                master_id = layer.associatedMasterId or layer.layerId  # TODO: remove `or layer.layerId`
                 ufo_font = self._sources[master_id].font
                 layer_dummy = GSLayer()
                 layer_dummy.attributes = copy.copy(layer.attributes)
-                del layer_dummy.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
+                if LAYER_ATTRIBUTE_AXIS_RULES in layer_dummy.attributes:
+                    del layer_dummy.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
                 if len(layer_dummy.attributes) > 0:
                     layer_name = layer_dummy.name
                     if layer_name not in ufo_font.layers:
@@ -154,7 +156,8 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
                 # implicit bracket layers have no distinct name, they are simply
                 # references to master layers; the empty string is a signal when
                 # roundtripping back to Glyphs to skip the duplicate layers.
-                ufo_glyph.lib[GLYPHLIB_PREFIX + "layer.attributes"] = dict(layer.attributes)
+                if not layer.isMasterLayer:
+                    ufo_glyph.lib[LAYER_ID_KEY] = layer.layerId
                 # swap components if base glyph contains matching bracket layers.
                 for comp in ufo_glyph.components:
                     bracket_comp_name = _bracket_glyph_name(self, comp.baseGlyph, box)

@@ -497,7 +497,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
 
     glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)  # FIXME: load glyphInfo at the end, not for each layer?
 
-    layer = self.to_glyphs_layer(ufo_layer, glyph, master)
+    layer = self.to_glyphs_layer(ufo_layer, ufo_glyph, glyph, master)
 
     for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
         # Also read the old version of the key that didn't have a prefix and

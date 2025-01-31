@@ -25,7 +25,7 @@ from .constants import (
     GLYPH_ORDER_KEY,
     GLYPHLIB_PREFIX,
     BRACKET_GLYPH_RE,
-    # GLYPHS_PREFIX,
+    GLYPHS_PREFIX,
     FORMATVERSION_LIB_KEY,
     APP_VERSION_LIB_KEY,
 )
@@ -607,10 +607,19 @@ class GlyphsBuilder(LoggerMixin):
             # Use self.designspace.rules
 
             base_glyph, location = m.groups()
-            layer_name = bracket_glyph.lib.get(GLYPHLIB_PREFIX + "_originalLayerName")
-            if layer_name is None:
-                # Determine layer name from location
-                raise NotImplementedError
+
+            layer_attributes = bracket_glyph.lib.get(GLYPHS_PREFIX + "layer.attributes")
+            if layer_attributes is not None:
+                # use a temp layer to build layer name from attributes
+                temp_glyph = classes.GSGlyph()
+                temp_glyph.parent = self._font
+                temp_layer = classes.GSLayer()
+                temp_layer.parent = temp_glyph
+                temp_layer.attributes = layer_attributes
+                layer_name = temp_layer._name_from_attributes()
+            else:
+                layer_name = bracket_glyph.lib.get(GLYPHLIB_PREFIX + "_originalLayerName")
+
             # _originalLayerName is an empty string for 'implicit' bracket layers;
             # we don't import these since they were copies of master layers.
             if layer_name:

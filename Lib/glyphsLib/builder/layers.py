@@ -17,6 +17,7 @@ from .constants import (
     LAYER_ID_KEY,
     LAYER_ORDER_PREFIX,
     LAYER_ORDER_TEMP_USER_DATA_KEY,
+    GLYPHS_PREFIX,
 )
 
 
@@ -55,8 +56,8 @@ def to_ufo_layer(self, glyph, layer):
         ufo_layer = ufo_font.newLayer(new_layer_name)
     else:
         ufo_layer = ufo_font.layers[layer_name]
+
     if self.minimize_glyphs_diffs:
-        ufo_layer.lib[LAYER_ID_KEY] = layer.layerId
         ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
             self, layer
         )
@@ -86,7 +87,7 @@ def _layer_order_in_glyph(self, layer):
     return None
 
 
-def to_glyphs_layer(self, ufo_layer, glyph, master):
+def to_glyphs_layer(self, ufo_layer, ufo_glyph, glyph, master):
     if ufo_layer is self._sources[master.id].font.layers.defaultLayer:
         layer = _get_or_make_foreground(self, glyph, master)
     elif ufo_layer.name == "public.background":
@@ -122,11 +123,20 @@ def to_glyphs_layer(self, ufo_layer, glyph, master):
         if layer is None:
             layer = self.glyphs_module.GSLayer()
         layer.associatedMasterId = master.id
-        if LAYER_ID_KEY in ufo_layer.lib:
-            layer.layerId = ufo_layer.lib[LAYER_ID_KEY]
+
+        assert LAYER_ID_KEY not in ufo_layer.lib  # (gs) layerId needs to be stored in ufo_glyph, not in ufo_layer
+        if LAYER_ID_KEY in ufo_glyph.lib:
+            layer.layerId = ufo_glyph.lib[LAYER_ID_KEY]
+
         layer.name = ufo_layer.name
         glyph.layers.append(layer)
-        layer.layer_name_to_atributes()
+        if self._font.formatVersion < 3:
+            layer.layer_name_to_atributes()
+        else:
+            layer_attributes = ufo_glyph.lib.get(GLYPHS_PREFIX + "layer.attributes")
+            if layer_attributes:
+                layer.attributes = layer_attributes
+
     order_key = LAYER_ORDER_PREFIX + glyph.name
     if order_key in ufo_layer.lib:
         order = ufo_layer.lib[order_key]
