@@ -291,6 +291,7 @@ def to_glyphs_axes(self):
         if axis_def.hidden:
             axis.hidden = True
         axes.append(axis)
+        axis.axisId = "a%02d" % len(axes)
     if axes:
         self._font.axes = axes
 
