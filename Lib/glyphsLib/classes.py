@@ -3510,6 +3510,8 @@ class GSTransformable(GSBase):
 
     @position.setter
     def position(self, value):
+        if isinstance(value, tuple):
+            value = Point(value[0], value[1])
         assert isinstance(value, Point)
         self._position = value
 
