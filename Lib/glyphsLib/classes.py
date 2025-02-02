@@ -6316,14 +6316,13 @@ class GSFont(GSBase):
 
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "keepAlternatesTogether", "if_true")
-            if self.kerningLTR:
-                writer.writeKeyValue("kerning", self.kerningLTR)
-            if self.kerningRTL:
-                writer.writeKeyValue("vertKerning", self.kerningRTL)
+            writer.writeKerning(self, self.kerningLTR, "kerning")
+            if self.kerningVertical:
+                writer.writeKerning(self, self.kerningVertical, "vertKerning")
         else:
-            writer.writeObjectKeyValue(self, "kerningLTR", "if_true")
-            writer.writeObjectKeyValue(self, "kerningRTL", "if_true")
-            writer.writeObjectKeyValue(self, "kerningVertical", "if_true")
+            writer.writeKerning(self, self.kerningLTR, "kerningLTR")
+            writer.writeKerning(self, self.kerningRTL, "kerningRTL")
+            writer.writeKerning(self, self.kerningVertical, "kerningVertical")
 
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(
@@ -6972,11 +6971,7 @@ GSFont._add_parsers(
         {"plist_name": "features", "type": GSFeature},
         {"plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster},
         {"plist_name": "kerning", "object_name": "_kerningLTR", "type": OrderedDict},
-        {
-            "plist_name": "vertKerning",
-            "object_name": "_kerningRTL",
-            "type": OrderedDict,
-        },
+        {"plist_name": "vertKerning", "object_name": "kerningVertical", "type": OrderedDict},
         {"plist_name": "kerningLTR", "type": OrderedDict},
         {"plist_name": "kerningRTL", "type": OrderedDict},
         {"plist_name": "kerningVertical", "type": OrderedDict},

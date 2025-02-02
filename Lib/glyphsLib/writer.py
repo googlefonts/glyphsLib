@@ -152,6 +152,18 @@ class Writer:
             self.writeValue(value, key)
             self.file.write(";\n")
 
+    def writeKerning(self, font, kernDict, keyName):
+        if kernDict:
+            self.writeKey(keyName)
+            self.file.write("{\n")
+            for master in font.masters:
+                value = kernDict.get(master.id)
+                if value:
+                    self.writeKey(master.id)
+                    self.writeDict(value)
+                    self.file.write(";\n")
+            self.file.write("};\n")
+
     def writeValue(self, value, forKey=None):
         if hasattr(value, "plistValue"):
             value = value.plistValue(formatVersion=self.formatVersion)
