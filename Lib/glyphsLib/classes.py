@@ -69,6 +69,7 @@ __all__ = [
     "GSFeature",
     "GSGlyph",
     "GSLayer",
+    "GSBackgroundLayer",
     "GSAnchor",
     "GSComponent",
     "GSSmartComponentAxis",
@@ -5731,7 +5732,7 @@ class GSLayer(GSBase):
         return node
 
     @property
-    def background(self):
+    def background(self) -> GSBackgroundLayer:
         """Only a getter on purpose. See the tests."""
         if self._background is None:
             self._background = GSBackgroundLayer()
@@ -5885,7 +5886,7 @@ class GSBackgroundLayer(GSLayer):
         return None
 
     @property
-    def foreground(self):
+    def foreground(self) -> GSLayer:
         return self._foreground
 
     # The width property of this class behaves like this in Glyphs:
