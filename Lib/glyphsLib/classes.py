@@ -4608,7 +4608,7 @@ class GSInstance(GSBase):
             weight_class_string = WEIGHT_CODES_REVERSE.get(self.weightClass)
             if weight_class_string is not None and weight_class_string != "Regular":
                 writer.writeKeyValue("weightClass", weight_class_string)
-            width_class_string = WIDTH_CODES_REVERSE.get(self.weightClass)
+            width_class_string = WIDTH_CODES_REVERSE.get(self.widthClass)
             if (
                 width_class_string is not None
                 and width_class_string != "Medium (normal)"
