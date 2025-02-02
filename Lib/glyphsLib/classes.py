@@ -2482,6 +2482,8 @@ class GSFontMaster(GSBase):
     def _joinNames(self, width, weight, custom):
         # Remove None and empty string
         names = list(filter(None, [width, weight, custom]))
+        while len(names) > 1 and "Regular" in names:
+            names.remove("Regular")
         return " ".join(names)
 
     def _splitName(self, value):
