@@ -3769,7 +3769,7 @@ class GSAnchor(GSBase):
             self.userData = userData
 
     def __repr__(self):
-        return '<{} {}> "{}" x={:.1f} y={:.1f}>'.format(
+        return '<{} {}> "{}" x={:.1f} y={:.1f}'.format(
             self.__class__.__name__, hex(id(self)), self.name, self.position[0], self.position[1]
         )
 
