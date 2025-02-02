@@ -1,5 +1,5 @@
 {
-.appVersion = "1114";
+.appVersion = "1365";
 DisplayStrings = (
 A
 );
@@ -490,7 +490,7 @@ leftKerningGroup = A;
 rightKerningGroup = A;
 unicode = 0041;
 script = "";
-category = "foo";
+category = foo;
 subCategory = "";
 },
 {
