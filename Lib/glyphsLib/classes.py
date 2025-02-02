@@ -6392,7 +6392,6 @@ class GSFont(GSBase):
         ]
         self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
         self._disablesAutomaticAlignment = None
-        self.filepath = None
         self.grid = self._defaultsForName["grid"]
         self.gridSubDivision = self._defaultsForName["gridSubDivision"]
         self.keepAlternatesTogether = False
@@ -6412,6 +6411,7 @@ class GSFont(GSBase):
         self._note = ""
         self.readBuffer = {}
 
+        self.filepath = None
         if path:
             path = os.fsdecode(os.fspath(path))
             self.filepath = path
