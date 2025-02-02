@@ -2242,7 +2242,7 @@ class GSFontMaster(GSBase):
         if writer.formatVersion >= 3:
             metricValues = []
             for metric in self.font.metrics:
-                metricValue = self.metricValues.get(metric.id)
+                metricValue = self.metricValues.get(metric.id, {})
                 metricValues.append(metricValue)
             writer.writeKeyValue("metricValues", metricValues)
 
@@ -2409,6 +2409,10 @@ class GSFontMaster(GSBase):
                     filter=filterString,
                 )
                 del self.customParameters["smallCapHeight"]
+                metric = self.font.metricFor("italic angle", name=None, filter=None, add_if_missing=False)
+                if metric:
+                    self.font.metrics.remove(metric)
+                    self.font.metrics.append(metric)
 
             if self._alignmentZones:
                 self._import_alignmentZones_to_metrics()
@@ -3604,6 +3608,8 @@ class GSComponent(GSTransformable):
             writer.writeObjectKeyValue(
                 self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
             )
+        if len(self.userData) > 0:
+            writer.writeKeyValue("userData", self.userData)
 
     _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
 
@@ -3628,6 +3634,8 @@ class GSComponent(GSTransformable):
             self.scale = scale
 
         self._attributes = {}
+
+        self._userData = None
 
     def copy(self):
         return GSComponent(self.name, transform=copy.deepcopy(self.transform))
@@ -3706,6 +3714,11 @@ class GSComponent(GSTransformable):
         """Draws points of component with given point pen."""
         pointPen.addComponent(self.name, self.transform)
 
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value),
+    )
+
 
 GSComponent._add_parsers(
     [
@@ -3717,6 +3730,7 @@ GSComponent._add_parsers(
         {"plist_name": "slant", "converter": Point},
         {"plist_name": "locked", "converter": bool},
         {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
+        {"plist_name": "userData", "object_name": "_userData", "type": dict},
     ]
 )
 
