@@ -740,3 +740,47 @@ def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
     assert [
         cp.value for cp in font2.customParameters if cp.name == "Virtual Master"
     ] == virtual_masters
+
+
+def test_axis_mappings_different_interpretations(ufo_module, datadir):
+    # https://github.com/googlefonts/glyphsLib/issues/859
+    font = GSFont(datadir.join("gf", "Rubik.glyphs"))  # Saved under Glyphs 3079
+    expected_map = [
+        (300.0, 60),
+        (400.0, 90),
+        (500.0, 125),
+        (600.0, 142),
+        (700.0, 160),
+        (800.0, 190),
+        (900.0, 220),
+    ]
+    assert "Axis Mappings" in font.customParameters
+    ds = to_designspace(font, ufo_module=ufo_module)
+    assert ds.axes[0].minimum == 300
+    assert ds.axes[0].maximum == 900
+    assert ds.axes[0].map == expected_map
+
+    font.format_version = 3  # Ambiguous, work out interpretation hueristically
+    ds = to_designspace(font, ufo_module=ufo_module)
+    assert ds.axes[0].minimum == 300
+    assert ds.axes[0].maximum == 900
+    assert ds.axes[0].map == expected_map
+
+    # Pretend we saved it under a new version
+    font.appVersion = 3217
+    font.customParameters["Axis Mappings"] = {
+        "wght": {
+            60: 300,
+            90: 400,
+            125: 500,
+            142: 600,
+            160: 700,
+            190: 800,
+            220: 900,
+        }
+    }
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+    assert ds.axes[0].minimum == 300
+    assert ds.axes[0].maximum == 900
+    assert ds.axes[0].map == expected_map
