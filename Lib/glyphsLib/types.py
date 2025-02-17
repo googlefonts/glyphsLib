@@ -365,6 +365,16 @@ def writeIntlist(val):
     return _mutate_list(str, val)
 
 
+def floatToString2(f: float) -> str:
+    """Return float f as a string with two decimal places without trailing zeros
+    and dot.
+
+    Intended for ('brace') intermediate layer coordinates and ('bracket') alternate
+    layer axis ranges.
+    """
+    return f"{f:.2f}".rstrip("0").rstrip(".")
+
+
 def floatToString3(f: float) -> str:
     """Return float f as a string with three decimal places without trailing zeros
     and dot.
