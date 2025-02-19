@@ -78,6 +78,7 @@ __all__ = [
     "GSAnnotation",
     "GSHint",
     "GSBackgroundImage",
+    "GSAxis",
     # Constants
     "MOVE",
     "LINE",
