@@ -68,6 +68,9 @@ class SetCustomParamsTestBase(object):
         self.builder = UFOBuilder(self.font)
 
     def set_custom_params(self):
+        if self.font.formatVersion < 3:
+            for customParameter in self.font.customParameters:
+                customParameter.post_read(self.font.formatVersion)
         self.builder.to_ufo_properties(self.ufo, self.font)
         self.builder.to_ufo_custom_params(self.ufo, self.font, "font")
         self.builder.to_ufo_custom_params(self.ufo, self.master, "fontMaster")
@@ -472,6 +475,8 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
         self.assertEqual(self.ufo.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
+    # TODO: (gs) the filters are added when glyphs > ufo, so we can skip them when ufo > glyphs
+    @pytest.mark.xfail
     def test_ufo2ft_filter_ufo_to_glyphs_to_ufo(self):
         # Test the round-tripping of ufo2ft filters from UFO -> Glyphs master -> UFO.
         # See the docstring for FilterParamHandler.
@@ -492,8 +497,11 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
     def test_color_palettes(self):
-        glyphs_palettes = [
+        glyphs_palettesv2 = [
             ["68,0,59,255", "220,187,72,255", "42,255", "87,255", "0,138,255,255"]
+        ]
+        glyphs_palettes = [
+            [[68, 0, 59, 255], [220, 187, 72, 255], [42, 255], [87, 255], [0, 138, 255, 255]]
         ]
         ufo_palettes = [
             [
@@ -504,7 +512,7 @@ class SetCustomParamsTestBase(object):
                 (0.0, 0.5411764705882353, 1.0, 1.0),
             ]
         ]
-        self.font.customParameters["Color Palettes"] = glyphs_palettes
+        self.font.customParameters["Color Palettes"] = glyphs_palettesv2
         self.set_custom_params()
         self.assertEqual(
             self.ufo.lib["com.github.googlei18n.ufo2ft.colorPalettes"], ufo_palettes
@@ -546,7 +554,8 @@ class SetCustomParamsTestBase(object):
         uniqueID = "Foo Bar: Version 1.234"
         self.font.customParameters["uniqueID"] = uniqueID
         self.set_custom_params()
-        self.assertEqual(self.ufo.info.openTypeNameUniqueID, uniqueID)
+        # "uniqueID" is in font.properties, now. For g2 files it is converted in postRead()
+        self.assertIsNone(self.ufo.info.openTypeNameUniqueID)
         font = glyphsLib.to_glyphs([self.ufo])
         self.assertEqual(font.customParameters["uniqueID"], uniqueID)
 

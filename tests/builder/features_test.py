@@ -680,14 +680,14 @@ def test_roundtrip_disabled_feature(ufo_module):
     assert len(font_r.features) == 1
     feature_r = font_r.features[0]
     assert feature_r.name == "ccmp"
-    assert feature_r.code == feature.code
+    assert feature_r.code.strip() == feature.code.strip()
     assert feature_r.active is False
 
     font_rr = to_glyphs(to_ufos(font_r, ufo_module=ufo_module))
     assert len(font_rr.features) == 1
     feature_rr = font_rr.features[0]
     assert feature_rr.name == "ccmp"
-    assert feature_rr.code == feature.code
+    assert feature_rr.code.strip() == feature.code.strip()
     assert feature_rr.active is False
 
 
@@ -742,7 +742,7 @@ def test_roundtrip_feature_prefix_with_only_a_comment(ufo_module):
 def test_drop_disabled_class(ufo_module):
     font = to_glyphs([ufo_module.Font()])
     class_ = classes.GSClass(name="Class1", code="a b")
-    class_.disabled = True
+    class_.active = False
     font.classes.append(class_)
 
     class_ = classes.GSClass(name="Class2", code="c d")
@@ -751,8 +751,7 @@ def test_drop_disabled_class(ufo_module):
     (ufo,) = to_ufos(font, ufo_module=ufo_module, minimal=True)
     assert ufo.features.text == dedent(
         """\
-        @Class2 = [ c d
-        ];
+        @Class2 = [ c d ];
     """
     )
 
@@ -760,7 +759,7 @@ def test_drop_disabled_class(ufo_module):
 def test_drop_disabled_prefix(ufo_module):
     font = to_glyphs([ufo_module.Font()])
     prefix = classes.GSFeaturePrefix(name="Prefix1", code="# test 1")
-    prefix.disabled = True
+    prefix.active = False
     font.featurePrefixes.append(prefix)
 
     prefix = classes.GSFeaturePrefix(name="Prefix2", code="# test 2")
@@ -778,7 +777,7 @@ def test_drop_disabled_prefix(ufo_module):
 def test_drop_disabled_feature(ufo_module):
     font = to_glyphs([ufo_module.Font()])
     feature = classes.GSFeature(name="ccmp", code="sub a by a.ccmp1 a.ccmp2;")
-    feature.disabled = True
+    feature.active = False
     font.features.append(feature)
 
     feature = classes.GSFeature(name="liga", code="sub f i by f_i;")

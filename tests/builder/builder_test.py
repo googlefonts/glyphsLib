@@ -1129,9 +1129,11 @@ def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):
     # if any component has a non-default alignment/locked values, write
     # list of values for all of them
     assert GLYPHS_PREFIX + "componentsAlignment" not in ufo["c"].lib
-    assert ufo["c"].lib[COMPONENT_INFO_KEY] == [
-        {"index": 1, "name": "b", "alignment": -1}
-    ]
+    b_component = ufo["c"].components[1]
+    assert b_component.identifier is not None
+    assert ufo["c"].lib["public.objectLibs"] == {
+        b_component.identifier: {'com.schriftgestaltung.alignment': -1}
+    }
     assert GLYPHS_PREFIX + "componentsLocked" in ufo["c"].lib
     assert ufo["c"].lib[GLYPHS_PREFIX + "componentsLocked"] == [True, False]
     assert GLYPHS_PREFIX + "componentsSmartComponentValues" in ufo["c"].lib

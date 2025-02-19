@@ -161,7 +161,7 @@ def test_smart_component_regular(values, expected_rect, smart_font):
     for key, value in values.items():
         component.smartComponentValues[key] = value
 
-    (ufo,) = to_ufos(smart_font)
+    (ufo,) = to_ufos(smart_font, minimal=True)
 
     rect, clockwise = get_rectangle_data(ufo)
     assert rect == expected_rect
@@ -193,7 +193,7 @@ def test_smart_component_regular_flipped_x(values, expected_rect, smart_font):
     for key, value in values.items():
         component.smartComponentValues[key] = value
 
-    (ufo,) = to_ufos(smart_font)
+    (ufo,) = to_ufos(smart_font, minimal=True)
 
     rect, clockwise = get_rectangle_data(ufo)
     assert rect == expected_rect

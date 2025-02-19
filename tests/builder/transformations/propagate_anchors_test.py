@@ -451,7 +451,7 @@ def test_propagate_across_layers(caplog):
     )
 
     # non-master (e.g. backup) layers are silently skipped
-    assert not new_glyph.layers[2]._is_master_layer
+    assert not new_glyph.layers[2].isMasterLayer
     assert_anchors(new_glyph.layers[2].anchors, [])
 
     assert len(caplog.records) == 0

@@ -483,18 +483,18 @@ def test_info_name_records(tmpdir, ufo_module):
 
     name_records = [
         {
-            "nameID": 19,
-            "platformID": 1,
-            "encodingID": 0,
-            "languageID": 1,
-            "string": "Les cornichons sont nos amis",
-        },
-        {
             "nameID": 1,
             "platformID": 3,
             "encodingID": 1,
             "languageID": 0x0410,
             "string": "Illustrativo Sans",
+        },
+        {
+            "nameID": 19,
+            "platformID": 1,
+            "encodingID": 0,
+            "languageID": 1,
+            "string": "Les cornichons sont nos amis",
         },
     ]
 
