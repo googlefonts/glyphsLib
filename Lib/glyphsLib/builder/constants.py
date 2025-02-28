@@ -94,12 +94,12 @@ CUSTOM_PARAMETERS_BLACKLIST = [
     "postscriptFontName",
     "fileName",
     # These can be recovered by reading the mapping backward.
-    "weightClass",
-    "widthClass",
+    # "weightClass",
+    # "widthClass",
     # These are artificial.
     FULL_FILENAME_KEY,
     UFO_FILENAME_CUSTOM_PARAM,
-    "uniqueID",
+    # "uniqueID",
     "styleMapFamilyNames",
     "styleMapStyleNames",
     "Use Typo Metrics",
