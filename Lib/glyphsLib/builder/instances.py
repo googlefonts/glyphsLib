@@ -208,7 +208,7 @@ def _to_filename(self, instance, ufo_instance):
 
 def _to_properties(instance):
     return [
-        (item.name, item.value)
+        (item.name, item.value if item.value else item.values)
         for item in instance.properties
         if item.name not in CUSTOM_PARAMETERS_BLACKLIST
     ]
