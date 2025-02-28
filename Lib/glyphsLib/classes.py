@@ -6361,7 +6361,7 @@ class GSFont(GSBase):
         GSMetric(type=GSMetricsKeyxHeight),
         GSMetric(type=GSMetricsKeyBaseline),
         GSMetric(type=GSMetricsKeyDescender),
-        # GSMetric(type=GSMetricsKeyItalicAngle),
+        GSMetric(type=GSMetricsKeyItalicAngle),
     ]
 
     def _parse_glyphs_dict(self, parser, value):
