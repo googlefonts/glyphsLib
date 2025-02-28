@@ -5816,7 +5816,7 @@ class GSLayer(GSBase):
 
     @property
     def isColorPaletteLayer(self):
-        return LAYER_ATTRIBUTE_COLOR_PALETTE in self.attributes
+        return self._color_palette_index() is not None
 
     @property
     def isSVGColorLayer(self):
@@ -5828,6 +5828,8 @@ class GSLayer(GSBase):
             return None
         if index == "*":
             return 0xFFFF
+        if isinstance(index, str) and not index.isdecimal():
+            return None
         return int(index)
 
     @property
