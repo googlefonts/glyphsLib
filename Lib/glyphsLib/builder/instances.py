@@ -148,7 +148,7 @@ def _to_designspace_instance(self, instance):
     ufo_instance.lib["openTypeOS2WidthClass"] = instance.widthClass
     ufo_instance.lib["openTypeOS2WeightClass"] = instance.weightClass
 
-    uniqueID = instance.customParameters["uniqueID"]
+    uniqueID = instance.properties["uniqueID"]
     if uniqueID:
         ufo_instance.lib["openTypeNameUniqueID"] = uniqueID
 
