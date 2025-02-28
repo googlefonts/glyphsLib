@@ -2,6 +2,7 @@ import os
 import tempfile
 import glyphsLib
 import difflib
+from datetime import datetime
 from glyphsLib.classes import GSFont, GSFontMaster, GSPath, GSComponent
 
 
@@ -314,3 +315,25 @@ def test_glyphs3_layer_keys(datadir):
     assert layer.layerKey() == "Light [45‹wg]"
     layer = glyph.layers[3]
     assert layer.layerKey() == "Regular []"
+
+
+def testBuildFontInCode(datadir):
+    font = GSFont()
+    font.date = datetime.fromtimestamp(123.123)
+    master = GSFontMaster("Regular")
+    master.id = "m001"
+    font.masters.append(master)
+
+    with tempfile.TemporaryDirectory() as outputdir:
+        temp_dir = str(outputdir)
+        temp_file_path = os.path.join(temp_dir, "BuildFontInCode.glyphs")
+        font.save(temp_file_path)
+        temp_file = open(temp_file_path)
+        temp_file_content = temp_file.read()
+        temp_file.close()
+
+    original_file = open(os.path.join(datadir, "BuildFontInCode.glyphs"))
+    original_file_content = original_file.read()
+    original_file.close()
+
+    assert temp_file_content == original_file_content

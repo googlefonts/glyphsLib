@@ -1,0 +1,51 @@
+{
+.appVersion = "3260";
+.formatVersion = 3;
+date = "1970-01-01 01:02:03 +0000";
+familyName = "Unnamed font";
+fontMaster = (
+{
+id = m001;
+metricValues = (
+{
+},
+{
+},
+{
+},
+{
+},
+{
+},
+{
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
