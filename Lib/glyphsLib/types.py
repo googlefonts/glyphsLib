@@ -20,6 +20,7 @@ import re
 from typing import List
 from typing import Optional
 from typing import Union
+from fontTools.misc.transform import Transform as ftTransform
 
 __all__ = [
     "BinaryData",
@@ -78,7 +79,7 @@ class ValueType:
         """Overrides the default implementation"""
         if isinstance(self, other.__class__):
             return self.value == other.value
-        return NotImplemented
+        return False
 
     def __hash__(self):
         """Overrides the default implementation"""
@@ -115,6 +116,9 @@ def Vector(dim):
         def __setitem__(self, key, value):
             assert isinstance(self.value, list) and len(self.value) == self.dimension
             self.value[key] = value
+
+        def __iter__(self):
+            return iter(self.value)
 
         def __len__(self):
             return self.dimension
@@ -265,6 +269,13 @@ class Transform(Vector(6)):
     def determinant(self):
         a, b, c, d = self[:4]
         return a * d - b * c
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return self.value == other.value
+        if isinstance(other, ftTransform):
+            return tuple(self.value) == other
+        return False
 
 
 class OneLineList:
