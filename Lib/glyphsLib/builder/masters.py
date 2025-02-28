@@ -201,3 +201,6 @@ def to_glyphs_master_attributes(self, source, master):  # noqa: C901
     self.to_glyphs_custom_params(ufo, master, "fontMaster")
     if source.styleName:
         master.name = source.styleName
+
+    if GLYPHS_PREFIX + "visible" in ufo.lib:
+        master.visible = ufo.lib[GLYPHS_PREFIX + "visible"]

@@ -112,6 +112,8 @@ def to_ufo_layer_lib(self, master, ufo, ufo_layer):
             # defcon
             else:
                 ufo_layer.name = layer_name
+    if master.visible and ufo_layer.name == "public.default":
+        ufo.lib[GLYPHS_PREFIX + "visible"] = True
 
 
 def to_ufo_layer_user_data(self, ufo_glyph, layer):
