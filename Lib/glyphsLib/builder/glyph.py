@@ -585,7 +585,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         layer.attributes["hasOverlap"] = hasOverlap
 
     color_index = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "ColorIndexLayer")
-    if color_index:
+    if color_index is not None:
         layer.color = color_index
 
     self.to_glyphs_background_image(ufo_glyph, layer)
