@@ -205,7 +205,7 @@ class Writer:
             else:
                 self.file.write("0")
         elif isinstance(value, datetime.datetime):
-            self.file.write('"%s +0000"' % str(value))
+            self.file.write(f"\"{value:%Y-%m-%d %H:%M:%S} +0000\"")
         else:
             value = self.escape_string(str(value), forKey)
             self.file.write(value)
