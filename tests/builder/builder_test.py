@@ -1280,8 +1280,8 @@ def test_glyph_color_layers_components_2(ufo_module):
         font = glyphsLib.load(f)
 
     ds = glyphsLib.to_designspace(font, minimize_glyphs_diffs=True)
-    bold_layer0 = ds.sources[1].font.layers["Color 0"]
-    bold_layer1 = ds.sources[1].font.layers["Color 1"]
+    bold_layer0 = ds.sources[1].font.layers["color.0"]
+    bold_layer1 = ds.sources[1].font.layers["color.1"]
     assert [c.baseGlyph for c in bold_layer0["Aacute"].components] == [
         "A.color0",
         "acutecomb.color0",

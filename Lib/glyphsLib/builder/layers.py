@@ -36,6 +36,10 @@ def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer):
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
     layer_name = layer.name
+    if layer_name and layer_name.startswith("Color "):
+        layer_name = layer_name.lower()
+        layer_name = layer_name.replace(" ", ".")
+        layer_name = layer_name.replace("*", "65535")
 
     if layer.isMasterLayer:
         ufo_layer = ufo_font.layers.defaultLayer
