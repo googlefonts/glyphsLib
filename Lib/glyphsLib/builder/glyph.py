@@ -17,12 +17,11 @@ import itertools
 import logging
 
 import glyphsLib.glyphdata
-from glyphsLib.util import best_repr
 
 try:
-    from GlyphsApp import GSLayer, GSPath, GSComponent
+    from GlyphsApp import GSLayer, GSPath, GSComponent, GSBackgroundLayer
 except ImportError:
-    from .. import GSLayer, GSPath, GSComponent
+    from .. import GSLayer, GSPath, GSComponent, GSBackgroundLayer
 from .common import from_loose_ufo_time, to_glyphs_time
 from .constants import (
     GLYPHLIB_PREFIX,
