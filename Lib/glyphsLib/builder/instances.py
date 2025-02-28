@@ -124,7 +124,7 @@ def _to_designspace_instance(self, instance):
     # Anyway, only generate the styleMap names if the Glyphs instance already
     # has a linkStyle set up, or if we're not round-tripping (i.e. generating
     # UFOs for fontmake, the traditional use-case of glyphsLib.)
-    if instance.linkStyle or not self.minimize_glyphs_diffs:
+    if instance.linkStyle or not self.minimize_glyphs_diffs or instance.isBold or instance.isItalic:
         styleMapFamilyName, styleMapStyleName = build_stylemap_names(
             family_name=ufo_instance.familyName,
             style_name=ufo_instance.styleName,
