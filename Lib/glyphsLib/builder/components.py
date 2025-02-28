@@ -144,17 +144,11 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
     rpen.replay(ufo_glyph.getPen())
 
 
-def to_glyphs_components(self, ufo_glyph, layer):
-    for comp in ufo_glyph.components:
-        component = self.glyphs_module.GSComponent(comp.baseGlyph)
-        if comp.transformation:  # TODO: (gs) why is that check needed now
-            component.transform = Transform(*comp.transformation)
-        layer.components.append(component)
+def parse_legacy_component_info(ufo_glyph, layer):
 
     for key in ["alignment", "locked", "smartComponentValues"]:
         if _lib_key(key) not in ufo_glyph.lib:
             continue
-        # FIXME: (jany) move to using component identifiers for robustness
         # "alignment" is read, but not written for source backwards compatibility.
         values = ufo_glyph.lib[_lib_key(key)]
         for component, value in zip(layer.components, values):
@@ -205,6 +199,30 @@ def to_glyphs_components(self, ufo_glyph, layer):
                     component_info["name"],
                     component.name,
                 )
+
+
+def to_glyphs_components(self, ufo_glyph, layer):
+
+    objectLibs = ufo_glyph.lib.get("public.objectLibs")
+
+    for comp in ufo_glyph.components:
+        component = self.glyphs_module.GSComponent(comp.baseGlyph)
+        if comp.transformation:
+            component.transform = Transform(*comp.transformation)
+        if comp.identifier:
+            component.identifier = comp.identifier
+            if objectLibs and comp.identifier in objectLibs:
+                component_info = objectLibs[comp.identifier]
+                if GLYPHS_PREFIX + "anchor" in component_info:
+                    component.anchor = component_info[GLYPHS_PREFIX + "anchor"]
+                if GLYPHS_PREFIX + "alignment" in component_info:
+                    component.alignment = component_info[GLYPHS_PREFIX + "alignment"]
+                if GLYPHS_PREFIX + "userData" in component_info:
+                    component.userData = component_info[GLYPHS_PREFIX + "userData"]
+
+        layer.components.append(component)
+
+    parse_legacy_component_info(ufo_glyph, layer)
 
 
 def _lib_key(key):

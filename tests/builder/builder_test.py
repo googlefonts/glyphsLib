@@ -2646,13 +2646,12 @@ def test_anchor_assignment(ufo_module):
 
     ds = to_designspace(font, ufo_module=ufo_module)
     ufo = ds.sources[0].font
-    assert ufo["circumflexcomb_acutecomb"].lib[GLYPHLIB_PREFIX + "ComponentInfo"] == [
-        {"anchor": "top_viet", "index": 1, "name": "acutecomb"}
-    ]
-    assert (
-        ufo["circumflexcomb_tildecomb"].lib.get(GLYPHLIB_PREFIX + "ComponentInfo")
-        is None
-    )
+    glif = ufo["circumflexcomb_acutecomb"]
+    component = glif.components[1]
+    assert glif.lib["public.objectLibs"] == {component.identifier: {'com.schriftgestaltung.anchor': 'top_viet'}}
+
+    assert ufo["circumflexcomb_tildecomb"].lib.get(GLYPHLIB_PREFIX + "ComponentInfo") is None
+    assert ufo["circumflexcomb_tildecomb"].lib.get("public.objectLibs") is None
 
     font2 = to_glyphs(ds)
     assert (
@@ -2662,9 +2661,7 @@ def test_anchor_assignment(ufo_module):
 
     assert not (font2.glyphs["circumflexcomb_tildecomb"].layers[0].components[1].anchor)
 
-    ufo["circumflexcomb_acutecomb"].lib[GLYPHLIB_PREFIX + "ComponentInfo"] = [
-        {"anchor": "top_viet", "index": 1, "name": "asadad"}
-    ]
+    del ufo["circumflexcomb_acutecomb"].lib["public.objectLibs"]
     font3 = to_glyphs(ds)
     assert not font3.glyphs["circumflexcomb_acutecomb"].layers[0].components[1].anchor
 
