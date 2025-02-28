@@ -93,7 +93,7 @@ def to_ufo_shapes(self, ufo_glyph, layer):
             f"Glyph '{ufo_glyph.name}': All components of the background layer of "
             f"'{layer.foreground.name}' will be decomposed."
         )
-        self.to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer)
+        self.to_ufo_components_nonmaster_decompose(ufo_glyph, layer)
         return
 
     # Store shape order for mixed glyphs
