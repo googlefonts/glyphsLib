@@ -133,13 +133,13 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
                 **layers_nonmaster,
             }
     rpen = DecomposingRecordingPen(glyphSet=layers)
-    for component in layer.components:
+    for shape in layer.shapes:
         try:
-            component.draw(rpen)
+            shape.draw(rpen)
         except MissingComponentError as e:
             raise MissingComponentError(
                 f"Glyph '{ufo_glyph.name}', background layer: component "
-                f"'{component.name}' points to a non-existent glyph."
+                f"'{shape.name}' points to a non-existent glyph."
             ) from e
     rpen.replay(ufo_glyph.getPen())
 
