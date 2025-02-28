@@ -1587,7 +1587,10 @@ class PropertiesProxy(ListDictionaryProxy):
             infoValue.parent = self._owner
             self._owner._properties.append(infoValue)
         if key.endswith("s"):
-            infoValue.defaultValue = value
+            if isinstance(value, dict):
+                infoValue.values = value
+            else:
+                infoValue.defaultValue = value
         else:
             infoValue.value = value
 
