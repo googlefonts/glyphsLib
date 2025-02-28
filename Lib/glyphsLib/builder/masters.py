@@ -165,6 +165,10 @@ def to_glyphs_master_attributes(self, source, master):  # noqa: C901
             metricValue = GSMetricValue(position=metricDict.get("pos"), overshoot=metricDict.get("over"))
             master.metricValues[metric.id] = metricValue
             metricValue.metric = metric
+        metric = self._font.metricFor("italic angle", name=None, filter=None, add_if_missing=False)
+        if metric:
+            self._font.metrics.remove(metric)
+            self._font.metrics.append(metric)
 
     horizontal_stems = ufo.info.postscriptStemSnapH
     vertical_stems = ufo.info.postscriptStemSnapV
