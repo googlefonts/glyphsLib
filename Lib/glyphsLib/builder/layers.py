@@ -19,6 +19,7 @@ from .constants import (
     LAYER_ORDER_TEMP_USER_DATA_KEY,
     GLYPHS_PREFIX,
 )
+from glyphsLib.classes import GSGlyph, GSLayer
 
 
 def to_ufo_color_layer_names(self, ufo):
@@ -30,7 +31,7 @@ def to_ufo_color_layer_names(self, ufo):
             ]
 
 
-def to_ufo_layer(self, glyph, layer):
+def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer):
     assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
