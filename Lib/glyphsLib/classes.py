@@ -41,6 +41,7 @@ from glyphsLib.types import (
     OneLineList,
     Point,
     Rect,
+    Size,
     Transform,
     UnicodesList,
     floatToString5,
@@ -5720,7 +5721,7 @@ class GSLayer(GSBase):
             and right is not None
             and top is not None
         ):
-            return Rect(Point(left, bottom), Point(right - left, top - bottom))
+            return Rect(Point(left, bottom), Size(right - left, top - bottom))
 
     def _find_node_by_indices(self, point):
         """ "Find the GSNode that is refered to by the given indices.
