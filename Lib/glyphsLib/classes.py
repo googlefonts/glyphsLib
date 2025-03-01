@@ -5693,7 +5693,7 @@ class GSLayer(GSBase):
     def bounds(self):
         left, bottom, right, top = None, None, None, None
 
-        for item in self.paths.values() + self.components.values():
+        for item in self.shapes:
             newLeft, newBottom, newWidth, newHeight = item.bounds
             newRight = newLeft + newWidth
             newTop = newBottom + newHeight
