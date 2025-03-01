@@ -46,6 +46,7 @@ from glyphsLib.builder.constants import (
     COMPONENT_INFO_KEY,
     GLYPHS_PREFIX,
     GLYPHLIB_PREFIX,
+    OBJECT_LIBS_KEY,
 )
 
 from ..classes_test import (
@@ -1131,7 +1132,7 @@ def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):
     assert GLYPHS_PREFIX + "componentsAlignment" not in ufo["c"].lib
     b_component = ufo["c"].components[1]
     assert b_component.identifier is not None
-    assert ufo["c"].lib["public.objectLibs"] == {
+    assert ufo["c"].lib[OBJECT_LIBS_KEY] == {
         b_component.identifier: {'com.schriftgestaltung.alignment': -1}
     }
     assert GLYPHS_PREFIX + "componentsLocked" in ufo["c"].lib
@@ -2648,10 +2649,10 @@ def test_anchor_assignment(ufo_module):
     ufo = ds.sources[0].font
     glif = ufo["circumflexcomb_acutecomb"]
     component = glif.components[1]
-    assert glif.lib["public.objectLibs"] == {component.identifier: {'com.schriftgestaltung.anchor': 'top_viet'}}
+    assert glif.lib[OBJECT_LIBS_KEY] == {component.identifier: {'com.schriftgestaltung.anchor': 'top_viet'}}
 
     assert ufo["circumflexcomb_tildecomb"].lib.get(GLYPHLIB_PREFIX + "ComponentInfo") is None
-    assert ufo["circumflexcomb_tildecomb"].lib.get("public.objectLibs") is None
+    assert ufo["circumflexcomb_tildecomb"].lib.get(OBJECT_LIBS_KEY) is None
 
     font2 = to_glyphs(ds)
     assert (
@@ -2661,7 +2662,7 @@ def test_anchor_assignment(ufo_module):
 
     assert not (font2.glyphs["circumflexcomb_tildecomb"].layers[0].components[1].anchor)
 
-    del ufo["circumflexcomb_acutecomb"].lib["public.objectLibs"]
+    del ufo["circumflexcomb_acutecomb"].lib[OBJECT_LIBS_KEY]
     font3 = to_glyphs(ds)
     assert not font3.glyphs["circumflexcomb_acutecomb"].layers[0].components[1].anchor
 

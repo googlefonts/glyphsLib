@@ -21,7 +21,7 @@ from glyphsLib.classes import GSBackgroundLayer, GSComponent
 from glyphsLib.types import Transform
 
 from .smart_components import to_ufo_smart_component
-from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY
+from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY, OBJECT_LIBS_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +68,10 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
         if not identifier:
             identifier = str(uuid.uuid4()).upper()
             component.userData["UFO.identifier"] = identifier
-        objectLibs = ufo_glyph.lib.get("public.objectLibs")
+        objectLibs = ufo_glyph.lib.get(OBJECT_LIBS_KEY)
         if objectLibs is None:
             objectLibs = {}
-            ufo_glyph.lib["public.objectLibs"] = objectLibs
+            ufo_glyph.lib[OBJECT_LIBS_KEY] = objectLibs
         objectLibs[identifier] = component_info
 
     # XXX We may also want to test here if we're compiling a font (and decompose
@@ -203,7 +203,7 @@ def parse_legacy_component_info(ufo_glyph, layer):
 
 def to_glyphs_components(self, ufo_glyph, layer):
 
-    objectLibs = ufo_glyph.lib.get("public.objectLibs")
+    objectLibs = ufo_glyph.lib.get(OBJECT_LIBS_KEY)
 
     for comp in ufo_glyph.components:
         component = self.glyphs_module.GSComponent(comp.baseGlyph)
