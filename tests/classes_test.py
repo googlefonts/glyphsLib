@@ -60,11 +60,13 @@ from glyphsLib.classes import (
 from glyphsLib.types import Point, Transform, Rect
 from glyphsLib.classes import LAYER_ATTRIBUTE_AXIS_RULES
 
+datadir = os.path.join(os.path.dirname(__file__), "data")
+
 TESTFILE_PATHV2 = os.path.join(
-    os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans2.glyphs")
+    os.path.join(datadir, "GlyphsUnitTestSans2.glyphs")
 )
 TESTFILE_PATHV3 = os.path.join(
-    os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans3.glyphs")
+    os.path.join(datadir, "GlyphsUnitTestSans3.glyphs")
 )
 
 pytestmark = pytest.mark.parametrize("file_path", [TESTFILE_PATHV2, TESTFILE_PATHV3])
@@ -180,6 +182,34 @@ class GlyphLayersTest(unittest.TestCase):
         # this ought not to raise a `KeyError: 0` exception
         layers = list(glyph.layers)
         assert layers[0] is layer
+
+    def test_layer_nested_bounds(self):
+        file = "layer_bounds_with_nested_component.glyphs"
+        font = GSFont(os.path.join(datadir, file))
+
+        quotedblright = font.glyphs["quotedblbase"]
+        layer = quotedblright.layers[0]
+        bounds = layer.bounds
+        assert bounds.origin.x == 64
+        assert bounds.origin.y == -130
+        assert bounds.size.width == 251
+        assert bounds.size.height == 237
+
+        quotedblright = font.glyphs["quotedblleft"]
+        layer = quotedblright.layers[0]
+        bounds = layer.bounds
+        assert bounds.origin.x == 79
+        assert bounds.origin.y == 463
+        assert bounds.size.width == 251
+        assert bounds.size.height == 237
+
+        quotedblright = font.glyphs["quotedblright"]
+        layer = quotedblright.layers[0]
+        bounds = layer.bounds
+        assert bounds.origin.x == 73
+        assert bounds.origin.y == 463
+        assert bounds.size.width == 251
+        assert bounds.size.height == 237
 
 
 # GlyphsBracketLayerTest

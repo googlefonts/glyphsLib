@@ -1,0 +1,156 @@
+{
+.appVersion = "3323";
+.formatVersion = 3;
+DisplayStrings = (
+"”"
+);
+date = "2024-11-27 11:32:39 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 770;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 570;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -210;
+},
+{
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = comma;
+lastChange = "2024-12-04 13:09:18 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(65,-130,ls),
+(143,-130,o),
+(165,-90,o),
+(165,-38,cs),
+(165,107,l),
+(84,107,l),
+(84,0,l),
+(143,0,l),
+(127,44,l),
+(127,-28,ls),
+(127,-72,o),
+(123,-95,o),
+(65,-95,cs),
+(64,-95,l),
+(64,-130,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 44;
+},
+{
+glyphname = quotedblbase;
+lastChange = "2024-12-04 13:09:21 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+alignment = -1;
+pos = (150,0);
+ref = comma;
+},
+{
+alignment = 1;
+ref = comma;
+}
+);
+width = 600;
+}
+);
+unicode = 8222;
+},
+{
+glyphname = quotedblleft;
+lastChange = "2024-12-04 13:09:24 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+alignment = -1;
+angle = 180;
+pos = (394,570);
+ref = quotedblbase;
+}
+);
+width = 600;
+}
+);
+unicode = 8220;
+},
+{
+glyphname = quotedblright;
+lastChange = "2024-12-04 13:20:49 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+alignment = -1;
+angle = 180;
+pos = (403,1163);
+ref = quotedblleft;
+}
+);
+width = 600;
+}
+);
+unicode = 8221;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

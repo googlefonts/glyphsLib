@@ -277,6 +277,38 @@ class Transform(Vector(6)):
             return tuple(self.value) == other
         return False
 
+    # from fontTools
+    # TODO: find a way to directly use the Transform class from fontTools. It only misses the reading and writing methods.
+    def transformPoint(self, p: Point) -> Point:
+        """Transform a point.
+
+        :Example:
+            >>> t = Transform()
+            >>> t = t.scale(2.5, 5.5)
+            >>> t.transformPoint((100, 100))
+            (250.0, 550.0)
+        """
+        (x, y) = p
+        xx, xy, yx, yy, dx, dy = self
+        return Point(xx * x + yx * y + dx, xy * x + yy * y + dy)
+
+    def transformRect(self, rect: Rect) -> Rect:
+        p1 = rect.origin
+        p2 = Point(rect.origin.x + rect.size.width, rect.origin.y)
+        p3 = Point(rect.origin.x, rect.origin.y + rect.size.height)
+        p4 = Point(rect.origin.x + rect.size.width, rect.origin.y + rect.size.height)
+        p1 = self.transformPoint(p1)
+        p2 = self.transformPoint(p2)
+        p3 = self.transformPoint(p3)
+        p4 = self.transformPoint(p4)
+
+        minX = min(p1.x, p2.x, p3.x, p4.x)
+        minY = min(p1.y, p2.y, p3.y, p4.y)
+
+        maxX = max(p1.x, p2.x, p3.x, p4.x)
+        maxY = max(p1.y, p2.y, p3.y, p4.y)
+        return Rect(Point(minX, minY), Size(maxX - minX, maxY - minY))
+
 
 class OneLineList:
     def __init__(self, values):

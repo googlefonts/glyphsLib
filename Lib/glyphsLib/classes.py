@@ -3679,33 +3679,12 @@ class GSComponent(GSTransformable):
     def layer(self):
         return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
 
-    def applyTransformation(self, x, y):
-        x *= self.scale[0]
-        y *= self.scale[1]
-        x += self.position.x
-        y += self.position.y
-        # TODO:
-        # Integrate rotation
-        return x, y
-
     @property
     def bounds(self):
         bounds = self.layer.bounds
         if bounds is not None:
-            left, bottom, width, height = self.layer.bounds
-            right = left + width
-            top = bottom + height
-
-            left, bottom = self.applyTransformation(left, bottom)
-            right, top = self.applyTransformation(right, top)
-
-            if (
-                left is not None
-                and bottom is not None
-                and right is not None
-                and top is not None
-            ):
-                return Rect(Point(left, bottom), Point(right - left, top - bottom))
+            # TODO: (gs) This onyl produces correct results if fliped or roateted 180°
+            return self.transform.transformRect(bounds)
 
     # smartComponentValues = property(
     #     lambda self: self.piece,
