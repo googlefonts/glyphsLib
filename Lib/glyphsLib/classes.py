@@ -1351,6 +1351,20 @@ def axisLocationToAxesValue(master_or_instances):
             master_or_instances.externalAxesValues[axis.axisId] = location
 
 
+def axisValueToAxisLocation(master_or_instance: GSFontMaster | GSInstance):
+    if len(master_or_instance._externalAxesValues) > 0:
+        for axis in master_or_instance.font.axes:
+            externalValue = master_or_instance.externalAxesValues.get(axis.axisId)
+            locations = []
+            if externalValue is not None:
+                locations.append({
+                    "Axis": axis.name,
+                    "Location": externalValue
+                })
+            if len(locations) > 0:
+                master_or_instance.customParameters["Axis Location"] = locations
+
+
 class MasterStemsProxy(Proxy):
     def __getitem__(self, key):
         if isinstance(key, slice):
@@ -2235,6 +2249,9 @@ class GSFontMaster(GSBase):
             if smallCapMetric:
                 parameter = GSCustomParameter("smallCapHeight", smallCapMetric)
                 customParameters.append(parameter)
+
+        if writer.formatVersion <= 3:
+            axisValueToAxisLocation(self)
 
         if customParameters:
             writer.writeKeyValue("customParameters", customParameters)
@@ -4572,6 +4589,10 @@ class GSInstance(GSBase):
             )
             if parameters:
                 customParameters.extend(parameters)
+
+        if writer.formatVersion <= 3:
+            axisValueToAxisLocation(self)
+
         if customParameters:
             writer.writeKeyValue("customParameters", customParameters)
         if writer.formatVersion == 2:
