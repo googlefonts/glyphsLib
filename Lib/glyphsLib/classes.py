@@ -2346,7 +2346,6 @@ class GSFontMaster(GSBase):
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
     def __init__(self, name="Regular"):
-        self.customParameters = []
         self.name = name
         self._userData = None
         self._horizontalStems = None
@@ -4652,7 +4651,6 @@ class GSInstance(GSBase):
         self.font = None
         self._internalAxesValues = {}
         self._externalAxesValues = {}
-        self.customParameters = []
         self.exports = True
         self.custom = None
         self.instanceInterpolations = copy.deepcopy(
@@ -6427,7 +6425,6 @@ class GSFont(GSBase):
         self.classes = copy.copy(self._defaultsForName["classes"])
         self.features = copy.copy(self._defaultsForName["features"])
         self.featurePrefixes = copy.copy(self._defaultsForName["featurePrefixes"])
-        self.customParameters = []
         self.date = None
         self._disablesAutomaticAlignment = self._defaultsForName[
             "disablesAutomaticAlignment"
