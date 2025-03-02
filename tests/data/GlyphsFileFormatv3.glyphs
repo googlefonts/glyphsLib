@@ -104,6 +104,15 @@ customParameters = (
 {
 name = "Default Layer Width";
 value = "600";
+},
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 321;
+}
+);
 }
 );
 guides = (
