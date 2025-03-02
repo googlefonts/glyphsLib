@@ -36,7 +36,7 @@ def to_ufo_path(self, ufo_glyph, path):
         node = nodes.pop(0)
         assert node.type == "line", "Open path starts with off-curve points"
         pen.addPoint(
-            best_repr_list(tuple(node.position)),
+            best_repr_list(node.position),
             segmentType="move",
             name=node.userData.get("name"),
             identifier=node.userData.get("UFO.identifier"),

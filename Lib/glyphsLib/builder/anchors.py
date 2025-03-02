@@ -17,6 +17,7 @@ from glyphsLib.types import Point
 import uuid
 
 from glyphsLib.builder.constants import OBJECT_LIBS_KEY
+from glyphsLib.util import best_repr_list
 
 __all__ = [
     "to_ufo_glyph_anchors",
@@ -28,7 +29,7 @@ def to_ufo_glyph_anchors(self, glyph, anchors):
     """Add .glyphs anchors to a glyph."""
 
     for anchor in anchors:
-        x, y = anchor.position
+        x, y = best_repr_list(anchor.position)
         anchor_dict = {"name": anchor.name, "x": x, "y": y}
         if anchor.userData:
             identifier = str(uuid.uuid4()).upper()
