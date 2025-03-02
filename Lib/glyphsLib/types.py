@@ -309,6 +309,27 @@ class Transform(Vector(6)):
         maxY = max(p1.y, p2.y, p3.y, p4.y)
         return Rect(Point(minX, minY), Size(maxX - minX, maxY - minY))
 
+    def transform(self, other):
+        """Return a new transformation, transformed by another
+        transformation.
+
+        :Example:
+                >>> t = Transform(2, 0, 0, 3, 1, 6)
+                >>> t.transform((4, 3, 2, 1, 5, 6))
+                <Transform [8 9 4 3 11 24]>
+                >>>
+        """
+        xx1, xy1, yx1, yy1, dx1, dy1 = other
+        xx2, xy2, yx2, yy2, dx2, dy2 = self
+        return self.__class__(
+            xx1 * xx2 + xy1 * yx2,
+            xx1 * xy2 + xy1 * yy2,
+            yx1 * xx2 + yy1 * yx2,
+            yx1 * xy2 + yy1 * yy2,
+            xx2 * dx1 + yx2 * dy1 + dx2,
+            xy2 * dx1 + yy2 * dy1 + dy2,
+        )
+
 
 class OneLineList:
     def __init__(self, values):
