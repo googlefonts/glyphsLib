@@ -54,7 +54,7 @@ value = (
 }
 );
 date = "2020-01-03 19:42:13 +0000";
-familyName = "New Font";
+familyName = GlyphsFileFormatv3;
 featurePrefixes = (
 {
 automatic = 1;
