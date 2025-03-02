@@ -1223,6 +1223,8 @@ class IndexedObjectsProxy(Proxy):
 
 class InternalAxesProxy(Proxy):
     def __getitem__(self, key):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return None
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -1239,11 +1241,15 @@ class InternalAxesProxy(Proxy):
         )
 
     def __setitem__(self, key, value):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return
         if isinstance(key, int) and self._owner.font:
             key = self._owner.font.axes[key].axisId
         self._owner._internalAxesValues[key] = value
 
     def values(self):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return []
         if self._owner.font is None:
             return []
         values = []
@@ -1252,11 +1258,15 @@ class InternalAxesProxy(Proxy):
         return values
 
     def __len__(self):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return 0
         if self._owner.font is None:
             return 0
         return len(self._owner.font.axes)
 
     def _setterMethod(self, values):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return
         if self._owner.font is None:
             return
         idx = 0
@@ -1271,6 +1281,8 @@ class InternalAxesProxy(Proxy):
 
 class ExternalAxesProxy(Proxy):
     def __getitem__(self, key):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return None
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -1287,11 +1299,15 @@ class ExternalAxesProxy(Proxy):
         )
 
     def __setitem__(self, key, value):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return None
         if isinstance(key, int):
             key = self._owner.font.axes[key].axisId
         self._owner._externalAxesValues[key] = value
 
     def values(self):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return []
         if self._owner.font is None:
             return []
         values = []
@@ -1300,11 +1316,15 @@ class ExternalAxesProxy(Proxy):
         return values
 
     def __len__(self):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return 0
         if self._owner.font is None:
             return 0
         return self._owner.font.countOfAxes()
 
     def _setterMethod(self, values):
+        if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
+            return
         if self._owner.font is None:
             return
         idx = 0
