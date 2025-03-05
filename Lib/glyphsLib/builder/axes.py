@@ -297,7 +297,7 @@ def to_glyphs_axes(self):
 
     if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
         mapping = {
-            axis_def.tag: {str(k): v for k, v in axis_def.map}
+            axis_def.tag: {k: v for k, v in axis_def.map}
             for axis_def in self.designspace.axes
         }
         self._font.customParameters["Axis Mappings"] = mapping
