@@ -62,6 +62,10 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
             component_info[GLYPHS_PREFIX + "anchor"] = component.anchor
         if component.alignment:
             component_info[GLYPHS_PREFIX + "alignment"] = component.alignment
+        if component.locked:
+            component_info[GLYPHS_PREFIX + "locked"] = True
+        if component.smartComponentValues:
+            component_info[GLYPHS_PREFIX + "smartComponentValues"] = component.smartComponentValues
         if component.userData:
             component_info[GLYPHS_PREFIX + "userData"] = dict(component.userData)
         identifier = component.userData.get("UFO.identifier")
@@ -82,14 +86,6 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
         to_ufo_smart_component(self, layer, component, pen)
     else:
         pen.addComponent(component_name, component.transform, identifier=component.userData.get("UFO.identifier"))
-
-    # data related to components that is not stored in ComponentInfo is
-    # stored in lists of booleans. each list's elements correspond to the
-    # components in order.
-    for key in ["locked", "smartComponentValues"]:
-        values = [getattr(c, key) for c in layer.components]
-        if any(values):
-            ufo_glyph.lib[_lib_key(key)] = values
 
 
 def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
@@ -217,6 +213,10 @@ def to_glyphs_components(self, ufo_glyph, layer):
                     component.anchor = component_info[GLYPHS_PREFIX + "anchor"]
                 if GLYPHS_PREFIX + "alignment" in component_info:
                     component.alignment = component_info[GLYPHS_PREFIX + "alignment"]
+                if GLYPHS_PREFIX + "locked" in component_info:
+                    component.locked = component_info[GLYPHS_PREFIX + "locked"]
+                if GLYPHS_PREFIX + "smartComponentValues" in component_info:
+                    component.smartComponentValues = component_info[GLYPHS_PREFIX + "smartComponentValues"]
                 if GLYPHS_PREFIX + "userData" in component_info:
                     component.userData = component_info[GLYPHS_PREFIX + "userData"]
 
