@@ -231,10 +231,8 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
         self.assertEqual(self.ufo.info.openTypeOS2CodePageRanges, [0, 1, 15, 29])
         self.font = glyphsLib.to_glyphs([self.ufo], minimize_ufo_diffs=True)
-        self.assertEqual(self.font.customParameters["codePageRanges"], [1252, 1250])
-        self.assertEqual(
-            self.font.customParameters["codePageRangesUnsupportedBits"], [15, 29]
-        )
+        self.assertEqual(self.font.customParameters["codePageRanges"], ["1252", "1250", "bit 15", "bit 29"])
+        self.assertIsNone(self.font.customParameters["codePageRangesUnsupportedBits"])
 
     def test_set_openTypeOS2CodePageRanges(self):
         self.font.customParameters["openTypeOS2CodePageRanges"] = ["1252", "1250"]

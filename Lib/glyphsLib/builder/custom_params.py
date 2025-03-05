@@ -507,7 +507,7 @@ class OS2CodePageRangesParamHandler(AbstractParamHandler):
 register_parameter_handler(OS2CodePageRangesParamHandler())
 
 register_parameter_handler(
-    ParamHandler(glyphs_name="codePageRangesUnsupportedBits", write_to_ufo=False)
+    ParamHandler(glyphs_name="codePageRangesUnsupportedBits", write_to_ufo=False, write_to_glyphs=False)
 )
 
 # enforce that winAscent/Descent are positive, according to UFO spec

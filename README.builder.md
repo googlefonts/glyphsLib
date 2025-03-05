@@ -15,7 +15,7 @@ Here is an of overview of how `glyphsLib.builder` converts a Glyphs `GSFont` obj
 * Convert color layer IDs into layer names if there is a mapping in com.github.googlei18n.ufo2ft.colorLayerMapping (how would there be one here at this point?)
 * Convert the features into a feature file
 * Apply any custom parameters to the lib, including:
-    * codePageRanges/openTypeOS2CodePageRanges/codePageRangesUnsupportedBits
+    * codePageRanges/openTypeOS2CodePageRanges
     * GASP table
     * Color Palettes (converted and stored in a ufo2ft key)
     * Name records
