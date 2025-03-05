@@ -15,6 +15,7 @@ from .constants import (
     GLYPHLIB_PREFIX,
     LAYER_ID_KEY,
 )
+from glyphsLib.types import floatToString3
 
 
 def _bracket_info(layer, axes):
@@ -177,7 +178,7 @@ def _bracket_glyph_name(self, glyph_name, box):
 
 def _make_designspace_rule(box, mapping):
     description = ".".join(
-        f"{name}_{min:.3g}_{max:.3g}" for name, (min, max) in sorted(box.items())
+        f"{name}_{floatToString3(min)}_{floatToString3(max)}" for name, (min, max) in sorted(box.items())
     )
     rule = designspaceLib.RuleDescriptor()
     rule.name = "BRACKET." + description
