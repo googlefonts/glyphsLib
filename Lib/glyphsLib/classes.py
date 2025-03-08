@@ -5859,7 +5859,6 @@ class GSGlyph(GSBase):
         self.export: bool = self._defaultsForName["export"]
         self.lastChange: Optional[Any] = None
         self.leftKerningGroup: Optional[str] = None
-        self.leftKerningKey: Optional[str] = None
         self.metricLeft: Optional[Any] = None
         self.name: str = name or "new glyph"  # make name not optional to simpify usage
         self.note: Optional[str] = None
@@ -5867,7 +5866,6 @@ class GSGlyph(GSBase):
         self.smartComponentAxes: List[Any] = []
         self.production: str = ""
         self.rightKerningGroup: Optional[str] = None
-        self.rightKerningKey: str = ""
         self.metricRight: Optional[Any] = None
         self.script: Optional[str] = None
         self.selected: bool = False

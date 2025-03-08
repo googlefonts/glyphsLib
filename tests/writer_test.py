@@ -804,8 +804,6 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         glyph.leftKerningGroup = "A"
         # rightKerningGroup
         glyph.rightKerningGroup = "A"
-        # leftKerningKey: not written
-        # rightKerningKey: not written
         # leftMetricsKey
         glyph.leftMetricsKey = "A"
         # rightMetricsKey
