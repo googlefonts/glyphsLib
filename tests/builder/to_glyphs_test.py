@@ -448,7 +448,7 @@ def test_ufo_filename_is_kept_the_same(tmpdir, ufo_module):
 
 
 @pytest.mark.xfail(
-    reason="GSLayer.background doesn’t store the width. it is always the same as the foreground"
+    reason="GSLayer.background is only written if not empty"
 )
 def test_dont_copy_advance_to_the_background_unless_it_was_there(tmpdir, ufo_module):
     ufo = ufo_module.Font()

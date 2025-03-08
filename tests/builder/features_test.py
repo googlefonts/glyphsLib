@@ -143,19 +143,16 @@ def test_class_synonym(tmpdir, ufo_module):
     )
 
 
-@pytest.mark.xfail(
-    reason="The names form the note should be converted to .labels on import. This is not implemented, yet"
-)
 def test_feature_names_from_glyph_2_file():
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     font = glyphsLib.load(filename)
     assert len(font.features) == 2
     feature = font.features[1]
     assert feature.code == "sub A by B;\n"
-    assert feature.notes == ""
+    assert feature.notes == "\n"
     assert feature.labels == [
-        {"language": "dflt", "value": "Feature Name dflt"},
-        {"language": "DEU", "value": "Feature Name DEU"},
+        {"language": "ENG", "value": "Stylistic Set Name 1"},
+        {"language": "DEU", "value": "Formatsatzname 1"},
     ]
 
 
