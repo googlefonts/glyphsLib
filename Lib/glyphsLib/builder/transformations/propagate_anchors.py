@@ -17,7 +17,7 @@ import logging
 from collections import deque
 from itertools import chain
 from math import atan2, degrees, isinf
-from typing import TYPE_CHECKING
+from typing import Tuple, TYPE_CHECKING
 
 from fontTools.misc.transform import Transform
 
@@ -54,7 +54,7 @@ def propagate_all_anchors_impl(
     # implement it by pre-sorting the work to ensure we always process components
     # first.
     todo = depth_sorted_composite_glyphs(glyphs)
-    num_base_glyphs: dict[(str, str), int] = {}
+    num_base_glyphs: dict = {}
     # NOTE: there's an important detail here, which is that we need to call the
     # 'anchors_traversing_components' function on each glyph, and save the returned
     # anchors, but we only *set* those anchors on glyphs that have components.
@@ -145,7 +145,7 @@ def anchors_traversing_components(
     layer: GSLayer,
     glyphs: dict[str, GSGlyph],
     done_anchors: dict[str, dict[str, list[GSAnchor]]],
-    base_glyph_counts: dict[(str, str), int],
+    base_glyph_counts: dict[Tuple[str, str], int],
     glyph_data: glyphdata.GlyphData | None = None,
 ) -> list[GSAnchor]:
     """Return the anchors for this glyph, including anchors from components
@@ -173,7 +173,7 @@ def anchors_traversing_components(
     has_underscore = any(a.name.startswith("_") for a in layer.anchors)
 
     number_of_base_glyphs = 0
-    all_anchors = {}
+    all_anchors: dict[str, GSAnchor] = {}
 
     for component_idx, component in enumerate(layer.components):
         # because we process dependencies first we know that all components
@@ -385,7 +385,7 @@ def get_component_layer_anchors(
     glyphs: dict[str, GSGlyph],
     anchors: dict[str, dict[str, list[GSAnchor]]],
 ) -> list[GSAnchor] | None:
-    glyph = glyphs.get(component.name)
+    glyph = glyphs.get(component.componentName)
     if glyph is None:
         return None
     # in Glyphs.app, the `componentLayer` property would synthesize a layer
@@ -393,8 +393,8 @@ def get_component_layer_anchors(
     # only support the corresponding 'master' layer of a component's base glyph.
     layer_anchors = None
     for comp_layer in _interesting_layers(glyph):
-        if comp_layer.layerId == layer.layerId and component.name in anchors:
-            layer_anchors = anchors[component.name][comp_layer.layerId]
+        if comp_layer.layerId == layer.layerId and component.componentName in anchors:
+            layer_anchors = anchors[component.componentName][comp_layer.layerId]
             break
     if layer_anchors is not None:
         # return a copy as they may be modified in place
@@ -410,21 +410,21 @@ def get_component_layer_anchors(
 
 
 def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]:
-    queue = deque()
+    queue: deque = deque()
     # Returns a map of the maximum component depth of each glyph.
     # - a glyph with no components has depth 0,
     # - a glyph with a component has depth 1,
     # - a glyph with a component that itself has a component has depth 2, etc
     # - a glyph with a cyclical component reference has infinite depth, which is
     #   technically a source error
-    depths = {}
+    depths: dict[str, float] = {}
 
     # for cycle detection; anytime a glyph is waiting for components (and so is
     # pushed to the back of the queue) we record its name and the length of the queue.
     # If we process the same glyph twice without the queue having gotten smaller
     # (meaning we have gone through everything in the queue) that means we aren't
     # making progress, and have a cycle.
-    waiting_for_components = {}
+    waiting_for_components: dict = {}
 
     for name, glyph in glyphs.items():
         if _has_components(glyph):
@@ -455,7 +455,7 @@ def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]
                 logger.debug("glyph '%s' is waiting for components", next_glyph.name)
                 queue.append(next_glyph)
             else:
-                depths[next_glyph.name] = float("inf")
+                depths[next_glyph.name] = int(float("inf"))
                 waiting_for_components.pop(next_glyph.name, None)
                 logger.warning("glyph '%s' has cyclical components", next_glyph.name)
 

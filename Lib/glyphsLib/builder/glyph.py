@@ -13,15 +13,16 @@
 # limitations under the License.
 
 
+from typing import Any, Dict, List, Optional, Tuple, Union
 import itertools
 import logging
 
 import glyphsLib.glyphdata
 
 try:
-    from GlyphsApp import GSLayer, GSPath, GSComponent, GSBackgroundLayer
+    from GlyphsApp import GSFontMaster, GSGlyph, GSLayer, GSPath, GSComponent, GSBackgroundLayer
 except ImportError:
-    from .. import GSLayer, GSPath, GSComponent, GSBackgroundLayer
+    from .. import GSFontMaster, GSGlyph, GSLayer, GSPath, GSComponent, GSBackgroundLayer
 from .common import from_loose_ufo_time, to_glyphs_time
 from .constants import (
     GLYPHLIB_PREFIX,
@@ -40,11 +41,14 @@ from .constants import (
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3
-
+from ufoLib2.objects import Glyph as UFOGlyph
+from ufoLib2.objects import Layer as UFOLayer
 logger = logging.getLogger(__name__)
 
 
-def _clone_layer(layer, paths=None, components=None):
+def _clone_layer(layer: GSLayer, paths: Optional[List[GSPath]] = None,
+                 components: Optional[List[GSComponent]] = None) -> GSLayer:
+    """Clone a GSLayer while optionally replacing paths and components."""
     paths = paths if paths is not None else []
     components = components if components is not None else []
     if len(paths) == len(layer.paths) and len(components) == len(layer.components):
@@ -67,18 +71,17 @@ def _clone_layer(layer, paths=None, components=None):
 # https://glyphsapp.com/news/glyphs-2-6-1-released
 # And this forum post:
 # https://forum.glyphsapp.com/t/unicode-variation-selector-u-fe01/21701
-USV_MAP = {
+USV_MAP: Dict[str, str] = {
     f".uv{i + 1:03}": f"{c:04X}"
     for i, c in enumerate(
         itertools.chain(range(0xFE00, 0xFE0F + 1), range(0xE0100, 0xE01EF + 1))
     )
 }
 
-USV_EXTENSIONS = tuple(USV_MAP.keys())
+USV_EXTENSIONS: Tuple[str, ...] = tuple(USV_MAP.keys())
 
 
-def to_ufo_shapes(self, ufo_glyph, layer):
-
+def to_ufo_shapes(self, ufo_glyph: Any, layer: GSLayer) -> None:
     # NOTE: The UFO v3 and Glyphs data model have incompatible component reference
     # semantics. UFO components always point to a glyph in the same layer, Glyphs
     # components in a ...:
@@ -101,19 +104,19 @@ def to_ufo_shapes(self, ufo_glyph, layer):
 
     for shape in layer.shapes:
         if isinstance(shape, GSPath):
-            self.to_ufo_path(ufo_glyph, shape)  # .path
+            self.to_ufo_path(ufo_glyph, shape)
             shape_order_lib_key += "P"
         elif isinstance(shape, GSComponent):
-            self.to_ufo_component(ufo_glyph, shape)  # .component
+            self.to_ufo_component(ufo_glyph, shape)
             shape_order_lib_key += "C"
         else:
-            raise ValueError("Unknown shape type %s" % shape)
+            raise ValueError(f"Unknown shape type {shape}")
 
     if "P" in shape_order_lib_key and "C" in shape_order_lib_key:
         ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = shape_order_lib_key
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
+def to_ufo_glyph(self, ufo_glyph: UFOGlyph, layer: GSLayer, glyph: GSGlyph, do_color_layers: bool = True) -> None:  # noqa: C901
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
@@ -123,12 +126,11 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     if glyph.unicodes:
         ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
-    export = glyph.export
+    export: bool = glyph.export
     if not export:
         if self.write_skipexportglyphs:
-            if "public.skipExportGlyphs" not in self._designspace.lib:
-                self._designspace.lib["public.skipExportGlyphs"] = []
-            self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
+            skip_export_glyphs = self._designspace.lib.setdefault("public.skipExportGlyphs", [])
+            skip_export_glyphs.append(glyph.name)
         else:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
 
@@ -146,26 +148,29 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     # we can't use use the glyphs.unicodes values since they aren't always
     # correctly padded
+    glyph_name = ufo_glyph.name
+    if not glyph_name:
+        return
     unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, unicodes=unicodes)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(glyph_name, unicodes=unicodes)
 
     if self.glyphdata is not None:
         custom = glyphsLib.glyphdata.get_glyph(
-            ufo_glyph.name, self.glyphdata, unicodes=unicodes
+            glyph_name, self.glyphdata, unicodes=unicodes
         )
-        production_name = glyph.production or (
+        production_name: Optional[str] = glyph.production or (
             custom.production_name
             if custom.production_name != glyphinfo.production_name
             else None
         )
-        category = glyph.category or (
+        category: Optional[str] = glyph.category or (
             custom.category if custom.category != glyphinfo.category else None
         )
-        subCategory = glyph.subCategory or (
+        subCategory: Optional[str] = glyph.subCategory or (
             custom.subCategory if custom.subCategory != glyphinfo.subCategory else None
         )
-        script = glyph.script or (
+        script: Optional[str] = glyph.script or (
             custom.script if custom.script != glyphinfo.script else None
         )
     else:
@@ -178,16 +183,18 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
 
     production_name = production_name or glyphinfo.production_name
 
-    if production_name:
-        # Make sure production names of bracket glyphs also get a BRACKET suffix.
-        bracket_glyph_name = BRACKET_GLYPH_RE.match(ufo_glyph.name)
+    glyph_name = ufo_glyph.name
+    if production_name and glyph_name:
+        # Ensure production name get the correct suffix
+        bracket_glyph_name = BRACKET_GLYPH_RE.match(glyph_name)
         prod_bracket_glyph_name = BRACKET_GLYPH_RE.match(production_name)
         if bracket_glyph_name and not prod_bracket_glyph_name:
-            production_name += BRACKET_GLYPH_SUFFIX_RE.match(ufo_glyph.name).group(1)
-    if production_name and production_name != ufo_glyph.name:
-        if POSTSCRIPT_NAMES_KEY not in ufo_font.lib:
-            ufo_font.lib[POSTSCRIPT_NAMES_KEY] = dict()
-        ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name] = production_name
+            match = BRACKET_GLYPH_SUFFIX_RE.match(glyph_name)
+            if match:
+                production_name += match.group(1)
+
+    if production_name and production_name != glyph_name:
+        ufo_font.lib.setdefault(POSTSCRIPT_NAMES_KEY, {})[glyph_name] = production_name
 
     if script is not None:
         ufo_glyph.lib[SCRIPT_LIB_KEY] = script
@@ -203,12 +210,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     else:
         subCategory = glyphinfo.subCategory
 
-    # load width before background, which is loaded with lib data
+    # Load width before background, which is loaded with lib data
 
-    width = effective_width(layer, glyph)
-    if width is None:
-        pass
-    elif category == "Mark" and subCategory == "Nonspacing" and width > 0:
+    width: float = effective_width(layer, glyph)
+    if category == "Mark" and subCategory == "Nonspacing" and width > 0:
         # zero the width of Nonspacing Marks like Glyphs.app does on export
         # TODO: (jany) check for customParameter DisableAllAutomaticBehaviour
         # FIXME: (jany) also don't do that when rt UFO -> glyphs -> UFO
@@ -218,7 +223,7 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         ufo_glyph.width = width
 
     if not self.minimal:
-        to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer)  # below
+        to_ufo_glyph_round_tripping(ufo_glyph, glyph, layer)  # below
         self.to_ufo_background_image(ufo_glyph, layer)  # .background_image
         self.to_ufo_guidelines(ufo_glyph, layer)  # .guidelines
         self.to_ufo_glyph_background(ufo_glyph, layer)  # below
@@ -258,10 +263,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     self.to_ufo_shapes(ufo_glyph, layer)
 
     self.to_ufo_glyph_anchors(ufo_glyph, layer.anchors)  # .anchors
+
     if self.is_vertical:
         self.to_ufo_glyph_height_and_vertical_origin(ufo_glyph, layer)  # below
 
-    # TODO: (gs) those should be stored in groups.plist but there is no public format to specify vertical kerning groups
     if glyph.bottomKerningGroup:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "kernBottom"] = glyph.bottomKerningGroup
     if glyph.topKerningGroup:
@@ -271,10 +276,12 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
         ufo_glyph.lib["public.truetype.overlap"] = True
 
 
-def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
-    note = glyph.note
-    if note is not None:
-        ufo_glyph.note = note
+def to_ufo_glyph_round_tripping(ufo_glyph: Any, glyph: GSGlyph, layer: GSLayer) -> None:
+    """Store additional glyph metadata for round tripping."""
+    # ufo_glyph: ufoLib2.objects.glyph.Glyph
+
+    if glyph.note:
+        ufo_glyph.note = glyph.note
 
     color_index = glyph.color
     if color_index is not None:
@@ -292,11 +299,8 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
         elif isinstance(color_index, int) and color_index in range(len(GLYPHS_COLORS)):
             ufo_glyph.markColor = GLYPHS_COLORS[color_index]
         else:
-            logger.warning(
-                "Glyph {}, layer {}: Invalid color index/tuple {}".format(
-                    glyph.name, layer.name, color_index
-                )
-            )
+            logger.warning(f"Glyph {glyph.name}, layer {layer.name}: Invalid color index/tuple {color_index}")
+
     color_index = layer.color
     if color_index is not None:
         ufo_glyph.lib[GLYPHLIB_PREFIX + "ColorIndexLayer"] = color_index
@@ -310,9 +314,12 @@ def to_ufo_glyph_roundtripping(ufo_glyph, glyph, layer):
             ufo_glyph.lib[GLYPHLIB_PREFIX + key] = value
 
 
-def effective_width(layer, glyph):
-    # The width may be taken from another master via the customParameters
-    # 'Link Metrics With Master' or 'Link Metrics With First Master'.
+def effective_width(layer: GSLayer, glyph: GSGlyph) -> float:
+    """
+    The width may be taken from another master via the customParameters
+    'Link Metrics With Master' or 'Link Metrics With First Master'.
+    """
+
     font = glyph.parent
     master = font.masters[layer.layerId]
     if master:
@@ -326,11 +333,13 @@ def effective_width(layer, glyph):
                         f"{layer.parent.name}: Applying width from master "
                         f"'{metrics_source.id}': {layer.width} -> {width}"
                     )
-                return width
-    return layer.width
+                return width or 0
+    return layer.width or 0
 
 
-def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
+def to_ufo_glyph_color(
+    self, ufo_glyph: Any, layer: "GSLayer", glyph: "GSGlyph", do_color_layers: bool = True
+) -> None:
     # Here we handle color layers. If this is a master layer and the glyph
     # has color layers, add ufo2ft lib key with the layer mapping.
 
@@ -343,12 +352,12 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # When building minimal UFOs, we instead collect color layers and later
     # add them as separate glyphs to the UFO font.
 
-    masterId = layer.associatedMasterId
+    masterId: str = layer.associatedMasterId
     if any(
         l.associatedMasterId == masterId and l.isColorPaletteLayer
         for layerId, l in glyph._layers.items()
     ):
-        layerMapping = [
+        layerMapping: List[Tuple[str, int]] = [
             (l.layerId, l._color_palette_index())
             for layerId, l in glyph._layers.items()
             if l.isColorPaletteLayer
@@ -358,10 +367,10 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
         if not self.minimal:
             ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = layerMapping
         elif glyph.export:
-            layers = []
-            for layerId, colorId in layerMapping:
-                layers.append((glyph.layers[layerId], colorId))
-            self._color_palette_layers.append(((glyph, layer), layers))
+            palette_layers: List[Tuple[GSLayer, int]] = [
+                (glyph.layers[layerId], colorId) for layerId, colorId in layerMapping
+            ]
+            self._color_palette_layers.append(((glyph, layer), palette_layers))
 
     if self.minimal:
         # The other kind of color layers supports solid colors and
@@ -371,19 +380,19 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
         # attributes, then we make a clone of the layer for each group with
         # only the paths in this group. We do this splitting because a
         # COLRv1 layer can’t have multiple gradients or colors.
-        color_layers = [
+        color_layers: List[GSLayer] = [
             l
             for l in glyph.layers
             if l.attributes.get(LAYER_ATTRIBUTE_COLOR)
             and l.associatedMasterId == layer.associatedMasterId
         ]
         if color_layers:
-            layers = []
+            layers: List[GSLayer] = []
             for color_layer in color_layers:
                 # Group consecutive paths with same attributes together.
-                groups = [
+                groups: List[List[GSPath]] = [
                     list(g)
-                    for k, g in itertools.groupby(
+                    for _, g in itertools.groupby(
                         color_layer.paths, key=lambda p: p.attributes
                     )
                 ]
@@ -392,7 +401,7 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
 
                 # Group components based on whether component glyph has
                 # color layers or not.
-                groups = [
+                component_groups: List[Tuple[bool, List[GSComponent]]] = [
                     (k, list(g))
                     for k, g in itertools.groupby(
                         color_layer.components,
@@ -403,9 +412,9 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
                         ),
                     )
                 ]
-                for has_color, components in groups:
+                for has_color, components in component_groups:
                     if not has_color:
-                        new_layer = _clone_layer(color_layer, components=components)
+                        new_layer: GSLayer = _clone_layer(color_layer, components=components)
                         new_layer.attributes = {}
                         layers.append(new_layer)
                     else:
@@ -415,9 +424,10 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
             self._color_layers.append(((glyph, layer), layers))
 
 
-def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
+def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph: UFOGlyph, layer: GSLayer) -> None:
     # implentation based on:
     # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
+
     assert self.is_vertical
 
     ascender, descender = _get_typo_ascender_descender(layer.master)
@@ -433,10 +443,11 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
         ufo_glyph.verticalOrigin = ascender
 
 
-def _get_typo_ascender_descender(master):
-    # Glyphsapp will use the typo metrics to set the vertOrigin and
-    # vertWidth. If typo metrics are not present, the master
-    # ascender and descender are used instead.
+def _get_typo_ascender_descender(master: GSFontMaster) -> Tuple[Union[int, float], Union[int, float]]:
+    """Glyphsapp will use the typo metrics to set the vertOrigin and
+    vertWidth. If typo metrics are not present, the master
+    ascender and descender are used instead."""
+
     if "typoAscender" in master.customParameters:
         ascender = master.customParameters["typoAscender"]
     else:
@@ -448,17 +459,16 @@ def _get_typo_ascender_descender(master):
     return ascender, descender
 
 
-def to_ufo_glyph_background(self, glyph, layer):
-    """Set glyph background."""
-
+def to_ufo_glyph_background(self, glyph: "GSGlyph", layer: "GSLayer") -> None:
+    """Set glyph background layer."""
     if not layer.hasBackground:
         return
 
-    background = layer.background
+    background: GSBackgroundLayer = layer.background
     ufo_layer = self.to_ufo_background_layer(layer)
     ufo_glyph = ufo_layer.newGlyph(glyph.name)
 
-    width = background.userData[BACKGROUND_WIDTH_KEY]
+    width: Optional[Union[int, float]] = background.userData[BACKGROUND_WIDTH_KEY]
     if width is not None:
         ufo_glyph.width = width
 
@@ -471,13 +481,12 @@ def to_ufo_glyph_background(self, glyph, layer):
 # UFO to Glyphs
 
 
-def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
+def to_glyphs_glyph(self, ufo_glyph: UFOGlyph, ufo_layer: UFOLayer, master: GSFontMaster) -> None:  # noqa: C901
     """Add UFO glif metadata, paths, components, and anchors to a GSGlyph.
     If the matching GSGlyph does not exist, then it is created,
     else it is updated with the new data.
     In all cases, a matching GSLayer is created in the GSGlyph to hold paths.
     """
-
     # FIXME: (jany) split between glyph and layer attributes
     #        have a write the first time, compare the next times for glyph
     #        always write for the layer
@@ -486,14 +495,15 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     #       without replacing the actual data structure. Ideally, FontGlyphsProxy
     #       provides O(1) lookup for all the ways you can use strings to look up
     #       glyphs.
-    ufo_glyph_name = ufo_glyph.name  # Avoid method lookup in hot loop.
-    glyph = None
-    for glyph_object in self.font._glyphs:  # HOT LOOP. Avoid FontGlyphsProxy for speed!
-        if glyph_object.name == ufo_glyph_name:  # HOT HOT HOT
-            glyph = glyph_object
-            break
+
+    ufo_glyph_name = ufo_glyph.name
+
+    assert ufo_glyph_name
+
+    glyph: Optional[GSGlyph] = self.font.glyphs[ufo_glyph_name]
+
     if glyph is None:
-        glyph = self.glyphs_module.GSGlyph(name=ufo_glyph_name)
+        glyph = GSGlyph(name=ufo_glyph_name)
         # FIXME: (jany) ordering? gs: sort after loading from 'public.glyphOrder'
         self.font.glyphs.append(glyph)
 
@@ -502,7 +512,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     if ufo_glyph.note:
         glyph.note = ufo_glyph.note
     if GLYPHLIB_PREFIX + "lastChange" in ufo_glyph.lib:
-        last_change = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
+        last_change: str = ufo_glyph.lib[GLYPHLIB_PREFIX + "lastChange"]
         # We cannot be strict about the dateformat because it's not an official
         # UFO field mentioned in the spec, so it could happen to have a timezone
         glyph.lastChange = from_loose_ufo_time(last_change)
@@ -518,11 +528,7 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         glyph.export = False
 
     ufo_font = self._sources[master.id].font
-
-    if (
-        POSTSCRIPT_NAMES_KEY in ufo_font.lib
-        and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]
-    ):
+    if POSTSCRIPT_NAMES_KEY in ufo_font.lib and ufo_glyph.name in ufo_font.lib[POSTSCRIPT_NAMES_KEY]:
         glyph.production = ufo_font.lib[POSTSCRIPT_NAMES_KEY][ufo_glyph.name]
         # FIXME: (jany) maybe put something in glyphinfo? No, it's readonly
         #        maybe don't write in glyph.production if glyphinfo already
@@ -530,9 +536,9 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)
         # production_name = glyph.production or glyphinfo.production_name
 
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name)  # FIXME: load glyphInfo at the end, not for each layer?
+    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph_name)  # FIXME: load glyphInfo at the end, not for each layer?
 
-    layer = self.to_glyphs_layer(ufo_layer, ufo_glyph, glyph, master)
+    layer: GSLayer = self.to_glyphs_layer(ufo_layer, ufo_glyph, glyph, master)
 
     for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
         # Also read the old version of the key that didn't have a prefix and
@@ -542,12 +548,11 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
         # layer)
         for prefix, glyphs_object in (
             ("", glyph),
-            # ("", layer),
-            ("layer.", layer),
+            ("layer.", layer)
         ):
             full_key = GLYPHLIB_PREFIX + prefix + key
             if full_key in ufo_glyph.lib:
-                value = ufo_glyph.lib[full_key]
+                value: Any = ufo_glyph.lib[full_key]
                 setattr(glyphs_object, key, value)
 
     if SCRIPT_LIB_KEY in ufo_glyph.lib:
@@ -565,26 +570,27 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     else:
         sub_category = glyphinfo.subCategory
 
-    # load width before background, which is loaded with lib data
     if hasattr(layer, "foreground"):
-        if ufo_glyph.width:
+        width: Optional[Union[int, float]] = ufo_glyph.width
+        if width:
             # Don't store "0", it's the default in UFO.
             # Store in userData because the background's width is not relevant
             # in Glyphs.
-            layer.userData[BACKGROUND_WIDTH_KEY] = ufo_glyph.width
+            layer.userData[BACKGROUND_WIDTH_KEY] = width
     else:
         layer.width = ufo_glyph.width
+
     if category == "Mark" and sub_category == "Nonspacing" and layer.width == 0:
         # Restore originalWidth
         if ORIGINAL_WIDTH_KEY in ufo_glyph.lib:
             layer.width = ufo_glyph.lib[ORIGINAL_WIDTH_KEY]
             # TODO: (jany) check for customParam DisableAllAutomaticBehaviour?
 
-    hasOverlap = ufo_glyph.lib.get("public.truetype.overlap", None)
+    hasOverlap: Optional[bool] = ufo_glyph.lib.get("public.truetype.overlap")
     if hasOverlap is not None:
         layer.attributes["hasOverlap"] = hasOverlap
 
-    color_index = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "ColorIndexLayer")
+    color_index: Optional[int] = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "ColorIndexLayer")
     if color_index is not None:
         layer.color = color_index
 
@@ -595,17 +601,19 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
     self.to_glyphs_glyph_user_data(ufo_font, glyph)
     self.to_glyphs_layer_user_data(ufo_glyph, layer)
     self.to_glyphs_smart_component_axes(ufo_glyph, glyph)
-    tags = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "tags")
+
+    tags: Optional[List[str]] = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "tags")
     if tags:
         glyph.tags = tags
+
     self.to_glyphs_paths(ufo_glyph, layer)
     self.to_glyphs_components(ufo_glyph, layer)
 
     if SHAPE_ORDER_LIB_KEY in ufo_glyph.lib:
         # Reshuffle shapes array to match original shape order
-        new_shapes = []
-        path_counter = 0
-        comp_counter = 0
+        new_shapes: List[Any] = []
+        path_counter: int = 0
+        comp_counter: int = 0
         for sign in ufo_glyph.lib[SHAPE_ORDER_LIB_KEY]:
             if sign == "P":
                 new_shapes.append(layer.paths[path_counter])
@@ -614,26 +622,29 @@ def to_glyphs_glyph(self, ufo_glyph, ufo_layer, master):  # noqa: C901
                 new_shapes.append(layer.components[comp_counter])
                 comp_counter += 1
             else:
-                raise ValueError("Unknown shape type %s" % sign)
+                raise ValueError(f"Unknown shape type {sign}")
         layer.shapes = new_shapes
-    kernBottom = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernBottom")
-    if kernBottom is not None and not glyph.bottomKerningGroup:
+
+    kernBottom: Optional[str] = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernBottom")
+    if kernBottom and not glyph.bottomKerningGroup:
         glyph.bottomKerningGroup = kernBottom
-    kernTop = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernTop")
-    if kernTop is not None and not glyph.topKerningGroup:
+
+    kernTop: Optional[str] = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "kernTop")
+    if kernTop and not glyph.topKerningGroup:
         glyph.topKerningGroup = kernTop
 
     self.to_glyphs_glyph_anchors(ufo_glyph, layer)
     self.to_glyphs_glyph_height_and_vertical_origin(ufo_glyph, master, layer)
 
-    smartComponentPoleMapping = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "smartComponentPoleMapping")
+    smartComponentPoleMapping: Optional[Dict[str, Any]] = ufo_glyph.lib.get(GLYPHLIB_PREFIX + "smartComponentPoleMapping")
     if smartComponentPoleMapping:
         layer.smartComponentPoleMapping = smartComponentPoleMapping
 
 
-def _to_glyphs_color(color):
-    # If the color matches one of Glyphs's predefined colors, return that
-    # index.
+def _to_glyphs_color(color: str) -> Union[int, List[int]]:
+    """
+    If the color matches one of Glyphs's predefined colors, return that index.
+    """
     for index, glyphs_color in enumerate(GLYPHS_COLORS):
         if str(color) == glyphs_color:
             return index
@@ -645,7 +656,8 @@ def _to_glyphs_color(color):
     return [round(float(component) * 255) for component in color.split(",")]
 
 
-def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
+def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph: Any, master: "GSFontMaster", layer: "GSLayer") -> None:
+    """Convert glyph height and vertical origin to Glyphs format."""
     ascender, descender = _get_typo_ascender_descender(master)
     if ufo_glyph.height != (ascender - descender):
         layer.vertWidth = ufo_glyph.height

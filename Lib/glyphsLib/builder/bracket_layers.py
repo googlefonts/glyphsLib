@@ -12,7 +12,7 @@ from glyphsLib.classes import GSLayer, LAYER_ATTRIBUTE_AXIS_RULES
 from glyphsLib.util import designspace_min_max
 from .constants import (
     BRACKET_GLYPH_TEMPLATE,
-    GLYPHLIB_PREFIX,
+    # GLYPHLIB_PREFIX,
     LAYER_ID_KEY,
 )
 from glyphsLib.types import floatToString3

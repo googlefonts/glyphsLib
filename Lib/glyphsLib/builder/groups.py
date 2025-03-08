@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+from typing import Any, Dict, List, Set, Optional, Tuple
 from collections import defaultdict
 import os
 
@@ -25,19 +26,19 @@ from .constants import (
 )
 
 
-def _get_glyphs_with_rtl_kerning(font):
-    # Return a set of all glyph names that are referenced from font.kerningRTL,
-    # either directly as single glyphs or as part of kerning groups.
-
-    rtl_glyphs = set()
+def _get_glyphs_with_rtl_kerning(font: Any) -> Set[str]:
+    """Return a set of all glyph names referenced from font.kerningRTL,
+    either directly as single glyphs or as part of kerning groups.
+    """
+    rtl_glyphs: Set[str] = set()
     if not font.kerningRTL:
         return rtl_glyphs
 
     # sets of group names keyed by {left,right}KerningGroup
-    rtl_groups = defaultdict(set)
-    glyph_kerning_attr = {"R": "leftKerningGroup", "L": "rightKerningGroup"}
+    rtl_groups: Dict[str, Set[str]] = defaultdict(set)
+    glyph_kerning_attr: Dict[str, str] = {"R": "leftKerningGroup", "L": "rightKerningGroup"}
 
-    def mark_as_rtl(s, side):
+    def mark_as_rtl(s: str, side: str) -> None:
         if s.startswith(f"@MMK_{side}_"):
             rtl_groups[glyph_kerning_attr[side]].add(s[7:])
         else:  # single glyph
@@ -54,38 +55,35 @@ def _get_glyphs_with_rtl_kerning(font):
 
     for glyph in font.glyphs.values():
         if glyph.name not in rtl_glyphs and any(
-            getattr(glyph, attr) in rtl_groups[attr]
-            for attr in glyph_kerning_attr.values()
+            getattr(glyph, attr) in rtl_groups[attr] for attr in glyph_kerning_attr.values()
         ):
             rtl_glyphs.add(glyph.name)
 
     return rtl_glyphs
 
 
-def to_ufo_groups(self):
-    # Build groups once and then apply to all UFOs.
-    groups = defaultdict(list)
+def to_ufo_groups(self) -> None:
+    """Build and apply groups for all UFOs."""
+    groups: Dict[str, List[str]] = defaultdict(list)
 
     # Classes usually go to the feature file, unless we have our custom flag
-    group_names = None
+    group_names: Optional[Set[str]] = None
     if UFO_GROUPS_NOT_IN_FEATURE_KEY in self.font.userData.keys():
         group_names = set(self.font.userData[UFO_GROUPS_NOT_IN_FEATURE_KEY])
+
     if group_names:
         for gsclass in self.font.classes.values():
             if gsclass.name in group_names:
-                if gsclass.code:
-                    groups[gsclass.name] = gsclass.code.split(" ")
-                else:
-                    # Empty group: using split like above would produce ['']
-                    groups[gsclass.name] = []
+                groups[gsclass.name] = gsclass.code.split(" ") if gsclass.code else []
 
     # Rebuild kerning groups from `left/rightKerningGroup`s
     # Use the original list of kerning groups as a base, to recover
     #  - the original ordering
     #  - the kerning groups of glyphs that were not in the font (which can be
     #    stored in a UFO but not by Glyphs)
-    recovered = set()
-    orig_groups = self.font.userData.get(UFO_ORIGINAL_KERNING_GROUPS_KEY)
+
+    recovered: Set[Tuple[str, int]] = set()
+    orig_groups: Optional[Dict[str, List[str]]] = self.font.userData.get(UFO_ORIGINAL_KERNING_GROUPS_KEY)
     if orig_groups:
         for group, glyphs in orig_groups.items():
             if not glyphs:
@@ -94,15 +92,13 @@ def to_ufo_groups(self):
             for glyph_name in glyphs:
                 # Check that the original value is still valid
                 match = UFO_KERN_GROUP_PATTERN.match(group)
-                side = match.group(1)
-                group_name = match.group(2)
-                glyph = self.font.glyphs[glyph_name]
-                if not glyph or getattr(glyph, _glyph_kerning_attr(side)) == group_name:
-                    # The original grouping is still valid
-                    groups[group].append(glyph_name)
-                    # Remember not to add this glyph again later
-                    # Thus the original position in the list is preserved
-                    recovered.add((glyph_name, int(side)))
+                if match:
+                    side = int(match.group(1))
+                    group_name = match.group(2)
+                    glyph = self.font.glyphs[glyph_name]
+                    if not glyph or getattr(glyph, _glyph_kerning_attr(side)) == group_name:
+                        groups[group].append(glyph_name)
+                        recovered.add((glyph_name, side))
 
     # Read new/modified grouping values.
     # For glyphs that are used in Glyphs3's kerningRTL dict, take the opposite side:
@@ -111,16 +107,16 @@ def to_ufo_groups(self):
     # While this is unfortunate, we believe it's better than completely ignoring
     # all Glyphs3's RTL kerning.
     # For more info: https://github.com/googlefonts/glyphsLib/pull/778
-    rtl_glyphs = _get_glyphs_with_rtl_kerning(self.font)
+
+    rtl_glyphs: Set[str] = _get_glyphs_with_rtl_kerning(self.font)
     for glyph in self.font.glyphs.values():
         is_rtl = glyph.name in rtl_glyphs
-        for side in 1, 2:
+        for side in (1, 2):
             if (glyph.name, side) not in recovered:
                 attr = _glyph_kerning_attr(side, is_rtl)
                 group = getattr(glyph, attr)
                 if group:
-                    group = f"public.kern{side}.{group}"
-                    groups[group].append(glyph.name)
+                    groups[f"public.kern{side}.{group}"].append(glyph.name)
 
     # Update all UFOs with the same info
     for source in self._sources.values():
@@ -129,23 +125,23 @@ def to_ufo_groups(self):
             source.font.groups[name] = glyphs[:]
 
 
-def to_glyphs_groups(self):
-    # Build the GSClasses from the groups of the first UFO.
-    groups = []
+def to_glyphs_groups(self) -> None:
+    """Convert UFO groups to GSClasses in Glyphs."""
+    groups: List[str] = []
     for source in self._sources.values():
         for name, glyphs in source.font.groups.items():
             # Filter out all BRACKET glyphs first, as they are created at
             # to_designspace time to inherit glyph kerning to their bracket
             # variants. They need to be removed because Glpyhs.app handles that
             # on its own.
-            glyphs = [name for name in glyphs if not BRACKET_GLYPH_RE.match(name)]
+            glyphs = [g for g in glyphs if not BRACKET_GLYPH_RE.match(g)]
             if _is_kerning_group(name):
                 _to_glyphs_kerning_group(self, name, glyphs)
             else:
                 gsclass = classes.GSClass(name, " ".join(glyphs))
                 self.font.classes.append(gsclass)
                 groups.append(name)
-        if self.minimize_ufo_diffs and len(groups) > 0:
+        if self.minimize_ufo_diffs and groups:
             self.font.userData[UFO_GROUPS_NOT_IN_FEATURE_KEY] = groups
         break
 
@@ -157,52 +153,50 @@ def to_glyphs_groups(self):
             _assert_groups_are_identical(self, reference_ufo, source.font)
 
 
-def _is_kerning_group(name):
+def _is_kerning_group(name: str) -> bool:
     return name.startswith(("public.kern1.", "public.kern2."))
 
 
-def _to_glyphs_kerning_group(self, name, glyphs):
+def _to_glyphs_kerning_group(self, name: str, glyphs: List[str]) -> None:
+    """Convert UFO kerning group to Glyphs kerning group."""
     if self.minimize_ufo_diffs:
         # Preserve ordering when going from UFO group
         # to left/rightKerningGroup disseminated in GSGlyphs
         # back to UFO group.
-        if not self.font.userData.get(UFO_ORIGINAL_KERNING_GROUPS_KEY):
-            self.font.userData[UFO_ORIGINAL_KERNING_GROUPS_KEY] = {}
-        self.font.userData[UFO_ORIGINAL_KERNING_GROUPS_KEY][name] = glyphs
+        self.font.userData.setdefault(UFO_ORIGINAL_KERNING_GROUPS_KEY, {})[name] = glyphs
 
     match = UFO_KERN_GROUP_PATTERN.match(name)
+    if not match:
+        return
     side = match.group(1)
     group_name = match.group(2)
     for glyph_name in glyphs:
         glyph = self.font.glyphs[glyph_name]
         if glyph:
-            setattr(glyph, _glyph_kerning_attr(side), group_name)
+            setattr(glyph, _glyph_kerning_attr(int(side)), group_name)
 
 
-def _glyph_kerning_attr(side, is_rtl=False):
+def _glyph_kerning_attr(side: int, is_rtl: bool = False) -> str:
     """Return rightKerningGroup or leftKerningGroup depending on the UFO
     group's side (1 or 2).
 
     Flip values for RTL kerning.
     """
-    side = int(side)
-    assert side in (1, 2), f"invalid kerning side: {side}"
+
+    assert side in (1, 2), f"Invalid kerning side: {side}"
     if is_rtl:
         side = 2 if side == 1 else 1
-    if side == 1:
-        return "rightKerningGroup"
-    else:
-        return "leftKerningGroup"
+    return "rightKerningGroup" if side == 1 else "leftKerningGroup"
 
 
-def _assert_groups_are_identical(self, reference_ufo, ufo):
-    first_time = [True]  # Using a mutable as a non-local for closure below
+def _assert_groups_are_identical(self, reference_ufo: Any, ufo: Any) -> None:
+    """Check that all UFO groups are identical, logging warnings otherwise."""
+    first_time = [True]
 
-    def _warn(message, *args):
+    def _warn(message: str, *args: Any) -> None:
         if first_time:
             self.logger.warning(
-                "Using UFO `%s` as a reference for groups:",
-                _ufo_logging_ref(reference_ufo),
+                "Using UFO `%s` as a reference for groups:", _ufo_logging_ref(reference_ufo)
             )
             first_time.clear()
         self.logger.warning("   " + message, *args)
@@ -210,27 +204,16 @@ def _assert_groups_are_identical(self, reference_ufo, ufo):
     # Check for inconsistencies
     for group, glyphs in ufo.groups.items():
         if group not in reference_ufo.groups:
-            _warn(
-                "group `%s` from `%s` will be lost because it's not "
-                "defined in the reference UFO",
-                group,
-                _ufo_logging_ref(ufo),
-            )
+            _warn("group `%s` from `%s` will be lost because it's not in the reference UFO",
+                  group, _ufo_logging_ref(ufo))
             continue
         reference_glyphs = reference_ufo.groups[group]
         if set(glyphs) != set(reference_glyphs):
-            _warn(
-                "group `%s` from `%s` will not be stored accurately because "
-                "it is different from the reference UFO",
-                group,
-                _ufo_logging_ref(ufo),
-            )
+            _warn("group `%s` from `%s` differs from reference UFO", group, _ufo_logging_ref(ufo))
             _warn("    reference = %s", " ".join(sorted(reference_glyphs)))
             _warn("    current   = %s", " ".join(sorted(glyphs)))
 
 
-def _ufo_logging_ref(ufo):
-    """Return a string that can identify this UFO in logs."""
-    if ufo.path:
-        return os.path.basename(ufo.path)
-    return ufo.info.styleName
+def _ufo_logging_ref(ufo: Any) -> str:
+    """Return a string identifying this UFO in logs."""
+    return os.path.basename(ufo.path) if ufo.path else ufo.info.styleName

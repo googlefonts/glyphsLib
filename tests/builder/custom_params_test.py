@@ -21,7 +21,7 @@ from textwrap import dedent
 
 from unittest import mock
 from unittest.mock import patch
-
+from typing import Any
 import glyphsLib
 import defcon
 import ufoLib2
@@ -56,7 +56,7 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
 class SetCustomParamsTestBase(object):
-    ufo_module = None  # subclasses must override this
+    ufo_module: Any = None  # subclasses must override this
 
     def setUp(self):
         self.ufo = self.ufo_module.Font()

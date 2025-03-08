@@ -12,24 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+from typing import Optional, Dict, Any, Union, List
 
 from glyphsLib.types import Point
 from glyphsLib.builder.constants import LOCKED_GUIDE_NAME_SUFFIX
+from glyphsLib.classes import GSLayer, GSFontMaster
+from ufoLib2.objects import Font as UFOFont
+from ufoLib2.objects import Glyph as UFOGlyph
 
 IDENTIFIER_GLYPHS_KEY = "UFO.identifier"
 COLOR_GLYPHS_KEY = "UFO.color"
 
 
-def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
+def to_ufo_guidelines(self, ufo_obj: Union[UFOFont, UFOGlyph], glyphs_obj: Union[GSLayer, GSFontMaster]) -> None:
     """Set guidelines."""
     guidelines = glyphs_obj.guides
     if not guidelines:
         return
-    new_guidelines = []
+    new_guidelines: List[dict] = []
     for guideline in guidelines:
-        new_guideline = {}
+        new_guideline: Dict[str, Any] = {}
         x, y = guideline.position
         angle = guideline.angle % 360
+
         if _is_vertical(x, y, angle):
             new_guideline["x"] = x
         elif _is_horizontal(x, y, angle):
@@ -38,6 +44,7 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
             new_guideline["x"] = x
             new_guideline["y"] = y
             new_guideline["angle"] = angle
+
         name = guideline.name
         if guideline.locked:
             name = (name or "") + LOCKED_GUIDE_NAME_SUFFIX
@@ -53,10 +60,10 @@ def to_ufo_guidelines(self, ufo_obj, glyphs_obj):
             new_guideline["color"] = color
 
         new_guidelines.append(new_guideline)
-    ufo_obj.guidelines = new_guidelines
+    ufo_obj.guidelines = new_guidelines  # type: ignore
 
 
-def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
+def to_glyphs_guidelines(self, ufo_obj: Union[UFOFont, UFOGlyph], glyphs_obj: Union[GSLayer, GSFontMaster]) -> None:
     """Set guidelines."""
     if not ufo_obj.guidelines:
         return
@@ -87,9 +94,9 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
         glyphs_obj.guides.append(new_guideline)
 
 
-def _is_vertical(x, y, angle):
-    return (y is None or y == 0) and (angle is None or angle == 90 or angle == 270)
+def _is_vertical(x: Optional[float], y: Optional[float], angle: Optional[float]) -> bool:
+    return (y is None or y == 0) and (angle is None or angle in {90, 270})
 
 
-def _is_horizontal(x, y, angle):
-    return (x is None or x == 0) and (angle is None or angle == 0 or angle == 180)
+def _is_horizontal(x: Optional[float], y: Optional[float], angle: Optional[float]) -> bool:
+    return (x is None or x == 0) and (angle is None or angle in {0, 180})

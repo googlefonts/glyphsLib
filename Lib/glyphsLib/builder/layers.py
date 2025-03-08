@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+from typing import Any, Optional
+
 from .constants import (
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
     LAYER_ID_KEY,
@@ -19,10 +22,12 @@ from .constants import (
     LAYER_ORDER_TEMP_USER_DATA_KEY,
     GLYPHS_PREFIX,
 )
-from glyphsLib.classes import GSGlyph, GSLayer
+from glyphsLib.classes import GSGlyph, GSLayer, GSFontMaster
+from ufoLib2.objects import Glyph as UFOGlyph
+from ufoLib2.objects import Layer as UFOLayer
 
 
-def to_ufo_color_layer_names(self, ufo):
+def to_ufo_color_layer_names(self, ufo) -> None:
     for glyph in ufo.layers.defaultLayer:
         if UFO2FT_COLOR_LAYER_MAPPING_KEY in glyph.lib:
             glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [
@@ -31,7 +36,7 @@ def to_ufo_color_layer_names(self, ufo):
             ]
 
 
-def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer):
+def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer) -> UFOLayer:
     assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
@@ -62,7 +67,7 @@ def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer):
     else:
         ufo_layer = ufo_font.layers[layer_name]
 
-    if self.minimize_glyphs_diffs:
+    if self.minimize_glyphs_diffs and glyph.name:
         ufo_layer.lib[LAYER_ORDER_PREFIX + glyph.name] = _layer_order_in_glyph(
             self, layer
         )
@@ -70,7 +75,7 @@ def to_ufo_layer(self, glyph: GSGlyph, layer: GSLayer):
     return ufo_layer
 
 
-def to_ufo_background_layer(self, layer):
+def to_ufo_background_layer(self, layer: GSLayer) -> UFOLayer:
     assert layer.associatedMasterId  # gs TODO: remove the `or layer.layerId`
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
     if layer.associatedMasterId == layer.layerId:
@@ -84,7 +89,7 @@ def to_ufo_background_layer(self, layer):
     return background_layer
 
 
-def _layer_order_in_glyph(self, layer):
+def _layer_order_in_glyph(self, layer: GSLayer) -> Optional[int]:
     # TODO: optimize?
     for order, glyph_layer in enumerate(layer.parent.layers.values()):
         if glyph_layer is layer:
@@ -92,7 +97,7 @@ def _layer_order_in_glyph(self, layer):
     return None
 
 
-def to_glyphs_layer(self, ufo_layer, ufo_glyph, glyph, master):
+def to_glyphs_layer(self, ufo_layer: UFOLayer, ufo_glyph: UFOGlyph, glyph: GSGlyph, master: GSFontMaster) -> GSLayer:
     if ufo_layer is self._sources[master.id].font.layers.defaultLayer:
         layer = _get_or_make_foreground(self, glyph, master)
     elif ufo_layer.name == "public.background":
@@ -123,7 +128,7 @@ def to_glyphs_layer(self, ufo_layer, ufo_glyph, glyph, master):
                 for l in glyph.layers
                 if l.name == ufo_layer.name and l.associatedMasterId == master.id
             ),
-            None,
+            None,  # type: ignore # TODO: (gs) Check
         )
         if layer is None:
             layer = self.glyphs_module.GSLayer()
@@ -136,20 +141,20 @@ def to_glyphs_layer(self, ufo_layer, ufo_glyph, glyph, master):
         layer.name = ufo_layer.name
         glyph.layers.append(layer)
         if self._font.formatVersion < 3:
-            layer.layer_name_to_atributes()
+            layer.layer_name_to_attributes()
         else:
             layer_attributes = ufo_glyph.lib.get(GLYPHS_PREFIX + "layer.attributes")
             if layer_attributes:
                 layer.attributes = layer_attributes
 
-    order_key = LAYER_ORDER_PREFIX + glyph.name
+    order_key = LAYER_ORDER_PREFIX + (glyph.name or "")
     if order_key in ufo_layer.lib:
         order = ufo_layer.lib[order_key]
         layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY] = order
     return layer
 
 
-def _get_or_make_foreground(self, glyph, master):
+def _get_or_make_foreground(self, glyph: GSGlyph, master) -> GSLayer:
     layer = glyph.layers[master.id]
     if layer is None:
         layer = glyph.layers[master.id] = self.glyphs_module.GSLayer()
@@ -157,7 +162,7 @@ def _get_or_make_foreground(self, glyph, master):
     return layer
 
 
-def to_glyphs_layer_order(self, glyph):
+def to_glyphs_layer_order(self, glyph: GSGlyph) -> None:
     # TODO: (jany) ask for the rules of layer ordering inside a glyph
     # For now, order according to key in lib
     glyph.layers = sorted(glyph.layers, key=_layer_order)
@@ -166,7 +171,7 @@ def to_glyphs_layer_order(self, glyph):
             del layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY]
 
 
-def _layer_order(layer):
+def _layer_order(layer: GSLayer) -> Any:
     if LAYER_ORDER_TEMP_USER_DATA_KEY in layer.userData:
         return layer.userData[LAYER_ORDER_TEMP_USER_DATA_KEY]
     return float("inf")

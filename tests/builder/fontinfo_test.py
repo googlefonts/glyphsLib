@@ -25,7 +25,7 @@ http://unifiedfontobject.org/versions/ufo3/fontinfo.plist/
 import os
 import pytest
 from dataclasses import dataclass
-
+from typing import Any
 from glyphsLib import to_glyphs, to_ufos, classes
 
 
@@ -40,7 +40,7 @@ def skip_section(name, *fields):
 @dataclass
 class Field:
     name: str
-    test_value: any
+    test_value: Any
     instance_only: bool = False
 
 

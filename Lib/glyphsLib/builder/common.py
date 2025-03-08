@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import annotations
+from typing import Tuple, Union
 import datetime
 from glyphsLib.types import parse_datetime
 
@@ -20,22 +21,22 @@ UFO_FORMAT = "%Y/%m/%d %H:%M:%S"
 GLYPHS_FORMAT = "%Y-%m-%d %H:%M:%S +0000"
 
 
-def to_ufo_time(datetime_obj):
+def to_ufo_time(datetime_obj: datetime.datetime) -> str:
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime(UFO_FORMAT)
 
 
-def to_glyphs_time(datetime_obj):
+def to_glyphs_time(datetime_obj: datetime.datetime) -> str:
     """Format a datetime object as specified for UFOs."""
     return datetime_obj.strftime(GLYPHS_FORMAT)
 
 
-def from_ufo_time(string):
+def from_ufo_time(string: str) -> datetime.datetime:
     """Parses a datetime as specified for UFOs into a datetime object."""
     return datetime.datetime.strptime(string, UFO_FORMAT)
 
 
-def from_loose_ufo_time(string):
+def from_loose_ufo_time(string: str) -> datetime.datetime:
     """Parses a datetime as specified for UFOs into a datetime object,
     or as the Glyphs formet."""
     try:
@@ -44,7 +45,7 @@ def from_loose_ufo_time(string):
         return parse_datetime(string)
 
 
-def to_ufo_color(color):
+def to_ufo_color(color: Union[list, tuple, str]) -> Tuple[float]:
     if isinstance(color, str):
         color = [int(v) for v in color.split(",")]
     if len(color) == 2:

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from __future__ import annotations
-
+from typing import Dict
 from io import open
 import collections
 import os
@@ -25,7 +25,7 @@ from glyphsLib.builder import to_ufos, to_designspace, to_glyphs  # noqa
 from glyphsLib.parser import load, loads  # noqa
 from glyphsLib.writer import dump, dumps  # noqa
 from glyphsLib.util import clean_ufo, ufo_create_background_layer_for_all_glyphs
-
+from ufoLib2.objects import Font as UFOFont
 try:
     from ._version import version as __version__
 except ImportError:
@@ -144,7 +144,7 @@ def build_masters(
 
     # Only write full masters to disk. This assumes that layer sources are always part
     # of another full master source, which must always be the case in a .glyphs file.
-    ufos = {}
+    ufos: Dict[str, UFOFont] = {}
     for source in designspace.sources:
         if source.filename in ufos:
             assert source.font is ufos[source.filename]

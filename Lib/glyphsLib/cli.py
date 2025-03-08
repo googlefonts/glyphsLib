@@ -241,8 +241,8 @@ def main(args=None):
     group.add_argument(
         "--format-version",
         metavar="formatVersion",
-        choices=("2", "3"),
-        default="3",
+        choices=(2, 3),
+        default=3,
         help=("Set the file version for the .glyphs file."),
     )
 

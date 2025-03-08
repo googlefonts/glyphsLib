@@ -14,8 +14,12 @@
 
 import copy
 import logging
+from typing import Any, List, Optional, Tuple, Union
 
 from glyphsLib import classes, glyphdata
+from glyphsLib.classes import GSFont
+from fontTools.designspaceLib import DesignSpaceDocument
+from ufoLib2 import Font as UFOFont
 
 from .builders import UFOBuilder, GlyphsBuilder
 from .transformations import TRANSFORMATIONS, TRANSFORMATION_CUSTOM_PARAMS
@@ -24,20 +28,20 @@ logger = logging.getLogger(__name__)
 
 
 def to_ufos(
-    font,
-    include_instances=False,
-    family_name=None,
-    propagate_anchors=None,
-    ufo_module=None,
-    minimize_glyphs_diffs=False,
-    generate_GDEF=True,
-    store_editor_state=True,
-    write_skipexportglyphs=False,
-    expand_includes=False,
-    minimal=False,
-    glyph_data=None,
-    preserve_original=False,
-):
+    font: GSFont,
+    include_instances: bool = False,
+    family_name: Optional[str] = None,
+    propagate_anchors: Optional[bool] = None,
+    ufo_module: Optional[Any] = None,
+    minimize_glyphs_diffs: bool = False,
+    generate_GDEF: bool = True,
+    store_editor_state: bool = True,
+    write_skipexportglyphs: bool = False,
+    expand_includes: bool = False,
+    minimal: bool = False,
+    glyph_data: Optional[glyphdata.GlyphData] = None,
+    preserve_original: bool = False,
+) -> Union[List[UFOFont], Tuple[List[UFOFont], Any]]:
     """Take a GSFont object and convert it into one UFO per master.
 
     Takes in data as Glyphs.app-compatible classes, as documented at
@@ -93,23 +97,23 @@ def to_ufos(
 
 
 def to_designspace(
-    font,
-    family_name=None,
-    instance_dir=None,
-    propagate_anchors=None,
-    ufo_module=None,
-    minimize_glyphs_diffs=False,
-    generate_GDEF=True,
-    store_editor_state=True,
-    write_skipexportglyphs=False,
-    expand_includes=False,
-    minimal=False,
-    glyph_data=None,
-    preserve_original=False,
-):
+    font: GSFont,
+    family_name: Optional[str] = None,
+    instance_dir: Optional[str] = None,
+    propagate_anchors: Optional[bool] = None,
+    ufo_module: Optional[Any] = None,
+    minimize_glyphs_diffs: bool = False,
+    generate_GDEF: bool = True,
+    store_editor_state: bool = True,
+    write_skipexportglyphs: bool = False,
+    expand_includes: bool = False,
+    minimal: bool = False,
+    glyph_data: Optional[glyphdata.GlyphData] = None,
+    preserve_original: bool = False,
+) -> DesignSpaceDocument:
     """Take a GSFont object and convert it into a Designspace Document + UFOS.
     The UFOs are available as the attribute `font` of each SourceDescriptor of
-    the DesignspaceDocument:
+    the DesignSpaceDocument:
 
         ufos = [source.font for source in designspace.sources]
 
@@ -117,7 +121,7 @@ def to_designspace(
 
     The designspace and the UFOs are not written anywhere by default, they
     are all in-memory. If you want to write them to the disk, consider using
-    the `filename` attribute of the DesignspaceDocument and of its
+    the `filename` attribute of the DesignSpaceDocument and of its
     SourceDescriptor as possible file names.
 
     Takes in data as Glyphs.app-compatible classes, as documented at
@@ -161,7 +165,12 @@ def to_designspace(
     return builder.designspace
 
 
-def preflight_glyphs(font, *, glyph_data=None, **flags):
+def preflight_glyphs(
+    font: GSFont,
+    *,
+    glyph_data: Optional[glyphdata.GlyphData] = None,
+    **flags: Any
+) -> GSFont:
     """Run a set of transformations over a GSFont object to make
     it easier to convert to UFO; resolve all the "smart stuff".
 
@@ -202,30 +211,27 @@ def preflight_glyphs(font, *, glyph_data=None, **flags):
             raise ValueError(f"Invalid value for do_{transform.__name__}")
         logger.info(f"Running '{transform.__name__}' transformation")
         transform(font, glyph_data=glyph_data)
+
     if flags:
         logger.warning(f"preflight_glyphs has unused `flags` arguments: {flags}")
     return font
 
 
 def to_glyphs(
-    ufos_or_designspace,
-    glyphs_module=classes,
-    ufo_module=None,
-    minimize_ufo_diffs=False,
-    expand_includes=False,
-    format_version=False,
-):
-    """
-    Take a list of UFOs or a single DesignspaceDocument with attached UFOs
-    and converts it into a GSFont object.
+    ufos_or_designspace: Union[List[UFOFont], DesignSpaceDocument],
+    glyphs_module: Any = classes,
+    ufo_module: Optional[Any] = None,
+    minimize_ufo_diffs: bool = False,
+    expand_includes: bool = False,
+    format_version: Optional[int] = None,
+) -> GSFont:
+    """Convert UFOs or a DesignspaceDocument into a GSFont object.
 
-    The GSFont object is in-memory, it's up to the user to write it to the disk
-    if needed.
-
-    This should be the inverse function of `to_ufos` and `to_designspace`,
-    so we should have to_glyphs(to_ufos(font)) == font
-    and also to_glyphs(to_designspace(font)) == font
+    Returns:
+        A GSFont object.
     """
+    assert format_version is None or isinstance(format_version, int)
+
     if hasattr(ufos_or_designspace, "sources"):
         builder = GlyphsBuilder(
             designspace=ufos_or_designspace,

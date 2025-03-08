@@ -1116,6 +1116,8 @@ def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):
 
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
 
+    c_glyph = ufo["c"]
+    assert OBJECT_LIBS_KEY not in c_glyph.lib
     # all components have deault values, no lib key is written
     assert GLYPHS_PREFIX + "componentsAlignment" not in ufo["c"].lib
     assert GLYPHS_PREFIX + "componentsLocked" not in ufo["c"].lib
@@ -1127,21 +1129,25 @@ def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):
     comp1.smartComponentValues["height"] = 0
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
 
+    c_glyph = ufo["c"]
     # if any component has a non-default alignment/locked values, write
     # list of values for all of them
-    assert GLYPHS_PREFIX + "componentsAlignment" not in ufo["c"].lib
-    b_component = ufo["c"].components[1]
+    assert GLYPHS_PREFIX + "componentsAlignment" not in c_glyph.lib
+
+    a_component = c_glyph.components[0]
+    assert a_component.identifier is not None
+    object_lib = c_glyph.lib[OBJECT_LIBS_KEY]
+    a_object_lib = object_lib[a_component.identifier]
+    assert len(a_object_lib) == 2
+    assert a_object_lib["com.schriftgestaltung.locked"] is True
+    assert a_object_lib["com.schriftgestaltung.smartComponentValues"] == {"height": 0}
+
+    b_component = c_glyph.components[1]
     assert b_component.identifier is not None
-    assert ufo["c"].lib[OBJECT_LIBS_KEY] == {
-        b_component.identifier: {'com.schriftgestaltung.alignment': -1}
-    }
-    assert GLYPHS_PREFIX + "componentsLocked" in ufo["c"].lib
-    assert ufo["c"].lib[GLYPHS_PREFIX + "componentsLocked"] == [True, False]
-    assert GLYPHS_PREFIX + "componentsSmartComponentValues" in ufo["c"].lib
-    assert ufo["c"].lib[GLYPHS_PREFIX + "componentsSmartComponentValues"] == [
-        {"height": 0},
-        {},
-    ]
+    object_lib = c_glyph.lib[OBJECT_LIBS_KEY]
+    b_object_lib = object_lib[b_component.identifier]
+    assert len(b_object_lib) == 1
+    assert b_object_lib["com.schriftgestaltung.alignment"] == -1
 
 
 def test_glyph_lib_color_mapping(ufo_module):

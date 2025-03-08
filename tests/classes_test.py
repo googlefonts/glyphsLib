@@ -1652,7 +1652,7 @@ def test_applyTransform_skew(file_path):
         assert abs(pathCopy.nodes[i].position.y - pt[1]) < 0.01
 
 
-def test_direction(file_path):
+def test_direction(file_path: str):
     font = GSFont(file_path)
     glyph = font.glyphs["a"]
     layer = glyph.layers[0]
@@ -1660,11 +1660,11 @@ def test_direction(file_path):
     assert path.direction == -1
 
 
-def test_segments(file_path):
+def test_segments(file_path: str):
     font = GSFont(file_path)
-    glyph = font.glyphs["a"]
-    layer = glyph.layers[0]
-    path = layer.paths[0]
+    glyph: GSGlyph = font.glyphs["a"]
+    layer: GSLayer = glyph.layers[0]
+    path: GSPath = layer.paths[0]
     oldSegments = path.segments
     assert len(path.segments) == 20
     path.reverse()

@@ -17,9 +17,7 @@ import binascii
 import copy
 import datetime
 import re
-from typing import List
-from typing import Optional
-from typing import Union
+from typing import List, Optional, Union, Any, cast
 from fontTools.misc.transform import Transform as ftTransform
 
 __all__ = [
@@ -54,7 +52,7 @@ class ValueType:
     and readable/writable using the glyphsLib parser/writer.
     """
 
-    default = None
+    default: Any = None
 
     def __init__(self, value=None):
         if value:
@@ -126,7 +124,7 @@ def Vector(dim):
     return Vector
 
 
-class Point(Vector(2)):
+class Point(Vector(2)):  # type: ignore
     """Read/write a vector in curly braces."""
 
     __slots__ = ("value", "rect")
@@ -203,7 +201,7 @@ class Size(Point):
             self.rect.value[3] = value
 
 
-class Rect(Vector(4)):
+class Rect(Vector(4)):  # type: ignore
     """Read/write a rect of two points in curly braces."""
 
     regex = re.compile(r"{{([-.e\d]+), ([-.e\d]+)}, {([-.e\d]+), ([-.e\d]+)}}")
@@ -243,7 +241,7 @@ class Rect(Vector(4)):
         self.value[3] = value.height
 
 
-class Transform(Vector(6)):
+class Transform(Vector(6)):  # type: ignore
     """Read/write a six-element vector."""
 
     def __init__(
@@ -464,7 +462,7 @@ def floatToString5(f: float) -> str:
 class UnicodesList(list):
     """Represent a PLIST-able list of unicode codepoints as strings."""
 
-    def __init__(self, value=None):
+    def __init__(self, value: Optional[Union[str, list]] = None):
         if value is None:
             unicodes = []
         elif isinstance(value, str):
@@ -473,7 +471,7 @@ class UnicodesList(list):
             unicodes = [str(v) for v in value]
         super().__init__(unicodes)
 
-    def plistValue(self, formatVersion=2):
+    def plistValue(self, formatVersion: int = 2):
         if not self:
             return None
         if len(self) == 1:
@@ -526,7 +524,7 @@ class IndexPath(ValueType):
         elif isinstance(value, (list, tuple)):
             self.value = value
         else:
-            self.value = self.fromString(value)
+            self.value = self.fromString(cast(str, value))
 
     def fromString(self, string: str) -> List[Union[int, str]]:
         values = string.strip().lstrip('"{(').rstrip(')}"').split(",")

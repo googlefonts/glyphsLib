@@ -13,9 +13,11 @@
 # limitations under the License.
 
 from glyphsLib.util import pairs
+from glyphsLib.classes import GSFontMaster
+from ufoLib2.objects import Font as UFOFont
 
 
-def to_ufo_blue_values(self, ufo, master):
+def to_ufo_blue_values(self, ufo: UFOFont, master: GSFontMaster) -> None:
     """Set postscript blue values from Glyphs alignment zones."""
 
     blue_values = master.blueValues
@@ -26,7 +28,7 @@ def to_ufo_blue_values(self, ufo, master):
         ufo.info.postscriptOtherBlues = other_blues
 
 
-def to_glyphs_blue_values(self, ufo, master):
+def to_glyphs_blue_values(self, ufo: UFOFont, master: GSFontMaster) -> None:
     """Sets the GSFontMaster alignmentZones from the postscript blue values."""
 
     zones = []

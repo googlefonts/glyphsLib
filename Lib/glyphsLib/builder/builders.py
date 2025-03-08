@@ -16,7 +16,7 @@
 from collections import OrderedDict, defaultdict
 import os
 from textwrap import dedent
-from typing import Dict
+from typing import Dict, Optional, List, Any
 
 from fontTools import designspaceLib
 
@@ -32,7 +32,7 @@ from .constants import (
 
 from .axes import find_base_style, class_to_value
 from glyphsLib.util import LoggerMixin, _DeprecatedArgument
-from glyphsLib.classes import GSAxis
+from glyphsLib.classes import GSAxis, GSInstance
 from .sources import _to_glyphs_source
 from fontTools.designspaceLib import SourceDescriptor
 
@@ -43,19 +43,19 @@ class UFOBuilder(LoggerMixin):
     def __init__(
         self,
         font,
-        ufo_module=None,
-        designspace_module=designspaceLib,
-        family_name=None,
-        instance_dir=None,
-        propagate_anchors=_DeprecatedArgument,  # DEPRECATED
-        use_designspace=False,
-        minimize_glyphs_diffs=False,
-        generate_GDEF=True,
-        store_editor_state=True,
-        write_skipexportglyphs=False,
-        expand_includes=False,
-        minimal=False,
-        glyph_data=None,
+        ufo_module: Any = None,
+        designspace_module: Any = designspaceLib,
+        family_name: Optional[str] = None,
+        instance_dir: Optional[str] = None,
+        propagate_anchors: Any = _DeprecatedArgument,  # DEPRECATED
+        use_designspace: bool = False,
+        minimize_glyphs_diffs: bool = False,
+        generate_GDEF: bool = True,
+        store_editor_state: bool = True,
+        write_skipexportglyphs: bool = False,
+        expand_includes: bool = False,
+        minimal: bool = False,
+        glyph_data: Optional[glyphdata.GlyphData] = None,
     ):
         """Create a builder that goes from Glyphs to UFO + designspace.
 
@@ -106,7 +106,7 @@ class UFOBuilder(LoggerMixin):
         self.minimize_glyphs_diffs = minimize_glyphs_diffs
         self.generate_GDEF = generate_GDEF
         self.store_editor_state = store_editor_state
-        self.bracket_layers = []
+        self.bracket_layers: List = []
         self.write_skipexportglyphs = write_skipexportglyphs
         self.expand_includes = expand_includes
         self.minimal = minimal
@@ -127,16 +127,16 @@ class UFOBuilder(LoggerMixin):
 
         # The set of (SourceDescriptor + UFO)s that will be built,
         # indexed by master ID, the same order as masters in the source GSFont.
-        self._sources = OrderedDict()
+        self._sources: OrderedDict = OrderedDict()
 
         # Map Glyphs layer IDs to UFO layer names.
-        self._layer_map = {}
+        self._layer_map: dict = {}
 
         # List of exploded color palette layers when building minimal UFOs.
-        self._color_palette_layers = []
+        self._color_palette_layers: list = []
 
         # List of color layers when building minimal UFOs.
-        self._color_layers = []
+        self._color_layers: list = []
 
         # A cache for mappings of layer IDs to mappings of glyph names to Glyphs layers,
         # for passing into pens as glyph sets.
@@ -158,7 +158,7 @@ class UFOBuilder(LoggerMixin):
         self.is_vertical = self._is_vertical()
 
         # Counter to generate shorter names for alternate layer glyphs
-        self.alternate_names_map = defaultdict(list)
+        self.alternate_names_map: dict = defaultdict(list)
 
         # check that source was generated with at least stable version 2.3
         # https://github.com/googlefonts/glyphsLib/pull/65#issuecomment-237158140
@@ -389,48 +389,34 @@ class UFOBuilder(LoggerMixin):
         return instance_data
 
     # Implementation is split into one file per feature
-    from .anchors import to_ufo_glyph_anchors
-    from .anchor_propagation import to_ufo_propagate_font_anchors
-    from .annotations import to_ufo_annotations
-    from .axes import to_designspace_axes
-    from .background_image import to_ufo_background_image
-    from .bracket_layers import to_designspace_bracket_layers
-    from .blue_values import to_ufo_blue_values
-    from .color_layers import to_ufo_color_layers
-    from .common import to_ufo_time
-    from .components import to_ufo_component, to_ufo_smart_component_axes, to_ufo_components_nonmaster_decompose
-    from .custom_params import to_ufo_custom_params, to_ufo_properties
-    from .features import regenerate_gdef, to_ufo_master_features
-    from .font import to_ufo_font_attributes
-    from .groups import to_ufo_groups
-    from .guidelines import to_ufo_guidelines
-    from .hints import to_ufo_hints
-    from .instances import to_designspace_instances
-    from .kerning import to_ufo_kerning
-    from .layers import to_ufo_layer, to_ufo_background_layer, to_ufo_color_layer_names
-    from .masters import to_ufo_master_attributes
-    from .names import to_ufo_names
-    from .paths import to_ufo_path
-    from .sources import to_designspace_sources
-    from .glyph import (
-        to_ufo_glyph,
-        to_ufo_glyph_color,
-        to_ufo_glyph_background,
-        to_ufo_glyph_height_and_vertical_origin,
-        to_ufo_shapes,
-    )
-    from .user_data import (
-        to_designspace_family_user_data,
-        to_ufo_family_user_data,
-        to_ufo_master_user_data,
-        to_ufo_glyph_user_data,
-        to_ufo_layer_lib,
-        to_ufo_layer_user_data,
-        to_ufo_node_user_data,
-    )
+    from .anchors import to_ufo_glyph_anchors   # type: ignore
+    from .anchor_propagation import to_ufo_propagate_font_anchors  # type: ignore
+    from .annotations import to_ufo_annotations  # type: ignore
+    from .axes import to_designspace_axes  # type: ignore
+    from .background_image import to_ufo_background_image  # type: ignore
+    from .bracket_layers import to_designspace_bracket_layers  # type: ignore
+    from .blue_values import to_ufo_blue_values  # type: ignore
+    from .color_layers import to_ufo_color_layers  # type: ignore
+    from .common import to_ufo_time  # type: ignore
+    from .components import to_ufo_component, to_ufo_smart_component_axes, to_ufo_components_nonmaster_decompose  # type: ignore
+    from .custom_params import to_ufo_custom_params, to_ufo_properties  # type: ignore
+    from .features import regenerate_gdef, to_ufo_master_features  # type: ignore
+    from .font import to_ufo_font_attributes  # type: ignore
+    from .groups import to_ufo_groups  # type: ignore
+    from .guidelines import to_ufo_guidelines  # type: ignore
+    from .hints import to_ufo_hints  # type: ignore
+    from .instances import to_designspace_instances  # type: ignore
+    from .kerning import to_ufo_kerning  # type: ignore
+    from .layers import to_ufo_layer, to_ufo_background_layer, to_ufo_color_layer_names  # type: ignore
+    from .masters import to_ufo_master_attributes  # type: ignore
+    from .names import to_ufo_names  # type: ignore
+    from .paths import to_ufo_path  # type: ignore
+    from .sources import to_designspace_sources  # type: ignore
+    from .glyph import to_ufo_glyph, to_ufo_glyph_color, to_ufo_glyph_background, to_ufo_glyph_height_and_vertical_origin, to_ufo_shapes  # type: ignore
+    from .user_data import to_designspace_family_user_data, to_ufo_family_user_data, to_ufo_master_user_data, to_ufo_glyph_user_data, to_ufo_layer_lib, to_ufo_layer_user_data, to_ufo_node_user_data  # type: ignore
 
 
-def filter_instances_by_family(instances, family_name=None):
+def filter_instances_by_family(instances: List[GSInstance], family_name: Optional[str] = None):
     """Yield instances whose 'familyName' custom parameter is
     equal to 'family_name'.
     """
@@ -765,36 +751,28 @@ class GlyphsBuilder(LoggerMixin):
         return designspace
 
     # Implementation is split into one file per feature
-    from .anchors import to_glyphs_glyph_anchors
-    from .annotations import to_glyphs_annotations
-    from .axes import to_glyphs_axes
-    from .axes import check_axis_ranges
-    from .sources import to_glyphs_sources
-    from .background_image import to_glyphs_background_image
-    from .blue_values import to_glyphs_blue_values
-    from .components import to_glyphs_components, to_glyphs_smart_component_axes
-    from .custom_params import to_glyphs_custom_params
-    from .features import to_glyphs_features
-    from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters
-    from .glyph import to_glyphs_glyph, to_glyphs_glyph_height_and_vertical_origin
-    from .groups import to_glyphs_groups
-    from .guidelines import to_glyphs_guidelines
-    from .hints import to_glyphs_hints
-    from .instances import to_glyphs_instances
-    from .kerning import to_glyphs_kerning
-    from .layers import to_glyphs_layer, to_glyphs_layer_order
-    from .masters import to_glyphs_master_attributes
-    from .names import to_glyphs_family_names, to_glyphs_master_names
-    from .paths import to_glyphs_paths
-    from .user_data import (
-        to_glyphs_family_user_data_from_designspace,
-        to_glyphs_family_user_data_from_ufo,
-        to_glyphs_master_user_data,
-        to_glyphs_glyph_user_data,
-        to_glyphs_layer_lib,
-        to_glyphs_layer_user_data,
-        to_glyphs_node_user_data,
-    )
+    from .anchors import to_glyphs_glyph_anchors  # type: ignore
+    from .annotations import to_glyphs_annotations  # type: ignore
+    from .axes import to_glyphs_axes  # type: ignore
+    from .axes import check_axis_ranges  # type: ignore
+    from .sources import to_glyphs_sources  # type: ignore
+    from .background_image import to_glyphs_background_image  # type: ignore
+    from .blue_values import to_glyphs_blue_values  # type: ignore
+    from .components import to_glyphs_components, to_glyphs_smart_component_axes  # type: ignore
+    from .custom_params import to_glyphs_custom_params  # type: ignore
+    from .features import to_glyphs_features  # type: ignore
+    from .font import to_glyphs_font_attributes, to_glyphs_ordered_masters  # type: ignore
+    from .glyph import to_glyphs_glyph, to_glyphs_glyph_height_and_vertical_origin  # type: ignore
+    from .groups import to_glyphs_groups  # type: ignore
+    from .guidelines import to_glyphs_guidelines  # type: ignore
+    from .hints import to_glyphs_hints  # type: ignore
+    from .instances import to_glyphs_instances  # type: ignore
+    from .kerning import to_glyphs_kerning  # type: ignore
+    from .layers import to_glyphs_layer, to_glyphs_layer_order  # type: ignore
+    from .masters import to_glyphs_master_attributes  # type: ignore
+    from .names import to_glyphs_family_names, to_glyphs_master_names  # type: ignore
+    from .paths import to_glyphs_paths  # type: ignore
+    from .user_data import to_glyphs_family_user_data_from_designspace, to_glyphs_family_user_data_from_ufo, to_glyphs_master_user_data, to_glyphs_glyph_user_data, to_glyphs_layer_lib, to_glyphs_layer_user_data, to_glyphs_node_user_data  # type: ignore
 
 
 def _sorted_backgrounds_last(ufo_layers):

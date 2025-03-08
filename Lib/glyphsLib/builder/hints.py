@@ -14,11 +14,12 @@
 
 
 from .constants import HINTS_LIB_KEY
-from glyphsLib.types import IndexPath
-from glyphsLib.types import Point
+from glyphsLib.types import IndexPath, Point
+from glyphsLib.classes import GSLayer
+from ufoLib2.objects import Glyph as UFOGlyph
 
 
-def to_ufo_hints(self, ufo_glyph, layer):
+def to_ufo_hints(self, ufo_glyph: UFOGlyph, layer: GSLayer):
     if not hasattr(layer, "hints"):
         return
     hints = []
@@ -42,7 +43,7 @@ def to_ufo_hints(self, ufo_glyph, layer):
         ufo_glyph.lib[HINTS_LIB_KEY] = hints
 
 
-def to_glyphs_hints(self, ufo_glyph, layer):
+def to_glyphs_hints(self, ufo_glyph: UFOGlyph, layer: GSLayer):
     if HINTS_LIB_KEY not in ufo_glyph.lib:
         return
     for source in ufo_glyph.lib[HINTS_LIB_KEY]:

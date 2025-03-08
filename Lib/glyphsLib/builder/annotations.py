@@ -15,9 +15,11 @@
 
 from .constants import ANNOTATIONS_LIB_KEY
 from glyphsLib.types import Point
+from glyphsLib import GSLayer
+from ufoLib2.objects import Glyph as UFOGlyphs
 
 
-def to_ufo_annotations(self, ufo_glyph, layer):
+def to_ufo_annotations(self, ufo_glyph: UFOGlyphs, layer: GSLayer):
     try:
         value = layer.annotations
     except KeyError:
@@ -37,7 +39,7 @@ def to_ufo_annotations(self, ufo_glyph, layer):
         ufo_glyph.lib[ANNOTATIONS_LIB_KEY] = annotations
 
 
-def to_glyphs_annotations(self, ufo_glyph, layer):
+def to_glyphs_annotations(self, ufo_glyph: UFOGlyphs, layer: GSLayer):
     if ANNOTATIONS_LIB_KEY not in ufo_glyph.lib:
         return
 

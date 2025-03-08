@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import os
 import logging
+from pathlib import Path
+from typing import Any, List, Optional, Set, Tuple, Union, cast
 
 from fontTools.varLib.models import piecewiseLinearMap
-
+from fontTools.designspaceLib import DesignSpaceDocument, InstanceDescriptor
+from ufoLib2 import Font as UFOFont
 from glyphsLib.util import build_ufo_path
 from glyphsLib.classes import (
     GSCustomParameter,
@@ -39,12 +41,12 @@ from .constants import (
     PROPERTIES_KEY,
 )
 from .names import build_stylemap_names
-from .custom_params import to_ufo_custom_params, InstanceDescriptorAsGSInstance
+from .custom_params import to_ufo_custom_params, to_ufo_properties, InstanceDescriptorAsGSInstance
 
 logger = logging.getLogger(__name__)
 
 
-def to_designspace_instances(self):
+def to_designspace_instances(self) -> None:
     """Write instance data from self.font to self.designspace."""
     for instance in self.font.instances:
         if self.minimize_glyphs_diffs or (
@@ -56,17 +58,16 @@ def to_designspace_instances(self):
                 _to_designspace_instance(self, instance)
 
 
-def _to_designspace_varfont(self, instance):
+def _to_designspace_varfont(self, instance: GSInstance) -> None:
     from fontTools.designspaceLib import RangeAxisSubsetDescriptor
     from fontTools.ufoLib import fontInfoAttributesVersion3
 
     ds = self.designspace
-
     # unless the `fileName` custom parameter was explicitly set, do like Glyphs.app
     # and concatenate the family, instance (style) names and "VF" to form a filename;
     # the default 'Regular' is omitted by Glyphs.app.
     # https://github.com/googlefonts/glyphsLib/issues/981
-    filename = instance.customParameters["fileName"]
+    filename: str = instance.customParameters.get("fileName", "")
     if not filename:
         filename = self.font.familyName
         if instance.name != "Regular":
@@ -79,8 +80,6 @@ def _to_designspace_varfont(self, instance):
         filename=filename,
         axisSubsets=[RangeAxisSubsetDescriptor(name=axis.name) for axis in ds.axes],
     )
-    from .custom_params import to_ufo_properties
-    # to_ufo_custom_params() wants a UFO, create a dummy one
     ufo = self.ufo_module.Font()
     to_ufo_properties(self, ufo, instance)
     to_ufo_custom_params(self, ufo, instance, "instance", set_default_params=False)
@@ -97,7 +96,7 @@ def _to_designspace_varfont(self, instance):
         ufo_varfont.lib[key] = ufo.lib[key]
 
 
-def _to_designspace_instance(self, instance):
+def _to_designspace_instance(self, instance: GSInstance) -> None:
     ufo_instance = self.designspace.newInstanceDescriptor()
 
     # FIXME: (jany) most of these customParameters are actually attributes,
@@ -112,8 +111,8 @@ def _to_designspace_instance(self, instance):
     )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
-    designspace_axis_tags = {a.tag for a in self.designspace.axes}
-    location = {}
+    designspace_axis_tags: set[Any] = {a.tag for a in self.designspace.axes}
+    location: dict = {}
     for axis_def in self.font.axes:
         # Only write locations along defined axes
         if axis_def.axisTag in designspace_axis_tags:
@@ -175,7 +174,8 @@ def _to_designspace_instance(self, instance):
     self.designspace.addInstance(ufo_instance)
 
 
-def _to_custom_parameters(instance):
+def _to_custom_parameters(instance: GSInstance) -> List[Tuple[str, Any]]:
+    """Extract custom parameters from an instance."""
     return [
         (item.name, item.value)
         for item in instance.customParameters
@@ -183,7 +183,7 @@ def _to_custom_parameters(instance):
     ]
 
 
-def _to_filename(self, instance, ufo_instance):
+def _to_filename(self, instance: GSInstance, ufo_instance: InstanceDescriptor) -> str:
     filename = (
         instance.customParameters[UFO_FILENAME_CUSTOM_PARAM]
         or instance.customParameters[FULL_FILENAME_KEY]
@@ -206,7 +206,7 @@ def _to_filename(self, instance, ufo_instance):
     )
 
 
-def _to_properties(instance):
+def _to_properties(instance: GSInstance):
     return [
         (item.name, item.value if item.value else item.values)
         for item in instance.properties
@@ -221,29 +221,20 @@ def _is_instance_included_in_family(self, instance: GSInstance):
 
 
 # TODO: function is too complex (35), split it up
-def to_glyphs_instances(self):  # noqa: C901
+def to_glyphs_instances(self) -> None:  # noqa: C901
     if self.designspace is None:
         return
 
     for ufo_instance in self.designspace.instances:
         instance = self.glyphs_module.GSInstance()
 
-        try:
-            instance.active = ufo_instance.lib[EXPORT_KEY]
-        except KeyError:
-            # If not specified, the default is to export all instances
-            instance.active = True
-
+        instance.active = ufo_instance.lib.get(EXPORT_KEY, True)
         instance.name = ufo_instance.styleName
 
         for axis_def in self.font.axes:
-            design_loc = None
-            try:
-                design_loc = ufo_instance.location[axis_def.name]
+            design_loc = ufo_instance.location.get(axis_def.name)
+            if design_loc is not None:
                 instance.internalAxesValues[axis_def.axisId] = design_loc
-            except KeyError:
-                # The location does not have this axis?
-                pass
 
             if axis_def.axisTag in ("wght", "wdth"):
                 # Retrieve the user location (weightClass/widthClass)
@@ -262,43 +253,30 @@ def to_glyphs_instances(self):  # noqa: C901
         instance.weightClass = ufo_instance.lib.get("openTypeOS2WeightClass", 400)
         instance.widthClass = ufo_instance.lib.get("openTypeOS2WidthClass", 5)
 
-        if ufo_instance.familyName is not None:
-            if ufo_instance.familyName != self.font.familyName:
-                instance.familyName = ufo_instance.familyName
+        if ufo_instance.familyName and ufo_instance.familyName != self.font.familyName:
+            instance.familyName = ufo_instance.familyName
 
         smfn = ufo_instance.styleMapFamilyName
-        if smfn is not None:
+        if smfn:
             instance.styleMapFamilyName = smfn
             if smfn.startswith(ufo_instance.familyName):
                 smfn = smfn[len(ufo_instance.familyName):].strip()
             instance.linkStyle = smfn
 
         smsn = ufo_instance.styleMapStyleName
-        if smsn is not None:
+        if smsn:
             instance.styleMapStyleName = smsn
             instance.isBold = "bold" in smsn
             instance.isItalic = "italic" in smsn
 
-        if ufo_instance.postScriptFontName is not None:
+        if ufo_instance.postScriptFontName:
             instance.fontName = ufo_instance.postScriptFontName
 
-        try:
-            instance.manualInterpolation = ufo_instance.lib[MANUAL_INTERPOLATION_KEY]
-        except KeyError:
-            pass
+        instance.manualInterpolation = ufo_instance.lib.get(MANUAL_INTERPOLATION_KEY, False)
+        instance.instanceInterpolations = ufo_instance.lib.get(INSTANCE_INTERPOLATIONS_KEY, {})
 
-        try:
-            instance.instanceInterpolations = ufo_instance.lib[
-                INSTANCE_INTERPOLATIONS_KEY
-            ]
-        except KeyError:
-            # TODO: (jany) compute instanceInterpolations from the location
-            # if instance.manualInterpolation: warn about data loss
-            pass
-
-        if GLYPHS_PREFIX + "customParameters" in ufo_instance.lib:
-            for name, value in ufo_instance.lib[GLYPHS_PREFIX + "customParameters"]:
-                instance.customParameters.append(GSCustomParameter(name, value))
+        for name, value in ufo_instance.lib.get(GLYPHS_PREFIX + "customParameters", []):
+            instance.customParameters.append(GSCustomParameter(name, value))
 
         if ufo_instance.filename and self.minimize_ufo_diffs:
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
@@ -306,18 +284,23 @@ def to_glyphs_instances(self):  # noqa: C901
         self.font.instances.append(instance)
 
 
-def apply_instance_data(designspace, include_filenames=None, Font=None):
+def apply_instance_data(
+    designspace: Union[str, Path, DesignSpaceDocument],
+    include_filenames: Optional[Set[str]] = None,
+    Font: Optional[UFOFont] = None
+) -> List[UFOFont]:
     """Open UFO instances referenced by designspace, apply Glyphs instance
     data if present, re-save UFOs and return updated UFO Font objects.
 
     Args:
         designspace: DesignSpaceDocument object or path (str or PathLike) to
             a designspace file.
-        include_filenames: optional set of instance filenames (relative to
-            the designspace path) to be included. By default all instaces are
+        include_filenames: Optional set of instance filenames (relative to
+            the designspace path) to be included. By default all instances are
             processed.
-        Font: a callable(path: str) -> Font, used to load a UFO, such as
+        Font: A callable(path: str) -> Font, used to load a UFO, such as
             defcon.Font class (default: ufoLib2.Font.open).
+
     Returns:
         List of opened and updated instance UFOs.
     """
@@ -334,16 +317,15 @@ def apply_instance_data(designspace, include_filenames=None, Font=None):
     if isinstance(designspace, str):
         designspace = DesignSpaceDocument.fromfile(designspace)
 
-    basedir = os.path.dirname(designspace.path)
+    basedir = os.path.dirname(designspace.path or "")
     instance_ufos = []
     if include_filenames is not None:
         include_filenames = {normcase(normpath(p)) for p in include_filenames}
 
     for designspace_instance in designspace.instances:
         fname = designspace_instance.filename
-        assert fname is not None, "instance %r missing required filename" % getattr(
-            designspace_instance, "name", designspace_instance
-        )
+        assert fname is not None, f"Instance {designspace_instance.name} missing required filename."
+
         if include_filenames is not None:
             fname = normcase(normpath(fname))
             if fname not in include_filenames:
@@ -353,7 +335,7 @@ def apply_instance_data(designspace, include_filenames=None, Font=None):
         # fontmake <= 1.4.0 compares the ufo paths returned from this function
         # to the keys of a dict of designspace locations that have been passed
         # through normpath (but not normcase). We do the same.
-        ufo = Font(normpath(os.path.join(basedir, fname)))
+        ufo = Font(normpath(os.path.join(basedir, fname)))  # type: ignore
 
         apply_instance_data_to_ufo(ufo, designspace_instance, designspace)
 
@@ -362,19 +344,14 @@ def apply_instance_data(designspace, include_filenames=None, Font=None):
     return instance_ufos
 
 
-def apply_instance_data_to_ufo(ufo, instance, designspace):
-    """Apply Glyphs instance data to UFO object.
+def apply_instance_data_to_ufo(ufo: UFOFont, instance: InstanceDescriptor, designspace: DesignSpaceDocument) -> None:
+    """Apply Glyphs instance data to a UFO object.
 
     Args:
-        ufo: a defcon-like font object.
-        instance: a fontTools.designspaceLib.InstanceDescriptor.
-        designspace: a fontTools.designspaceLib.DesignSpaceDocument.
-    Returns:
-        None.
+        ufo: A defcon-like font object.
+        instance: A fontTools.designspaceLib.InstanceDescriptor.
+        designspace: A fontTools.designspaceLib.DesignSpaceDocument.
     """
-    # Import here to prevent a cyclic import with custom_params
-    from .custom_params import to_ufo_custom_params, to_ufo_properties
-
     try:
         ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
     except KeyError:
@@ -384,6 +361,6 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     except KeyError:
         pass
 
-    glyphs_instance = InstanceDescriptorAsGSInstance(instance)
+    glyphs_instance: GSInstance = cast(GSInstance, InstanceDescriptorAsGSInstance(instance))
     to_ufo_properties(None, ufo, glyphs_instance)
     to_ufo_custom_params(None, ufo, glyphs_instance, "instance")

@@ -15,10 +15,12 @@
 
 from .constants import CROP_KEY, LOCKED_KEY, ALPHA_KEY
 from glyphsLib.types import Transform, Rect, Point, Size
+from ufoLib2.objects import Glyph as UFOGlyph
+from glyphsLib.classes import GSLayer
 
 
-def to_ufo_background_image(self, ufo_glyph, layer):
-    """Copy the backgound image from the GSLayer to the UFO Glyph."""
+def to_ufo_background_image(self, ufo_glyph: UFOGlyph, layer: GSLayer) -> None:
+    """Copy the background image from the GSLayer to the UFO Glyph."""
     image = layer.backgroundImage
     if image is None:
         return
@@ -31,7 +33,7 @@ def to_ufo_background_image(self, ufo_glyph, layer):
     ufo_glyph.lib[ALPHA_KEY] = image.alpha
 
 
-def to_glyphs_background_image(self, ufo_glyph, layer):
+def to_glyphs_background_image(self, ufo_glyph: UFOGlyph, layer: GSLayer) -> None:
     """Copy the background image from the UFO Glyph to the GSLayer."""
     ufo_image = ufo_glyph.image
     if ufo_image.fileName is None:

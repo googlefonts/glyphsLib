@@ -12,34 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import annotations
+from typing import Dict
 import logging
 import uuid
 from fontTools.pens.basePen import MissingComponentError
 from fontTools.pens.recordingPen import DecomposingRecordingPen
-from glyphsLib.classes import GSBackgroundLayer, GSComponent
+from glyphsLib.classes import GSGlyph, GSLayer, GSBackgroundLayer, GSComponent
 from glyphsLib.types import Transform
-
+from ufoLib2.objects import Glyph as UFOGlyph
 from .smart_components import to_ufo_smart_component
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY, OBJECT_LIBS_KEY
 
 logger = logging.getLogger(__name__)
 
 
-def to_ufo_component(self, ufo_glyph, component: GSComponent):
+def to_ufo_component(self, ufo_glyph: UFOGlyph, component: GSComponent):
     """Draw .glyphs components onto a pen, adding them to the parent glyph."""
 
     pen = ufo_glyph.getPointPen()
     # for index, component in enumerate(layer.components):
     layer = component.parent
 
-    component_name = component.name
-    if layer.isColorPaletteLayer:
+    component_name = component.componentName
+    if layer and layer.isColorPaletteLayer:
         # Glyphs handles components for color layers in a special way. If
         # the component glyph has color layers of its own, the component
         # use the first color layer with the same color index, otherwise it
         # fallback to the default layer. We try to do that here as well.
-        font = layer.parent.parent
+        font = layer.font
         component_glyph = font.glyphs[component_name]
         color_layers = [
             l
@@ -56,8 +57,8 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
                     component_name += f".color{color_layer_idx}"
                 break
 
-    if component.anchor or component.alignment or component.userData:
-        component_info = {}
+    if component.anchor or component.alignment or component.userData or component.locked or component.smartComponentValues:
+        component_info: Dict = {}
         if component.anchor:
             component_info[GLYPHS_PREFIX + "anchor"] = component.anchor
         if component.alignment:
@@ -68,6 +69,7 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
             component_info[GLYPHS_PREFIX + "smartComponentValues"] = component.smartComponentValues
         if component.userData:
             component_info[GLYPHS_PREFIX + "userData"] = dict(component.userData)
+
         identifier = component.userData.get("UFO.identifier")
         if not identifier:
             identifier = str(uuid.uuid4()).upper()
@@ -82,13 +84,13 @@ def to_ufo_component(self, ufo_glyph, component: GSComponent):
     # if so) or changing the representation format (in which case we leave it
     # as a component and save the smart component values).
     # See https://github.com/googlefonts/glyphsLib/pull/822
-    if component.smartComponentValues and component.component.smartComponentAxes and self.minimal:
+    if component.smartComponentValues and component.component and component.component.smartComponentAxes and self.minimal:
         to_ufo_smart_component(self, layer, component, pen)
     else:
         pen.addComponent(component_name, component.transform, identifier=component.userData.get("UFO.identifier"))
 
 
-def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
+def to_ufo_components_nonmaster_decompose(self, ufo_glyph: UFOGlyph, layer: GSLayer):
     """Draw decomposed .glyphs background and non-master layers with a pen,
     adding them to the parent glyph."""
 
@@ -140,7 +142,7 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
     rpen.replay(ufo_glyph.getPen())
 
 
-def parse_legacy_component_info(ufo_glyph, layer):
+def parse_legacy_component_info(ufo_glyph: UFOGlyph, layer: GSLayer):
 
     for key in ["alignment", "locked", "smartComponentValues"]:
         if _lib_key(key) not in ufo_glyph.lib:
@@ -197,7 +199,7 @@ def parse_legacy_component_info(ufo_glyph, layer):
                 )
 
 
-def to_glyphs_components(self, ufo_glyph, layer):
+def to_glyphs_components(self, ufo_glyph: UFOGlyph, layer: GSLayer):
 
     objectLibs = ufo_glyph.lib.get(OBJECT_LIBS_KEY)
 
@@ -233,7 +235,7 @@ def _lib_key(key):
 AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"
 
 
-def to_ufo_smart_component_axes(self, ufo_glyph, glyph):
+def to_ufo_smart_component_axes(self, ufo_glyph: UFOGlyph, glyph: GSGlyph):
     def _to_ufo_axis(axis):
         return {
             "name": axis.name,
@@ -249,7 +251,7 @@ def to_ufo_smart_component_axes(self, ufo_glyph, glyph):
         ]
 
 
-def to_glyphs_smart_component_axes(self, ufo_glyph, glyph):
+def to_glyphs_smart_component_axes(self, ufo_glyph: UFOGlyph, glyph: GSGlyph):
     def _to_glyphs_axis(axis):
         res = self.glyphs_module.GSSmartComponentAxis()
         res.name = axis["name"]

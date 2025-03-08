@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import Optional
+
 import copy
 from dataclasses import dataclass
 from enum import IntEnum
@@ -21,12 +24,13 @@ from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
 from glyphsLib.classes import CORNER
+from glyphsLib.types import Point
 
 try:
     from math import dist
 except ImportError:
 
-    def dist(p1, p2):
+    def dist(p1, p2):  # type: ignore
         return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
 
@@ -195,14 +199,14 @@ class CornerComponentApplier:
     corner_path: object
     other_paths: list
     target_node: object
-    target_node_ix: int = None
-    origin: (int, int) = (0, 0)
-    effective_start: (int, int) = None
-    effective_end: (int, int) = None
-    scale: (int, int) = None
+    target_node_ix: Optional[int] = None
+    origin: Point = Point(0, 0)
+    effective_start: Optional[Point] = None
+    effective_end: Optional[Point] = None
+    scale: Optional[Point] = None
     left_x: int = 0
     right_x: int = 0
-    outstroke_intersection_point: (int, int) = None
+    outstroke_intersection_point: Optional[Point] = None
 
     def fail(self, msg, hard=True):
         full_msg = f"{msg} (corner {self.corner_name} in {self.glyph_name})"

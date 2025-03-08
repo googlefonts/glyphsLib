@@ -6,47 +6,49 @@ For anchor propagation on UFO font objects, you can try the
 `ufo2ft.filters.propagateAnchors` filter.
 """
 
+from typing import Dict, Set, List, Optional, Tuple, Any
 from fontTools.misc.transform import Transform
-import fontTools.pens.boundsPen
+from fontTools.pens.boundsPen import BoundsPen
+from ufoLib2.objects import Glyph as UFOGlyph
+from ufoLib2.objects import Font as UFOFont
 
 from .constants import COMPONENT_INFO_KEY
 
 
-def to_ufo_propagate_font_anchors(self, ufo):
+def to_ufo_propagate_font_anchors(self, ufo: UFOFont) -> None:
     """Copy anchors from parent glyphs' components to the parent."""
-
-    processed = set()
+    processed: Set[str] = set()
     for glyph in ufo:
         _propagate_glyph_anchors(self, ufo, glyph, processed)
 
 
-def _propagate_glyph_anchors(self, ufo, parent, processed):
+def _propagate_glyph_anchors(self, ufo: UFOFont, parent: UFOGlyph, processed: Set[str]) -> None:
     """Propagate anchors for a single parent glyph."""
 
     if parent.name in processed:
         return
-    processed.add(parent.name)
+    if parent.name:
+        processed.add(parent.name)
 
-    base_components = []
-    mark_components = []
-    anchor_names = set()
-    to_add = {}
+    base_components: List = []
+    mark_components: List = []
+    anchor_names: Set[str] = set()
+    to_add: Dict[str, Tuple[float, float]] = {}
+
     for component in parent.components:
         try:
             glyph = ufo[component.baseGlyph]
         except KeyError:
             self.logger.warning(
-                "Anchors not propagated for inexistent component {} in glyph {}".format(
-                    component.baseGlyph, parent.name
-                )
+                f"Anchors not propagated for inexistent component {component.baseGlyph} in glyph {parent.name}"
             )
         else:
             _propagate_glyph_anchors(self, ufo, glyph, processed)
-            if any(a.name.startswith("_") for a in glyph.anchors):
+            if any(a.name.startswith("_") for a in glyph.anchors if a.name):
                 mark_components.append(component)
             else:
                 base_components.append(component)
-                anchor_names |= {a.name for a in glyph.anchors}
+                anchor_names |= {a.name for a in glyph.anchors if a.name}
 
     if mark_components and not base_components and _is_ligature_mark(parent):
         # The composite is a mark that is composed of other marks (E.g.
@@ -57,32 +59,31 @@ def _propagate_glyph_anchors(self, ufo, parent, processed):
         except Exception as e:
             raise Exception(
                 "Error while determining which component of composite "
-                "'{}' is the lowest: {}".format(parent.name, str(e))
+                f"Error while determining which component of composite '{parent.name}' is the lowest: {str(e)}"
             ) from e
         mark_components.remove(component)
         base_components.append(component)
         glyph = ufo[component.baseGlyph]
-        anchor_names |= {a.name for a in glyph.anchors}
+        anchor_names |= {a.name for a in glyph.anchors if a.name}
 
     for anchor_name in anchor_names:
         # don't add if parent already contains this anchor OR any associated
         # ligature anchors (e.g. "top_1, top_2" for "top")
-        if not any(a.name.startswith(anchor_name) for a in parent.anchors):
+        if not any(a.name.startswith(anchor_name) for a in parent.anchors if a.name):
             _get_anchor_data(to_add, ufo, base_components, anchor_name)
 
     for component in mark_components:
         _adjust_anchors(to_add, ufo, parent, component)
 
-    # we sort propagated anchors to append in a deterministic order
     for name, (x, y) in sorted(to_add.items()):
         anchor_dict = {"name": name, "x": x, "y": y}
         parent.appendAnchor(anchor_dict)
 
 
-def _get_anchor_data(anchor_data, ufo, components, anchor_name):
+def _get_anchor_data(anchor_data: Dict[str, Tuple[float, float]], ufo: UFOFont, components: List, anchor_name: str) -> None:
     """Get data for an anchor from a list of components."""
 
-    anchors = []
+    anchors: List[Tuple] = []
     for component in components:
         for anchor in ufo[component.baseGlyph].anchors:
             if anchor.name == anchor_name:
@@ -91,59 +92,62 @@ def _get_anchor_data(anchor_data, ufo, components, anchor_name):
     if len(anchors) > 1:
         for i, (anchor, component) in enumerate(anchors):
             t = Transform(*component.transformation)
-            name = "%s_%d" % (anchor.name, i + 1)
+            name = f"{anchor.name}_{i + 1}"
             anchor_data[name] = t.transformPoint((anchor.x, anchor.y))
     elif anchors:
         anchor, component = anchors[0]
-        t = Transform(*component.transformation)
-        anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
+        if anchor.name:
+            t = Transform(*component.transformation)
+            anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
-def _componentAnchorFromLib(_glyph, _targetComponent):
+def _componentAnchorFromLib(glyph: UFOGlyph, targetComponent) -> Optional[str]:
     """Pull component’s named anchor from Glyph.lib"""
-    if COMPONENT_INFO_KEY in _glyph.lib:
-        for _anchorLib in _glyph.lib[COMPONENT_INFO_KEY]:
+    if COMPONENT_INFO_KEY in glyph.lib:
+        for anchorLib in glyph.lib[COMPONENT_INFO_KEY]:
             if (
-                "anchor" in _anchorLib
-                and "name" in _anchorLib
-                and _anchorLib["name"] == _targetComponent.baseGlyph
-                and _anchorLib["index"] == _glyph.components.index(_targetComponent)
+                "anchor" in anchorLib
+                and "name" in anchorLib
+                and anchorLib["name"] == targetComponent.baseGlyph
+                and anchorLib["index"] == glyph.components.index(targetComponent)
             ):
-                return _anchorLib["anchor"] or None
+                return anchorLib["anchor"] or None
     return None
 
 
-def _adjust_anchors(anchor_data, ufo, parent, component):
+def _adjust_anchors(anchor_data: Dict[str, Tuple[float, float]], ufo: UFOFont, parent: UFOGlyph, component) -> None:
     """Adjust anchors to which a mark component may have been attached."""
     glyph = ufo[component.baseGlyph]
-    anchor_names = {a.name for a in glyph.anchors}
+    anchor_names: Set[str] = {a.name for a in glyph.anchors if a.name}
     t = Transform(*component.transformation)
     component_anchor = _componentAnchorFromLib(parent, component)
     # ignore the component's named anchor if we don't have it
     if component_anchor not in anchor_data:
         component_anchor = None
     # For each base anchor in the mark component glyph
-    for anchor in (a for a in glyph.anchors if not a.name.startswith("_")):
+    for anchor in (a for a in glyph.anchors if a.name and not a.name.startswith("_")):
         # adjust either if component is attached to a specific named anchor
         # (e.g. top_2 for a ligature glyph)
         # rather than to the standard anchors (top/bottom)
         if (
             component_anchor
+            and anchor.name  # for mypy
             and component_anchor.startswith(anchor.name + "_")
             and "_" + anchor.name in anchor_names
         ):
             anchor_data[component_anchor] = t.transformPoint((anchor.x, anchor.y))
         # ... or this anchor has data and the component also contains
         # the associated mark anchor (e.g. "_top" for "top") ...
+
         elif anchor.name in anchor_data and "_" + anchor.name in anchor_names:
             anchor_data[anchor.name] = t.transformPoint((anchor.x, anchor.y))
 
 
-def _is_ligature_mark(glyph):
+def _is_ligature_mark(glyph: UFOGlyph) -> bool:
     return not glyph.name.startswith("_") and "_" in glyph.name
 
 
-def _component_closest_to_origin(components, glyph_set):
+def _component_closest_to_origin(components: List, glyph_set: UFOFont) -> Any:
     """Return the component whose (xmin, ymin) bounds are closest to origin.
 
     This ensures that a component that is moved below another is
@@ -153,21 +157,21 @@ def _component_closest_to_origin(components, glyph_set):
     return min(components, key=lambda comp: _distance((0, 0), _bounds(comp, glyph_set)))
 
 
-def _distance(pos1, pos2):
+def _distance(pos1: Tuple[float, float], pos2: Tuple[float, float]) -> float:
     x1, y1 = pos1
     x2, y2 = pos2
     return (x1 - x2) ** 2 + (y1 - y2) ** 2
 
 
-def _bounds(component, glyph_set):
+def _bounds(component, glyph_set: UFOFont) -> Tuple[float, float]:
     """Return the (xmin, ymin) of the bounds of `component`."""
     if hasattr(component, "bounds"):  # e.g. defcon
         return component.bounds[:2]
     elif hasattr(component, "draw"):  # e.g. ufoLib2
-        pen = fontTools.pens.boundsPen.BoundsPen(glyphSet=glyph_set)
+        pen = BoundsPen(glyphSet=glyph_set)
         component.draw(pen)
         return pen.bounds[:2]
     else:
         raise ValueError(
-            "Don't know to to compute the bounds of component '{}' ".format(component)
+            f"Don't know how to compute the bounds of component '{component}'"
         )

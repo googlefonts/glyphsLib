@@ -530,4 +530,4 @@ class SetWeightWidthClassesTestDefcon(SetWeightWidthClassesTestBase, unittest.Te
 """
 
 if __name__ == "__main__":
-    sys.exit(unittest.main())
+    sys.exit(unittest.main())  # type: ignore

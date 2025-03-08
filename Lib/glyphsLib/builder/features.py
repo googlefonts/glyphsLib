@@ -95,6 +95,7 @@ def _to_ufo_features(  # noqa: C901
 
     Optionally, build a GDEF table definition, excluding 'skip_export_glyphs'.
     """
+    expander: TokenExpander | PassThruExpander
     if not master:
         expander = PassThruExpander()
     else:

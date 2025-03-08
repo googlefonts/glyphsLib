@@ -187,15 +187,15 @@ def directory(testable):
 for testable in TESTABLES:
     print("#### Downloading ", testable["name"])
     if not os.path.exists(directory(testable)):
-        subprocess.call(["git", "clone", testable["git_url"], directory(testable)])
+        subprocess.call(["git", "clone", testable["git_url"], directory(testable)])  # type: ignore
     subprocess.check_call(
-        ["git", "-C", directory(testable), "checkout", testable["git_ref"]]
+        ["git", "-C", directory(testable), "checkout", testable["git_ref"]]  # type: ignore
     )
     print()
 
 for testable in TESTABLES:
     for cls in testable["classes"]:
-        cls.add_tests(testable)
+        cls.add_tests(testable)  # type: ignore
 
 
 if __name__ == "__main__":

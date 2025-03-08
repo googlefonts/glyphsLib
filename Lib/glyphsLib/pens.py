@@ -1,7 +1,7 @@
 from typing import Any, Dict, Tuple, Union, Optional
 
 from fontTools.pens.pointPen import AbstractPointPen
-
+from glyphsLib.classes import GSLayer, GSPath, OFFCURVE, LINE, MOVE, CURVE, QCURVE
 from glyphsLib.types import Transform, Point
 
 Number = Union[int, float]
@@ -14,9 +14,9 @@ class LayerPointPen(AbstractPointPen):
     introduction to pens.
     """
 
-    def __init__(self, layer: "GSLayer") -> None:  # noqa: F821
-        self._layer: "GSLayer" = layer  # noqa: F821
-        self._path: Optional["GSPath"] = None  # noqa: F821
+    def __init__(self, layer: GSLayer) -> None:  # noqa: F821
+        self._layer: GSLayer = layer  # noqa: F821
+        self._path: Optional[GSPath] = None  # noqa: F821
 
     def beginPath(self, **kwargs: Any) -> None:
         from glyphsLib.classes import GSPath
@@ -83,13 +83,13 @@ class LayerPointPen(AbstractPointPen):
 
 def _to_glyphs_node_type(node_type):
     if node_type is None:
-        return "offcurve"
-    if node_type == "move":
-        return "line"
+        return OFFCURVE
+    if node_type == MOVE:
+        return LINE
     return node_type
 
 
 def _to_ufo_node_type(node_type):
-    if node_type not in ["line", "curve", "qcurve"]:
+    if node_type not in [LINE, CURVE, QCURVE]:
         return None
     return node_type

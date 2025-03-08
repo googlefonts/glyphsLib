@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
+from typing import Dict, Tuple
 import math
+from glyphsLib.classes import GSFontMaster, GSLayer, GSComponent
+from glyphsLib.types import Rect, Point
+from ufoLib2.objects import Font as UFOFont
+from ufoLib2.objects import Glyph as UFOGlyph
 
 from fontTools.misc.transform import Identity, Transform
 from fontTools.ttLib.tables.otTables import PaintFormat
@@ -21,7 +27,7 @@ from .common import to_ufo_color
 from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
 
 
-def _to_ufo_color_palette_layers(builder, master, layerMapping):
+def _to_ufo_color_palette_layers(builder, master: GSFontMaster, layerMapping: Dict) -> None:
     for (glyph, masterLayer), layers in builder._color_palette_layers:
         if master.id != masterLayer.associatedMasterId:
             continue
@@ -44,7 +50,7 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
         layerMapping[glyph.name] = colorLayers
 
 
-def _find_or_insert_color(color, palette):
+def _find_or_insert_color(color, palette) -> Tuple[int, int]:
     if color is None:
         return 0xFFFF, 1
     color = to_ufo_color(color)
@@ -54,7 +60,7 @@ def _find_or_insert_color(color, palette):
     return len(old) + palette.index(color), color[-1]
 
 
-def _radius(rect, point):
+def _radius(rect: Rect, point: Point) -> float:
     # Emulate how AppKit’s “drawInRect:relativeCenterPosition:” calculates the
     # radius, since this is what Glyphs uses.
     center = (rect.width * point[0], rect.height * point[1])
@@ -69,10 +75,12 @@ def _radius(rect, point):
     return max(distances)
 
 
-def _to_gradient_paint(gradient, layer, palette):
+def _to_gradient_paint(gradient, layer: GSLayer, palette) -> Dict:
     # Glyphs start and stop points seem to be a percentage of the
     # path size, but we want absolute coordinates.
     bounds = layer.bounds
+    if bounds is None:
+        return {}
     x0, y0 = gradient["start"]
     x1, y1 = gradient["end"]
     x0 = bounds.origin.x + (bounds.size.width * x0)
@@ -120,18 +128,18 @@ def _to_gradient_paint(gradient, layer, palette):
         )
     else:
         raise NotImplementedError(
-            f"Unsupported color layer path gradient in '{layer.parent.name}'"
+            f"Unsupported color layer path gradient in '{layer.parent.name if layer.parent else 'no name'}'"
         )
 
     return paint
 
 
-def _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo):
+def _to_stroked_paint(attributes: Dict, layer: GSLayer, palette, ufo_glyph: UFOGlyph, ufo: UFOFont):
     try:
         import pathops
     except ImportError as ex:
         raise RuntimeError(
-            f"Stroked color layer path in '{layer.parent.name}' requires "
+            f"Stroked color layer path in '{layer.parent.name if layer.parent else 'no name'}' requires "
             f"'pathops' module."
         ) from ex
 
@@ -139,7 +147,7 @@ def _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo):
     if pos:
         raise NotImplementedError(
             f"Unsupported color layer path attribute 'strokePos' "
-            f"in '{layer.parent.name}'"
+            f"in '{layer.parent.name if layer.parent else 'no name'}'"
         )
 
     width = attributes.get("strokeWidth", 1)
@@ -154,8 +162,8 @@ def _to_stroked_paint(attributes, layer, palette, ufo_glyph, ufo):
     return dict(Format=PaintFormat.PaintSolid, Alpha=a, PaletteIndex=paletteIndex)
 
 
-def _to_component_paint(component):
-    paint = dict(Format=PaintFormat.PaintColrGlyph, Glyph=component.name)
+def _to_component_paint(component: GSComponent) -> Dict:
+    paint = dict(Format=PaintFormat.PaintColrGlyph, Glyph=component.componentName)
     t = Transform(*component.transform)
     if t != Identity:
         if t[:4] == (1, 0, 0, 1):
@@ -167,8 +175,8 @@ def _to_component_paint(component):
     return paint
 
 
-def _to_ufo_color_layers(builder, ufo, master, layerMapping):
-    palette = ([], ufo.lib.get(UFO2FT_COLOR_PALETTES_KEY, [[]])[0])
+def _to_ufo_color_layers(builder, ufo: UFOFont, master: GSFontMaster, layerMapping: Dict) -> None:
+    palette: Tuple = ([], ufo.lib.get(UFO2FT_COLOR_PALETTES_KEY, [[]])[0])
     for (glyph, masterLayer), layers in builder._color_layers:
         if master.id != masterLayer.associatedMasterId:
             continue
@@ -234,8 +242,8 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
             p.extend(palette[0])
 
 
-def to_ufo_color_layers(self, ufo, master):
-    layerMapping = {}
+def to_ufo_color_layers(self, ufo: UFOFont, master: GSFontMaster) -> None:
+    layerMapping: Dict = {}
     _to_ufo_color_palette_layers(self, master, layerMapping)
     _to_ufo_color_layers(self, ufo, master, layerMapping)
     if layerMapping:

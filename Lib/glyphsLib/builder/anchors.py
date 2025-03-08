@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+from __future__ import annotations
+from typing import List
 from glyphsLib.types import Point
 import uuid
 
 from glyphsLib.builder.constants import OBJECT_LIBS_KEY
 from glyphsLib.util import best_repr_list
+from glyphsLib.classes import GSLayer, GSAnchor
+from ufoLib2.objects import Glyph as UFOGlyph
 
 __all__ = [
     "to_ufo_glyph_anchors",
@@ -25,7 +28,7 @@ __all__ = [
 ]
 
 
-def to_ufo_glyph_anchors(self, glyph, anchors):
+def to_ufo_glyph_anchors(self, ufo_glyph: UFOGlyph, anchors: List[GSAnchor]):
     """Add .glyphs anchors to a glyph."""
 
     for anchor in anchors:
@@ -34,13 +37,13 @@ def to_ufo_glyph_anchors(self, glyph, anchors):
         if anchor.userData:
             identifier = str(uuid.uuid4()).upper()
             anchor_dict["identifier"] = identifier
-            glyph.lib.setdefault(OBJECT_LIBS_KEY, {})[identifier] = dict(
+            ufo_glyph.lib.setdefault(OBJECT_LIBS_KEY, {})[identifier] = dict(
                 anchor.userData
             )
-        glyph.appendAnchor(anchor_dict)
+        ufo_glyph.appendAnchor(anchor_dict)
 
 
-def to_glyphs_glyph_anchors(self, ufo_glyph, layer):
+def to_glyphs_glyph_anchors(self, ufo_glyph: UFOGlyph, layer: GSLayer):
     """Add UFO glif anchors to a GSLayer."""
     for ufo_anchor in ufo_glyph.anchors:
         anchor = self.glyphs_module.GSAnchor()

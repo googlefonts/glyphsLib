@@ -24,7 +24,7 @@ import shutil
 from collections import OrderedDict
 from io import StringIO
 from textwrap import dedent
-
+from typing import Any
 import glyphsLib
 from glyphsLib import classes, util
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -93,7 +93,7 @@ class AssertParseWriteRoundtrip(AssertLinesEqual):
 
 
 class ParametrizedUfoModuleTestMixin(object):
-    ufo_module = None  # subclasses must override this
+    ufo_module: Any = None  # subclasses must override this
 
     def to_ufos(self, *args, **kwargs):
         kwargs["ufo_module"] = self.ufo_module

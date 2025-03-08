@@ -93,7 +93,7 @@ class GlyphBuilder:
         self.glyph.subCategory = subCategory
         return self
 
-    def add_component(self, name: str, pos: tuple[float, float]) -> Self:
+    def add_component(self, name: str, pos: Point) -> Self:
         component = GSComponent(name, offset=pos)
         self.current_layer.components.append(component)
         return self
@@ -126,7 +126,7 @@ class GlyphBuilder:
 def make_glyph(name: str, components: list[str]) -> GSGlyph:
     builder = GlyphBuilder(name)
     for comp in components:
-        builder.add_component(comp, (0, 0))  # pos doesn't matter for this test
+        builder.add_component(comp, Point(0, 0))  # pos doesn't matter for this test
     return builder.build()
 
 

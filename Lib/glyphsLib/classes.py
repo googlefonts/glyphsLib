@@ -23,6 +23,7 @@ import uuid
 from collections import OrderedDict
 from enum import IntEnum
 from io import StringIO
+from typing import Dict, List, Optional, Tuple, Union, Any, Iterator, cast
 
 # renamed to avoid shadowing glyphsLib.types.Transform imported further below
 from fontTools.misc.transform import Identity, Transform as Affine
@@ -35,7 +36,6 @@ from fontTools.pens.pointPen import (
 
 from fontTools.ufoLib import filenames
 from glyphsLib.parser import load, Parser
-from glyphsLib.pens import LayerPointPen
 from glyphsLib.types import (
     IndexPath,
     OneLineList,
@@ -299,7 +299,7 @@ GSBottomLeft = 0
 GSBottomCenter = 1
 GSBottomRight = 2
 
-WEIGHT_CODES = {
+WEIGHT_CODES: Dict[Optional[str], int] = {
     "Thin": 100,
     "UltraLight": 200,
     "ExtraLight": 200,
@@ -317,9 +317,9 @@ WEIGHT_CODES = {
     "Heavy": 900,
 }
 
-WEIGHT_CODES_REVERSE = {v: k for k, v in WEIGHT_CODES.items()}
+WEIGHT_CODES_REVERSE: Dict[int, Optional[str]] = {v: k for k, v in WEIGHT_CODES.items()}
 
-WIDTH_CODES = {
+WIDTH_CODES: Dict[Optional[str], int] = {
     "Ultra Condensed": 1,
     "Extra Condensed": 2,
     "Condensed": 3,
@@ -332,17 +332,17 @@ WIDTH_CODES = {
     "Ultra Expanded": 9,
 }
 
-WIDTH_CODES_REVERSE = {v: k for k, v in WIDTH_CODES.items()}
+WIDTH_CODES_REVERSE: Dict[int, Optional[str]] = {v: k for k, v in WIDTH_CODES.items()}
 
 DefaultAxisValuesV2 = [100, 100, 0, 0, 0, 0]
 
 
-def instance_type(value):
+def instance_type(value: str) -> InstanceType:
     # Convert the instance type from the plist ("variable") into the integer constant
     return getattr(InstanceType, value.upper())
 
 
-def font_type(value):
+def font_type(value: str) -> FontType:
     # Convert the instance type from the plist ("variable") into the integer constant
     return getattr(FontType, value.upper())
 
@@ -356,13 +356,13 @@ class OnlyInGlyphsAppError(NotImplementedError):
         )
 
 
-def transformStructToScaleAndRotation(transform):
-    Det = transform[0] * transform[3] - transform[1] * transform[2]
-    _sX = math.sqrt(math.pow(transform[0], 2) + math.pow(transform[1], 2))
-    _sY = math.sqrt(math.pow(transform[2], 2) + math.pow(transform[3], 2))
+def transformStructToScaleAndRotation(transform: Tuple[float, float, float, float, float, float]) -> Tuple[float, float, float]:
+    Det: float = transform[0] * transform[3] - transform[1] * transform[2]
+    _sX: float = math.sqrt(math.pow(transform[0], 2) + math.pow(transform[1], 2))
+    _sY: float = math.sqrt(math.pow(transform[2], 2) + math.pow(transform[3], 2))
     if Det < 0:
         _sY = -_sY
-    _R = math.atan2(transform[1] * _sY, transform[0] * _sX) * 180 / math.pi
+    _R: float = math.atan2(transform[1] * _sY, transform[0] * _sX) * 180 / math.pi
 
     if Det < 0 and (math.fabs(_R) > 135 or _R < -90):
         _sX = -_sX
@@ -372,7 +372,7 @@ def transformStructToScaleAndRotation(transform):
         else:
             _R -= 180
 
-    quadrant = 0
+    quadrant: int = 0
     if _R < -90:
         quadrant = 180
         _R += quadrant
@@ -415,9 +415,9 @@ class GSBase:
             to imply by their absence.
     """
 
-    _defaultsForName = {}
+    _defaultsForName: Dict[str, Any] = {}
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         content = ""
         if hasattr(self, "_dict"):
             content = str(self._dict)
@@ -432,33 +432,29 @@ class GSBase:
     #
     # Users of the library should only rely on the object-oriented API that is
     # documented at https://docu.glyphsapp.com/
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         setattr(self, key, value)
 
     @classmethod
-    def _add_parsers(cls, specification):
+    def _add_parsers(cls, specification: List[Dict[str, Any]]) -> None:
         for field in specification:
             keyname = field["plist_name"]
-            dict_parser_name = "_parse_%s_dict" % keyname
+            dict_parser_name = f"_parse_{keyname}_dict"
             target = field.get("object_name", keyname)
             classname = field.get("type")
             transformer = field.get("converter")
 
             def _generic_parser(
-                self,
-                parser,
-                value,
-                keyname=keyname,
-                target=target,
-                classname=classname,
-                transformer=transformer,
-            ):
+                self: GSBase,
+                parser: Parser,
+                value: Any,
+                keyname: str = keyname,
+                target: str = target,
+                classname: Optional[str] = classname,
+                transformer: Optional[Any] = transformer,
+            ) -> None:
                 if transformer:
-                    if isinstance(value, list) and transformer not in [
-                        IndexPath,
-                        Point,
-                        Rect,
-                    ]:
+                    if isinstance(value, list) and transformer not in [IndexPath, Point, Rect]:
                         self[target] = [transformer(v) for v in value]
                     else:
                         self[target] = transformer(value)
@@ -470,122 +466,125 @@ class GSBase:
 
 
 class Proxy:
-    __slots__ = "_owner"
+    __slots__ = ("_owner",)
 
-    def __init__(self, owner):
+    def __init__(self, owner: Any) -> None:
         self._owner = owner
 
-    def __repr__(self):
-        """Return class name, id() and list-lookalike of representation string of objects"""
-        strings = []
-        for currItem in self:
-            strings.append("%s" % currItem)
+    def __repr__(self) -> str:
+        """Return class name, id(), and list-lookalike representation of objects."""
+        strings = [str(item) for item in self]
         content = ", ".join(strings)
         return f"<{self.__class__.__name__} {hex(id(self))}> ({content})"
 
-    def __str__(self):
-        """Return list-lookalike of representation string of objects"""
-        strings = []
-        for currItem in self:
-            strings.append("%s" % currItem)
-        return "(%s)" % (", ".join(strings))
+    def __str__(self) -> str:
+        """Return list-lookalike representation of objects."""
+        strings = [str(item) for item in self]
+        return f"({', '.join(strings)})"
 
-    def __len__(self):
+    def __len__(self) -> int:
         values = self.values()
         if values is not None:
             return len(values)
         return 0
 
-    def get(self, key, default=None):
+    def get(self, key: Any, default: Optional[Any] = None) -> Any:
         if isinstance(key, int) and key >= self.__len__():
             return default
         result = self[key]
-        if not result:
-            result = default
-        return result
+        return result if result else default
 
-    def pop(self, i):
+    def pop(self, i: int) -> Any:
         if isinstance(i, int):
             node = self[i]
             del self[i]
             return node
-        else:
-            raise KeyError
+        raise KeyError
 
     def __iter__(self):
         values = self.values()
         if values is not None:
             yield from values
 
-    def index(self, value):
+    def index(self, value: Any) -> int:
         return self.values().index(value)
 
-    def __copy__(self):
+    def __copy__(self) -> List[Any]:
         return list(self)
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo: Dict[int, Any]) -> List[Any]:
         return [x.copy() for x in self.values()]
 
-    def setter(self, values):
+    def setter(self, values: Any) -> None:
         method = self.setterMethod()
         if isinstance(values, list):
             method(values)
         elif isList(values) or isinstance(values, type(self)):
             method(list(values))
         elif values is None:
-            method(list())
+            method([])
         else:
             raise TypeError
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any) -> Any:
         raise NotImplementedError("Should be implemented in a subclass")
 
-    def __delitem__(self, item):
+    def __setitem__(self, key: Any, value: Any) -> None:
         raise NotImplementedError("Should be implemented in a subclass")
 
-    def values(self):
+    def __delitem__(self, item: Any) -> None:
         raise NotImplementedError("Should be implemented in a subclass")
 
-    def setterMethod(self):
+    def values(self) -> List[Any]:
+        raise NotImplementedError("Should be implemented in a subclass")
+
+    def setdefault(self, key: Any, default: Any):
+        value = self[key]
+        if value is None:
+            value = default
+            self[key] = default
+        return value
+
+    def setterMethod(self) -> Any:
         raise NotImplementedError("Should be implemented in a subclass")
 
 
 class ListDictionaryProxy(Proxy):
-    def __init__(self, owner, name, klass):
+    def __init__(self, owner: Any, name: str, klass: Any) -> None:
         super().__init__(owner)
-        self._name = name
-        self._class = klass
-        self._items = getattr(owner, name, [])
+        self._name: str = name
+        self._class: Any = klass
+        self._items: List[Any] = getattr(owner, name, [])
 
-    def get(self, name, default=None):
+    def get(self, name: str, default: Optional[Any] = None) -> Optional[Any]:
         item = self._get_by_name(name)
         return item.value if item else default
 
-    def append(self, item):
+    def append(self, item: Any) -> None:
         item.parent = self._owner
         self._items.append(item)
 
-    def extend(self, items):
+    def extend(self, items: List[Any]) -> None:
         for item in items:
             item.parent = self._owner
         self._items.extend(items)
 
-    def remove(self, item):
+    def remove(self, item: Any) -> None:
         if isinstance(item, str):
             item = self.__getitem__(item)
         self._items.remove(item)
 
-    def insert(self, index, item):
+    def insert(self, index: int, item: Any) -> None:
         item.parent = self._owner
         self._items.insert(index, item)
 
-    def values(self):
+    def values(self) -> List[Any]:
         return self._items
 
-    def setterMethod(self):
+    def setterMethod(self) -> Any:
         return self.__setter__
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str]) -> Optional[Any]:
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         if isinstance(key, int):
@@ -596,16 +595,20 @@ class ListDictionaryProxy(Proxy):
                 return item.value
         return None
 
-    def __setitem__(self, name, value):
-        item = self._get_by_name(name)
+    def __setitem__(self, key: Union[int, str], value: Any) -> None:
+        if isinstance(key, int):
+            item = self._items[key]
+        else:
+            item = self._get_by_name(key)
+
         if item is not None:
             item.value = value
         else:
-            item = self._class(name, value)
+            item = self._class(key, value)
             item.parent = self._owner
             self._items.append(item)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int):
             del self._items[key]
         elif isinstance(key, str):
@@ -615,7 +618,7 @@ class ListDictionaryProxy(Proxy):
         else:
             raise KeyError(key)
 
-    def __contains__(self, item):
+    def __contains__(self, item: Any) -> bool:
         if isinstance(item, str):
             return self.__getitem__(item) is not None
         return item in self._items
@@ -624,41 +627,42 @@ class ListDictionaryProxy(Proxy):
         for index in range(len(self._items)):
             yield self._items[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._items)
 
-    def __setter__(self, items):
+    def __setter__(self, items: List[Any]) -> None:
         for item in items:
             item.parent = self._owner
         self._items = items
         setattr(self._owner, self._name, items)
 
-    def _get_by_name(self, name):
+    def _get_by_name(self, name: str) -> Optional[Any]:
         for item in self._items:
             if item.name == name:
                 return item
+        return None
 
 
 class LayersIterator:
     __slots__ = ("_layers",)
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSGlyph) -> None:
         if owner.parent:
-            self._layers = self.orderedLayers(owner)
+            self._layers: Iterator[GSLayer] = self.orderedLayers(owner)
         else:
             self._layers = iter(owner._layers.values())
 
-    def __iter__(self):
+    def __iter__(self) -> LayersIterator:
         return self
 
-    def next(self):
+    def next(self) -> GSLayer:
         return self.__next__()
 
-    def __next__(self):
+    def __next__(self) -> GSLayer:
         return next(self._layers)
 
     @staticmethod
-    def orderedLayers(glyph):
+    def orderedLayers(glyph: GSGlyph) -> Iterator[GSLayer]:
         font = glyph.parent
         assert font is not None
         glyphLayerIds = {
@@ -688,7 +692,7 @@ class FontFontMasterProxy(Proxy):
             ...
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str]) -> Optional[GSFontMaster]:
         if isinstance(key, str):
             # UUIDs are case-sensitive in Glyphs.app.
             return next((master for master in self.values() if master.id == key), None)
@@ -700,35 +704,38 @@ class FontFontMasterProxy(Proxy):
             return self.values()[key]
         raise KeyError(key)
 
-    def __setitem__(self, key, fontMaster):
+    def __setitem__(self, key: Union[int, str], fontMaster: GSFontMaster) -> None:
         fontMaster.font = self._owner
         if isinstance(key, int):
-            oldFontMaster = self.__getitem__(key)
             if key < 0:
                 key = self.__len__() + key
-            fontMaster.id = oldFontMaster.id
-            self._owner._masters[key] = fontMaster
+            oldFontMaster = self.__getitem__(key)
+            if oldFontMaster:
+                fontMaster.id = oldFontMaster.id
+                self._owner._masters[key] = fontMaster
         elif isinstance(key, str):
             oldFontMaster = self.__getitem__(key)
-            fontMaster.id = oldFontMaster.id
-            idx = self._owner._masters.index(oldFontMaster)
+            if oldFontMaster:
+                fontMaster.id = oldFontMaster.id
+                idx = self._owner._masters.index(oldFontMaster)
             self._owner._masters[idx] = fontMaster
         else:
             raise KeyError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
-            return self.remove(self._owner._masters[key])
+            self.remove(self._owner._masters[key])
         else:
             oldFontMaster = self.__getitem__(key)
-            return self.remove(oldFontMaster)
+            if oldFontMaster:
+                self.remove(oldFontMaster)
 
-    def values(self):
+    def values(self) -> List[GSFontMaster]:
         return self._owner._masters
 
-    def append(self, fontMaster):
+    def append(self, fontMaster: GSFontMaster) -> None:
         fontMaster.font = self._owner
         # If the master to be appended has no ID yet or it's a duplicate,
         # make up a new one.
@@ -743,28 +750,24 @@ class FontFontMasterProxy(Proxy):
                 glyph._setupLayer(newLayer, fontMaster.id)
                 glyph.layers.append(newLayer)
 
-    def remove(self, fontMaster):
+    def remove(self, fontMaster: GSFontMaster) -> None:
         # First remove all layers in all glyphs that reference this master
         for glyph in self._owner.glyphs:
             for layer in list(glyph.layers):
-                if (
-                    layer.associatedMasterId == fontMaster.id
-                    or layer.layerId == fontMaster.id
-                ):
+                if layer.associatedMasterId == fontMaster.id or layer.layerId == fontMaster.id:
                     glyph.layers.remove(layer)
-
         self._owner._masters.remove(fontMaster)
 
-    def insert(self, Index, fontMaster):
+    def insert(self, index: int, fontMaster: GSFontMaster) -> None:
         fontMaster.font = self._owner
-        self._owner._masters.insert(Index, fontMaster)
+        self._owner._masters.insert(index, fontMaster)
 
-    def extend(self, fontMasters):
+    def extend(self, fontMasters: List[GSFontMaster]) -> None:
         for fontMaster in fontMasters:
             fontMaster.font = self._owner
             self.append(fontMaster)
 
-    def setter(self, values):
+    def setter(self, values: Union[List[GSFontMaster], Proxy]) -> None:
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._masters = values
@@ -780,7 +783,7 @@ class FontInstanceProxy(Proxy):
             ...
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice]) -> GSInstance:
         if isinstance(key, slice):
             return self._owner._instances.__getitem__(key)
         if isinstance(key, int):
@@ -789,7 +792,7 @@ class FontInstanceProxy(Proxy):
             return self._owner._instances[key]
         raise KeyError(key)
 
-    def __setitem__(self, key, instance):
+    def __setitem__(self, key: int, instance: GSInstance) -> None:
         instance.font = self._owner
         if isinstance(key, int):
             if key < 0:
@@ -798,7 +801,7 @@ class FontInstanceProxy(Proxy):
         else:
             raise KeyError(key)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: int) -> None:
         if isinstance(key, int):
             if key < 0:
                 key = self.__len__() + key
@@ -806,30 +809,30 @@ class FontInstanceProxy(Proxy):
         else:
             raise KeyError(key)
 
-    def values(self):
+    def values(self) -> List[GSInstance]:
         return self._owner._instances
 
-    def append(self, instance):
+    def append(self, instance: GSInstance) -> None:
         instance.font = self._owner
         # If the master to be appended has no ID yet or it's a duplicate,
         # make up a new one.
         self._owner._instances.append(instance)
 
-    def remove(self, instance):
+    def remove(self, instance: GSInstance) -> None:
         if instance.font == self._owner:
-            instance.font = None
+            instance._font = None
         self._owner._instances.remove(instance)
 
-    def insert(self, Index, instance):
+    def insert(self, index: int, instance: GSInstance) -> None:
         instance.font = self._owner
-        self._owner._instances.insert(Index, instance)
+        self._owner._instances.insert(index, instance)
 
-    def extend(self, instances):
+    def extend(self, instances: List[GSInstance]) -> None:
         for instance in instances:
             instance.font = self._owner
         self._owner._instances.extend(instances)
 
-    def setter(self, values):
+    def setter(self, values: Union[List[GSInstance], Proxy]) -> None:
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._instances = values
@@ -846,102 +849,91 @@ class FontGlyphsProxy(Proxy):
         ...
     """
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[GSGlyph]:
         if isinstance(key, slice):
-            return self.values().__getitem__(key)
-
-        # by index
+            return self._owner._glyphs.__getitem__(key)
         if isinstance(key, int):
             return self._owner._glyphs[key]
-
         if isinstance(key, str):
             return self._get_glyph_by_string(key)
-
         return None
 
-    def __setitem__(self, key, glyph):
+    def __setitem__(self, key: int, glyph: GSGlyph) -> None:
         if isinstance(key, int):
             self._owner._setupGlyph(glyph)
             self._owner._glyphs[key] = glyph
         else:
             raise KeyError(key)  # TODO: add other access methods
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int):
             del self._owner._glyphs[key]
         elif isinstance(key, str):
             glyph = self._get_glyph_by_string(key)
             if not glyph:
-                raise KeyError("No glyph '%s' in the font" % key)
+                raise KeyError(f"No glyph '{key}' in the font")
             self._owner._glyphs.remove(glyph)
         else:
             raise KeyError(key)
 
-    def __contains__(self, item):
+    def __contains__(self, item: Union[str, GSGlyph]) -> bool:
         if isinstance(item, str):
             return self._get_glyph_by_string(item) is not None
         return item in self._owner._glyphs
 
-    def _get_glyph_by_string(self, key):
+    def _get_glyph_by_string(self, key: str) -> Optional[GSGlyph]:
         # FIXME: (jany) looks inefficient
-        if isinstance(key, str):
+        if not isinstance(key, str):
+            return None
             # by glyph name
+        for glyph in self._owner._glyphs:
+            if glyph.name == key:
+                return glyph
+        # by string representation as u'ä'
+        if len(key) == 1:
             for glyph in self._owner._glyphs:
-                if glyph.name == key:
+                if glyph.unicode == f"{ord(key):04X}":
                     return glyph
-            # by string representation as u'ä'
-            if len(key) == 1:
-                for glyph in self._owner._glyphs:
-                    if glyph.unicode == "%04X" % (ord(key)):
-                        return glyph
-            # by unicode
-            else:
-                for glyph in self._owner._glyphs:
-                    if glyph.unicode == key.upper():
-                        return glyph
+        # by unicode
+        else:
+            for glyph in self._owner._glyphs:
+                if glyph.unicode == key.upper():
+                    return glyph
         return None
 
-    def values(self):
+    def values(self) -> List[GSGlyph]:
         return self._owner._glyphs
 
-    def items(self):
-        items = []
-        for value in self._owner._glyphs:
-            key = value.name
-            items.append((key, value))
-        return items
+    def items(self) -> List[Tuple[str, GSGlyph]]:
+        return [(glyph.name, glyph) for glyph in self._owner._glyphs]
 
-    def append(self, glyph):
+    def append(self, glyph: GSGlyph) -> None:
         self._owner._setupGlyph(glyph)
         self._owner._glyphs.append(glyph)
 
-    def extend(self, objects):
+    def extend(self, objects: List[GSGlyph]) -> None:
         for glyph in objects:
             self._owner._setupGlyph(glyph)
         self._owner._glyphs.extend(list(objects))
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._owner._glyphs)
 
-    def setter(self, values):
+    def setter(self, values: Union[List[GSGlyph], Proxy]) -> None:
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._glyphs = values
         for g in self._owner._glyphs:
             g.parent = self._owner
             for layer in g.layers.values():
-                if (
-                    not hasattr(layer, "associatedMasterId")
-                    or layer.associatedMasterId is None
-                    or len(layer.associatedMasterId) == 0
-                ):
+                if not hasattr(layer, "associatedMasterId") or not layer.associatedMasterId:
                     g._setupLayer(layer, layer.layerId)
 
 
 class FontClassesProxy(Proxy):
     VALUES_ATTR = "_classes"
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[Union[GSClass, List[GSClass]]]:
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
         if isinstance(key, str):
@@ -950,7 +942,7 @@ class FontClassesProxy(Proxy):
                     return self.values()[index]
         raise KeyError
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Union[int, str], value: GSClass) -> None:
         if isinstance(key, int):
             self.values()[key] = value
             value._parent = self._owner
@@ -962,7 +954,7 @@ class FontClassesProxy(Proxy):
         else:
             raise KeyError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int):
             del self.values()[key]
         elif isinstance(key, str):
@@ -970,7 +962,7 @@ class FontClassesProxy(Proxy):
                 if klass.name == key:
                     del self.values()[index]
 
-    def __contains__(self, item):
+    def __contains__(self, item: Union[str, GSClass]) -> bool:
         if isinstance(item, str):
             for klass in self.values():
                 if klass.name == item:
@@ -978,26 +970,26 @@ class FontClassesProxy(Proxy):
             return False
         return item in self.values()
 
-    def append(self, item):
+    def append(self, item: GSClass) -> None:
         self.values().append(item)
         item._parent = self._owner
 
-    def insert(self, key, item):
+    def insert(self, key: int, item: GSClass) -> None:
         self.values().insert(key, item)
         item._parent = self._owner
 
-    def extend(self, items):
+    def extend(self, items: List[GSClass]) -> None:
         self.values().extend(items)
         for value in items:
             value._parent = self._owner
 
-    def remove(self, item):
+    def remove(self, item: GSClass) -> None:
         self.values().remove(item)
 
-    def values(self):
+    def values(self) -> List[GSClass]:
         return getattr(self._owner, self.VALUES_ATTR)
 
-    def setter(self, values):
+    def setter(self, values: Union[List[GSClass], Proxy]) -> None:
         if isinstance(values, Proxy):
             values = list(values)
         setattr(self._owner, self.VALUES_ATTR, values)
@@ -1014,7 +1006,7 @@ class FontFeaturePrefixesProxy(FontClassesProxy):
 
 
 class GlyphLayerProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[Union[GSLayer, List[GSLayer]]]:
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
@@ -1022,95 +1014,90 @@ class GlyphLayerProxy(Proxy):
                 return list(self)[key]
             return list(self.values())[key]
         elif isinstance(key, str):
-            if key in self._owner._layers:
-                return self._owner._layers[key]
+            return self._owner._layers.get(key, None)
 
-    def __setitem__(self, key, layer):
+    def __setitem__(self, key: Union[int, str], layer: GSLayer) -> None:
         if isinstance(key, int) and self._owner.parent:
-            OldLayer = self._owner._layers.values()[key]
             if key < 0:
                 key = self.__len__() + key
-            layer.layerId = OldLayer.layerId
-            layer.associatedMasterId = OldLayer.associatedMasterId
-            self._owner._setupLayer(layer, OldLayer.layerId)
+            old_layer = self._owner._layers.values()[key]
+            layer.layerId = old_layer.layerId
+            layer.associatedMasterId = old_layer.associatedMasterId
+            self._owner._setupLayer(layer, old_layer.layerId)
             self._owner._layers[key] = layer
         elif isinstance(key, str) and self._owner.parent:
-            # FIXME: (jany) more work to do?
-            layer.parent = self._owner
+            self._owner._setupLayer(layer, key)
             self._owner._layers[key] = layer
         else:
             raise KeyError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int) and self._owner.parent:
-            if key < 0:
-                key = self.__len__() + key
-            Layer = self.__getitem__(key)
-            key = Layer.layerId
+            layer: GSLayer = self.values()[key]
+            key = layer.layerId
         del self._owner._layers[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[GSLayer]:
         return LayersIterator(self._owner)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.values())
 
-    def keys(self):
+    def keys(self) -> List[str]:
         return self._owner._layers.keys()
 
-    def values(self):
+    def values(self) -> List[GSLayer]:
         return self._owner._layers.values()
 
-    def append(self, layer):
+    def append(self, layer: GSLayer) -> None:
         assert layer is not None
-        if not layer.associatedMasterId:
-            if self._owner.parent:
-                layer.associatedMasterId = self._owner.parent.masters[0].id
+        if not layer.associatedMasterId and self._owner.parent:
+            layer.associatedMasterId = self._owner.parent.masters[0].id
         if not layer.layerId:
             layer.layerId = str(uuid.uuid4()).upper()
         self._owner._setupLayer(layer, layer.layerId)
         self._owner._layers[layer.layerId] = layer
 
-    def extend(self, layers):
+    def extend(self, layers: List[GSLayer]) -> None:
         for layer in layers:
             self.append(layer)
 
-    def remove(self, layer):
-        return self._owner.removeLayerForKey_(layer.layerId)
+    def remove(self, layer: GSLayer) -> None:
+        self._owner.removeLayerForKey(layer.layerId)
 
-    def insert(self, index, layer):
+    def insert(self, index: int, layer: GSLayer) -> None:
         self.append(layer)
 
-    def setter(self, values):
-        newLayers = OrderedDict()
+    def setter(self, values: Union[List[GSLayer], Dict[str, GSLayer]]) -> None:
+        new_layers: OrderedDict[str, GSLayer] = OrderedDict()
         if isinstance(values, (list, tuple, type(self))):
             for layer in values:
-                newLayers[layer.layerId] = layer
-        elif isinstance(values, dict):  # or isinstance(values, NSDictionary)
-            for layer in values.values():
-                newLayers[layer.layerId] = layer
+                new_layers[layer.layerId] = layer
+        elif isinstance(values, dict):
+            new_layers.update(values)
         else:
             raise TypeError
-        for key, layer in newLayers.items():
+        for key, layer in new_layers.items():
             self._owner._setupLayer(layer, key)
-        self._owner._layers = newLayers
+        self._owner._layers = new_layers
 
-    def plistArray(self):
+    def plistArray(self) -> List[GSLayer]:
         return list(self._owner._layers.values())
 
 
 class LayerAnchorsProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[Union[GSAnchor, List[GSAnchor]]]:
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
         elif isinstance(key, str):
             for i, a in enumerate(self._owner._anchors):
                 if a.name == key:
                     return self._owner._anchors[i]
+            return None
         else:
             raise KeyError
 
-    def __setitem__(self, key, anchor):
+    def __setitem__(self, key: str, anchor: GSAnchor) -> None:
         if isinstance(key, str):
             anchor.name = key
             for i, a in enumerate(self._owner._anchors):
@@ -1122,7 +1109,7 @@ class LayerAnchorsProxy(Proxy):
         else:
             raise TypeError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: Union[int, str]) -> None:
         if isinstance(key, int):
             del self._owner._anchors[key]
         elif isinstance(key, str):
@@ -1132,10 +1119,10 @@ class LayerAnchorsProxy(Proxy):
                     del self._owner._anchors[i]
                     return
 
-    def values(self):
+    def values(self) -> List[GSAnchor]:
         return self._owner._anchors
 
-    def append(self, anchor):
+    def append(self, anchor: GSAnchor) -> None:
         for i, a in enumerate(self._owner._anchors):
             if a.name == anchor.name:
                 anchor._parent = self._owner
@@ -1146,24 +1133,26 @@ class LayerAnchorsProxy(Proxy):
         else:
             raise ValueError("Anchor must have name")
 
-    def extend(self, anchors):
+    def extend(self, anchors: List[GSAnchor]) -> None:
         for anchor in anchors:
             anchor._parent = self._owner
         self._owner._anchors.extend(anchors)
 
-    def remove(self, anchor):
+    def remove(self, anchor: Union[str, GSAnchor]) -> None:
         if isinstance(anchor, str):
-            anchor = self.values()[anchor]
-        return self._owner._anchors.remove(anchor)
+            for a in self._owner._anchors:
+                if a.name == anchor:
+                    anchor = a
+        self._owner._anchors.remove(anchor)
 
-    def insert(self, index, anchor):
+    def insert(self, index: int, anchor: GSAnchor) -> None:
         anchor._parent = self._owner
         self._owner._anchors.insert(index, anchor)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._owner._anchors)
 
-    def setter(self, anchors):
+    def setter(self, anchors: Union[List[GSAnchor], Proxy]) -> None:
         if isinstance(anchors, Proxy):
             anchors = list(anchors)
         self._owner._anchors = anchors
@@ -1172,57 +1161,56 @@ class LayerAnchorsProxy(Proxy):
 
 
 class IndexedObjectsProxy(Proxy):
-    _objects_name = None
+    _objects_name: str
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, slice]) -> Any:
         if isinstance(key, (slice, int)):
             return self.values().__getitem__(key)
-        else:
-            raise KeyError
+        raise KeyError
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: Any) -> None:
         if isinstance(key, int):
             self.values()[key] = value
             value._parent = self._owner
         else:
             raise KeyError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: int) -> None:
         if isinstance(key, int):
             del self.values()[key]
         else:
             raise KeyError
 
-    def values(self):
+    def values(self) -> List[Any]:
         return getattr(self._owner, self._objects_name)
 
-    def append(self, value):
+    def append(self, value: Any) -> None:
         self.values().append(value)
         value._parent = self._owner
 
-    def extend(self, values):
+    def extend(self, values: List[Any]) -> None:
         self.values().extend(values)
         for value in values:
             value._parent = self._owner
 
-    def remove(self, value):
+    def remove(self, value: Any) -> None:
         self.values().remove(value)
 
-    def insert(self, index, value):
+    def insert(self, index: int, value: Any) -> None:
         self.values().insert(index, value)
         value._parent = self._owner
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.values())
 
-    def setter(self, values):
+    def setter(self, values: List[Any]) -> None:
         setattr(self._owner, self._objects_name, list(values))
         for value in self.values():
             value._parent = self._owner
 
 
 class InternalAxesProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[Union[int, float, List[float]]]:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return None
         if isinstance(key, slice):
@@ -1230,57 +1218,49 @@ class InternalAxesProxy(Proxy):
         elif isinstance(key, int):
             if key < len(self._owner.font.axes):
                 axis = self._owner.font.axes[key]
-            else:
-                return None
-            return self._owner._internalAxesValues.get(axis.axisId)
+                return self._owner._internalAxesValues.get(axis.axisId)
+            return None
         elif isinstance(key, str):
             return self._owner._internalAxesValues.get(key)
         raise TypeError(
-            "list indices must be integers, strings or slices, not %s"
-            % type(key).__name__
+            "list indices must be integers, strings or slices, not %s" % type(key).__name__
         )
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Union[int, str], value: Union[int, float]) -> None:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return
         if isinstance(key, int) and self._owner.font:
             key = self._owner.font.axes[key].axisId
         self._owner._internalAxesValues[key] = value
 
-    def values(self):
+    def values(self) -> List[Union[int, float]]:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return []
         if self._owner.font is None:
             return []
-        values = []
-        for axis in self._owner.font.axes:
-            values.append(self._owner._internalAxesValues.get(axis.axisId, 0))
-        return values
+        return [self._owner._internalAxesValues.get(axis.axisId, 0) for axis in self._owner.font.axes]
 
-    def __len__(self):
+    def __len__(self) -> int:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return 0
         if self._owner.font is None:
             return 0
         return len(self._owner.font.axes)
 
-    def _setterMethod(self, values):
+    def _setterMethod(self, values: List[Union[int, float]]) -> None:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return
         if self._owner.font is None:
             return
-        idx = 0
-        for axis in self._owner.font.axes:
-            value = values[idx]
-            self._owner._internalAxesValues[axis.axisId] = value
-            idx += 1
+        for idx, axis in enumerate(self._owner.font.axes):
+            self._owner._internalAxesValues[axis.axisId] = values[idx]
 
-    def setterMethod(self):
+    def setterMethod(self) -> Any:
         return self._setterMethod
 
 
 class ExternalAxesProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Optional[Union[int, float, List[float]]]:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return None
         if isinstance(key, slice):
@@ -1288,147 +1268,127 @@ class ExternalAxesProxy(Proxy):
         elif isinstance(key, int):
             if key < len(self._owner.font.axes):
                 axis = self._owner.font.axes[key]
-            else:
-                return None
-            return self._owner._externalAxesValues.get(axis.axisId)
+                return self._owner._externalAxesValues.get(axis.axisId)
+            return None
         elif isinstance(key, str):
             return self._owner._externalAxesValues.get(key)
         raise TypeError(
-            "list indices must be integers, strings or slices, not %s"
-            % type(key).__name__
+            "list indices must be integers, strings or slices, not %s" % type(key).__name__
         )
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Union[int, str], value: Union[int, float]) -> None:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
-            return None
+            return
         if isinstance(key, int):
             key = self._owner.font.axes[key].axisId
         self._owner._externalAxesValues[key] = value
 
-    def values(self):
+    def values(self) -> List[Union[int, float]]:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return []
         if self._owner.font is None:
             return []
-        values = []
-        for axis in self._owner.font.axes:
-            values.append(self._owner._externalAxesValues.get(axis.axisId, 0))
-        return values
+        return [self._owner._externalAxesValues.get(axis.axisId, 0) for axis in self._owner.font.axes]
 
-    def __len__(self):
+    def __len__(self) -> int:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return 0
         if self._owner.font is None:
             return 0
         return self._owner.font.countOfAxes()
 
-    def _setterMethod(self, values):
+    def _setterMethod(self, values: List[Union[int, float]]) -> None:
         if isinstance(self._owner, GSInstance) and self._owner.type == InstanceType.VARIABLE:
             return
         if self._owner.font is None:
             return
-        idx = 0
-        for axis in self._owner.font.axes:
-            value = values[idx]
-            self._owner._externalAxesValues[axis.axisId] = value
-            idx += 1
+        for idx, axis in enumerate(self._owner.font.axes):
+            self._owner._externalAxesValues[axis.axisId] = values[idx]
 
 
-def axisLocationToAxesValue(master_or_instances):
-    axisLocations = master_or_instances.customParameters["Axis Location"]
+def axisLocationToAxesValue(master_or_instances: GSFontMaster | GSInstance) -> None:
+    axisLocations = master_or_instances.customParameters.get("Axis Location")
     if axisLocations is None:
+        return
+    if not master_or_instances.font:
         return
     for axis in master_or_instances.font.axes:
         locationDict = None
-        for currLocartion in axisLocations:
-            if currLocartion["Axis"] == axis.name:
-                locationDict = currLocartion
+        for currLocation in axisLocations:
+            if currLocation["Axis"] == axis.name:
+                locationDict = currLocation
                 break
         if locationDict is None:
             continue
-        location = locationDict.get("Location", None)
-        if location:
+        location = locationDict.get("Location")
+        if location is not None:
             master_or_instances.externalAxesValues[axis.axisId] = location
 
 
-def axisValueToAxisLocation(master_or_instance: GSFontMaster | GSInstance):
-    if len(master_or_instance._externalAxesValues) > 0:
-        for axis in master_or_instance.font.axes:
-            externalValue = master_or_instance.externalAxesValues.get(axis.axisId)
-            locations = []
-            if externalValue is not None:
-                locations.append({
-                    "Axis": axis.name,
-                    "Location": externalValue
-                })
-            if len(locations) > 0:
-                master_or_instance.customParameters["Axis Location"] = locations
+def axisValueToAxisLocation(master_or_instance: GSFontMaster | GSInstance) -> None:
+    if master_or_instance._externalAxesValues and master_or_instance.font:
+        locations = [
+            {"Axis": axis.name, "Location": master_or_instance.externalAxesValues.get(axis.axisId)}
+            for axis in master_or_instance.font.axes
+            if master_or_instance.externalAxesValues.get(axis.axisId) is not None
+        ]
+        if locations:
+            master_or_instance.customParameters["Axis Location"] = locations
 
 
 class MasterStemsProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: str | int | slice) -> Union[int, float, List[float]]:
         if isinstance(key, slice):
-            return [self.__getitem__(i) for i in range(*key.indices(self.__len__()))]
+            return [cast(float, self.__getitem__(i)) for i in range(*key.indices(self.__len__()))]
         stem = self._owner.font.stemForKey(key)
         if stem is None:
-            raise KeyError("No stem for %s" % key)
+            raise KeyError(f"No stem for {key}")
         return self._owner._stems[stem.id]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str | int, value: Union[int, float]) -> None:
         stem = self._owner.font.stemForKey(key)
         if stem is None:
-            if isString(key):
-                name = key
-            else:
-                name = "stem%s" % key
+            name = key if isinstance(key, str) else f"stem{key}"
             stem = GSMetric()
             stem.name = name
             stem.horizontal = True
             self._owner.font.stems.append(stem)
         self._owner._stems[stem.id] = value
 
-    def values(self):
-        values = []
-        for stem in self._owner.font.stems:
-            values.append(self._owner._stems.get(stem.id, None))
-        return values
+    def values(self) -> List[Optional[Union[int, float]]]:
+        return [self._owner._stems.get(stem.id, None) for stem in self._owner.font.stems]
 
-    def __len__(self):
+    def __len__(self) -> int:
         if self._owner.font is None:
             return 0
         return len(self._owner.font.stems)
 
-    def _setterMethod(self, values):
+    def _setterMethod(self, values: List[Union[int, float]]) -> None:
         if self._owner.font is None:
             return
         if self.__len__() != len(values):
             raise ValueError("Count of values doesn’t match stems")
-        idx = 0
-        for stem in self._owner.font.stems:
+        for idx, stem in enumerate(self._owner.font.stems):
             self._owner.stems[stem.id] = values[idx]
-            idx += 1
 
-    def setterMethod(self):
+    def setterMethod(self) -> Any:
         return self._setterMethod
 
 
 class MasterNumbersProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: str | int | slice) -> Union[int, float, List[float]]:
         if isinstance(key, slice):
-            return [self.__getitem__(i) for i in range(*key.indices(self.__len__()))]
+            return [cast(float, self.__getitem__(i)) for i in range(*key.indices(self.__len__()))]
         number = self._owner.font.numberForKey(key)
         if number is None:
-            raise KeyError("No number for %s" % key)
+            raise KeyError(f"No number for {key}")
         return self._owner._numbers[number.id]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str | int, value: Union[int, float]) -> None:
         if self._owner.font:
             number = self._owner.font.numberForKey(key)
             if number is None:
-                if isString(key):
-                    name = key
-                else:
-                    name = "number%s" % key
+                name = key if isinstance(key, str) else f"number{key}"
                 number = GSMetric()
                 number.name = name
                 number.horizontal = True
@@ -1440,55 +1400,50 @@ class MasterNumbersProxy(Proxy):
             raise KeyError
         self._owner._numbers[numberId] = value
 
-    def values(self):
-        values = []
-        for number in self._owner.font.numbers:
-            values.append(self._owner._numbers.get(number.id, None))
-        return values
+    def values(self) -> List[Optional[Union[int, float]]]:
+        return [self._owner._numbers.get(number.id, None) for number in self._owner.font.numbers]
 
-    def __len__(self):
+    def __len__(self) -> int:
         if self._owner.font is None:
             return 0
         return len(self._owner.font.numbers)
 
-    def _setterMethod(self, values):
+    def _setterMethod(self, values: List[Union[int, float]]) -> None:
         if self._owner.font is None:
             return
         if self.__len__() != len(values):
             raise ValueError("Count of values doesn’t match numbers")
-        idx = 0
-        for number in self._owner.font.numbers:
+        for idx, number in enumerate(self._owner.font.numbers):
             self._owner.numbers[number.id] = values[idx]
-            idx += 1
 
-    def setterMethod(self):
+    def setterMethod(self) -> Any:
         return self._setterMethod
 
 
 class LayerShapesProxy(IndexedObjectsProxy):
-    _objects_name = "_shapes"
-    _filter = None
+    _objects_name: str = "_shapes"
+    _filter: Optional[Any] = None
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSLayer) -> None:
         super().__init__(owner)
 
-    def append(self, value):
+    def append(self, value: GSShape) -> None:
         self._owner._shapes.append(value)
         value.parent = self._owner
 
-    def extend(self, values):
+    def extend(self, values: List[GSShape]) -> None:
         self._owner._shapes.extend(values)
         for value in values:
             value.parent = self._owner
 
-    def remove(self, value):
+    def remove(self, value: GSShape) -> None:
         self._owner._shapes.remove(value)
 
-    def insert(self, index, value):
+    def insert(self, index: int, value: GSShape) -> None:
         self._owner._shapes.insert(index, value)
         value.parent = self._owner
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: int, value: GSShape) -> None:
         if isinstance(key, int):
             index = self._owner._shapes.index(self.values()[key])
             self._owner._shapes[index] = value
@@ -1496,106 +1451,104 @@ class LayerShapesProxy(IndexedObjectsProxy):
         else:
             raise KeyError
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: int) -> None:
         if isinstance(key, int):
             index = self._owner._shapes.index(self.values()[key])
             del self._owner._shapes[index]
         else:
             raise KeyError
 
-    def setter(self, values):
+    def setter(self, values: List[GSShape]) -> None:
         if self._filter:
-            newvalues = list(
-                filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)
+            new_values: List = list(
+                filter(lambda s: not isinstance(s, self._filter), self._owner._shapes)  # type: ignore # TODO: (gs) Check
             )
         else:
-            newvalues = []
-        newvalues.extend(list(values))
-        self._owner._shapes = newvalues
-        for value in newvalues:
+            new_values = []
+        new_values.extend(list(values))
+        self._owner._shapes = new_values
+        for value in new_values:
             value.parent = self._owner
 
-    def values(self):
+    def values(self) -> List[GSShape]:
         if self._filter:
             return list(
-                filter(lambda s: isinstance(s, self._filter), self._owner._shapes)
+                filter(lambda s: isinstance(s, self._filter), self._owner._shapes)  # type: ignore # TODO: (gs) Check
             )
         else:
             return self._owner._shapes[:]
 
 
 class LayerHintsProxy(IndexedObjectsProxy):
-    _objects_name = "_hints"
+    _objects_name: str = "_hints"
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSLayer) -> None:
         super().__init__(owner)
 
 
 class LayerAnnotationProxy(IndexedObjectsProxy):
-    _objects_name = "_annotations"
+    _objects_name: str = "_annotations"
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSLayer) -> None:
         super().__init__(owner)
 
 
 class LayerGuideLinesProxy(IndexedObjectsProxy):
-    _objects_name = "_guides"
+    _objects_name: str = "_guides"
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSLayer) -> None:
         super().__init__(owner)
 
 
 class PathNodesProxy(IndexedObjectsProxy):
-    _objects_name = "_nodes"
+    _objects_name: str = "_nodes"
 
-    def __init__(self, owner):
+    def __init__(self, owner: GSPath) -> None:
         super().__init__(owner)
 
 
 class CustomParametersProxy(ListDictionaryProxy):
-    def __init__(self, owner):
+    def __init__(self, owner: Union[GSFont, GSFontMaster, GSInstance]) -> None:
         super().__init__(owner, "_customParameters", GSCustomParameter)
         self._update_lookup()
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Any:
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
             return self.values()[key]
         elif isinstance(key, str):
             return self._lookup.get(key)
-        raise TypeError("key must be integer or string, not %s" % type(key).__name__)
+        raise TypeError(f"key must be integer or string, not {type(key).__name__}")
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Union[int, str], value: Any) -> None:
         super().__setitem__(key, value)
         self._update_lookup()
 
-    def setter(self, params):
+    def setter(self, params: List[GSCustomParameter]) -> None:
         super().setter(params)
         self._update_lookup()
 
-    def __iter__(self):
-        for item in super().__iter__():
-            yield item
+    def __iter__(self) -> Iterator[GSCustomParameter]:
+        yield from super().__iter__()
 
-    def keys(self):
-        keys = [parameter.name for parameter in self]
-        return keys
+    def keys(self) -> List[str]:
+        return [parameter.name for parameter in self]
 
-    def _get_by_name(self, name):
+    def _get_by_name(self, name: str) -> Optional[GSCustomParameter]:
         if name == "Name Table Entry":
             return None
         return super()._get_by_name(name)
 
-    def is_font(self):
+    def is_font(self) -> bool:
         """Returns whether we are looking at a top-level GSFont object as
         opposed to a master or instance.
         This is a stupid hack to make the globally registered parameter handler work
         """
         return isinstance(self._owner, GSFont)
 
-    def _update_lookup(self):
-        self._lookup = {}
+    def _update_lookup(self) -> None:
+        self._lookup: Dict[str, Any] = {}
         for param in self:
             params = self._lookup.get(param.name, None)
             if params is None:
@@ -1603,19 +1556,20 @@ class CustomParametersProxy(ListDictionaryProxy):
 
 
 class PropertiesProxy(ListDictionaryProxy):
-    def __init__(self, owner):
+    def __init__(self, owner: Any) -> None:
         assert owner
         super().__init__(owner, "_properties", GSFontInfoValue)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Union[int, str, slice]) -> Any:
         if isinstance(key, slice):
             return self.values().__getitem__(key)
         elif isinstance(key, int):
             return self.values()[key]
         elif isinstance(key, str):
             return self.getProperty(key, language="dflt") or self.getProperty(key, language="ENG")
+        raise TypeError(f"key must be integer or string, not {type(key).__name__}")
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:  # type: ignore
         infoValue = self[key]
         if infoValue is None or not isinstance(infoValue, GSFontInfoValue):
             infoValue = GSFontInfoValue(key)
@@ -1629,7 +1583,7 @@ class PropertiesProxy(ListDictionaryProxy):
         else:
             infoValue.value = value
 
-    def getProperty(self, key, language="dflt"):
+    def getProperty(self, key: str, language: str = "dflt") -> Any:
         for infoValue in self:
             if infoValue.name != key:
                 continue
@@ -1638,7 +1592,7 @@ class PropertiesProxy(ListDictionaryProxy):
             else:
                 return infoValue.value
 
-    def setProperty(self, key, value, language="dflt"):
+    def setProperty(self, key: str, value: Any, language: str = "dflt") -> None:
         for infoValue in self:
             if infoValue.name != key:
                 continue
@@ -1655,103 +1609,106 @@ class PropertiesProxy(ListDictionaryProxy):
 
 
 class UserDataProxy(Proxy):
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> Optional[Any]:
         if self._owner._userData is None:
             return None
         # This is not the normal `dict` behaviour, because this does not raise
         # `KeyError` and instead just returns `None`. It matches Glyphs.app.
         return self._owner._userData.get(key)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         if self._owner._userData is not None:
             self._owner._userData[key] = value
         else:
             self._owner._userData = {key: value}
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         if self._owner._userData is not None and key in self._owner._userData:
             del self._owner._userData[key]
 
-    def __contains__(self, item):
+    def __contains__(self, item: str) -> bool:
         if self._owner._userData is None:
             return False
         return item in self._owner._userData
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         if self._owner._userData is None:
             return
         # This is not the normal `dict` behaviour, because this yields values
         # instead of keys. It matches Glyphs.app though. Urg.
         yield from self._owner._userData.values()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         strings = []
         if self._owner._userData is not None:
             for key, item in self._owner._userData.items():
-                strings.append("%s:%s" % (key, item))
-        return "(%s)" % (", ".join(strings))
+                strings.append(f"{key}:{item}")
+        return f"({', '.join(strings)})"
 
-    def values(self):
+    def values(self) -> List[Any]:
         if self._owner._userData is None:
             return []
         return self._owner._userData.values()
 
-    def keys(self):
+    def keys(self) -> List[str]:
         if self._owner._userData is None:
             return []
         return self._owner._userData.keys()
 
-    def items(self):
+    def items(self) -> List[Tuple[str, Any]]:
         if self._owner._userData is None:
             return []
         return self._owner._userData.items()
 
-    def get(self, key, default=None):
+    def get(self, key: str, default: Optional[Any] = None) -> Optional[Any]:
         if self._owner._userData is None:
             return None
         return self._owner._userData.get(key, default)
 
-    def setter(self, values):
+    def setter(self, values: Dict[str, Any]) -> None:
         self._owner._userData = values
 
-    def __copy__(self):
-        return copy.copy(self._owner._userData)
+    def __copy__(self) -> Optional[Dict[str, Any]]:  # type: ignore
+        return copy.copy(self._owner._userData)  # type: ignore
 
-    def __deepcopy__(self, memo):
-        return copy.deepcopy(self._owner._userData)
+    def __deepcopy__(self, memo: Dict[int, Any]) -> Optional[Dict[str, Any]]:  # type: ignore
+        return copy.deepcopy(self._owner._userData)  # type: ignore
 
 
 class GSAxis(GSBase):
-    def _serialize_to_plist(self, writer):
+    __slots__ = ("name", "axisTag", "axisId", "hidden")
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "hidden", "if_true")
         writer.writeObjectKeyValue(self, "name", True)
         writer.writeKeyValue("tag", self.axisTag)
 
-    def __init__(self, name="", tag="", hidden=False):
-        self.name = name
-        self.axisTag = tag
-        self.axisId = "%X" % id(self)
-        self.hidden = hidden
+    def __init__(self, name: str = "", tag: str = "", hidden: bool = False) -> None:
+        self.name: str = name
+        self.axisTag: str = tag
+        self.axisId: str = "%X" % id(self)
+        self.hidden: bool = hidden
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {hex(id(self))}> {self.name}: {self.axisTag}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}: {self.axisTag}>"
 
-    def __eq__(self, other):
-        return self.name == other.name and self.axisTag == other.axisTag
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, GSAxis) and self.name == other.name and self.axisTag == other.axisTag
+
+    _shortAxisTagMapping: Dict[str, str] = {
+        "ital": "it",
+        "opsz": "oz",
+        "slnt": "sl",
+        "wdth": "wd",
+        "wght": "wg",
+    }
 
     @property
-    def shortAxisTag(self):
-        shortAxisTagMapping = {
-            "ital": "it",
-            "opsz": "oz",
-            "slnt": "sl",
-            "wdth": "wd",
-            "wght": "wg",
-        }
-        return shortAxisTagMapping.get(self.axisTag, self.axisTag)
+    def shortAxisTag(self) -> str:
+        return self._shortAxisTagMapping.get(self.axisTag, self.axisTag)
 
 
 GSAxis._add_parsers(
@@ -1763,7 +1720,7 @@ GSAxis._add_parsers(
 
 
 class GSCustomParameter(GSBase):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion >= 3 and not self.active:
             writer.writeKeyValue("disabled", True)
         writer.writeKeyValue("name", self.name)
@@ -1773,9 +1730,9 @@ class GSCustomParameter(GSBase):
                 writer.writeKeyValue("value", self.value)
                 writer.allowTuple = False
             else:
-                palettes = []
+                palettes: List[List[str]] = []
                 for palette in self.value:
-                    colorStrings = []
+                    colorStrings: List[str] = []
                     for color in palette:
                         colorStrings.append(",".join(str(v) for v in color))
                     palettes.append(colorStrings)
@@ -1911,37 +1868,37 @@ class GSCustomParameter(GSBase):
 
     _CUSTOM_DICT_PARAMS = frozenset("GASP Table")
 
-    def __init__(self, name="New Value", value="New Parameter", active=True):
-        self.name = name
-        self.value = value
-        self.active = active
+    def __init__(self, name: str = "New Value", value: Any = "New Parameter", active: bool = True) -> None:
+        self.name: str = name
+        self._value: Any = value
+        self.active: bool = active
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {hex(id(self))}> {self.name}: {self._value}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<{self.__class__.__name__} {self.name}: {self._value}>"
 
-    def plistValue(self, formatVersion=2):
+    def plistValue(self, formatVersion: int = 2) -> str:
         string = StringIO()
         writer = Writer(string, formatVersion=formatVersion)
         self._serialize_to_plist(writer)
         return "{\n" + string.getvalue() + "}"
 
-    def post_read(self, formatVersion):  # GSCustomParameter
+    def post_read(self, formatVersion: int) -> None:  # GSCustomParameter
         if self.name == "Color Palettes" and formatVersion < 3:
-            palettes = []
+            palettes: List[List[List[int]]] = []
             for palette in self.value:
-                colors = []
+                colors: List[List[int]] = []
                 for color in palette:
                     colors.append([int(v) for v in color.split(',')])
                 palettes.append(colors)
             self.value = palettes
 
-    def getValue(self):
+    def getValue(self) -> Any:
         return self._value
 
-    def setValue(self, value):
+    def setValue(self, value: Any) -> None:
         """Cast some known data in custom parameters."""
         if self.name in self._CUSTOM_INT_PARAMS:
             value = int(value)
@@ -1957,10 +1914,10 @@ class GSCustomParameter(GSBase):
         elif self.name == "note":
             value = str(value)
         elif self.name == "Axis Mappings":
-            # make sure the mapping keys are all numbers, not str
-            newValue = {}
+            newValue: Dict[str, Dict[float, float]] = {}
             for axisTag, mapping in value.items():
-                newMapping = {}
+                # make sure the mapping keys are all numbers, not str
+                newMapping: Dict[float, float] = {}
                 for input, output in mapping.items():
                     if not isinstance(input, (int, float)):
                         input = float(input)
@@ -1982,21 +1939,21 @@ GSCustomParameter._add_parsers(
 
 
 class GSMetric(GSBase):
-    def __init__(self, name=None, type=None):
-        self.name = name
-        self.type = type
-        self.id = str(uuid.uuid4()).upper()
-        self.filter = None
-        self.horizontal = False
+    def __init__(self, name: Optional[str] = None, type: Optional[str] = None) -> None:
+        self.name: Optional[str] = name
+        self.type: Optional[str] = type
+        self.id: str = str(uuid.uuid4()).upper()
+        self.filter: Optional[str] = None
+        self.horizontal: bool = False
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "horizontal", "if_true")
         writer.writeObjectKeyValue(self, "filter", "if_true")
         writer.writeObjectKeyValue(self, "name", "if_true")
         if self.type:
             writer.writeKeyValue("type", self.type)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         string = f"<{self.__class__.__name__} {hex(id(self))}> {self.type}"
         if self.filter:
             string += " " + self.filter
@@ -2004,7 +1961,7 @@ class GSMetric(GSBase):
             string += " " + self.name
         return string
 
-    def __str__(self):
+    def __str__(self) -> str:
         string = f"<{self.__class__.__name__} {self.type}"
         if self.filter:
             string += self.filter
@@ -2020,18 +1977,18 @@ GSMetric._add_parsers(
 
 
 class GSMetricValue(GSBase):
-    def __init__(self, position=0, overshoot=0):
-        self.position = position
-        self.overshoot = overshoot
-        self.metric = None
+    def __init__(self, position: float = 0, overshoot: float = 0) -> None:
+        self.position: float = position
+        self.overshoot: float = overshoot
+        self.metric: Optional[GSMetric] = None
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if self.overshoot:
             writer.writeKeyValue("over", self.overshoot)
         if self.position:
             writer.writeKeyValue("pos", self.position)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{} {}> {}: {}/{}".format(
             self.__class__.__name__,
             hex(id(self)),
@@ -2040,7 +1997,7 @@ class GSMetricValue(GSBase):
             self.overshoot,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "<{} {}: {}/{}>".format(
             self.__class__.__name__,
             self.metric.type if self.metric else "-",
@@ -2058,45 +2015,61 @@ GSMetricValue._add_parsers(
 
 
 class GSAlignmentZone(GSBase):
-    def __init__(self, pos=0, size=20):
-        self.position = pos
-        self.size = size
+    def __init__(self, pos: float = 0, size: float = 20) -> None:
+        self.position: float = pos
+        self.size: float = size
 
-    def read(self, src):
+    def read(self, src: Optional[Any]) -> GSAlignmentZone:
         if src is not None:
             p = Point(src)
             self.position = parse_float_or_int(p.value[0])
             self.size = parse_float_or_int(p.value[1])
         return self
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{} {}> pos:{} size:{}".format(
             self.__class__.__name__, hex(id(self)), self.position, self.size
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "<{} pos:{} size:{}>".format(
             self.__class__.__name__, self.position, self.size
         )
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         if not isinstance(other, GSAlignmentZone):
             return NotImplemented
         return (self.position, self.size) < (other.position, other.size)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, GSAlignmentZone):
             return NotImplemented
         return (self.position, self.size) == (other.position, other.size)
 
-    def plistValue(self, formatVersion=2):
+    def plistValue(self, formatVersion: int = 2) -> str:
         return '"{{{}, {}}}"'.format(
             floatToString5(self.position), floatToString5(self.size)
         )
 
 
 class GSGuide(GSBase):
-    def _serialize_to_plist(self, writer):
+    _parent: Optional[Union[GSLayer, GSFontMaster]] = None
+    _defaultsForName: Dict[str, Any] = {"position": Point(0, 0), "angle": 0}
+    __slots__ = ("alignment", "angle", "filter", "locked", "name", "position", "showMeasurement", "lockAngle", "_userData", "orientation")
+
+    def __init__(self) -> None:
+        self.alignment: str = ""
+        self.angle: float = 0
+        self.filter: str = ""
+        self.locked: bool = False
+        self.name: str = ""
+        self.position: Point = Point(0, 0)
+        self.showMeasurement: bool = False
+        self.lockAngle: bool = False
+        self._userData: Optional[Dict[str, Any]] = None
+        self.orientation: Optional[str] = None
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         for field in ["alignment", "angle", "filter"]:
             writer.writeObjectKeyValue(self, field, "if_true")
         if writer.formatVersion >= 3:
@@ -2114,33 +2087,18 @@ class GSGuide(GSBase):
         if writer.formatVersion >= 3 and len(self.userData) > 0:
             writer.writeKeyValue("userData", self.userData)
 
-    _parent = None
-    _defaultsForName = {"position": Point(0, 0), "angle": 0}
-
-    def __init__(self):
-        self.alignment = ""
-        self.angle = 0
-        self.filter = ""
-        self.locked = False
-        self.name = ""
-        self.position = Point(0, 0)
-        self.showMeasurement = False
-        self.lockAngle = False
-        self._userData = None
-        self.orientation = None
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "<{} {}> x={:.1f} y={:.1f} angle={:.1f}".format(
             self.__class__.__name__, hex(id(self)), self.position.x, self.position.y, self.angle
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "<{} x={:.1f} y={:.1f} angle={:.1f}>".format(
             self.__class__.__name__, self.position.x, self.position.y, self.angle
         )
 
     @property
-    def parent(self):
+    def parent(self) -> Optional[GSLayer | GSFontMaster]:
         return self._parent
 
     userData = property(
@@ -2199,16 +2157,40 @@ MASTER_ICON_NAMES = {
 
 
 class GSFontMaster(GSBase):
-    def _write_axis_value(self, writer, idx, defaultValue):
+    _font: Optional[GSFont] = None
+
+    def __init__(self, name: str = "Regular") -> None:
+        self.customParameters = []
+        self.name: str = name
+        self._userData: Optional[Any] = None
+        self._horizontalStems: Optional[List[float]] = None
+        self._verticalStems: Optional[List[float]] = None
+        self._internalAxesValues: Dict[str, float] = {}
+        self._externalAxesValues: Dict[str, float] = {}
+        self._metricValues: Dict[str, GSMetricValue] = {}
+        self.guides: List[GSGuide] = []
+        self.iconName: str = ""
+        self.id: str = str(uuid.uuid4()).upper()
+        self._numbers: Dict[str, float] = {}
+        self._stems: Dict[str, float] = {}
+        self.visible: bool = False
+        self.weight: Optional[str] = None
+        self.width: Optional[str] = None
+        self.customName: Optional[str] = None
+        self.readBuffer: Dict[str, Any] = {}
+        self._axesValues: Optional[List[float]] = None
+        self._alignmentZones: Optional[List[Any]] = None
+
+    def _write_axis_value(self, writer: Writer, idx: int, defaultValue: float) -> None:
         axes = self.font.axes
-        axesCount = len(axes)
+        axesCount: int = len(axes)
         if axesCount > idx:
-            value = self.internalAxesValues[axes[idx].axisId]
+            value: float = self.internalAxesValues[axes[idx].axisId]
             if value is not None and abs(value - defaultValue) > 0.0001:
                 writer.writeKeyValue(MASTER_AXIS_VALUE_KEYS[idx], value)
 
-    def _default_icon_name(self):
-        name_parts = self.name.split(" ")
+    def _default_icon_name(self) -> str:
+        name_parts: List[str] = self.name.split(" ")
         if len(name_parts) > 1:
             try:
                 name_parts.remove("Regular")
@@ -2218,29 +2200,27 @@ class GSFontMaster(GSBase):
                 name_parts.remove("Italic")
             except ValueError:
                 pass
-        iconName = "_".join(name_parts)
+        iconName: str = "_".join(name_parts)
         if len(iconName) == 0 or iconName not in MASTER_ICON_NAMES:
             iconName = "Regular"
         return iconName
 
-    def _serialize_to_plist(self, writer):  # noqa: C901
+    def _serialize_to_plist(self, writer: Writer) -> None:  # noqa: C901
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "alignmentZones", "if_true")
             writer.writeObjectKeyValue(self, "ascender")
         if writer.formatVersion >= 3 and len(self.internalAxesValues):
             writer.writeKeyValue("axesValues", self.internalAxesValues)
-        customParameters = list(self.customParameters)
+        customParameters: List[Any] = list(self.customParameters)
 
         if writer.formatVersion == 2:
-            (weightName, widthName, customName) = self._splitName(self.name)
+            weightName, widthName, customName = self._splitName(self.name)
             writer.writeObjectKeyValue(self, "capHeight")
             if customName:
                 writer.writeKeyValue("custom", customName)
 
-            self._write_axis_value(writer, 2, 0)
-            self._write_axis_value(writer, 3, 0)
-            self._write_axis_value(writer, 4, 0)
-            self._write_axis_value(writer, 5, 0)
+            for idx in range(2, 6):
+                self._write_axis_value(writer, idx, 0)
 
             smallCapMetric = self._get_metric_position(
                 GSMetricsKeyxHeight, filter="case == 3"
@@ -2274,15 +2254,18 @@ class GSFontMaster(GSBase):
                 self.iconName != self._default_icon_name() or writer.formatVersion == 3
             )
             and self.iconName != "Regular"
-        ):  # TODO: Glyhs <= 3.1 had a bug that it would not compute the defaultIconName correctly for v3 files.
+        ):  # TODO: Glyphs <= 3.1 had a bug that it would not compute the defaultIconName correctly for v3 files.
             writer.writeKeyValue("iconName", self.iconName)
+
         writer.writeObjectKeyValue(self, "id")
+
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "italicAngle", "if_true")
+
         if writer.formatVersion >= 3:
-            metricValues = []
+            metricValues: List[Any] = []
             for metric in self.font.metrics:
-                metricValue = self.metricValues.get(metric.id, {})
+                metricValue: GSMetricValue = self.metricValues.get(metric.id, GSMetricValue())
                 metricValues.append(metricValue)
             writer.writeKeyValue("metricValues", metricValues)
 
@@ -2294,14 +2277,16 @@ class GSFontMaster(GSBase):
                 self, "numbers", "if_true", keyName="numberValues"
             )
             writer.writeObjectKeyValue(self, "stems", "if_true", keyName="stemValues")
+
         if True:
-            userData = dict(self.userData)
+            userData: Dict[str, Any] = dict(self.userData)
             if "com.github.googlei18n.ufo2ft.filters" in userData:
                 del userData["com.github.googlei18n.ufo2ft.filters"]
             if len(userData) > 0:
                 writer.writeKeyValue("userData", userData)
         else:
             writer.writeObjectKeyValue(self, "userData", "if_true")
+
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "verticalStems", "if_true")
 
@@ -2338,35 +2323,12 @@ class GSFontMaster(GSBase):
 
     _axis_defaults = (100, 100)
 
-    def _parse_alignmentZones_dict(self, parser, text):
+    def _parse_alignmentZones_dict(self, parser: Parser, text: str):
         """
         For glyphs file format 2 this parses the alignmentZone parameter directly.
         """
         _zones = parser._parse(text, str)
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
-
-    def __init__(self, name="Regular"):
-        self.customParameters = []
-        self.name = name
-        self._userData = None
-        self._horizontalStems = None
-        self._verticalStems = None
-        self._internalAxesValues = {}
-        self._externalAxesValues = {}
-        self._metricValues = {}
-        self.font = None
-        self.guides = []
-        self.iconName = ""
-        self.id = str(uuid.uuid4()).upper()
-        self._numbers = {}
-        self._stems = {}
-        self.visible = False
-        self.weight = None
-        self.width = None
-        self.customName = None
-        self.readBuffer = {}  # temp storage while reading
-        self._axesValues = None
-        self._alignmentZones = None
 
     def __repr__(self):
         return '<GSFontMaster {}> "{}" {}'.format(
@@ -2378,49 +2340,52 @@ class GSFontMaster(GSBase):
             self.name, self.internalAxesValues.values()
         )
 
-    def _import_stem_list(self, stems, horizontal):
+    def _import_stem_list(self, stems: List[float], horizontal: bool) -> None:
+        assert isinstance(stems, list)
+        assert not stems or isinstance(stems[0], GSMetricValue)
         if self._stems is None:
             self._stems = {}
+        font = self.font
         for idx in range(len(stems)):
-            name = "%sStem%d" % ("h" if horizontal else "v", idx)
-            metric = self.font.stemForName(name)
+            name: str = "%sStem%d" % ("h" if horizontal else "v", idx)
+            metric: Optional[GSMetric] = font.stemForName(name)
             if not metric:
                 metric = GSMetric()
                 metric.name = name
                 metric.horizontal = horizontal
-                self.font.stems.append(metric)
+                font.stems.append(metric)
             self._stems[metric.id] = stems[idx]
 
     # GSFontMaster
-    def post_read(self):  # noqa: C901
-        axes = self.font.axes
-        if self.font.formatVersion < 3:
-            axesValues = self.readBuffer.get("axesValues", {})
-            axesCount = len(axes)
+    def post_read(self) -> None:  # noqa: C901
+        font = self.font
+        axes: List[Any] = font.axes
+        axesCount: int = len(axes)
+        if font.formatVersion < 3:
+            axesValues2: Dict[int, float] = self.readBuffer.get("axesValues", {})
             for idx in range(axesCount):
                 axis = axes[idx]
                 if axis.axisId in self._internalAxesValues:  # (gs) e.g. when loading from designspace, this is properly set already
                     continue
-                value = axesValues.get(idx, DefaultAxisValuesV2[idx])
+                value: float = axesValues2.get(idx, DefaultAxisValuesV2[idx])
                 self.internalAxesValues[axis.axisId] = value
             if axes and len(self._internalAxesValues) == 0:
-                axisId = axes[0].axisId
-                self.internalAxesValues[axisId] = 100
+                axisId: str = axes[0].axisId
+                self._internalAxesValues[axisId] = 100
         else:
-            axesValues = self._axesValues
-            if axesValues:
-                axesCount = len(axes)
+            axesValues3: Optional[List[float]] = self._axesValues
+            if axesValues3:
                 for idx in range(axesCount):
                     axis = axes[idx]
-                    if idx < len(axesValues):
-                        value = axesValues[idx]
+                    if idx < len(axesValues3):
+                        value = axesValues3[idx]
                     else:
                         # (georg) fallback for old designspace setup
                         value = 100 if idx < 2 else 0
                     self.internalAxesValues[axis.axisId] = value
 
         if isinstance(self._metricValues, list):
-            metricValues = list(self._metricValues)
+            metricValues: List[Any] = list(self._metricValues)
             self._metricValues = {}
             if metricValues:
                 for fontMetric, metricValue in zip(self.font.metrics, metricValues):
@@ -2438,10 +2403,10 @@ class GSFontMaster(GSBase):
                 position, overshoot = self.readBuffer.get(metricKey, (0, 0))
                 self._set_metric(metricKey, position, overshoot)
 
-            parameter = self.customParameters["smallCapHeight"]
+            parameter: Optional[Any] = self.customParameters["smallCapHeight"]
             if parameter:
-                xHeightMetricValue = self._get_metric(GSMetricsKeyxHeight)
-                filterString = "case == 3"
+                xHeightMetricValue: GSMetricValue = self._get_metric(GSMetricsKeyxHeight) or GSMetricValue()
+                filterString: str = "case == 3"
                 self._set_metric(
                     GSMetricsKeyxHeight,
                     parameter,
@@ -2449,10 +2414,10 @@ class GSFontMaster(GSBase):
                     filter=filterString,
                 )
                 del self.customParameters["smallCapHeight"]
-                metric = self.font.metricFor("italic angle", name=None, filter=None, add_if_missing=False)
+                metric: Optional[GSMetric] = font.metricFor(GSMetricsKeyItalicAngle)
                 if metric:
-                    self.font.metrics.remove(metric)
-                    self.font.metrics.append(metric)
+                    font.metrics.remove(metric)
+                    font.metrics.append(metric)
 
             if self._alignmentZones:
                 self._import_alignmentZones_to_metrics()
@@ -2461,10 +2426,10 @@ class GSFontMaster(GSBase):
             self._set_metric(GSMetricsKeyItalicAngle, position, overshoot)
 
         if self._stems:
-            assert len(self.font.stems) == len(self._stems)
-            stems = {}
-            for idx, stem in enumerate(self.font.stems):
-                stems[stem.id] = self._stems[idx]
+            assert len(font.stems) == len(self._stems)
+            stems: Dict[str, float] = {}
+            for idx, stem in enumerate(font.stems):
+                stems[stem.id] = self._stems[idx]  # type: ignore
             self._stems = stems
         else:
             if self._horizontalStems:
@@ -2473,13 +2438,13 @@ class GSFontMaster(GSBase):
                 self._import_stem_list(self._verticalStems, False)
 
         if self._numbers:
-            assert len(self.font.numbers) == len(self._numbers)
-            numbers = {}
-            for idx, number in enumerate(self.font.numbers):
-                numbers[number.id] = self._numbers[idx]
+            assert len(font.numbers) == len(self._numbers)
+            numbers: Dict[str, float] = {}
+            for idx, number in enumerate(font.numbers):
+                numbers[number.id] = self._numbers[idx]  # type: ignore
             self._numbers = numbers
 
-        if self.font.formatVersion < 3 and (
+        if font.formatVersion < 3 and (
             self.weight or self.width or self.customName
         ):
             self.name = self._joinNames(self.weight, self.width, self.customName)
@@ -2490,16 +2455,19 @@ class GSFontMaster(GSBase):
             self.name = self._defaultsForName["name"]
         axisLocationToAxesValue(self)
         for customParameter in self.customParameters:
-            customParameter.post_read(self.font.formatVersion)
+            customParameter.post_read(font.formatVersion)
 
     @property
-    def metricsSource(self):
+    def metricsSource(self) -> Optional["GSFontMaster"]:
         """Returns the source master to be used for glyph and kerning metrics.
 
         If linked metrics parameters are being used, the master is returned here,
         otherwise None."""
+
+        font = self.font
+
         if self.customParameters["Link Metrics With First Master"]:
-            return self.font.masters[0]
+            return font.masters[0]
         source_master_id = self.customParameters["Link Metrics With Master"]
 
         # No custom parameters apply, go home
@@ -2507,26 +2475,26 @@ class GSFontMaster(GSBase):
             return None
 
         # Try by master id
-        source_master = self.font.masterForId(source_master_id)
+        source_master = font.masterForId(source_master_id)
         if source_master is not None:
             return source_master
 
         # Try by name
-        for source_master in self.font.masters:
+        for source_master in font.masters:
             if source_master.name == source_master_id:
                 return source_master
 
         logger.warning(f"Source master for metrics not found: '{source_master_id}'")
         return self
 
-    def _joinNames(self, width, weight, custom):
+    def _joinNames(self, width: Optional[str], weight: Optional[str], custom: Optional[str]) -> str:
         # Remove None and empty string
         names = list(filter(None, [width, weight, custom]))
         while len(names) > 1 and "Regular" in names:
             names.remove("Regular")
         return " ".join(names)
 
-    def _splitName(self, value):
+    def _splitName(self, value: Optional[str]) -> Tuple[str, str, str]:
         if value is None:
             value = ""
         weight = "Regular"
@@ -2555,6 +2523,14 @@ class GSFontMaster(GSBase):
         custom = " ".join(names).strip()
         return weight, width, custom
 
+    @property
+    def font(self) -> GSFont:
+        return cast(GSFont, self._font)
+
+    @font.setter
+    def font(self, value: Optional[GSFont]) -> None:
+        self._font = value
+
     customParameters = property(
         lambda self: CustomParametersProxy(self),
         lambda self, value: CustomParametersProxy(self).setter(value),
@@ -2565,18 +2541,22 @@ class GSFontMaster(GSBase):
         lambda self, value: UserDataProxy(self).setter(value),
     )
 
-    def _get_metric_layer(self, metricType, layer=None):
+    def _get_metric_layer(
+        self, metricType: str, layer: Optional["GSLayer"] = None
+    ) -> Optional["GSMetricValue"]:
         for metric in self.font.metrics:
             if (
                 metric.type == metricType
                 and metric.filter
-                and metric.filter.evaluateWithObject(layer.parent)
+                and metric.filter.evaluateWithObject(layer.parent if layer else None)
             ):
                 metricValue = self.metricValues[metric.id]
                 return metricValue
         return self._get_metric(metricType)
 
-    def _get_metric(self, metricType, filter=None, name=None):
+    def _get_metric(
+        self, metricType: str, filter: Optional[str] = None, name: Optional[str] = None
+    ) -> Optional["GSMetricValue"]:
         metric = self.font.metricFor(metricType, name, filter)
         if metric:
             metricValue = self.metricValues.get(metric.id)
@@ -2589,21 +2569,28 @@ class GSFontMaster(GSBase):
             return self._get_metric(GSMetricsKeyAscender)
         return None
 
-    def _get_metric_position(self, metricType, filter=None, name=None):
+    def _get_metric_position(
+        self, metricType: str, filter: Optional[str] = None, name: Optional[str] = None
+    ) -> Optional[float]:
         metricValue = self._get_metric(metricType, name, filter)
         if metricValue:
             return metricValue.position
         return None
 
     def _set_metric(
-        self, metricType, position=None, overshoot=None, name=None, filter=None
-    ):
+        self,
+        metricType: str,
+        position: float,
+        overshoot: float = 0,
+        name: Optional[str] = None,
+        filter: Optional[str] = None,
+    ) -> None:
         if not self.font:
             # we read that later in postRead
             self.readBuffer[metricType] = (position, overshoot)
             return
         metrics = self.font.metrics
-        metric = None
+        metric: Optional["GSMetric"] = None
         for currMetric in metrics:
             if (
                 metricType == currMetric.type
@@ -2630,7 +2617,9 @@ class GSFontMaster(GSBase):
             if overshoot is not None:
                 metricValue.overshoot = overshoot
 
-    def _import_alignmentZones_to_metrics(self):
+    def _import_alignmentZones_to_metrics(self) -> None:
+        if not self._alignmentZones:
+            return
         for metricValue in self.metricValues.values():
             for zone in list(self._alignmentZones):
                 if abs(zone.position - metricValue.position) <= 1:
@@ -2648,32 +2637,27 @@ class GSFontMaster(GSBase):
         self._alignmentZones = None
 
     @property
-    def metricValues(self):
+    def metricValues(self) -> Dict[str, "GSMetricValue"]:
         return self._metricValues
 
     @metricValues.setter
-    def metricValues(self, metrics):
+    def metricValues(self, metrics: Dict[str, "GSMetricValue"]) -> None:
         assert isinstance(metrics, dict)
         self._metricValues = metrics
 
-    # Legacy accessors
     @property
-    def alignmentZones(self):
-        if len(self.font.metrics) == 0:
+    def alignmentZones(self) -> List["GSAlignmentZone"]:
+        if not self.font or len(self.font.metrics) == 0:
             return []
 
-        zones = []
+        zones: List["GSAlignmentZone"] = []
         for fontMetric in self.font.metrics:
-            # Ignore the "italic angle" "metric", it is not an alignmentZone
             if fontMetric.type == GSMetricsKeyItalicAngle or (
                 fontMetric.filter and fontMetric.filter != "case == 3"
             ):
                 continue
             metric = self.metricValues.get(fontMetric.id)
-            if not metric:
-                continue
-            # Ignore metric without overshoot, it is not an alignmentZone
-            if metric.overshoot is None or metric.overshoot == 0:
+            if not metric or metric.overshoot is None or metric.overshoot == 0:
                 continue
             zone = GSAlignmentZone(pos=metric.position, size=metric.overshoot)
             zones.append(zone)
@@ -2682,18 +2666,18 @@ class GSFontMaster(GSBase):
         return zones
 
     @alignmentZones.setter
-    def alignmentZones(self, entries):
+    def alignmentZones(self, entries: Union[List[Tuple[float, float]], List["GSAlignmentZone"]]) -> None:
         if not isinstance(entries, (tuple, list)):
             raise TypeError(
                 "alignmentZones expected as list, got %s (%s)"
                 % (entries, type(entries))
             )
-        zones = []
+        zones: List[Union[Tuple[float, float], "GSAlignmentZone"]] = []
         for zone in entries:
             if not isinstance(zone, (tuple, GSAlignmentZone)):
                 raise TypeError(
                     "alignmentZones values expected as tuples of (pos, size) "
-                    "or GSAligmentZone, got: %s (%s)" % (zone, type(zone))
+                    "or GSAlignmentZone, got: %s (%s)" % (zone, type(zone))
                 )
             if zone not in zones:
                 zones.append(zone)
@@ -2702,22 +2686,20 @@ class GSFontMaster(GSBase):
             self._import_alignmentZones_to_metrics()
 
     @property
-    def blueValues(self):
-        """Set postscript blue values from Glyphs alignment zones."""
-
-        if len(self.font.metrics) == 0:
+    def blueValues(self) -> List[float]:
+        """Get postscript blue values from Glyphs alignment zones."""
+        font = self.font
+        if len(font.metrics) == 0:
             return []
 
-        blueValues = []
-        for fontMetric in self.font.metrics:
+        blueValues: List[float] = []
+        for fontMetric in font.metrics:
             # Ignore the "italic angle" "metric", it is not an alignmentZone
             if fontMetric.type == GSMetricsKeyItalicAngle or fontMetric.filter:
                 continue
             metric = self.metricValues.get(fontMetric.id)
-            if not metric:
-                continue
             # Ignore metric without overshoot, it is not an alignmentZone
-            if metric.overshoot is None or (
+            if not metric or metric.overshoot is None or (
                 metric.overshoot <= 0 and metric.position != 0
             ):
                 continue
@@ -2729,25 +2711,21 @@ class GSFontMaster(GSBase):
         return blueValues
 
     @property
-    def otherBlues(self):
-        """Set postscript blue values from Glyphs alignment zones."""
-
-        if len(self.font.metrics) == 0:
+    def otherBlues(self) -> List[float]:
+        """Get postscript blue values from Glyphs alignment zones."""
+        font = self.font
+        if len(font.metrics) == 0:
             return []
 
-        otherBlues = []
-        for fontMetric in self.font.metrics:
+        otherBlues: List[float] = []
+        for fontMetric in font.metrics:
             # Ignore the "italic angle" "metric", it is not an alignmentZone
             if fontMetric.type == GSMetricsKeyItalicAngle or fontMetric.filter:
                 continue
             metric = self.metricValues.get(fontMetric.id)
-            if not metric:
-                continue
             # Ignore metric without overshoot, it is not an alignmentZone
-            if (
-                metric.overshoot is None
-                or metric.overshoot >= 0
-                or metric.position == 0
+            if not metric or (
+                metric.overshoot is None or metric.overshoot >= 0 or metric.position == 0
             ):
                 continue
             otherBlues.append(metric.position)
@@ -2756,14 +2734,15 @@ class GSFontMaster(GSBase):
         otherBlues.sort()
         return otherBlues
 
-    def _set_stem(self, name, size, direction, filter=None):
+    def _set_stem(
+        self, name: str, size: float, horizontal: bool, filter: Optional[str] = None
+    ) -> None:
         assert self.font
         stems = self.font.stems
-        stem = None
+        stem: Optional["GSMetric"] = None
         for currStem in stems:
             if (
-                name == currStem.mame
-                and name == currStem.name
+                name == currStem.name
                 and filter == currStem.filter
             ):
                 stem = currStem
@@ -2771,7 +2750,7 @@ class GSFontMaster(GSBase):
         if not stem:
             stem = GSMetric()
             stem.name = name
-            stem.direction = direction
+            stem.horizontal = horizontal
             stem.filter = filter
             self.font.stems.append(stem)
         metricValue = GSMetricValue(position=size)
@@ -2785,8 +2764,8 @@ class GSFontMaster(GSBase):
 
     # Legacy accessors
     @property
-    def horizontalStems(self):
-        horizontalStems = []
+    def horizontalStems(self) -> List[GSMetricValue]:
+        horizontalStems: List[GSMetricValue] = []
         for index, font_stem in enumerate(self.font.stems):
             if not font_stem.horizontal:
                 continue
@@ -2794,16 +2773,18 @@ class GSFontMaster(GSBase):
         return horizontalStems
 
     @horizontalStems.setter
-    def horizontalStems(self, value):
+    def horizontalStems(self, value: List[float]) -> None:
         assert isinstance(value, list)
+        assert not value or isinstance(value[0], (float, int))
         if self.font:
+            assert isinstance(value[0], float)
             self._import_stem_list(value, True)
         else:
             self._horizontalStems = value
 
     @property
-    def verticalStems(self):
-        verticalStems = []
+    def verticalStems(self) -> List[GSMetricValue]:
+        verticalStems: List[GSMetricValue] = []
         for index, font_stem in enumerate(self.font.stems):
             if font_stem.horizontal:
                 continue
@@ -2811,8 +2792,9 @@ class GSFontMaster(GSBase):
         return verticalStems
 
     @verticalStems.setter
-    def verticalStems(self, value):
+    def verticalStems(self, value: List[float]) -> None:
         assert isinstance(value, list)
+        assert not value or isinstance(value[0], (float, int))
         if self.font:
             self._import_stem_list(value, False)
         else:
@@ -2824,46 +2806,44 @@ class GSFontMaster(GSBase):
     )
 
     @property
-    def ascender(self):
+    def ascender(self) -> Optional[float]:
         return self._get_metric_position(GSMetricsKeyAscender)
 
     @ascender.setter
-    def ascender(self, value):
+    def ascender(self, value: float) -> None:
         self._set_metric(GSMetricsKeyAscender, value)
 
     @property
-    def xHeight(self):
+    def xHeight(self) -> Optional[float]:
         return self._get_metric_position(GSMetricsKeyxHeight)
 
     @xHeight.setter
-    def xHeight(self, value):
+    def xHeight(self, value: float) -> None:
         self._set_metric(GSMetricsKeyxHeight, value)
 
     @property
-    def capHeight(self):
+    def capHeight(self) -> Optional[float]:
         return self._get_metric_position(GSMetricsKeyCapHeight)
 
     @capHeight.setter
-    def capHeight(self, value):
+    def capHeight(self, value: float) -> None:
         self._set_metric(GSMetricsKeyCapHeight, value)
 
     @property
-    def descender(self):
+    def descender(self) -> Optional[float]:
         return self._get_metric_position(GSMetricsKeyDescender)
 
     @descender.setter
-    def descender(self, value):
+    def descender(self, value: float) -> None:
         self._set_metric(GSMetricsKeyDescender, value)
 
     @property
-    def italicAngle(self):
+    def italicAngle(self) -> float:
         value = self._get_metric_position(GSMetricsKeyItalicAngle)
-        if value:
-            return value
-        return 0
+        return value if value is not None else 0
 
     @italicAngle.setter
-    def italicAngle(self, value):
+    def italicAngle(self, value: float) -> None:
         self._set_metric(GSMetricsKeyItalicAngle, value)
 
     internalAxesValues = property(
@@ -2876,97 +2856,84 @@ class GSFontMaster(GSBase):
         lambda self, value: ExternalAxesProxy(self).setter(value),
     )
 
+    # TODO: (gs) the following methods should be removed
     @property
-    def weightValue(self):
+    def weightValue(self) -> Optional[float]:
         return self.internalAxesValues[0] if len(self.font.axes) > 0 else None
 
     @weightValue.setter
-    def weightValue(self, value):
+    def weightValue(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[0]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
-            return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][0] = value
+        else:
+            self.readBuffer.setdefault("axesValues", {})[0] = value
 
     @property
-    def widthValue(self):
+    def widthValue(self) -> Optional[float]:
         return self.internalAxesValues[1] if len(self.font.axes) > 1 else None
 
     @widthValue.setter
-    def widthValue(self, value):
+    def widthValue(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[1]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
-            return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][1] = value
+        else:
+            self.readBuffer.setdefault("axesValues", {})[1] = value
 
     @property
-    def customValue(self):
+    def customValue(self) -> Optional[float]:
         return self.internalAxesValues.get(2)
 
     @customValue.setter
-    def customValue(self, value):
+    def customValue(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[2]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][2] = value
+        self.readBuffer.setdefault("axesValues", {})[2] = value
 
     @property
-    def customValue1(self):
+    def customValue1(self) -> Optional[float]:
         return self.internalAxesValues.get(3)
 
     @customValue1.setter
-    def customValue1(self, value):
+    def customValue1(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[3]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][3] = value
+        self.readBuffer.setdefault("axesValues", {})[3] = value
 
     @property
-    def customValue2(self):
+    def customValue2(self) -> Optional[float]:
         return self.internalAxesValues.get(4)
 
     @customValue2.setter
-    def customValue2(self, value):
+    def customValue2(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[4]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][4] = value
+        self.readBuffer.setdefault("axesValues", {})[4] = value
 
     @property
-    def customValue3(self):
+    def customValue3(self) -> Optional[float]:
         return self.internalAxesValues.get(5)
 
     @customValue3.setter
-    def customValue3(self, value):
+    def customValue3(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[5]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][5] = value
+        self.readBuffer.setdefault("axesValues", {})[5] = value
 
 
 GSFontMaster._add_parsers(
@@ -2995,13 +2962,20 @@ class GSNode(GSBase):
         re.DOTALL,
     )
 
-    __slots__ = "_parent", "_userData", "_position", "smooth", "type"
+    __slots__ = ("_parent", "_userData", "_position", "smooth", "type", )
+
+    _parent: Optional["GSPath"]
 
     def __init__(
-        self, position=(0, 0), type=LINE, smooth=False, name=None, nodetype=None
-    ):
+        self,
+        position: Point = Point(0, 0),
+        type: str = LINE,
+        smooth: bool = False,
+        name: Optional[str] = None,
+        nodetype: Optional[str] = None,
+    ) -> None:
         self._position = Point(position[0], position[1])
-        self._userData = None
+        self._userData: Optional[Dict] = None
         self.smooth = smooth
         self.type = type
         if nodetype is not None:  # for backward compatibility
@@ -3011,10 +2985,10 @@ class GSNode(GSBase):
         if name is not None:
             self.name = name
 
-    def copy(self):
+    def copy(self) -> "GSNode":
         """Clones the node (does not clone attributes)"""
         node = GSNode(
-            position=(self._position.x, self._position.y),
+            position=self.position,
             type=self.type,
             smooth=self.smooth,
         )
@@ -3022,7 +2996,7 @@ class GSNode(GSBase):
             node._userData = copy.deepcopy(self._userData)
         return node
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         content = self.type
         if self.smooth:
             content += " smooth"
@@ -3030,7 +3004,7 @@ class GSNode(GSBase):
             self.__class__.__name__, hex(id(self)), self.position.x, self.position.y, content
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         content = self.type
         if self.smooth:
             content += " smooth"
@@ -3044,25 +3018,39 @@ class GSNode(GSBase):
     )
 
     @property
-    def position(self):
+    def position(self) -> Point:
         return self._position
 
     @position.setter
-    def position(self, value):
+    def position(self, value: Union[Tuple[float, float], Point]) -> None:
         if not isinstance(value, Point):
             value = Point(value[0], value[1])
         self._position = value
 
     @property
-    def parent(self):
+    def parent(self) -> Optional["GSPath"]:
         return self._parent
 
-    def plistValue(self, formatVersion=2):
-        string = ""
+    _char_to_node_type = {
+        "c": CURVE,
+        "o": OFFCURVE,
+        "l": LINE,
+        "q": QCURVE
+    }
+    _node_type_to_char = {
+        CURVE: "c",
+        OFFCURVE: "o",
+        LINE: "l",
+        QCURVE: "q"
+    }
+
+    def plistValue(self, formatVersion: int = 2) -> str:
+        string: Optional[StringIO] = None
         if self._userData is not None and len(self._userData) > 0:
             string = StringIO()
             writer = Writer(string, formatVersion=formatVersion)
             writer.writeDict(self._userData)
+
         if formatVersion == 2:
             content = self.type.upper()
             if self.smooth:
@@ -3076,15 +3064,7 @@ class GSNode(GSBase):
                 content,
             )
         else:
-            content = ""
-            if self.type == CURVE:
-                content = "c"
-            elif self.type == QCURVE:
-                content = "q"
-            elif self.type == OFFCURVE:
-                content = "o"
-            elif self.type == LINE:
-                content = "l"
+            content = self._node_type_to_char.get(self.type, "x")
             if self.smooth:
                 content += "s"
             if string:
@@ -3096,7 +3076,7 @@ class GSNode(GSBase):
             )
 
     @classmethod
-    def read(cls, line):
+    def read(cls, line: str) -> "GSNode":
         """Parse a Glyphs node string into a GSNode.
 
         The format of a Glyphs node string (`line`) is:
@@ -3111,9 +3091,12 @@ class GSNode(GSBase):
         WARNING: This method is HOT. It is called for every single node and can
         account for a significant portion of the file parsing time.
         """
-        m = cls._PLIST_VALUE_RE.match(line).groups()
+        match = cls._PLIST_VALUE_RE.match(line)
+        if not match:
+            return GSNode()
+        m = match.groups()
         node = cls(
-            position=(parse_float_or_int(m[0]), parse_float_or_int(m[1])),
+            position=(Point(parse_float_or_int(m[0]), parse_float_or_int(m[1]))),
             type=m[2].lower(),
             smooth=bool(m[3]),
         )
@@ -3125,100 +3108,92 @@ class GSNode(GSBase):
         return node
 
     @classmethod
-    def read_v3(cls, lst):
-        position = (lst[0], lst[1])
-        smooth = lst[2].endswith("s")
-        if lst[2][0] == "c":
-            node_type = CURVE
-        elif lst[2][0] == "o":
-            node_type = OFFCURVE
-        elif lst[2][0] == "l":
-            node_type = LINE
-        elif lst[2][0] == "q":
-            node_type = QCURVE
-        else:
-            node_type = None
+    def read_v3(cls, lst: List[Union[float, str, Dict]]) -> "GSNode":
+        position = Point(lst[0], lst[1])
+        string: str = cast(str, lst[2])
+        smooth = string.endswith("s")
+        node_type = cls._char_to_node_type.get(string[0], LINE)
+
         node = cls(position=position, type=node_type, smooth=smooth)
         if len(lst) > 3:
-            node._userData = lst[3]
+            node._userData = cast(dict, lst[3])
         return node
 
     @property
-    def name(self):
-        if "name" in self.userData:
-            return self.userData["name"]
-        return None
+    def name(self) -> Optional[str]:
+        return self.userData.get("name", None)
 
     @name.setter
-    def name(self, value):
+    def name(self, value: Optional[str]) -> None:
         if value is None:
+            # self.userData.pop("name", None)
             if "name" in self.userData:
                 del self.userData["name"]
         else:
             self.userData["name"] = value
 
     @property
-    def index(self):
+    def index(self) -> int:
         assert self.parent
         return self.parent.nodes.index(self)
 
     @property
-    def nextNode(self):
+    def nextNode(self) -> Optional["GSNode"]:
         assert self.parent
         index = self.index
         if index == (len(self.parent.nodes) - 1):
             return self.parent.nodes[0]
         elif index < len(self.parent.nodes):
             return self.parent.nodes[index + 1]
+        return None
 
     @property
-    def prevNode(self):
+    def prevNode(self) -> Optional["GSNode"]:
         assert self.parent
         index = self.index
         if index == 0:
             return self.parent.nodes[-1]
         elif index < len(self.parent.nodes):
             return self.parent.nodes[index - 1]
+        return None
 
-    def makeNodeFirst(self):
+    def makeNodeFirst(self) -> None:
         assert self.parent
-        if self.type == "offcurve":
+        if self.type == OFFCURVE:
             raise ValueError("Off-curve points cannot become start points.")
         nodes = self.parent.nodes
         index = self.index
         newNodes = nodes[index:len(nodes)] + nodes[0:index]
         self.parent.nodes = newNodes
 
-    def toggleConnection(self):
+    def toggleConnection(self) -> None:
         self.smooth = not self.smooth
 
     # TODO
     @property
-    def connection(self):
+    def connection(self) -> None:
         raise NotImplementedError
 
     # TODO
     @property
-    def selected(self):
+    def selected(self) -> None:
         raise OnlyInGlyphsAppError
 
     @staticmethod
-    def _encode_dict_as_string(value):
+    def _encode_dict_as_string(value: str) -> str:
         """Takes the PLIST string of a dict, and returns the same string
         encoded such that it can be included in the string representation
         of a GSNode."""
-        # Strip the first and last newlines
         if value.startswith("{\n"):
             value = "{" + value[2:]
         if value.endswith("\n}"):
             value = value[:-2] + "}"
-        # escape double quotes and newlines
         return value.replace('"', '\\"').replace("\\n", "\\\\n").replace("\n", "\\n")
 
     _ESCAPED_CHAR_RE = re.compile(r'\\(\\*)(?:(n)|("))')
 
     @staticmethod
-    def _unescape_char(m):
+    def _unescape_char(m: re.Match) -> str:
         backslashes = m.group(1) or ""
         if m.group(2):
             return "\n" if not backslashes else backslashes + "n"
@@ -3226,28 +3201,49 @@ class GSNode(GSBase):
             return backslashes + '"'
 
     @classmethod
-    def _decode_dict_as_string(cls, value):
+    def _decode_dict_as_string(cls, value: str) -> str:
         """Reverse function of _encode_string_as_dict"""
         # strip one level of backslashes preceding quotes and newlines
         return cls._ESCAPED_CHAR_RE.sub(cls._unescape_char, value)
 
-    def _indices(self):
+    def _indices(self) -> Optional[IndexPath]:
         """Find the path_index and node_index that identify the given node."""
         path = self.parent
+        if not path:
+            return None
         layer = path.parent
-        for path_index in range(len(layer.paths)):
-            if path == layer.paths[path_index]:
-                for node_index in range(len(path.nodes)):
-                    if self == path.nodes[node_index]:
-                        return Point(path_index, node_index)
+        if not layer:
+            return None
+        for path_index, p in enumerate(layer.paths):
+            if path == p:
+                for node_index, n in enumerate(p.nodes):
+                    if self == n:
+                        return IndexPath(path_index, node_index)
         return None
 
 
-class GSPath(GSBase):
-    _defaultsForName = {"closed": True}
-    _parent = None
+class GSShape(GSBase):
+    _parent: Optional[GSLayer] = None
 
-    def _serialize_to_plist(self, writer):
+    @property
+    def parent(self) -> GSLayer:
+        return cast(GSLayer, self._parent)
+
+    @parent.setter
+    def parent(self, value: Optional[GSLayer]) -> None:
+        self._parent = value
+
+
+class GSPath(GSShape):
+    _defaultsForName: Dict[str, bool] = {"closed": True}
+    __slots__ = ("closed", "_nodes", "_attributes", "_parent")
+
+    def __init__(self) -> None:
+        self.closed: bool = self._defaultsForName["closed"]
+        self._nodes: List["GSNode"] = []
+        self._attributes: Dict = {}
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion >= 3 and self.attributes:
             writer.allowTuple = True
             writer.writeObjectKeyValue(self, "attributes", keyName="attr")
@@ -3255,9 +3251,9 @@ class GSPath(GSBase):
         writer.writeObjectKeyValue(self, "closed")
         writer.writeObjectKeyValue(self, "nodes", "if_true")
 
-    def _parse_nodes_dict(self, parser, d):
+    def _parse_nodes_dict(self, parser: Parser, d: List[Union[str, List]]) -> None:
         if parser.formatVersion >= 3:
-            read_node = GSNode.read_v3
+            read_node: Any = GSNode.read_v3
         else:
             read_node = GSNode.read
         for x in d:
@@ -3265,30 +3261,25 @@ class GSPath(GSBase):
             node._parent = self
             self._nodes.append(node)
 
-    def __init__(self):
-        self.closed = self._defaultsForName["closed"]
-        self._nodes = []
-        self._attributes = {}
-
-    def copy(self):
+    def copy(self) -> "GSPath":
         """Clones the path (Does not clone attributes)"""
         cloned = GSPath()
         cloned.closed = self.closed
         cloned.nodes = [node.copy() for node in self.nodes]
         return cloned
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {hex(id(self))}> nodes:{len(self.nodes)}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<{self.__class__.__name__} nodes:{len(self.nodes)}>"
 
     @property
-    def parent(self):
-        return self._parent
+    def parent(self) -> "GSLayer":
+        return cast(GSLayer, self._parent)
 
     @parent.setter
-    def parent(self, value):
+    def parent(self, value: Optional["GSLayer"]) -> None:
         self._parent = value
 
     nodes = property(
@@ -3297,15 +3288,14 @@ class GSPath(GSBase):
     )
 
     @property
-    def segments(self):
-        self._segments = []
-        self._segmentLength = 0
+    def segments(self) -> List["GSPathSegment"]:
+        self._segments: List["GSPathSegment"] = []
+        self._segmentLength: int = 0
 
         nodes = list(self.nodes)
-        # Cycle node list until curve or line at start
         cycled = False
         for i, n in enumerate(nodes):
-            if n.type == "curve" or n.type == "line":
+            if n.type in {CURVE, LINE}:
                 nodes = nodes[i:] + nodes[:i]
                 cycled = True
                 break
@@ -3313,17 +3303,12 @@ class GSPath(GSBase):
             return []
 
         for nodeIndex in range(len(nodes)):
-            if nodes[nodeIndex].type == CURVE:
-                count = 3
-            elif nodes[nodeIndex].type == QCURVE:
-                count = 2
-            elif nodes[nodeIndex].type == LINE:
-                count = 1
-            else:
+            count = 3 if nodes[nodeIndex].type == CURVE else 2 if nodes[nodeIndex].type == QCURVE else 1 if nodes[nodeIndex].type == LINE else 0
+            if count == 0:
                 continue
             newSegment = GSPathSegment()
-            newSegment.parent = self
-            newSegment.index = len(self._segments)
+            newSegment.parent = self  # type: ignore # TODO: (gs) Check
+            newSegment.index = len(self._segments)  # type: ignore # TODO: (gs) Check
             for ix in range(-count, 1):
                 newSegment.appendNode(nodes[(nodeIndex + ix) % len(nodes)])
             self._segments.append(newSegment)
@@ -3335,74 +3320,59 @@ class GSPath(GSBase):
         return self._segments
 
     @segments.setter
-    def segments(self, value):
+    def segments(self, value: List["GSPathSegment"]) -> None:
         if isinstance(value, (list, tuple)):
             self.setSegments(value)
         else:
             raise TypeError
 
-    def setSegments(self, segments):
+    def setSegments(self, segments: List["GSPathSegment"]) -> None:
         self.nodes = []
         for segment in segments:
-            if len(segment.nodes) == 2 or len(segment.nodes) == 4:
+            if len(segment.nodes) in {2, 4}:
                 self.nodes.extend(segment.nodes[1:])
             else:
                 raise ValueError
 
     @property
-    def bounds(self):
+    def bounds(self) -> Rect:
         left, bottom, right, top = None, None, None, None
         for segment in self.segments:
             newLeft, newBottom, newRight, newTop = segment.bbox()
-            if left is None:
-                left = newLeft
-            else:
-                left = min(left, newLeft)
-            if bottom is None:
-                bottom = newBottom
-            else:
-                bottom = min(bottom, newBottom)
-            if right is None:
-                right = newRight
-            else:
-                right = max(right, newRight)
-            if top is None:
-                top = newTop
-            else:
-                top = max(top, newTop)
-        return Rect(Point(left, bottom), Point(right - left, top - bottom))
+            left = min(left, newLeft) if left is not None else newLeft
+            bottom = min(bottom, newBottom) if bottom is not None else newBottom
+            right = max(right, newRight) if right is not None else newRight
+            top = max(top, newTop) if top is not None else newTop
+        if left and bottom and right and left:
+            return Rect(Point(left, bottom), Size(right - left, top - bottom))
+        return Rect(Point(None, 0), Size(0, 0))
 
     @property
-    def direction(self):
-        direction = 0
-        for i in range(len(self.nodes)):
-            thisNode = self.nodes[i]
-            nextNode = thisNode.nextNode
-            direction += (nextNode.position.x - thisNode.position.x) * (
-                nextNode.position.y + thisNode.position.y
-            )
-        if direction < 0:
-            return -1
-        else:
-            return 1
+    def direction(self) -> int:
+        direction = sum(
+            (self.nodes[i + 1].position.x - self.nodes[i].position.x)
+            * (self.nodes[i + 1].position.y + self.nodes[i].position.y)
+            for i in range(len(self.nodes) - 1)
+        )
+        return -1 if direction < 0 else 1
 
     @property
-    def attributes(self):
+    def attributes(self) -> Dict:
         return self._attributes
 
     @attributes.setter
-    def attributes(self, attributes):
+    def attributes(self, attributes: Dict) -> None:
         self._attributes = attributes
 
     @property
-    def selected(self):
+    def selected(self) -> None:
         raise OnlyInGlyphsAppError
 
     @property
-    def bezierPath(self):
+    def bezierPath(self) -> None:
         raise OnlyInGlyphsAppError
 
-    def reverse(self):
+    def reverse(self) -> None:
         segments = list(reversed(self.segments))
         for s, segment in enumerate(segments):
             segment.nodes = list(reversed(segment.nodes))
@@ -3419,11 +3389,11 @@ class GSPath(GSBase):
         self.setSegments(segments)
 
     # TODO
-    def addNodesAtExtremes(self):
+    def addNodesAtExtremes(self) -> None:
         raise NotImplementedError
 
     # TODO
-    def applyTransform(self, transformationMatrix):
+    def applyTransform(self, transformationMatrix: Union[Transform, Tuple[float, float, float, float, float, float]]) -> None:
         assert len(transformationMatrix) == 6
         transform = Affine(*transformationMatrix)
         if transform == Identity:
@@ -3450,7 +3420,7 @@ class GSPath(GSBase):
 
         if not self.closed:
             node = nodes.pop(0)
-            assert node.type == "line", "Open path starts with off-curve points"
+            assert node.type == LINE, "Open path starts with off-curve points"
             node_data = dict(node.userData)
             node_name = node_data.pop("name", None)
             pointPen.addPoint(
@@ -3484,9 +3454,10 @@ GSPath._add_parsers(
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
-_UFO_NODE_TYPES = {"line", "curve", "qcurve"}
+_UFO_NODE_TYPES = {LINE, CURVE, QCURVE}
 
 
+# TODO: the GSPathSegments API and behaviour is quite differnt than in Glyphs. That should be adjusted (e.g. do no store GSNodes)
 class GSPathSegment(list):
     def appendNode(self, node):
         if not hasattr(
@@ -3496,6 +3467,7 @@ class GSPathSegment(list):
         self.nodes.append(node)
         self.append(Point(node.position.x, node.position.y))
 
+    # TODO: (gs) this is not available in Glyphs. And I do’t think it is a good idea to have this. path._segments are currently cached. That creates a potential of out of sync data
     @property
     def nextSegment(self):
         assert self.parent
@@ -3534,78 +3506,66 @@ class GSPathSegment(list):
             raise ValueError
 
 
-class GSTransformable(GSBase):
-    _position = Point(0, 0)
-    _scale = Point(1, 1)
-    _rotation = 0
-    _slant = Point(0, 0)
-    _parent = None
+class GSTransformable(GSShape):
+    _position: Point = Point(0, 0)
+    _scale: Point = Point(1, 1)
+    _rotation: float = 0
+    _slant: Point = Point(0, 0)
 
     @property
-    def parent(self):
-        return self._parent
-
-    @parent.setter
-    def parent(self, value):
-        self._parent = value
-
-    # .position
-    @property
-    def position(self):
+    def position(self) -> Point:
         return self._position
 
     @position.setter
-    def position(self, value):
+    def position(self, value: Union[Point, Tuple[float, float]]) -> None:
         if isinstance(value, tuple):
             value = Point(value[0], value[1])
         assert isinstance(value, Point)
         self._position = value
 
-    # .scale
     @property
-    def scale(self):
+    def scale(self) -> Point:
         return self._scale
 
     @scale.setter
-    def scale(self, value):
+    def scale(self, value: Union[float, Point, Tuple[float, float]]) -> None:
         if isinstance(value, (int, float)):
             self._scale = Point(value, value)
         elif isinstance(value, (tuple, list)) and len(value) == 2:
             self._scale = Point(value[0], value[1])
+        elif isinstance(value, Point):
+            self._scale = value
         else:
-            raise ValueError
+            raise ValueError("Scale must be a number or a tuple of two numbers")
 
-    # .rotation
     @property
-    def rotation(self):
+    def rotation(self) -> float:
         return self._rotation
 
     @rotation.setter
-    def rotation(self, value):
+    def rotation(self, value: Union[int, float]) -> None:
         if isinstance(value, (int, float)):
             self._rotation = value
         else:
-            raise ValueError
+            raise ValueError("Rotation must be a number")
 
-    # .slant
     @property
-    def slant(self):
+    def slant(self) -> Point:
         return self._slant
 
     @slant.setter
-    def slant(self, value):
+    def slant(self, value: Union[Point, float, Tuple[float, float]]) -> None:
         if isinstance(value, Point):
             self._slant = value
         elif isinstance(value, (int, float)):
-            # when setting a single value, that most likly means a single x slant
             self._slant = Point(value, 0)
         elif isinstance(value, (tuple, list)) and len(value) == 2:
             self._slant = Point(value[0], value[1])
         else:
-            raise ValueError
+            raise ValueError("Slant must be a number, Point, or tuple of two numbers")
 
     @property
-    def transform(self):
+    def transform(self) -> Transform:
         affine = (
             Affine()
             .translate(self.position.x, self.position.y)
@@ -3616,7 +3576,7 @@ class GSTransformable(GSBase):
         return Transform(affine.xx, affine.xy, affine.yx, affine.yy, affine.dx, affine.dy)
 
     @transform.setter
-    def transform(self, value):
+    def transform(self, value: Transform) -> None:
         sX, sY, R = transformStructToScaleAndRotation(value)
         self._scale = Point(sX, sY)
         self._rotation = R
@@ -3625,7 +3585,7 @@ class GSTransformable(GSBase):
 
 
 class GSComponent(GSTransformable):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
@@ -3653,20 +3613,25 @@ class GSComponent(GSTransformable):
         if len(self.userData) > 0:
             writer.writeKeyValue("userData", self.userData)
 
-    _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
+    _defaultsForName: Dict[str, Transform] = {"transform": Transform(1, 0, 0, 1, 0, 0)}
 
-    # TODO: glyph arg is required
-    def __init__(self, glyph="", offset=None, scale=None, transform=None):
-        self.alignment = 0
-        self.anchor = ""
-        self.locked = False
+    def __init__(
+        self,
+        glyph: Union[str, "GSGlyph"] = "",
+        offset: Optional[Point] = None,
+        scale: Optional[Point] = None,
+        transform: Optional[Transform] = None,
+    ) -> None:
+        self.alignment: int = 0
+        self.anchor: str = ""
+        self.locked: bool = False
 
         if isinstance(glyph, str):
-            self.name = glyph
+            self._componentName: str = glyph
         elif isinstance(glyph, GSGlyph):
-            self.name = glyph.name
+            self._componentName = glyph.name
 
-        self.smartComponentValues = {}
+        self.smartComponentValues: Dict = {}
 
         if transform is not None:
             self.transform = transform
@@ -3675,53 +3640,59 @@ class GSComponent(GSTransformable):
         if scale is not None:
             self.scale = scale
 
-        self._attributes = {}
+        self._attributes: Dict = {}
+        self._userData: Optional[Dict] = None
 
-        self._userData = None
+    def copy(self) -> "GSComponent":
+        return GSComponent(self._componentName, transform=copy.deepcopy(self.transform))
 
-    def copy(self):
-        return GSComponent(self.name, transform=copy.deepcopy(self.transform))
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<GSComponent {}> "{}" x={:.1f} y={:.1f}'.format(
-            hex(id(self)), self.name, self.transform[4], self.transform[5]
+            hex(id(self)), self._componentName, self.transform[4], self.transform[5]
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
-            self.name, self.transform[4], self.transform[5]
+            self._componentName, self.transform[4], self.transform[5]
         )
 
     @property
-    def componentName(self):
-        return self.name
+    def componentName(self) -> str:
+        return self._componentName
 
     @componentName.setter
-    def componentName(self, value):
-        self.name = value
+    def componentName(self, value: str) -> None:
+        self._componentName = value
 
     @property
-    def component(self):
-        return self.parent.parent.parent.glyphs[self.name]
+    def component(self) -> Optional["GSGlyph"]:
+        return self.parent.parent.parent.glyphs[self._componentName]
 
     @property
-    def attributes(self):
+    def attributes(self) -> Dict:
         return self._attributes
 
     @attributes.setter
-    def attributes(self, attributes):
+    def attributes(self, attributes: Dict) -> None:
         self._attributes = attributes
 
     @property
-    def layer(self):
-        return self.parent.parent.parent.glyphs[self.name].layers[self.parent.layerId]
+    def componentLayer(self) -> Optional["GSLayer"]:
+        # TODO: (gs) this needs to compute/interpolate for brace layers and smart components
+        glyph = self.component
+        if not glyph:
+            return None
+
+        return glyph.layers[self.parent.layerId]
 
     @property
-    def bounds(self):
-        bounds = self.layer.bounds
+    def bounds(self) -> Optional[Rect]:
+        componentLayer = self.componentLayer
+        bounds = componentLayer.bounds if componentLayer else None
         if bounds is not None:
-            # TODO: (gs) This onyl produces correct results if fliped or roateted 180°
+            # TODO: (gs) This only produces correct results if flipped or rotated 180°
             return self.transform.transformRect(bounds)
+        return None
 
     # smartComponentValues = property(
     #     lambda self: self.piece,
@@ -3729,11 +3700,11 @@ class GSComponent(GSTransformable):
 
     def draw(self, pen: AbstractPen) -> None:
         """Draws component with given pen."""
-        pen.addComponent(self.name, self.transform)
+        pen.addComponent(self._componentName, self.transform)
 
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
         """Draws points of component with given point pen."""
-        pointPen.addComponent(self.name, self.transform)
+        pointPen.addComponent(self._componentName, self.transform)
 
     userData = property(
         lambda self: UserDataProxy(self),
@@ -3757,7 +3728,7 @@ GSComponent._add_parsers(
 
 
 class GSSmartComponentAxis(GSBase):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "bottomName", "if_true")
             writer.writeObjectKeyValue(self, "bottomValue")
@@ -3770,53 +3741,56 @@ class GSSmartComponentAxis(GSBase):
             writer.writeObjectKeyValue(self, "topName")
         writer.writeObjectKeyValue(self, "topValue", True)
 
-    _defaultsForName = {"bottomValue": 0, "topValue": 0}
+    _defaultsForName: Dict[str, float] = {"bottomValue": 0.0, "topValue": 0.0}
 
-    def __init__(self):
-        self.bottomName = ""
-        self.bottomValue = self._defaultsForName["bottomValue"]
-        self.name = ""
-        self.topName = ""
-        self.topValue = self._defaultsForName["topValue"]
+    def __init__(self) -> None:
+        self.bottomName: str = ""
+        self.bottomValue: float = self._defaultsForName["bottomValue"]
+        self.name: str = ""
+        self.topName: str = ""
+        self.topValue: float = self._defaultsForName["topValue"]
 
 
 class GSAnchor(GSBase):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "name", "if_true")
-        posKey = "position"
-        default = None
-        if writer.formatVersion > 2:
-            posKey = "pos"
-            default = Point(0, 0)
+        posKey = "pos" if writer.formatVersion > 2 else "position"
+        default = Point(0, 0) if writer.formatVersion > 2 else None
         writer.writeObjectKeyValue(self, "position", keyName=posKey, default=default)
         if len(self.userData) > 0:
             writer.writeKeyValue("userData", self.userData)
 
-    _parent = None
-    _defaultsForName = {"position": Point(0, 0)}
+    _parent: Optional[GSLayer] = None
+    _defaultsForName: Dict[str, Point] = {"position": Point(0, 0)}
 
-    def __init__(self, name=None, position=None, userData=None):
-        self.name = "" if name is None else name
-        if position is None:
-            self.position = copy.deepcopy(self._defaultsForName["position"])
-        else:
-            self.position = position
-        self._userData = None
+    def __init__(
+        self,
+        name: Optional[str] = None,
+        position: Optional[Point] = None,
+        userData: Optional[Dict] = None,
+    ) -> None:
+        self.name: str = "" if name is None else name
+        self.position: Point = (
+            copy.deepcopy(self._defaultsForName["position"])
+            if position is None
+            else Point(position[0], position[1]) if isinstance(position, tuple) else position
+        )
+        self._userData: Optional[Dict] = None
         if userData is not None:
             self.userData = userData
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<{} {}> "{}" x={:.1f} y={:.1f}'.format(
             self.__class__.__name__, hex(id(self)), self.name, self.position[0], self.position[1]
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<{} "{}" x={:.1f} y={:.1f}>'.format(
             self.__class__.__name__, self.name, self.position[0], self.position[1]
         )
 
     @property
-    def parent(self):
+    def parent(self) -> Optional[GSLayer]:
         return self._parent
 
     userData = property(
@@ -3872,7 +3846,27 @@ HINT_TYPE_TO_STRING_V2 = {
 
 
 class GSHint(GSBase):
-    def _serialize_to_plist(self, writer):
+
+    _parent: Optional[GSLayer] = None
+
+    def __init__(self) -> None:
+        self.horizontal: bool = False
+        self.name: str = ""
+        self.options: int = 0
+        self.origin = self._defaultsForName["origin"]
+        self.other1 = self._defaultsForName["other1"]
+        self.other2 = self._defaultsForName["other2"]
+        self.place = self._defaultsForName["place"]
+        self.scale = self._defaultsForName["scale"]
+        self.settings: Dict = {}
+        self.stem: int = self._defaultsForName["stem"]
+        self.origin = None
+        self.width = None
+        self._type: Optional[str] = None
+        self._target: Optional[Any] = None
+        self._targetNode: Optional[Any] = None
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion >= 3:
             # NOTE: The fields should come in alphabetical order in Glyphs 3 and later
             for field in ["horizontal", "name", "options"]:
@@ -3902,8 +3896,7 @@ class GSHint(GSBase):
             writer.writeObjectKeyValue(self, "options", "if_true")
             writer.writeObjectKeyValue(self, "settings", "if_true")
 
-    _defaultsForName = {
-        # TODO: (jany) check defaults in glyphs
+    _defaultsForName: Dict[str, Any] = {
         "origin": None,
         "other1": None,
         "other2": None,
@@ -3912,167 +3905,151 @@ class GSHint(GSBase):
         "stem": -2,
     }
 
-    def __init__(self):
-        self.horizontal = False
-        self.name = ""
-        self.options = 0
-        self.origin = self._defaultsForName["origin"]
-        self.other1 = self._defaultsForName["other1"]
-        self.other2 = self._defaultsForName["other2"]
-        self.place = self._defaultsForName["place"]
-        self.scale = self._defaultsForName["scale"]
-        self.settings = {}
-        self.stem = self._defaultsForName["stem"]
-        self.origin = None
-        self.width = None
-        self._type = None
-        self._target = None
-        self._targetNode = None
-
-    def _origin_pos(self):
+    def _origin_pos(self) -> Optional[float]:
         if self.originNode:
-            if self.horizontal:
-                return self.originNode.position.y
-            else:
-                return self.originNode.position.x
+            return self.originNode.position.y if self.horizontal else self.originNode.position.x
         return self.origin
 
-    def _width_pos(self):
+    def _width_pos(self) -> Optional[float]:
         if self.targetNode:
-            if self.horizontal:
-                return self.targetNode.position.y
-            else:
-                return self.targetNode.position.x
+            return self.targetNode.position.y if self.horizontal else self.targetNode.position.x
         return self.width
 
-    def _str(self):
-        if self.horizontal:
-            direction = "horizontal"
-        else:
-            direction = "vertical"
-        if self.type == PS_BOTTOM_GHOST or self.type == PS_TOP_GHOST:
+    def _str(self) -> str:
+        direction = "horizontal" if self.horizontal else "vertical"
+        if self.type in {PS_BOTTOM_GHOST, PS_TOP_GHOST}:
             return "{} origin=({})".format(self.type, self._origin_pos())
         elif self.type == PS_STEM:
-            return "{} Stem origin=({}) target=({})".format(
-                direction, self.origin, self.width
-            )
-        elif self.type == CORNER or self.type == CAP:
+            return "{} Stem origin=({}) target=({})".format(direction, self.origin, self.width)
+        elif self.type in {CORNER, CAP}:
             return f"{self.type} {self.name}"
         else:
             return f"{self.type} {direction}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<GSHint {hex(id(self))}> {self._str()}"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<GSHint {self._str()}>"
 
     @property
-    def parent(self):
-        return self._parent
+    def parent(self) -> GSLayer:
+        return cast(GSLayer, self._parent)
+
+    @parent.setter
+    def parent(self, value: Optional[GSLayer]) -> None:
+        self._parent = value
 
     @property
-    def originNode(self):
+    def originNode(self) -> Optional["GSNode"]:
         if self._originNode is not None:
             return self._originNode
         if self._origin is not None:
             return self.parent._find_node_by_indices(self._origin)
+        return None
 
     @originNode.setter
-    def originNode(self, node):
+    def originNode(self, node: Optional["GSNode"]) -> None:
         self._originNode = node
         self._origin = None
 
     @property
-    def origin(self):
+    def origin(self) -> Optional[Any]:
         if self._origin is not None:
             return self._origin
         if self._originNode is not None:
             return self._originNode._indices()
+        return None
 
     @origin.setter
-    def origin(self, origin):
+    def origin(self, origin: Optional[Any]) -> None:
         self._origin = origin
         self._originNode = None
 
     @property
-    def targetNode(self):
+    def targetNode(self) -> Optional["GSNode"]:
         if self._targetNode is not None:
             return self._targetNode
         if self._target is not None:
             return self.parent._find_node_by_indices(self._target)
+        return None
 
     @targetNode.setter
-    def targetNode(self, node):
+    def targetNode(self, node: Optional["GSNode"]) -> None:
         self._targetNode = node
         self._target = None
 
     @property
-    def target(self):
+    def target(self) -> Optional[Any]:
         if self._target is not None:
             return self._target
         if self._targetNode is not None:
             return self._targetNode._indices()
+        return None
 
     @target.setter
-    def target(self, target):
+    def target(self, target: Optional[Any]) -> None:
         self._target = target
         self._targetNode = None
 
     @property
-    def otherNode1(self):
+    def otherNode1(self) -> Optional["GSNode"]:
         if self._otherNode1 is not None:
             return self._otherNode1
         if self._other1 is not None:
             return self.parent._find_node_by_indices(self._other1)
+        return None
 
     @otherNode1.setter
-    def otherNode1(self, node):
+    def otherNode1(self, node: Optional["GSNode"]) -> None:
         self._otherNode1 = node
         self._other1 = None
 
     @property
-    def other1(self):
+    def other1(self) -> Optional[Any]:
         if self._other1 is not None:
             return self._other1
         if self._otherNode1 is not None:
             return self._otherNode1._indices()
+        return None
 
     @other1.setter
-    def other1(self, other1):
+    def other1(self, other1: Optional[Any]) -> None:
         self._other1 = other1
         self._otherNode1 = None
 
     @property
-    def otherNode2(self):
+    def otherNode2(self) -> Optional["GSNode"]:
         if self._otherNode2 is not None:
             return self._otherNode2
         if self._other2 is not None:
             return self.parent._find_node_by_indices(self._other2)
+        return None
 
     @otherNode2.setter
-    def otherNode2(self, node):
+    def otherNode2(self, node: Optional["GSNode"]) -> None:
         self._otherNode2 = node
         self._other2 = None
 
     @property
-    def other2(self):
+    def other2(self) -> Optional[Any]:
         if self._other2 is not None:
             return self._other2
         if self._otherNode2 is not None:
             return self._otherNode2._indices()
+        return None
 
     @other2.setter
-    def other2(self, other2):
+    def other2(self, other2: Optional[Any]) -> None:
         self._other2 = other2
         self._otherNode2 = None
 
     @property
-    def type(self):
-        return self._type
+    def type(self) -> str:
+        return self._type or PS_STEM
 
     @type.setter
-    def type(self, hintType):
+    def type(self, hintType: str) -> None:
         assert isinstance(hintType, type(CORNER)), "hintType %s (%s) != %s" % (
             hintType,
             type(hintType),
@@ -4081,16 +4058,11 @@ class GSHint(GSBase):
         self._type = hintType
 
     @property
-    def isPathComponent(self):
-        return (
-            self._type == CORNER
-            or self._type == CAP
-            or self._type == BRUSH
-            or self._type == SEGMENT
-        )
+    def isPathComponent(self) -> bool:
+        return self._type in {CORNER, CAP, BRUSH, SEGMENT}
 
     @property
-    def isCorner(self):
+    def isCorner(self) -> bool:
         return self.isPathComponent
 
 
@@ -4122,8 +4094,18 @@ def extract_name_and_langId(s):
 
 
 class GSFeature(GSBase):
-    def _serialize_to_plist(self, writer):
-        # NOTE: The fields should come in alphabetical order.
+
+    _parent: Optional["GSFont"]
+
+    def __init__(self, name: str = "xxxx", code: str = "") -> None:
+        self.active: bool = True
+        self.automatic: bool = False
+        self.code = code
+        self.labels: List[Dict[str, str]] = []
+        self.name: str = name
+        self.notes: str = ""
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         if not self.active:
@@ -4138,31 +4120,22 @@ class GSFeature(GSBase):
             if self.labels:
                 feature_names = self.featureNamesString()
                 if feature_names:
-                    if notes:
-                        notes = feature_names + notes
-                    else:
-                        notes = feature_names
+                    notes = feature_names + notes if notes else feature_names
             if notes:
                 writer.writeKeyValue("notes", notes)
 
-    def post_read(self):  # GSFeature
+    def post_read(self) -> None:
         if self.notes and len(self.notes) > 10:
             remaining_note = self.loadLabelsFromNote(self.notes)
             if remaining_note is not False:
-                self.notes = remaining_note
+                self.notes = cast(str, remaining_note)
 
-    def __init__(self, name="xxxx", code=""):
-        self.active = True
-        self.automatic = False
-        self.code = code
-        self.labels = []
-        self.name = name
-        self.notes = ""
-
-    def getCode(self):
+    @property
+    def code(self) -> str:
         return self._code
 
-    def setCode(self, code):
+    @code.setter
+    def code(self, code: str) -> None:
         replacements = (
             ("\\012", "\n"),
             ("\\011", "\t"),
@@ -4175,35 +4148,33 @@ class GSFeature(GSBase):
             code = code.replace(escaped, unescaped)
         self._code = code
 
-    code = property(getCode, setCode)
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {hex(id(self))}> "{self.name}"'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.__class__.__name__} "{self.name}">'
 
     @property
-    def parent(self):
+    def parent(self) -> Optional[GSFont]:
         return self._parent
 
     @property
-    def disabled(self):
+    def disabled(self) -> None:
         raise Exception("Use .active")
 
     @disabled.setter
-    def disabled(self, _val):
+    def disabled(self, _val: Any) -> None:
         raise Exception("Use .active = ")
 
-    def featureNamesString(self):
-        if len(self.labels) == 0:
+    def featureNamesString(self) -> Optional[str]:
+        if not self.labels:
             return None
         feature_names = []
         from glyphsLib.builder.features import _to_name_langID
         for label in self.labels:
             langID = _to_name_langID(label["language"])
             name = label["value"]
-            if name == "":
+            if not name:
                 continue
             name = name.replace("\\", r"\005c").replace('"', r"\0022")
             if langID is None:
@@ -4215,19 +4186,16 @@ class GSFeature(GSBase):
             feature_names.append("};")
         return "\n".join(feature_names)
 
-    def loadLabelsFromNote(self, note):
+    def loadLabelsFromNote(self, note: str) -> str | bool:
         remaining_note = note
         if note.startswith("Name:"):
-            remaining_note = note
-            name = note
+            name = note[5:].strip()
             lineEnd = name.find("\n")
             if lineEnd > 0:
                 name = name[:lineEnd]
                 remaining_note = note[lineEnd:]
             else:
                 remaining_note = ""
-            name = name[5:]
-            name = name.strip()
             if name:
                 self.labels.append(dict(language="dflt", value=name))
                 return remaining_note
@@ -4237,18 +4205,10 @@ class GSFeature(GSBase):
             if lineEnd < 0:
                 return False
             remaining_note = note[lineEnd + 2 :]
-            note = note[14:lineEnd]
-            note = note.strip()
+            note = note[14:lineEnd].strip()
             if not note:
                 return False
-            r"""
-            featureNames {
-            name "Single Storey a"; # Windows (default)
-            name 3 1 0x0407 "Einstöckiges a"; # 3=Windows, 1=Unicode, 0407=German
-            name 1 "Single Storey a"; # 1=Mac
-            name 1 0 2 "Einst\9fckiges a"; # 1=Mac, 0=MacRoman, 2=German
-            };
-            """
+
             lines = note.split("\n")
             seenLanguage = set()
             for line in lines:
@@ -4259,30 +4219,17 @@ class GSFeature(GSBase):
                 name, langIDs = extract_name_and_langId(code)
 
                 if len(langIDs) == 0:
-                    platformID = 3
-                    platEncID = 1
-                    langID = 0x0409
-
+                    platformID, platEncID, langID = 3, 1, 0x0409
                 elif len(langIDs) == 1:
-                    platformID = 3
-                    platEncID = 1
-                    langID = langIDs[0]
+                    platformID, platEncID, langID = 3, 1, langIDs[0]
                 elif len(langIDs) == 3:
-                    platformID = int(langIDs[0])
-                    platEncID = int(langIDs[1])
-                    langID = langIDs[2]
-                    if langID.startswith("0x"):
-                        langID = int(langID, 16)
-                    else:
-                        langID = int(langID)
+                    platformID, platEncID, langID = int(langIDs[0]), int(langIDs[1]), int(langIDs[2], 16) if langIDs[2].startswith("0x") else int(langIDs[2])
 
                 language = "dflt"
                 if platformID == 3 and platEncID == 1:
                     from glyphsLib.builder.features import _to_glyphs_language
-
                     language = _to_glyphs_language(langID)
                 elif platformID == 1 and platEncID == 0 and langID == 0:
-                    # mostly to make the test work, who is using apple names any more
                     language = "ENG"
                 else:
                     logger.warning(
@@ -4307,7 +4254,7 @@ GSFeature._add_parsers(
 
 
 class GSClass(GSFeature):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
@@ -4322,11 +4269,9 @@ class GSFeaturePrefix(GSClass):
 
 
 class GSAnnotation(GSBase):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "angle", default=0)
-        posKey = "position"
-        if writer.formatVersion > 2:
-            posKey = "pos"
+        posKey = "pos" if writer.formatVersion > 2 else "position"
         writer.writeObjectKeyValue(
             self, "position", keyName=posKey, default=Point(0, 0)
         )
@@ -4334,25 +4279,30 @@ class GSAnnotation(GSBase):
         writer.writeObjectKeyValue(self, "type", "if_true")
         writer.writeObjectKeyValue(self, "width", default=100)
 
-    _defaultsForName = {
+    _defaultsForName: Dict[str, Optional[Union[int, float, Point, str]]] = {
         "angle": 0,
         "position": Point(0, 0),
         "text": None,
         "type": 0,
         "width": 100,
     }
-    _parent = None
 
-    def __init__(self):
-        self.angle = self._defaultsForName["angle"]
-        self.position = copy.deepcopy(self._defaultsForName["position"])
-        self.text = self._defaultsForName["text"]
-        self.type = self._defaultsForName["type"]
-        self.width = self._defaultsForName["width"]
+    _parent: Optional[GSLayer] = None
+
+    def __init__(self) -> None:
+        self.angle: int = cast(int, self._defaultsForName["angle"])
+        self.position: Point = cast(Point, copy.copy(self._defaultsForName["position"]))
+        self.text: Optional[str] = cast(str, self._defaultsForName["text"])
+        self.type: int = cast(int, self._defaultsForName["type"])
+        self.width: int = cast(int, self._defaultsForName["width"])
 
     @property
-    def parent(self):
-        return self._parent
+    def parent(self) -> GSLayer:
+        return cast(GSLayer, self._parent)
+
+    @parent.setter
+    def parent(self, value: Optional[GSLayer]) -> None:
+        self._parent = value
 
 
 GSAnnotation._add_parsers(
@@ -4372,95 +4322,95 @@ LOCALIZED_PARAMETERS = (
 # SIMPLE_PARAMETERS = ("trademark")
 
 
-class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
-    def __init__(self, key="", value=None):
-        self.key = key
-        self._value = value
-        self._localized_values = None
+class GSFontInfoValue(GSBase):
+    """Combines localizable/nonlocalizable properties"""
+    parent: Optional[GSBase]
 
-    def _parse_values_dict(self, parser, values):
+    def __init__(self, key: str = "", value: Optional[Any] = None) -> None:
+        self.key: str = key
+        self._value: Optional[Any] = value
+        self._localized_values: Optional[Dict[str, Any]] = None
+
+    def _parse_values_dict(self, parser: Parser, values: List[Dict[str, str]]) -> None:
         self._localized_values = {}
         for v in values:
             if "language" not in v or "value" not in v:
                 continue
             self._localized_values[v["language"]] = v["value"]
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "key", "if_true")
         if self._localized_values:
             writer.writeKeyValue(
                 "values",
-                [
-                    {"language": l, "value": v}
-                    for l, v in self._localized_values.items()
-                ],
+                [{"language": l, "value": v} for l, v in self._localized_values.items()],
             )
         else:
             writer.writeObjectKeyValue(self, "value")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {hex(id(self))}> "{self.key}"'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.__class__.__name__} "{self.key}">'
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.key
 
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         self.key = value
 
-    # this is only for properties that don’t have localizations.
     @property
-    def value(self):
+    def value(self) -> Optional[Any]:
         return self._value
 
     @value.setter
-    def value(self, value):
+    def value(self, value: Optional[Any]) -> None:
         self._value = value
 
     @property
-    def values(self):
+    def values(self) -> Optional[Dict[str, Any]]:
         return self._localized_values
 
     @values.setter
-    def values(self, values):
+    def values(self, values: Optional[Dict[str, Any]]) -> None:
         self._localized_values = values
 
     @property
-    def defaultValue(self):
+    def defaultValue(self) -> Optional[Any]:
+        if not self._localized_values:
+            return None
         for key in ["dflt", "ENG"]:
             if key in self._localized_values:
                 return self._localized_values[key]
         return list(self._localized_values.values())[0]
 
     @defaultValue.setter
-    def defaultValue(self, value):
+    def defaultValue(self, value: Any) -> None:
         self.setLocalizedValue(value)
 
-    def localizedValue(self, language="dflt"):
-        if language in ["dflt", "ENG"]:
-            if language in self._localized_values:
-                value = self._localized_values[language]
-                return value
+    def localizedValue(self, language: str = "dflt") -> Optional[Any]:
+        if not self._localized_values:
+            return None
+        if language in ["dflt", "ENG"] and language in self._localized_values:
+            return self._localized_values[language]
         return self._localized_values.get(language, None)
 
-    def setLocalizedValue(self, value, language="dflt"):
+    def setLocalizedValue(self, value: Any, language: str = "dflt") -> None:
         if not self._localized_values:
             self._localized_values = {}
         self._localized_values[language] = value
 
     @classmethod
-    def propertiesFromLegacyCustomParameters(cls, obj):
+    def propertiesFromLegacyCustomParameters(cls, obj: Union[GSFont, GSInstance]) -> None:
+        if not obj.customParameters:
+            return
         for parameter in list(obj.customParameters):
             name = parameter.name
             if name in PROPERTIES_WHITELIST or name + "s" in PROPERTIES_WHITELIST:
-                if name + "s" in PROPERTIES_WHITELIST:
-                    propertyName = name + "s"
-                else:
-                    propertyName = name
+                propertyName = name + "s" if name + "s" in PROPERTIES_WHITELIST else name
                 obj.properties.setProperty(propertyName, parameter.value)
                 obj.customParameters.remove(parameter)
                 continue
@@ -4473,56 +4423,44 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
 
             language = string[:semicolonPos]
             language = glyphdata.langName2Tag.get(language, language)
-            value = string[semicolonPos + 1 :]
-            name = parameter.name
+            value = string[semicolonPos + 1:]
             name = name[9].lower() + name[10:] + "s"
             obj.properties.setProperty(name, value, language)
             obj.customParameters.remove(parameter)
 
     @classmethod
-    def legacyCustomParametersFromProperties(cls, properties, obj):
+    def legacyCustomParametersFromProperties(cls, properties: List["GSFontInfoValue"], obj: GSBase) -> List["GSCustomParameter"]:
         customParameters = []
         for infoValue in properties:
             newParameter = cls.legacyCustomParametersFromInfoValue(infoValue)
-            # first check for nil as that is a error condition
             if newParameter is not None:
-                if len(newParameter) > 0:  # this means we did find something
+                if len(newParameter) > 0:
                     customParameters.extend(newParameter)
             else:
-                raise Exception("problem converting infoValue %s in %s" % (infoValue, obj))
-                return None
+                raise Exception(f"Problem converting infoValue {infoValue} in {obj}")
         return customParameters
 
     @classmethod
-    def legacyCustomParametersFromInfoValue(cls, infoValue):
-        parameterKey = infoValue.key
-        if parameterKey.endswith("s"):
-            parameterKey = parameterKey[:-1]
-
+    def legacyCustomParametersFromInfoValue(cls, infoValue: "GSFontInfoValue") -> Optional[List["GSCustomParameter"]]:
+        parameterKey = infoValue.key.rstrip("s")
         locParameterKey = "localized" + parameterKey[0].upper() + parameterKey[1:]
         defaultValue = None
-        isLocalizedParameter = True
-        if locParameterKey not in LOCALIZED_PARAMETERS:  # e.g. for trademark
-            isLocalizedParameter = False
+        isLocalizedParameter = locParameterKey in LOCALIZED_PARAMETERS
+
+        if not isLocalizedParameter:
             defaultValue = infoValue.value or infoValue.defaultValue
-            # TODO: check if it is a valid parameter altogether
-            # if (![GSGlyphsInfo customParameterTypes][parameterKey]) {
-            #     return None
+
         customParameters = []
 
         if isLocalizedParameter and infoValue._localized_values:
             values = infoValue._localized_values
             for key in sorted(values.keys()):
                 value = values[key]
-                parameter = None
                 if key in ["dflt", "ENG"]:
                     defaultValue = value
                 else:
-                    # langName = GSGlyphsInfo.langNameForTag(infoValue.languageTag)
                     langName = glyphdata.langTag2Name.get(key, key)
-                    if not langName:
-                        langName = key
-                    stringValue = "%s;%s" % (langName, value)
+                    stringValue = f"{langName};{value}"
                     parameter = GSCustomParameter(locParameterKey, stringValue)
                     customParameters.append(parameter)
 
@@ -4532,22 +4470,15 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
                 "designerURL",
                 "manufacturer",
                 "manufacturerURL",
-                "copyright"
+                "copyright",
             }
 
-            if parameterKey in nativeDefaultKeys and isinstance(
-                infoValue.parent, GSFont
-            ):
+            if parameterKey in nativeDefaultKeys and isinstance(infoValue.parent, GSFont):
                 return customParameters
 
-            # TODO: check if it is a valid parameter altogether
-            # if ([GSGlyphsInfo customParameterTypes][parameterKey]) {
-            if True:
-                parameter = GSCustomParameter(parameterKey, defaultValue)
-                customParameters.insert(0, parameter)
-            else:
-                return None
-        return customParameters
+            parameter = GSCustomParameter(parameterKey, defaultValue)
+            customParameters.insert(0, parameter)
+        return customParameters if customParameters else None
 
 
 INSTANCE_AXIS_VALUE_KEYS = (
@@ -4561,7 +4492,7 @@ INSTANCE_AXIS_VALUE_KEYS = (
 
 
 class GSInstance(GSBase):
-    def _write_axis_value(self, writer, idx, defaultValue):
+    def _write_axis_value(self, writer: Writer, idx: int, defaultValue: float) -> None:
         axes = self.font.axes
         axesCount = len(axes)
         if axesCount > idx:
@@ -4569,7 +4500,7 @@ class GSInstance(GSBase):
             if value and abs(value - defaultValue) > 0.01:
                 writer.writeKeyValue(INSTANCE_AXIS_VALUE_KEYS[idx], value)
 
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         if (
@@ -4578,6 +4509,7 @@ class GSInstance(GSBase):
             and self.type != InstanceType.VARIABLE
         ):
             writer.writeKeyValue("axesValues", self.internalAxesValues)
+
         customParameters = list(self.customParameters)
         if writer.formatVersion < 3:
             weight_class_string = WEIGHT_CODES_REVERSE.get(self.weightClass)
@@ -4595,6 +4527,7 @@ class GSInstance(GSBase):
 
         if customParameters:
             writer.writeKeyValue("customParameters", customParameters)
+
         if writer.formatVersion == 2:
             self._write_axis_value(writer, 2, 0)
             self._write_axis_value(writer, 3, 0)
@@ -4605,12 +4538,14 @@ class GSInstance(GSBase):
 
         if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
+
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
         writer.writeObjectKeyValue(self, "manualInterpolation", "if_true")
         writer.writeObjectKeyValue(self, "name")
+
         if writer.formatVersion > 2:
             if self.properties and len(self.properties) > 0:
                 self._properties.sort(key=lambda key: key.key.lower())
@@ -4632,15 +4567,12 @@ class GSInstance(GSBase):
             if weight_class_string is not None and weight_class_string != "Regular":
                 writer.writeKeyValue("weightClass", weight_class_string)
             width_class_string = WIDTH_CODES_REVERSE.get(self.widthClass)
-            if (
-                width_class_string is not None
-                and width_class_string != "Medium (normal)"
-            ):
+            if width_class_string is not None and width_class_string != "Medium (normal)":
                 writer.writeKeyValue("widthClass", width_class_string)
 
-    _axis_defaults = (100, 100)
+    _axis_defaults: tuple[int, int] = (100, 100)
 
-    _defaultsForName = {
+    _defaultsForName: Dict[str, Any] = {
         "exports": True,
         "weightClass": 400,
         "widthClass": 5,
@@ -4648,35 +4580,41 @@ class GSInstance(GSBase):
         "type": InstanceType.SINGLE,
     }
 
-    def __init__(self, name="Regular"):
-        self.font = None
-        self._internalAxesValues = {}
-        self._externalAxesValues = {}
+    def __init__(self, name: str = "Regular") -> None:
+        self._font: Optional["GSFont"] = None
+        self._internalAxesValues: Dict[str, float] = {}
+        self._externalAxesValues: Dict[str, float] = {}
         self.customParameters = []
-        self.exports = True
-        self.custom = None
-        self.instanceInterpolations = copy.deepcopy(
-            self._defaultsForName["instanceInterpolations"]
-        )
-        self.isBold = False
-        self.isItalic = False
-        self.linkStyle = ""
-        self.manualInterpolation = False
-        self.name = name
-        self._properties = []
-        self.visible = True
-        self.weightClass = self._defaultsForName["weightClass"]
-        self.widthClass = self._defaultsForName["widthClass"]
-        self.type = self._defaultsForName["type"]
-        self.readBuffer = {}
-        self._axesValues = None
-        self._userData = None
+        self.exports: bool = True
+        self.custom: Optional[str] = None
+        self.instanceInterpolations: Dict = copy.deepcopy(self._defaultsForName["instanceInterpolations"])
+        self.isBold: bool = False
+        self.isItalic: bool = False
+        self.linkStyle: str = ""
+        self.manualInterpolation: bool = False
+        self.name: str = name
+        self._properties: List["GSFontInfoValue"] = []
+        self.visible: bool = True
+        self.weightClass: int = self._defaultsForName["weightClass"]
+        self.widthClass: int = self._defaultsForName["widthClass"]
+        self.type: InstanceType = self._defaultsForName["type"]
+        self.readBuffer: Dict = {}
+        self._axesValues: Optional[Dict[int, float]] = None
+        self._userData: Optional[Dict[str, Any]] = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {hex(id(self))}> "{self.name}"'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.__class__.__name__} "{self.name}">'
+
+    @property
+    def font(self) -> GSFont:
+        return cast(GSFont, self._font)
+
+    @font.setter
+    def font(self, value: Optional[GSFont]) -> None:
+        self._font = value
 
     customParameters = property(
         lambda self: CustomParametersProxy(self),
@@ -4688,7 +4626,7 @@ class GSInstance(GSBase):
         lambda self, value: PropertiesProxy(self).setter(value),
     )
 
-    def post_read(self):  # GSInstance
+    def post_read(self) -> None:
         assert self.font
         axes = self.font.axes
         if axes and self.type != InstanceType.VARIABLE:
@@ -4718,19 +4656,21 @@ class GSInstance(GSBase):
                         self.internalAxesValues[axis.axisId] = value
 
         if self.font.formatVersion < 3:
-            weightClass = WEIGHT_CODES.get(self.weightClass)
-            if weightClass:
-                self.weightClass = weightClass
-            widthClass = WIDTH_CODES.get(self.widthClass)
-            if widthClass:
-                self.widthClass = widthClass
+            if isinstance(self.weightClass, str):
+                weightClass = WEIGHT_CODES.get(self.weightClass)
+                if weightClass:
+                    self.weightClass = weightClass
+            if isinstance(self.widthClass, str):
+                widthClass = WIDTH_CODES.get(self.widthClass)
+                if widthClass:
+                    self.widthClass = widthClass
 
             if self.font.formatVersion < 3 and len(self._internalAxesValues) == 0:
                 self.internalAxesValues[self.font.axes[0].axisId] = 100
 
             GSFontInfoValue.propertiesFromLegacyCustomParameters(self)
 
-        weight_class_parameter = self.customParameters["weightClass"]
+        weight_class_parameter = self.customParameters.get("weightClass")
         if weight_class_parameter:
             self.weightClass = int(weight_class_parameter)
             del self.customParameters["weightClass"]
@@ -4741,131 +4681,117 @@ class GSInstance(GSBase):
             customParameter.post_read(self.font.formatVersion)
 
     @property
-    def exports(self):
+    def exports(self) -> bool:
         """Deprecated alias for `active`, which is in the documentation."""
         return self._exports
 
     @exports.setter
-    def exports(self, value):
+    def exports(self, value: bool) -> None:
         self._exports = value
 
     @property
-    def familyName(self):
+    def familyName(self) -> str:
         return self.properties["familyNames"] or self.font.familyName
 
     @familyName.setter
-    def familyName(self, value):
+    def familyName(self, value: str) -> None:
         self.properties["familyNames"] = value
 
     @property
-    def preferredFamily(self):
+    def preferredFamily(self) -> str:
         return self.preferredFamilyName or self.font.familyName
 
     @preferredFamily.setter
-    def preferredFamily(self, value):
+    def preferredFamily(self, value: str) -> None:
         self.preferredFamilyName = value
 
     @property
-    def preferredFamilyName(self):
+    def preferredFamilyName(self) -> Optional[str]:
         return self.properties["preferredFamilyNames"]
 
     @preferredFamilyName.setter
-    def preferredFamilyName(self, value):
+    def preferredFamilyName(self, value: str) -> None:
         self.properties["preferredFamilyNames"] = value
 
     @property
-    def preferredSubfamilyName(self):
+    def preferredSubfamilyName(self) -> Optional[str]:
         return self.properties["preferredSubfamilyNames"]
 
     @preferredSubfamilyName.setter
-    def preferredSubfamilyName(self, value):
+    def preferredSubfamilyName(self, value: str) -> None:
         self.properties["preferredSubfamilyNames"] = value
 
     @property
-    def windowsFamily(self):
+    def windowsFamily(self) -> str:
         value = self.properties["styleMapFamilyNames"]
         if value:
             return value
-        if self.name not in (
+        if self.name not in {
             "Regular",
             "Bold",
             "Italic",
             "Oblique",
             "Bold Italic",
             "Bold Oblique",
-        ):
-            return self.familyName + " " + self.name
-        else:
-            return self.familyName
+        }:
+            return f"{self.familyName} {self.name}"
+        return self.familyName
 
     @windowsFamily.setter
-    def windowsFamily(self, value):
+    def windowsFamily(self, value: str) -> None:
         self.properties["styleMapFamilyNames"] = value
 
     @property
-    def windowsStyle(self):
-        if self.name in (
+    def windowsStyle(self) -> str:
+        if self.name in {
             "Regular",
             "Bold",
             "Italic",
             "Oblique",
             "Bold Italic",
             "Bold Oblique",
-        ):
+        }:
             return self.name
-        else:
-            return "Regular"
+        return "Regular"
 
     @property
-    def styleMapFamilyNames(self):
-        self.properties["styleMapFamilyNames"]
+    def styleMapFamilyNames(self) -> Optional[str]:
+        return self.properties["styleMapFamilyNames"]
 
     @styleMapFamilyNames.setter
-    def styleMapFamilyNames(self, values):
+    def styleMapFamilyNames(self, values: str) -> None:
         self.properties["styleMapFamilyNames"] = values
 
     @property
-    def styleMapStyleNames(self):
-        self.properties["styleMapStyleNames"]
+    def styleMapStyleNames(self) -> Optional[str]:
+        return self.properties["styleMapStyleNames"]
 
     @styleMapStyleNames.setter
-    def styleMapStyleNames(self, values):
+    def styleMapStyleNames(self, values: str) -> None:
         self.properties["styleMapStyleNames"] = values
 
     @property
-    def styleMapFamilyName(self):
+    def styleMapFamilyName(self) -> Optional[str]:
         return self.properties.getProperty("styleMapFamilyNames")
 
     @styleMapFamilyName.setter
-    def styleMapFamilyName(self, value):
+    def styleMapFamilyName(self, value: str) -> None:
         self.properties.setProperty("styleMapFamilyNames", value)
 
     @property
-    def styleMapStyleName(self):
+    def styleMapStyleName(self) -> Optional[str]:
         return self.properties.getProperty("styleMapStyleNames")
 
     @styleMapStyleName.setter
-    def styleMapStyleName(self, value):
+    def styleMapStyleName(self, value: str) -> None:
         self.properties.setProperty("styleMapStyleNames", value)
 
     @property
-    def windowsLinkedToStyle(self):
-        value = self.linkStyle
-        return value
-        if self.name in (
-            "Regular",
-            "Bold",
-            "Italic",
-            "Oblique",
-            "Bold Italic",
-            "Bold Oblique",
-        ):
-            return self.name
-        else:
-            return "Regular"
+    def windowsLinkedToStyle(self) -> Optional[str]:
+        return self.linkStyle
 
     @property
-    def fontName(self):
+    def fontName(self) -> str:
         return (
             self.properties["postscriptFontName"]
             # TODO: Strip invalid characters.
@@ -4873,17 +4799,17 @@ class GSInstance(GSBase):
         )
 
     @fontName.setter
-    def fontName(self, value):
+    def fontName(self, value: str) -> None:
         self.properties["postscriptFontName"] = value
 
     @property
-    def fullName(self):
+    def fullName(self) -> str:
         return self.properties["postscriptFullName"] or (
             self.familyName + " " + self.name
         )
 
     @fullName.setter
-    def fullName(self, value):
+    def fullName(self, value: str) -> None:
         self.properties["postscriptFullName"] = value
 
     internalAxesValues = property(
@@ -4897,34 +4823,30 @@ class GSInstance(GSBase):
     )
 
     @property
-    def weightValue(self):
+    def weightValue(self) -> Optional[float]:
         return self.internalAxesValues[0] if len(self.font.axes) > 0 else None
 
     @weightValue.setter
-    def weightValue(self, value):
+    def weightValue(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[0]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][0] = value
+        self.readBuffer.setdefault("axesValues", {})[0] = value
 
     @property
-    def widthValue(self):
+    def widthValue(self) -> Optional[float]:
         return self.internalAxesValues[1] if len(self.font.axes) > 1 else None
 
     @widthValue.setter
-    def widthValue(self, value):
+    def widthValue(self, value: float) -> None:
         if self.font:
             axis = self.font.axes[1]
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][1] = value
+        self.readBuffer.setdefault("axesValues", {})[1] = value
 
     @property
     def customValue(self):
@@ -4937,9 +4859,7 @@ class GSInstance(GSBase):
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][2] = value
+        self.readBuffer.setdefault("axesValues", {})[2] = value
 
     @property
     def customValue1(self):
@@ -4952,9 +4872,7 @@ class GSInstance(GSBase):
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][3] = value
+        self.readBuffer.setdefault("axesValues", {})[3] = value
 
     @property
     def customValue2(self):
@@ -4967,9 +4885,7 @@ class GSInstance(GSBase):
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["axesValues"][4] = value
+        self.readBuffer.setdefault("axesValues", {})[4] = value
 
     @property
     def customValue3(self):
@@ -4982,9 +4898,7 @@ class GSInstance(GSBase):
             if axis:
                 self._internalAxesValues[axis.axisId] = value
             return
-        if "axesValues" not in self.readBuffer:
-            self.readBuffer["axesValues"] = {}
-        self.readBuffer["_axesValues"][5] = value
+        self.readBuffer.setdefault("axesValues", {})[5] = value
 
     userData = property(
         lambda self: UserDataProxy(self),
@@ -5013,7 +4927,7 @@ GSInstance._add_parsers(
 
 
 class GSBackgroundImage(GSTransformable):
-    def _serialize_to_plist(self, writer):
+    def _serialize_to_plist(self, writer: Writer) -> None:
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
@@ -5023,10 +4937,8 @@ class GSBackgroundImage(GSTransformable):
 
         writer.writeObjectKeyValue(self, "imagePath")
         if self.locked:
-            if writer.formatVersion == 2:
-                writer.writeKeyValue("locked", "1")
-            else:
-                writer.writeKeyValue("locked", 1)
+            writer.writeKeyValue("locked", "1" if writer.formatVersion == 2 else 1)
+
         if writer.formatVersion > 2:
             if self.position != Point(0, 0):
                 writer.writeObjectKeyValue(self, "position", keyName="pos")
@@ -5037,44 +4949,37 @@ class GSBackgroundImage(GSTransformable):
                 self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
             )
 
-    _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
+    _defaultsForName: dict[str, Union[int, "Transform"]] = {
+        "alpha": 50,
+        "transform": Transform(1, 0, 0, 1, 0, 0),
+    }
 
-    def __init__(self, path=None):
-        self.alpha = self._defaultsForName["alpha"]
-        self.crop = None
-        self.imagePath = path
-        self.locked = False
+    def __init__(self, path: Optional[str] = None) -> None:
+        self.alpha: int = self._defaultsForName["alpha"]
+        self.crop: Optional[Any] = None
+        self.imagePath: Optional[str] = path
+        self.locked: bool = False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {hex(id(self))}> '{self.imagePath}'"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<{self.__class__.__name__} '{self.imagePath}'>"
 
-    # .path
     @property
-    def path(self):
+    def path(self) -> Optional[str]:
         return self.imagePath
 
     @path.setter
-    def path(self, value):
-        # FIXME: (jany) use posix pathnames here?
-        # FIXME: (jany) the following code must have never been tested.
-        #   Also it would require to keep track of the parent for background
-        #   images.
-        # if os.path.dirname(os.path.abspath(value)) == \
-        #       os.path.dirname(os.path.abspath(self.parent.parent.parent.filepath)):
-        #     self.imagePath = os.path.basename(value)
-        # else:
+    def path(self, value: str) -> None:
         self.imagePath = value
 
-    # .alpha
     @property
-    def alpha(self):
+    def alpha(self) -> int:
         return self._alpha
 
     @alpha.setter
-    def alpha(self, value):
+    def alpha(self, value: int) -> None:
         if not 10 <= value <= 100:
             value = 50
         self._alpha = value
@@ -5100,32 +5005,60 @@ class LayerComponentsProxy(LayerShapesProxy):
 
 
 class GSLayer(GSBase):
-    parent = None
+    _parent: Optional["GSGlyph"] = None
 
-    def _get_plist_attributes(self):
+    def __init__(self) -> None:
+        self._anchors: List[Any] = []
+        self._annotations: List[Any] = []
+        self._background: Optional[GSBackgroundLayer] = None
+        self._foreground: Optional[GSLayer] = None
+        self._guides: List[Any] = []
+        self._hints: List[Any] = []
+        self._layerId: str = ""
+        self._name: str = ""
+        self._selection: List[Any] = []
+        self._shapes: List[Any] = []
+        self._userData: Optional[Dict[str, Any]] = None
+        self.attributes: Dict[str, Any] = {}
+        self.smartComponentPoleMapping: Dict[str, Any] = {}
+        self.associatedMasterId: str = ""
+        self.backgroundImage: Optional[Any] = None
+        self.color: Optional[Any] = None
+        self.metricWidth: Optional[str] = None
+        self.metricLeft: Optional[str] = None
+        self.metricRight: Optional[str] = None
+        self.vertOrigin: Optional[float] = None
+        self.vertWidth: Optional[float] = None
+        self.visible: bool = False
+        self.width: Union[float | int] = self._defaultsForName["width"] or 0
+
+    def _get_plist_attributes(self) -> Dict[str, Any]:
         attributes = dict(self.attributes)
-        font = self.parent.parent
+        glyph = self.parent
+        if not glyph:
+            return attributes
+        font = glyph.parent
+
         if LAYER_ATTRIBUTE_AXIS_RULES in self.attributes:
             rule = attributes[LAYER_ATTRIBUTE_AXIS_RULES]
-            ruleMap = []
+            ruleMap: List[Dict[str, Any]] = []
             for axis in font.axes:
                 ruleMap.append(rule.get(axis.axisId, {}))
             attributes[LAYER_ATTRIBUTE_AXIS_RULES] = ruleMap
         if LAYER_ATTRIBUTE_COORDINATES in self.attributes:
             coordinates = attributes[LAYER_ATTRIBUTE_COORDINATES]
-            coordinatesMap = []
+            coordinatesMap: List[Optional[float]] = []
             for axis in font.axes:
                 value = coordinates.get(axis.axisId)
                 coordinatesMap.append(value)
             attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
         return attributes
 
-    def _serialize_to_plist(self, writer):  # noqa: C901
-        # NOTE: The fields should come in alphabetical order.
+    def _serialize_to_plist(self, writer: Writer) -> None:  # noqa: C901
         writer.writeObjectKeyValue(self, "anchors", "if_true")
         writer.writeObjectKeyValue(self, "annotations", "if_true")
 
-        userData = dict(self.userData)
+        userData: Dict[str, Any] = dict(self.userData)
 
         if not self.isMasterLayer:
             writer.writeObjectKeyValue(self, "associatedMasterId")
@@ -5149,20 +5082,20 @@ class GSLayer(GSBase):
             writer.writeKeyValue("guideLines", self.guides)
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
-        if writer.formatVersion == 2:
+        if writer.formatVersion > 2:
+            writer.writeObjectKeyValue(self, "metricLeft")
+            writer.writeObjectKeyValue(self, "metricRight")
+            writer.writeObjectKeyValue(self, "metricWidth")
+        else:
             writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
             # NOTE: The following two are an exception from the ordering rule.
             writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
             writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
-        else:
-            writer.writeObjectKeyValue(self, "metricLeft")
-            writer.writeObjectKeyValue(self, "metricRight")
-            writer.writeObjectKeyValue(self, "metricWidth")
         if writer.formatVersion > 2:
-            if self._name is not None and len(self._name) > 0 and not self.isMasterLayer:
+            if self._name and not self.isMasterLayer:
                 writer.writeKeyValue("name", self._name)
         else:
-            if ((self._name is not None and len(self._name) > 0) or len(self.attributes) > 0) and not self.isMasterLayer:
+            if ((self._name and len(self._name) > 0) or len(self.attributes) > 0) and not self.isMasterLayer:
                 legacyName = self._legacyName()
                 if legacyName:
                     writer.writeKeyValue("name", legacyName)
@@ -5184,13 +5117,11 @@ class GSLayer(GSBase):
             writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
         if self.vertWidth != 0:
-            # FIXME: how to know if that zero is a realy value (this is a problem with the ufo spec)
+            # FIXME: how to know if that zero is a really value (this is a problem with the ufo spec)
             writer.writeObjectKeyValue(self, "vertWidth")
         if writer.formatVersion >= 3:
             writer.writeObjectKeyValue(self, "visible", "if_true")
-        writer.writeObjectKeyValue(
-            self, "width", not isinstance(self, GSBackgroundLayer)
-        )
+        writer.writeObjectKeyValue(self, "width", not isinstance(self, GSBackgroundLayer))
 
     BRACKET_LAYER_RE_V2 = re.compile(
         r".*(?P<first_bracket>[\[\]])\s*(?P<value>\d+)\s*\].*"
@@ -5200,11 +5131,11 @@ class GSLayer(GSBase):
     )
     COLOR_PALETTE_LAYER_RE = re.compile(r"^Color (?P<index>\*|\d+)$")
 
-    def _parse_layer_bracket_name_v3(self, name, font):
+    def _parse_layer_bracket_name_v3(self, name: str, font: GSFont) -> Tuple[Optional[Dict[str, Dict[str, float]]], str]:
         """
-        when importing form ufo
+        When importing from UFO.
         """
-        def if_number(s):
+        def if_number(s: str) -> bool:
             try:
                 float(s)
                 return True
@@ -5213,13 +5144,13 @@ class GSLayer(GSBase):
 
         m = re.search(self.BRACKET_LAYER_RE_V3, name)
         if m:
-            bracket_rule = {}
-            content = m.group(1)
+            bracket_rule: Dict[str, Dict[str, float]] = {}
+            content: str = m.group(1)
             groups = [group.strip().split('‹') for group in content.split(',')]
             for rule in groups:
-                firstNumber = None
-                short_axis_tag = None
-                secondNumber = None
+                firstNumber: Optional[float] = None
+                short_axis_tag: Optional[str] = None
+                secondNumber: Optional[float] = None
                 if if_number(rule[0]):
                     firstNumber = float(rule[0])
                 else:
@@ -5230,54 +5161,54 @@ class GSLayer(GSBase):
                     short_axis_tag = rule[1]
                 if len(rule) > 2 and if_number(rule[2]):
                     secondNumber = float(rule[2])
-                axis_id = None
+                axis_id: Optional[str] = None
                 for axis in font.axes:
                     if axis.shortAxisTag == short_axis_tag:
                         axis_id = axis.axisId
                         break
-                ruleDict = {}
-                if firstNumber:
+                ruleDict: Dict[str, float] = {}
+                if firstNumber is not None:
                     ruleDict["min"] = firstNumber
-                if secondNumber:
+                if secondNumber is not None:
                     ruleDict["max"] = secondNumber
                 if axis_id:
                     bracket_rule[axis_id] = ruleDict
-            name = name.replace(m.group(0), "")
-            name = name.replace("  ", " ")
-            name = name.strip()
+            name = name.replace(m.group(0), "").replace("  ", " ").strip()
             return bracket_rule, name
         return None, name
 
-    def _parse_layer_bracket_name_v2(self, name, font):
+    def _parse_layer_bracket_name_v2(self, name: str, font: GSFont) -> Tuple[Optional[Dict[str, Dict[str, int]]], str]:
         m = re.match(self.BRACKET_LAYER_RE_V2, name)
         if m:
-            axis = font.axes[0]  # For glyphs 2
+            axis = font.axes[0]  # For Glyphs 2
             reverse = m.group("first_bracket") == "]"
             bracket_crossover = int(m.group("value"))
-            name = name.replace(m.group(0), "")
-            name = name.replace("  ", " ")
-            name = name.strip()
+            name = name.replace(m.group(0), "").replace("  ", " ").strip()
             bracket_rule = {axis.axisId: {"max" if reverse else "min": bracket_crossover}}
             return bracket_rule, name
         return None, name
 
-    def layer_name_to_atributes(self):
-        name = self.name
-        font = self.font
+    def layer_name_to_attributes(self) -> None:
+        name: str = self.name
+        font: GSFont = self.font
         assert font
+
         if "]" in name:
+            rule: Optional[dict] = None
             if "‹" in name:
                 rule, name = self._parse_layer_bracket_name_v3(name, font)
             else:
                 rule, name = self._parse_layer_bracket_name_v2(name, font)
             if rule:
                 self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = rule
+
         if "{" in name and "}" in name and ".background" not in self.name:
-            coordinatesString = name[name.index("{") + 1 : name.index("}")]
-            coordinatesMap = {}
-            for c, axis in zip(coordinatesString.split(","), font.axes):
-                coordinatesMap[axis.axisId] = float(c)
-            master = None
+            coordinatesString: str = name[name.index("{") + 1 : name.index("}")]
+            coordinatesMap: Dict[str, float] = {
+                axis.axisId: float(c)
+                for c, axis in zip(coordinatesString.split(","), font.axes)
+            }
+            master: Optional[GSFontMaster] = None
             for axis in font.axes:
                 if axis.axisId not in coordinatesMap:
                     if master is None:
@@ -5285,30 +5216,27 @@ class GSLayer(GSBase):
                     value = master.internalAxesValues[axis.axisId]
                     coordinatesMap[axis.axisId] = value
             self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
+
         if "Color" in name:
             m = re.match(self.COLOR_PALETTE_LAYER_RE, self.name.strip())
             if m and m.group("index"):
-                palette = m.group("index")
+                palette: Union[int, str] = m.group("index")
                 if palette != "*":
                     palette = int(palette)
-                name = name.replace(m.group(0), "")
-                name = name.replace("  ", " ")
-                name = name.strip()
+                name = name.replace(m.group(0), "").replace("  ", " ").strip()
                 self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE] = palette
             elif name.startswith("Color"):
-                name = name.replace("Color", "")
-                name = name.replace("  ", " ")
-                name = name.strip()
+                name = name.replace("Color", "").replace("  ", " ").strip()
                 self.attributes[LAYER_ATTRIBUTE_COLOR] = True
 
         if self.name != name:
             self.name = name
 
-    def post_read(self):  # GSLayer
+    def post_read(self) -> None:  # GSLayer
         assert self.parent
-        font = self.parent.parent
+        font: GSFont = self.parent.parent
         if font.formatVersion == 2:
-            self.layer_name_to_atributes()
+            self.layer_name_to_attributes()
 
             if not self.smartComponentPoleMapping and "PartSelection" in self.userData:
                 self.smartComponentPoleMapping = self.userData["PartSelection"]
@@ -5316,16 +5244,17 @@ class GSLayer(GSBase):
         else:
             if LAYER_ATTRIBUTE_AXIS_RULES in self.attributes:
                 rule = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
-                ruleMap = {}
-                for axis, value in zip(font.axes, rule):
-                    ruleMap[axis.axisId] = value
+                ruleMap: Dict[str, Any] = {
+                    axis.axisId: value for axis, value in zip(font.axes, rule)
+                }
                 self.attributes[LAYER_ATTRIBUTE_AXIS_RULES] = ruleMap
+
             if LAYER_ATTRIBUTE_COORDINATES in self.attributes:
                 coordinates = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
-                coordinatesMap = {}
-                for axis, value in zip(font.axes, coordinates):
-                    coordinatesMap[axis.axisId] = value
-                master = None
+                coordinatesMap: Dict[str, Any] = {
+                    axis.axisId: value for axis, value in zip(font.axes, coordinates)
+                }
+                master: Optional[GSFontMaster] = None
                 for axis in font.axes:
                     if axis.axisId not in coordinatesMap:
                         if master is None:
@@ -5334,7 +5263,7 @@ class GSLayer(GSBase):
                         coordinatesMap[axis.axisId] = value
                 self.attributes[LAYER_ATTRIBUTE_COORDINATES] = coordinatesMap
 
-    def _parse_shapes_dict(self, parser, shapes):
+    def _parse_shapes_dict(self, parser: Parser, shapes: List[Dict[str, Any]]) -> None:
         for shape_dict in shapes:
             if "ref" in shape_dict:
                 shape = parser._parse_dict(shape_dict, GSComponent)
@@ -5343,7 +5272,7 @@ class GSLayer(GSBase):
                 shape = parser._parse_dict(shape_dict, GSPath)
                 self.paths.append(shape)
 
-    _defaultsForName = {
+    _defaultsForName: Dict[str, Optional[Union[int, float]]] = {
         "width": 600,
         "metricLeft": None,
         "metricRight": None,
@@ -5352,48 +5281,16 @@ class GSLayer(GSBase):
         "vertOrigin": None,
     }
 
-    def _parse_background_dict(self, parser, value):
-        self._background = parser._parse(value, GSBackgroundLayer)
-        self._background._foreground = self
-        self._background.parent = self.parent
-
-    def __init__(self):
-        self._anchors = []
-        self._annotations = []
-        self._background = None
-        self._foreground = None
-        self._guides = []
-        self._hints = []
-        self._layerId = ""
-        self._name = ""
-        self._selection = []
-        self._shapes = []
-        self._userData = None
-        self.attributes = {}
-        self.smartComponentPoleMapping = {}
-        self.associatedMasterId = ""
-        self.backgroundImage = None
-        self.color = None
-        self.metricLeft = self._defaultsForName["metricLeft"]
-        self.parent = None
-        self.metricRight = self._defaultsForName["metricRight"]
-        self.vertOrigin = self._defaultsForName["vertOrigin"]
-        self.vertWidth = self._defaultsForName["vertWidth"]
-        self.visible = False
-        self.width = self._defaultsForName["width"]
-        self.metricWidth = self._defaultsForName["metricWidth"]
-
-    def __copy__(self):
+    def __copy__(self) -> "GSLayer":
         new_obj = self.__class__()
         new_obj._anchors = copy.copy(self._anchors)
         new_obj._annotations = copy.copy(self._annotations)
         new_obj._background = copy.copy(self._background)
-        # new_obj._foreground = None
+        new_obj._foreground = None
         new_obj._guides = copy.copy(self._guides)
         new_obj._hints = copy.copy(self._hints)
-        new_obj._layerId = self._layerId  # immutable?
+        new_obj._layerId = self._layerId
         new_obj._name = copy.copy(self._name)
-        # new_obj._selection = []
         new_obj._shapes = copy.copy(self._shapes)
         new_obj._userData = copy.copy(self._userData)
         new_obj.attributes = copy.copy(self.attributes)
@@ -5401,7 +5298,6 @@ class GSLayer(GSBase):
         new_obj.associatedMasterId = self.associatedMasterId
         new_obj.backgroundImage = copy.copy(self.backgroundImage)
         new_obj.color = copy.copy(self.color)
-        # new_obj.parent = None
         new_obj.metricWidth = self.metricWidth
         new_obj.metricLeft = self.metricLeft
         new_obj.metricRight = self.metricRight
@@ -5411,39 +5307,48 @@ class GSLayer(GSBase):
         new_obj.width = self.width
         return new_obj
 
-    def _str(self):
-        name = self.name
+    def _str(self) -> str:
+        name: str = self.name
         try:
-            # assert self.name
             name = self.name
         except AttributeError:
             name = "orphan (n)"
         try:
-            assert self.parent.name
-            parent = self.parent.name
+            assert self.parent and self.parent.name
+            parent: str = self.parent.name
         except (AttributeError, AssertionError):
             parent = "orphan"
         return f'"{name}" ({parent})'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {hex(id(self))}> {self._str()}'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.__class__.__name__} {self._str()}>'
 
-    def __lt__(self, other):
+    def __lt__(self, other: "GSLayer") -> bool:
         if self.master and other.master and self.isMasterLayer:
-            return (
-                self.master.weightValue < other.master.weightValue
-                or self.master.widthValue < other.master.widthValue
-            )
+            for axis in self.font.axes:
+                value = self.master.internalAxesValues[axis.axisId]
+                other_value = other.master.internalAxesValues[axis.axisId]
+                if value != other_value:
+                    return value < other_value
+        return False
 
     @property
-    def layerId(self):
+    def parent(self) -> GSGlyph:
+        return cast(GSGlyph, self._parent)
+
+    @parent.setter
+    def parent(self, value: Optional[GSGlyph]) -> None:
+        self._parent = value
+
+    @property
+    def layerId(self) -> str:
         return self._layerId
 
     @layerId.setter
-    def layerId(self, value):
+    def layerId(self, value: str) -> None:
         self._layerId = value
         """ # FIXME: this is not the right place to do this. Maybe `_setupLayer`
         # Update the layer map in the parent glyph, if any.
@@ -5462,26 +5367,28 @@ class GSLayer(GSBase):
         """
 
     @property
-    def master(self):
+    def master(self) -> Optional["GSFontMaster"]:
         if self.associatedMasterId and self.parent:
-            master = self.parent.parent.masterForId(self.associatedMasterId)
-            return master
+            return self.parent.parent.masterForId(self.associatedMasterId)
+        return None
 
     @property
-    def font(self):
-        return self.parent.parent
+    def font(self) -> "GSFont":
+        glyph = self.parent
+        assert glyph and glyph.parent
+        return glyph.parent
 
-    def _name_from_attributes(self):
-        # For Glyphs 3's speciall layers (brace, bracket, color) we must generate the
+    def _name_from_attributes(self) -> Optional[str]:
+        # For Glyphs 3's special layers (brace, bracket, color) we must generate the
         # name from the attributes (as it's shown in Glyphs.app UI) and discard
         # the layer's actual 'name' as found in the source file, which is usually just
         # the unique date-time when a layer was first created.
         # Using the generated name ensures that all the intermediate glyph instances
         # at a given location end up in the same UFO source layer, see:
         # https://github.com/googlefonts/glyphsLib/issues/851
-        nameStrings = []
+        nameStrings: List[str] = []
 
-        name = self._colorNameString()
+        name: Optional[str] = self._colorNameString()
         if name:
             nameStrings.append(name)
 
@@ -5493,26 +5400,28 @@ class GSLayer(GSBase):
             name = self._brace_layer_name()
             if name:
                 nameStrings.append(name)
-        if len(nameStrings):
+
+        if nameStrings:
             return " ".join(nameStrings)
         return None
 
-    def layerKey(self):
+    def layerKey(self) -> str:
         if not self.font:
             return self._name
 
+        name: Optional[str]
         if self.isMasterLayer:
-            master = self.font.masters[self.associatedMasterId]
+            master: Optional[GSFontMaster] = self.font.masters[self.associatedMasterId]
             name = "-"
             if master:
                 name = master.name
             if self.isBracketLayer:
-                rule_name = self._bracket_layer_name()
-                if len(rule_name) > 0:
+                rule_name: Optional[str] = self._bracket_layer_name()
+                if rule_name:
                     name = f"{name} {rule_name}"
             return name
 
-        name_strings = []
+        name_strings: List[str] = []
         name = self._colorNameString()
         if name:
             """
@@ -5520,8 +5429,8 @@ class GSLayer(GSBase):
             So we need to add a counter suffix to distinguish them.
             """
             if self.isColorPaletteLayer:
-                color_palette_layer_counter = 0
-                color_idx = int(self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE])
+                color_palette_layer_counter: int = 0
+                color_idx: int = int(self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE])
                 for layer in self.parent.layers:
                     if layer == self:
                         break
@@ -5535,60 +5444,61 @@ class GSLayer(GSBase):
             name_strings.append(name)
 
         if self.isBracketLayer:
-            font_master = self.font.masters[self.associatedMasterId]
+            font_master: Optional[GSFontMaster] = self.font.masters[self.associatedMasterId]
             if font_master:
                 name_strings.append(font_master.name)
             name = self._bracket_layer_name()
-            if len(name) > 0:
+            if name:
                 name_strings.append(name)
 
         if self.isBraceLayer:
             name = self._brace_layer_name()
-            if len(name) > 0:
+            if name:
                 name_strings.append(name)
 
-        if len(name_strings) > 0:
+        if name_strings:
             return " ".join(name_strings)
         return self._name
 
-    def _colorNameString(self):
+    def _colorNameString(self) -> Optional[str]:
         if self.isFullColorLayer:
             return "Color"
 
-        colorPalette = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
+        colorPalette: Optional[int] = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
         if colorPalette is not None:
             return f"Color {colorPalette}"
 
-        sbixSize = self.attributes.get(LAYER_ATTRIBUTE_SBIX_SIZE, None)
+        sbixSize: Optional[int] = self.attributes.get(LAYER_ATTRIBUTE_SBIX_SIZE, None)
         if sbixSize is not None:
             return f"iColor {sbixSize}"
 
         if self.isSVGColorLayer:
             return "svg"
+
         return None
 
-    def _legacyName(self):
+    def _legacyName(self) -> str:
         """
-        The layer name to write it to a glyphs 2 file.
+        The layer name to write it to a Glyphs 2 file.
         """
         if self.font is None:
             return self._name
 
-        nameStrings = []
+        nameStrings: List[str] = []
 
-        colorNameString = self._colorNameString()
+        colorNameString: Optional[str] = self._colorNameString()
         if colorNameString:
             nameStrings.append(colorNameString)
 
-        axisRules = self.attributes.get(LAYER_ATTRIBUTE_AXIS_RULES, None)
+        axisRules: Optional[Dict[str, Dict[str, Any]]] = self.attributes.get(LAYER_ATTRIBUTE_AXIS_RULES, None)
         if axisRules:
             axis = self.font.axes[0]
-            rule = axisRules.get(axis.axisId, None)
+            rule: Optional[Dict[str, Any]] = axisRules.get(axis.axisId, None)
             if rule is None:
-                raise ValueError("Glyphs 2 can obly handle axis rules for the first axis")
-            minValue = rule.get("min", None)
-            maxValue = rule.get("max", None)
-            if minValue and maxValue or len(axisRules) > 1:
+                raise ValueError("Glyphs 2 can only handle axis rules for the first axis")
+            minValue: Optional[float] = rule.get("min", None)
+            maxValue: Optional[float] = rule.get("max", None)
+            if (minValue and maxValue) or len(axisRules) > 1:
                 raise ValueError("Glyphs 2 can’t handle ranges in axis rules")
             if minValue:
                 nameStrings.append(f"[{floatToString3(minValue)}]")
@@ -5598,37 +5508,33 @@ class GSLayer(GSBase):
                 nameStrings.append("[]")
 
         if self.isBraceLayer:
-            brace_layer_name = self._brace_layer_name()
+            brace_layer_name: Optional[str] = self._brace_layer_name()
             if brace_layer_name:
                 nameStrings.append(brace_layer_name)
+
         return " ".join(nameStrings)
 
-    def _brace_layer_name(self):
+    def _brace_layer_name(self) -> Optional[str]:
         if not self.isBraceLayer:
             return None
-        coordinates = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
+        coordinates: Dict[str, float] = self.attributes[LAYER_ATTRIBUTE_COORDINATES]
         return f"{{{', '.join(floatToString5(v) for v in coordinates.values())}}}"
 
-    def _bracket_layer_name(self):
-        axisRules = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
+    def _bracket_layer_name(self) -> Optional[str]:
+        axisRules: Dict[str, Dict[str, Any]] = self.attributes[LAYER_ATTRIBUTE_AXIS_RULES]
         if not axisRules or not isinstance(axisRules, dict):
             return None
 
-        ruleStrings = []
+        ruleStrings: List[str] = []
         for axis in self.font.axes:
-            rule = axisRules.get(axis.axisId, None)
+            rule: Optional[Dict[str, Any]] = axisRules.get(axis.axisId, None)
             if rule is None:
                 continue
-            minValue = rule.get("min", None)
-            maxValue = rule.get("max", None)
+            minValue: Optional[float] = rule.get("min", None)
+            maxValue: Optional[float] = rule.get("max", None)
             if minValue and maxValue:
                 ruleStrings.append(
-                    "%s‹%s‹%s"
-                    % (
-                        floatToString3(minValue),
-                        axis.shortAxisTag,
-                        floatToString3(maxValue),
-                    )
+                    "%s‹%s‹%s" % (floatToString3(minValue), axis.shortAxisTag, floatToString3(maxValue))
                 )
             elif minValue:
                 ruleStrings.append(
@@ -5638,20 +5544,21 @@ class GSLayer(GSBase):
                 ruleStrings.append(
                     "%s‹%s" % (axis.shortAxisTag, floatToString3(maxValue))
                 )
+
         if ruleStrings:
             return "[%s]" % ", ".join(ruleStrings)
         return "[]"
 
-    def _COLR_layer_name(self):
-        palette = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
+    def _COLR_layer_name(self) -> str:
+        palette: int = self.attributes[LAYER_ATTRIBUTE_COLOR_PALETTE]
         return f"Color {palette}"
 
-    def _sbix_layer_name(self):
-        sbixSize = self.attributes[LAYER_ATTRIBUTE_SBIX_SIZE]
+    def _sbix_layer_name(self) -> str:
+        sbixSize: int = self.attributes[LAYER_ATTRIBUTE_SBIX_SIZE]
         return f"iColor {sbixSize}"
 
-    def _svg_layer_name(self):
-        svg = self.attributes[LAYER_ATTRIBUTE_SVG]
+    def _svg_layer_name(self) -> Optional[str]:
+        svg: Optional[Any] = self.attributes[LAYER_ATTRIBUTE_SVG]
         return "svg" if svg else None
 
     @property
@@ -5666,7 +5573,7 @@ class GSLayer(GSBase):
         return self._name
 
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         self._name = value
 
     anchors = property(
@@ -5710,7 +5617,7 @@ class GSLayer(GSBase):
     )
 
     @property
-    def bounds(self):
+    def bounds(self) -> Optional[Rect]:
         left, bottom, right, top = None, None, None, None
 
         for item in self.shapes:
@@ -5742,9 +5649,10 @@ class GSLayer(GSBase):
             and top is not None
         ):
             return Rect(Point(left, bottom), Size(right - left, top - bottom))
+        return None
 
-    def _find_node_by_indices(self, point):
-        """ "Find the GSNode that is refered to by the given indices.
+    def _find_node_by_indices(self, point: Tuple[int, int]) -> "GSNode":
+        """Find the GSNode that is referred to by the given indices.
 
         See GSNode::_indices()
         """
@@ -5754,7 +5662,7 @@ class GSLayer(GSBase):
         return node
 
     @property
-    def background(self) -> GSBackgroundLayer:
+    def background(self) -> "GSBackgroundLayer":
         """Only a getter on purpose. See the tests."""
         if self._background is None:
             self._background = GSBackgroundLayer()
@@ -5762,14 +5670,16 @@ class GSLayer(GSBase):
             self._background.parent = self.parent
         return self._background
 
-    # FIXME: (jany) how to check whether there is a background without calling
-    #               ::background?
+    @background.setter
+    def background(self, value: Optional["GSBackgroundLayer"]) -> None:
+        self._background = value
+
     @property
-    def hasBackground(self):
+    def hasBackground(self) -> bool:
         return bool(self._background)
 
     @property
-    def foreground(self):
+    def foreground(self) -> None:
         """Forbidden, and also forbidden to set it."""
         raise AttributeError
 
@@ -5779,6 +5689,9 @@ class GSLayer(GSBase):
         return pen
 
     def getPointPen(self) -> AbstractPointPen:
+
+        from glyphsLib.pens import LayerPointPen
+
         """Returns a point pen for others to draw points into self."""
         pointPen = LayerPointPen(self)
         return pointPen
@@ -5794,54 +5707,54 @@ class GSLayer(GSBase):
             shape.drawPoints(pointPen)
 
     @property
-    def rightMetricsKey(self):
-        return self.metricRight
-
-    @property
-    def leftMetricsKey(self):
+    def leftMetricsKey(self) -> Optional[str]:
         return self.metricLeft
 
-    @property
-    def widthMetricsKey(self):
-        return self.metricWidth
-
-    @rightMetricsKey.setter
-    def rightMetricsKey(self, value):
-        self.metricRight = value
-
     @leftMetricsKey.setter
-    def leftMetricsKey(self, value):
+    def leftMetricsKey(self, value: Optional[str]) -> None:
         self.metricLeft = value
 
+    @property
+    def rightMetricsKey(self) -> Optional[str]:
+        return self.metricRight
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value: Optional[str]) -> None:
+        self.metricRight = value
+
+    @property
+    def widthMetricsKey(self) -> Optional[str]:
+        return self.metricWidth
+
     @widthMetricsKey.setter
-    def widthMetricsKey(self, value):
+    def widthMetricsKey(self, value: Optional[str]) -> None:
         self.metricWidth = value
 
     @property
-    def isMasterLayer(self):
+    def isMasterLayer(self) -> bool:
         return self.layerId == self.associatedMasterId
 
     @property
-    def isBracketLayer(self):
+    def isBracketLayer(self) -> bool:
         return LAYER_ATTRIBUTE_AXIS_RULES in self.attributes
 
     @property
-    def isBraceLayer(self):
+    def isBraceLayer(self) -> bool:
         return LAYER_ATTRIBUTE_COORDINATES in self.attributes
 
     @property
-    def isFullColorLayer(self):
+    def isFullColorLayer(self) -> bool:
         return LAYER_ATTRIBUTE_COLOR in self.attributes
 
     @property
-    def isColorPaletteLayer(self):
+    def isColorPaletteLayer(self) -> bool:
         return self._color_palette_index() is not None
 
     @property
-    def isSVGColorLayer(self):
+    def isSVGColorLayer(self) -> bool:
         return LAYER_ATTRIBUTE_SVG in self.attributes
 
-    def _color_palette_index(self):
+    def _color_palette_index(self) -> Optional[int]:
         index = self.attributes.get(LAYER_ATTRIBUTE_COLOR_PALETTE, None)
         if index is None:
             return None
@@ -5852,15 +5765,15 @@ class GSLayer(GSBase):
         return int(index)
 
     @property
-    def isAppleColorLayer(self):
+    def isAppleColorLayer(self) -> bool:
         return LAYER_ATTRIBUTE_SBIX_SIZE in self.attributes
 
     @property
-    def hasPathComponents(self):
+    def hasPathComponents(self) -> bool:
         return any(h.isPathComponent for h in self.hints)
 
     @property
-    def hasCorners(self):
+    def hasCorners(self) -> bool:
         return self.hasPathComponents
 
 
@@ -5905,29 +5818,73 @@ GSLayer._add_parsers(
 
 
 class GSBackgroundLayer(GSLayer):
-    @property
-    def background(self):
+
+    @property  # type: ignore
+    def background(self) -> None:  # type: ignore
         return None
 
+    @background.setter
+    def background(self, value: "GSBackgroundLayer") -> None:  # type: ignore
+        pass
+
     @property
-    def foreground(self) -> GSLayer:
-        return self._foreground
+    def foreground(self) -> GSLayer:  # type: ignore
+        return self._foreground  # type: ignore
 
     # The width property of this class behaves like this in Glyphs:
     #  - Always return the width of the foreground
     #  - Settable but does not remember the value (basically useless)
     # Reproduce this behaviour here so that the roundtrip does not rely on it.
     @property
-    def width(self):
-        return self._foreground.width
+    def width(self) -> float:
+        return self._foreground.width if self._foreground else 0.0
 
     @width.setter
-    def width(self, whatever):
+    def width(self, whatever: Optional[float]) -> None:
         pass
 
 
 class GSGlyph(GSBase):
-    def _serialize_to_plist(self, writer):
+
+    _parent: Optional[GSFont] = None
+
+    def __init__(self, name: Optional[str] = None) -> None:
+        self._layers: OrderedDict[str, Any] = OrderedDict()
+        self._unicodes: List[str] = []
+        self.bottomKerningGroup: Optional[str] = None
+        self.bottomMetricsKey: Optional[str] = None
+        self._category: Optional[str] = None
+        self.case: Optional[str] = None
+        self.color: Optional[Any] = None
+        self.export: bool = self._defaultsForName["export"]
+        self.lastChange: Optional[Any] = None
+        self.leftKerningGroup: Optional[str] = None
+        self.leftKerningKey: Optional[str] = None
+        self.metricLeft: Optional[Any] = None
+        self.name: str = name or "new glyph"  # make name not optional to simpify usage
+        self.note: Optional[str] = None
+        self.locked: bool = False
+        self.smartComponentAxes: List[Any] = []
+        self.production: str = ""
+        self.rightKerningGroup: Optional[str] = None
+        self.rightKerningKey: str = ""
+        self.metricRight: Optional[Any] = None
+        self.script: Optional[str] = None
+        self.selected: bool = False
+        self.subCategory: Optional[str] = None
+        self.tags: List[str] = []
+        self.topKerningGroup: Optional[str] = None
+        self.topMetricsKey: Optional[str] = None
+        self._userData: Optional[Any] = None
+        self.vertWidthMetricsKey: Optional[Any] = None
+        self.metricVertWidth: Optional[Any] = None
+        self.metricWidth: Optional[Any] = None
+        self.vertOriginMetricsKey: Optional[Any] = None
+        self.sortName: Optional[str] = None
+        self.sortNameKeep: Optional[str] = None
+        self.direction: Optional[Any] = None
+
+    def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "case")
             writer.writeObjectKeyValue(self, "category")
@@ -5950,6 +5907,7 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(
                 self, "topKerningGroup", "if_true", keyName="kernTop"
             )
+
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
 
@@ -5959,41 +5917,20 @@ class GSGlyph(GSBase):
             # else:
             #    # Glyphs 3 switches the classes. Writing to G2
             #    writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true", keyName="leftKerningGroup")
-
-            writer.writeObjectKeyValue(
-                self, "metricLeft", "if_true", keyName="leftMetricsKey"
-            )
-            writer.writeObjectKeyValue(
-                self, "metricWidth", "if_true", keyName="widthMetricsKey"
-            )
-            writer.writeObjectKeyValue(
-                self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey"
-            )
+            writer.writeObjectKeyValue(self, "metricLeft", "if_true", keyName="leftMetricsKey")
+            writer.writeObjectKeyValue(self, "metricWidth", "if_true", keyName="widthMetricsKey")
+            writer.writeObjectKeyValue(self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey")
 
         writer.writeObjectKeyValue(self, "locked", "if_true")
 
         if writer.formatVersion >= 3:
-            writer.writeObjectKeyValue(
-                self, "bottomMetricsKey", "if_true", keyName="metricBottom"
-            )
-            writer.writeObjectKeyValue(
-                self, "leftMetricsKey", "if_true", keyName="metricLeft"
-            )
-            writer.writeObjectKeyValue(
-                self, "rightMetricsKey", "if_true", keyName="metricRight"
-            )
-            writer.writeObjectKeyValue(
-                self, "topMetricsKey", "if_true", keyName="metricTop"
-            )
-            writer.writeObjectKeyValue(
-                self, "vertOriginMetricsKey", "if_true", keyName="metricVertOrigin"
-            )
-            writer.writeObjectKeyValue(
-                self, "vertWidthMetricsKey", "if_true", keyName="metricVertWidth"
-            )
-            writer.writeObjectKeyValue(
-                self, "widthMetricsKey", "if_true", keyName="metricWidth"
-            )
+            writer.writeObjectKeyValue(self, "bottomMetricsKey", "if_true", keyName="metricBottom")
+            writer.writeObjectKeyValue(self, "leftMetricsKey", "if_true", keyName="metricLeft")
+            writer.writeObjectKeyValue(self, "rightMetricsKey", "if_true", keyName="metricRight")
+            writer.writeObjectKeyValue(self, "topMetricsKey", "if_true", keyName="metricTop")
+            writer.writeObjectKeyValue(self, "vertOriginMetricsKey", "if_true", keyName="metricVertOrigin")
+            writer.writeObjectKeyValue(self, "vertWidthMetricsKey", "if_true", keyName="metricVertWidth")
+            writer.writeObjectKeyValue(self, "widthMetricsKey", "if_true", keyName="metricWidth")
 
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true")
@@ -6009,6 +5946,7 @@ class GSGlyph(GSBase):
             writer.writeKeyValue("unicode", self.unicodes)
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "production", "if_true")
+
         writer.writeObjectKeyValue(self, "script")
         if writer.formatVersion == 2:
             writer.writeObjectKeyValue(self, "category")
@@ -6023,22 +5961,27 @@ class GSGlyph(GSBase):
             writer.writeObjectKeyValue(self, "tags", "if_true")
 
         if self.unicodes and writer.formatVersion > 2:
-            count_of_unicodes = len(self.unicodes)
+            count_of_unicodes: int = len(self.unicodes)
             if count_of_unicodes == 1:
                 writer.writeKeyValue("unicode", int(self.unicodes[0], 16))
             else:
-                v = OneLineList([str(int(u, 16)) for u in self.unicodes])
+                v: OneLineList = OneLineList([str(int(u, 16)) for u in self.unicodes])
                 writer.writeKeyValue("unicode", v)
+
         writer.writeObjectKeyValue(self, "userData", "if_true")
+
         if self.smartComponentAxes:
             writer.writeKeyValue("partsSettings", self.smartComponentAxes)
 
-    _defaultsForName = {
+    _defaultsForName: Dict[str, Any] = {
         "export": True,
     }
 
-    def _parse_unicode_dict(self, parser, value):
+    def _parse_unicode_dict(self, parser: Parser, value: Union[int, List[int]]) -> None:
         parser.current_type = None
+
+        uni: Optional[Union[str, list]] = None
+
         if parser.formatVersion >= 3:
             if not isinstance(value, list):
                 value = [value]
@@ -6050,62 +5993,23 @@ class GSGlyph(GSBase):
             # look like a hex string again
             uni = ["%04i" % value]
         else:
-            uni = value
+            uni = cast(str, value)
         self["_unicodes"] = UnicodesList(uni)
 
-    def _parse_layers_dict(self, parser, value):
+    def _parse_layers_dict(self, parser: Parser, value: Any) -> int:
         layers = parser._parse(value, GSLayer)
         for l in layers:
             self.layers.append(l)
         return 0
 
-    def post_read(self):  # GSGlyph
+    def post_read(self) -> None:  # GSGlyph
         for layer in self.layers:
             layer.post_read()
 
-    def __init__(self, name=None):
-        self._layers = OrderedDict()
-        self._unicodes = []
-        self.bottomKerningGroup = None
-        self.bottomMetricsKey = None
-        self.category = None
-        self.case = None
-        self.color = None
-        self.export = self._defaultsForName["export"]
-        self.lastChange = None
-        self.leftKerningGroup = None
-        self.leftKerningKey = None
-        self.metricLeft = None
-        self.name = name
-        self.note = None
-        self.locked = False
-        self.parent = None
-        self.partsSettings = []
-        self.production = ""
-        self.rightKerningGroup = None
-        self.rightKerningKey = ""
-        self.metricRight = None
-        self.script = None
-        self.selected = False
-        self.subCategory = None
-        self.tags = []
-        self.topKerningGroup = None
-        self.topMetricsKey = None
-        self.userData = None
-        self.vertWidthMetricsKey = None
-        self.metricVertWidth = None
-        self.metricWidth = None
-        self.vertOriginMetricsKey = None
-        self.vertWidthMetricsKey = None
-
-        self.sortName = None
-        self.sortNameKeep = None
-        self.direction = None
-
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<GSGlyph {hex(id(self))}> "{self.name}" with {len(self.layers)} layers'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<GSGlyph "{self.name}" with {len(self.layers)} layers>'
 
     layers = property(
@@ -6113,7 +6017,7 @@ class GSGlyph(GSBase):
         lambda self, value: GlyphLayerProxy(self).setter(value),
     )
 
-    def _setupLayer(self, layer, key):
+    def _setupLayer(self, layer: Any, key: str) -> None:
         assert isinstance(key, str)
         layer.parent = self
         if layer.hasBackground:
@@ -6131,15 +6035,24 @@ class GSGlyph(GSBase):
     #             Layer.associatedMasterId = Key
     #         self._layers[key] = layer
 
-    def removeLayerForKey_(self, key):
+    def removeLayerForKey(self, key: str) -> None:
         for layer in list(self._layers):
             if layer == key:
                 del self._layers[key]
 
     @property
-    def string(self):
+    def parent(self) -> GSFont:
+        return cast(GSFont, self._parent)
+
+    @parent.setter
+    def parent(self, value: Optional[GSFont]) -> None:
+        self._parent = value
+
+    @property
+    def string(self) -> Optional[str]:
         if self.unicode:
             return chr(int(self.unicode, 16))
+        return None
 
     userData = property(
         lambda self: UserDataProxy(self),
@@ -6147,75 +6060,83 @@ class GSGlyph(GSBase):
     )
 
     @property
-    def glyphname(self):
+    def glyphname(self) -> str:
         return self.name
 
     @glyphname.setter
-    def glyphname(self, value):
+    def glyphname(self, value: str) -> None:
         self.name = value
 
     @property
-    def smartComponentAxes(self):
+    def category(self) -> Optional[str]:
+        return self._category
+
+    @category.setter
+    def category(self, value: Optional[str]) -> None:
+        self._category = value
+
+    @property
+    def smartComponentAxes(self) -> List[Any]:
         return self.partsSettings
 
     @smartComponentAxes.setter
-    def smartComponentAxes(self, value):
+    def smartComponentAxes(self, value: List[Any]) -> None:
         self.partsSettings = value
 
     @property
-    def id(self):
+    def id(self) -> Optional[str]:
         """An unique identifier for each glyph"""
         return self.name
 
     @property
-    def unicode(self):
+    def unicode(self) -> Optional[str]:
         if self._unicodes:
             return self._unicodes[0]
         return None
 
     @unicode.setter
-    def unicode(self, unicode):
+    def unicode(self, unicode: Union[str, List[str]]) -> None:
         self._unicodes = UnicodesList(unicode)
 
     @property
-    def unicodes(self):
+    def unicodes(self) -> List[str]:
         return self._unicodes
 
     @unicodes.setter
-    def unicodes(self, unicodes):
+    def unicodes(self, unicodes: Union[str, List[str]]) -> None:
         self._unicodes = UnicodesList(unicodes)
 
     # V2 compatible interface
     @property
-    def rightMetricsKey(self):
+    def rightMetricsKey(self) -> Optional[Any]:
         return self.metricRight
 
     @rightMetricsKey.setter
-    def rightMetricsKey(self, value):
+    def rightMetricsKey(self, value: Any) -> None:
         self.metricRight = value
 
     @property
-    def leftMetricsKey(self):
+    def leftMetricsKey(self) -> Optional[Any]:
         return self.metricLeft
 
     @leftMetricsKey.setter
-    def leftMetricsKey(self, value):
+    def leftMetricsKey(self, value: Any) -> None:
         self.metricLeft = value
 
     @property
-    def widthMetricsKey(self):
+    def widthMetricsKey(self) -> Optional[Any]:
         return self.metricWidth
 
     @widthMetricsKey.setter
-    def widthMetricsKey(self, value):
+    def widthMetricsKey(self, value: Any) -> None:
         self.metricWidth = value
 
     @property
-    def vertWidthMetricsKey(self):
+    def vertWidthMetricsKey(self) -> Optional[Any]:
         return self.metricVertWidth
 
     @vertWidthMetricsKey.setter
-    def vertWidthMetricsKey(self, value):
+    def vertWidthMetricsKey(self, value: Any) -> None:
         self.metricVertWidth = value
     '''
     @property
@@ -6258,7 +6179,7 @@ GSGlyph._add_parsers(
 
 
 class GSFont(GSBase):
-    _defaultsForName = {
+    _defaultsForName: Dict[str, Any] = {
         "classes": [],
         "features": [],
         "featurePrefixes": [],
@@ -6273,14 +6194,66 @@ class GSFont(GSBase):
         "keyboardIncrementHuge": 100,
     }
 
-    def _serialize_to_plist(self, writer):  # noqa: C901
+    def __init__(
+        self, path: Optional[Union[str, bytes, os.PathLike[str], os.PathLike[bytes]]] = None
+    ) -> None:
+        self.displayStrings: str = ""
+        self.familyName: str = "Unnamed font"
+        self.fontType: FontType = FontType.DEFAULT
+        self._glyphs: List[GSGlyph] = []
+        self._instances: List[GSInstance] = []
+        self._masters: List[GSFontMaster] = []
+        self.axes: List[GSAxis] = []
+        self._userData: Optional[Dict[str, Any]] = None
+        self._versionMinor: int = 0
+        self.formatVersion: int = 3
+        self.appVersion: str = "3260"  # minimum required version
+        self._classes: List[GSClass] = []
+        self._features: List[GSFeature] = []
+        self._featurePrefixes: List[GSFeaturePrefix] = []
+        self.customParameters = []
+        self.date: Optional[Any] = None
+        self._disablesAutomaticAlignment: Optional[bool] = self._defaultsForName["disablesAutomaticAlignment"]
+        self.disablesNiceNames: bool = self._defaultsForName["disablesNiceNames"]
+        self.grid: int = self._defaultsForName["grid"]
+        self.gridSubDivision: int = self._defaultsForName["gridSubDivision"]
+        self.keepAlternatesTogether: bool = False
+        self._kerningLTR: Dict[str, Dict[str, Dict[str, int]]] = OrderedDict()
+        self._kerningRTL: Dict[str, Dict[str, Dict[str, int]]] = OrderedDict()
+        self._kerningVertical: Dict[str, Dict[str, Dict[str, int]]] = OrderedDict()
+        self.metrics: List[GSMetric] = copy.copy(self._defaultMetrics)
+        self._numbers: List[GSMetric] = []
+        self._properties: List[Any] = []
+        self._stems: List[GSMetric] = []
+        self.keyboardIncrement: int = self._defaultsForName["keyboardIncrement"]
+        self.keyboardIncrementBig: int = self._defaultsForName["keyboardIncrementBig"]
+        self.keyboardIncrementHuge: int = self._defaultsForName["keyboardIncrementHuge"]
+        self.previewRemoveOverlap: bool = True
+        self.upm: int = self._defaultsForName["unitsPerEm"]
+        self.versionMajor: int = 1
+        self._note: str = ""
+        self.readBuffer: Dict[str, Any] = {}
+
+        self.filepath: Optional[str] = None
+        if path:
+            path = os.fsdecode(os.fspath(path))
+            self.filepath = path
+            load(path, self)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.familyName}"'
+
+    def __str__(self) -> str:
+        return f'<{self.__class__.__name__} "{self.familyName}">'
+
+    def _serialize_to_plist(self, writer: Writer) -> None:  # noqa: C901
         writer.writeKeyValue(".appVersion", self.appVersion)
         if writer.formatVersion > 2:
             writer.writeKeyValue(".formatVersion", writer.formatVersion)
         if self.displayStrings and writer.container == "flat":
             writer.writeKeyValue("DisplayStrings", self.displayStrings)
 
-        customParameters = list(self.customParameters)
+        customParameters: List[GSCustomParameter] = list(self.customParameters)
         if writer.formatVersion < 3:
             parameters = GSFontInfoValue.legacyCustomParametersFromProperties(
                 self.properties, self
@@ -6295,9 +6268,9 @@ class GSFont(GSBase):
             if writer.formatVersion >= 3:
                 writer.writeObjectKeyValue(self, "axes", "if_true")
             else:
-                axes = []
+                axes: List[Dict[str, Union[str, int]]] = []
                 for axis in self.axes:
-                    axesDict = {"Name": axis.name, "Tag": axis.axisTag}
+                    axesDict: Dict[str, Union[str, int]] = {"Name": axis.name, "Tag": axis.axisTag}
                     if axis.hidden:
                         axesDict["Hidden"] = 1
                     axes.append(axesDict)
@@ -6376,7 +6349,7 @@ class GSFont(GSBase):
         writer.writeObjectKeyValue(self, "versionMajor")
         writer.writeObjectKeyValue(self, "versionMinor")
 
-    _defaultMetrics = [
+    _defaultMetrics: List[GSMetric] = [
         GSMetric(type=GSMetricsKeyAscender),
         GSMetric(type=GSMetricsKeyCapHeight),
         GSMetric(type=GSMetricsKeyxHeight),
@@ -6385,13 +6358,13 @@ class GSFont(GSBase):
         GSMetric(type=GSMetricsKeyItalicAngle),
     ]
 
-    def _parse_glyphs_dict(self, parser, value):
+    def _parse_glyphs_dict(self, parser: Parser, value: Any) -> int:
         glyphs = parser._parse(value, GSGlyph)
         for l in glyphs:
             self.glyphs.append(l)
         return 0
 
-    def _parse_settings_dict(self, parser, settings):
+    def _parse_settings_dict(self, parser: Parser, settings: Dict[str, Any]) -> None:
         self.disablesAutomaticAlignment = bool(
             settings.get("disablesAutomaticAlignment", False)
         )
@@ -6407,71 +6380,16 @@ class GSFont(GSBase):
         self.fontType = font_type(settings.get("fontType", "default"))
         self.previewRemoveOverlap = bool(settings.get("previewRemoveOverlap", True))
 
-    def _parse___formatVersion_dict(self, parser, val):
+    def _parse___formatVersion_dict(self, parser: Parser, val: int) -> None:
         self.formatVersion = parser.formatVersion = val
 
-    def __init__(
-        self, path: str | bytes | os.PathLike[str] | os.PathLike[bytes] | None = None
-    ):
-        self.displayStrings = ""
-        self.familyName = "Unnamed font"
-        self.fontType = FontType.DEFAULT
-        self._glyphs = []
-        self._instances = []
-        self._masters = []
-        self.axes = []
-        self._userData = None
-        self._versionMinor = 0
-        self.formatVersion = 3
-        self.appVersion = "3260"  # minimum required version
-        self.classes = copy.copy(self._defaultsForName["classes"])
-        self.features = copy.copy(self._defaultsForName["features"])
-        self.featurePrefixes = copy.copy(self._defaultsForName["featurePrefixes"])
-        self.customParameters = []
-        self.date = None
-        self._disablesAutomaticAlignment = self._defaultsForName[
-            "disablesAutomaticAlignment"
-        ]
-        self.disablesNiceNames = self._defaultsForName["disablesNiceNames"]
-        self._disablesAutomaticAlignment = None
-        self.grid = self._defaultsForName["grid"]
-        self.gridSubDivision = self._defaultsForName["gridSubDivision"]
-        self.keepAlternatesTogether = False
-        self._kerningLTR = OrderedDict()
-        self._kerningRTL = OrderedDict()
-        self._kerningVertical = OrderedDict()
-        self.metrics = copy.copy(self._defaultMetrics)
-        self._numbers = []
-        self._properties = []
-        self._stems = []
-        self.keyboardIncrement = self._defaultsForName["keyboardIncrement"]
-        self.keyboardIncrementBig = self._defaultsForName["keyboardIncrementBig"]
-        self.keyboardIncrementHuge = self._defaultsForName["keyboardIncrementHuge"]
-        self.previewRemoveOverlap = True
-        self.upm = self._defaultsForName["unitsPerEm"]
-        self.versionMajor = 1
-        self._note = ""
-        self.readBuffer = {}
-
-        self.filepath = None
-        if path:
-            path = os.fsdecode(os.fspath(path))
-            self.filepath = path
-            load(path, self)
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__} {hex(id(self))}> "{self.familyName}"'
-
-    def __str__(self):
-        return f'<{self.__class__.__name__} "{self.familyName}">'
-
-    def save(self, path=None):
+    def save(self, path: Optional[Union[str, os.PathLike[str]]] = None) -> None:
         if path is None:
             if self.filepath:
                 path = self.filepath
             else:
                 raise ValueError("No path provided and GSFont has no filepath")
-        if not isinstance(path, str):  # sometime we get a Path
+        if not isinstance(path, str):  # sometimes we get a Path object
             path = str(path)
         if path.endswith(".glyphs"):
             self.save_flat_file(path)
@@ -6480,19 +6398,19 @@ class GSFont(GSBase):
         else:
             raise ValueError("unknown file extension on path:", path)
 
-    def save_flat_file(self, path):
+    def save_flat_file(self, path: str) -> None:
         with open(path, "w", encoding="utf-8") as fp:
             w = Writer(fp, formatVersion=self.formatVersion)
             logger.info("Writing %r to .glyphs file", self)
             w.write(self)
 
-    def save_package_file(self, path):
+    def save_package_file(self, path: str) -> None:
         os.makedirs(path, exist_ok=True)
         glyphs_folder = os.path.join(path, "glyphs")
         os.makedirs(glyphs_folder, exist_ok=True)
-        glyph_order = []
+        glyph_order: List[str] = []
         for glyph in self.glyphs:
-            name = glyph.name
+            name: str = glyph.name
             glyph_order.append(name)
             glyph_file_name = os.path.join(
                 glyphs_folder, filenames.userNameToFileName(name) + ".glyph"
@@ -6508,24 +6426,21 @@ class GSFont(GSBase):
         with open(info_file, "w", encoding="utf-8") as fp:
             w = Writer(fp, formatVersion=self.formatVersion, container="package")
             w.write(self)
-        info_file = os.path.join(path, "fontinfo.plist")
         if self.displayStrings:
             uistate_file = os.path.join(path, "UIState.plist")
             with open(uistate_file, "w", encoding="utf-8") as fp:
                 w = Writer(fp, formatVersion=self.formatVersion)
                 w.write({"displayStrings": self.displayStrings})
 
-    def _getAxisCountFromMasters(self, masters):
-        axisCount = 6
-        widthValueSet = set()
-        customValueSet = set()
-        customValue1Set = set()
-        customValue2Set = set()
-        customValue3Set = set()
+    def _getAxisCountFromMasters(self, masters: List[GSFontMaster]) -> int:
+        axisCount: int = 6
+        widthValueSet: set = set()
+        customValueSet: set = set()
+        customValue1Set: set = set()
+        customValue2Set: set = set()
+        customValue3Set: set = set()
         for master in masters:
-            axesValues = self.readBuffer.get("axesValues")
-            if not axesValues:
-                axesValues = []
+            axesValues = self.readBuffer.get("axesValues", [])
             if len(axesValues) > 1:
                 widthValueSet.add(axesValues[1])
             if len(axesValues) > 2:
@@ -6548,9 +6463,9 @@ class GSFont(GSBase):
                             axisCount -= 1
         return axisCount
 
-    def _getLegacyAxes(self):
-        legacyAxes = []
-        axesCount = self._getAxisCountFromMasters(self.masters)
+    def _getLegacyAxes(self) -> List[GSAxis]:
+        legacyAxes: List[GSAxis] = []
+        axesCount: int = self._getAxisCountFromMasters(self.masters)
         legacyAxes.append(GSAxis("Weight", "wght"))
         legacyAxes[-1].axisId = "a01"
         if axesCount > 1:
@@ -6570,13 +6485,13 @@ class GSFont(GSBase):
             legacyAxes[-1].axisId = "a05"
         return legacyAxes
 
-    def post_read(self):  # GSFont
+    def post_read(self) -> None:  # GSFont
         if self.formatVersion < 3:
             if not self.axes:
-                axesParameter = self.customParameters["Axes"]
+                axesParameter: Any = self.customParameters["Axes"]
                 if axesParameter:
                     for axisDict in axesParameter:
-                        axis = GSAxis()
+                        axis: GSAxis = GSAxis()
                         axis.name = axisDict["Name"]
                         axis.axisTag = axisDict["Tag"]
                         axis.hidden = axisDict.get("Hidden", False)
@@ -6587,12 +6502,11 @@ class GSFont(GSBase):
                     self.axes = self._getLegacyAxes()
                 GSFontInfoValue.propertiesFromLegacyCustomParameters(self)
         else:
-            idx = 1
+            idx: int = 1
             for axis in self.axes:
-                axis.axisId = (
-                    "a%02d" % idx
-                )  # this is more cosmetic as the default would do
+                axis.axisId = "a%02d" % idx  # This is more cosmetic as the default would do
                 idx += 1
+
         assert self.axes is not None
         for master in self.masters:
             assert master.font == self
@@ -6606,14 +6520,15 @@ class GSFont(GSBase):
             feature.post_read()
         for customParameter in self.customParameters:
             customParameter.post_read(self.formatVersion)
+
         if self.customParameters["note"]:
             self.note = self.customParameters["note"]
             del self.customParameters["note"]
 
-    def getVersionMinor(self):
+    def getVersionMinor(self) -> int:
         return self._versionMinor
 
-    def setVersionMinor(self, value):
+    def setVersionMinor(self, value: int) -> None:
         """Ensure that the minor version number is between 0 and 999."""
         assert 0 <= value <= 999
         self._versionMinor = value
@@ -6621,11 +6536,11 @@ class GSFont(GSBase):
     versionMinor = property(getVersionMinor, setVersionMinor)
 
     @property
-    def formatVersion(self):
+    def formatVersion(self) -> int:
         return self._formatVersion
 
     @formatVersion.setter
-    def formatVersion(self, value):
+    def formatVersion(self, value: int) -> None:
         self._formatVersion = value
 
     glyphs = property(
@@ -6633,7 +6548,7 @@ class GSFont(GSBase):
         lambda self, value: FontGlyphsProxy(self).setter(value),
     )
 
-    def _setupGlyph(self, glyph):
+    def _setupGlyph(self, glyph: GSGlyph) -> None:
         glyph.parent = self
         for layer in glyph.layers:
             if (
@@ -6648,13 +6563,19 @@ class GSFont(GSBase):
         lambda self, value: FontFontMasterProxy(self).setter(value),
     )
 
-    def masterForId(self, key):
+    def masterForId(self, key: str) -> Optional[GSFontMaster]:
         for master in self._masters:
             if master.id == key:
                 return master
         return None
 
-    def metricFor(self, metricType, filter=None, name=None, add_if_missing=False):
+    def metricFor(
+        self,
+        metricType: str,
+        filter: Optional[str] = None,
+        name: Optional[str] = None,
+        add_if_missing: bool = False,
+    ) -> Optional[GSMetric]:
         for metric in self.metrics:
             if (
                 metric.type == metricType
@@ -6707,91 +6628,85 @@ class GSFont(GSBase):
     )
 
     @property
-    def stems(self):
+    def stems(self) -> List[GSMetric]:
         return self._stems
 
     @stems.setter
-    def stems(self, stems):
+    def stems(self, stems: List[GSMetric]) -> None:
         assert not stems or isinstance(stems[0], GSMetric)
         self._stems = stems
 
-    def stemForKey(self, key):
+    def stemForKey(self, key: Union[int, str]) -> Optional[GSMetric]:
         if isinstance(key, int):
             if key < 0:
-                key += self.__len__()
-            stem = self.stems[key]
+                key += len(self.stems)
+            return self.stems[key]
         elif isString(key):
-            stem = self.stemForName(key)
-            if stem is None:
-                stem = self.stemForId(key)
+            return self.stemForName(key) or self.stemForId(key)
         else:
             raise TypeError(
                 "list indices must be integers or strings, not %s" % type(key).__name__
             )
-        return stem
 
-    def stemForName(self, key):
+    def stemForName(self, key: str) -> Optional[GSMetric]:
         for stem in self._stems:
             if stem.name == key:
                 return stem
         return None
 
-    def stemForId(self, key):
+    def stemForId(self, key: str) -> Optional[GSMetric]:
         for stem in self._stems:
             if stem.id == key:
                 return stem
         return None
 
     @property
-    def numbers(self):
+    def numbers(self) -> List[GSMetric]:
         return self._numbers
 
     @numbers.setter
-    def numbers(self, numbers):
+    def numbers(self, numbers: List[GSMetric]) -> None:
         assert not numbers or isinstance(numbers[0], GSMetric)
         self._numbers = numbers
 
-    def numberForKey(self, key):
+    def numberForKey(self, key: Union[int, str]) -> Optional[GSMetric]:
         if isinstance(key, int):
             if key < 0:
-                key += self.__len__()
-            number = self.numbers[key]
-        elif isString(key):
-            number = self.numberForName(key)
-            if number is None:
-                number = self.numberForId(key)
+                key += len(self.numbers)
+            return self.numbers[key]
+        elif isinstance(key, str):
+            return self.numberForName(key) or self.numberForId(key)
         else:
             raise TypeError(
                 "list indices must be integers or strings, not %s" % type(key).__name__
             )
-        return number
 
-    def numberForName(self, key):
+    def numberForName(self, key: str) -> Optional[GSMetric]:
         for number in self._numbers:
             if number.name == key:
                 return number
         return None
 
-    def numberForId(self, key):
+    def numberForId(self, key: str) -> Optional[GSMetric]:
         for number in self._numbers:
             if number.id == key:
                 return number
         return None
 
     @property
-    def kerning(self):
+    def kerning(self) -> Dict[str, Dict[str, Dict[str, int]]]:
         return self._kerningLTR
 
     @kerning.setter
-    def kerning(self, kerning):
+    def kerning(self, kerning: Dict[str, Dict[str, Dict[str, int]]]) -> None:
         self.kerningLTR = kerning
 
     @property
-    def kerningLTR(self):
+    def kerningLTR(self) -> Dict[str, Dict[str, Dict[str, int]]]:
         return self._kerningLTR
 
     @kerningLTR.setter
-    def kerningLTR(self, kerning):
+    def kerningLTR(self, kerning: Dict[str, Dict[str, Dict[str, int]]]) -> None:
         self._kerningLTR = kerning
         for master_map in kerning.values():
             for glyph_map in master_map.values():
@@ -6799,11 +6714,11 @@ class GSFont(GSBase):
                     glyph_map[right_glyph] = parse_float_or_int(value)
 
     @property
-    def kerningRTL(self):
+    def kerningRTL(self) -> Dict[str, Dict[str, Dict[str, int]]]:
         return self._kerningRTL
 
     @kerningRTL.setter
-    def kerningRTL(self, kerning):
+    def kerningRTL(self, kerning: Dict[str, Dict[str, Dict[str, int]]]) -> None:
         self._kerningRTL = kerning
         for master_map in kerning.values():
             for glyph_map in master_map.values():
@@ -6811,11 +6726,11 @@ class GSFont(GSBase):
                     glyph_map[right_glyph] = parse_float_or_int(value)
 
     @property
-    def kerningVertical(self):
+    def kerningVertical(self) -> Dict[str, Dict[str, Dict[str, int]]]:
         return self._kerningVertical
 
     @kerningVertical.setter
-    def kerningVertical(self, kerning):
+    def kerningVertical(self, kerning: Dict[str, Dict[str, Dict[str, int]]]) -> None:
         self._kerningVertical = kerning
         for master_map in kerning.values():
             for glyph_map in master_map.values():
@@ -6823,36 +6738,38 @@ class GSFont(GSBase):
                     glyph_map[right_glyph] = parse_float_or_int(value)
 
     @property
-    def selection(self):
-        return (glyph for glyph in self.glyphs if glyph.selected)
+    def selection(self) -> None:
+        OnlyInGlyphsAppError
 
     @property
-    def note(self):
+    def note(self) -> str:
         return self._note
 
     @note.setter
-    def note(self, value):
+    def note(self, value: str) -> None:
         self._note = value
 
     @property
-    def gridLength(self):
+    def gridLength(self) -> int:
         if self.gridSubDivision > 0:
-            return self.grid / self.gridSubDivision
+            return self.grid // self.gridSubDivision
         else:
             return self.grid
 
     @property
-    def disablesAutomaticAlignment(self):
+    def disablesAutomaticAlignment(self) -> Optional[bool]:
         return self._disablesAutomaticAlignment
 
     @disablesAutomaticAlignment.setter
-    def disablesAutomaticAlignment(self, value):
-        assert value or self._disablesAutomaticAlignment is None
+    def disablesAutomaticAlignment(self, value: bool) -> None:
+        # assert value or self._disablesAutomaticAlignment is None
         self._disablesAutomaticAlignment = value
 
-    EMPTY_KERNING_VALUE = (1 << 63) - 1  # As per the documentation
+    EMPTY_KERNING_VALUE: int = (1 << 63) - 1  # As per the documentation
 
-    def kerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
+    def kerningForPair(
+        self, fontMasterId: str, leftKey: str, rightKey: str, direction: int = LTR
+    ) -> int:
         if direction == LTR:
             kerntable = self._kerningLTR
         elif direction == RTL:
@@ -6866,7 +6783,9 @@ class GSFont(GSBase):
         except KeyError:
             return self.EMPTY_KERNING_VALUE
 
-    def setKerningForPair(self, fontMasterId, leftKey, rightKey, value, direction=LTR):
+    def setKerningForPair(
+        self, fontMasterId: str, leftKey: str, rightKey: str, value: int, direction: int = LTR
+    ) -> None:
         if direction == LTR:
             if not self._kerningLTR:
                 self._kerningLTR = {}
@@ -6885,7 +6804,9 @@ class GSFont(GSBase):
             kerntable[fontMasterId][leftKey] = {}
         kerntable[fontMasterId][leftKey][rightKey] = value
 
-    def removeKerningForPair(self, fontMasterId, leftKey, rightKey, direction=LTR):
+    def removeKerningForPair(
+        self, fontMasterId: str, leftKey: str, rightKey: str, direction: int = LTR
+    ) -> None:
         if direction == LTR:
             kerntable = self._kerningLTR
         elif direction == RTL:
@@ -6907,56 +6828,56 @@ class GSFont(GSBase):
             del kerntable[fontMasterId]
 
     @property
-    def manufacturer(self):
+    def manufacturer(self) -> str:
         return self.properties["manufacturers"]
 
     @manufacturer.setter
-    def manufacturer(self, value):
+    def manufacturer(self, value: str) -> None:
         self.properties.setProperty("manufacturers", value)
 
     @property
-    def manufacturerURL(self):
+    def manufacturerURL(self) -> str:
         return self.properties["manufacturerURL"]
 
     @manufacturerURL.setter
-    def manufacturerURL(self, value):
+    def manufacturerURL(self, value: str) -> None:
         self.properties["manufacturerURL"] = value
 
     @property
-    def copyright(self):
+    def copyright(self) -> str:
         return self.properties["copyrights"]
 
     @copyright.setter
-    def copyright(self, value):
+    def copyright(self, value: str) -> None:
         self.properties.setProperty("copyrights", value)
 
     @property
-    def trademark(self):
+    def trademark(self) -> str:
         return self.properties["trademarks"]
 
     @trademark.setter
-    def trademark(self, value):
+    def trademark(self, value: str) -> None:
         self.properties.setProperty("trademarks", value)
 
     @property
-    def designer(self):
+    def designer(self) -> str:
         return self.properties["designers"]
 
     @designer.setter
-    def designer(self, value):
+    def designer(self, value: str) -> None:
         self.properties.setProperty("designers", value)
 
     @property
-    def designerURL(self):
+    def designerURL(self) -> str:
         return self.properties["designerURL"]
 
     @designerURL.setter
-    def designerURL(self, value):
+    def designerURL(self, value: str) -> None:
         self.properties["designerURL"] = value
 
     @property
-    def settings(self):
-        _settings = OrderedDict()
+    def settings(self) -> Dict[str, Union[int, str]]:
+        _settings: Dict[str, Union[int, str]] = OrderedDict()
         if self.disablesAutomaticAlignment:
             _settings["disablesAutomaticAlignment"] = 1
         if self.disablesNiceNames:

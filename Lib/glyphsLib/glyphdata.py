@@ -19,7 +19,8 @@ of a glyph.
 These properties assist in applying automatisms to glyphs when round-tripping.
 """
 
-
+from __future__ import annotations
+from typing import Optional, Dict, Tuple, List, Union, IO
 import collections
 import re
 from fontTools import unicodedata
@@ -162,7 +163,7 @@ langTag2Name = {
 langName2Tag = {dl: ul for ul, dl in langTag2Name.items()}
 
 # Global variable holding the actual GlyphData data, assigned on first use.
-GLYPHDATA = None
+GLYPHDATA: Optional["GlyphData"] = None
 
 
 class GlyphData:
@@ -177,28 +178,32 @@ class GlyphData:
     __slots__ = ["names", "alternative_names", "production_names", "unicodes"]
 
     def __init__(
-        self, name_mapping, alt_name_mapping, production_name_mapping, unicodes_mapping
-    ):
+        self,
+        name_mapping: Dict[str, Dict[str, str]],
+        alt_name_mapping: Dict[str, Dict[str, str]],
+        production_name_mapping: Dict[str, Dict[str, str]],
+        unicodes_mapping: Dict[str, Dict[str, str]],
+    ) -> None:
         self.names = name_mapping
         self.alternative_names = alt_name_mapping
         self.production_names = production_name_mapping
         self.unicodes = unicodes_mapping
 
     @classmethod
-    def from_files(cls, *glyphdata_files):
+    def from_files(cls, *glyphdata_files: Union[str, IO[bytes]]) -> "GlyphData":
         """Return GlyphData holding data from a list of XML file paths."""
-        name_mapping = {}
-        alt_name_mapping = {}
-        production_name_mapping = {}
-        unicodes_mapping = {}
+        name_mapping: Dict[str, Dict[str, str]] = {}
+        alt_name_mapping: Dict[str, Dict[str, str]] = {}
+        production_name_mapping: Dict[str, Dict[str, str]] = {}
+        unicodes_mapping: Dict[str, Dict[str, str]] = {}
 
         for glyphdata_file in glyphdata_files:
             glyph_data = xml.etree.ElementTree.parse(glyphdata_file).getroot()
             for glyph in glyph_data:
-                glyph_name = glyph.attrib["name"]
-                glyph_name_alternatives = glyph.attrib.get("altNames")
-                glyph_name_production = glyph.attrib.get("production")
-                glyph_unicode = glyph.attrib.get("unicode")
+                glyph_name: str = glyph.attrib["name"]
+                glyph_name_alternatives: Optional[str] = glyph.attrib.get("altNames")
+                glyph_name_production: Optional[str] = glyph.attrib.get("production")
+                glyph_unicode: Optional[str] = glyph.attrib.get("unicode")
 
                 name_mapping[glyph_name] = glyph.attrib
                 if glyph_name_alternatives:
@@ -215,7 +220,7 @@ class GlyphData:
         )
 
 
-def get_glyph(glyph_name, data=None, unicodes=None):
+def get_glyph(glyph_name: str, data: Optional["GlyphData"] = None, unicodes: Optional[List[str]] = None):
     """Return a named tuple (Glyph) containing information derived from a glyph
     name akin to GSGlyphInfo.
 
@@ -227,11 +232,7 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     if data is None:
         global GLYPHDATA
         if GLYPHDATA is None:
-            try:
-                from importlib.resources import files
-            except ImportError:
-                # Python <= 3.8 backport
-                from importlib_resources import files
+            from importlib.resources import files
 
             with (files("glyphsLib.data") / "GlyphData.xml").open("rb") as f1:
                 with (files("glyphsLib.data") / "GlyphData_Ideographs.xml").open(
@@ -277,7 +278,7 @@ def get_glyph(glyph_name, data=None, unicodes=None):
     )
 
 
-def _lookup_attributes(glyph_name, data):
+def _lookup_attributes(glyph_name: str, data: "GlyphData") -> Dict[str, str]:
     """Look up glyph attributes in data by glyph name, alternative name or
     production name in order or return empty dictionary.
 
@@ -291,39 +292,37 @@ def _lookup_attributes(glyph_name, data):
         or {}
     )
     # If we are using custom GlyphData, fallback to default GlyphData
-    if not attributes and data is not GLYPHDATA:
+    if not attributes and GLYPHDATA and data is not GLYPHDATA:
         attributes = _lookup_attributes(glyph_name, GLYPHDATA)
     return attributes
 
 
-def _lookup_attributes_by_unicode(unicode, data):
+def _lookup_attributes_by_unicode(unicode_value: str, data: "GlyphData") -> Dict[str, str]:
     """Look up glyph attributes in data by unicode
     or return empty dictionary.
     """
-    attributes = data.unicodes.get(unicode) or {}
+    attributes = data.unicodes.get(unicode_value) or {}
     return attributes
 
 
-def _agl_compliant_name(glyph_name):
+def _agl_compliant_name(glyph_name: str) -> Optional[str]:
     """Return an AGL-compliant name string or None if we can't make one."""
     MAX_GLYPH_NAME_LENGTH = 63
-    clean_name = re.sub("[^0-9a-zA-Z_.]", "", glyph_name)
+    clean_name = re.sub(r"[^0-9a-zA-Z_.]", "", glyph_name)
     if len(clean_name) > MAX_GLYPH_NAME_LENGTH:
         return None
     return clean_name
 
 
-def _is_unicode_u_value(name):
+def _is_unicode_u_value(name: str) -> bool:
     """Return whether we are looking at a uXXXX value."""
-    return name.startswith("u") and all(
-        part_char in "0123456789ABCDEF" for part_char in name[1:]
-    )
+    return name.startswith("u") and all(c in "0123456789ABCDEF" for c in name[1:])
 
 
-def _construct_category(glyph_name, data):
+def _construct_category(
+    glyph_name: str, data: "GlyphData"
+) -> Tuple[Optional[str], Optional[str]]:
     """Derive (sub)category of a glyph name."""
-    # Glyphs creates glyphs that start with an underscore as "non-exportable" glyphs or
-    # construction helpers without a category.
     if glyph_name.startswith("_"):
         return None, None
 
@@ -333,9 +332,7 @@ def _construct_category(glyph_name, data):
     base_name = _split_glyph_name(glyph_name, data)[0]
     base_attribute = _lookup_attributes(base_name, data) or {}
     if base_attribute:
-        category = base_attribute.get("category")
-        sub_category = base_attribute.get("subCategory")
-        return category, sub_category
+        return base_attribute.get("category"), base_attribute.get("subCategory")
 
     # Detect ligatures.
     if "_" in base_name:
@@ -345,11 +342,8 @@ def _construct_category(glyph_name, data):
 
         # If the first part is a Mark, Glyphs 2.6 declares the entire glyph a Mark
         if first_attribute.get("category") == "Mark":
-            category = first_attribute.get("category")
-            sub_category = first_attribute.get("subCategory")
-            return category, sub_category
+            return first_attribute.get("category"), first_attribute.get("subCategory")
 
-        # If the first part is a Letter...
         if first_attribute.get("category") == "Letter":
             # ... and the rest are only marks or separators or don't exist, the
             # sub_category is that of the first part ...
@@ -357,13 +351,9 @@ def _construct_category(glyph_name, data):
                 a.get("category") in (None, "Mark", "Separator")
                 for a in base_names_attributes[1:]
             ):
-                category = first_attribute.get("category")
-                sub_category = first_attribute.get("subCategory")
-                return category, sub_category
+                return first_attribute.get("category"), first_attribute.get("subCategory")
             # ... otherwise, a ligature.
-            category = first_attribute.get("category")
-            sub_category = "Ligature"
-            return category, sub_category
+            return first_attribute.get("category"), "Ligature"
 
         # TODO: Cover more cases. E.g. "one_one" -> ("Number", "Ligature") but
         # "one_onee" -> ("Number", "Composition").
@@ -374,15 +364,12 @@ def _construct_category(glyph_name, data):
     # are skipped, so len("acutecomb_o") == 2 but len("dotaccentcomb_o") == 1.
     character = fontTools.agl.toUnicode(base_name)
     if character:
-        category, sub_category = _translate_category(
-            glyph_name, unicodedata.category(character[0])
-        )
-        return category, sub_category
+        return _translate_category(glyph_name, unicodedata.category(character[0]))
 
     return None, None
 
 
-def _translate_category(glyph_name, unicode_category):
+def _translate_category(glyph_name: str, unicode_category: Optional[str]) -> Tuple[str, Optional[str]]:
     """Return a translation from Unicode category letters to Glyphs
     categories."""
     DEFAULT_CATEGORIES = {
@@ -418,18 +405,18 @@ def _translate_category(glyph_name, unicode_category):
         "Zs": ("Separator", "Space"),
     }
 
-    glyphs_category = DEFAULT_CATEGORIES.get(unicode_category, ("Letter", None))
+    category = DEFAULT_CATEGORIES.get(unicode_category, ("Letter", None))
 
     # Exception: Something like "one_two" should be a (_, Ligature),
     # "acutecomb_brevecomb" should however stay (Mark, Nonspacing).
-    if "_" in glyph_name and glyphs_category[0] != "Mark":
-        return glyphs_category[0], "Ligature"
+    if "_" in glyph_name and category[0] != "Mark":
+        return category[0], "Ligature"
 
-    return glyphs_category
+    return category
 
 
-def _split_ligature_glyph_name(name, data):
-    # Split name to ligature parts
+def _split_ligature_glyph_name(name: str, data: "GlyphData") -> List[str]:
+    """Split name to ligature parts"""
     parts = name.split("_")
 
     # If the last part has a script suffix, strip it and re-split the name.
@@ -450,12 +437,10 @@ def _split_ligature_glyph_name(name, data):
                 if _lookup_attributes(part, data) and not _lookup_attributes(new, data):
                     continue
                 parts[i] = new
-    else:
-        parts = name.split("_")
     return parts
 
 
-def _split_glyph_name(name, data):
+def _split_glyph_name(name: str, data: "GlyphData") -> Tuple[str, str, str]:
     # Split glyph name into base and suffix
     base, dot, suffix = name.partition(".")
 
@@ -472,7 +457,7 @@ def _split_glyph_name(name, data):
     return base, dot, suffix
 
 
-def _construct_production_name(glyph_name, data=None):
+def _construct_production_name(glyph_name: str, data: Optional["GlyphData"] = None) -> Optional[str]:
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
 
@@ -505,7 +490,7 @@ def _construct_production_name(glyph_name, data=None):
 
     if "_" not in base_name:
         # Nothing found so far and the glyph name isn't a ligature ("_"
-        # somewhere in it). The name does not carry any discernable Unicode
+        # somewhere in it). The name does not carry any discernible Unicode
         # semantics, so just return something sanitized.
         return _agl_compliant_name(glyph_name)
 
@@ -534,9 +519,7 @@ def _construct_production_name(glyph_name, data=None):
                 # Take note if there are any characters outside the Unicode
                 # BMP, e.g. "u10FFF" or "u10FFFF". Do not catch e.g. "u013B"
                 # though.
-                if len(part_production_name) > 5 and _is_unicode_u_value(
-                    part_production_name
-                ):
+                if len(part_production_name) > 5 and _is_unicode_u_value(part_production_name):
                     _character_outside_BMP = True
             else:
                 # We hit a part that does not seem to be a valid glyph name known to us,
@@ -555,11 +538,8 @@ def _construct_production_name(glyph_name, data=None):
     # If any production name starts with a "uni" and there are none of the
     # "uXXXXX" format, try to turn all parts into "uni" names and concatenate
     # them.
-    if not _character_outside_BMP and any(
-        part.startswith("uni") for part in production_names
-    ):
+    if not _character_outside_BMP and any(part.startswith("uni") for part in production_names):
         uni_names = []
-
         for part in production_names:
             if part.startswith("uni"):
                 uni_names.append(part[3:])

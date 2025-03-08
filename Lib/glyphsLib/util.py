@@ -14,6 +14,8 @@
 
 # TODO: (jany) merge with builder/common.py
 
+from __future__ import annotations
+from typing import List, Optional, Tuple, Any
 import logging
 import itertools
 import os
@@ -114,7 +116,7 @@ def best_repr_list(list_of_float_or_int):
     return new_list
 
 
-def bin_to_int_list(value):
+def bin_to_int_list(value: int) -> List[int]:
     string = num2binary(value)
     string = string.replace(" ", "")  # num2binary add a space every 8 digits
     return [i for i, v in enumerate(reversed(string)) if v == "1"]
@@ -151,7 +153,7 @@ def freezedict(dct):
 
 
 class LoggerMixin:
-    _logger = None
+    _logger: Optional[logging.Logger] = None
 
     @property
     def logger(self):
@@ -194,14 +196,15 @@ class PeekableIterator:
         return self.list[self.index + n]
 
 
+stringClasses: Any = str
+listClasses: Tuple = (list, tuple)
 try:
     from Foundation import NSString, NSArray
 
     stringClasses = (str, NSString)
     listClasses = (list, tuple, NSArray)
 except ImportError:
-    stringClasses = str
-    listClasses = (list, tuple)
+    pass
 
 
 def isString(value):
