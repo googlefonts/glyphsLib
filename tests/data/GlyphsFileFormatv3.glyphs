@@ -326,6 +326,8 @@ Welt";
 userData = {
 "Some Key" = "Some layer Value";
 };
+vertOrigin = 172;
+vertWidth = 654;
 width = 459;
 },
 {
@@ -445,7 +447,9 @@ nodes = (
 width = 459;
 }
 );
+metricBottom = "=21";
 metricLeft = "=10";
+metricTop = "=20";
 note = "a note";
 tags = (
 tag1,

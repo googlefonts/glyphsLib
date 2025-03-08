@@ -157,6 +157,8 @@ nodes = (
 );
 }
 );
+vertOrigin = 172;
+vertWidth = 583;
 width = 459;
 },
 {
@@ -170,7 +172,9 @@ leftKerningGroup = A;
 leftMetricsKey = "=10";
 rightKerningGroup = A;
 topKerningGroup = A;
+topMetricsKey = "=20";
 bottomKerningGroup = A;
+bottomMetricsKey = "=21";
 unicode = "0041,0061";
 },
 {
