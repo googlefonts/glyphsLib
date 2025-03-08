@@ -43,7 +43,7 @@ def test_pen_roundtrip(datadir, ufo_module):
 
             assert len(layer.components) == len(layer_temp.components)
             for comp_orig, comp_temp in zip(layer.components, layer_temp.components):
-                assert comp_orig.name == comp_temp.name
+                assert comp_orig.componentName == comp_temp.componentName
                 assert comp_orig.position == comp_temp.position
                 assert comp_orig.scale == comp_temp.scale
                 assert comp_orig.slant == comp_temp.slant

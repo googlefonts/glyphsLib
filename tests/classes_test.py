@@ -126,25 +126,23 @@ def add_glyph(font, glyphname):
 
 
 def add_anchor(font, glyphname, anchorname, x, y):
-    for glyph in font.glyphs:
-        if glyph.name == glyphname:
-            for master in font.masters:
-                layer = glyph.layers[master.id]
-                layer.anchors = getattr(layer, "anchors", [])
-                anchor = GSAnchor()
-                anchor.name = anchorname
-                anchor.position = Point(x, y)
-                layer.anchors.append(anchor)
+    glyph = font.glyphs[glyphname]
+    if glyph:
+        for master in font.masters:
+            layer = glyph.layers[master.id]
+            layer.anchors = getattr(layer, "anchors", [])
+            anchor = GSAnchor()
+            anchor.name = anchorname
+            anchor.position = Point(x, y)
+            layer.anchors.append(anchor)
 
 
 def add_component(font, glyphname, componentname, transform):
-    for glyph in font.glyphs:
-        if glyph.name == glyphname:
-            for layer in glyph.layers.values():
-                component = GSComponent()
-                component.name = componentname
-                component.transform = transform
-                layer.components.append(component)
+    glyph = font.glyphs[glyphname]
+    if glyph:
+        for layer in glyph.layers.values():
+            component = GSComponent(componentname, transform=transform)
+            layer.components.append(component)
 
 
 class GlyphLayersTest(unittest.TestCase):
@@ -1009,7 +1007,7 @@ def test_repr_orphan_glyph(file_path):
     assert layer.isMasterLayer
     assert prune_repr(layer) == expected
 
-    parent = GSGlyph()
+    parent = GSGlyph("orphan")
     parent.layers.append(layer)
     assert layer.parent == parent  # no longer orphan layer
     assert parent.parent is None  # but still orphan glyph
@@ -1065,7 +1063,7 @@ def test_components(file_path):
     #     assert component.parent == layer
     amount = len(layer.components)
     component = GSComponent()
-    component.name = "A"
+    component.componentName = "A"
     layer.components.append(component)
     assert component.parent == layer
     assert len(layer.components) == (amount + 1)

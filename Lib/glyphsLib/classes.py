@@ -1047,7 +1047,7 @@ class GlyphLayerProxy(Proxy):
         return self._owner._layers.keys()
 
     def values(self) -> List[GSLayer]:
-        return self._owner._layers.values()
+        return list(self._owner._layers.values())
 
     def append(self, layer: GSLayer) -> None:
         assert layer is not None
@@ -2330,19 +2330,17 @@ class GSFontMaster(GSBase):
         _zones = parser._parse(text, str)
         self._alignmentZones = [GSAlignmentZone().read(x) for x in _zones]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<GSFontMaster {}> "{}" {}'.format(
             hex(id(self)), self.name, self.internalAxesValues.values()
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '<GSFontMaster "{}" {}>'.format(
             self.name, self.internalAxesValues.values()
         )
 
     def _import_stem_list(self, stems: List[float], horizontal: bool) -> None:
-        assert isinstance(stems, list)
-        assert not stems or isinstance(stems[0], GSMetricValue)
         if self._stems is None:
             self._stems = {}
         font = self.font
@@ -2581,7 +2579,7 @@ class GSFontMaster(GSBase):
         self,
         metricType: str,
         position: float,
-        overshoot: float = 0,
+        overshoot: Optional[float] = None,
         name: Optional[str] = None,
         filter: Optional[str] = None,
     ) -> None:
@@ -2608,7 +2606,7 @@ class GSFontMaster(GSBase):
             self.font.metrics.append(metric)
         metricValue = self.metricValues.get(metric.id)
         if not metricValue:
-            metricValue = GSMetricValue(position=position, overshoot=overshoot)
+            metricValue = GSMetricValue(position=position, overshoot=overshoot if overshoot is not None else 0)
             self.metricValues[metric.id] = metricValue
             metricValue.metric = metric
         else:
@@ -2777,7 +2775,7 @@ class GSFontMaster(GSBase):
         assert isinstance(value, list)
         assert not value or isinstance(value[0], (float, int))
         if self.font:
-            assert isinstance(value[0], float)
+            assert isinstance(value[0], (float, int))
             self._import_stem_list(value, True)
         else:
             self._horizontalStems = value
@@ -3335,7 +3333,7 @@ class GSPath(GSShape):
                 raise ValueError
 
     @property
-    def bounds(self) -> Rect:
+    def bounds(self) -> Optional[Rect]:
         left, bottom, right, top = None, None, None, None
         for segment in self.segments:
             newLeft, newBottom, newRight, newTop = segment.bbox()
@@ -3343,9 +3341,9 @@ class GSPath(GSShape):
             bottom = min(bottom, newBottom) if bottom is not None else newBottom
             right = max(right, newRight) if right is not None else newRight
             top = max(top, newTop) if top is not None else newTop
-        if left and bottom and right and left:
+        if top is not None and bottom is not None and left is not None and right is not None:
             return Rect(Point(left, bottom), Size(right - left, top - bottom))
-        return Rect(Point(None, 0), Size(0, 0))
+        return None
 
     @property
     def direction(self) -> int:
@@ -3595,13 +3593,13 @@ class GSComponent(GSTransformable):
             writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.formatVersion == 2:
-            writer.writeObjectKeyValue(self, "name")
+            writer.writeObjectKeyValue(self, "componentName", keyName="name")
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
         if writer.formatVersion > 2:
             if self._position and self._position != Point(0, 0):
                 writer.writeKeyValue("pos", self._position)
-            writer.writeObjectKeyValue(self, "name", keyName="ref")
+            writer.writeObjectKeyValue(self, "componentName", keyName="ref")
             if self.scale and self.scale != Point(1, 1):
                 writer.writeKeyValue("scale", self.scale)
             if self.slant and self.slant != Point(0, 0):
@@ -3655,6 +3653,9 @@ class GSComponent(GSTransformable):
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
             self._componentName, self.transform[4], self.transform[5]
         )
+
+    def _parse_name_dict(self, parser: Parser, value: str) -> None:
+        self._componentName = value
 
     @property
     def componentName(self) -> str:
@@ -3718,7 +3719,7 @@ GSComponent._add_parsers(
         {"plist_name": "piece", "object_name": "smartComponentValues", "type": dict},
         {"plist_name": "angle", "object_name": "rotation", "type": float},
         {"plist_name": "pos", "object_name": "position", "converter": Point},
-        {"plist_name": "ref", "object_name": "name"},
+        {"plist_name": "ref", "object_name": "componentName"},
         {"plist_name": "slant", "converter": Point},
         {"plist_name": "locked", "converter": bool},
         {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
@@ -5034,11 +5035,7 @@ class GSLayer(GSBase):
 
     def _get_plist_attributes(self) -> Dict[str, Any]:
         attributes = dict(self.attributes)
-        glyph = self.parent
-        if not glyph:
-            return attributes
-        font = glyph.parent
-
+        font = self.font
         if LAYER_ATTRIBUTE_AXIS_RULES in self.attributes:
             rule = attributes[LAYER_ATTRIBUTE_AXIS_RULES]
             ruleMap: List[Dict[str, Any]] = []
@@ -5234,7 +5231,7 @@ class GSLayer(GSBase):
 
     def post_read(self) -> None:  # GSLayer
         assert self.parent
-        font: GSFont = self.parent.parent
+        font: GSFont = self.font
         if font.formatVersion == 2:
             self.layer_name_to_attributes()
 
@@ -5271,6 +5268,11 @@ class GSLayer(GSBase):
             else:
                 shape = parser._parse_dict(shape_dict, GSPath)
                 self.paths.append(shape)
+
+    def _parse_background_dict(self, parser, value):
+        self._background = parser._parse(value, GSBackgroundLayer)
+        self._background._foreground = self
+        self._background.parent = self.parent
 
     _defaultsForName: Dict[str, Optional[Union[int, float]]] = {
         "width": 600,
@@ -5670,10 +5672,6 @@ class GSLayer(GSBase):
             self._background.parent = self.parent
         return self._background
 
-    @background.setter
-    def background(self, value: Optional["GSBackgroundLayer"]) -> None:
-        self._background = value
-
     @property
     def hasBackground(self) -> bool:
         return bool(self._background)
@@ -5822,10 +5820,6 @@ class GSBackgroundLayer(GSLayer):
     @property  # type: ignore
     def background(self) -> None:  # type: ignore
         return None
-
-    @background.setter
-    def background(self, value: "GSBackgroundLayer") -> None:  # type: ignore
-        pass
 
     @property
     def foreground(self) -> GSLayer:  # type: ignore

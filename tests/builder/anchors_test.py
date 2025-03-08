@@ -26,8 +26,8 @@ def test_ufo_with_propagated_anchors(datadir):
     ufo = glyphsLib.load_to_ufos(datadir.join("AnchorPropagation.glyphs"))[0]
 
     # In UFO, the same two glyphs (see above) are supposed to show anchors
-    assert len(ufo["lam_alefHamzaabove-ar"].anchors) > 0
-    assert len(ufo["shadda_fatha-ar"].anchors) > 0
+    assert len(ufo["lam_alefHamzaabove-ar"].anchors) == 4
+    assert len(ufo["shadda_fatha-ar"].anchors) == 2
 
     # Additionally, we’ll check the anchor positions and compare them with Glyphs.app’s
     # own results (hard coded) from `layer.anchorsTraversingComponents()`
@@ -36,15 +36,30 @@ def test_ufo_with_propagated_anchors(datadir):
     # upwards following the `hamza-ar` mark as part of the ligature base glyph
 
     # lam_alefHamzaabove-ar
-    assert "top_2" in [x.name for x in ufo["lam_alefHamzaabove-ar"].anchors]
+    anchor_names = [x.name for x in ufo["lam_alefHamzaabove-ar"].anchors]
+    assert "bottom_1" in anchor_names
+    assert "bottom_2" in anchor_names
+    assert "top_1" in anchor_names
+    assert "top_2" in anchor_names
+
     for anchor in ufo["lam_alefHamzaabove-ar"].anchors:
+        if anchor.name == "bottom_1":
+            assert anchor.x == 456
+            assert anchor.y == 0
+        if anchor.name == "bottom_2":
+            assert anchor.x == 124
+            assert anchor.y == 0
+        if anchor.name == "top_1":
+            assert anchor.x == 498
+            assert anchor.y == 760
         if anchor.name == "top_2":
             assert anchor.x == 129
             assert anchor.y == 950
 
     # lamHamzaabove_alefHamzaabove-ar (fictional glyph with 2x same component)
-    assert "top_1" in [x.name for x in ufo["lamHamzaabove_alefHamzaabove-ar"].anchors]
-    assert "top_2" in [x.name for x in ufo["lamHamzaabove_alefHamzaabove-ar"].anchors]
+    anchor_names = [x.name for x in ufo["lamHamzaabove_alefHamzaabove-ar"].anchors]
+    assert "top_1" in anchor_names
+    assert "top_2" in anchor_names
     for anchor in ufo["lamHamzaabove_alefHamzaabove-ar"].anchors:
         if anchor.name == "top_1":
             assert anchor.x == 497

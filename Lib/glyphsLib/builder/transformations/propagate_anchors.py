@@ -183,7 +183,7 @@ def anchors_traversing_components(
             logger.debug(
                 "could not get layer '%s' for component '%s' of glyph '%s'",
                 layer.layerId,
-                component.name,
+                component.componentName,
                 glyph.name,
             )
             continue
@@ -193,7 +193,7 @@ def anchors_traversing_components(
             maybe_rename_component_anchor(component.anchor, anchors)
 
         component_number_of_base_glyphs = base_glyph_counts.get(
-            (component.name, layer.layerId), 0
+            (component.componentName, layer.layerId), 0
         )
 
         comb_has_underscore = any(
@@ -239,7 +239,7 @@ def anchors_traversing_components(
             has_underscore |= new_has_underscore
 
         number_of_base_glyphs += base_glyph_counts.get(
-            (component.name, layer.layerId), 0
+            (component.componentName, layer.layerId), 0
         )
 
     # now we've handled all the anchors from components, so copy over anchors
@@ -392,6 +392,7 @@ def get_component_layer_anchors(
     # if it is missing. glyphsLib does not have that yet, so for now we
     # only support the corresponding 'master' layer of a component's base glyph.
     layer_anchors = None
+    # TODO: (gs) This should use component.componentLayer
     for comp_layer in _interesting_layers(glyph):
         if comp_layer.layerId == layer.layerId and component.componentName in anchors:
             layer_anchors = anchors[component.componentName][comp_layer.layerId]
@@ -435,11 +436,11 @@ def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]
     while queue:
         next_glyph = queue.popleft()
         comp_names = {
-            comp.name
+            comp.componentName
             for comp in chain.from_iterable(
                 l.components for l in _interesting_layers(next_glyph)
             )
-            if comp.name in glyphs  # ignore missing components
+            if comp.componentName in glyphs  # ignore missing components
         }
         if all(comp in depths for comp in comp_names):
             depths[next_glyph.name] = (
@@ -455,7 +456,7 @@ def compute_max_component_depths(glyphs: dict[str, GSGlyph]) -> dict[str, float]
                 logger.debug("glyph '%s' is waiting for components", next_glyph.name)
                 queue.append(next_glyph)
             else:
-                depths[next_glyph.name] = int(float("inf"))
+                depths[next_glyph.name] = float("inf")
                 waiting_for_components.pop(next_glyph.name, None)
                 logger.warning("glyph '%s' has cyclical components", next_glyph.name)
 

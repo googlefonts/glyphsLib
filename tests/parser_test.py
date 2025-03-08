@@ -143,7 +143,7 @@ class ParserGlyphTest(unittest.TestCase):
             "lastChange",
             "leftKerningGroup",
             "leftMetricsKey",
-            "name",
+            # "name",
             "note",
             "rightKerningGroup",
             "rightMetricsKey",

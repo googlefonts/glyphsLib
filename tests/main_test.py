@@ -192,13 +192,13 @@ def test_read_postscriptBlueValues():
     assert font.metrics[0].name is None
     assert font.metrics[0].type == "ascender"
     assert font.metrics[6].name == "zone 1"
-    assert font.metrics[6].type is None
+    assert font.metrics[6].type == "undefined"
     assert len(font.masters) == 1
     master = font.masters[0]
     assert len(master.metricValues) == 10
     metricValue = master.metricValues[font.metrics[0].id]
     assert metricValue.position == 2100
-    assert metricValue.overshoot is None  # should be zero?
+    assert metricValue.overshoot == 0
     metricValue = master.metricValues[font.metrics[6].id]
     assert metricValue.position == 1600
     assert metricValue.overshoot == 20

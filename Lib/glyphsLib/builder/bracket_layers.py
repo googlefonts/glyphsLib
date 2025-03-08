@@ -1,6 +1,6 @@
 from collections import defaultdict
 from functools import partial
-from typing import Any
+from typing import Any, List
 import copy
 
 from fontTools import designspaceLib
@@ -16,6 +16,7 @@ from .constants import (
     LAYER_ID_KEY,
 )
 from glyphsLib.types import floatToString3
+from fontTools.designspaceLib import AxisDescriptor
 
 
 def _bracket_info(layer, axes):
@@ -217,15 +218,15 @@ def _expand_kerning_to_brackets(
     ufo_font.kerning.update(bracket_kerning)
 
 
-def find_component_use(self):
+def find_component_use(self) -> None:
     """If a glyph uses a component which has alternate layers, that
     glyph also must have the same alternate layers or else it will not
     correctly swap. We copy the layer locations from the component into
     the glyph which uses it."""
     # First let's put all the layers in a sensible order so we can
     # query them efficiently
-    master_layers = defaultdict(dict)
-    alternate_layers = defaultdict(lambda: defaultdict(list))
+    master_layers: dict = defaultdict(dict)
+    alternate_layers: dict = defaultdict(lambda: defaultdict(list))
     master_ids = set(master.id for master in self.font.masters)
 
     for glyph in self.font.glyphs:
@@ -242,7 +243,7 @@ def find_component_use(self):
     # to keep doing this, bubbling up fixes until there's nothing left
     # to do.
     while True:
-        problematic_glyphs = defaultdict(set)
+        problematic_glyphs: dict = defaultdict(set)
         for master, layers in master_layers.items():
             for glyph_name, layer in layers.items():
                 my_bracket_layers = [
@@ -253,7 +254,7 @@ def find_component_use(self):
                     # Check our alternate layer set-up agrees with theirs
                     components_bracket_layers = [
                         _bracket_info(layer, self._designspace.axes)
-                        for layer in alternate_layers[master][comp.name]
+                        for layer in alternate_layers[master][comp.componentName]
                     ]
                     if my_bracket_layers != components_bracket_layers:
                         # Find what we need to add, and make them hashable
@@ -299,7 +300,7 @@ def find_component_use(self):
                 alternate_layers[master][glyph_name].append(new_layer)
 
 
-def synthesize_bracket_layer(old_layer, box, axes):
+def synthesize_bracket_layer(old_layer: GSLayer, box: dict, axes: List[AxisDescriptor]):
     new_layer = copy.copy(old_layer)  # We don't need a deep copy of everything
     new_layer.layerId = ""
     new_layer.associatedMasterId = old_layer.layerId

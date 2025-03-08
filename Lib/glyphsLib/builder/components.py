@@ -137,7 +137,7 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph: UFOGlyph, layer: GSLa
         except MissingComponentError as e:
             raise MissingComponentError(
                 f"Glyph '{ufo_glyph.name}', background layer: component "
-                f"'{shape.name}' points to a non-existent glyph."
+                f"'{shape.componentName}' points to a non-existent glyph."
             ) from e
     rpen.replay(ufo_glyph.getPen())
 

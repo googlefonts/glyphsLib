@@ -273,6 +273,7 @@ def test_designspace_generation_on_disk(datadir, tmpdir, filename, ufo_module):
                 else:
                     assert glyph
 
+
 # TODO: (gs) I don’t understand the designspace structure well enought to fix this
 @pytest.mark.xfail
 def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
@@ -406,13 +407,13 @@ def test_designspace_generation_bracket_unbalanced_brackets(datadir, ufo_module)
     assert "C.BRACKET.varAlt01" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
+def test_designspace_generation_bracket_composite_glyph(datadir: str, ufo_module):
     with open(str(datadir.join("BracketTestFont2.glyphs"))) as f:
         font = glyphsLib.load(f)
 
     g = font.glyphs["B"]
     for layer in g.layers:
-        assert layer.components[0].name == "A"
+        assert layer.components[0].componentName == "A"
 
     designspace = to_designspace(font, ufo_module=ufo_module)
 
@@ -431,7 +432,7 @@ def test_designspace_generation_bracket_composite_glyph(datadir, ufo_module):
 
     g2 = font_rt.glyphs["B"]
     for layer in g2.layers:
-        assert layer.components[0].name == "A"
+        assert layer.components[0].componentName == "A"
 
     assert "B.BRACKET.600" not in font_rt.glyphs
 
