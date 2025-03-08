@@ -150,13 +150,13 @@ GSCURVE = "curve"
 GSQCURVE = "qcurve"
 GSOFFCURVE = "offcurve"
 
-MOVE = "move"
-LINE = "line"
-CURVE = "curve"
-OFFCURVE = "offcurve"
-QCURVE = "qcurve"
+MOVE = GSMOVE
+LINE = GSLINE
+CURVE = GSCURVE
+OFFCURVE = GSOFFCURVE
+QCURVE = GSQCURVE
 
-GSMetricsKeyUndefined = None
+GSMetricsKeyUndefined = "undefined"
 GSMetricsKeyAscender = "ascender"
 GSMetricsKeyCapHeight = "cap height"
 GSMetricsKeySlantHeight = "slant height"  # defaults to half xHeight
