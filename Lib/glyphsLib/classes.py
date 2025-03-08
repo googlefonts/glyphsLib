@@ -5025,13 +5025,24 @@ class GSLayer(GSBase):
         self.associatedMasterId: str = ""
         self.backgroundImage: Optional[GSBackgroundImage] = None
         self.color: Optional[Any] = None
-        self.metricWidth: Optional[str] = None
-        self.metricLeft: Optional[str] = None
-        self.metricRight: Optional[str] = None
+        self.visible: bool = False
+
+        self.width: Union[float] = self._defaultsForName["width"] or 0
         self.vertOrigin: Optional[float] = None
         self.vertWidth: Optional[float] = None
-        self.visible: bool = False
-        self.width: Union[float | int] = self._defaultsForName["width"] or 0
+
+        self._bottomKerningGroup: Optional[str] = None
+        self._leftKerningGroup: Optional[str] = None
+        self._rightKerningGroup: Optional[str] = None
+        self._topKerningGroup: Optional[str] = None
+
+        self._bottomMetricsKey: Optional[str] = None
+        self._leftMetricsKey: Optional[str] = None
+        self._rightMetricsKey: Optional[str] = None
+        self._topMetricsKey: Optional[str] = None
+        self._vertOriginMetricsKey: Optional[str] = None
+        self._vertWidthMetricsKey: Optional[str] = None
+        self._widthMetricsKey: Optional[str] = None
 
     def _get_plist_attributes(self) -> Dict[str, Any]:
         attributes = dict(self.attributes)
@@ -5080,14 +5091,16 @@ class GSLayer(GSBase):
         writer.writeObjectKeyValue(self, "hints", "if_true")
         writer.writeObjectKeyValue(self, "layerId", "if_true")
         if writer.formatVersion > 2:
-            writer.writeObjectKeyValue(self, "metricLeft")
-            writer.writeObjectKeyValue(self, "metricRight")
-            writer.writeObjectKeyValue(self, "metricWidth")
+            writer.writeObjectKeyValue(self, "bottomMetricsKey", keyName="metricBottom")
+            writer.writeObjectKeyValue(self, "leftMetricsKey", keyName="metricLeft")
+            writer.writeObjectKeyValue(self, "rightMetricsKey", keyName="metricRight")
+            writer.writeObjectKeyValue(self, "topMetricsKey", keyName="metricTop")
+            writer.writeObjectKeyValue(self, "widthMetricsKey", keyName="metricWidth")
         else:
-            writer.writeObjectKeyValue(self, "metricLeft", keyName="leftMetricsKey")
+            writer.writeObjectKeyValue(self, "leftMetricsKey")
             # NOTE: The following two are an exception from the ordering rule.
-            writer.writeObjectKeyValue(self, "metricRight", keyName="rightMetricsKey")
-            writer.writeObjectKeyValue(self, "metricWidth", keyName="widthMetricsKey")
+            writer.writeObjectKeyValue(self, "rightMetricsKey")
+            writer.writeObjectKeyValue(self, "widthMetricsKey")
         if writer.formatVersion > 2:
             if self._name and not self.isMasterLayer:
                 writer.writeKeyValue("name", self._name)
@@ -5300,9 +5313,11 @@ class GSLayer(GSBase):
         new_obj.associatedMasterId = self.associatedMasterId
         new_obj.backgroundImage = copy.copy(self.backgroundImage)
         new_obj.color = copy.copy(self.color)
-        new_obj.metricWidth = self.metricWidth
-        new_obj.metricLeft = self.metricLeft
-        new_obj.metricRight = self.metricRight
+        new_obj.widthMetricsKey = self.widthMetricsKey
+        new_obj.leftMetricsKey = self.leftMetricsKey
+        new_obj.rightMetricsKey = self.rightMetricsKey
+        new_obj.topMetricsKey = self.topMetricsKey
+        new_obj.bottomMetricsKey = self.bottomMetricsKey
         new_obj.vertOrigin = self.vertOrigin
         new_obj.vertWidth = self.vertWidth
         new_obj.visible = self.visible
@@ -5706,27 +5721,59 @@ class GSLayer(GSBase):
 
     @property
     def leftMetricsKey(self) -> Optional[str]:
-        return self.metricLeft
+        return self._leftMetricsKey
 
     @leftMetricsKey.setter
     def leftMetricsKey(self, value: Optional[str]) -> None:
-        self.metricLeft = value
+        self._leftMetricsKey = value
 
     @property
     def rightMetricsKey(self) -> Optional[str]:
-        return self.metricRight
+        return self._rightMetricsKey
 
     @rightMetricsKey.setter
     def rightMetricsKey(self, value: Optional[str]) -> None:
-        self.metricRight = value
+        self._rightMetricsKey = value
 
     @property
     def widthMetricsKey(self) -> Optional[str]:
-        return self.metricWidth
+        return self._widthMetricsKey
 
     @widthMetricsKey.setter
     def widthMetricsKey(self, value: Optional[str]) -> None:
-        self.metricWidth = value
+        self._widthMetricsKey = value
+
+    @property
+    def topMetricsKey(self) -> Optional[str]:
+        return self._topMetricsKey
+
+    @topMetricsKey.setter
+    def topMetricsKey(self, value: Optional[str]) -> None:
+        self._topMetricsKey = value
+
+    @property
+    def bottomMetricsKey(self) -> Optional[str]:
+        return self._bottomMetricsKey
+
+    @bottomMetricsKey.setter
+    def bottomMetricsKey(self, value: Optional[str]) -> None:
+        self._bottomMetricsKey = value
+
+    @property
+    def vertWidthMetricsKey(self) -> Optional[str]:
+        return self._vertWidthMetricsKey
+
+    @vertWidthMetricsKey.setter
+    def vertWidthMetricsKey(self, value: Optional[str]) -> None:
+        self._vertWidthMetricsKey = value
+
+    @property
+    def vertOriginMetricsKey(self) -> Optional[str]:
+        return self._vertOriginMetricsKey
+
+    @vertOriginMetricsKey.setter
+    def vertOriginMetricsKey(self, value: Optional[str]) -> None:
+        self._vertOriginMetricsKey = value
 
     @property
     def isMasterLayer(self) -> bool:
@@ -5795,21 +5842,20 @@ GSLayer._add_parsers(
             "object_name": "smartComponentPoleMapping",
             "type": dict,
         },
-        {
-            "plist_name": "leftMetricsKey",
-            "object_name": "metricLeft",
-            "type": str,
-        },  # V2
-        {
-            "plist_name": "rightMetricsKey",
-            "object_name": "metricRight",
-            "type": str,
-        },  # V2
-        {
-            "plist_name": "widthMetricsKey",
-            "object_name": "metricWidth",
-            "type": str,
-        },  # V2
+        {"plist_name": "leftMetricsKey", "type": str},  # V2
+        {"plist_name": "rightMetricsKey", "type": str},  # V2
+        {"plist_name": "widthMetricsKey", "type": str},  # V2
+        {"plist_name": "topMetricsKey", "type": str},  # V2
+        {"plist_name": "bottomMetricsKey", "type": str},  # V2
+        {"plist_name": "vertOriginMetricsKey", "type": str},  # V2
+        {"plist_name": "vertWidthMetricsKey", "type": str},  # V2
+        {"plist_name": "metricLeft", "object_name": "leftMetricsKey", "type": str},  # V3
+        {"plist_name": "metricRight", "object_name": "rightMetricsKey", "type": str},  # V3
+        {"plist_name": "metricWidth", "object_name": "widthMetricsKey", "type": str},  # V3
+        {"plist_name": "metricTop", "object_name": "topMetricsKey", "type": str},  # V3
+        {"plist_name": "metricBottom", "object_name": "bottomMetricsKey", "type": str},  # V3
+        {"plist_name": "metricVertOrigin", "object_name": "vertOriginMetricsKey", "type": str},  # V3
+        {"plist_name": "metricVertWidth", "object_name": "vertWidthMetricsKey", "type": str},  # V3
         {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
     ]
 )
@@ -5845,36 +5891,37 @@ class GSGlyph(GSBase):
     def __init__(self, name: Optional[str] = None) -> None:
         self._layers: OrderedDict[str, Any] = OrderedDict()
         self._unicodes: List[str] = []
-        self.bottomKerningGroup: Optional[str] = None
-        self.bottomMetricsKey: Optional[str] = None
         self._category: Optional[str] = None
         self._subCategory: Optional[str] = None
         self.case: Optional[str] = None
         self.color: Optional[Any] = None
         self.export: bool = self._defaultsForName["export"]
         self.lastChange: Optional[Any] = None
-        self.leftKerningGroup: Optional[str] = None
-        self.metricLeft: Optional[Any] = None
         self.name: str = name or "new glyph"  # make name not optional to simpify usage
         self.note: Optional[str] = None
         self.locked: bool = False
         self.smartComponentAxes: List[Any] = []
         self.production: str = ""
-        self.rightKerningGroup: Optional[str] = None
-        self.metricRight: Optional[Any] = None
         self.script: Optional[str] = None
         self.selected: bool = False
         self.tags: List[str] = []
-        self.topKerningGroup: Optional[str] = None
-        self.topMetricsKey: Optional[str] = None
-        self._userData: Optional[Any] = None
-        self.vertWidthMetricsKey: Optional[Any] = None
-        self.metricVertWidth: Optional[Any] = None
-        self.metricWidth: Optional[Any] = None
-        self.vertOriginMetricsKey: Optional[Any] = None
+        self._userData: Optional[dict] = None
         self.sortName: Optional[str] = None
         self.sortNameKeep: Optional[str] = None
         self.direction: Optional[int] = None
+
+        self._bottomKerningGroup: Optional[str] = None
+        self._leftKerningGroup: Optional[str] = None
+        self._rightKerningGroup: Optional[str] = None
+        self._topKerningGroup: Optional[str] = None
+
+        self._bottomMetricsKey: Optional[str] = None
+        self._leftMetricsKey: Optional[str] = None
+        self._rightMetricsKey: Optional[str] = None
+        self._topMetricsKey: Optional[str] = None
+        self._vertOriginMetricsKey: Optional[str] = None
+        self._vertWidthMetricsKey: Optional[str] = None
+        self._widthMetricsKey: Optional[str] = None
 
     def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion > 2:
@@ -5904,14 +5951,10 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "layers", "if_true")
 
         if writer.formatVersion == 2:
-            if True:  # self.direction != GSWritingDirectionRightToLeft:
-                writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
-            # else:
-            #    # Glyphs 3 switches the classes. Writing to G2
-            #    writer.writeObjectKeyValue(self, "rightKerningGroup", "if_true", keyName="leftKerningGroup")
-            writer.writeObjectKeyValue(self, "metricLeft", "if_true", keyName="leftMetricsKey")
-            writer.writeObjectKeyValue(self, "metricWidth", "if_true", keyName="widthMetricsKey")
-            writer.writeObjectKeyValue(self, "metricVertWidth", "if_true", keyName="vertWidthMetricsKey")
+            writer.writeObjectKeyValue(self, "leftKerningGroup", "if_true")
+            writer.writeObjectKeyValue(self, "leftMetricsKey", "if_true")
+            writer.writeObjectKeyValue(self, "widthMetricsKey", "if_true")
+            writer.writeObjectKeyValue(self, "vertWidthMetricsKey", "if_true")
 
         writer.writeObjectKeyValue(self, "locked", "if_true")
 
@@ -6106,38 +6149,94 @@ class GSGlyph(GSBase):
     def unicodes(self, unicodes: Union[str, List[str]]) -> None:
         self._unicodes = UnicodesList(unicodes)
 
-    # V2 compatible interface
     @property
-    def rightMetricsKey(self) -> Optional[Any]:
-        return self.metricRight
+    def leftKerningGroup(self) -> Optional[str]:
+        return self._leftKerningGroup
 
-    @rightMetricsKey.setter
-    def rightMetricsKey(self, value: Any) -> None:
-        self.metricRight = value
+    @leftKerningGroup.setter
+    def leftKerningGroup(self, value: Optional[str]) -> None:
+        self._leftKerningGroup = value
 
     @property
-    def leftMetricsKey(self) -> Optional[Any]:
-        return self.metricLeft
+    def rightKerningGroup(self) -> Optional[str]:
+        return self._rightKerningGroup
+
+    @rightKerningGroup.setter
+    def rightKerningGroup(self, value: Optional[str]) -> None:
+        self._rightKerningGroup = value
+
+    @property
+    def topKerningGroup(self) -> Optional[str]:
+        return self._topKerningGroup
+
+    @topKerningGroup.setter
+    def topKerningGroup(self, value: Optional[str]) -> None:
+        self._topKerningGroup = value
+
+    @property
+    def bottomKerningGroup(self) -> Optional[str]:
+        return self._bottomKerningGroup
+
+    @bottomKerningGroup.setter
+    def bottomKerningGroup(self, value: Optional[str]) -> None:
+        self._bottomKerningGroup = value
+
+    @property
+    def leftMetricsKey(self) -> Optional[str]:
+        return self._leftMetricsKey
 
     @leftMetricsKey.setter
-    def leftMetricsKey(self, value: Any) -> None:
-        self.metricLeft = value
+    def leftMetricsKey(self, value: Optional[str]) -> None:
+        self._leftMetricsKey = value
 
     @property
-    def widthMetricsKey(self) -> Optional[Any]:
-        return self.metricWidth
+    def rightMetricsKey(self) -> Optional[str]:
+        return self._rightMetricsKey
+
+    @rightMetricsKey.setter
+    def rightMetricsKey(self, value: Optional[str]) -> None:
+        self._rightMetricsKey = value
+
+    @property
+    def widthMetricsKey(self) -> Optional[str]:
+        return self._widthMetricsKey
 
     @widthMetricsKey.setter
-    def widthMetricsKey(self, value: Any) -> None:
-        self.metricWidth = value
+    def widthMetricsKey(self, value: Optional[str]) -> None:
+        self._widthMetricsKey = value
 
     @property
-    def vertWidthMetricsKey(self) -> Optional[Any]:
-        return self.metricVertWidth
+    def topMetricsKey(self) -> Optional[str]:
+        return self._topMetricsKey
+
+    @topMetricsKey.setter
+    def topMetricsKey(self, value: Optional[str]) -> None:
+        self._topMetricsKey = value
+
+    @property
+    def bottomMetricsKey(self) -> Optional[str]:
+        return self._bottomMetricsKey
+
+    @bottomMetricsKey.setter
+    def bottomMetricsKey(self, value: Optional[str]) -> None:
+        self._bottomMetricsKey = value
+
+    @property
+    def vertWidthMetricsKey(self) -> Optional[str]:
+        return self._vertWidthMetricsKey
 
     @vertWidthMetricsKey.setter
-    def vertWidthMetricsKey(self, value: Any) -> None:
-        self.metricVertWidth = value
+    def vertWidthMetricsKey(self, value: Optional[str]) -> None:
+        self._vertWidthMetricsKey = value
+
+    @property
+    def vertOriginMetricsKey(self) -> Optional[str]:
+        return self._vertOriginMetricsKey
+
+    @vertOriginMetricsKey.setter
+    def vertOriginMetricsKey(self, value: Optional[str]) -> None:
+        self._vertOriginMetricsKey = value
+
     '''
     @property
     def note(self):
@@ -6167,10 +6266,22 @@ GSGlyph._add_parsers(
         {"plist_name": "kernRight", "object_name": "rightKerningGroup"},  # V3
         {"plist_name": "kernBottom", "object_name": "bottomKerningGroup"},  # V3
         {"plist_name": "kernTop", "object_name": "topKerningGroup"},  # V3
-        {"plist_name": "leftMetricsKey", "object_name": "metricLeft"},  # V2
-        {"plist_name": "rightMetricsKey", "object_name": "metricRight"},  # V2
-        {"plist_name": "widthMetricsKey", "object_name": "metricWidth"},  # V2
-        {"plist_name": "vertWidthMetricsKey", "object_name": "metricVertWidth"},  # V2
+
+        {"plist_name": "leftMetricsKey", "type": str},  # V2
+        {"plist_name": "rightMetricsKey", "type": str},  # V2
+        {"plist_name": "widthMetricsKey", "type": str},  # V2
+        {"plist_name": "topMetricsKey", "type": str},  # V2
+        {"plist_name": "bottomMetricsKey", "type": str},  # V2
+        {"plist_name": "vertOriginMetricsKey", "type": str},  # V2
+        {"plist_name": "vertWidthMetricsKey", "type": str},  # V2
+        {"plist_name": "metricLeft", "object_name": "leftMetricsKey", "type": str},  # V3
+        {"plist_name": "metricRight", "object_name": "rightMetricsKey", "type": str},  # V3
+        {"plist_name": "metricWidth", "object_name": "widthMetricsKey", "type": str},  # V3
+        {"plist_name": "metricTop", "object_name": "topMetricsKey", "type": str},  # V3
+        {"plist_name": "metricBottom", "object_name": "bottomMetricsKey", "type": str},  # V3
+        {"plist_name": "metricVertOrigin", "object_name": "vertOriginMetricsKey", "type": str},  # V3
+        {"plist_name": "metricVertWidth", "object_name": "vertWidthMetricsKey", "type": str},  # V3
+
         {"plist_name": "sortName", "object_name": "sortName"},
         {"plist_name": "sortNameKeep", "object_name": "sortNameKeep"},
         {"plist_name": "direction", "object_name": "direction"},

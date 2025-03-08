@@ -540,7 +540,7 @@ def to_glyphs_glyph(self, ufo_glyph: UFOGlyph, ufo_layer: UFOLayer, master: GSFo
 
     layer: GSLayer = self.to_glyphs_layer(ufo_layer, ufo_glyph, glyph, master)
 
-    for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey"]:
+    for key in ["leftMetricsKey", "rightMetricsKey", "widthMetricsKey", "topMetricsKey", "bottomMetricsKey"]:
         # Also read the old version of the key that didn't have a prefix and
         # store it on the layer (because without the "glyph"/"layer" prefix we
         # didn't know whether it originally came from the layer of the glyph,
