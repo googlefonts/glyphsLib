@@ -310,7 +310,7 @@ def apply_instance_data(
     if Font is None:
         import ufoLib2
 
-        Font = ufoLib2.Font.open
+        Font = ufoLib2.Font.open  # type: ignore
 
     if hasattr(designspace, "__fspath__"):
         designspace = designspace.__fspath__()

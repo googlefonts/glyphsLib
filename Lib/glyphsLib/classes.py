@@ -2162,7 +2162,7 @@ class GSFontMaster(GSBase):
     def __init__(self, name: str = "Regular") -> None:
         self.customParameters = []
         self.name: str = name
-        self._userData: Optional[Any] = None
+        self._userData: Optional[dict] = None
         self._horizontalStems: Optional[List[float]] = None
         self._verticalStems: Optional[List[float]] = None
         self._internalAxesValues: Dict[str, float] = {}
@@ -5018,12 +5018,12 @@ class GSLayer(GSBase):
         self._layerId: str = ""
         self._name: str = ""
         self._selection: List[Any] = []
-        self._shapes: List[Any] = []
+        self._shapes: List[GSShape] = []
         self._userData: Optional[Dict[str, Any]] = None
         self.attributes: Dict[str, Any] = {}
         self.smartComponentPoleMapping: Dict[str, Any] = {}
         self.associatedMasterId: str = ""
-        self.backgroundImage: Optional[Any] = None
+        self.backgroundImage: Optional[GSBackgroundImage] = None
         self.color: Optional[Any] = None
         self.metricWidth: Optional[str] = None
         self.metricLeft: Optional[str] = None
@@ -5848,6 +5848,7 @@ class GSGlyph(GSBase):
         self.bottomKerningGroup: Optional[str] = None
         self.bottomMetricsKey: Optional[str] = None
         self._category: Optional[str] = None
+        self._subCategory: Optional[str] = None
         self.case: Optional[str] = None
         self.color: Optional[Any] = None
         self.export: bool = self._defaultsForName["export"]
@@ -5863,7 +5864,6 @@ class GSGlyph(GSBase):
         self.metricRight: Optional[Any] = None
         self.script: Optional[str] = None
         self.selected: bool = False
-        self.subCategory: Optional[str] = None
         self.tags: List[str] = []
         self.topKerningGroup: Optional[str] = None
         self.topMetricsKey: Optional[str] = None
@@ -5874,7 +5874,7 @@ class GSGlyph(GSBase):
         self.vertOriginMetricsKey: Optional[Any] = None
         self.sortName: Optional[str] = None
         self.sortNameKeep: Optional[str] = None
-        self.direction: Optional[Any] = None
+        self.direction: Optional[int] = None
 
     def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion > 2:
@@ -6066,6 +6066,14 @@ class GSGlyph(GSBase):
     @category.setter
     def category(self, value: Optional[str]) -> None:
         self._category = value
+
+    @property
+    def subCategory(self) -> Optional[str]:
+        return self._subCategory
+
+    @subCategory.setter
+    def subCategory(self, value: Optional[str]) -> None:
+        self._subCategory = value
 
     @property
     def smartComponentAxes(self) -> List[Any]:

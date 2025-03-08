@@ -335,7 +335,7 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
-def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
+def test_designspace_generation_bracket_roundtrip_psnames(datadir: str, ufo_module):
     with open(str(datadir.join("PSNamesv2.glyphs"))) as f:
         font = glyphsLib.load(f)
     designspace: DesignSpaceDocument = to_designspace(font, ufo_module=ufo_module)
