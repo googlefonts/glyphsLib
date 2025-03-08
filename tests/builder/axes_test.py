@@ -14,17 +14,14 @@
 # limitations under the License.
 
 from copy import deepcopy
-import os.path
-
 import pytest
-
 from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster, GSAxis, GSInstance
 from glyphsLib.builder.axes import get_regular_master
 
 """
-Goal: check how files with custom axes are roundtripped.
+Goal: check how files with custom axes are round tripped.
 """
 
 
@@ -448,6 +445,7 @@ def test_no_axes(datadir):
     font1 = GSFont(datadir.join("NoAxes.glyphs"))
     doc1 = to_designspace(font1)
     assert len(doc1.axes) == 0
+
 
 def test_wheres_ma_axis(datadir):
     font1 = GSFont(datadir.join("AxesWdth.glyphs"))

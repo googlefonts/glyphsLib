@@ -158,6 +158,7 @@ def test_feature_names_from_glyph_2_file():
         {"language": "DEU", "value": "Feature Name DEU"},
     ]
 
+
 def test_upgrade_layer_attributes_from_glyph_2_file():
     filename = os.path.join(DATA, "GlyphsFileFormatv2.glyphs")
     font = glyphsLib.load(filename)
