@@ -3455,7 +3455,7 @@ GSPath._add_parsers(
 _UFO_NODE_TYPES = {LINE, CURVE, QCURVE}
 
 
-# TODO: the GSPathSegments API and behaviour is quite differnt than in Glyphs. That should be adjusted (e.g. do no store GSNodes)
+# TODO: the GSPathSegments API and behaviour is quite different than in Glyphs. That should be adjusted (e.g. do no store GSNodes)
 class GSPathSegment(list):
     def appendNode(self, node):
         if not hasattr(

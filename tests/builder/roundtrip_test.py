@@ -38,7 +38,7 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
 
-    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debuggin
+    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debugging
     def test_GlyphsUnitTestSans3(self):
         filename = os.path.join(
             os.path.dirname(__file__), "../data/GlyphsUnitTestSans3.glyphs"
@@ -47,7 +47,7 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
 
-    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debuggin
+    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debugging
     def test_GlyphsFileFormatv2(self):
         filename = os.path.join(
             os.path.dirname(__file__), "../data/GlyphsFileFormatv2.glyphs"
@@ -56,7 +56,7 @@ class UFORoundtripTest(unittest.TestCase, test_helpers.AssertUFORoundtrip):
             font = glyphsLib.load(f)
         self.assertUFORoundtrip(font)
 
-    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debuggin
+    @pytest.mark.xfail  # there are small changes that are not easy to fix. But the tests are super useful when debugging
     def test_GlyphsFileFormatv3(self):
         filename = os.path.join(
             os.path.dirname(__file__), "../data/GlyphsFileFormatv3.glyphs"
