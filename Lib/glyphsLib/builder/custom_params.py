@@ -808,8 +808,6 @@ register_parameter_handler(
 
 class DisplayStringsParamHandler(MiscParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
-        # We test for builder here because apply_instance_data() passes None and
-        # we don't want to copy-paste or subclass UFOBuilder.
         if (
             builder is not None
             and builder.store_editor_state
@@ -980,7 +978,7 @@ class FilterParamHandler(AbstractParamHandler):
           | Source  |        | Instance |    ------------>   |Interpolated UFO |
           +---+-----+        +-----+----+                    +-----------------+
               |                    |          goes 1 way        lib
-      +-------+-----+              |     apply_instance_data()    com...ufo2ft.filters
+      +-------+-----+              |                        com...ufo2ft.filters
       | Designspace +--------------+
       +-------------+
 

@@ -162,8 +162,7 @@ def _to_designspace_instance(self, instance: GSInstance) -> None:
             ufo_instance.lib[MANUAL_INTERPOLATION_KEY] = instance.manualInterpolation
 
     # Dump selected custom parameters and properties into the instance
-    # descriptor. Later, when using `apply_instance_data`, we will dig out those
-    # custom parameters and apply them to the UFO instance.
+    # descriptor.
     parameters = _to_custom_parameters(instance)
     if parameters:
         ufo_instance.lib[GLYPHS_PREFIX + "customParameters"] = parameters
@@ -282,85 +281,3 @@ def to_glyphs_instances(self) -> None:  # noqa: C901
             instance.customParameters[UFO_FILENAME_CUSTOM_PARAM] = ufo_instance.filename
 
         self.font.instances.append(instance)
-
-
-def apply_instance_data(
-    designspace: Union[str, Path, DesignSpaceDocument],
-    include_filenames: Optional[Set[str]] = None,
-    Font: Optional[UFOFont] = None
-) -> List[UFOFont]:
-    """Open UFO instances referenced by designspace, apply Glyphs instance
-    data if present, re-save UFOs and return updated UFO Font objects.
-
-    Args:
-        designspace: DesignSpaceDocument object or path (str or PathLike) to
-            a designspace file.
-        include_filenames: Optional set of instance filenames (relative to
-            the designspace path) to be included. By default all instances are
-            processed.
-        Font: A callable(path: str) -> Font, used to load a UFO, such as
-            defcon.Font class (default: ufoLib2.Font.open).
-
-    Returns:
-        List of opened and updated instance UFOs.
-    """
-    from fontTools.designspaceLib import DesignSpaceDocument
-    from os.path import normcase, normpath
-
-    if Font is None:
-        import ufoLib2
-
-        Font = ufoLib2.Font.open  # type: ignore
-
-    if hasattr(designspace, "__fspath__"):
-        designspace = designspace.__fspath__()
-    if isinstance(designspace, str):
-        designspace = DesignSpaceDocument.fromfile(designspace)
-
-    basedir = os.path.dirname(designspace.path or "")
-    instance_ufos = []
-    if include_filenames is not None:
-        include_filenames = {normcase(normpath(p)) for p in include_filenames}
-
-    for designspace_instance in designspace.instances:
-        fname = designspace_instance.filename
-        assert fname is not None, f"Instance {designspace_instance.name} missing required filename."
-
-        if include_filenames is not None:
-            fname = normcase(normpath(fname))
-            if fname not in include_filenames:
-                continue
-
-        logger.debug("Applying instance data to %s", fname)
-        # fontmake <= 1.4.0 compares the ufo paths returned from this function
-        # to the keys of a dict of designspace locations that have been passed
-        # through normpath (but not normcase). We do the same.
-        ufo = Font(normpath(os.path.join(basedir, fname)))  # type: ignore
-
-        apply_instance_data_to_ufo(ufo, designspace_instance, designspace)
-
-        ufo.save()
-        instance_ufos.append(ufo)
-    return instance_ufos
-
-
-def apply_instance_data_to_ufo(ufo: UFOFont, instance: InstanceDescriptor, designspace: DesignSpaceDocument) -> None:
-    """Apply Glyphs instance data to a UFO object.
-
-    Args:
-        ufo: A defcon-like font object.
-        instance: A fontTools.designspaceLib.InstanceDescriptor.
-        designspace: A fontTools.designspaceLib.DesignSpaceDocument.
-    """
-    try:
-        ufo.info.openTypeOS2WidthClass = instance.lib["openTypeOS2WidthClass"]
-    except KeyError:
-        pass
-    try:
-        ufo.info.openTypeOS2WeightClass = instance.lib["openTypeOS2WeightClass"]
-    except KeyError:
-        pass
-
-    glyphs_instance: GSInstance = cast(GSInstance, InstanceDescriptorAsGSInstance(instance))
-    to_ufo_properties(None, ufo, glyphs_instance)
-    to_ufo_custom_params(None, ufo, glyphs_instance, "instance")

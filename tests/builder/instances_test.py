@@ -16,11 +16,8 @@
 
 import os
 import glyphsLib
-from fontTools.designspaceLib import DesignSpaceDocument
-from glyphsLib.builder.instances import apply_instance_data
 
 import pytest
-import py.path
 from ..test_helpers import write_designspace_and_UFOs
 
 
@@ -32,86 +29,6 @@ DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
     [None, ["Extra Light"], ["Regular", "Bold"]],
     ids=["default", "include_1", "include_2"],
 )
-def test_apply_instance_data(tmpdir, instance_names, ufo_module):
-    font = glyphsLib.GSFont(os.path.join(DATA, "GlyphsUnitTestSans2.glyphs"))
-    instance_dir = "instances"
-    designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
-    path = str(tmpdir / (font.familyName + ".designspace"))
-    write_designspace_and_UFOs(designspace, path)
-
-    test_designspace = DesignSpaceDocument()
-    test_designspace.read(designspace.path)
-    if instance_names is None:
-        # Collect all instances.
-        test_instances = [instance.filename for instance in test_designspace.instances]
-    else:
-        # Collect only selected instances.
-        test_instances = [
-            instance.filename
-            for instance in test_designspace.instances
-            if instance.styleName in instance_names
-        ]
-
-    # Generate dummy UFOs for collected instances so we don't actually need to
-    # interpolate.
-    tmpdir.mkdir(instance_dir)
-    for instance in test_instances:
-        ufo = ufo_module.Font()
-        ufo.save(str(tmpdir / instance))
-
-    ufos = apply_instance_data(designspace.path, include_filenames=test_instances)
-
-    for filename in test_instances:
-        assert os.path.isdir(str(tmpdir / filename))
-    assert len(ufos) == len(test_instances)
-
-    for ufo in ufos:
-        assert ufo.info.openTypeOS2WeightClass in {
-            100,
-            200,
-            300,
-            400,
-            500,
-            700,
-            900,
-            357,
-        }
-        # FIXME: GSInstance always has a widthClass, so this will be "5"
-        # assert ufo.info.openTypeOS2WidthClass is None  # GlyphsUnitTestSans is wght only
-
-
-def test_reexport_apply_instance_data():
-    # this is for compatibility with fontmake
-    # https://github.com/googlefonts/fontmake/issues/451
-    from glyphsLib.interpolation import apply_instance_data as reexported
-
-    assert reexported is apply_instance_data
-
-
-def test_reencode_glyphs(tmpdir):
-    data_dir = py.path.local(DATA)
-
-    designspace_path = data_dir / "TestReencode.designspace"
-    designspace_path.copy(tmpdir)
-
-    ufo_path = data_dir / "TestReencode-Regular.ufo"
-    ufo_path.copy(tmpdir.ensure_dir("TestReencode-Regular.ufo"))
-
-    instance_dir = tmpdir.ensure_dir("instance_ufo")
-    ufo_path.copy(instance_dir.ensure_dir("TestReencode-Regular.ufo"))
-    ufo_path.copy(instance_dir.ensure_dir("TestReencodeUI-Regular.ufo"))
-
-    ufos = apply_instance_data(str(tmpdir / "TestReencode.designspace"))
-
-    assert len(ufos) == 2
-    assert ufos[0]["A"].unicode == 0x0041
-    assert ufos[0]["A.alt"].unicode is None
-    assert ufos[0]["C"].unicode == 0x0043
-    # Reencode Glyphs: A.alt=0041, C=
-    assert ufos[1]["A"].unicode is None
-    assert ufos[1]["A.alt"].unicode == 0x0041
-    assert ufos[1]["C"].unicode is None
-
 
 def test_glyphs3_names():
     file = "InstanceFamilyName-G3.glyphs"
@@ -385,29 +302,3 @@ def test_glyphs3_instance_properties(tmpdir):
 
     for expected, instance in zip(expected_num_properties, font.instances):
         assert expected == len(instance.properties)
-
-
-def test_rename_glyphs(tmpdir):
-    font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
-    instance_dir = tmpdir.ensure_dir("instance_ufo")
-    designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
-    path = str(tmpdir / (font.familyName + ".designspace"))
-    write_designspace_and_UFOs(designspace, path)
-
-    ufo_path = tmpdir / "RenameGlyphsTest-Regular.ufo"
-    ufo_path.copy(instance_dir.ensure_dir("RenameGlyphsTest-Straight.ufo"))
-    ufo_path.copy(instance_dir.ensure_dir("RenameGlyphsTest-Swapped.ufo"))
-
-    ufos = apply_instance_data(designspace.path)
-
-    assert len(ufos) == 2
-
-    assert len(ufos[0]["a"][0]) == 4  # Square
-    assert len(ufos[0]["b"][0]) == 12  # Circle
-    assert ufos[0]["a"].unicode == 0x0061
-    assert ufos[0]["b"].unicode == 0x0062
-
-    assert len(ufos[1]["a"][0]) == 12  # Circle
-    assert len(ufos[1]["b"][0]) == 4  # Square
-    assert ufos[0]["a"].unicode == 0x0061
-    assert ufos[0]["b"].unicode == 0x0062
