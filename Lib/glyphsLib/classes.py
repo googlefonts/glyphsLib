@@ -5246,6 +5246,13 @@ class GSLayer(GSBase):
         assert self.parent
         font: GSFont = self.font
         if font.formatVersion == 2:
+
+            if hasattr(self, "_paths"):
+                self.shapes.extend(self._paths)
+                del self._paths
+            if hasattr(self, "_components"):
+                self.shapes.extend(self._components)
+                del self._components
             self.layer_name_to_attributes()
 
             if not self.smartComponentPoleMapping and "PartSelection" in self.userData:
@@ -5277,10 +5284,9 @@ class GSLayer(GSBase):
         for shape_dict in shapes:
             if "ref" in shape_dict:
                 shape = parser._parse_dict(shape_dict, GSComponent)
-                self.components.append(shape)
             else:
                 shape = parser._parse_dict(shape_dict, GSPath)
-                self.paths.append(shape)
+            self.shapes.append(shape)
 
     def _parse_background_dict(self, parser, value):
         self._background = parser._parse(value, GSBackgroundLayer)
@@ -5830,11 +5836,11 @@ GSLayer._add_parsers(
             "type": GSAnnotation,
         },
         {"plist_name": "backgroundImage", "type": GSBackgroundImage},
-        {"plist_name": "paths", "type": GSPath},
+        {"plist_name": "paths", "object_name": "_paths", "type": GSPath},
         {"plist_name": "anchors", "type": GSAnchor},
         {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # V2
         {"plist_name": "guides", "type": GSGuide},  # V3
-        {"plist_name": "components", "type": GSComponent},
+        {"plist_name": "components", "object_name": "_components", "type": GSComponent},
         {"plist_name": "hints", "type": GSHint},
         {"plist_name": "userData", "object_name": "_userData", "type": dict},
         {
