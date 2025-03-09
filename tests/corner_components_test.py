@@ -2,17 +2,17 @@ import glyphsLib
 from glyphsLib.filters.cornerComponents import CornerComponentsFilter
 import py
 import pytest
-
+from typing import List
 
 datadir = py.path.local(py.path.local(__file__).dirname).join("data")
 
 ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]
 
-test_glyphs = [glyph[:-12] for glyph in ufo.keys() if glyph.endswith(".expectation")]
+test_glyphs: List[str] = [glyph[:-12] for glyph in ufo.keys() if glyph.endswith(".expectation")]
 
 
 @pytest.mark.parametrize("glyph", sorted(test_glyphs))
-def test_corner_components(glyph):
+def test_corner_components(glyph: str):
     if "left_anchor" in glyph:
         pytest.xfail("left anchors not quite working yet")
     philter = CornerComponentsFilter(include={glyph})
