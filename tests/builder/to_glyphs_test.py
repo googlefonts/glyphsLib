@@ -599,7 +599,6 @@ def test_custom_stylemap_style_name(ufo_module):
     assert ufo.info.styleMapStyleName == "bold"
 
 
-@pytest.mark.xfail  # FIXME: (georg) I’m not sure where to put this
 def test_custom_default_layer_name(ufo_module):
     ufo1 = ufo_module.Font()
     ufo2 = ufo_module.Font()
