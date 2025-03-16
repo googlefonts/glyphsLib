@@ -385,7 +385,7 @@ def _get_ascender_descender(master):
     # has been a padding applied to the sTypo metrics, then falling back to the old method. 
 
     valid_BASE = False
-    has_BASE = []
+    has_BASE = [False,0]
     for i, prefix in enumerate(master.font.featurePrefixes):
         if prefix.name == "BASE":
             has_BASE = [True,i]
