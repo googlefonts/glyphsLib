@@ -23,7 +23,7 @@ import uuid
 from collections import OrderedDict
 from enum import IntEnum
 from io import StringIO
-from typing import Dict, List, Optional, Tuple, Union, Any, Iterator, cast
+from typing import Dict, List, Optional, Tuple, Union, Any, Iterator, cast, overload
 
 # renamed to avoid shadowing glyphsLib.types.Transform imported further below
 from fontTools.misc.transform import Identity, Transform as Affine
@@ -849,7 +849,13 @@ class FontGlyphsProxy(Proxy):
         ...
     """
 
-    def __getitem__(self, key: Union[int, str, slice]) -> Optional[GSGlyph]:
+    @overload
+    def __getitem__(self, key: int) -> Optional[GSGlyph]: ...  # noqa: E704
+    @overload
+    def __getitem__(self, key: str) -> Optional[GSGlyph]: ...  # noqa: E704
+    @overload
+    def __getitem__(self, key: slice) -> List[Optional[GSGlyph]]: ...  # noqa: E704
+    def __getitem__(self, key: Union[int, str, slice]) -> Union[Optional[GSGlyph], List[Optional[GSGlyph]]]:  # noqa: E704 E301
         if isinstance(key, slice):
             return self._owner._glyphs.__getitem__(key)
         if isinstance(key, int):
@@ -6660,10 +6666,13 @@ class GSFont(GSBase):
     def formatVersion(self, value: int) -> None:
         self._formatVersion = value
 
-    glyphs = property(
-        lambda self: FontGlyphsProxy(self),
-        lambda self, value: FontGlyphsProxy(self).setter(value),
-    )
+    @property
+    def glyphs(self) -> FontGlyphsProxy:
+        return FontGlyphsProxy(self)
+
+    @glyphs.setter
+    def glyphs(self, value: Union[List[GSGlyph], FontGlyphsProxy]) -> None:
+        FontGlyphsProxy(self).setter(value)
 
     def _setupGlyph(self, glyph: GSGlyph) -> None:
         glyph.parent = self
