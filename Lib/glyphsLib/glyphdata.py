@@ -457,7 +457,7 @@ def _split_glyph_name(name: str, data: "GlyphData") -> Tuple[str, str, str]:
     return base, dot, suffix
 
 
-def _construct_production_name(glyph_name: str, data: Optional["GlyphData"] = None) -> Optional[str]:
+def _construct_production_name(glyph_name: str, data: "GlyphData") -> Optional[str]:
     """Return the production name for a glyph name from the GlyphData.xml
     database according to the AGL specification.
 

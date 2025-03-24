@@ -474,6 +474,7 @@ class CornerComponentApplier:
 
 class CornerComponentsFilter(BaseFilter):
     def filter(self, glyph):
+        assert isinstance(glyph, str)
         if not len(glyph) or HINTS_LIB_KEY not in glyph.lib:
             return False
 

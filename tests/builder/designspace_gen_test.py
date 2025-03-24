@@ -431,6 +431,7 @@ def test_designspace_generation_bracket_composite_glyph(datadir: str, ufo_module
     assert "B" in font_rt.glyphs
 
     g2 = font_rt.glyphs["B"]
+    assert g2 is not None
     for layer in g2.layers:
         assert layer.components[0].componentName == "A"
 

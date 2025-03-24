@@ -144,6 +144,8 @@ def _adjust_anchors(anchor_data: Dict[str, Tuple[float, float]], ufo: UFOFont, p
 
 
 def _is_ligature_mark(glyph: UFOGlyph) -> bool:
+    if glyph.name is None:
+        return False
     return not glyph.name.startswith("_") and "_" in glyph.name
 
 

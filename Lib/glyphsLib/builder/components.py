@@ -42,6 +42,7 @@ def to_ufo_component(self, ufo_glyph: UFOGlyph, component: GSComponent):
         # fallback to the default layer. We try to do that here as well.
         font = layer.font
         component_glyph = font.glyphs[component_name]
+        assert component_glyph is not None
         color_layers = [
             l
             for l in component_glyph.layers

@@ -20,6 +20,7 @@ import copy
 import unittest
 import pytest
 import re
+from typing import Optional
 
 from glyphsLib.classes import (
     GSFont,
@@ -1653,6 +1654,7 @@ def test_applyTransform_skew(file_path):
 def test_direction(file_path: str):
     font = GSFont(file_path)
     glyph = font.glyphs["a"]
+    assert glyph is not None
     layer = glyph.layers[0]
     path = layer.paths[0]
     assert path.direction == -1
@@ -1660,7 +1662,8 @@ def test_direction(file_path: str):
 
 def test_segments(file_path: str):
     font = GSFont(file_path)
-    glyph: GSGlyph = font.glyphs["a"]
+    glyph: Optional[GSGlyph] = font.glyphs["a"]
+    assert glyph is not None
     layer: GSLayer = glyph.layers[0]
     path: GSPath = layer.paths[0]
     oldSegments = path.segments
