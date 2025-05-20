@@ -57,6 +57,10 @@ jobs:
       - lint
       - test
     runs-on: ubuntu-latest
+    # This is required to create a release using Github integration token
+    # https://github.com/softprops/action-gh-release?tab=readme-ov-file#permissions
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v3
       with:
