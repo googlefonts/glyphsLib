@@ -404,6 +404,7 @@ PRODUCTION_NAMES = {
     "ya_uMatra-tamil": "uni0BAF0BC1",
     "ya_uuMatra-tamil": "uni0BAF0BC2",
     "yoYing_underscore-thai": "uni0E0D005F",  # uni0E0D_uni005F
+    "one_one-han.paren": "one_one.paren",  # not 'one_onehan.paren'
 }
 
 
