@@ -392,7 +392,8 @@ def _construct_production_name(glyph_name, data=None):
     # If all parts are in the AGLFN list, the glyph name is our production
     # name already.
     if all(part in fontTools.agl.AGL2UV for part in base_name_parts):
-        return _agl_compliant_name(glyph_name)
+        production_name = "_".join(base_name_parts) + dot + suffix
+        return _agl_compliant_name(production_name)
 
     # Turn all parts of the ligature into production names.
     _character_outside_BMP = False
