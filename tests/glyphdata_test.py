@@ -24,66 +24,6 @@ from glyphsLib.glyphdata import get_glyph
 
 
 class GlyphDataTest(unittest.TestCase):
-    def test_production_name(self):
-        # Our behavior differs from Glyphs, Glyphs 2.5.2 responses are in comments.
-        def prod(n):
-            return get_glyph(n).production_name
-
-        self.assertEqual(prod(".notdef"), ".notdef")
-        self.assertEqual(prod("eacute"), "eacute")
-        self.assertEqual(prod("Abreveacute"), "uni1EAE")
-        self.assertEqual(prod("C-fraktur"), "uni212D")
-        self.assertEqual(prod("Dboldscript-math"), "u1D4D3")
-        self.assertEqual(prod("fi"), "fi")
-        self.assertEqual(prod("s_t"), "s_t")
-        self.assertEqual(prod("Gcommaaccent"), "uni0122")
-        self.assertEqual(prod("o_f_f_i.foo"), "o_f_f_i.foo")
-        self.assertEqual(prod("ain_alefMaksura-ar.fina"), "uni06390649.fina")
-        self.assertEqual(prod("brevecomb"), "uni0306")
-        self.assertEqual(prod("brevecomb.case"), "uni0306.case")
-        self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
-        self.assertEqual(prod("brevecomb_acutecomb.case"), "uni03060301.case")
-        self.assertEqual(prod("brevecomb_a_a_a"), "uni0306006100610061")
-        self.assertEqual(prod("brevecomb_a_a_a.case"), "uni0306006100610061.case")
-        self.assertEqual(prod("brevecomb_aaa.case"), "brevecomb_aaa.case")
-
-        # brevecomb_Dboldscript-math
-        self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
-
-        # brevecomb_Dboldscript-math.f.r
-        self.assertEqual(prod("brevecomb_Dboldscript-math.f.r"), "uni0306_u1D4D3.f.r")
-
-        self.assertEqual(prod("Dboldscript-math_Dboldscript-math"), "u1D4D3_u1D4D3")
-        self.assertEqual(prod("Dboldscript-math_Dboldscript-math.f"), "u1D4D3_u1D4D3.f")
-        self.assertEqual(prod("Dboldscript-math_a"), "u1D4D3_a")
-
-        # a_Dboldscript-math
-        self.assertEqual(prod("a_Dboldscript-math"), "a_u1D4D3")
-
-        # Dboldscript-math_a_aa
-        self.assertEqual(prod("Dboldscript-math_a_aa"), "u1D4D3_a_uniA733")
-
-        self.assertEqual(prod("Dboldscript-math_a_aaa"), "Dboldscriptmath_a_aaa")
-
-        # brevecomb_Dboldscript-math
-        self.assertEqual(prod("brevecomb_Dboldscript-math"), "uni0306_u1D4D3")
-
-        # Dboldscript-math_brevecomb
-        self.assertEqual(prod("Dboldscript-math_brevecomb"), "u1D4D3_uni0306")
-
-        self.assertEqual(prod("idotaccent"), "i.loclTRK")
-        self.assertEqual(prod("a_idotaccent"), "a_i.loclTRK")
-
-        # a_i.loclTRK_a
-        self.assertEqual(prod("a_idotaccent_a"), "a_idotaccent_a")
-
-        self.assertEqual(prod("a_a_acutecomb"), "a_a_acutecomb")
-        self.assertEqual(prod("a_a_dieresiscomb"), "uni006100610308")
-        self.assertEqual(prod("brevecomb_acutecomb"), "uni03060301")
-        self.assertEqual(prod("vaphalaa-malayalam"), "uni0D030D35.1")
-        self.assertEqual(prod("onethird"), "uni2153")
-        self.assertEqual(prod("Jacute"), "uni004A0301")
-        self.assertEqual(prod("Ech_Vew-arm.liga"), "uni0535054E.liga")
 
     def test_unicode(self):
         def uni(n):
@@ -201,6 +141,63 @@ class GlyphDataTest(unittest.TestCase):
 
 # Testing more production names separately because parameterizing is easier.
 PRODUCTION_NAMES = {
+    # Our behavior differs from Glyphs, Glyphs 2.5.2 responses are in comments.
+    ".notdef": ".notdef",
+    "eacute": "eacute",
+    "Abreveacute": "uni1EAE",
+    "C-fraktur": "uni212D",
+    "Dboldscript-math": "u1D4D3",
+    "fi": "fi",
+    "s_t": "s_t",
+    "Gcommaaccent": "uni0122",
+    "o_f_f_i.foo": "o_f_f_i.foo",
+    "ain_alefMaksura-ar.fina": "uni06390649.fina",
+    "brevecomb": "uni0306",
+    "brevecomb.case": "uni0306.case",
+    "brevecomb_acutecomb": "uni03060301",
+    "brevecomb_acutecomb.case": "uni03060301.case",
+    "brevecomb_a_a_a": "uni0306006100610061",
+    "brevecomb_a_a_a.case": "uni0306006100610061.case",
+    "brevecomb_aaa.case": "brevecomb_aaa.case",
+
+    # brevecomb_Dboldscript-math
+    "brevecomb_Dboldscript-math": "uni0306_u1D4D3",
+
+    # brevecomb_Dboldscript-math.f.r
+    "brevecomb_Dboldscript-math.f.r": "uni0306_u1D4D3.f.r",
+
+    "Dboldscript-math_Dboldscript-math": "u1D4D3_u1D4D3",
+    "Dboldscript-math_Dboldscript-math.f": "u1D4D3_u1D4D3.f",
+    "Dboldscript-math_a": "u1D4D3_a",
+
+    # a_Dboldscript-math
+    "a_Dboldscript-math": "a_u1D4D3",
+
+    # Dboldscript-math_a_aa
+    "Dboldscript-math_a_aa": "u1D4D3_a_uniA733",
+
+    "Dboldscript-math_a_aaa": "Dboldscriptmath_a_aaa",
+
+    # brevecomb_Dboldscript-math
+    "brevecomb_Dboldscript-math": "uni0306_u1D4D3",
+
+    # Dboldscript-math_brevecomb
+    "Dboldscript-math_brevecomb": "u1D4D3_uni0306",
+
+    "idotaccent": "i.loclTRK",
+    "a_idotaccent": "a_i.loclTRK",
+
+    # a_i.loclTRK_a
+    "a_idotaccent_a": "a_idotaccent_a",
+
+    "a_a_acutecomb": "a_a_acutecomb",
+    "a_a_dieresiscomb": "uni006100610308",
+    "brevecomb_acutecomb": "uni03060301",
+    "vaphalaa-malayalam": "uni0D030D35.1",
+    "onethird": "uni2153",
+    "Jacute": "uni004A0301",
+    "Ech_Vew-arm.liga": "uni0535054E.liga",
+
     "Ech_Vew-arm.liga": "uni0535054E.liga",
     "Men_Ech-arm.liga": "uni05440535.liga",
     "Men_Ini-arm.liga": "uni0544053B.liga",
