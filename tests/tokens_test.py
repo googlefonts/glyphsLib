@@ -48,7 +48,7 @@ expander = TokenExpander(TESTFONT, master)
         (r"pos A ${A:width+width};", "pos A 1200;", False),
         (r"pos A ${A:width+padding};", "pos A 850;", False),
         (r"pos A ${A:length};", "", True),
-        # (r"pos A ${A:LSB}", "pos A 600;", False),
+        (r"pos A ${A:LSB};", "pos A 82;", False),
         (r"pos A ${A:anchors.top.x};", "pos A 300;", False),
         (r"pos A ${A:anchors.ogonek.y};", "pos A 10;", False),
         (r"pos A ${A:anchors.ogonek.y*1.5};", "pos A 15;", False),
@@ -65,70 +65,69 @@ expander = TokenExpander(TESTFONT, master)
             "A.sc",
             False,
         ),  # will expand to all glyph names that end in ".sc"
-        ("$[not name endswith '.sc']", "A space Sacute", False),
-        ("$[NOT name endswith '.sc']", "A space Sacute", False),
-        ("$[! name endswith '.sc']", "A space Sacute", False),
-        (
-            "$[name endswith '.sc' or not name endswith '.sc']",
-            "A.sc A space Sacute",
-            False,
-        ),
-        (
-            "$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']",
-            "A.sc A space Sacute",
-            False,
-        ),
-        (
-            "$[name endswith '.sc' || ! name endswith '.sc']",
-            "A.sc A space Sacute",
-            False,
-        ),
-        ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
-        ("$[name ENDSWITH '.sc' AND NOT name ENDSWITH '.sc']", "", False),
-        ("$[name endswith '.sc' && ! name endswith '.sc']", "", False),
+        ("$[not name endswith '.sc']", "A alef-ar space Sacute", False),
+        ("$[NOT name endswith '.sc']", "A alef-ar space Sacute", False),
+        ("$[! name endswith '.sc']", "A alef-ar space Sacute", False),
         ("$[name like 'A']", "A", False),
         ("$[name like 'Sacut']", "", False),
         ("$[name like 'S?cute']", "Sacute", False),
         ("$[name like 'S*']", "Sacute", False),
-        # ('$[layer0.width < 500]', "", False), # layer0 = first master
-        # ('$[layers.count > 1]', "", False), # compare numbers with: == != <= >= < >
-        # ('$[direction == 2]', "", False), # 0=LTR, 1=BiDi, 2=RTL
+        # ('$[layer0.width < 500]', "space Sacute", False),  # layer0 = first master
+        # ('$[layers.count > 1]', "", False),  # compare numbers with: == != <= >= < >
+        ('$[direction == 0]', "", False),  # 0=LTR, 1=BiDi, 2=RTL
+        ('$[direction == 2]', "", False),  # 0=LTR, 1=BiDi, 2=RTL
         ("$[colorIndex == 5]", "Sacute", False),
-        # ('$[case == smallCaps]', "", False),
+
         # predefined constants: noCase, upper, lower, smallCaps, minor, other
-        (
-            '$[name matches "S|s.*"]',
-            "A.sc space Sacute",
-            False,
-        ),  # "matches": regular expression
-        # ('$[leftMetricsKey like "*"]', "", False), # "like": wildcard search
-        # ('$[name like "*e*"]', "", False), # e anywhere in the glyph name
-        ('$[script like "latin"]', "A", False),
-        ('$[category like "Separator"]', "Sacute", False),
+        ('$[case == upper]', "A Sacute", False),
+        ('$[case == smallCaps]', "A.sc", False),
+        ('$[name matches "S|s.*"]', "A.sc space Sacute", False),  # "matches": regular expression
+        ('$[leftMetricsKey like "*"]', "Sacute", False),  # "like": wildcard search
+        ('$[name like "*e*"]', "alef-ar space Sacute", False),  # e anywhere in the glyph name
+        ('$[script like "latin"]', "A A.sc Sacute", False),
+        ('$[script == "latin"]', "A A.sc Sacute", False),
+        ('$[category like "Separator"]', "space Sacute", False),
         ('$[leftKerningGroup like "H"]', "A", False),
         ('$[rightKerningGroup like "L"]', "A", False),
         ('$[unicode endswith "41"]', "A", False),  # beginswith, endswith, contains
         ('$[note contains "love it"]', "A.sc", False),  # glyph note
         ("$[countOfUnicodes > 1]", "space", False),
+        ("$[countOfUnicodes == 0]", "A.sc", False),
         ("$[countOfLayers > 2]", "space", False),
         ('$[subCategory like "Arrow"]', "Sacute", False),
-        # ('$[hasHints == 0]', "", False), # boolean: false, no, 0 versus true, yes, 1
+        ('$[hasHints == 0]', "A A.sc alef-ar space Sacute", False),  # boolean: false, no, 0 versus true, yes, 1
         # ('$[isColorGlyph == true]', "", False),
-        (
-            '$[script == "latin"]',
-            "A",
-            False,
-        ),  # connect multiple conditions with ORor AND
-        # ('$[hasComponents == true and script == "latin"]', "", False),
-        # connect multiple conditions with ORor AND
+        ('$[hasComponents == true]', "A.sc", False),
+        ('$[unicode == nil]', "A.sc", False),
         # ('$[hasTrueTypeHints == false]', "", False),
         # ('$[hasAlignedWidth == true]', "", False),
         # ('$[hasPostScriptHints == true]', "", False),
         # ('$[hasAnnotations == true]', "", False),
         # ('$[hasCorners == true]', "", False), # corners = corner components
-        # ('$[hasSpecialLayers == yes]', "", False),
+
         # special layers = color, brace and bracket layers
+        # ('$[hasSpecialLayers == yes]', "", False),
         # ('$[isHangulKeyGlyph == no]', "", False),
+
+        # connect multiple conditions with OR or AND
+        (
+            "$[name endswith '.sc' or not name endswith '.sc']",
+            "A.sc A alef-ar space Sacute",
+            False,
+        ),
+        (
+            "$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']",
+            "A.sc A alef-ar space Sacute",
+            False,
+        ),
+        (
+            "$[name endswith '.sc' || ! name endswith '.sc']",
+            "A.sc A alef-ar space Sacute",
+            False,
+        ),
+        ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
+        ("$[name ENDSWITH '.sc' AND NOT name ENDSWITH '.sc']", "", False),
+        ("$[name endswith '.sc' && ! name endswith '.sc']", "", False),
     ],
 )
 def test_token_expander(test_input, expected, throws):

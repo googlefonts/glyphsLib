@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 
 def _like(got, expected):
+    if got is None:
+        return False
     # LIKE is similar to Unix shell-style wildcards supported by fnmatch
     return fnmatch.fnmatchcase(str(got), expected)
 
@@ -259,7 +261,8 @@ class TokenExpander:
         if m:
             self.glyph_predicate = self.glyph_predicate[len(m[0]):]
             return int(m[1])
-
+        if self.glyph_predicate == "nil":
+            return None
         # Keyword constants
         m = re.match(r"\s*(\w+)", self.glyph_predicate)
         if m:
@@ -296,6 +299,8 @@ class TokenExpander:
         "colorIndex": lambda g: g.color,
         "countOfUnicodes": lambda g: len(g.unicodes),
         "countOfLayers": lambda g: len(g.layers),
+        "hasComponents": lambda g: len(g.layers[0].components) > 0,
+        "hasHints": lambda g: len(g.layers[0].hints) > 0,
     }
 
     def _get_value_for_glyph(self, g, value):

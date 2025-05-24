@@ -2535,7 +2535,7 @@ class GSFontMaster(GSBase):
             if (
                 metric.type == metricType
                 and metric.filter
-                and metric.filter.evaluateWithObject(layer.parent if layer else None)
+                and metric.filter.evaluateWithObject(layer.parent if layer else None)  # Maybe the token parser can help?
             ):
                 metricValue = self.metricValues[metric.id]
                 return metricValue
@@ -5662,6 +5662,16 @@ class GSLayer(GSBase):
         ):
             return Rect(Point(left, bottom), Size(right - left, top - bottom))
         return None
+
+    @property
+    def LSB(self):
+        bounds = self.bounds
+        return bounds.origin.x
+
+    @property
+    def RSB(self):
+        bounds = self.bounds
+        return self.width - bounds.size.width
 
     def _find_node_by_indices(self, point: Tuple[int, int]) -> "GSNode":
         """Find the GSNode that is referred to by the given indices.
