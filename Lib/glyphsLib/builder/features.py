@@ -22,7 +22,7 @@ from io import StringIO
 from typing import TYPE_CHECKING
 
 from fontTools.feaLib import ast, parser
-
+from glyphsLib.glyphdata import get_glyph
 from glyphsLib.util import PeekableIterator
 from .constants import (
     GLYPHLIB_PREFIX,
@@ -236,7 +236,6 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
     * https://github.com/googlefonts/glyphsLib/issues/85
     * https://github.com/googlefonts/glyphsLib/pull/100#issuecomment-275430289
     """
-    from glyphsLib import glyphdata
 
     categories: dict[str, str] = {}
     category_key = GLYPHLIB_PREFIX + "category"
@@ -256,7 +255,7 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
 
         # First check glyph.lib for category/subCategory overrides. Otherwise,
         # use global values from GlyphData.
-        glyphinfo = glyphdata.get_glyph(
+        glyphinfo = get_glyph(
             glyph_name, unicodes=[f"{c:04X}" for c in glyph.unicodes]
         )
         category = glyph.lib.get(category_key) or glyphinfo.category

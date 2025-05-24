@@ -55,6 +55,7 @@ from glyphsLib.types import (
 from glyphsLib.util import isString, isList
 from glyphsLib.writer import Writer
 import glyphsLib.glyphdata as glyphdata
+from glyphsLib.glyphdata import GSGlyphInfo, GSWritingDirection, GSCase, GSLTR
 
 logger = logging.getLogger(__name__)
 
@@ -200,24 +201,6 @@ PROPERTIES_WHITELIST = [
     "WWSSubfamilyName",
     "variationsPostScriptNamePrefix",
 ]
-
-
-class GSWritingDirection(IntEnum):
-    """a default value, not used"""
-
-    GSWritingDirectionBIDI = 1
-
-    """Left to Right"""
-    GSWritingDirectionLeftToRight = 0  # bit one and two not set
-
-    """Right to Left"""
-    GSWritingDirectionRightToLeft = 1 << 1
-
-    """Vertical"""
-    GSWritingDirectionVertical = 1 << 2
-
-    """Line to Right"""
-    GSWritingDirectionLineToRight = 1 << 3
 
 
 # Instance types; normal instance or variable font setting pseudo-instance
@@ -5905,7 +5888,7 @@ class GSGlyph(GSBase):
         self._unicodes: List[str] = []
         self._category: Optional[str] = None
         self._subCategory: Optional[str] = None
-        self.case: Optional[str] = None
+        self._case: GSCase = None
         self.color: Optional[Any] = None
         self.export: bool = self._defaultsForName["export"]
         self.lastChange: Optional[Any] = None
@@ -5920,7 +5903,7 @@ class GSGlyph(GSBase):
         self._userData: Optional[dict] = None
         self.sortName: Optional[str] = None
         self.sortNameKeep: Optional[str] = None
-        self.direction: Optional[int] = None
+        self.direction: GSWritingDirection = GSLTR
 
         self._bottomKerningGroup: Optional[str] = None
         self._leftKerningGroup: Optional[str] = None

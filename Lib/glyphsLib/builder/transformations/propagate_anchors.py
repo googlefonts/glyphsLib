@@ -21,7 +21,7 @@ from typing import Tuple, TYPE_CHECKING
 
 from fontTools.misc.transform import Transform
 
-from glyphsLib import glyphdata
+from glyphsLib.glyphdata import GlyphData, get_glyph
 from glyphsLib.classes import GSAnchor
 from glyphsLib.types import Point
 
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 def propagate_all_anchors(
-    font: GSFont, *, glyph_data: glyphdata.GlyphData | None = None
+    font: GSFont, *, glyph_data: GlyphData | None = None
 ) -> None:
     """Copy anchors from component glyphs into their including composites.
 
@@ -48,7 +48,7 @@ def propagate_all_anchors(
 
 # the actual implementation, easier to test and compare with the original Rust code
 def propagate_all_anchors_impl(
-    glyphs: dict[str, GSGlyph], *, glyph_data: glyphdata.GlyphData | None = None
+    glyphs: dict[str, GSGlyph], *, glyph_data: GlyphData | None = None
 ) -> None:
     # the reference implementation does this recursively, but we opt to
     # implement it by pre-sorting the work to ensure we always process components
@@ -116,13 +116,15 @@ def _has_components(glyph: GSGlyph) -> bool:
     return any(layer.components for layer in _interesting_layers(glyph))
 
 
-def _get_category(  # TODO: remove this. Should be handled internally (gs)
+# TODO: remove this. Should be handled internally (gs)
+    # glyph.category is automatically set now. The glyph_data argument needs to be loaded from the font internaly.
+def _get_category(
     glyph: GSGlyph,
-    glyph_data: glyphdata.GlyphData | None = None,
-) -> str:
+    glyph_data: GlyphData | None = None,
+) -> str | None:
     return (
         glyph.category
-        or glyphdata.get_glyph(
+        or get_glyph(
             glyph.name, data=glyph_data, unicodes=glyph.unicodes
         ).category
     )
@@ -130,11 +132,11 @@ def _get_category(  # TODO: remove this. Should be handled internally (gs)
 
 def _get_subCategory(  # TODO: remove this. Should be handled internally (gs)
     glyph: GSGlyph,
-    glyph_data: glyphdata.GlyphData | None = None,
-) -> str:
+    glyph_data: GlyphData | None = None,
+) -> str | None:
     return (
         glyph.subCategory
-        or glyphdata.get_glyph(
+        or get_glyph(
             glyph.name, data=glyph_data, unicodes=glyph.unicodes
         ).subCategory
     )
@@ -146,7 +148,7 @@ def anchors_traversing_components(
     glyphs: dict[str, GSGlyph],
     done_anchors: dict[str, dict[str, list[GSAnchor]]],
     base_glyph_counts: dict[Tuple[str, str], int],
-    glyph_data: glyphdata.GlyphData | None = None,
+    glyph_data: GlyphData | None = None,
 ) -> list[GSAnchor]:
     """Return the anchors for this glyph, including anchors from components
 

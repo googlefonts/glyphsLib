@@ -41,6 +41,7 @@ from .constants import (
 )
 from glyphsLib.classes import LAYER_ATTRIBUTE_COLOR
 from glyphsLib.types import floatToString3
+from glyphsLib.glyphdata import GSGlyphInfo
 from ufoLib2.objects import Glyph as UFOGlyph
 from ufoLib2.objects import Layer as UFOLayer
 logger = logging.getLogger(__name__)
@@ -153,15 +154,15 @@ def to_ufo_glyph(self, ufo_glyph: UFOGlyph, layer: GSLayer, glyph: GSGlyph, do_c
         return
     unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(glyph_name, unicodes=unicodes)
+    glyphinfo: GSGlyphInfo = glyphsLib.glyphdata.get_glyph(glyph_name, unicodes=unicodes)
 
     if self.glyphdata is not None:
-        custom = glyphsLib.glyphdata.get_glyph(
+        custom: GSGlyphInfo = glyphsLib.glyphdata.get_glyph(
             glyph_name, self.glyphdata, unicodes=unicodes
         )
-        production_name: Optional[str] = glyph.production or (
-            custom.production_name
-            if custom.production_name != glyphinfo.production_name
+        production_name: Optional[str] = glyph.productionName or (
+            custom.productionName
+            if custom.productionName != glyphinfo.productionName
             else None
         )
         category: Optional[str] = glyph.category or (
@@ -175,13 +176,13 @@ def to_ufo_glyph(self, ufo_glyph: UFOGlyph, layer: GSLayer, glyph: GSGlyph, do_c
         )
     else:
         production_name, category, subCategory, script = (
-            glyph.production,
+            glyph.productionName,
             glyph.category,
             glyph.subCategory,
             glyph.script,
         )
 
-    production_name = production_name or glyphinfo.production_name
+    production_name = production_name or glyphinfo.productionName
 
     glyph_name = ufo_glyph.name
     if production_name and glyph_name:
