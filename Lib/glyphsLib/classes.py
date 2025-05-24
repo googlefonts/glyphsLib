@@ -5896,8 +5896,8 @@ class GSGlyph(GSBase):
         self.note: Optional[str] = None
         self.locked: bool = False
         self.smartComponentAxes: List[Any] = []
-        self.production: str = ""
-        self.script: Optional[str] = None
+        self._productionName: Optional[str] = None
+        self._script: Optional[str] = None
         self.selected: bool = False
         self.tags: List[str] = []
         self._userData: Optional[dict] = None
@@ -5918,6 +5918,8 @@ class GSGlyph(GSBase):
         self._vertWidthMetricsKey: Optional[str] = None
         self._widthMetricsKey: Optional[str] = None
 
+        self._hasInfo = False
+
     def _serialize_to_plist(self, writer: Writer) -> None:
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(self, "case")
@@ -5927,7 +5929,7 @@ class GSGlyph(GSBase):
         writer.writeObjectKeyValue(self, "export", not self.export)
         writer.writeKeyValue("glyphname", self.name)
         if writer.formatVersion == 2:
-            writer.writeObjectKeyValue(self, "production", "if_true")
+            writer.writeObjectKeyValue(self, "productionName", "if_true", keyName="production")
         if writer.formatVersion > 2:
             writer.writeObjectKeyValue(
                 self, "bottomKerningGroup", "if_true", keyName="kernBottom"
@@ -5975,7 +5977,7 @@ class GSGlyph(GSBase):
         if self.unicodes and writer.formatVersion == 2:
             writer.writeKeyValue("unicode", self.unicodes)
         if writer.formatVersion > 2:
-            writer.writeObjectKeyValue(self, "production", "if_true")
+            writer.writeObjectKeyValue(self, "productionName", "if_true", keyName="production")
 
         writer.writeObjectKeyValue(self, "script")
         if writer.formatVersion == 2:
@@ -6097,8 +6099,27 @@ class GSGlyph(GSBase):
     def glyphname(self, value: str) -> None:
         self.name = value
 
+    def _loadGlyphInfo(self) -> None:
+        info: GSGlyphInfo = glyphdata.get_glyph(self.name, unicodes=self.unicodes)
+        if info:
+            if self._category is None:
+                self._category = info.category
+            if self._subCategory is None:
+                self._subCategory = info.subCategory
+            if self._productionName is None:
+                self._productionName = info.productionName
+            if self._script is None:
+                self._script = info.script
+            if self._case is None:
+                self._case = info.case
+            if self.direction is None:
+                self.direction = info.direction
+        self._hasInfo = True
+
     @property
     def category(self) -> Optional[str]:
+        if self._hasInfo is False:
+            self._loadGlyphInfo()
         return self._category
 
     @category.setter
@@ -6107,11 +6128,43 @@ class GSGlyph(GSBase):
 
     @property
     def subCategory(self) -> Optional[str]:
+        if self._hasInfo is False:
+            self._loadGlyphInfo()
         return self._subCategory
 
     @subCategory.setter
     def subCategory(self, value: Optional[str]) -> None:
         self._subCategory = value
+
+    @property
+    def productionName(self) -> Optional[str]:
+        if self._hasInfo is False:
+            self._loadGlyphInfo()
+        return self._productionName
+
+    @productionName.setter
+    def productionName(self, value: Optional[str]) -> None:
+        self._productionName = value
+
+    @property
+    def script(self):
+        if self._hasInfo is False:
+            self._loadGlyphInfo()
+        return self._script
+
+    @script.setter
+    def script(self, value):
+        self._script = value
+
+    @property
+    def case(self):
+        if self._hasInfo is False:
+            self._loadGlyphInfo()
+        return self._case
+
+    @case.setter
+    def case(self, value):
+        self._case = value
 
     @property
     def smartComponentAxes(self) -> List[Any]:
