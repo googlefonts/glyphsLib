@@ -20,7 +20,7 @@ import logging
 import glyphsLib.glyphdata
 
 try:
-    from GlyphsApp import GSFontMaster, GSGlyph, GSLayer, GSPath, GSComponent, GSBackgroundLayer
+    from GlyphsApp import GSFontMaster, GSGlyph, GSLayer, GSPath, GSComponent, GSBackgroundLayer  # type: ignore
 except ImportError:
     from .. import GSFontMaster, GSGlyph, GSLayer, GSPath, GSComponent, GSBackgroundLayer
 from .common import from_loose_ufo_time, to_glyphs_time

@@ -2535,7 +2535,7 @@ class GSFontMaster(GSBase):
             if (
                 metric.type == metricType
                 and metric.filter
-                and metric.filter.evaluateWithObject(layer.parent if layer else None)  # Maybe the token parser can help?
+                and metric.filter.evaluateWithObject(layer.parent if layer else None)  # type: ignore  # Maybe the token parser can help?
             ):
                 metricValue = self.metricValues[metric.id]
                 return metricValue

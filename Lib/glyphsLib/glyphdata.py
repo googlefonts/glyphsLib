@@ -372,7 +372,7 @@ def _load_data_files():
             from importlib.resources import files
         except ImportError:
             # Python <= 3.8 backport
-            from importlib_resources import files
+            from importlib_resources import files  # type: ignore
 
         data_dir = files("glyphsLib.data")
         with (data_dir / "GlyphData.xml").open("rb") as f1:
