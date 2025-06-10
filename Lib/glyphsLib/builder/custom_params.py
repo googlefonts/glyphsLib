@@ -1154,7 +1154,7 @@ def _normalize_custom_param_name(name):
     since they can be user-generated.
     """
 
-    replacements = (("\u2018", "'"), ("\u2019", "'"), ("\u201C", '"'), ("\u201D", '"'))
+    replacements = (("\u2018", "'"), ("\u2019", "'"), ("\u201c", '"'), ("\u201d", '"'))
     for orig, replacement in replacements:
         name = name.replace(orig, replacement)
     return name
