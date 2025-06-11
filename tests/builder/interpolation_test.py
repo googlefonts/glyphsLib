@@ -279,6 +279,26 @@ class DesignspaceTest(unittest.TestCase):
 
         self.expect_designspace_roundtrip(designspace)
 
+    def test_variablePostscriptFontNameProperty(self):
+        master = makeMaster("Master")
+        thin, black = makeInstance("Thin"), makeInstance("Black")
+        black.properties.append(
+            GSFontInfoValue("variablePostscriptFontName", "PSNameTest-Superfat")
+        )
+        font = makeFont([master], [thin, black], "PSNameTest")
+        designspace = to_designspace(font, instance_dir="out")
+        path = self.write_to_tmp_path(designspace, "psname.designspace")
+        d = etree.parse(path)
+
+        def psname(doc, style):
+            inst = doc.find('instances/instance[@stylename="%s"]' % style)
+            return inst.attrib.get("postscriptfontname")
+
+        self.assertIsNone(psname(d, "Thin"))
+        self.assertEqual(psname(d, "Black"), "PSNameTest-Superfat")
+
+        self.expect_designspace_roundtrip(designspace)
+
     def test_instanceOrder(self):
         # The generated *.designspace file should place instances
         # in the same order as they appear in the original source.

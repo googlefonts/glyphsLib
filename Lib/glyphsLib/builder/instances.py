@@ -116,7 +116,8 @@ def _to_designspace_instance(self, instance):
     ufo_instance.familyName = instance.familyName
     ufo_instance.styleName = instance.name
     ufo_instance.postScriptFontName = (
-        instance.properties.get("postscriptFontName")
+        instance.properties.get("variablePostscriptFontName")
+        or instance.properties.get("postscriptFontName")
         or instance.customParameters["postscriptFontName"]
     )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
