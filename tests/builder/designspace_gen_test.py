@@ -25,6 +25,7 @@ import pytest
 
 import glyphsLib
 from glyphsLib import to_designspace, to_glyphs
+from glyphsLib.builder.constants import CUSTOM_PARAMETERS_KEY
 from glyphsLib.util import open_ufo
 from glyphsLib.types import Point
 
@@ -562,3 +563,23 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
     assert designspace.rules[0].subs == [
         ("v", "v.BRACKET.varAlt01"),
     ]
+
+
+@pytest.mark.parametrize("minimal", [True, False])
+def test_designspace_generation_instances_disabled_custom_params(
+    datadir, ufo_module, minimal
+):
+    with open(str(datadir.join("GlyphsUnitTestSans.glyphs"))) as f:
+        font = glyphsLib.load(f)
+
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=minimal)
+
+    regular_instance = next(
+        (i for i in designspace.instances if i.name.endswith("Regular"))
+    )
+    if minimal:
+        assert len(regular_instance.lib) == 0
+    else:
+        assert len(regular_instance.lib) == 1
+        assert CUSTOM_PARAMETERS_KEY in regular_instance.lib
+        assert regular_instance.lib[CUSTOM_PARAMETERS_KEY] == [("fsType", [])]
