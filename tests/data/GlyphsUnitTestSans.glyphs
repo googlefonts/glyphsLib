@@ -27,6 +27,14 @@ name = smcp_target;
 );
 customParameters = (
 {
+disabled = 1;
+name = "Axis Mappings";
+value = {
+wght = {
+};
+};
+},
+{
 name = note;
 value = "Bla bla";
 }
