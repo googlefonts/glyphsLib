@@ -477,6 +477,25 @@ class GSFontFromFileTest(GSObjectsTestCase):
 
     def test_customParameters(self):
         font = self.font
+
+        # disabled custom parameters are ignored by getters-by-name
+        assert font.customParameters["Axis Mappings"] is None
+        assert font.customParameters.get("Axis Mappings") is None
+        assert "Axis Mappings" not in font.customParameters
+        # ... however this test font actually contains one
+        cp = font.customParameters._get_by_name("Axis Mappings", skip_disabled=False)
+        assert cp.disabled
+        assert cp.value == {"wght": {}}
+        # On the other hand, __iter__, __len__ or get-by-index still take into account
+        # the presence of the disabled parameter. Yeah it's weird, but Glyphs.app
+        # also does the same...
+        assert cp in list(font.customParameters)
+        assert font.customParameters[0] == cp
+        assert len(font.customParameters) == 2
+
+        assert font.customParameters[1].name == "note"
+        assert font.customParameters[1].value == "Bla bla"
+
         font.customParameters["trademark"] = "ThisFont is a trademark by MyFoundry.com"
         self.assertIn(
             font.customParameters["trademark"],
