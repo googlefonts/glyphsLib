@@ -1157,12 +1157,15 @@ class CustomParametersProxy(ListDictionaryProxy):
         length = super().__len__()
         return length + 1 if self._should_add_axes() else length
 
-    def _get_by_name(self, name):
+    def _get_by_name(self, name, skip_disabled=True):
         if name == "Axes" and isinstance(self._owner, GSFont):
             return self._owner._get_custom_parameter_from_axes()
-        if name == "Name Table Entry":
+        if name == "Name Table Entry":  # WTH is this?!
             return None
-        return super()._get_by_name(name)
+        item = super()._get_by_name(name)
+        if skip_disabled and item is not None and item.disabled:
+            return None
+        return item
 
     def _should_add_axes(self):
         if isinstance(self._owner, GSFont) and self._owner.format_version < 3:

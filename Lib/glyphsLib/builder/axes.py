@@ -168,6 +168,7 @@ def to_designspace_axes(self):
         {v["Axis"]: v["Location"] for v in cp.value}
         for cp in self.font.customParameters
         if cp.name == "Virtual Master"
+        if not cp.disabled
     ]
 
     for axis_def in get_axis_definitions(self.font):

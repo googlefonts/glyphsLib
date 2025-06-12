@@ -27,6 +27,14 @@ name = smcp_target;
 );
 customParameters = (
 {
+disabled = 1;
+name = "Axis Mappings";
+value = {
+wght = {
+};
+};
+},
+{
 name = note;
 value = "Bla bla";
 }
@@ -2366,6 +2374,14 @@ name = Light;
 weightClass = Light;
 },
 {
+customParameters = (
+{
+disabled = 1;
+name = fsType;
+value = (
+);
+}
+);
 interpolationWeight = 90;
 instanceInterpolations = {
 "3E7589AA-8194-470F-8E2F-13C1C581BE24" = 1;

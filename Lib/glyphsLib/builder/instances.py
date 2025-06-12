@@ -63,7 +63,13 @@ def to_designspace_instances(self):
             if instance.type == InstanceType.VARIABLE:
                 _to_designspace_varfont(self, instance)
             else:
-                _to_designspace_instance(self, instance)
+                # In 'minimal' mode (enabled e.g. by fontmake when converting
+                # .glyphs => .ufo for compiling OpenType fonts) we treat disabled
+                # custom parameters as if they are absent, thus here we skip
+                # exporting them to the designspace instance when minimal=True.
+                _to_designspace_instance(
+                    self, instance, ignore_disabled_cp=self.minimal
+                )
 
 
 def _to_designspace_varfont(self, instance):
@@ -106,7 +112,7 @@ def _to_designspace_varfont(self, instance):
         ufo_varfont.lib[key] = ufo.lib[key]
 
 
-def _to_designspace_instance(self, instance):
+def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     ufo_instance = self.designspace.newInstanceDescriptor()
 
     # FIXME: (jany) most of these customParameters are actually attributes,
@@ -160,7 +166,7 @@ def _to_designspace_instance(self, instance):
     # Dump selected custom parameters and properties into the instance
     # descriptor. Later, when using `apply_instance_data`, we will dig out those
     # custom parameters and apply them to the UFO instance.
-    parameters = _to_custom_parameters(instance)
+    parameters = _to_custom_parameters(instance, ignore_disabled_cp)
     if parameters:
         ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = parameters
     properties = _to_properties(instance)
@@ -170,11 +176,12 @@ def _to_designspace_instance(self, instance):
     self.designspace.addInstance(ufo_instance)
 
 
-def _to_custom_parameters(instance):
+def _to_custom_parameters(instance, ignore_disabled=False):
     return [
         (item.name, item.value)
         for item in instance.customParameters
         if item.name not in CUSTOM_PARAMETERS_BLACKLIST
+        and not (ignore_disabled and item.disabled)
     ]
 
 
