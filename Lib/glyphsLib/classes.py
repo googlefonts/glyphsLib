@@ -3947,40 +3947,42 @@ class GSLayer(GSBase):
             return "axisRules" in self.attributes  # Glyphs 3
         return re.match(self.BRACKET_LAYER_RE, self.name)  # Glyphs 2
 
-    def _bracket_info(self, axes):
-        # Returns a region expressed as a {axis_tag: (min, max)} box
-        # (dictionary), once the axes have been computed
+    def _bracket_axis_rules(self):
         if not self._is_bracket_layer():
-            return {}
-
+            return
         if self.parent.parent.format_version > 2:
             # Glyphs 3
-            info = {}
-            for axis, rule in zip(axes, self.attributes["axisRules"]):
-                if "min" not in rule and "max" not in rule:
-                    continue
-                # Rules are expressed in designspace coordinates,
-                # so map appropriately.
-                designspace_min, designspace_max = designspace_min_max(axis)
-                axis_min = rule.get("min", designspace_min)
-                axis_max = rule.get("max", designspace_max)
+            for rule in self.attributes["axisRules"]:
+                axis_min = rule.get("min")
+                axis_max = rule.get("max")
                 if isinstance(axis_min, str):
                     axis_min = float(axis_min)
                 if isinstance(axis_max, str):
                     axis_max = float(axis_max)
-                info[axis.tag] = (axis_min, axis_max)
-            return info
+                yield (axis_min, axis_max)
+            return
 
         # Glyphs 2
         m = re.match(self.BRACKET_LAYER_RE, self.name)
-        axis = axes[0]  # For glyphs 2
-        designspace_min, designspace_max = designspace_min_max(axis)
         reverse = m.group("first_bracket") == "]"
         bracket_crossover = int(m.group("value"))
         if reverse:
-            return {axis.tag: (designspace_min, bracket_crossover)}
+            yield (None, bracket_crossover)
         else:
-            return {axis.tag: (bracket_crossover, designspace_max)}
+            yield (bracket_crossover, None)
+
+    def _bracket_info(self, axes):
+        # Returns a region expressed as a {axis_tag: (min, max)} box
+        # (dictionary), once the axes have been computed
+        info = {}
+        for axis, (axis_min, axis_max) in zip(axes, self._bracket_axis_rules()):
+            # Rules are expressed in designspace coordinates,
+            # so map appropriately.
+            designspace_min, designspace_max = designspace_min_max(axis)
+            axis_min = axis_min if axis_min is not None else designspace_min
+            axis_max = axis_max if axis_max is not None else designspace_max
+            info[axis.tag] = (axis_min, axis_max)
+        return info
 
     def _is_brace_layer(self):
         if self.parent.parent.format_version > 2:

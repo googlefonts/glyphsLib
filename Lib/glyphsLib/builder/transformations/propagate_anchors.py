@@ -105,9 +105,8 @@ def _interesting_layers(glyph):
     return (
         l
         for l in glyph.layers
-        if l._is_master_layer
+        if l._is_master_layer or l._is_bracket_layer()
         # or l._is_brace_layer
-        # or l._is_bracket_layer
         # etc.
     )
 
@@ -385,17 +384,48 @@ def get_component_layer_anchors(
     glyphs: dict[str, GSGlyph],
     anchors: dict[str, dict[str, list[GSAnchor]]],
 ) -> list[GSAnchor] | None:
+    if component.name not in anchors:
+        return None  # nothing to propagate
+
     glyph = glyphs.get(component.name)
     if glyph is None:
-        return None
+        return None  # invalid component reference, skip
+
     # in Glyphs.app, the `componentLayer` property would synthesize a layer
     # if it is missing. glyphsLib does not have that yet, so for now we
-    # only support the corresponding 'master' layer of a component's base glyph.
+    # only support the corresponding 'master' or alternate ('bracket') layers
+    # of a component's base glyph.
+
     layer_anchors = None
+
+    # whether the parent layer where the component is defined is a 'master' layer
+    # and/or a 'bracket' or alternate layer (masters can have bracket layers too but
+    # glyphsLib doesn't support that yet).
+    parent_is_master = layer._is_master_layer
+    parent_is_bracket = layer._is_bracket_layer()
+    parent_axis_rules = (
+        [] if not parent_is_bracket else list(layer._bracket_axis_rules())
+    )
+
+    # we support propagating anchors from the component base glyph's 'master' layer
+    # (with same layerId), or from a 'bracket' alternate layer with matching axis
+    # rules and the same associated master; we try the latter first
     for comp_layer in _interesting_layers(glyph):
-        if comp_layer.layerId == layer.layerId and component.name in anchors:
+        if (
+            parent_is_bracket
+            and comp_layer._is_bracket_layer()
+            and comp_layer.associatedMasterId == layer.associatedMasterId
+            and (list(comp_layer._bracket_axis_rules()) == parent_axis_rules)
+        ) or (parent_is_master and comp_layer.layerId == layer.layerId):
             layer_anchors = anchors[component.name][comp_layer.layerId]
             break
+
+    # else we fall back to the associated master layer; this is guaranteed to exist
+    # since all glyphs must at least define one layer per master; if this raised
+    # KeyError, the font is broken
+    if layer_anchors is None:
+        layer_anchors = anchors[component.name][layer.associatedMasterId]
+
     if layer_anchors is not None:
         # return a copy as they may be modified in place
         layer_anchors = [
