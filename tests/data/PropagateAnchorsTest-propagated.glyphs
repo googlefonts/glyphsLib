@@ -1,5 +1,5 @@
 {
-.appVersion = "3300";
+.appVersion = "3414";
 .formatVersion = 3;
 axes = (
 {
@@ -17,7 +17,6 @@ name = "Write DisplayStrings";
 value = 0;
 }
 );
-date = "2024-02-08 12:03:09 +0000";
 familyName = "Propagate Anchors Test";
 fontMaster = (
 {
@@ -141,6 +140,72 @@ nodes = (
 }
 );
 width = 600;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (206,16);
+},
+{
+name = top;
+pos = (212,724);
+}
+);
+associatedMasterId = m01;
+attr = {
+axisRules = (
+{
+min = 500;
+}
+);
+};
+layerId = "E61BC818-2322-467B-A4A1-15B486422429";
+name = "13 Jun 25 at 15:18";
+shapes = (
+{
+closed = 1;
+nodes = (
+(212,689,l),
+(24,8,l),
+(427,7,l)
+);
+}
+);
+width = 450;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (278,12);
+},
+{
+name = top;
+pos = (281,758);
+}
+);
+associatedMasterId = "D3EE0982-E416-4D68-847E-1544F56AC980";
+attr = {
+axisRules = (
+{
+min = 500;
+}
+);
+};
+layerId = "3C1708EA-2783-4178-B320-C233E0FA50FF";
+name = "13 Jun 25 at 15:18";
+shapes = (
+{
+closed = 1;
+nodes = (
+(282,689,l),
+(13,12,l),
+(566,6,l)
+);
+}
+);
+width = 600;
 }
 );
 unicode = 65;
@@ -197,6 +262,74 @@ ref = A;
 },
 {
 pos = (114,178);
+ref = acutecomb;
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (226,16);
+},
+{
+name = top;
+pos = (252,936);
+}
+);
+associatedMasterId = m01;
+attr = {
+axisRules = (
+{
+min = 500;
+}
+);
+};
+layerId = "25A3B823-DBFC-4DF3-B9A2-D54BE3B6BFB4";
+name = "13 Jun 25 at 15:19";
+shapes = (
+{
+alignment = -1;
+pos = (20,0);
+ref = A;
+},
+{
+pos = (82,144);
+ref = acutecomb;
+}
+);
+width = 450;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (308,12);
+},
+{
+name = top;
+pos = (314,970);
+}
+);
+associatedMasterId = "D3EE0982-E416-4D68-847E-1544F56AC980";
+attr = {
+axisRules = (
+{
+min = 500;
+}
+);
+};
+layerId = "5B1FF63D-9CF9-4329-87E5-F39B45631C53";
+name = "13 Jun 25 at 15:19";
+shapes = (
+{
+alignment = -1;
+pos = (30,0);
+ref = A;
+},
+{
+pos = (144,178);
 ref = acutecomb;
 }
 );

@@ -39,15 +39,19 @@ class GlyphSetBuilder:
     glyphs: dict[str, GSGlyph]
 
     def __init__(self):
-        self.glyphs = {}
+        self.font = GSFont()
+        self.font.format_version = 3
 
     def build(self) -> dict[str, GSGlyph]:
-        return self.glyphs
+        return {g.name: g for g in self.font.glyphs}
 
     def add_glyph(self, name: str, build_fn: Callable[["GlyphBuilder"], None]) -> Self:
         glyph = GlyphBuilder(name)
         build_fn(glyph)
-        self.glyphs[name] = glyph.build()
+        # this inserts the glyph in the font and sets the glyph.parent attribute to it;
+        # GSLayer._is_bracket_layer()/_bracket_axis_rules() require this to check the
+        # glyph.parent.format_version to determine where to look for the axis rules
+        self.font.glyphs.append(glyph.build())
         return self
 
 
@@ -60,6 +64,7 @@ class GlyphBuilder:
         glyph.category = info.category
         glyph.subCategory = info.subCategory
         self.num_masters = 0
+        self.num_alternates = 0
         self.add_master_layer()
 
     def build(self) -> GSGlyph:
@@ -71,6 +76,7 @@ class GlyphBuilder:
             f"master-{self.num_masters}"
         )
         self.num_masters += 1
+        self.num_alternates = 0
         self.glyph.layers.append(layer)
         self.current_layer = layer
         return self
@@ -81,6 +87,20 @@ class GlyphBuilder:
         layer.layerId = str(uuid.uuid4()).upper()
         master_layer = self.glyph.layers[associated_master_idx]
         layer.associatedMasterId = master_layer.layerId
+        self.glyph.layers.append(layer)
+        self.current_layer = layer
+        return self
+
+    def add_bracket_layer(self, axis_rules):
+        assert self.current_layer._is_master_layer
+        associated_master_id = self.current_layer.layerId
+        master_layer = self.glyph.layers[associated_master_id]
+        layer = GSLayer()
+        layer.name = f"{master_layer.name} bracket-{self.num_alternates}"
+        layer.layerId = str(uuid.uuid4()).upper()
+        layer.associatedMasterId = associated_master_id
+        layer.attributes["axisRules"] = axis_rules
+        self.num_alternates += 1
         self.glyph.layers.append(layer)
         self.current_layer = layer
         return self
@@ -362,19 +382,25 @@ def test_digraphs_arent_ligatures():
 
 
 def test_propagate_across_layers(caplog):
-    # derived from the observed behaviour of glyphs 3.2.2 (3259)
+    # derived from the observed behaviour of glyphs 3.4 (3414)
     glyphs = (
         GlyphSetBuilder()
         .add_glyph(
             "A",
             lambda glyph: (
-                glyph.add_anchor("bottom", (290, 10))
-                .add_anchor("ogonek", (490, 3))
-                .add_anchor("top", (290, 690))
+                glyph.add_anchor("bottom", (206, 16))
+                .add_anchor("ogonek", (360, 13))
+                .add_anchor("top", (212, 724))
+                .add_bracket_layer([{"min": 500}])
+                .add_anchor("bottom", (206, 16))
+                .add_anchor("top", (212, 724))
                 .add_master_layer()
-                .add_anchor("bottom", (300, 0))
-                .add_anchor("ogonek", (540, 10))
-                .add_anchor("top", (300, 700))
+                .add_anchor("bottom", (278, 12))
+                .add_anchor("ogonek", (464, 13))
+                .add_anchor("top", (281, 758))
+                .add_bracket_layer([{"min": 500}])
+                .add_anchor("bottom", (278, 12))
+                .add_anchor("top", (281, 758))
                 .add_backup_layer()
                 .add_anchor("top", (290, 690))
             ),
@@ -382,11 +408,11 @@ def test_propagate_across_layers(caplog):
         .add_glyph(
             "acutecomb",
             lambda glyph: (
-                glyph.add_anchor("_top", (335, 502))
-                .add_anchor("top", (353, 721))
+                glyph.add_anchor("_top", (150, 580))
+                .add_anchor("top", (170, 792))
                 .add_master_layer()
-                .add_anchor("_top", (366, 500))
-                .add_anchor("top", (366, 765))
+                .add_anchor("_top", (167, 580))
+                .add_anchor("top", (170, 792))
                 .add_backup_layer()
                 .add_anchor("_top", (335, 502))
             ),
@@ -395,10 +421,16 @@ def test_propagate_across_layers(caplog):
             "Aacute",
             lambda glyph: (
                 glyph.add_component("A", (0, 0))
-                .add_component("acutecomb", (-45, 188))
+                .add_component("acutecomb", (62, 144))
+                .add_bracket_layer([{"min": 500}])
+                .add_component("A", (20, 0))
+                .add_component("acutecomb", (82, 144))
                 .add_master_layer()
                 .add_component("A", (0, 0))
-                .add_component("acutecomb", (-66, 200))
+                .add_component("acutecomb", (114, 178))
+                .add_bracket_layer([{"min": 500}])
+                .add_component("A", (30, 0))
+                .add_component("acutecomb", (144, 178))
                 .add_backup_layer()
                 .add_component("A", (0, 0))
                 .add_component("acutecomb", (-45, 188))
@@ -433,26 +465,45 @@ def test_propagate_across_layers(caplog):
 
     new_glyph = glyphs["Aacute"]
     assert_anchors(
-        new_glyph.layers[0].anchors,
+        new_glyph.layers["master-0"].anchors,
         [
-            ("bottom", (290, 10)),
-            ("ogonek", (490, 3)),
-            ("top", (308, 909)),
+            ("bottom", (206, 16)),
+            ("ogonek", (360, 13)),
+            ("top", (232, 936)),
         ],
     )
 
     assert_anchors(
-        new_glyph.layers[1].anchors,
+        new_glyph.layers["master-1"].anchors,
         [
-            ("bottom", (300, 0)),
-            ("ogonek", (540, 10)),
-            ("top", (300, 965)),
+            ("bottom", (278, 12)),
+            ("ogonek", (464, 13)),
+            ("top", (284, 970)),
+        ],
+    )
+
+    # alternate 'bracket' layers should work as well
+    alternate_layers = [l for l in new_glyph.layers if l._is_bracket_layer()]
+    assert len(alternate_layers) == 2
+    assert_anchors(
+        alternate_layers[0].anchors,
+        [
+            ("bottom", (226, 16)),
+            ("top", (252, 936)),
+        ],
+    )
+    assert_anchors(
+        alternate_layers[1].anchors,
+        [
+            ("bottom", (308, 12)),
+            ("top", (314, 970)),
         ],
     )
 
     # non-master (e.g. backup) layers are silently skipped
-    assert not new_glyph.layers[2]._is_master_layer
-    assert_anchors(new_glyph.layers[2].anchors, [])
+    assert not new_glyph.layers[-1]._is_master_layer
+    assert not new_glyph.layers[-1]._is_bracket_layer()
+    assert_anchors(new_glyph.layers[-1].anchors, [])
 
     assert len(caplog.records) == 0
 
@@ -730,6 +781,9 @@ def test_real_files():
     for g1, g2 in zip(font.glyphs, expected.glyphs):
         assert len(g1.layers) == len(g2.layers)
         for l1, l2 in zip(g1.layers, g2.layers):
-            assert [(a.name, tuple(a.position)) for a in l1.anchors] == [
+            # seems like the latest Glyphs.app insists on sorting anchors alphabetically
+            # whereas we keep the original order; but what matters is their name and
+            # position
+            assert sorted((a.name, tuple(a.position)) for a in l1.anchors) == sorted(
                 (a.name, tuple(a.position)) for a in l2.anchors
-            ]
+            )
