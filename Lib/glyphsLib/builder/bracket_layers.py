@@ -253,6 +253,11 @@ def find_component_use(self):
                 self.bracket_layers.append(new_layer)
                 alternate_layers[master][glyph_name].append(new_layer)
 
+    # any components have now just been appended to the end; let's sort bracket
+    # layers by glyph order to maintain a consistent, understandable order.
+    glyphOrder = {g.name: i for (i, g) in enumerate(self.font.glyphs)}
+    self.bracket_layers.sort(key=lambda layer: glyphOrder.get(layer.parent.name))
+
 
 def synthesize_bracket_layer(old_layer, box, axes):
     new_layer = copy.copy(old_layer)  # We don't need a deep copy of everything
