@@ -1925,5 +1925,45 @@ class FontClassesProxyTest(unittest.TestCase):
         assert self.font.features["aalt"] in self.font.features
 
 
+def test_GSLayer_layerKey(datadir):
+    # https://github.com/googlefonts/glyphsLib/issues/1017
+    font = GSFont(str(datadir / "LayerKeysTestv3.glyphs"))
+
+    glyph = font.glyphs["grinningFace"]
+    for i in (0, 1):
+        # master layers without attributes have no layerKey
+        layer = glyph.layers[i]
+        assert layer._is_master_layer
+        assert not layer.attributes
+        assert layer.layerKey() is None
+    assert glyph.layers[2].layerKey() == "Color 1"
+    assert glyph.layers[3].layerKey() == "Color 0"
+    assert glyph.layers[4].layerKey() == "Color 2"
+    # layer with existing palette index (and same associated master) gets de-duped
+    assert glyph.layers[2].associatedMasterId == glyph.layers[5].associatedMasterId
+    assert glyph.layers[5].layerKey() == "Color 0_1"
+    assert glyph.layers[6].layerKey() == "Color"
+
+    glyph = font.glyphs["grinningFaceWithSmilingEyes"]
+    # layers[2] and [3] have the same palette index but are associated with
+    # different masters do not get de-duped
+    assert glyph.layers[2].layerKey() == "Color 1"
+    assert glyph.layers[2].associatedMasterId != glyph.layers[3].associatedMasterId
+    assert glyph.layers[3].layerKey() == "Color 1"
+    # also note how multiple attributes can be combined in a key
+    # (in this case colorPalettes and brace coordinates}
+    assert glyph.layers[4].layerKey() == "Color 1_1 {45}"
+    assert glyph.layers[5].layerKey() == "{45}"
+
+    glyph = font.glyphs["dollar"]
+    # master layers with bracket axisRules attribute *do* have a layerKey
+    layer = glyph.layers[1]
+    assert layer._is_master_layer
+    assert "axisRules" in layer.attributes
+    assert layer.layerKey() == "Regular [45‹wg]"
+    assert glyph.layers[2].layerKey() == "Light [45‹wg]"
+    assert glyph.layers[3].layerKey() == "Regular []"
+
+
 if __name__ == "__main__":
     unittest.main()
