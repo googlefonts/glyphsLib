@@ -1,0 +1,321 @@
+{
+.appVersion = "3418";
+customParameters = (
+{
+name = "Write DisplayStrings";
+value = 0;
+},
+{
+name = "Disable Last Change";
+value = 1;
+},
+{
+name = Axes;
+value = (
+{
+Name = Weight;
+Tag = wght;
+}
+);
+}
+);
+date = "2025-07-17 14:47:28 +0000";
+familyName = "Align Alternate Layers";
+fontMaster = (
+{
+custom = Thin;
+id = m01;
+weightValue = 18;
+},
+{
+id = "99762543-398E-43AB-854F-DA2E7CB96616";
+weightValue = 76;
+},
+{
+custom = Black;
+id = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+weightValue = 200;
+}
+);
+glyphs = (
+{
+color = 4;
+glyphname = C;
+layers = (
+{
+anchors = (
+{
+name = bottom;
+position = "{310, 0}";
+},
+{
+name = top;
+position = "{328, 652}";
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 601;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{324, 0}";
+},
+{
+name = top;
+position = "{344, 660}";
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 672;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{310, 0}";
+},
+{
+name = top;
+position = "{328, 652}";
+}
+);
+associatedMasterId = "99762543-398E-43AB-854F-DA2E7CB96616";
+layerId = "44D89361-07AC-473A-B92E-5719C952F74F";
+name = "[112]";
+width = 601;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{324, 0}";
+},
+{
+name = top;
+position = "{324, 660}";
+}
+);
+associatedMasterId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+layerId = "F9149FDF-6002-4A51-A7BF-E3CE4B373D55";
+name = "[112]";
+width = 672;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{301, 0}";
+},
+{
+name = top;
+position = "{319, 652}";
+}
+);
+layerId = m01;
+width = 592;
+},
+{
+anchors = (
+{
+name = bottom;
+position = "{329, 0}";
+},
+{
+name = top;
+position = "{347, 652}";
+}
+);
+associatedMasterId = m01;
+layerId = "7138B02B-620A-4DBD-A88E-2CD912CE6D6C";
+name = "[112]";
+width = 620;
+}
+);
+leftKerningGroup = O;
+leftMetricsKey = O;
+rightKerningGroup = C;
+unicode = 0043;
+},
+{
+color = 1;
+glyphname = Cacute;
+layers = (
+{
+components = (
+{
+name = C;
+},
+{
+name = acutecomb.case;
+transform = "{1, 0, 0, 1, 223, 12}";
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 601;
+},
+{
+components = (
+{
+name = C;
+},
+{
+name = acutecomb.case;
+transform = "{1, 0, 0, 1, 219, 0}";
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 672;
+},
+{
+components = (
+{
+name = C;
+},
+{
+name = acutecomb.case;
+transform = "{1, 0, 0, 1, 214, 12}";
+}
+);
+layerId = m01;
+width = 592;
+}
+);
+leftKerningGroup = O;
+rightKerningGroup = C;
+unicode = 0106;
+},
+{
+color = 4;
+glyphname = cedillacomb;
+layers = (
+{
+anchors = (
+{
+name = _bottom;
+position = "{89, 0}";
+},
+{
+name = bottom;
+position = "{89, -212}";
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 177;
+},
+{
+anchors = (
+{
+name = _bottom;
+position = "{115, 0}";
+},
+{
+name = bottom;
+position = "{115, -220}";
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 229;
+},
+{
+anchors = (
+{
+name = _bottom;
+position = "{89, 0}";
+},
+{
+name = bottom;
+position = "{89, -212}";
+}
+);
+layerId = m01;
+width = 177;
+}
+);
+unicode = 0327;
+userData = {
+KernOnSpecialSpacing = {
+L = NoKerning;
+R = NoKerning;
+};
+};
+},
+{
+color = 4;
+glyphname = acutecomb.case;
+layers = (
+{
+anchors = (
+{
+name = _top;
+position = "{105, 640}";
+},
+{
+name = top;
+position = "{105, 829}";
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 209;
+},
+{
+anchors = (
+{
+name = _top;
+position = "{125, 660}";
+},
+{
+name = top;
+position = "{125, 896}";
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 294;
+},
+{
+anchors = (
+{
+name = _top;
+position = "{105, 640}";
+},
+{
+name = top;
+position = "{105, 829}";
+}
+);
+layerId = m01;
+width = 209;
+}
+);
+}
+);
+instances = (
+{
+interpolationWeight = 18;
+instanceInterpolations = {
+m01 = 1;
+};
+name = Thin;
+weightClass = Thin;
+},
+{
+interpolationWeight = 76;
+instanceInterpolations = {
+"99762543-398E-43AB-854F-DA2E7CB96616" = 1;
+};
+name = Regular;
+},
+{
+interpolationWeight = 200;
+instanceInterpolations = {
+"1A46CC89-F728-4423-801A-A3F18553AF7D" = 1;
+};
+name = Black;
+weightClass = Black;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
