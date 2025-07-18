@@ -5,6 +5,7 @@ import math
 import os.path
 import uuid
 
+import pytest
 from copy import deepcopy
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -16,6 +17,9 @@ from glyphsLib.glyphdata import get_glyph
 from glyphsLib.types import Point, Transform
 from glyphsLib.writer import dumps
 
+from glyphsLib.builder.transformations.align_alternate_layers import (
+    align_alternate_layers,
+)
 from glyphsLib.builder.transformations.propagate_anchors import (
     compute_max_component_depths,
     get_xy_rotation,
@@ -787,3 +791,42 @@ def test_real_files():
             assert sorted((a.name, tuple(a.position)) for a in l1.anchors) == sorted(
                 (a.name, tuple(a.position)) for a in l2.anchors
             )
+
+
+@pytest.mark.parametrize(
+    "test_file",
+    [
+        "AlignAlternateLayers-g2.glyphs",
+        "AlignAlternateLayers-g3.glyphs",
+    ],
+)
+def test_propagate_anchors_after_aligining_alternates(test_file):
+    # https://github.com/googlefonts/glyphsLib/issues/1090
+    font = GSFont(os.path.join(DATA, test_file))
+
+    Cacute = font.glyphs["Cacute"]
+    assert not any(l._is_bracket_layer() for l in Cacute.layers)
+    for layer in Cacute.layers:
+        assert len(layer.anchors) == 0
+
+    align_alternate_layers(font)
+    propagate_all_anchors(font)
+
+    # all layers have now 2 anchors, including the new alternates
+    Cacute = font.glyphs["Cacute"]
+    alternate_layers = [l for l in Cacute.layers if l._is_bracket_layer()]
+    assert len(alternate_layers) == 3
+    for layer in Cacute.layers:
+        assert len(layer.anchors) == 2
+        assert [a.name for a in layer.anchors] == ["bottom", "top"]
+
+    # the 'bottom' anchor in one of the alternate layers has different
+    # position than the corresponding anchor in the associated master layer
+    # (i.e. it was propagated and not simply duplicated)
+    alt_layer = alternate_layers[0]
+    alt_bottom = alt_layer.anchors[0]
+    master_layer = Cacute.layers[alt_layer.associatedMasterId]
+    master_bottom = master_layer.anchors[0]
+    assert alt_bottom.name == master_bottom.name == "bottom"
+    assert tuple(alt_bottom.position) == (329, 0)
+    assert tuple(master_bottom.position) == (301, 0)

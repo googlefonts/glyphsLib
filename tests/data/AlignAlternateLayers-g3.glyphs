@@ -1,0 +1,353 @@
+{
+.appVersion = "3418";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = "Write DisplayStrings";
+value = 0;
+},
+{
+name = "Write lastChange";
+value = 0;
+}
+);
+date = "2025-07-17 14:47:28 +0000";
+familyName = "Align Alternate Layers";
+fontMaster = (
+{
+axesValues = (
+18
+);
+id = m01;
+name = Thin;
+},
+{
+axesValues = (
+76
+);
+id = "99762543-398E-43AB-854F-DA2E7CB96616";
+name = Regular;
+},
+{
+axesValues = (
+200
+);
+id = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+name = Black;
+}
+);
+glyphs = (
+{
+color = 4;
+glyphname = C;
+kernLeft = O;
+kernRight = C;
+layers = (
+{
+anchors = (
+{
+name = bottom;
+pos = (310,0);
+},
+{
+name = top;
+pos = (328,652);
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 601;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (324,0);
+},
+{
+name = top;
+pos = (344,660);
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 672;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (310,0);
+},
+{
+name = top;
+pos = (328,652);
+}
+);
+associatedMasterId = "99762543-398E-43AB-854F-DA2E7CB96616";
+attr = {
+axisRules = (
+{
+min = 112;
+}
+);
+};
+layerId = "44D89361-07AC-473A-B92E-5719C952F74F";
+name = "[65]";
+width = 601;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (324,0);
+},
+{
+name = top;
+pos = (324,660);
+}
+);
+associatedMasterId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+attr = {
+axisRules = (
+{
+min = 112;
+}
+);
+};
+layerId = "F9149FDF-6002-4A51-A7BF-E3CE4B373D55";
+name = "[65]";
+width = 672;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (301,0);
+},
+{
+name = top;
+pos = (319,652);
+}
+);
+layerId = m01;
+width = 592;
+},
+{
+anchors = (
+{
+name = bottom;
+pos = (329,0);
+},
+{
+name = top;
+pos = (347,652);
+}
+);
+associatedMasterId = m01;
+attr = {
+axisRules = (
+{
+min = 112;
+}
+);
+};
+layerId = "7138B02B-620A-4DBD-A88E-2CD912CE6D6C";
+name = "[65]";
+width = 620;
+}
+);
+metricLeft = O;
+unicode = 67;
+},
+{
+color = 1;
+glyphname = Cacute;
+kernLeft = O;
+kernRight = C;
+layers = (
+{
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+shapes = (
+{
+ref = C;
+},
+{
+pos = (223,12);
+ref = acutecomb.case;
+}
+);
+width = 601;
+},
+{
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+shapes = (
+{
+ref = C;
+},
+{
+pos = (219,0);
+ref = acutecomb.case;
+}
+);
+width = 672;
+},
+{
+layerId = m01;
+shapes = (
+{
+ref = C;
+},
+{
+pos = (214,12);
+ref = acutecomb.case;
+}
+);
+width = 592;
+}
+);
+unicode = 262;
+},
+{
+color = 4;
+glyphname = cedillacomb;
+layers = (
+{
+anchors = (
+{
+name = _bottom;
+pos = (89,0);
+},
+{
+name = bottom;
+pos = (89,-212);
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 177;
+},
+{
+anchors = (
+{
+name = _bottom;
+pos = (115,0);
+},
+{
+name = bottom;
+pos = (115,-220);
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 229;
+},
+{
+anchors = (
+{
+name = _bottom;
+pos = (89,0);
+},
+{
+name = bottom;
+pos = (89,-212);
+}
+);
+layerId = m01;
+width = 177;
+}
+);
+unicode = 807;
+userData = {
+KernOnSpecialSpacing = {
+L = NoKerning;
+R = NoKerning;
+};
+};
+},
+{
+color = 4;
+glyphname = acutecomb.case;
+layers = (
+{
+anchors = (
+{
+name = _top;
+pos = (105,640);
+},
+{
+name = top;
+pos = (105,829);
+}
+);
+layerId = "99762543-398E-43AB-854F-DA2E7CB96616";
+width = 209;
+},
+{
+anchors = (
+{
+name = _top;
+pos = (125,660);
+},
+{
+name = top;
+pos = (125,896);
+}
+);
+layerId = "1A46CC89-F728-4423-801A-A3F18553AF7D";
+width = 294;
+},
+{
+anchors = (
+{
+name = _top;
+pos = (105,640);
+},
+{
+name = top;
+pos = (105,829);
+}
+);
+layerId = m01;
+width = 209;
+}
+);
+}
+);
+instances = (
+{
+axesValues = (
+18
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Thin;
+weightClass = 100;
+},
+{
+axesValues = (
+76
+);
+instanceInterpolations = {
+"99762543-398E-43AB-854F-DA2E7CB96616" = 1;
+};
+name = Regular;
+},
+{
+axesValues = (
+200
+);
+instanceInterpolations = {
+"1A46CC89-F728-4423-801A-A3F18553AF7D" = 1;
+};
+name = Black;
+weightClass = 900;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
