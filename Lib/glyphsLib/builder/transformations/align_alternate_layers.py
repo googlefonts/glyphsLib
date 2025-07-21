@@ -21,8 +21,6 @@ def align_alternate_layers(font, glyph_data=None):
     master_ids = set(master.id for master in font.masters)
 
     for glyph in font.glyphs:
-        if not glyph.export:
-            continue
         for layer in glyph.layers:
             if layer.layerId in master_ids:
                 master_layers[layer.layerId][glyph.name] = layer
