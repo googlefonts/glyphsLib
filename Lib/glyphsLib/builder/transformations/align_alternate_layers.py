@@ -48,7 +48,7 @@ def align_alternate_layers(font, glyph_data=None):
                         for layer in alternate_layers[master][comp.name]
                     }
                     if my_bracket_layers != components_bracket_layers:
-                        # Find what we need to add, and make them hashable
+                        # Find what we need to add
                         needed = components_bracket_layers - my_bracket_layers
                         if needed:
                             problematic_glyphs[(glyph_name, master)] |= needed
@@ -74,7 +74,18 @@ def align_alternate_layers(font, glyph_data=None):
                     "not be applied. Consider fixing the source instead."
                 )
             # Just copy the master layer for each thing we need.
-            for axis_rules in needed_brackets:
+            # Insert the new layers in a predictable, deterministic order based on
+            # the bracket layers' axis values.
+            for axis_rules in sorted(
+                needed_brackets,
+                key=lambda rules: tuple(
+                    (
+                        float("-inf") if r[0] is None else r[0],
+                        float("inf") if r[1] is None else r[1],
+                    )
+                    for r in rules
+                ),
+            ):
                 new_layer = synthesize_bracket_layer(
                     master_layers[master][glyph_name], axis_rules
                 )
