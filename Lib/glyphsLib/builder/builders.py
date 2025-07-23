@@ -102,6 +102,7 @@ class UFOBuilder(LoggerMixin):
         self.store_editor_state = store_editor_state
         self.bracket_layers = []
         self.write_skipexportglyphs = write_skipexportglyphs
+        self.skip_export_glyphs = set()
         self.expand_includes = expand_includes
         self.minimal = minimal
 
@@ -235,17 +236,15 @@ class UFOBuilder(LoggerMixin):
 
             self.to_ufo_color_layers(ufo, master)  # .color_layers
 
-        if self.write_skipexportglyphs:
+        if self.write_skipexportglyphs and self.skip_export_glyphs:
             # Sanitize skip list and write it to both Designspace- and UFO-level lib
             # keys. The latter is unnecessary when using e.g. the ufo2ft.compile*FromDS`
             # functions, but the data may take a different path. Writing it everywhere
             # can save on surprises/logic in other software.
-            skip_export_glyphs = self._designspace.lib.get("public.skipExportGlyphs")
-            if skip_export_glyphs is not None:
-                skip_export_glyphs = sorted(set(skip_export_glyphs))
-                self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
-                for source in self._sources.values():
-                    source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
+            skip_export_glyphs = sorted(self.skip_export_glyphs)
+            self._designspace.lib["public.skipExportGlyphs"] = skip_export_glyphs
+            for source in self._sources.values():
+                source.font.lib["public.skipExportGlyphs"] = skip_export_glyphs
 
         self.to_ufo_groups()  # .groups
         self.to_ufo_kerning()  # .kerning
@@ -308,11 +307,7 @@ class UFOBuilder(LoggerMixin):
             # have to extract them to free-standing glyphs -- unless the parent glyph is
             # set to non-export (in which case makes no sense to have Designspace rules
             # referencing non existent glyphs).
-            if (
-                layer._is_bracket_layer()
-                and glyph.export
-                and ".background" not in layer.name
-            ):
+            if layer._is_bracket_layer() and ".background" not in layer.name:
                 self.bracket_layers.append(layer)
             elif (
                 self.minimal

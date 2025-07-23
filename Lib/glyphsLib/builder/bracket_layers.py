@@ -26,6 +26,7 @@ def to_designspace_bracket_layers(self):
     bracket_layer_map = defaultdict(partial(defaultdict, list))
     rules = []
     tag_to_name = {axis.tag: axis.name for axis in self._designspace.axes}
+    any_non_export_bracket_glyphs = False
     for layer in self.bracket_layers:
         box_with_tag = layer._bracket_info(self._designspace.axes)
         glyph_name = layer.parent.name
@@ -33,14 +34,20 @@ def to_designspace_bracket_layers(self):
         # rules, but given designspace refers to axes by name, our hand
         # is forced. (We don't use axis names in glyph names because they
         # might have spaces in them.)
-        box_with_name = {tag_to_name[k]: v for k, v in box_with_tag.items()}
         bracket_layer_map[glyph_name][util.freezedict(box_with_tag)].append(layer)
-        rules.append(
-            (
-                [box_with_name],
-                {glyph_name: _bracket_glyph_name(self, glyph_name, box_with_tag)},
-            )
-        )
+
+        # Note this has the side-effect of allocating a .varAltNN glyph name
+        bracket_glyph_name = _bracket_glyph_name(self, glyph_name, box_with_tag)
+
+        # for glyphs marked as non-export, we skip adding the substitution rules
+        # but we do generate the bracket glyphs in the UFO and append them to
+        # the 'public.skipExportGlyphs' list as they might be used as components
+        if not layer.parent.export:
+            any_non_export_bracket_glyphs = True
+            continue
+
+        box_with_name = {tag_to_name[k]: v for k, v in box_with_tag.items()}
+        rules.append(([box_with_name], {glyph_name: bracket_glyph_name}))
 
     # overlayFeatureVariations does exactly what we need in terms of
     # splitting rules into non-overlapping boxes and consolidating
@@ -62,6 +69,15 @@ def to_designspace_bracket_layers(self):
 
     # Finally, copy bracket layers to their own glyphs.
     copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map)
+
+    # we need to update the skipExportGlyphs list if there were any bracket glyphs
+    # marked as non-export. We do it in-place because a reference to the same list
+    # object is shared with the master UFO's 'public.skipExportGlyphs' and we
+    # want to keep them in sync.
+    if self.write_skipexportglyphs and any_non_export_bracket_glyphs:
+        self._designspace.lib["public.skipExportGlyphs"][:] = sorted(
+            self.skip_export_glyphs
+        )
 
     # re-generate the GDEF table since we have added new BRACKET glyphs, which may
     # also need to be included: https://github.com/googlefonts/glyphsLib/issues/578
@@ -97,11 +113,11 @@ def copy_bracket_layers_to_ufo_glyphs(self, bracket_layer_map):
     for glyph_name, glyph_bracket_layers in bracket_layer_map.items():
         for frozenbox, layers in glyph_bracket_layers.items():
             box = dict(frozenbox)
+            ufo_glyph_name = _bracket_glyph_name(self, glyph_name, box)
             for layer in layers:
                 layer_id = layer.associatedMasterId or layer.layerId
                 ufo_font = self._sources[layer_id].font
                 ufo_layer = ufo_font.layers.defaultLayer
-                ufo_glyph_name = _bracket_glyph_name(self, glyph_name, box)
                 ufo_glyph = ufo_layer.newGlyph(ufo_glyph_name)
                 self.to_ufo_glyph(ufo_glyph, layer, layer.parent)
                 ufo_glyph.unicodes = []  # Avoid cmap interference

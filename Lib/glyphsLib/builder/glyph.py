@@ -81,9 +81,10 @@ def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: 
     export = glyph.export
     if not export:
         if self.write_skipexportglyphs:
-            if "public.skipExportGlyphs" not in self._designspace.lib:
-                self._designspace.lib["public.skipExportGlyphs"] = []
-            self._designspace.lib["public.skipExportGlyphs"].append(glyph.name)
+            # Note that we use `ufo_glyph.name`, not `glyph.name`; these are normally
+            # the same however for bracket layers, the name of the UFO glyph has a
+            # .varAltNN suffix.
+            self.skip_export_glyphs.add(ufo_glyph.name)
         else:
             ufo_glyph.lib[GLYPHLIB_PREFIX + "Export"] = export
 
