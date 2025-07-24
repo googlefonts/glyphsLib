@@ -1,0 +1,431 @@
+{
+.appVersion = "3419";
+.formatVersion = 3;
+axes = (
+{
+name = "Optical size";
+tag = opsz;
+},
+{
+name = Width;
+tag = wdth;
+},
+{
+name = Weight;
+tag = wght;
+}
+);
+customParameters = (
+{
+name = "Axis Mappings";
+value = {
+opsz = {
+5 = 5;
+6 = 200;
+7 = 325;
+8 = 400;
+12 = 550;
+16 = 640;
+21 = 700;
+32 = 800;
+41 = 860;
+48 = 900;
+72 = 980;
+96 = 1020;
+1200 = 1200;
+};
+wdth = {
+87.5 = 95;
+100 = 100;
+112.5 = 114;
+};
+wght = {
+300 = 360;
+400 = 400;
+500 = 475;
+600 = 550;
+700 = 650;
+800 = 750;
+900 = 900;
+};
+};
+},
+{
+name = "Variable Font Origin";
+value = "2895B92B-45F5-4972-B85C-1A160E6E6488";
+}
+);
+date = "2024-11-05 07:24:09 +0000";
+familyName = Playfair;
+fontMaster = (
+{
+axesValues = (
+1200,
+95,
+360
+);
+iconName = SemiCondensed;
+id = "DF17D77B-A5C4-4843-826A-BC0F1C4CB224";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "1200pt SemiCondensed Light";
+},
+{
+axesValues = (
+1200,
+114,
+360
+);
+id = "2AEC198B-4747-4E5F-80A7-B5A71C2761F9";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "1200pt SemiExpanded Light";
+},
+{
+axesValues = (
+1200,
+95,
+900
+);
+iconName = SemiCondensed;
+id = "F497C50F-30EB-4580-9148-0005B36D0333";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "1200pt SemiCondensed Black";
+},
+{
+axesValues = (
+1200,
+114,
+900
+);
+id = "41FE8A15-28AA-4FFF-A503-D6748EB37864";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "1200pt SemiExpanded Black";
+},
+{
+axesValues = (
+5,
+95,
+360
+);
+iconName = SemiCondensed;
+id = "7300F074-2CFD-43CC-B20F-1BF1EAE6C2C7";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "5pt SemiCondensed Light";
+},
+{
+axesValues = (
+5,
+114,
+360
+);
+iconName = SemiExtended;
+id = "2895B92B-45F5-4972-B85C-1A160E6E6488";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "5pt SemiExpanded Light";
+},
+{
+axesValues = (
+5,
+95,
+900
+);
+iconName = Bold_SemiCondensed;
+id = "29EF49B2-C370-4E88-B36E-A4ACD23E3F3A";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "5pt SemiCondensed Black";
+},
+{
+axesValues = (
+5,
+114,
+900
+);
+iconName = Bold_SemiExtended;
+id = "58AEE805-6805-4A0B-A273-5ABBCB55D365";
+metricValues = (
+{
+over = 30;
+pos = 773;
+},
+{
+over = 30;
+pos = 708;
+},
+{
+over = 30;
+pos = 520;
+},
+{
+over = -30;
+},
+{
+over = -30;
+pos = -231;
+},
+{
+over = 30;
+pos = 608;
+}
+);
+name = "5pt SemiExpanded Black";
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+filter = "case == 3";
+name = Smallcaps;
+type = "x-height";
+}
+);
+properties = (
+{
+key = copyrights;
+values = (
+{
+language = dflt;
+value = "Copyright 2005 The Playfair Project Authors (https://github.com/clauseggers/Playfair)";
+}
+);
+},
+{
+key = designers;
+values = (
+{
+language = dflt;
+value = "Claus Eggers Sørensen";
+}
+);
+},
+{
+key = designerURL;
+value = "http://www.forthehearts.net";
+},
+{
+key = licenses;
+values = (
+{
+language = dflt;
+value = "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org";
+}
+);
+},
+{
+key = licenseURL;
+value = "https://openfontlicense.org";
+},
+{
+key = manufacturers;
+values = (
+{
+language = dflt;
+value = "Claus Eggers Sørensen";
+}
+);
+},
+{
+key = manufacturerURL;
+value = "http://www.forthehearts.net";
+},
+{
+key = trademarks;
+values = (
+{
+language = dflt;
+value = "Playfair is a trademark of Claus Eggers Sørensen.";
+}
+);
+},
+{
+key = vendorID;
+value = FTH;
+}
+);
+settings = {
+disablesAutomaticAlignment = 1;
+};
+unitsPerEm = 1240;
+versionMajor = 2;
+versionMinor = 203;
+}

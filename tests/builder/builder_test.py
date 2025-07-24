@@ -19,6 +19,7 @@ import pytest
 import tempfile
 import os
 import shutil
+from pathlib import Path
 
 import glyphsLib
 import defcon
@@ -2420,6 +2421,49 @@ def test_load_kerning_bracket(ufo_module):
         ("public.kern1.foo", "public.kern2.foo"): -300
     }
     assert ds2.sources[3].font.kerning == {}
+
+
+def test_non_export_bracket_glyphs(ufo_module):
+    font = glyphsLib.load(
+        Path(__file__).parent / ".." / "data" / "Playfair-dollar.glyphspackage"
+    )
+    assert not font.glyphs["_dollar-bar"].export
+
+    ds = glyphsLib.to_designspace(
+        font, ufo_module=ufo_module, write_skipexportglyphs=True
+    )
+
+    # we expect the '_dollar_bar' and its alternates are marked as non-export
+    expected_skip_export = [
+        "_dollar-bar",
+        "_dollar-bar.BRACKET.varAlt01",
+        "_dollar-bar.BRACKET.varAlt02",
+    ]
+    assert ds.lib["public.skipExportGlyphs"] == expected_skip_export
+
+    # ... but they are still generated in the UFO sources
+    for src in ds.sources:
+        assert set(expected_skip_export).issubset(src.font.keys())
+
+    # They should be excluded from the DS rules; however the 'dollar' is included
+    # even though it doesn't have bracket layers, because it uses the '_dollar-bar'
+    # as a component
+    assert len(ds.rules) == 2
+    assert ds.rules[0].subs == [("dollar", "dollar.BRACKET.varAlt02")]
+    assert ds.rules[1].subs == [("dollar", "dollar.BRACKET.varAlt01")]
+
+    # the correct component glyphs should be referenced in 'dollar'
+    for src in ds.sources:
+        assert [c.baseGlyph for c in src.font["dollar"].components] == [
+            "S",
+            "_dollar-bar",
+        ]
+        assert [
+            c.baseGlyph for c in src.font["dollar.BRACKET.varAlt01"].components
+        ] == ["S", "_dollar-bar.BRACKET.varAlt01"]
+        assert [
+            c.baseGlyph for c in src.font["dollar.BRACKET.varAlt02"].components
+        ] == ["S", "_dollar-bar.BRACKET.varAlt02"]
 
 
 def test_unicode_variation_sequences(ufo_module):
