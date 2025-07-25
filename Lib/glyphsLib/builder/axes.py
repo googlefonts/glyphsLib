@@ -188,10 +188,22 @@ def to_designspace_axes(self):
         ):
             axis_wanted = True
 
+        # Build the mapping from the instances because they have both
+        # a user location and a design location; we build this here
+        # because we use it to check if a custom mapping needs to be inverted.
+        instance_mapping = {}
+        update_mapping_from_instances(
+            instance_mapping,
+            self.font.instances,
+            axis_def,
+            minimize_glyphs_diffs=self.minimize_glyphs_diffs,
+        )
+
         # See https://github.com/googlefonts/glyphsLib/issues/568
         if custom_mapping:
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                mapping = _potentially_invert_mapping(self, mapping, instance_mapping)
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
                 reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
                 regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
@@ -231,16 +243,6 @@ def to_designspace_axes(self):
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
-            # Build the mapping from the instances because they have both
-            # a user location and a design location.
-            instance_mapping = {}
-            update_mapping_from_instances(
-                instance_mapping,
-                self.font.instances,
-                axis_def,
-                minimize_glyphs_diffs=self.minimize_glyphs_diffs,
-            )
-
             master_mapping = {}
             for master in self.font.masters:
                 # Glyphs masters don't have a user location
@@ -321,6 +323,49 @@ def font_uses_axis_locations(font):
     return font.axes and all(
         master.customParameters["Axis Location"] for master in font.masters
     )
+
+
+def _potentially_invert_mapping(self, mapping, instance_mapping):
+    # Fontmake introduced an Axis Mapping custom parameter before Glyphs did;
+    # then Glyphs introduced it, but with an inverted interpretation. Then
+    # Glyphs changed the interpretation to match fontmake's. Try and figure out
+    # what's going on.
+    # See https://github.com/googlefonts/glyphsLib/issues/745
+
+    # We want to return a userspace->designspace map for our purposes
+    inverted = {v: k for k, v in mapping.items()}
+    if self.font.format_version != 3:
+        # Glyphs wasn't using this custom parameter, only we were
+        return mapping
+    # Let's get heuristical
+    if min(mapping.keys()) == min(mapping.values()) or max(mapping.keys()) == max(
+        mapping.values()
+    ):
+        # No way of knowing
+        logger.warning(
+            "Axis %s: The Axis Mappings custom parameter is ambiguous, "
+            "assuming it is in userspace->designspace format. Please check the mapping "
+            "and save in a recent version of Glyphs to avoid this warning."
+        )
+        return mapping
+    if instance_mapping:
+        if min(mapping.keys()) == min(instance_mapping.keys()) and max(
+            mapping.keys()
+        ) == max(instance_mapping.keys()):
+            # Looks like userspace->designspace
+            return mapping
+        if min(mapping.keys()) == min(instance_mapping.values()) and max(
+            mapping.values()
+        ) == max(instance_mapping.keys()):
+            # Looks like designspace->userspace
+            return inverted
+    # No idea
+    logger.warning(
+        "Axis %s: The Axis Mappings custom parameter is ambiguous, "
+        "assuming it is in userspace->designspace format. Please check the mapping "
+        "and save in a recent version of Glyphs to avoid this warning."
+    )
+    return mapping
 
 
 def to_glyphs_axes(self):
