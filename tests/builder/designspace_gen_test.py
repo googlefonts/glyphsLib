@@ -209,6 +209,16 @@ def test_designspace_generation_brace_layers(datadir, filename, ufo_module):
     assert len(designspace.sources[0].font.layers) == 2
 
 
+# https://github.com/googlefonts/glyphsLib/issues/1097
+def test_designspace_generation_v3_brace_component_without_a_name(datadir, ufo_module):
+    with open(str(datadir.join("BraceCompositev3.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font, ufo_module=ufo_module)
+    light = designspace.sources[0]
+    assert [l.name for l in light.font.layers] == ["public.default", "{100}"]
+    assert "aacute" in light.font.layers["{100}"]
+
+
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
 def test_designspace_generation_instances(datadir, filename, ufo_module):
     with open(str(datadir.join(filename))) as f:
