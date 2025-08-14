@@ -1,0 +1,44 @@
+{
+.appVersion = "3414";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+familyName = WghtVar;
+fontMaster = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = "Axis Location";
+value = (
+{
+Axis = Weight;
+Location = 400.75;
+}
+);
+}
+);
+id = m01;
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 32;
+}
+);
+unitsPerEm = 1000;
+}
