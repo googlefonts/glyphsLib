@@ -20,6 +20,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
+from glyphsLib.types import parse_float_or_int
 
 logger = logging.getLogger(__name__)
 
@@ -438,7 +439,7 @@ class AxisDefinition:
         try:
             for location in loc_param:
                 if location.get("Axis") == self.name:
-                    return int(location["Location"])
+                    return parse_float_or_int(location["Location"])
         except (TypeError, KeyError):
             pass
 

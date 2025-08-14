@@ -740,3 +740,22 @@ def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
     assert [
         cp.value for cp in font2.customParameters if cp.name == "Virtual Master"
     ] == virtual_masters
+
+
+def test_axis_location_cp_uses_floats(ufo_module, datadir):
+    # https://github.com/googlefonts/glyphsLib/issues/1100
+    font = GSFont(datadir.join("WghtVar_AxisLocationFloat.glyphs"))
+
+    assert len(font.masters) == 1
+    assert font.masters[0].customParameters["Axis Location"] == [
+        {
+            "Axis": "Weight",
+            "Location": 400.75,
+        }
+    ]
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+
+    assert len(ds.sources) == 1
+    assert ds.axes[0].name == "Weight"
+    assert ds.axes[0].map == [(400.75, 0)]
