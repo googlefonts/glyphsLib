@@ -183,6 +183,24 @@ from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
                         ("closePath", ()),
                     ],
                 },
+                # a case that passed in older versions of glyphs.app.
+                # See https://github.com/googlefonts/fontc/issues/1600
+                {
+                    "name": "cornerExactlyOnLine",
+                    "width": 600,
+                    "outline": [
+                        ("moveTo", ((339.0, 141.0),)),
+                        ("lineTo", ((354.0, 0.0),)),
+                        ("lineTo", ((328.0, 0.0),)),
+                        ("lineTo", ((328.0, 208.0),)),
+                        ("lineTo", ((384.0, 208.0),)),
+                        (
+                            "curveTo",
+                            ((364.91, 186.86), (346.24, 168.53), (328.0, 153.0)),
+                        ),
+                        ("closePath", ()),
+                    ],
+                },
             ]
         }
     ]
