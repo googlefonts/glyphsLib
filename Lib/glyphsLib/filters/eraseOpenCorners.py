@@ -111,9 +111,13 @@ class EraseOpenCornersPen(BasePen):
             # Glyphs logic provided by Georg at
             # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
             if (
-                ((t1 < 0.5 and t2 < 0.5) or t1 < 0.3 or t2 < 0.3)
-                and t1 > 0.0001
-                and t2 > 0.0001
+                (
+                    (t1 < 0.5 and t2 < 0.5)
+                    or (t1 < 0.3 and t2 < 0.99)
+                    or (t1 < 0.99 and t2 < 0.3)
+                )
+                and t1 > 0.001
+                and t2 > 0.001
             ):
                 logger.debug("Found an open corner")
                 (segs[ix - 1], _) = _split_segment_at_t(
