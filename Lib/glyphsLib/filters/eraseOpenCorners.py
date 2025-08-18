@@ -110,6 +110,8 @@ class EraseOpenCornersPen(BasePen):
 
             # Glyphs logic provided by Georg at
             # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
+            # and subsequently further clarified in
+            # https://github.com/googlefonts/fontc/issues/1600#issuecomment-3190896627
             if (
                 (
                     (t1 < 0.5 and t2 < 0.5)
