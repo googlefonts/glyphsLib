@@ -89,8 +89,6 @@ PROPERTIES_FIELDS = (
 def fill_ufo_metadata(master, ufo):
     font = master.font
 
-    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
-    # https://github.com/googlefonts/glyphsLib/issues/134
     for info_key, glyphs_key in INFO_FIELDS:
         value = getattr(font, glyphs_key)
         setattr(ufo.info, info_key, value)
@@ -122,6 +120,8 @@ def fill_ufo_metadata(master, ufo):
     if name_records:
         ufo.info.openTypeNameRecords = name_records
 
+    # "date" can be missing; Glyphs.app removes it on saving if it's empty:
+    # https://github.com/googlefonts/glyphsLib/issues/134
     date_created = getattr(font, "date", None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)
