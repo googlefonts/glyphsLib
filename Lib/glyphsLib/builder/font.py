@@ -20,6 +20,7 @@ from .constants import (
     UFO2FT_FILTERS_KEY,
     APP_VERSION_LIB_KEY,
     KEYBOARD_INCREMENT_KEY,
+    LANGUAGE_MAPPING,
     MASTER_ORDER_LIB_KEY,
 )
 
@@ -69,27 +70,58 @@ def to_ufo_font_attributes(self, family_name):
 
 
 INFO_FIELDS = (
-    ("unitsPerEm", "upm", True),
-    ("versionMajor", "versionMajor", True),
-    ("versionMinor", "versionMinor", True),
-    ("copyright", "copyright", False),
-    ("openTypeNameDesigner", "designer", False),
-    ("openTypeNameDesignerURL", "designerURL", False),
-    ("openTypeNameManufacturer", "manufacturer", False),
-    ("openTypeNameManufacturerURL", "manufacturerURL", False),
+    ("unitsPerEm", "upm"),
+    ("versionMajor", "versionMajor"),
+    ("versionMinor", "versionMinor"),
+)
+
+PROPERTIES_FIELDS = (
+    ("copyright", "copyrights", 0),
+    ("openTypeNameDesigner", "designers", 9),
+    ("openTypeNameDesignerURL", "designerURL", None),
+    ("openTypeNameManufacturer", "manufacturers", 8),
+    ("openTypeNameManufacturerURL", "manufacturerURL", None),
+    ("openTypeNameDescription", "descriptions", 10),
+    ("openTypeNameSampleText", "sampleTexts", 19),
 )
 
 
 def fill_ufo_metadata(master, ufo):
     font = master.font
 
+    for info_key, glyphs_key in INFO_FIELDS:
+        value = getattr(font, glyphs_key)
+        setattr(ufo.info, info_key, value)
+
+    # font.properties will "helpfully" always give us teh property value as a
+    # string, but we want the GSFontInfoValue to access its localized values
+    properties = {p.key: p for p in font.properties}
+    name_records = ufo.info.openTypeNameRecords or []
+    for info_key, glyphs_key, name_id in PROPERTIES_FIELDS:
+        value = properties.get(glyphs_key)
+        if value:
+            setattr(ufo.info, info_key, value.value)
+            # If the property has localized values, add them to openTypeNameRecords
+            if name_id is not None and value._localized_values:
+                for lang, val in value._localized_values.items():
+                    if lang in ["dflt", "default", "ENG"]:
+                        continue
+                    if (lang_id := LANGUAGE_MAPPING.get(lang)) is None:
+                        raise ValueError(f"Unknown name language: {lang}")
+                    name_records.append(
+                        {
+                            "nameID": name_id,
+                            "languageID": lang_id,
+                            "string": val,
+                            "platformID": 3,  # Windows
+                            "encodingID": 1,  # Unicode BMP
+                        }
+                    )
+    if name_records:
+        ufo.info.openTypeNameRecords = name_records
+
     # "date" can be missing; Glyphs.app removes it on saving if it's empty:
     # https://github.com/googlefonts/glyphsLib/issues/134
-    for info_key, glyphs_key, always in INFO_FIELDS:
-        value = getattr(font, glyphs_key)
-        if always or value:
-            setattr(ufo.info, info_key, value)
-
     date_created = getattr(font, "date", None)
     if date_created is not None:
         date_created = to_ufo_time(date_created)

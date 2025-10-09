@@ -23,6 +23,7 @@ http://unifiedfontobject.org/versions/ufo3/fontinfo.plist/
 """
 
 import os
+import pathlib
 import pytest
 from collections import namedtuple
 
@@ -494,3 +495,23 @@ def test_info_name_records(tmpdir, ufo_module):
 
     print(ufo.info.openTypeNameRecords)
     assert [dict(r) for r in ufo.info.openTypeNameRecords] == name_records
+
+
+def test_localized_properties(tmpdir, ufo_module):
+    filename = (
+        pathlib.Path(__file__).parent.parent / "data" / "GlyphsFileFormatv3.glyphs"
+    )
+    font = classes.GSFont(filename)
+
+    ufos = to_ufos(font, ufo_module=ufo_module)
+    for ufo in ufos:
+        assert ufo.info.copyright == "Default Copyright1"
+        assert [dict(r) for r in ufo.info.openTypeNameRecords] == [
+            {
+                "nameID": 0,
+                "platformID": 3,
+                "encodingID": 1,
+                "languageID": 1031,
+                "string": "Deutsches Copyright",
+            }
+        ]
