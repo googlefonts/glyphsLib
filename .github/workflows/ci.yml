@@ -109,7 +109,7 @@ jobs:
         body_path: "${{ runner.temp }}/release_notes.md"
         draft: false
         prerelease: ${{ env.IS_PRERELEASE }}
-    - name: Build and publish
+    - name: Build wheel and sdist packages
       run: |
         if [ "$IS_PRERELEASE" == true ]; then
           echo "DEBUG: This is a pre-release"
@@ -118,4 +118,5 @@ jobs:
         fi
         # use https://github.com/pypa/build for our setup.py-less setup
         pipx run build
-        pipx run twine upload dist/*
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
