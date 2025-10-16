@@ -77,11 +77,14 @@ INFO_FIELDS = (
 
 PROPERTIES_FIELDS = (
     ("copyright", "copyrights", 0),
-    ("openTypeNameDesigner", "designers", 9),
-    ("openTypeNameDesignerURL", "designerURL", None),
+    ("familyName", "familyNames", 1),
+    ("trademark", "trademarks", 7),
     ("openTypeNameManufacturer", "manufacturers", 8),
     ("openTypeNameManufacturerURL", "manufacturerURL", None),
+    ("openTypeNameDesigner", "designers", 9),
+    ("openTypeNameDesignerURL", "designerURL", None),
     ("openTypeNameDescription", "descriptions", 10),
+    ("openTypeNameLicense", "licenses", 13),
     ("openTypeNameSampleText", "sampleTexts", 19),
 )
 
