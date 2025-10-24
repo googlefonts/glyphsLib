@@ -230,3 +230,44 @@ def test_smarts_with_one_master(datadir, ufo_module):
     assert len(ufos[0]["lam-ar.swsh"]) == 1
     assert len(ufos[1]["lam-ar.swsh"].components) == 1
     assert len(ufos[1]["lam-ar.swsh"]) == 1
+
+
+def test_nested_smart_components(datadir):
+    """Test that nested smart components are instantiated correctly.
+
+    This test verifies that if a smart component contains other smart
+    components, those nested components are instantiated before the parent.
+    See https://github.com/googlefonts/glyphsLib/issues/1111
+    """
+    with open(str(datadir.join("NestedSmartComponent.glyphs")), encoding="utf-8") as f:
+        font = load(f)
+
+    (ufo,) = to_ufos(font)
+
+    # The 'w' glyph should have 4 contours after smart component instantiation
+    w = ufo["w"]
+    assert len(w) == 4, f"Expected 4 contours in 'w', got {len(w)}"
+
+    # Get bounding boxes of each contour
+    bboxes = []
+    for contour in w:
+        left = min(pt.x for pt in contour)
+        bottom = min(pt.y for pt in contour)
+        right = max(pt.x for pt in contour)
+        top = max(pt.y for pt in contour)
+        bboxes.append((left, bottom, right, top))
+
+    # Sort bboxes by x position to get consistent order
+    bboxes = sorted(bboxes, key=lambda b: (b[0], b[1]))
+
+    # Expected bounding boxes based on the fontc test:
+    # Two components on the left (x=0-400) and two on the right (x=500-550)
+    # Each component has a top part (y=200-400) and bottom part (y=0-100)
+    expected = [
+        (0.0, 0.0, 400.0, 100.0),  # left bottom
+        (0.0, 200.0, 400.0, 400.0),  # left top
+        (500.0, 0.0, 550.0, 100.0),  # right bottom
+        (500.0, 200.0, 550.0, 400.0),  # right top
+    ]
+
+    assert bboxes == expected, f"Expected bboxes {expected}, got {bboxes}"

@@ -92,7 +92,45 @@ def set_coordinates(layer, coords):
             counter += 1
 
 
-def to_ufo_smart_component(self, layer, component, pen):
+def decompose_smart_components_in_layer(self, layer):
+    """Decompose any smart components in a layer, returning a new layer with paths.
+
+    This recursively instantiates nested smart components before extracting
+    coordinates for interpolation.
+
+    See https://github.com/googlefonts/glyphsLib/issues/1111
+    """
+    from glyphsLib.pens import LayerPointPen
+
+    has_smart_components = any(
+        comp.smartComponentValues and comp.component.smartComponentAxes
+        for comp in layer.components
+    )
+    if not has_smart_components:
+        return layer
+
+    from glyphsLib.classes import GSPath, GSComponent
+
+    new_layer = GSLayer()
+    new_layer.parent = layer.parent
+    new_layer.associatedMasterId = layer.associatedMasterId
+
+    pen = LayerPointPen(new_layer)
+    for shape in layer._shapes:
+        if isinstance(shape, GSPath):
+            new_layer.paths.append(shape.clone())
+        elif isinstance(shape, GSComponent):
+            if shape.smartComponentValues and shape.component.smartComponentAxes:
+                # Recursively decompose this smart component
+                instantiate_smart_component(self, new_layer, shape, pen)
+            else:
+                pen.addComponent(shape.name, shape.transform)
+
+    return new_layer
+
+
+def instantiate_smart_component(self, layer, component, pen):
+    """Instantiate a smart component by interpolating and drawing to a pointPen."""
     # Find the GSGlyph that is being used as a component by this GSComponent
     root = component.component
 
@@ -131,7 +169,9 @@ def to_ufo_smart_component(self, layer, component, pen):
         name: normalizeValue(value, axes_tuples[name], extrapolate=True)
         for name, value in component.smartComponentValues.items()
     }
-    coordinates = [get_coordinates(l) for l in masters]
+    # Decompose nested smart components before extracting coordinates
+    decomposed_masters = [decompose_smart_components_in_layer(self, l) for l in masters]
+    coordinates = [get_coordinates(l) for l in decomposed_masters]
     try:
         new_coords = model.interpolateFromMasters(normalized_location, coordinates)
     except Exception as e:
@@ -142,7 +182,7 @@ def to_ufo_smart_component(self, layer, component, pen):
     # Decompose by creating a new layer, copying its shapes and applying
     # the new coordinates
     new_layer = GSLayer()
-    new_layer._shapes = [shape.clone() for shape in masters[0]._shapes]
+    new_layer._shapes = [shape.clone() for shape in decomposed_masters[0]._shapes]
     set_coordinates(new_layer, new_coords)
 
     # Don't forget that the GSComponent might also be transformed, so
