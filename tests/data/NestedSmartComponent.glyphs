@@ -1,0 +1,177 @@
+{
+.appVersion = "3434";
+familyName = "Nested Components";
+fontMaster = (
+{
+id = "m01";
+}
+);
+glyphs = (
+{
+glyphname = w;
+layers = (
+{
+components = (
+{
+name = _part.two;
+piece = {
+Wide = 100;
+};
+},
+{
+name = _part.two;
+piece = {
+Wide = 0;
+};
+transform = "{1, 0, 0, 1, 500, 0}";
+}
+);
+layerId = "m01";
+width = 1000;
+}
+);
+unicode = 0077;
+},
+{
+export = 0;
+glyphname = _part.one;
+layers = (
+{
+layerId = "m01";
+paths = (
+{
+closed = 1;
+nodes = (
+"0 0 LINE",
+"50 0 LINE",
+"50 100 LINE",
+"0 100 LINE"
+);
+}
+);
+userData = {
+PartSelection = {
+wide = 1;
+};
+};
+width = 500;
+},
+{
+associatedMasterId = "m01";
+layerId = "A231E579-96FC-4D47-84B9-5E1DDDA6B78E";
+name = wide;
+paths = (
+{
+closed = 1;
+nodes = (
+"0 0 LINE",
+"400 0 LINE",
+"400 100 LINE",
+"0 100 LINE"
+);
+}
+);
+userData = {
+PartSelection = {
+wide = 2;
+};
+};
+width = 500;
+}
+);
+partsSettings = (
+{
+name = wide;
+bottomName = Low;
+bottomValue = -100;
+topName = High;
+topValue = 100;
+}
+);
+},
+{
+export = 0;
+glyphname = _part.two;
+layers = (
+{
+components = (
+{
+name = _part.one;
+piece = {
+wide = -100;
+};
+}
+);
+layerId = "m01";
+paths = (
+{
+closed = 1;
+nodes = (
+"0 200 LINE",
+"50 200 LINE",
+"50 400 LINE",
+"0 400 LINE"
+);
+}
+);
+userData = {
+PartSelection = {
+Wide = 1;
+};
+};
+width = 500;
+},
+{
+associatedMasterId = "m01";
+components = (
+{
+name = _part.one;
+piece = {
+wide = 100;
+};
+}
+);
+layerId = "B3AE13E4-A791-4F28-BF69-6B3EB62D9EB3";
+name = Wide;
+paths = (
+{
+closed = 1;
+nodes = (
+"1 200 LINE",
+"400 200 LINE",
+"400 400 LINE",
+"0 400 LINE"
+);
+}
+);
+userData = {
+PartSelection = {
+Wide = 2;
+};
+};
+width = 500;
+}
+);
+partsSettings = (
+{
+name = Wide;
+bottomName = Low;
+bottomValue = 0;
+topName = High;
+topValue = 100;
+}
+);
+}
+);
+instances = (
+{
+instanceInterpolations = {
+"m01" = 1;
+};
+name = Regular;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 3;
+}

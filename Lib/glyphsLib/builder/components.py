@@ -20,7 +20,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
 
-from .smart_components import to_ufo_smart_component
+from .smart_components import instantiate_smart_component
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY
 
 logger = logging.getLogger(__name__)
@@ -75,7 +75,7 @@ def to_ufo_components(self, ufo_glyph, layer):
         # as a component and save the smart component values).
         # See https://github.com/googlefonts/glyphsLib/pull/822
         if component.smartComponentValues and component.component.smartComponentAxes:
-            to_ufo_smart_component(self, layer, component, pen)
+            instantiate_smart_component(self, layer, component, pen)
         else:
             pen.addComponent(component_name, component.transform)
 
