@@ -65,22 +65,22 @@ expander = TokenExpander(TESTFONT, master)
             "A.sc",
             False,
         ),  # will expand to all glyph names that end in ".sc"
-        ("$[not name endswith '.sc']", "A space Sacute", False),
-        ("$[NOT name endswith '.sc']", "A space Sacute", False),
-        ("$[! name endswith '.sc']", "A space Sacute", False),
+        ("$[not name endswith '.sc']", "A C D E F G H I space Sacute", False),
+        ("$[NOT name endswith '.sc']", "A C D E F G H I space Sacute", False),
+        ("$[! name endswith '.sc']", "A C D E F G H I space Sacute", False),
         (
             "$[name endswith '.sc' or not name endswith '.sc']",
-            "A.sc A space Sacute",
+            "A.sc A C D E F G H I space Sacute",
             False,
         ),
         (
             "$[name ENDSWITH '.sc' OR NOT name ENDSWITH '.sc']",
-            "A.sc A space Sacute",
+            "A.sc A C D E F G H I space Sacute",
             False,
         ),
         (
             "$[name endswith '.sc' || ! name endswith '.sc']",
-            "A.sc A space Sacute",
+            "A.sc A C D E F G H I space Sacute",
             False,
         ),
         ("$[name endswith '.sc' and not name endswith '.sc']", "", False),
@@ -103,31 +103,40 @@ expander = TokenExpander(TESTFONT, master)
         ),  # "matches": regular expression
         # ('$[leftMetricsKey like "*"]', "", False), # "like": wildcard search
         # ('$[name like "*e*"]', "", False), # e anywhere in the glyph name
-        ('$[script like "latin"]', "A", False),
+        ('$[script like "latin"]', "A C", False),
         ('$[category like "Separator"]', "Sacute", False),
         ('$[leftKerningGroup like "H"]', "A", False),
         ('$[rightKerningGroup like "L"]', "A", False),
         ('$[unicode beginswith "41"]', "A", False),  # beginswith, endswith, contains
         ('$[note contains "love it"]', "A.sc", False),  # glyph note
         ("$[countOfUnicodes > 1]", "space", False),
-        ("$[countOfLayers > 2]", "space", False),
+        ("$[countOfLayers > 2]", "C D E F G H space", False),
         ('$[subCategory like "Arrow"]', "Sacute", False),
         # ('$[hasHints == 0]', "", False), # boolean: false, no, 0 versus true, yes, 1
-        # ('$[isColorGlyph == true]', "", False),
+        ("$[isAnyColorGlyph == true]", "C D E F", False),
+        ("$[isFullColorGlyph == true]", "C", False),
+        ("$[isSVGColorGlyph == true]", "F", False),
+        ("$[isAppleColorGlyph == true]", "E", False),
         (
             '$[script == "latin"]',
-            "A",
+            "A C",
             False,
         ),  # connect multiple conditions with ORor AND
-        # ('$[hasComponents == true and script == "latin"]', "", False),
-        # connect multiple conditions with ORor AND
+        (
+            '$[hasComponents == true and script == "latin"]',
+            "C",
+            False,
+        ),  # connect multiple conditions with ORor AND
         # ('$[hasTrueTypeHints == false]', "", False),
         # ('$[hasAlignedWidth == true]', "", False),
         # ('$[hasPostScriptHints == true]', "", False),
-        # ('$[hasAnnotations == true]', "", False),
-        # ('$[hasCorners == true]', "", False), # corners = corner components
-        # ('$[hasSpecialLayers == yes]', "", False),
-        # special layers = color, brace and bracket layers
+        ("$[hasAnnotations == true]", "I", False),
+        ("$[hasCorners == true]", "I", False),  # corners = corner components
+        (
+            "$[hasSpecialLayers == yes]",
+            "C D E F G H",
+            False,
+        ),  # special layers = color, brace and bracket layers
         # ('$[isHangulKeyGlyph == no]', "", False),
     ],
 )

@@ -124,10 +124,12 @@ class TokenExpander:
         "hasTrueTypeHints",
         "isAligned",
         "isAppleColorGlyph",
-        "isColorGlyph",
+        "isAnyColorGlyph",
+        "isFullColorGlyph",
         "isCornerGlyph",
         "isHangulKeyGlyph",
         "isSVGColorGlyph",
+        "isColorPaletteGlyph",
         "isSmartGlyph",
         "justLocked",
         "locked",
@@ -294,19 +296,13 @@ class TokenExpander:
                 "Unknown glyph property '%s' at position %i" % (value, self.position)
             ) from e
 
-    gsglyph_attr_getters = {
-        "colorIndex": lambda g: g.color,
-        "countOfUnicodes": lambda g: len(g.unicodes),
-        "countOfLayers": lambda g: len(g.layers),
-    }
-
     def _get_value_for_glyph(self, g, value):
-        getter = self.gsglyph_attr_getters.get(value, None)
-        if getter:
-            return getter(g)
-
         try:
-            return getattr(g, value)
+            attrib = getattr(g, value)
+            if callable(attrib):
+                return attrib()
+            else:
+                return attrib
         except AttributeError as exc:
             raise ValueError(
                 "Glyphs attribute %s used in predicate '%s'"
