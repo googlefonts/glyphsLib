@@ -4345,6 +4345,53 @@ class GSGlyph(GSBase):
     def vertWidthMetricsKey(self, value):
         self.metricVertWidth = value
 
+    # The following methods are their mainly to support there use in predicate
+    # tokens.
+
+    def colorIndex(self):
+        return self.color
+
+    def countOfUnicodes(self):
+        return len(self.unicodes)
+
+    def countOfLayers(self):
+        return len(self.layers)
+
+    def hasAnnotations(self):
+        return any(bool(layer.annotations) for layer in self.layers)
+
+    def hasComponents(self):
+        return any(bool(layer.components) for layer in self.layers)
+
+    def hasCorners(self):
+        return any(
+            any(hint.type.upper() == "CORNER" for hint in layer.hints)
+            for layer in self.layers
+        )
+
+    def hasSpecialLayers(self):
+        return any(bool(layer.attributes) for layer in self.layers)
+
+    def isAnyColorGlyph(self):
+        return (
+            self.isFullColorGlyph()
+            or self.isColorPaletteGlyph()
+            or self.isSVGColorGlyph()
+            or self.isAppleColorGlyph()
+        )
+
+    def isFullColorGlyph(self):
+        return any("color" in layer.attributes for layer in self.layers)
+
+    def isColorPaletteGlyph(self):
+        return any("colorPalette" in layer.attributes for layer in self.layers)
+
+    def isSVGColorGlyph(self):
+        return any("svg" in layer.attributes for layer in self.layers)
+
+    def isAppleColorGlyph(self):
+        return any("sbixSize" in layer.attributes for layer in self.layers)
+
 
 GSGlyph._add_parsers(
     [
