@@ -69,14 +69,19 @@ USV_MAP = {
 USV_EXTENSIONS = tuple(USV_MAP.keys())
 
 
-def to_ufo_glyph(self, ufo_glyph, layer, glyph, do_color_layers=True):  # noqa: C901
+def to_ufo_glyph(  # noqa: C901
+    self, ufo_glyph, layer, glyph, do_color_layers=True, is_color_layer_glyph=False
+):
     """Add .glyphs metadata, paths, components, and anchors to a glyph."""
     ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
 
     if layer.layerId == layer.associatedMasterId and do_color_layers:
         self.to_ufo_glyph_color(ufo_glyph, layer, glyph)
 
-    ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
+    # Color layer glyphs (e.g., "Acaron.color0") should not get unicode values
+    # from their parent glyph to avoid duplicate unicode mappings.
+    if not is_color_layer_glyph:
+        ufo_glyph.unicodes = [int(uval, 16) for uval in glyph.unicodes]
 
     export = glyph.export
     if not export:

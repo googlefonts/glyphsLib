@@ -36,10 +36,7 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
-                builder.to_ufo_glyph(ufo_glyph, layer, glyph)
-                # Remove Unicode mapping from each color layer to avoid
-                # duplicate entries.
-                ufo_glyph.unicodes = []
+                builder.to_ufo_glyph(ufo_glyph, layer, glyph, is_color_layer_glyph=True)
             colorLayers.append((layerGlyphName, colorId))
         layerMapping[glyph.name] = colorLayers
 
@@ -194,10 +191,13 @@ def _to_ufo_color_layers(builder, ufo, master, layerMapping):
                 layerGlyphName = f"{glyph.name}.color{i}"
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
-                builder.to_ufo_glyph(ufo_glyph, layer, glyph, do_color_layers=False)
-                # Remove Unicode mapping from each color layer to avoid
-                # duplicate entries.
-                ufo_glyph.unicodes = []
+                builder.to_ufo_glyph(
+                    ufo_glyph,
+                    layer,
+                    glyph,
+                    do_color_layers=False,
+                    is_color_layer_glyph=True,
+                )
 
             attributes = layer.paths[0].attributes if layer.paths else {}
             if "gradient" in attributes:

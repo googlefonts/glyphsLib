@@ -1238,6 +1238,48 @@ def test_glyph_color_palette_layers_no_unicode_mapping(ufo_module):
     assert ufo["a.color1"].unicode is None
 
 
+def test_glyph_color_palette_layers_postscript_names(ufo_module):
+    """Test that color layer glyphs get unique postscript names with .colorN suffix."""
+    font = generate_minimal_font(format_version=3)
+    # Add a glyph with unicode (production name will be auto-generated)
+    glyph_with_unicode = add_glyph(font, "Acaron")
+    glyph_with_unicode.unicode = "01CD"
+
+    # Add a glyph without unicode but with suffix
+    glyph_with_suffix = add_glyph(font, "caroncomb.alt")
+
+    # Add color palette layers
+    for glyph in [glyph_with_unicode, glyph_with_suffix]:
+        color0 = GSLayer()
+        color1 = GSLayer()
+        color0.attributes["colorPalette"] = 0
+        color1.attributes["colorPalette"] = 1
+        glyph.layers.append(color0)
+        glyph.layers.append(color1)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    postscriptNames = ufo.lib.get("public.postscriptNames", {})
+
+    # Color layer glyphs should have unique postscript names with .colorN suffix
+    assert postscriptNames.get("Acaron") == "uni01CD"
+    assert postscriptNames.get("Acaron.color0") == "uni01CD.color0"
+    assert postscriptNames.get("Acaron.color1") == "uni01CD.color1"
+
+    assert postscriptNames.get("caroncomb.alt") == "uni030C.alt"
+    assert postscriptNames.get("caroncomb.alt.color0") == "uni030C.alt.color0"
+    assert postscriptNames.get("caroncomb.alt.color1") == "uni030C.alt.color1"
+
+    # Color layer glyphs should not have unicode values
+    assert ufo["Acaron"].unicode == 0x01CD
+    assert ufo["Acaron.color0"].unicode is None
+    assert ufo["Acaron.color1"].unicode is None
+    assert ufo["caroncomb.alt"].unicode is None
+    assert ufo["caroncomb.alt.color0"].unicode is None
+    assert ufo["caroncomb.alt.color1"].unicode is None
+
+
 def test_glyph_color_layers_components_2(ufo_module):
     filename = os.path.join(
         os.path.dirname(__file__), "..", "data", "ColorComponents.glyphs"
