@@ -317,6 +317,95 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
+def test_designspace_generation_bracket_roundtrip_v3(datadir, ufo_module):
+    # v3 supports bracket layers that reference positions on multiple axes.
+    # of particular interest for this test is that we don't bother including
+    # irrelevant axes in the generated rules; that is, if a rule matches across
+    # all of an axis, it should be omitted.
+    with open(str(datadir.join("BracketTestFont_v3.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font, ufo_module=ufo_module)
+
+    assert designspace.rules[0].name == "BRACKET.Weight_600_1000.Width_50_80"
+    assert designspace.rules[0].conditionSets == [
+        [
+            dict(name="Weight", minimum=600, maximum=1000),
+            dict(name="Width", minimum=50, maximum=80),
+        ]
+    ]
+    assert sorted(designspace.rules[0].subs) == [
+        ("a", "a.BRACKET.varAlt01"),
+        ("b", "b.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt02"),
+    ]
+
+    assert designspace.rules[1].name == "BRACKET.Weight_600_1000"
+    assert designspace.rules[1].conditionSets == [
+        [dict(name="Weight", minimum=600, maximum=1000)]
+    ]
+    assert sorted(designspace.rules[1].subs) == [
+        ("a", "a.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt02"),
+    ]
+
+    assert designspace.rules[2].name == "BRACKET.Weight_300_600.Width_50_80"
+    assert designspace.rules[2].conditionSets == [
+        [
+            dict(name="Weight", minimum=300, maximum=600),
+            dict(name="Width", minimum=50, maximum=80),
+        ]
+    ]
+    assert sorted(designspace.rules[2].subs) == [
+        ("a", "a.BRACKET.varAlt01"),
+        ("b", "b.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt01"),
+    ]
+
+    assert designspace.rules[3].name == "BRACKET.Weight_300_600"
+    assert designspace.rules[3].conditionSets == [
+        [dict(name="Weight", minimum=300, maximum=600)]
+    ]
+    assert sorted(designspace.rules[3].subs) == [
+        ("a", "a.BRACKET.varAlt01"),
+        ("x", "x.BRACKET.varAlt01"),
+    ]
+
+    for source in designspace.sources:
+        assert "[300]" not in source.font.layers
+        assert "Something [300]" not in source.font.layers
+        assert "[600]" not in source.font.layers
+        assert "Other [600]" not in source.font.layers
+        g1 = source.font["x.BRACKET.varAlt01"]
+        assert not g1.unicodes
+        g2 = source.font["x.BRACKET.varAlt02"]
+        assert not g2.unicodes
+
+    font_rt = to_glyphs(designspace)
+    assert "x" in font_rt.glyphs
+    g1 = font_rt.glyphs["x"]
+    assert len(g1.layers) == 12 and {l.name for l in g1.layers} == {
+        "[300]",
+        "[600]",
+        "Bold",
+        "Bold Condensed",
+        "Light Condensed",
+        "Light",
+        "Other [600]",
+        "Something [300]",
+    }
+    g2 = font_rt.glyphs["a"]
+    assert len(g2.layers) == 8 and {l.name for l in g2.layers} == {
+        "[300]",
+        "Bold",
+        "Bold Condensed",
+        "Light Condensed",
+        "Light",
+    }
+    assert "a.BRACKET.300" not in font_rt.glyphs
+    assert "x.BRACKET.300" not in font_rt.glyphs
+    assert "x.BRACKET.600" not in font_rt.glyphs
+
+
 def test_designspace_generation_bracket_roundtrip_psnames(datadir, ufo_module):
     with open(str(datadir.join("PSNames.glyphs"))) as f:
         font = glyphsLib.load(f)
