@@ -3981,7 +3981,8 @@ class GSLayer(GSBase):
             designspace_min, designspace_max = designspace_min_max(axis)
             axis_min = axis_min if axis_min is not None else designspace_min
             axis_max = axis_max if axis_max is not None else designspace_max
-            info[axis.tag] = (axis_min, axis_max)
+            if (axis_min, axis_max) != (designspace_min, designspace_max):
+                info[axis.tag] = (axis_min, axis_max)
         return info
 
     def _is_brace_layer(self):
