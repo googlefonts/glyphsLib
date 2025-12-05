@@ -426,8 +426,6 @@ GLYPHS_UFO_CUSTOM_PARAMS_NO_SHORT_NAME = (
     "openTypeVheaCaretOffset",
     "openTypeHeadLowestRecPPEM",
     "openTypeHeadFlags",
-    "openTypeNameVersion",
-    "openTypeNameUniqueID",
     "openTypeOS2FamilyClass",
     "postscriptSlantAngle",
     "postscriptUniqueID",
