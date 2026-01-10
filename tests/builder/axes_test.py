@@ -759,3 +759,19 @@ def test_axis_location_cp_uses_floats(ufo_module, datadir):
     assert len(ds.sources) == 1
     assert ds.axes[0].name == "Weight"
     assert ds.axes[0].map == [(400.75, 0)]
+
+
+def test_hidden_axis(ufo_module):
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
+    axes = [
+        {"Tag": "opsz", "Name": "Optical"},
+        {"Tag": "TEST", "Name": "Test Axis", "Hidden": 1},
+    ]
+    font.customParameters["Axes"] = axes
+    doc = to_designspace(font, ufo_module=ufo_module)
+    assert len(doc.axes) == 2
+    assert not doc.axes[0].hidden
+    assert doc.axes[1].hidden
+
+    font = to_glyphs(doc)
+    assert font.customParameters["Axes"] == axes
