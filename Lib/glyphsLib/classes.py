@@ -3179,7 +3179,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
-        if writer.format_version > 2:
+        if writer.format_version > 2 and self.axes != list(self._axis_defaults):
             writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
