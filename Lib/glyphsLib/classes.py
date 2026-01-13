@@ -3212,8 +3212,6 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
-        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
-            writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
@@ -3221,6 +3219,8 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "name")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "properties", condition="if_true")
+            if self.type != InstanceType.SINGLE:
+                writer.writeKeyValue("type", InstanceType.VARIABLE.name.lower())
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )

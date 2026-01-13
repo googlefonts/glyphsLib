@@ -1571,9 +1571,8 @@
   );
   instances = (
   {
-- name = Regular;
-+ variablename = Regular;
-- type = variable;
+  name = Regular;
+  type = variable;
   },
   {
   axesValues = (
