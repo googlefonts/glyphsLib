@@ -3220,7 +3220,7 @@ class GSInstance(GSBase):
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "properties", condition="if_true")
             if self.type != InstanceType.SINGLE:
-                writer.writeKeyValue("type", InstanceType.VARIABLE.name.lower())
+                writer.writeKeyValue("type", InstanceType(self.type).name.lower())
         writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
