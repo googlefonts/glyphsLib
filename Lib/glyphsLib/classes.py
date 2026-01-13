@@ -3015,12 +3015,12 @@ class GSFeature(GSBase):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
+        if writer.format_version == 2:
+            writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "notes", "if_true")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "labels", "if_true")
             writer.writeKeyValue("tag", self.name)
-        else:
-            writer.writeKeyValue("name", self.name)
-        writer.writeObjectKeyValue(self, "notes", "if_true")
 
     def __init__(self, name="xxxx", code=""):
         self.automatic = False
@@ -3072,6 +3072,7 @@ class GSClass(GSFeature):
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "notes", "if_true")
 
     pass
 

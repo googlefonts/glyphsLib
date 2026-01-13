@@ -22,7 +22,7 @@
   code = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
   ";
   name = Uppercase;
-- notes = "a class note.";
+  notes = "a class note.";
   },
   {
   automatic = 1;
@@ -68,7 +68,7 @@
   code = "languagesystem DFLT dflt;
   ";
   name = Languagesystems;
-- notes = "a prefix note";
+  notes = "a prefix note";
   },
   {
   code = "";
@@ -80,9 +80,8 @@
   {
   code = "sub C by D;
   ";
-+ tag = test;
   notes = "a feature note.";
-- tag = test;
+  tag = test;
   },
   {
   automatic = 1;
