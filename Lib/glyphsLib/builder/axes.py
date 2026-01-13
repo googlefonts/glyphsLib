@@ -176,6 +176,7 @@ def to_designspace_axes(self):
         axis = self.designspace.newAxisDescriptor()
         axis.tag = axis_def.tag
         axis.name = axis_def.name
+        axis.hidden = axis_def.hidden
         # TODO add support for localised axis.labelNames when Glyphs.app does
 
         # Make sure here that if there is an Axes parameter, we actually really
@@ -328,13 +329,14 @@ def to_glyphs_axes(self):
     axes_parameter = []
     for axis in self.designspace.axes:
         if axis.tag == "wght":
-            axes_parameter.append(
-                classes.GSAxis(name=axis.name or "Weight", tag="wght")
-            )
+            name = axis.name or "Weight"
         elif axis.tag == "wdth":
-            axes_parameter.append(classes.GSAxis(name=axis.name or "Width", tag="wdth"))
+            name = axis.name or "Width"
         else:
-            axes_parameter.append(classes.GSAxis(name=axis.name, tag=axis.tag))
+            name = axis.name
+        axes_parameter.append(
+            classes.GSAxis(name=name, tag=axis.tag, hidden=axis.hidden)
+        )
 
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.axes = axes_parameter
@@ -360,6 +362,7 @@ class AxisDefinition:
         user_loc_key=None,
         user_loc_param=None,
         default_user_loc=0.0,
+        hidden=False,
     ):
         self.tag = tag
         self.name = name
@@ -368,6 +371,7 @@ class AxisDefinition:
         self.user_loc_key = user_loc_key
         self.user_loc_param = user_loc_param
         self.default_user_loc = default_user_loc
+        self.hidden = hidden
 
     def get_design_loc(self, glyphs_master_or_instance):
         """Get the design location (aka interpolation value) of a Glyphs
@@ -526,7 +530,7 @@ class AxisDefinitionFactory:
     def __init__(self):
         self.axis_index = -1
 
-    def get(self, tag=None, name="Custom"):
+    def get(self, tag=None, name="Custom", hidden=False):
         self.axis_index += 1
         design_loc_key = self._design_loc_key()
         if tag is None:
@@ -536,14 +540,25 @@ class AxisDefinitionFactory:
                 tag = "XXX%d" % self.axis_index
 
         if tag == "wght":
-            return AxisDefinition(
-                tag, name, design_loc_key, 100.0, "weight", "weightClass", 400.0
-            )
-        if tag == "wdth":
-            return AxisDefinition(
-                tag, name, design_loc_key, 100.0, "width", "widthClass", 100.0
-            )
-        return AxisDefinition(tag, name, design_loc_key, 0.0, None, None, 0.0)
+            default_design_loc, default_user_loc = 100.0, 400.0
+            user_loc_key, user_loc_param = "weight", "weightClass"
+        elif tag == "wdth":
+            default_design_loc = default_user_loc = 100.0
+            user_loc_key, user_loc_param = "width", "widthClass"
+        else:
+            default_design_loc = default_user_loc = 0.0
+            user_loc_key = user_loc_param = None
+
+        return AxisDefinition(
+            tag,
+            name,
+            design_loc_key,
+            default_design_loc=default_design_loc,
+            user_loc_key=user_loc_key,
+            user_loc_param=user_loc_param,
+            default_user_loc=default_user_loc,
+            hidden=hidden,
+        )
 
     def _design_loc_key(self):
         return self.axis_index
@@ -564,7 +579,10 @@ def get_axis_definitions(font):
         return DEFAULT_AXES_DEFS
 
     factory = AxisDefinitionFactory()
-    return [factory.get(axis.get("Tag"), axis["Name"]) for axis in axesParameter]
+    return [
+        factory.get(axis.get("Tag"), axis["Name"], bool(axis.get("Hidden")))
+        for axis in axesParameter
+    ]
 
 
 def _is_subset_of_default_axes(axes_parameter):
