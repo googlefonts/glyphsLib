@@ -490,11 +490,11 @@
   shapes = (
   {
   attr = {
-- lineCapEnd = 3;
-- lineCapStart = 1;
-- strokeHeight = 80;
-- strokePos = 1;
-- strokeWidth = 100;
+  lineCapEnd = 3;
+  lineCapStart = 1;
+  strokeHeight = 80;
+  strokePos = 1;
+  strokeWidth = 100;
   };
   closed = 0;
   nodes = (
@@ -505,7 +505,7 @@
   },
   {
   attr = {
-- mask = 1;
+  mask = 1;
   };
   closed = 1;
   nodes = (
@@ -517,9 +517,9 @@
   },
   {
   attr = {
-- fill = 1;
-- strokeHeight = 100;
-- strokeWidth = 100;
+  fill = 1;
+  strokeHeight = 100;
+  strokeWidth = 100;
   };
   closed = 1;
   nodes = (
@@ -557,21 +557,41 @@
   shapes = (
   {
   attr = {
-- gradient = {
-- colors = (
-- (
+  gradient = {
+  colors = (
+  (
 - (179,22,37,255),
-- 0
-- ),
-- (
++ (
++ 179,
++ 22,
++ 37,
++ 255
++ ),
+  0
+  ),
+  (
 - (63,56,203,255),
-- 1
-- )
-- );
++ (
++ 63,
++ 56,
++ 203,
++ 255
++ ),
+  1
+  )
+  );
 - end = (0,0);
 - start = (0.2939,-0.0168);
-- type = circle;
-- };
++ end = (
++ 0,
++ 0
++ );
++ start = (
++ 0.2939,
++ -0.0168
++ );
+  type = circle;
+  };
   };
   closed = 1;
   nodes = (

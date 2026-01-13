@@ -2442,7 +2442,11 @@ class GSPath(GSBase):
         pointPen.endPath()
 
 
-GSPath._add_parsers([{"plist_name": "attr", "object_name": "attributes"}])  # V3
+GSPath._add_parsers(
+    [
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
+    ]
+)
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
