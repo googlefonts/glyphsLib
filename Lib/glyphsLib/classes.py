@@ -3221,6 +3221,7 @@ class GSInstance(GSBase):
             writer.writeObjectKeyValue(self, "properties", condition="if_true")
             if self.type != InstanceType.SINGLE:
                 writer.writeKeyValue("type", InstanceType.VARIABLE.name.lower())
+        writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3253,6 +3254,7 @@ class GSInstance(GSBase):
         self.manualInterpolation = False
         self.name = "Regular"
         self.properties = []
+        self._userData = None
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
@@ -3266,6 +3268,11 @@ class GSInstance(GSBase):
     properties = property(
         lambda self: PropertiesProxy(self),
         lambda self, value: PropertiesProxy(self).setter(value),
+    )
+
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value),
     )
 
     @property
