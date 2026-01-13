@@ -2442,7 +2442,11 @@ class GSPath(GSBase):
         pointPen.endPath()
 
 
-GSPath._add_parsers([{"plist_name": "attr", "object_name": "attributes"}])  # V3
+GSPath._add_parsers(
+    [
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},  # V3
+    ]
+)
 
 
 # 'offcurve' GSNode.type is equivalent to 'None' in UFO PointPen API
@@ -2571,6 +2575,8 @@ class GSComponent(GSBase):
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            if self.attributes:
+                writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "name")
@@ -2596,6 +2602,7 @@ class GSComponent(GSBase):
         self.alignment = 0
         self.anchor = ""
         self.locked = False
+        self.attributes = {}
 
         if isinstance(glyph, str):
             self.name = glyph
@@ -2745,6 +2752,7 @@ GSComponent._add_parsers(
         {"plist_name": "transform", "object_name": "transform", "converter": Transform},
         {"plist_name": "piece", "object_name": "smartComponentValues", "type": dict},
         {"plist_name": "angle", "object_name": "rotation", "type": float},
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},
         {"plist_name": "pos", "object_name": "position", "converter": Point},
         {"plist_name": "ref", "object_name": "name"},
         {"plist_name": "locked", "converter": bool},
@@ -2784,6 +2792,7 @@ class GSAnchor(GSBase):
         writer.writeObjectKeyValue(
             self, "position", True, keyName=posKey, default=Point(0, 0)
         )
+        writer.writeObjectKeyValue(self, "userData", "if_true")
 
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
@@ -3011,12 +3020,12 @@ class GSFeature(GSBase):
         writer.writeObjectKeyValue(self, "automatic", "if_true")
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
+        if writer.format_version == 2:
+            writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "notes", "if_true")
         if writer.format_version == 3:
             writer.writeObjectKeyValue(self, "labels", "if_true")
             writer.writeKeyValue("tag", self.name)
-        else:
-            writer.writeKeyValue("name", self.name)
-        writer.writeObjectKeyValue(self, "notes", "if_true")
 
     def __init__(self, name="xxxx", code=""):
         self.automatic = False
@@ -3068,6 +3077,7 @@ class GSClass(GSFeature):
         writer.writeObjectKeyValue(self, "code", True)
         writer.writeObjectKeyValue(self, "disabled", "if_true")
         writer.writeKeyValue("name", self.name)
+        writer.writeObjectKeyValue(self, "notes", "if_true")
 
     pass
 
@@ -3169,7 +3179,7 @@ class GSFontInfoValue(GSBase):  # Combines localizable/nonlocalizable properties
 class GSInstance(GSBase):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "active", condition=(not self.active))
-        if writer.format_version > 2:
+        if writer.format_version > 2 and self.axes != list(self._axis_defaults):
             writer.writeObjectKeyValue(self, "axes", keyName="axesValues")
         writer.writeObjectKeyValue(self, "exports", condition=(not self.exports))
         writer.writeObjectKeyValue(self, "customParameters", condition="if_true")
@@ -3202,8 +3212,6 @@ class GSInstance(GSBase):
                 self, "widthValue", keyName="interpolationWidth", default=100
             )
         writer.writeObjectKeyValue(self, "instanceInterpolations", "if_true")
-        if writer.format_version > 2 and self.type == InstanceType.VARIABLE:
-            writer.writeValue(InstanceType.VARIABLE.name.lower(), "type")
         writer.writeObjectKeyValue(self, "isBold", "if_true")
         writer.writeObjectKeyValue(self, "isItalic", "if_true")
         writer.writeObjectKeyValue(self, "linkStyle", "if_true")
@@ -3211,6 +3219,9 @@ class GSInstance(GSBase):
         writer.writeObjectKeyValue(self, "name")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "properties", condition="if_true")
+            if self.type != InstanceType.SINGLE:
+                writer.writeKeyValue("type", InstanceType.VARIABLE.name.lower())
+        writer.writeObjectKeyValue(self, "userData", "if_true")
         writer.writeObjectKeyValue(
             self, "weight", default="Regular", keyName="weightClass"
         )
@@ -3243,6 +3254,7 @@ class GSInstance(GSBase):
         self.manualInterpolation = False
         self.name = "Regular"
         self.properties = []
+        self._userData = None
         self.visible = True
         self.weight = self._defaultsForName["weightClass"]
         self.width = self._defaultsForName["widthClass"]
@@ -3256,6 +3268,11 @@ class GSInstance(GSBase):
     properties = property(
         lambda self: PropertiesProxy(self),
         lambda self, value: PropertiesProxy(self).setter(value),
+    )
+
+    userData = property(
+        lambda self: UserDataProxy(self),
+        lambda self, value: UserDataProxy(self).setter(value),
     )
 
     @property
@@ -3645,9 +3662,9 @@ class GSLayer(GSBase):
         else:
             writer.writeObjectKeyValue(self, "paths", "if_true")
         writer.writeObjectKeyValue(self, "userData", "if_true")
-        writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
         writer.writeObjectKeyValue(self, "vertWidth")
+        writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(
             self, "width", not isinstance(self, GSBackgroundLayer)
         )

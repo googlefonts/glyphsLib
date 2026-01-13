@@ -22,7 +22,7 @@
   code = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
   ";
   name = Uppercase;
-- notes = "a class note.";
+  notes = "a class note.";
   },
   {
   automatic = 1;
@@ -68,7 +68,7 @@
   code = "languagesystem DFLT dflt;
   ";
   name = Languagesystems;
-- notes = "a prefix note";
+  notes = "a prefix note";
   },
   {
   code = "";
@@ -80,9 +80,8 @@
   {
   code = "sub C by D;
   ";
-+ tag = test;
   notes = "a feature note.";
-- tag = test;
+  tag = test;
   },
   {
   automatic = 1;
@@ -257,9 +256,9 @@
   {
   name = top;
   pos = (230,700);
-- userData = {
-- "Some Key" = "Some Value";
-- };
+  userData = {
+  "Some Key" = "Some Value";
+  };
   },
   {
   name = top.alt;
@@ -490,11 +489,11 @@
   shapes = (
   {
   attr = {
-- lineCapEnd = 3;
-- lineCapStart = 1;
-- strokeHeight = 80;
-- strokePos = 1;
-- strokeWidth = 100;
+  lineCapEnd = 3;
+  lineCapStart = 1;
+  strokeHeight = 80;
+  strokePos = 1;
+  strokeWidth = 100;
   };
   closed = 0;
   nodes = (
@@ -505,7 +504,7 @@
   },
   {
   attr = {
-- mask = 1;
+  mask = 1;
   };
   closed = 1;
   nodes = (
@@ -517,9 +516,9 @@
   },
   {
   attr = {
-- fill = 1;
-- strokeHeight = 100;
-- strokeWidth = 100;
+  fill = 1;
+  strokeHeight = 100;
+  strokeWidth = 100;
   };
   closed = 1;
   nodes = (
@@ -557,21 +556,41 @@
   shapes = (
   {
   attr = {
-- gradient = {
-- colors = (
-- (
+  gradient = {
+  colors = (
+  (
 - (179,22,37,255),
-- 0
-- ),
-- (
++ (
++ 179,
++ 22,
++ 37,
++ 255
++ ),
+  0
+  ),
+  (
 - (63,56,203,255),
-- 1
-- )
-- );
++ (
++ 63,
++ 56,
++ 203,
++ 255
++ ),
+  1
+  )
+  );
 - end = (0,0);
 - start = (0.2939,-0.0168);
-- type = circle;
-- };
++ end = (
++ 0,
++ 0
++ );
++ start = (
++ 0.2939,
++ -0.0168
++ );
+  type = circle;
+  };
   };
   closed = 1;
   nodes = (
@@ -657,9 +676,9 @@
   shapes = (
   {
   angle = 20;
-- attr = {
-- reversePaths = 1;
-- };
+  attr = {
+  reversePaths = 1;
+  };
   ref = A;
   scale = (0.8,0.8);
   }
@@ -1509,9 +1528,8 @@
   };
   layerId = "403102FA-569E-44B5-9F7D-836F0E7D2DAD";
   name = "25. Feb. 23, 15:21";
-+ visible = 1;
   vertWidth = 600;
-- visible = 1;
+  visible = 1;
   width = 600;
   }
   );
@@ -1553,13 +1571,8 @@
   );
   instances = (
   {
-+ axesValues = (
-+ 100,
-+ 100
-+ );
-- name = Regular;
-+ variablename = Regular;
-- type = variable;
+  name = Regular;
+  type = variable;
   },
   {
   axesValues = (
@@ -1603,9 +1616,9 @@
   value = www.designer.com;
   }
   );
-- userData = {
-- "Some Key" = "Some Value";
-- };
+  userData = {
+  "Some Key" = "Some Value";
+  };
   },
   {
 + active = 0;
