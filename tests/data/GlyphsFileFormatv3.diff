@@ -676,9 +676,9 @@
   shapes = (
   {
   angle = 20;
-- attr = {
-- reversePaths = 1;
-- };
+  attr = {
+  reversePaths = 1;
+  };
   ref = A;
   scale = (0.8,0.8);
   }

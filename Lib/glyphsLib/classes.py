@@ -2575,6 +2575,8 @@ class GSComponent(GSBase):
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            if self.attributes:
+                writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "name")
@@ -2600,6 +2602,7 @@ class GSComponent(GSBase):
         self.alignment = 0
         self.anchor = ""
         self.locked = False
+        self.attributes = {}
 
         if isinstance(glyph, str):
             self.name = glyph
@@ -2749,6 +2752,7 @@ GSComponent._add_parsers(
         {"plist_name": "transform", "object_name": "transform", "converter": Transform},
         {"plist_name": "piece", "object_name": "smartComponentValues", "type": dict},
         {"plist_name": "angle", "object_name": "rotation", "type": float},
+        {"plist_name": "attr", "object_name": "attributes", "type": dict},
         {"plist_name": "pos", "object_name": "position", "converter": Point},
         {"plist_name": "ref", "object_name": "name"},
         {"plist_name": "locked", "converter": bool},
