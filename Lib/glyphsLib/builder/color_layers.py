@@ -57,11 +57,7 @@ def _radius(rect, point):
     center = (rect.width * point[0], rect.height * point[1])
     distances = []
     for pt in ((0, 0), (rect.width, 0), (0, rect.height), (rect.width, rect.height)):
-        # Should have been “dist = math.dist(center, pt)” but math.dist is new
-        # in Python 3.8.
-        x0, y0 = center
-        x1, y1 = pt
-        dist = math.hypot(x1 - x0, y1 - y0)
+        dist = math.dist(center, pt)
         distances.append(dist)
     return max(distances)
 

@@ -967,7 +967,7 @@ class ReplacePrefixParamHandler(AbstractParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         repl_map = {}
         for value in glyphs.get_custom_values("Replace Prefix"):
-            prefix_name, prefix_code = re.split(r"\s*;\s*", value, 1)
+            prefix_name, prefix_code = re.split(r"\s*;\s*", value, maxsplit=1)
             # if multiple 'Replace Prefix' custom params replace the same
             # prefix, the last wins
             repl_map[prefix_name] = prefix_code
@@ -994,7 +994,7 @@ register(ReplacePrefixParamHandler())
 class ReplaceFeatureParamHandler(AbstractParamHandler):
     def to_ufo(self, builder, glyphs, ufo):
         for value in glyphs.get_custom_values("Replace Feature"):
-            tag, repl = re.split(r"\s*;\s*", value, 1)
+            tag, repl = re.split(r"\s*;\s*", value, maxsplit=1)
             ufo._owner.features.text = replace_feature(
                 tag, repl, ufo._owner.features.text or ""
             )
@@ -1152,7 +1152,7 @@ def _normalize_custom_param_name(name):
     since they can be user-generated.
     """
 
-    replacements = (("\u2018", "'"), ("\u2019", "'"), ("\u201C", '"'), ("\u201D", '"'))
+    replacements = (("\u2018", "'"), ("\u2019", "'"), ("\u201c", '"'), ("\u201d", '"'))
     for orig, replacement in replacements:
         name = name.replace(orig, replacement)
     return name
