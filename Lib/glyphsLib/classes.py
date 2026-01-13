@@ -3655,9 +3655,9 @@ class GSLayer(GSBase):
         else:
             writer.writeObjectKeyValue(self, "paths", "if_true")
         writer.writeObjectKeyValue(self, "userData", "if_true")
-        writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(self, "vertOrigin")
         writer.writeObjectKeyValue(self, "vertWidth")
+        writer.writeObjectKeyValue(self, "visible", "if_true")
         writer.writeObjectKeyValue(
             self, "width", not isinstance(self, GSBackgroundLayer)
         )
