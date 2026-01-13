@@ -2788,6 +2788,7 @@ class GSAnchor(GSBase):
         writer.writeObjectKeyValue(
             self, "position", True, keyName=posKey, default=Point(0, 0)
         )
+        writer.writeObjectKeyValue(self, "userData", "if_true")
 
     _parent = None
     _defaultsForName = {"position": Point(0, 0)}
