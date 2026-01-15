@@ -208,7 +208,10 @@ UFO2FT_META_TABLE_KEY = PUBLIC_PREFIX + "openTypeMeta"
 DEFAULT_FEATURE_WRITERS = [
     {"class": "CursFeatureWriter"},
     {"class": "KernFeatureWriter"},
-    {"class": "MarkFeatureWriter"},
+    # ufo2t default to `MC` prefix for mark classes, but Glyphs uses `mark`,
+    # since feature code can reference auto generated code, we want to match
+    # Glyphs here.
+    {"class": "MarkFeatureWriter", "options": {"markClassPrefix": "mark"}},
     {"class": "GdefFeatureWriter"},
 ]
 
