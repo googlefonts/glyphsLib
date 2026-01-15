@@ -4138,6 +4138,7 @@ class GSGlyph(GSBase):
             )
         writer.writeObjectKeyValue(self, "lastChange")
         writer.writeObjectKeyValue(self, "layers", "if_true")
+        writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "metricLeft", "if_true")
             writer.writeObjectKeyValue(self, "metricRight", "if_true")
@@ -4230,6 +4231,7 @@ class GSGlyph(GSBase):
         self.lastChange = self._defaultsForName["lastChange"]
         self.leftKerningGroup = self._defaultsForName["leftKerningGroup"]
         self.leftKerningKey = ""
+        self.locked = False
         self.metricLeft = self._defaultsForName["metricLeft"]
         self.name = name
         self.note = self._defaultsForName["note"]
@@ -4428,6 +4430,7 @@ GSGlyph._add_parsers(
         {"plist_name": "kernLeft", "object_name": "leftKerningGroup"},  # V3
         {"plist_name": "kernRight", "object_name": "rightKerningGroup"},  # V3
         {"plist_name": "leftMetricsKey", "object_name": "metricLeft"},  # V2
+        {"plist_name": "locked", "converter": bool},
         {"plist_name": "rightMetricsKey", "object_name": "metricRight"},  # V2
         {"plist_name": "widthMetricsKey", "object_name": "metricWidth"},  # V2
         {"plist_name": "vertWidthMetricsKey", "object_name": "metricVertWidth"},  # V2

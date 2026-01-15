@@ -201,3 +201,12 @@ def test_glyphs3_shape_order(datadir, ufo_module):
     glyph_b = round_trip.glyphs["B"].layers[0]
     assert isinstance(glyph_a.shapes[0], GSPath)
     assert isinstance(glyph_b.shapes[0], GSComponent)
+
+
+def test_glyph_locked(datadir):
+    font = glyphsLib.load(str(datadir.join("Locked.glyphs")))
+    assert font.glyphs["A"].locked is True
+
+    # Round trip
+    round_trip = glyphsLib.loads(glyphsLib.dumps(font))
+    assert round_trip.glyphs["A"].locked is True
