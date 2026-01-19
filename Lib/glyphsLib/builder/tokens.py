@@ -174,6 +174,7 @@ class TokenExpander:
         "sortNameKeep",
         "string",
         "subCategory",
+        "tags",
         "topKerningGroup",
         "topMetricsKey",
         "unicode",

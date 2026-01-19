@@ -96,7 +96,7 @@ glyphs = (
 glyphname = A;
 kernLeft = H;
 kernRight = L;
-lastChange = "2023-04-28 17:12:34 +0000";
+lastChange = "2026-01-19 08:47:38 +0000";
 layers = (
 {
 anchors = (
@@ -136,6 +136,10 @@ width = 600;
 }
 );
 script = latin;
+tags = (
+TestTag1,
+TestTag3
+);
 unicode = 65;
 },
 {
@@ -170,7 +174,7 @@ unicode = 67;
 },
 {
 glyphname = D;
-lastChange = "2025-11-06 15:37:07 +0000";
+lastChange = "2026-01-19 08:47:30 +0000";
 layers = (
 {
 layerId = m01;
@@ -190,11 +194,14 @@ name = "6 Nov 25 at 17:37";
 width = 600;
 }
 );
+tags = (
+TestTag2
+);
 unicode = 68;
 },
 {
 glyphname = E;
-lastChange = "2025-11-06 15:37:33 +0000";
+lastChange = "2026-01-19 08:47:30 +0000";
 layers = (
 {
 layerId = m01;
@@ -213,6 +220,10 @@ layerId = "7B946257-9F2E-4482-9E99-2575245FB482";
 name = "6 Nov 25 at 17:37";
 width = 600;
 }
+);
+tags = (
+TestTag1,
+TestTag2
 );
 unicode = 69;
 },
