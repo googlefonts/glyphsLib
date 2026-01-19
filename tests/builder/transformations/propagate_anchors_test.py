@@ -830,3 +830,57 @@ def test_propagate_anchors_after_aligining_alternates(test_file):
     assert alt_bottom.name == master_bottom.name == "bottom"
     assert tuple(alt_bottom.position) == (329, 0)
     assert tuple(master_bottom.position) == (301, 0)
+
+
+def test_entry_anchor_on_non_first_component():
+    glyphs = (
+        GlyphSetBuilder()
+        .add_glyph(
+            "part1",
+            lambda glyph: (glyph.add_anchor("top", (10, 0))),
+        )
+        .add_glyph(
+            "part2",
+            lambda glyph: (glyph.add_anchor("entry.2", (10, 0))),
+        )
+        .add_glyph(
+            "combo",
+            lambda glyph: (
+                glyph.add_component("part1", (0, 0)).add_component("part2", (100, 0))
+            ),
+        )
+        .build()
+    )
+    propagate_all_anchors_impl(glyphs)
+
+    new_glyph = glyphs["combo"]
+    assert_anchors(new_glyph.layers[0].anchors, [("top", (10, 0))])
+
+
+def test_cursive_anchors_ligature():
+    glyphs = (
+        GlyphSetBuilder()
+        .add_glyph(
+            "part1_part2",
+            lambda glyph: (
+                glyph.add_anchor("entry.1", (10, 0)).add_anchor("exit.1", (100, 0))
+            ),
+        )
+        .add_glyph(
+            "combo",
+            lambda glyph: (
+                glyph.set_subCategory("Ligature").add_component("part1_part2", (0, 0))
+            ),
+        )
+        .build()
+    )
+    propagate_all_anchors_impl(glyphs)
+
+    new_glyph = glyphs["combo"]
+    assert_anchors(
+        new_glyph.layers[0].anchors,
+        [
+            ("entry.1", (10, 0)),
+            ("exit.1", (100, 0)),
+        ],
+    )
