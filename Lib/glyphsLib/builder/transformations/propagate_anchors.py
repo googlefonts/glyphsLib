@@ -198,13 +198,13 @@ def anchors_traversing_components(
         comb_has_underscore = any(
             len(a.name) >= 2 and a.name.startswith("_") for a in anchors
         )
-        comb_has_exit = any(a.name.endswith("exit") for a in anchors)
+        comb_has_exit = any(a.name.startswith("exit") for a in anchors)
         if not (comb_has_underscore or comb_has_exit):
             # delete exit anchors we may have taken from earlier components
             # (since a glyph should only have one exit anchor, and logically its
             # at the end)
             all_anchors = {
-                n: a for n, a in all_anchors.items() if not n.endswith("exit")
+                n: a for n, a in all_anchors.items() if not n.startswith("exit")
             }
 
         component_transform = Transform(*component.transform)
@@ -214,7 +214,7 @@ def anchors_traversing_components(
             if (component_idx > 0 or has_underscore) and new_has_underscore:
                 continue
             # skip entry anchors on non-first glyphs
-            if component_idx > 0 and anchor.name.endswith("entry"):
+            if component_idx > 0 and anchor.name.startswith("entry"):
                 continue
 
             new_anchor_name = rename_anchor_for_scale(anchor.name, xscale, yscale)
@@ -223,8 +223,8 @@ def anchors_traversing_components(
                 and component_number_of_base_glyphs > 0
                 and not new_has_underscore
                 and not (
-                    new_anchor_name.endswith("exit")
-                    or new_anchor_name.endswith("entry")
+                    new_anchor_name.startswith("exit")
+                    or new_anchor_name.startswith("entry")
                 )
             ):
                 # dealing with marks like top_1 on a ligature
@@ -256,7 +256,7 @@ def anchors_traversing_components(
             not is_ligature
             and number_of_base_glyphs == 0
             and not name.startswith("_")
-            and not (name.endswith("exit") or name.endswith("entry"))
+            and not (name.startswith("exit") or name.startswith("entry"))
             and "_" in name
         ):
             suffix = name[name.index("_") + 1 :]
