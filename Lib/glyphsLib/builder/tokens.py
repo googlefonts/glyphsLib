@@ -8,6 +8,13 @@ def _like(got, expected):
     return fnmatch.fnmatchcase(str(got), expected)
 
 
+def _contains(got, expected):
+    try:
+        return expected in got
+    except Exception:
+        return expected in str(got)
+
+
 class TokenExpander:
     number_token_re = r"\$\{([^}]+)\}"
     glyph_predicate_re = r"\$\[([^\]]+)\]"
@@ -311,7 +318,7 @@ class TokenExpander:
 
     apply_comparators = {
         "beginswith": lambda got, exp: str(got).startswith(exp),
-        "contains": lambda got, exp: exp in str(got),
+        "contains": _contains,
         "endswith": lambda got, exp: str(got).endswith(exp),
         "like": _like,
         "matches": lambda got, exp: re.search(exp, str(got)),
