@@ -99,13 +99,20 @@ def maybe_log_new_anchors(
         )
 
 
+def _is_master_layer(layer: GSLayer) -> bool:
+    # Treat smart component layers as master layers
+    return layer._is_master_layer or (
+        layer.parent.smartComponentAxes and layer.smartComponentPoleMapping
+    )
+
+
 def _interesting_layers(glyph):
     # only master layers are currently supported for anchor propagation:
     # https://github.com/googlefonts/glyphsLib/issues/1017
     return (
         l
         for l in glyph.layers
-        if l._is_master_layer or l._is_bracket_layer()
+        if _is_master_layer(l) or l._is_bracket_layer()
         # or l._is_brace_layer
         # etc.
     )
@@ -137,6 +144,42 @@ def _get_subCategory(
             glyph.name, data=glyph_data, unicodes=glyph.unicodes
         ).subCategory
     )
+
+
+def _interpolate_smart_component_anchors(
+    layer: GSLayer,
+    component: GSComponent,
+    glyphs: dict[str, GSGlyph],
+    done_anchors: dict[str, dict[str, list[GSAnchor]]],
+    anchors: list[GSAnchor],
+) -> None:
+    from ..smart_components import get_smart_component_variation_model
+    from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+
+    model, location, masters = get_smart_component_variation_model(layer, component)
+    if model is not None:
+        coords = [
+            GlyphCoordinates(
+                [
+                    anchor.position
+                    for anchor in get_component_layer_anchors(
+                        component, master, glyphs, done_anchors
+                    )
+                ]
+            )
+            for master in masters
+        ]
+
+        try:
+            new_coords = model.interpolateFromMasters(location, coords)
+        except Exception as e:
+            raise ValueError(
+                "Could not interpolate smart component %s used in %s"
+                % (component.name, layer)
+            ) from e
+
+        for anchor, new_coord in zip(anchors, new_coords):
+            anchor.position = Point(new_coord[0], new_coord[1])
 
 
 def anchors_traversing_components(
@@ -186,6 +229,12 @@ def anchors_traversing_components(
                 glyph.name,
             )
             continue
+
+        if component.smartComponentValues and component.component.smartComponentAxes:
+            # If this is a smart component, we need to interpolate the anchors
+            _interpolate_smart_component_anchors(
+                layer, component, glyphs, done_anchors, anchors
+            )
 
         # if this component has an explicitly set attachment anchor, use it
         if component_idx > 0 and component.anchor:
@@ -401,7 +450,7 @@ def get_component_layer_anchors(
     # whether the parent layer where the component is defined is a 'master' layer
     # and/or a 'bracket' or alternate layer (masters can have bracket layers too but
     # glyphsLib doesn't support that yet).
-    parent_is_master = layer._is_master_layer
+    parent_is_master = _is_master_layer(layer)
     parent_is_bracket = layer._is_bracket_layer()
     parent_axis_rules = (
         [] if not parent_is_bracket else list(layer._bracket_axis_rules())
