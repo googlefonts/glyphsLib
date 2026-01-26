@@ -2857,3 +2857,37 @@ class TestGlyphOrder:
         ufo = self.from_glyphs(ufo_module)
         assert ["xxx1", "f", "xxx2", "c", "a"] == ufo.lib["public.glyphOrder"]
         assert GLYPHS_PREFIX + "glyphOrder" not in ufo.lib
+
+
+def test_vhea_custom_params_trigger_is_vertical(ufo_module):
+    """Test that vhea custom parameters (without per-glyph vertical metrics)
+    trigger is_vertical=True and populate glyph heights in UFO.
+
+    https://github.com/googlefonts/glyphsLib/issues/1132
+    """
+    font = generate_minimal_font()
+    font.masters[0].ascender = 800
+    font.masters[0].descender = -200
+
+    # Set vhea custom parameters on master (no per-glyph vertical metrics)
+    font.masters[0].customParameters["vheaVertAscender"] = 500
+    font.masters[0].customParameters["vheaVertDescender"] = -500
+    font.masters[0].customParameters["vheaVertLineGap"] = 0
+
+    # Add a glyph without explicit vertWidth/vertOrigin
+    add_glyph(font, "a")
+
+    builder = UFOBuilder(font, ufo_module=ufo_module)
+    assert builder.is_vertical is True
+
+    ufo = next(iter(builder.masters))
+
+    # Glyph should have height set to typoAscender - typoDescender
+    # (which defaults to master ascender - descender when not explicitly set)
+    expected_height = font.masters[0].ascender - font.masters[0].descender
+    assert ufo["a"].height == expected_height
+
+    # vhea UFO info should be populated
+    assert ufo.info.openTypeVheaVertTypoAscender == 500
+    assert ufo.info.openTypeVheaVertTypoDescender == -500
+    assert ufo.info.openTypeVheaVertTypoLineGap == 0
