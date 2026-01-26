@@ -129,8 +129,8 @@ def decompose_smart_components_in_layer(self, layer):
     return new_layer
 
 
-def instantiate_smart_component(self, layer, component, pen):
-    """Instantiate a smart component by interpolating and drawing to a pointPen."""
+def get_smart_component_variation_model(layer, component):
+    """Get the variation model for a smart component."""
     # Find the GSGlyph that is being used as a component by this GSComponent
     root = component.component
 
@@ -149,9 +149,7 @@ def instantiate_smart_component(self, layer, component, pen):
         )
 
     if len(masters) == 1:
-        # Treat this as a dumb component.
-        pen.addComponent(component.name, component.transform)
-        return
+        return None, None, None
 
     model = variation_model(root, masters, layer)
 
@@ -169,6 +167,23 @@ def instantiate_smart_component(self, layer, component, pen):
         name: normalizeValue(value, axes_tuples[name], extrapolate=True)
         for name, value in component.smartComponentValues.items()
     }
+
+    return model, normalized_location, masters
+
+
+def instantiate_smart_component(self, layer, component, pen):
+    """Instantiate a smart component by interpolating and drawing to a pointPen."""
+    # Find the GSGlyph that is being used as a component by this GSComponent
+    root = component.component
+
+    model, normalized_location, masters = get_smart_component_variation_model(
+        layer, component
+    )
+    if model is None:
+        # Treat this as a dumb component.
+        pen.addComponent(component.name, component.transform)
+        return
+
     # Decompose nested smart components before extracting coordinates
     decomposed_masters = [decompose_smart_components_in_layer(self, l) for l in masters]
     coordinates = [get_coordinates(l) for l in decomposed_masters]
