@@ -194,22 +194,21 @@ class UFOBuilder(LoggerMixin):
         # To match ufo2ft, require all three vhea params (ascender, descender, lineGap):
         # https://github.com/googlefonts/ufo2ft/blob/28acf8870487/Lib/ufo2ft/outlineCompiler.py#L154-L163
         # https://github.com/googlefonts/glyphsLib/issues/1132
+        # Each pair contains aliases for the same metric
+        vhea_metrics = (
+            {"vheaVertAscender", "vheaVertTypoAscender"},
+            {"vheaVertDescender", "vheaVertTypoDescender"},
+            {"vheaVertLineGap", "vheaVertTypoLineGap"},
+        )
+
         def has_all_vhea_params(custom_params):
             names = {p.name for p in custom_params}
-            # Each pair contains aliases for the same metric
-            vhea_metrics = (
-                {"vheaVertAscender", "vheaVertTypoAscender"},
-                {"vheaVertDescender", "vheaVertTypoDescender"},
-                {"vheaVertLineGap", "vheaVertTypoLineGap"},
-            )
             return all(names & metric for metric in vhea_metrics)
 
-        if has_all_vhea_params(self.font.customParameters):
+        if has_all_vhea_params(self.font.customParameters) or any(
+            has_all_vhea_params(master.customParameters) for master in self.font.masters
+        ):
             return True
-
-        for master in self.font.masters:
-            if has_all_vhea_params(master.customParameters):
-                return True
 
         # Check for glyph-level vertical attributes
         master_ids = {m.id for m in self.font.masters}
