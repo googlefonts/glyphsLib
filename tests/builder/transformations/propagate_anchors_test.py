@@ -12,7 +12,14 @@ from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform as Affine
 
-from glyphsLib.classes import GSAnchor, GSFont, GSGlyph, GSLayer, GSComponent
+from glyphsLib.classes import (
+    GSAnchor,
+    GSFont,
+    GSGlyph,
+    GSLayer,
+    GSComponent,
+    GSSmartComponentAxis,
+)
 from glyphsLib.glyphdata import get_glyph
 from glyphsLib.types import Point, Transform
 from glyphsLib.writer import dumps
@@ -50,7 +57,7 @@ class GlyphSetBuilder:
         return {g.name: g for g in self.font.glyphs}
 
     def add_glyph(self, name: str, build_fn: Callable[["GlyphBuilder"], None]) -> Self:
-        glyph = GlyphBuilder(name)
+        glyph = GlyphBuilder(name, self.font)
         build_fn(glyph)
         # this inserts the glyph in the font and sets the glyph.parent attribute to it;
         # GSLayer._is_bracket_layer()/_bracket_axis_rules() require this to check the
@@ -60,13 +67,14 @@ class GlyphSetBuilder:
 
 
 class GlyphBuilder:
-    def __init__(self, name: str):
+    def __init__(self, name: str, font: GSFont = None):
         info = get_glyph(name)
         self.glyph = glyph = GSGlyph()
         glyph.name = name
         glyph.unicode = info.unicode
         glyph.category = info.category
         glyph.subCategory = info.subCategory
+        glyph.parent = font
         self.num_masters = 0
         self.num_alternates = 0
         self.add_master_layer()
@@ -117,9 +125,30 @@ class GlyphBuilder:
         self.glyph.subCategory = subCategory
         return self
 
-    def add_component(self, name: str, pos: tuple[float, float]) -> Self:
+    def add_smartComponentAxis(
+        self, name: str, top_value: float, bottom_value: float
+    ) -> Self:
+        axis = GSSmartComponentAxis()
+        axis.name = name
+        axis.topValue = top_value
+        axis.bottomValue = bottom_value
+        self.glyph.smartComponentAxes.append(axis)
+        return self
+
+    def set_smartComponentPoleMapping(self, name: str, pole: int) -> Self:
+        self.current_layer.smartComponentPoleMapping[name] = pole
+        return self
+
+    def add_component(
+        self,
+        name: str,
+        pos: tuple[float, float],
+        smart_component_values: dict[str, float] = None,
+    ) -> Self:
         component = GSComponent(name, offset=pos)
         self.current_layer.components.append(component)
+        if smart_component_values:
+            component.smartComponentValues = smart_component_values
         return self
 
     def rotate_component(self, degrees: float) -> Self:
@@ -882,5 +911,71 @@ def test_cursive_anchors_ligature():
         [
             ("entry.1", (10, 0)),
             ("exit.1", (100, 0)),
+        ],
+    )
+
+
+def test_smart_component_anchors():
+    glyphs = (
+        GlyphSetBuilder()
+        .add_glyph(
+            "base",
+            lambda glyph: (
+                glyph.add_smartComponentAxis("TEST", 100, -100)
+                .set_smartComponentPoleMapping("TEST", 1)
+                .add_anchor("top", (23, 103))
+                .add_anchor("bottom", (36, -51))
+                .add_backup_layer()
+                .set_smartComponentPoleMapping("TEST", 2)
+                .add_anchor("top", (33, 123))
+                .add_anchor("bottom", (36, -51))
+            ),
+        )
+        .add_glyph(
+            "smart1",
+            lambda glyph: (glyph.add_component("base", (0, 0), {"TEST": -100})),
+        )
+        .add_glyph(
+            "smart2",
+            lambda glyph: (glyph.add_component("base", (0, 0), {"TEST": 100})),
+        )
+        .add_glyph(
+            "smart3",
+            lambda glyph: (glyph.add_component("base", (0, 0), {"TEST": 0})),
+        )
+        .add_glyph(
+            "smart4",
+            lambda glyph: (glyph.add_component("base", (20, 10), {"TEST": 0})),
+        )
+        .build()
+    )
+    propagate_all_anchors_impl(glyphs)
+
+    assert_anchors(
+        glyphs["smart1"].layers[0].anchors,
+        [
+            ("top", (23, 103)),
+            ("bottom", (36, -51)),
+        ],
+    )
+    assert_anchors(
+        glyphs["smart2"].layers[0].anchors,
+        [
+            ("top", (33, 123)),
+            ("bottom", (36, -51)),
+        ],
+    )
+    assert_anchors(
+        glyphs["smart3"].layers[0].anchors,
+        [
+            ("top", (28, 113)),
+            ("bottom", (36, -51)),
+        ],
+    )
+    assert_anchors(
+        glyphs["smart4"].layers[0].anchors,
+        [
+            ("top", (48, 123)),
+            ("bottom", (56, -41)),
         ],
     )
