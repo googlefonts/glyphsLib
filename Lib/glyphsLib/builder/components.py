@@ -74,7 +74,7 @@ def to_ufo_components(self, ufo_glyph, layer):
         # if so) or changing the representation format (in which case we leave it
         # as a component and save the smart component values).
         # See https://github.com/googlefonts/glyphsLib/pull/822
-        if component.smartComponentValues and component.component.smartComponentAxes:
+        if component.component and component.component.smartComponentAxes:
             instantiate_smart_component(self, layer, component, pen)
         else:
             pen.addComponent(component_name, component.transform)

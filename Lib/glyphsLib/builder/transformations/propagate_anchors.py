@@ -230,7 +230,7 @@ def anchors_traversing_components(
             )
             continue
 
-        if component.smartComponentValues and component.component.smartComponentAxes:
+        if component.component and component.component.smartComponentAxes:
             # If this is a smart component, we need to interpolate the anchors
             _interpolate_smart_component_anchors(
                 layer, component, glyphs, done_anchors, anchors

@@ -103,7 +103,7 @@ def decompose_smart_components_in_layer(self, layer):
     from glyphsLib.pens import LayerPointPen
 
     has_smart_components = any(
-        comp.smartComponentValues and comp.component.smartComponentAxes
+        comp.component and comp.component.smartComponentAxes
         for comp in layer.components
     )
     if not has_smart_components:
@@ -120,7 +120,7 @@ def decompose_smart_components_in_layer(self, layer):
         if isinstance(shape, GSPath):
             new_layer.paths.append(shape.clone())
         elif isinstance(shape, GSComponent):
-            if shape.smartComponentValues and shape.component.smartComponentAxes:
+            if shape.component and shape.component.smartComponentAxes:
                 # Recursively decompose this smart component
                 instantiate_smart_component(self, new_layer, shape, pen)
             else:
