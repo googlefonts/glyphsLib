@@ -271,3 +271,34 @@ def test_nested_smart_components(datadir):
     ]
 
     assert bboxes == expected, f"Expected bboxes {expected}, got {bboxes}"
+
+
+def test_smart_component_at_default_location(smart_font):
+    """Test that a smart component with empty smartComponentValues is decomposed.
+
+    When a smart component is placed at its default location, Glyphs.app doesn't
+    store the 'piece' attribute, so smartComponentValues is empty. The component
+    should still be decomposed (not left as a component reference), because other
+    masters may have non-default values and all masters need compatible outlines.
+
+    See https://github.com/googlefonts/glyphsLib/issues/1134
+    """
+    component = smart_font.glyphs["a"].layers[0].components[0]
+    # Leave smartComponentValues empty — this is the bug scenario
+    assert component.smartComponentValues == {}
+
+    (ufo,) = to_ufos(smart_font)
+
+    a = ufo["a"]
+    # The smart component should have been decomposed into a contour,
+    # not left as a component reference
+    assert len(a) == 1, f"Expected 1 contour (decomposed), got {len(a)} contours"
+    assert (
+        len(a.components) == 0
+    ), f"Expected 0 components (decomposed), got {len(a.components)}"
+
+    # At default location (Width=0, Height=100, Shift=0), the rectangle
+    # should match the default master: (100, 100, 100, 100)
+    rect, clockwise = get_rectangle_data(ufo)
+    assert rect == (100, 100, 100, 100)
+    assert not clockwise
