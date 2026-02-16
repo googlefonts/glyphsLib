@@ -182,6 +182,23 @@ def _interpolate_smart_component_anchors(
             anchor.position = Point(new_coord[0], new_coord[1])
 
 
+def _get_base_glyph_count(
+    base_glyph_counts: dict[(str, str), int],
+    component_name: str,
+    layer: GSLayer,
+) -> int:
+    """Look up the base glyph count for a component, handling bracket layers.
+
+    Synthesized bracket layers on composites have different layerIds than their
+    component's bracket layers. When the exact (name, layerId) lookup misses,
+    fall back to the associated master's layer.
+    """
+    count = base_glyph_counts.get((component_name, layer.layerId))
+    if count is not None:
+        return count
+    return base_glyph_counts.get((component_name, layer.associatedMasterId), 0)
+
+
 def anchors_traversing_components(
     glyph: GSGlyph,
     layer: GSLayer,
@@ -240,8 +257,8 @@ def anchors_traversing_components(
         if component_idx > 0 and component.anchor:
             maybe_rename_component_anchor(component.anchor, anchors)
 
-        component_number_of_base_glyphs = base_glyph_counts.get(
-            (component.name, layer.layerId), 0
+        component_number_of_base_glyphs = _get_base_glyph_count(
+            base_glyph_counts, component.name, layer
         )
 
         comb_has_underscore = any(
@@ -286,8 +303,8 @@ def anchors_traversing_components(
             all_anchors[anchor.name] = anchor
             has_underscore |= new_has_underscore
 
-        number_of_base_glyphs += base_glyph_counts.get(
-            (component.name, layer.layerId), 0
+        number_of_base_glyphs += _get_base_glyph_count(
+            base_glyph_counts, component.name, layer
         )
 
     # now we've handled all the anchors from components, so copy over anchors
