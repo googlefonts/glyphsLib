@@ -20,6 +20,8 @@ from math import atan2, degrees, isinf
 from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform
+from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
+from fontTools.varLib.models import VariationModel, normalizeLocation
 
 from glyphsLib import glyphdata
 from glyphsLib.classes import GSAnchor
@@ -43,12 +45,15 @@ def propagate_all_anchors(
     category and subCategory of glyphs.
     """
     glyphs = {glyph.name: glyph for glyph in font.glyphs}
-    propagate_all_anchors_impl(glyphs, glyph_data=glyph_data)
+    propagate_all_anchors_impl(glyphs, font=font, glyph_data=glyph_data)
 
 
 # the actual implementation, easier to test and compare with the original Rust code
 def propagate_all_anchors_impl(
-    glyphs: dict[str, GSGlyph], *, glyph_data: glyphdata.GlyphData | None = None
+    glyphs: dict[str, GSGlyph],
+    *,
+    font: GSFont | None = None,
+    glyph_data: glyphdata.GlyphData | None = None,
 ) -> None:
     # the reference implementation does this recursively, but we opt to
     # implement it by pre-sorting the work to ensure we always process components
@@ -61,9 +66,39 @@ def propagate_all_anchors_impl(
     # to make this work, we write the anchors to a separate data structure, and
     # then only update the actual glyphs after we've done all the work.
     all_anchors: dict[str, dict[str, list[GSAnchor]]] = {}
+
+    # For brace layer interpolation: map layer_id -> design-space location
+    if font and font.masters:
+        from glyphsLib.builder.axes import get_axis_definitions, get_regular_master
+
+        axis_defs = get_axis_definitions(font)
+        default_master = get_regular_master(font)
+        master_locations = {}
+        for master in font.masters:
+            master_locations[master.id] = {
+                a.name: a.get_design_loc(master) for a in axis_defs
+            }
+        default_loc = master_locations[default_master.id]
+        axes_triples = {}
+        for axis_def in axis_defs:
+            vals = [loc[axis_def.name] for loc in master_locations.values()]
+            axes_triples[axis_def.name] = (
+                min(vals), default_loc[axis_def.name], max(vals)
+            )
+    else:
+        master_locations = {}
+        axes_triples = {}
+    layer_locations: dict[str, dict[str, float]] = {}
+    variation_model_cache: dict = {}
+
     for name in todo:
         glyph = glyphs[name]
         for layer in _interesting_layers(glyph):
+            # Record this layer's location before traversal so it's available
+            # for interpolation of component anchors at brace layer locations
+            loc = _get_layer_location(layer, master_locations)
+            if loc is not None:
+                layer_locations[layer.layerId] = loc
             anchors = anchors_traversing_components(
                 glyph,
                 layer,
@@ -71,6 +106,9 @@ def propagate_all_anchors_impl(
                 all_anchors,
                 num_base_glyphs,
                 glyph_data,
+                layer_locations=layer_locations,
+                axes_triples=axes_triples,
+                variation_model_cache=variation_model_cache,
             )
             maybe_log_new_anchors(anchors, glyph, layer)
             all_anchors.setdefault(name, {})[layer.layerId] = anchors
@@ -107,14 +145,10 @@ def _is_master_layer(layer: GSLayer) -> bool:
 
 
 def _interesting_layers(glyph):
-    # only master layers are currently supported for anchor propagation:
-    # https://github.com/googlefonts/glyphsLib/issues/1017
     return (
         l
         for l in glyph.layers
-        if _is_master_layer(l) or l._is_bracket_layer()
-        # or l._is_brace_layer
-        # etc.
+        if _is_master_layer(l) or l._is_bracket_layer() or l._is_brace_layer()
     )
 
 
@@ -146,6 +180,143 @@ def _get_subCategory(
     )
 
 
+def _get_layer_location(
+    layer: GSLayer,
+    master_locations: dict[str, dict[str, float]],
+) -> dict[str, float] | None:
+    """Return the design-space coordinates for a layer as a dict.
+
+    For master layers, this is the master's axis values.
+    For brace (intermediate) layers, this is the brace coordinates, filled
+    with the associated master's values for any missing trailing axes.
+    Returns None for other layer types (bracket, backup, etc.).
+    """
+    if not master_locations:
+        return None
+    if layer._is_master_layer:
+        return master_locations[layer.layerId]
+    if layer._is_brace_layer():
+        master_loc = master_locations.get(layer.associatedMasterId)
+        if master_loc is None:
+            return None
+        axis_names = list(master_loc.keys())
+        coords = layer._brace_coordinates()
+        # Fill missing trailing axes with the associated master's values
+        loc = {}
+        for i, name in enumerate(axis_names):
+            if i < len(coords):
+                loc[name] = coords[i]
+            else:
+                loc[name] = master_loc[name]
+        return loc
+    return None
+
+
+def _interpolate_component_anchors(
+    component_name: str,
+    target_location: dict[str, float],
+    all_anchors: dict[str, dict[str, list[GSAnchor]]],
+    layer_locations: dict[str, dict[str, float]],
+    axes_triples: dict[str, tuple[float, float, float]],
+    variation_model_cache: dict,
+) -> list[GSAnchor] | None:
+    """Interpolate a component's anchors at a location where it has no source.
+
+    Collects all available (location, anchors) pairs for the component, builds
+    a VariationModel from normalized locations, and interpolates each anchor
+    independently. Models are cached by source location set.
+
+    Returns None if the component has no entries in all_anchors or interpolation
+    fails entirely.
+    """
+    comp_layers = all_anchors.get(component_name)
+    if not comp_layers:
+        return None
+
+    # Collect (location, anchors) pairs, deduplicating by normalized location
+    seen: dict[tuple[tuple[str, float], ...], list[GSAnchor]] = {}
+    loc_dicts: list[dict[str, float]] = []
+    for layer_id, layer_anchors in comp_layers.items():
+        loc = layer_locations.get(layer_id)
+        if loc is None:
+            continue
+        norm_loc = normalizeLocation(loc, axes_triples)
+        key = tuple(sorted(norm_loc.items()))
+        if key not in seen:
+            seen[key] = layer_anchors
+            loc_dicts.append(norm_loc)
+
+    if not seen:
+        return None
+
+    per_location = list(seen.items())
+    norm_target = normalizeLocation(target_location, axes_triples)
+
+    # Get canonical anchor names from the first source
+    anchor_names = [a.name for a in per_location[0][1]]
+    if not anchor_names:
+        return []
+
+    # Build per-anchor {normalized_location: position} maps
+    per_anchor: dict[str, list[tuple[dict[str, float], Point]]] = {}
+    for (key, anchors), norm_loc in zip(per_location, loc_dicts):
+        for anchor in anchors:
+            if anchor.name in anchor_names:
+                per_anchor.setdefault(anchor.name, []).append(
+                    (norm_loc, anchor.position)
+                )
+
+    axis_order = list(axes_triples.keys())
+
+    # Interpolate each anchor independently from its own set of source locations
+    result = []
+    for name in anchor_names:
+        sources = per_anchor.get(name)
+        if not sources:
+            continue
+
+        source_locs = [loc for loc, _ in sources]
+        cache_key = frozenset(tuple(sorted(loc.items())) for loc in source_locs)
+        if cache_key not in variation_model_cache:
+            try:
+                variation_model_cache[cache_key] = VariationModel(
+                    source_locs, axisOrder=axis_order
+                )
+            except Exception as e:
+                logger.warning(
+                    "failed to build VariationModel for anchor '%s' on "
+                    "component '%s': %s",
+                    name,
+                    component_name,
+                    e,
+                )
+                continue
+
+        model = variation_model_cache[cache_key]
+        master_values = [
+            GlyphCoordinates([(pos.x, pos.y)]) for _, pos in sources
+        ]
+
+        try:
+            interpolated = model.interpolateFromMasters(norm_target, master_values)
+        except Exception as e:
+            logger.warning(
+                "failed to interpolate anchor '%s' on component '%s': %s",
+                name,
+                component_name,
+                e,
+            )
+            continue
+
+        if interpolated:
+            x, y = interpolated[0]
+            result.append(
+                GSAnchor(name=name, position=Point(round(x, 6), round(y, 6)))
+            )
+
+    return result if result else None
+
+
 def _interpolate_smart_component_anchors(
     layer: GSLayer,
     component: GSComponent,
@@ -154,7 +325,6 @@ def _interpolate_smart_component_anchors(
     anchors: list[GSAnchor],
 ) -> None:
     from ..smart_components import get_smart_component_variation_model
-    from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
     model, location, masters = get_smart_component_variation_model(layer, component)
     if model is not None:
@@ -206,6 +376,9 @@ def anchors_traversing_components(
     done_anchors: dict[str, dict[str, list[GSAnchor]]],
     base_glyph_counts: dict[(str, str), int],
     glyph_data: glyphdata.GlyphData | None = None,
+    layer_locations: dict[str, dict[str, float]] | None = None,
+    axes_triples: dict[str, tuple[float, float, float]] | None = None,
+    variation_model_cache: dict | None = None,
 ) -> list[GSAnchor]:
     """Return the anchors for this glyph, including anchors from components
 
@@ -239,13 +412,40 @@ def anchors_traversing_components(
         # referenced have already been propagated
         anchors = get_component_layer_anchors(component, layer, glyphs, done_anchors)
         if anchors is None:
-            logger.debug(
-                "could not get layer '%s' for component '%s' of glyph '%s'",
-                layer.layerId,
-                component.name,
-                glyph.name,
-            )
-            continue
+            # Component doesn't have an explicit source at this location (e.g. the
+            # composite has a brace layer that its component doesn't). Try to
+            # interpolate anchors from the component's available sources.
+            if (
+                layer._is_brace_layer()
+                and layer_locations is not None
+                and axes_triples
+                and variation_model_cache is not None
+            ):
+                target_loc = layer_locations.get(layer.layerId)
+                if target_loc is None:
+                    logger.warning(
+                        "brace layer '%s' of glyph '%s' has no known "
+                        "design-space location; skipping anchor interpolation",
+                        layer.name,
+                        glyph.name,
+                    )
+                else:
+                    anchors = _interpolate_component_anchors(
+                        component.name,
+                        target_loc,
+                        done_anchors,
+                        layer_locations,
+                        axes_triples,
+                        variation_model_cache,
+                    )
+            if anchors is None:
+                logger.debug(
+                    "could not get layer '%s' for component '%s' of glyph '%s'",
+                    layer.layerId,
+                    component.name,
+                    glyph.name,
+                )
+                continue
 
         if component.component and component.component.smartComponentAxes:
             # If this is a smart component, we need to interpolate the anchors
@@ -457,25 +657,17 @@ def get_component_layer_anchors(
     if glyph is None:
         return None  # invalid component reference, skip
 
-    # in Glyphs.app, the `componentLayer` property would synthesize a layer
-    # if it is missing. glyphsLib does not have that yet, so for now we
-    # only support the corresponding 'master' or alternate ('bracket') layers
-    # of a component's base glyph.
-
     layer_anchors = None
 
-    # whether the parent layer where the component is defined is a 'master' layer
-    # and/or a 'bracket' or alternate layer (masters can have bracket layers too but
-    # glyphsLib doesn't support that yet).
     parent_is_master = _is_master_layer(layer)
     parent_is_bracket = layer._is_bracket_layer()
+    parent_is_brace = layer._is_brace_layer()
     parent_axis_rules = (
         [] if not parent_is_bracket else list(layer._bracket_axis_rules())
     )
 
-    # we support propagating anchors from the component base glyph's 'master' layer
-    # (with same layerId), or from a 'bracket' alternate layer with matching axis
-    # rules and the same associated master; we try the latter first
+    # Try matching: master layer (by layerId), bracket layer (by axis rules +
+    # associated master), or brace layer (by coordinates + associated master).
     for comp_layer in _interesting_layers(glyph):
         if (
             parent_is_bracket
@@ -485,11 +677,18 @@ def get_component_layer_anchors(
         ) or (parent_is_master and comp_layer.layerId == layer.layerId):
             layer_anchors = anchors[component.name][comp_layer.layerId]
             break
+        if (
+            parent_is_brace
+            and comp_layer._is_brace_layer()
+            and comp_layer._brace_coordinates() == layer._brace_coordinates()
+            and comp_layer.layerId in anchors.get(component.name, {})
+        ):
+            layer_anchors = anchors[component.name][comp_layer.layerId]
+            break
 
-    # else we fall back to the associated master layer; this is guaranteed to exist
-    # since all glyphs must at least define one layer per master; if this raised
-    # KeyError, the font is broken
-    if layer_anchors is None:
+    # For brace layers, return None when no match is found so the caller can
+    # try interpolation. For other layer types, fall back to the associated master.
+    if layer_anchors is None and not parent_is_brace:
         layer_anchors = anchors[component.name][layer.associatedMasterId]
 
     if layer_anchors is not None:
