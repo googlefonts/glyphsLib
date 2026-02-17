@@ -29,6 +29,7 @@ from glyphsLib.builder.transformations.align_alternate_layers import (
     align_alternate_layers,
 )
 from glyphsLib.builder.transformations.propagate_anchors import (
+    _get_design_space_info,
     compute_max_component_depths,
     get_xy_rotation,
     propagate_all_anchors,
@@ -1066,6 +1067,62 @@ def test_bracket_ligature_anchor_numbering():
     )
 
 
+def test_get_design_space_info_none():
+    """Returns empty dicts when font is None or has no masters."""
+    assert _get_design_space_info(None) == ({}, {})
+    assert _get_design_space_info(GSFont()) == ({}, {})
+
+
+def test_get_design_space_info_single_axis():
+    """Computes correct locations and triples for a single-axis font."""
+    font = GSFont()
+    font.format_version = 3
+    master0 = GSFontMaster()
+    master0.id = "light"
+    master0.axes = [100]
+    font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "bold"
+    master1.axes = [200]
+    font.masters.append(master1)
+
+    master_locations, axes_triples = _get_design_space_info(font)
+
+    assert master_locations["light"]["Weight"] == 100
+    assert master_locations["bold"]["Weight"] == 200
+    # Default is first master (light), so triple is (min=100, default=100, max=200)
+    assert axes_triples["Weight"] == (100, 100, 200)
+
+
+def test_get_design_space_info_two_axes():
+    """Computes correct locations and triples for a two-axis font."""
+    font = GSFont()
+    font.format_version = 3
+    m0 = GSFontMaster()
+    m0.id = "light-narrow"
+    m0.axes = [100, 75]
+    font.masters.append(m0)
+    m1 = GSFontMaster()
+    m1.id = "bold-narrow"
+    m1.axes = [200, 75]
+    font.masters.append(m1)
+    m2 = GSFontMaster()
+    m2.id = "bold-wide"
+    m2.axes = [200, 100]
+    font.masters.append(m2)
+
+    master_locations, axes_triples = _get_design_space_info(font)
+
+    assert len(master_locations) == 3
+    assert master_locations["light-narrow"]["Weight"] == 100
+    assert master_locations["light-narrow"]["Width"] == 75
+    assert master_locations["bold-wide"]["Weight"] == 200
+    assert master_locations["bold-wide"]["Width"] == 100
+    # Default is first master
+    assert axes_triples["Weight"] == (100, 100, 200)
+    assert axes_triples["Width"] == (75, 75, 100)
+
+
 def test_interpolate_brace_layer_component_anchors():
     """When a composite has a brace layer but its component doesn't, interpolate
     the component's anchor positions from its available master sources.
@@ -1151,7 +1208,8 @@ def test_interpolate_brace_layer_component_anchors():
     #   _top: (100, 500) + 0.5 * ((140, 520) - (100, 500)) = (120, 510)
     #   top:  (120, 700) + 0.5 * ((160, 740) - (120, 700)) = (140, 720)
     # Component offsets at brace layer: acutecomb offset = (220, 110)
-    # Final top = interpolated acutecomb.top + offset = (140, 720) + (220, 110) = (360, 830)
+    # Final top = interpolated acutecomb.top + offset
+    #           = (140, 720) + (220, 110) = (360, 830)
     # Final bottom = interpolated ae.bottom = (340, 0)
     brace_layers = [l for l in aeacute.layers if l._is_brace_layer()]
     assert len(brace_layers) == 1
@@ -1253,7 +1311,8 @@ def test_brace_layer_interpolation_with_existing_brace_sources():
     # The component has 3 sources: weight=100, 200, 300.
     # Interpolating at weight=150 with a 3-source model should use the brace
     # layer at 200 as well, giving a different result than simple 2-master lerp.
-    # With 2-master linear: top = (100, 600) + 0.25 * ((300, 800) - (100, 600)) = (150, 650)
+    # With 2-master linear:
+    #   top = (100, 600) + 0.25 * ((300, 800) - (100, 600)) = (150, 650)
     # With 3-source model the result differs because (220, 720) at weight=200 is
     # off the linear path between (100, 600) and (300, 800).
     anchors = brace_layers[0].anchors
