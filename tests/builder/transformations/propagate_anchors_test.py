@@ -15,6 +15,7 @@ from fontTools.misc.transform import Transform as Affine
 from glyphsLib.classes import (
     GSAnchor,
     GSFont,
+    GSFontMaster,
     GSGlyph,
     GSLayer,
     GSComponent,
@@ -978,4 +979,67 @@ def test_smart_component_anchors():
             ("top", (48, 123)),
             ("bottom", (56, -41)),
         ],
+    )
+
+
+def test_bracket_ligature_anchor_numbering():
+    """Ligature anchor numbering must work on synthesized bracket layers.
+
+    When align_alternate_layers creates a bracket layer on a ligature composite
+    (because its component has bracket layers), the synthesized layer has a
+    different layerId than the component's bracket layer. The base_glyph_counts
+    lookup must handle this mismatch, or ligature numbering is skipped.
+    """
+    axis_rules = [{"min": 160, "max": None}]
+
+    builder = GlyphSetBuilder()
+    # Add a master so align_alternate_layers can find master IDs
+    master = GSFontMaster()
+    master.id = "master-0"
+    builder.font.masters.append(master)
+    # "f" - simple base glyph with a top anchor
+    builder.add_glyph(
+        "f",
+        lambda glyph: glyph.add_anchor("top", (100, 700)),
+    )
+    # "h" - base glyph with a bracket layer (different top anchor position)
+    builder.add_glyph(
+        "h",
+        lambda glyph: (
+            glyph.add_anchor("top", (200, 700))
+            .add_bracket_layer(axis_rules)
+            .add_anchor("top", (200, 600))
+        ),
+    )
+    # "f_h" - ligature composite of f + h (no bracket layers of its own)
+    builder.add_glyph(
+        "f_h",
+        lambda glyph: (
+            glyph.set_subCategory("Ligature")
+            .add_component("f", (0, 0))
+            .add_component("h", (300, 0))
+        ),
+    )
+
+    glyphs = builder.build()
+
+    # align_alternate_layers synthesizes a bracket layer on f_h
+    align_alternate_layers(builder.font)
+    propagate_all_anchors_impl(glyphs)
+
+    f_h = glyphs["f_h"]
+    master_layers = [l for l in f_h.layers if l._is_master_layer]
+    bracket_layers = [l for l in f_h.layers if l._is_bracket_layer()]
+
+    assert len(bracket_layers) == 1
+
+    # Master layer should have ligature-numbered anchors
+    assert_anchors(
+        master_layers[0].anchors,
+        [("top_1", (100, 700)), ("top_2", (500, 700))],
+    )
+    # Bracket layer must also have ligature-numbered anchors (not plain "top")
+    assert_anchors(
+        bracket_layers[0].anchors,
+        [("top_1", (100, 700)), ("top_2", (500, 600))],
     )
