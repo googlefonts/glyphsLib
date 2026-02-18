@@ -138,6 +138,10 @@ expander = TokenExpander(TESTFONT, master)
             False,
         ),  # special layers = color, brace and bracket layers
         # ('$[isHangulKeyGlyph == no]', "", False),
+        ('$[tags contains "TestTag"]', "", False),
+        ('$[tags contains "TestTag1"]', "A E", False),
+        ('$[tags contains "TestTag2"]', "D E", False),
+        ('$[tags contains "TestTag3"]', "A", False),
     ],
 )
 def test_token_expander(test_input, expected, throws):
