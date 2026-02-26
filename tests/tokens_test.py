@@ -145,6 +145,10 @@ expander = TokenExpander(TESTFONT, master)
         ('$["TestTag1" in tags]', "A E", False),
         ('$["TestTag2" in tags]', "D E", False),
         ('$["TestTag" in tags]', "", False),
+        ("$[countOfLayers between {2, 2}]", "A I A.sc Sacute", False),
+        ("$[countOfLayers between {3, 3}]", "C D E F G H space", False),
+        ('$[script in {"latin"}]', "A C", False),
+        ('$[script in {"latin",}]', "", True),
         ('$[nme endswith ".sc"]', "", True),
     ],
 )

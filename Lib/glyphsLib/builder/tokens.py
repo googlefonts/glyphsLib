@@ -197,7 +197,10 @@ class TokenExpander:
         if re.match(self.gsglyph_predicate_object_re, self.glyph_predicate):
             obj = self._parse_object()
             comparator = self._parse_comparator()
-            expected = self._parse_value()
+            if comparator in ("in", "between"):
+                expected = self._parse_aggregate()
+            else:
+                expected = self._parse_value()
         elif re.search(r"(?i)\bin\b", self.glyph_predicate):
             expected = self._parse_value()
             comparator = self._parse_comparator()
@@ -257,6 +260,21 @@ class TokenExpander:
         normalize_comparators = {"=": "==", "=>": ">=", "=<": "<=", "<>": "!="}
         self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
         return normalize_comparators.get(m[1], m[1]).lower()
+
+    def _parse_aggregate(self):
+        m = re.match(r"\s*\{", self.glyph_predicate)
+        if not m:
+            self._parse_error_in_predicate("aggregate '{...}'")
+        self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+        values = [self._parse_value()]
+        while m := re.match(r"\s*,", self.glyph_predicate):
+            self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+            values.append(self._parse_value())
+        m = re.match(r"\s*}", self.glyph_predicate)
+        if not m:
+            self._parse_error_in_predicate("'}'")
+        self.glyph_predicate = self.glyph_predicate[len(m[0]) :]
+        return values
 
     def _parse_value(self):
         m = re.match(r'\s*"([^"]+)"', self.glyph_predicate) or re.match(
