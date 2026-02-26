@@ -678,6 +678,8 @@ class FontGlyphsProxy(Proxy):
         if isinstance(key, int):
             self._owner._setupGlyph(glyph)
             self._owner._glyphs[key] = glyph
+            self._owner._glyph_name_index = None
+            self._owner._glyph_unicode_index = None
         else:
             raise KeyError  # TODO: add other access methods
 
