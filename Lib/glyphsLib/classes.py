@@ -691,8 +691,8 @@ class FontGlyphsProxy(Proxy):
             self._owner._glyphs.remove(glyph)
         else:
             raise KeyError
-        self._owner._glyph_name_index = {}
-        self._owner._glyph_unicode_index = {}
+        self._owner._glyph_name_index = None
+        self._owner._glyph_unicode_index = None
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -701,7 +701,9 @@ class FontGlyphsProxy(Proxy):
 
     def _get_glyph_by_string(self, key):
         # by glyph name
-        if not self._owner._glyph_name_index:
+        if self._owner._glyph_name_index is None:
+            self._owner._glyph_name_index = {}
+            self._owner._glyph_unicode_index = {}
             for idx, g in enumerate(self._owner._glyphs):
                 self._owner._glyph_name_index[g.name] = idx
                 if g.unicode:
@@ -732,10 +734,11 @@ class FontGlyphsProxy(Proxy):
     def append(self, glyph):
         self._owner._setupGlyph(glyph)
         self._owner._glyphs.append(glyph)
-        idx = len(self._owner._glyphs) - 1
-        self._owner._glyph_name_index[glyph.name] = idx
-        if glyph.unicode:
-            self._owner._glyph_unicode_index[glyph.unicode] = idx
+        if self._owner._glyph_name_index is not None:
+            idx = len(self._owner._glyphs) - 1
+            self._owner._glyph_name_index[glyph.name] = idx
+            if glyph.unicode:
+                self._owner._glyph_unicode_index[glyph.unicode] = idx
 
     def extend(self, objects):
         for glyph in objects:
@@ -748,8 +751,8 @@ class FontGlyphsProxy(Proxy):
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._glyphs = values
-        self._owner._glyph_name_index = {}
-        self._owner._glyph_unicode_index = {}
+        self._owner._glyph_name_index = None
+        self._owner._glyph_unicode_index = None
         for g in self._owner._glyphs:
             g.parent = self._owner
             for layer in g.layers.values():
@@ -4566,8 +4569,8 @@ class GSFont(GSBase):
     ):
         self.DisplayStrings = ""
         self._glyphs = []
-        self._glyph_name_index = {}
-        self._glyph_unicode_index = {}
+        self._glyph_name_index = None
+        self._glyph_unicode_index = None
         self._instances = []
         self._masters = []
         self.axes = copy.deepcopy(self._defaultAxes)

@@ -1906,7 +1906,6 @@ class FontGlyphsProxyTest(unittest.TestCase):
         with pytest.raises(KeyError):
             del self.font.glyphs[self.font]
 
-
     def test_append_after_setter_keeps_index_consistent(self):
         """Appending a glyph after assigning font.glyphs must not leave
         the name index in an incomplete state where only the appended
