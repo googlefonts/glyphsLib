@@ -678,6 +678,8 @@ class FontGlyphsProxy(Proxy):
         if isinstance(key, int):
             self._owner._setupGlyph(glyph)
             self._owner._glyphs[key] = glyph
+            self._owner._glyph_name_index = None
+            self._owner._glyph_unicode_index = None
         else:
             raise KeyError  # TODO: add other access methods
 
@@ -691,6 +693,8 @@ class FontGlyphsProxy(Proxy):
             self._owner._glyphs.remove(glyph)
         else:
             raise KeyError
+        self._owner._glyph_name_index = None
+        self._owner._glyph_unicode_index = None
 
     def __contains__(self, item):
         if isinstance(item, str):
@@ -698,23 +702,26 @@ class FontGlyphsProxy(Proxy):
         return item in self._owner._glyphs
 
     def _get_glyph_by_string(self, key):
-        # FIXME: (jany) looks inefficient
-        if isinstance(key, str):
-            # by glyph name
-            for glyph in self._owner._glyphs:
-                if glyph.name == key:
-                    return glyph
-            # by string representation as u'ä'
-            if len(key) == 1:
-                for glyph in self._owner._glyphs:
-                    if glyph.unicode == "%04X" % (ord(key)):
-                        return glyph
-            # by unicode
-            else:
-                for glyph in self._owner._glyphs:
-                    if glyph.unicode == key.upper():
-                        return glyph
-        return None
+        # by glyph name
+        if self._owner._glyph_name_index is None:
+            self._owner._glyph_name_index = {}
+            self._owner._glyph_unicode_index = {}
+            for idx, g in enumerate(self._owner._glyphs):
+                self._owner._glyph_name_index[g.name] = idx
+                if g.unicode:
+                    self._owner._glyph_unicode_index[g.unicode] = idx
+        if key in self._owner._glyph_name_index:
+            return self._owner._glyphs[self._owner._glyph_name_index[key]]
+        # by string representation as u'ä'
+        if len(key) == 1:
+            u = "%04X" % (ord(key))
+            if u in self._owner._glyph_unicode_index:
+                return self._owner._glyphs[self._owner._glyph_unicode_index[u]]
+        # by unicode
+        else:
+            u = key.upper()
+            if u in self._owner._glyph_unicode_index:
+                return self._owner._glyphs[self._owner._glyph_unicode_index[u]]
 
     def values(self):
         return self._owner._glyphs
@@ -729,11 +736,15 @@ class FontGlyphsProxy(Proxy):
     def append(self, glyph):
         self._owner._setupGlyph(glyph)
         self._owner._glyphs.append(glyph)
+        if self._owner._glyph_name_index is not None:
+            idx = len(self._owner._glyphs) - 1
+            self._owner._glyph_name_index[glyph.name] = idx
+            if glyph.unicode:
+                self._owner._glyph_unicode_index[glyph.unicode] = idx
 
     def extend(self, objects):
         for glyph in objects:
-            self._owner._setupGlyph(glyph)
-        self._owner._glyphs.extend(list(objects))
+            self.append(glyph)
 
     def __len__(self):
         return len(self._owner._glyphs)
@@ -742,6 +753,8 @@ class FontGlyphsProxy(Proxy):
         if isinstance(values, Proxy):
             values = list(values)
         self._owner._glyphs = values
+        self._owner._glyph_name_index = None
+        self._owner._glyph_unicode_index = None
         for g in self._owner._glyphs:
             g.parent = self._owner
             for layer in g.layers.values():
@@ -4558,6 +4571,8 @@ class GSFont(GSBase):
     ):
         self.DisplayStrings = ""
         self._glyphs = []
+        self._glyph_name_index = None
+        self._glyph_unicode_index = None
         self._instances = []
         self._masters = []
         self.axes = copy.deepcopy(self._defaultAxes)

@@ -1906,6 +1906,40 @@ class FontGlyphsProxyTest(unittest.TestCase):
         with pytest.raises(KeyError):
             del self.font.glyphs[self.font]
 
+    def test_append_after_setter_keeps_index_consistent(self):
+        """Appending a glyph after assigning font.glyphs must not leave
+        the name index in an incomplete state where only the appended
+        glyph is findable by name."""
+        font = GSFont()
+        # Assign glyphs via the property setter
+        g1 = GSGlyph("A")
+        g2 = GSGlyph("B")
+        font.glyphs = [g1, g2]
+
+        # Now append a third glyph
+        g3 = GSGlyph("C")
+        font.glyphs.append(g3)
+
+        # All three must be findable by name
+        assert font.glyphs["A"] is not None, "glyph 'A' not found after setter+append"
+        assert font.glyphs["B"] is not None, "glyph 'B' not found after setter+append"
+        assert font.glyphs["C"] is not None, "glyph 'C' not found after setter+append"
+
+    def test_setitem_invalidates_index(self):
+        """Replacing a glyph by index must invalidate the name index so
+        the old name is no longer found and the new name is."""
+        font = GSFont()
+        font.glyphs = [GSGlyph("A"), GSGlyph("B")]
+
+        # Force the index to be built
+        assert font.glyphs["A"] is not None
+
+        # Replace glyph at index 0
+        font.glyphs[0] = GSGlyph("Z")
+
+        assert font.glyphs["Z"] is not None, "glyph 'Z' not found after replacement"
+        assert font.glyphs["A"] is None, "glyph 'A' still found after replacement"
+
 
 class FontClassesProxyTest(unittest.TestCase):
     def setUp(self):
