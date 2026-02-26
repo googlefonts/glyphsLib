@@ -1925,6 +1925,21 @@ class FontGlyphsProxyTest(unittest.TestCase):
         assert font.glyphs["B"] is not None, "glyph 'B' not found after setter+append"
         assert font.glyphs["C"] is not None, "glyph 'C' not found after setter+append"
 
+    def test_setitem_invalidates_index(self):
+        """Replacing a glyph by index must invalidate the name index so
+        the old name is no longer found and the new name is."""
+        font = GSFont()
+        font.glyphs = [GSGlyph("A"), GSGlyph("B")]
+
+        # Force the index to be built
+        assert font.glyphs["A"] is not None
+
+        # Replace glyph at index 0
+        font.glyphs[0] = GSGlyph("Z")
+
+        assert font.glyphs["Z"] is not None, "glyph 'Z' not found after replacement"
+        assert font.glyphs["A"] is None, "glyph 'A' still found after replacement"
+
 
 class FontClassesProxyTest(unittest.TestCase):
     def setUp(self):
