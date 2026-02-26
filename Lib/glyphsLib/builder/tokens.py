@@ -193,12 +193,19 @@ class TokenExpander:
 
     def _parse_glyph_predicate_to_array(self):
         invert = self._parse_optional_not()
-        obj = self._parse_object()
-        comparator = self._parse_comparator()
-        if comparator == "in" or comparator == "between":
-            expected = self._parse_aggregation()
-        else:
+        # Handle 'value in property' by flipping to 'property contains value'
+        if re.match(self.gsglyph_predicate_object_re, self.glyph_predicate):
+            obj = self._parse_object()
+            comparator = self._parse_comparator()
             expected = self._parse_value()
+        elif re.search(r"(?i)\bin\b", self.glyph_predicate):
+            expected = self._parse_value()
+            comparator = self._parse_comparator()
+            assert comparator == "in"
+            obj = self._parse_object()
+            comparator = "contains"
+        else:
+            self._parse_object()  # will raise with proper error
 
         glyphs = OrderedDict({})
         for g in self.font.glyphs:

@@ -142,6 +142,10 @@ expander = TokenExpander(TESTFONT, master)
         ('$[tags contains "TestTag1"]', "A E", False),
         ('$[tags contains "TestTag2"]', "D E", False),
         ('$[tags contains "TestTag3"]', "A", False),
+        ('$["TestTag1" in tags]', "A E", False),
+        ('$["TestTag2" in tags]', "D E", False),
+        ('$["TestTag" in tags]', "", False),
+        ('$[nme endswith ".sc"]', "", True),
     ],
 )
 def test_token_expander(test_input, expected, throws):
