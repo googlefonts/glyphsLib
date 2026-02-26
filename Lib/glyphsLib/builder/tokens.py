@@ -11,7 +11,7 @@ def _like(got, expected):
 def _contains(got, expected):
     try:
         return expected in got
-    except Exception:
+    except TypeError:
         return expected in str(got)
 
 
