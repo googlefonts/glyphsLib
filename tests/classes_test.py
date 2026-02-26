@@ -1907,6 +1907,26 @@ class FontGlyphsProxyTest(unittest.TestCase):
             del self.font.glyphs[self.font]
 
 
+    def test_append_after_setter_keeps_index_consistent(self):
+        """Appending a glyph after assigning font.glyphs must not leave
+        the name index in an incomplete state where only the appended
+        glyph is findable by name."""
+        font = GSFont()
+        # Assign glyphs via the property setter
+        g1 = GSGlyph("A")
+        g2 = GSGlyph("B")
+        font.glyphs = [g1, g2]
+
+        # Now append a third glyph
+        g3 = GSGlyph("C")
+        font.glyphs.append(g3)
+
+        # All three must be findable by name
+        assert font.glyphs["A"] is not None, "glyph 'A' not found after setter+append"
+        assert font.glyphs["B"] is not None, "glyph 'B' not found after setter+append"
+        assert font.glyphs["C"] is not None, "glyph 'C' not found after setter+append"
+
+
 class FontClassesProxyTest(unittest.TestCase):
     def setUp(self):
         self.font = GSFont(TESTFILE_PATH)
