@@ -107,7 +107,7 @@ expander = TokenExpander(TESTFONT, master)
         ('$[category like "Separator"]', "Sacute", False),
         ('$[leftKerningGroup like "H"]', "A", False),
         ('$[rightKerningGroup like "L"]', "A", False),
-        ('$[unicode beginswith "41"]', "A", False),  # beginswith, endswith, contains
+        ('$[unicode beginswith "0041"]', "A", False),  # beginswith, endswith, contains
         ('$[note contains "love it"]', "A.sc", False),  # glyph note
         ("$[countOfUnicodes > 1]", "space", False),
         ("$[countOfLayers > 2]", "C D E F G H space", False),

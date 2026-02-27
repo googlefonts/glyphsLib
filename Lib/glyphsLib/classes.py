@@ -4215,7 +4215,7 @@ class GSGlyph(GSBase):
         if parser.format_version == 3:
             if not isinstance(value, list):
                 value = [value]
-            uni = ["%x" % x for x in value]
+            uni = ["%04X" % x for x in value]
         elif isinstance(value, int):
             # This is unfortunate. We've used the openstep_plist parser with
             # use_numbers=True, and it's seen something like "0041". It's
