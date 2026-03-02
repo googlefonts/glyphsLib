@@ -29,6 +29,7 @@ from glyphsLib.builder.transformations.align_alternate_layers import (
     align_alternate_layers,
 )
 from glyphsLib.builder.transformations.propagate_anchors import (
+    _get_design_space_info,
     compute_max_component_depths,
     get_xy_rotation,
     propagate_all_anchors,
@@ -114,6 +115,27 @@ class GlyphBuilder:
         layer.associatedMasterId = associated_master_id
         layer.attributes["axisRules"] = axis_rules
         self.num_alternates += 1
+        self.glyph.layers.append(layer)
+        self.current_layer = layer
+        return self
+
+    def add_brace_layer(self, coordinates, associated_master_idx=None):
+        if associated_master_idx is None:
+            # Find the most recent master layer
+            associated_master_id = None
+            for l in reversed(list(self.glyph.layers)):
+                if l._is_master_layer:
+                    associated_master_id = l.layerId
+                    break
+            assert associated_master_id is not None
+        else:
+            master_layer = self.glyph.layers[associated_master_idx]
+            associated_master_id = master_layer.layerId
+        layer = GSLayer()
+        layer.name = f"{{{', '.join(str(c) for c in coordinates)}}}"
+        layer.layerId = str(uuid.uuid4()).upper()
+        layer.associatedMasterId = associated_master_id
+        layer.attributes["coordinates"] = coordinates
         self.glyph.layers.append(layer)
         self.current_layer = layer
         return self
@@ -1042,4 +1064,316 @@ def test_bracket_ligature_anchor_numbering():
     assert_anchors(
         bracket_layers[0].anchors,
         [("top_1", (100, 700)), ("top_2", (500, 600))],
+    )
+
+
+def test_get_design_space_info_none():
+    """Returns empty dicts when font is None or has no masters."""
+    assert _get_design_space_info(None) == ({}, {})
+    assert _get_design_space_info(GSFont()) == ({}, {})
+
+
+def test_get_design_space_info_single_axis():
+    """Computes correct locations and triples for a single-axis font."""
+    font = GSFont()
+    font.format_version = 3
+    master0 = GSFontMaster()
+    master0.id = "light"
+    master0.axes = [100]
+    font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "bold"
+    master1.axes = [200]
+    font.masters.append(master1)
+
+    master_locations, axes_triples = _get_design_space_info(font)
+
+    assert master_locations["light"]["Weight"] == 100
+    assert master_locations["bold"]["Weight"] == 200
+    # Default is first master (light), so triple is (min=100, default=100, max=200)
+    assert axes_triples["Weight"] == (100, 100, 200)
+
+
+def test_get_design_space_info_two_axes():
+    """Computes correct locations and triples for a two-axis font."""
+    font = GSFont()
+    font.format_version = 3
+    m0 = GSFontMaster()
+    m0.id = "light-narrow"
+    m0.axes = [100, 75]
+    font.masters.append(m0)
+    m1 = GSFontMaster()
+    m1.id = "bold-narrow"
+    m1.axes = [200, 75]
+    font.masters.append(m1)
+    m2 = GSFontMaster()
+    m2.id = "bold-wide"
+    m2.axes = [200, 100]
+    font.masters.append(m2)
+
+    master_locations, axes_triples = _get_design_space_info(font)
+
+    assert len(master_locations) == 3
+    assert master_locations["light-narrow"]["Weight"] == 100
+    assert master_locations["light-narrow"]["Width"] == 75
+    assert master_locations["bold-wide"]["Weight"] == 200
+    assert master_locations["bold-wide"]["Width"] == 100
+    # Default is first master
+    assert axes_triples["Weight"] == (100, 100, 200)
+    assert axes_triples["Width"] == (75, 75, 100)
+
+
+def test_interpolate_brace_layer_component_anchors():
+    """When a composite has a brace layer but its component doesn't, interpolate
+    the component's anchor positions from its available master sources.
+
+    See: https://github.com/googlefonts/fontc/issues/1661
+    """
+    builder = GlyphSetBuilder()
+    # Set up font with two masters on the weight axis
+    master0 = GSFontMaster()
+    master0.id = "master-0"
+    master0.axes = [100]  # light
+    builder.font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "master-1"
+    master1.axes = [200]  # bold
+    builder.font.masters.append(master1)
+
+    # 'ae': base glyph with anchors at both masters
+    builder.add_glyph(
+        "ae",
+        lambda glyph: (
+            glyph.add_anchor("top", (300, 600))
+            .add_anchor("bottom", (300, 0))
+            .add_master_layer()
+            .add_anchor("top", (380, 700))
+            .add_anchor("bottom", (380, 0))
+        ),
+    )
+
+    # 'acutecomb': mark glyph with anchors at both masters only (no brace layer)
+    builder.add_glyph(
+        "acutecomb",
+        lambda glyph: (
+            glyph.add_anchor("_top", (100, 500))
+            .add_anchor("top", (120, 700))
+            .add_master_layer()
+            .add_anchor("_top", (140, 520))
+            .add_anchor("top", (160, 740))
+        ),
+    )
+
+    # 'aeacute': composite with 2 masters + a brace layer at weight=150
+    builder.add_glyph(
+        "aeacute",
+        lambda glyph: (
+            glyph.add_component("ae", (0, 0))
+            .add_component("acutecomb", (200, 100))
+            .add_master_layer()
+            .add_component("ae", (0, 0))
+            .add_component("acutecomb", (240, 120))
+            # Add brace layer at weight=150 (midpoint)
+            .add_brace_layer([150], associated_master_idx=0)
+            .add_component("ae", (0, 0))
+            .add_component("acutecomb", (220, 110))
+        ),
+    )
+
+    propagate_all_anchors(builder.font)
+
+    aeacute = builder.font.glyphs["aeacute"]
+
+    # Master 0 (weight=100): acutecomb has explicit sources
+    # top from acutecomb.top (120, 700) + offset (200, 100) = (320, 800)
+    # bottom from ae: (300, 0)
+    assert_anchors(
+        aeacute.layers["master-0"].anchors,
+        [("top", (320, 800)), ("bottom", (300, 0))],
+    )
+
+    # Master 1 (weight=200): acutecomb has explicit sources
+    # top from acutecomb.top (160, 740) + offset (240, 120) = (400, 860)
+    # bottom from ae: (380, 0)
+    assert_anchors(
+        aeacute.layers["master-1"].anchors,
+        [("top", (400, 860)), ("bottom", (380, 0))],
+    )
+
+    # Brace layer (weight=150): both ae and acutecomb must be INTERPOLATED
+    # Interpolated ae anchors at weight=150 (midpoint of 100..200):
+    #   top: (300, 600) + 0.5 * ((380, 700) - (300, 600)) = (340, 650)
+    #   bottom: (300, 0) + 0.5 * ((380, 0) - (300, 0)) = (340, 0)
+    # Interpolated acutecomb anchors at weight=150:
+    #   _top: (100, 500) + 0.5 * ((140, 520) - (100, 500)) = (120, 510)
+    #   top:  (120, 700) + 0.5 * ((160, 740) - (120, 700)) = (140, 720)
+    # Component offsets at brace layer: acutecomb offset = (220, 110)
+    # Final top = interpolated acutecomb.top + offset
+    #           = (140, 720) + (220, 110) = (360, 830)
+    # Final bottom = interpolated ae.bottom = (340, 0)
+    brace_layers = [l for l in aeacute.layers if l._is_brace_layer()]
+    assert len(brace_layers) == 1
+    assert_anchors(
+        brace_layers[0].anchors,
+        [("top", (360, 830)), ("bottom", (340, 0))],
+    )
+
+
+def test_brace_layer_matching():
+    """When the component has a matching brace layer (same coordinates +
+    associated master), use it directly without interpolation."""
+    builder = GlyphSetBuilder()
+    master0 = GSFontMaster()
+    master0.id = "master-0"
+    master0.axes = [100]
+    builder.font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "master-1"
+    master1.axes = [200]
+    builder.font.masters.append(master1)
+
+    # 'base': has a brace layer at weight=150
+    builder.add_glyph(
+        "base",
+        lambda glyph: (
+            glyph.add_anchor("top", (100, 600))
+            .add_master_layer()
+            .add_anchor("top", (200, 700))
+            .add_brace_layer([150], associated_master_idx=0)
+            .add_anchor("top", (160, 660))  # explicit, not interpolated
+        ),
+    )
+
+    # 'composite': also has a brace layer at weight=150
+    builder.add_glyph(
+        "composite",
+        lambda glyph: (
+            glyph.add_component("base", (0, 0))
+            .add_master_layer()
+            .add_component("base", (0, 0))
+            .add_brace_layer([150], associated_master_idx=0)
+            .add_component("base", (10, 0))
+        ),
+    )
+
+    propagate_all_anchors(builder.font)
+
+    composite = builder.font.glyphs["composite"]
+    brace_layers = [l for l in composite.layers if l._is_brace_layer()]
+    assert len(brace_layers) == 1
+    # Should use the component's explicit brace layer anchor (160, 660) + offset (10, 0)
+    assert_anchors(brace_layers[0].anchors, [("top", (170, 660))])
+
+
+def test_brace_layer_interpolation_with_existing_brace_sources():
+    """Component has brace layers at different coordinates; interpolation uses
+    both masters and existing brace layers as sources."""
+    builder = GlyphSetBuilder()
+    master0 = GSFontMaster()
+    master0.id = "master-0"
+    master0.axes = [100]
+    builder.font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "master-1"
+    master1.axes = [300]
+    builder.font.masters.append(master1)
+
+    # 'base': 2 masters + a brace layer at weight=200
+    builder.add_glyph(
+        "base",
+        lambda glyph: (
+            glyph.add_anchor("top", (100, 600))
+            .add_master_layer()
+            .add_anchor("top", (300, 800))
+            .add_brace_layer([200], associated_master_idx=0)
+            .add_anchor("top", (220, 720))  # off the linear path
+        ),
+    )
+
+    # 'composite': brace layer at weight=150 (not matched by component)
+    builder.add_glyph(
+        "composite",
+        lambda glyph: (
+            glyph.add_component("base", (0, 0))
+            .add_master_layer()
+            .add_component("base", (0, 0))
+            .add_brace_layer([150], associated_master_idx=0)
+            .add_component("base", (0, 0))
+        ),
+    )
+
+    propagate_all_anchors(builder.font)
+
+    composite = builder.font.glyphs["composite"]
+    brace_layers = [l for l in composite.layers if l._is_brace_layer()]
+    assert len(brace_layers) == 1
+
+    # The component has 3 sources: weight=100, 200, 300.
+    # Interpolating at weight=150 with a 3-source model should use the brace
+    # layer at 200 as well, giving a different result than simple 2-master lerp.
+    # With 2-master linear:
+    #   top = (100, 600) + 0.25 * ((300, 800) - (100, 600)) = (150, 650)
+    # With 3-source model the result differs because (220, 720) at weight=200 is
+    # off the linear path between (100, 600) and (300, 800).
+    anchors = brace_layers[0].anchors
+    assert len(anchors) == 1
+    assert anchors[0].name == "top"
+    # Verify it's NOT the 2-master linear result
+    assert (round(anchors[0].position.x), round(anchors[0].position.y)) != (150, 650)
+
+
+def test_interpolate_brace_uses_default_source_anchor_names():
+    """Canonical anchor names should come from the default source location.
+
+    If an anchor is present in the default source but missing from another source,
+    it must still be interpolated (sparse interpolation), not dropped.
+    """
+    builder = GlyphSetBuilder()
+    master0 = GSFontMaster()
+    master0.id = "master-0"
+    master0.name = "Bold"
+    master0.axes = [200]
+    builder.font.masters.append(master0)
+    master1 = GSFontMaster()
+    master1.id = "master-1"
+    master1.name = "Regular"
+    master1.axes = [100]
+    builder.font.masters.append(master1)
+    # Make default source != first source layer
+    builder.font.customParameters["Variable Font Origin"] = "master-1"
+
+    # Component:
+    # - non-default source (master-0): top only
+    # - default source (master-1): top + bottom
+    builder.add_glyph(
+        "base",
+        lambda glyph: (
+            glyph.add_anchor("top", (200, 700))
+            .add_master_layer()
+            .add_anchor("top", (100, 600))
+            .add_anchor("bottom", (100, 0))
+        ),
+    )
+
+    # Composite has a brace layer at weight=150; component has no matching brace layer
+    builder.add_glyph(
+        "comp",
+        lambda glyph: (
+            glyph.add_component("base", (0, 0))
+            .add_master_layer()
+            .add_component("base", (0, 0))
+            .add_brace_layer([150], associated_master_idx=0)
+            .add_component("base", (0, 0))
+        ),
+    )
+
+    propagate_all_anchors(builder.font)
+
+    comp = builder.font.glyphs["comp"]
+    brace_layers = [l for l in comp.layers if l._is_brace_layer()]
+    assert len(brace_layers) == 1
+    # `bottom` must not be dropped just because it's missing in non-default source.
+    assert_anchors(
+        brace_layers[0].anchors,
+        [("top", (150, 650)), ("bottom", (100, 0))],
     )
