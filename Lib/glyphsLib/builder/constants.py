@@ -269,6 +269,7 @@ LANGUAGE_MAPPING = {
     "KAZ": 0x043F,
     "KHM": 0x0453,
     "KOK": 0x0457,
+    "KOR": 0x0412,
     "LAO": 0x0454,
     "LSB": 0x082E,
     "LTH": 0x0427,
@@ -277,6 +278,7 @@ LANGUAGE_MAPPING = {
     "MKD": 0x042F,
     "MLR": 0x044C,
     "MLY": 0x043E,
+    "MOL": 0x0818,
     "MNG": 0x0352,
     "MTS": 0x043A,
     "NEP": 0x0461,
@@ -315,7 +317,7 @@ LANGUAGE_MAPPING = {
     "ZHT": 0x0404,
 }
 
-REVERSE_LANGUAGE_MAPPING = {v: k for v, k in LANGUAGE_MAPPING.items()}
+REVERSE_LANGUAGE_MAPPING = {v: k for k, v in LANGUAGE_MAPPING.items()}
 
 GLYPHS_MATH_PREFIX = "com.nagwa.MATHPlugin."
 GLYPHS_MATH_CONSTANTS_KEY = GLYPHS_MATH_PREFIX + "constants"
