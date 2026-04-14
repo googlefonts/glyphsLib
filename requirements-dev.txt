@@ -62,7 +62,7 @@ pyflakes==3.4.0
     # via flake8
 pygments==2.19.2
     # via pytest
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   -r requirements-dev.in
     #   pytest-randomly
