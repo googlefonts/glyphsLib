@@ -2,6 +2,7 @@ from textwrap import dedent
 from glyphsLib import load_to_ufos
 from glyphsLib.featureWriters.markFeatureWriter import ContextualMarkFeatureWriter
 from ufo2ft.featureWriters import ast
+from ufo2ft.featureWriters.markFeatureWriter import MarkFeatureWriter
 
 
 def test_contextual_anchors(datadir):
@@ -14,7 +15,7 @@ def test_contextual_anchors(datadir):
         assert writer.write(ufo, feaFile)
 
         assert len(feaFile.markClasses) == 2
-        assert "MC_bottom" in feaFile.markClasses
+        assert f"{MarkFeatureWriter.markClassPrefix}_bottom" in feaFile.markClasses
 
         feature = feaFile.statements[-1]
         assert feature.name == "mark"
@@ -38,7 +39,7 @@ def test_contextual_anchors(datadir):
             "    lookupflag UseMarrkFilteringSet [twodotshorizontalbelow];\n"
             "    # reh-ar * behDotess-ar.medi &\n"
             "    pos reh-ar [behDotless-ar.init] behDotess-ar.medi"
-            " @MC_bottom' lookup ContextualMark_0;\n"
+            f" @{MarkFeatureWriter.markClassPrefix}_bottom' lookup ContextualMark_0;\n"
             "} ContextualMarkDispatch_0;\n"
         )
 
@@ -48,7 +49,7 @@ def test_contextual_anchors(datadir):
             "    lookupflag UseMarrkFilteringSet [twodotsverticalbelow];\n"
             "    # reh-ar *\n"
             "    pos reh-ar [behDotless-ar.init behDotless-ar.init.alt]"
-            " @MC_bottom' lookup ContextualMark_1;\n"
+            f" @{MarkFeatureWriter.markClassPrefix}_bottom' lookup ContextualMark_1;\n"
             "} ContextualMarkDispatch_1;\n"
         )
 
@@ -56,7 +57,8 @@ def test_contextual_anchors(datadir):
         assert str(lookup) == (
             "lookup ContextualMarkDispatch_2 {\n"
             "    # reh-ar *\n"
-            "    pos reh-ar [behDotless-ar.init] @MC_bottom' lookup ContextualMark_2;\n"
+            "    pos reh-ar [behDotless-ar.init] "
+            f"@{MarkFeatureWriter.markClassPrefix}_bottom' lookup ContextualMark_2;\n"
             "} ContextualMarkDispatch_2;\n"
         )
 
@@ -71,7 +73,7 @@ def test_ignorable_anchors(datadir):
         assert writer.write(ufo, feaFile)
 
         assert len(feaFile.markClasses) == 1
-        assert "MC_top" in feaFile.markClasses
+        assert f"{MarkFeatureWriter.markClassPrefix}_top" in feaFile.markClasses
 
         feature = feaFile.statements[-2]
         assert feature.name == "mark"
@@ -82,4 +84,6 @@ def test_ignorable_anchors(datadir):
         for statement in lookup.statements:
             assert isinstance(statement, ast.MarkBasePosStatement)
             assert len(statement.marks) == 1
-            assert statement.marks[0][1].name == "MC_top"
+            assert (
+                statement.marks[0][1].name == f"{MarkFeatureWriter.markClassPrefix}_top"
+            )
