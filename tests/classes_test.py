@@ -1734,6 +1734,28 @@ class GSPathFromFileTest(GSObjectsTestCase):
         self.assertEqual(bounds.size.width, 289)
         self.assertEqual(bounds.size.height, 490)
 
+    def test_reverse_open_path_preserves_all_nodes(self):
+        # Reversing an open path drops the last node of the original path
+        # because setSegments() skips segment[0]'s first node (correct for
+        # closed paths where boundary nodes are shared, but wrong for open
+        # paths where the start node is unique).
+        p = GSPath()
+        p.closed = False
+        p.nodes = [
+            GSNode((0, 0), "line"),
+            GSNode((100, 0), "line"),
+            GSNode((200, 0), "line"),
+        ]
+        positions_before = [(n.position.x, n.position.y) for n in p.nodes]
+
+        p.reverse()
+
+        # Should still have 3 nodes (not 2)
+        self.assertEqual(len(p.nodes), 3)
+        # Nodes should appear in reversed order
+        positions_after = [(n.position.x, n.position.y) for n in p.nodes]
+        self.assertEqual(positions_after, list(reversed(positions_before)))
+
 
 class GSNodeFromFileTest(GSObjectsTestCase):
     def setUp(self):

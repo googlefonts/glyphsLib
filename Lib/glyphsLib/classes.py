@@ -2394,6 +2394,11 @@ class GSPath(GSBase):
                 segment.nodes[-1].type = "curve"
                 nextSegment.nodes[0].type = "curve"
         self.setSegments(segments)
+        if not self.closed and segments:
+            # setSegments skips segment[0].nodes[0] (correct for closed paths
+            # where boundary nodes are shared), but open paths have a unique
+            # start node that must be reinserted explicitly.
+            self._nodes.insert(0, segments[0].nodes[0])
 
     # TODO
     def addNodesAtExtremes(self):
