@@ -1495,9 +1495,26 @@ class GSCustomParameter(GSBase):
             "openTypeHeadFlags",
         )
     )
-    _CUSTOM_DICT_PARAMS = frozenset("GASP Table")
+    _CUSTOM_DICT_PARAMS = frozenset(("GASP Table", "gasp Table"))
 
-    def __init__(self, name="New Value", value="New Parameter", disabled=False):
+    # Names whose values we cast below, and so can fail on bad input.
+    _TYPED_PARAMS = (
+        _CUSTOM_INT_PARAMS
+        | _CUSTOM_FLOAT_PARAMS
+        | _CUSTOM_BOOL_PARAMS
+        | _CUSTOM_INTLIST_PARAMS
+        | _CUSTOM_DICT_PARAMS
+    )
+
+    # Glyphs.app writes 'name = "New Parameter"; value = "New Value";' when a
+    # custom parameter is added in the UI. If the name is then set to one that
+    # we type and the value isn't changed, we end up with a placeholder with
+    # the wrong type. This happens in real fonts, so we guard against it.
+    # Older versions used different wording, and all three spellings turn up
+    # in the wild, so treat any of them as a placeholder.
+    _PLACEHOLDER_VALUES = frozenset(("New Value", "New Parameter", "New Property"))
+
+    def __init__(self, name="New Parameter", value="New Value", disabled=False):
         self.name = name
         self.value = value
         self.disabled = disabled
@@ -1516,7 +1533,15 @@ class GSCustomParameter(GSBase):
 
     def setValue(self, value):
         """Cast some known data in custom parameters."""
-        if self.name in self._CUSTOM_INT_PARAMS:
+        if self.name == "note":
+            value = str(value)
+        elif (
+            self.name in self._TYPED_PARAMS
+            and isinstance(value, str)
+            and value in self._PLACEHOLDER_VALUES
+        ):
+            value = None
+        elif self.name in self._CUSTOM_INT_PARAMS:
             value = int(value)
         elif self.name in self._CUSTOM_FLOAT_PARAMS:
             value = float(value)
@@ -1527,8 +1552,6 @@ class GSCustomParameter(GSBase):
         elif self.name in self._CUSTOM_DICT_PARAMS:
             parser = Parser()
             value = parser.parse(value)
-        elif self.name == "note":
-            value = str(value)
         self._value = value
 
     value = property(getValue, setValue)

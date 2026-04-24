@@ -55,6 +55,7 @@ from glyphsLib.classes import (
     CURVE,
     OFFCURVE,
 )
+from glyphsLib.parser import Parser
 from glyphsLib.types import Point, Rect
 
 TESTFILE_PATH = os.path.join(
@@ -1896,6 +1897,51 @@ class GSCustomParameterTest(unittest.TestCase):
             '{\nname = "New Parameter";\nvalue = {\nkey1 = value1;'
             "\nkey2 = value2;\n};\n}",
         )
+
+    def test_setValue_placeholder_discarded_for_typed_param(self):
+        """Glyphs.app writes 'value = "New Value";' for a custom parameter added
+        in the UI but never filled in. If the name is one we cast, the
+        placeholder cannot be cast: discard it rather than failing the parse."""
+        self.assertIsNone(GSCustomParameter("fsType", "New Value").value)
+
+    def test_setValue_placeholder_discarded_when_parsed(self):
+        """The name must be applied before the value for the check above to
+        fire, so cover a real parse and not just direct construction."""
+        source = '{customParameters = ({name = fsType; value = "New Value";});}'
+        master = Parser(current_type=GSFontMaster).parse(source)
+        self.assertIsNone(master.customParameters[0].value)
+
+    def test_setValue_placeholder_spellings(self):
+        """Older Glyphs versions used different placeholder wording. These are
+        the two that actually break real fonts: "New Parameter" on fsType
+        (Taviraj, Trirong), where readIntlist asserts, and "New Property" on
+        a GASP Table (Rhodium Libre)."""
+        self.assertIsNone(GSCustomParameter("fsType", "New Parameter").value)
+        self.assertIsNone(GSCustomParameter("GASP Table", "New Property").value)
+        self.assertIsNone(GSCustomParameter("gasp Table", "New Property").value)
+
+    def test_gasp_table_value_is_parsed(self):
+        """_CUSTOM_DICT_PARAMS used to be a set of characters, so a GASP Table
+        written as a plist string was never parsed."""
+        param = GSCustomParameter("GASP Table", "{8 = 10; 20 = 7;}")
+        self.assertEqual(dict(param.value), {"8": 10, "20": 7})
+
+    def test_setValue_placeholder_kept_for_untyped_param(self):
+        """For a name we do not cast, the placeholder is an ordinary string and
+        must survive a round trip. This shape appears verbatim in
+        tests/data/gf/Karla-Roman.glyphs."""
+        param = GSCustomParameter("New Parameter", "New Value")
+        self.assertEqual(param.value, "New Value")
+        self.assertEqual(
+            param.plistValue(), '{\nname = "New Parameter";\nvalue = "New Value";\n}'
+        )
+
+    def test_setValue_only_the_placeholder_is_discarded(self):
+        """Real values still cast and genuinely bad ones still raise."""
+        self.assertEqual(GSCustomParameter("weightClass", "400").value, 400)
+        self.assertEqual(GSCustomParameter("fsType", ["2"]).value, [2])
+        with self.assertRaises(ValueError):
+            GSCustomParameter("weightClass", "not a number")
 
 
 class GSBackgroundLayerTest(unittest.TestCase):
