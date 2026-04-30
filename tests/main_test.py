@@ -62,7 +62,7 @@ def test_parser_main(capsys):
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans.glyphs")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
@@ -75,7 +75,7 @@ def test_parser_main_v3(capsys):
     and for the round-trip of GlyphsUnitTestSans.glyphs.
     """
     filename = os.path.join(DATA, "GlyphsUnitTestSans3.glyphs")
-    with open(filename) as f:
+    with open(filename, encoding="utf-8") as f:
         expected = f.read()
 
     glyphsLib.parser.main([filename])
