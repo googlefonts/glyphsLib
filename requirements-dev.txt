@@ -38,7 +38,7 @@ fonttools[ufo,unicode]==4.61.1
     #   ufo2ft
 iniconfig==2.3.0
     # via pytest
-lxml==6.0.2
+lxml==6.1.0
     # via xmldiff
 mccabe==0.7.0
     # via flake8
