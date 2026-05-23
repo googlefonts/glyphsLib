@@ -164,7 +164,7 @@ def _to_designspace_source_layer(self):
     designspace = self._designspace
     layers_to_insert = collections.defaultdict(list)
     for key, master_ids in layer_to_master_ids.items():
-        brace_coordinates = list(key[1])
+        brace_coordinates = list(map(int,key[1]))
         layer_name = key[0]
         for master_id in master_ids:
             # ... as they may need to be filled up with the values of the associated
