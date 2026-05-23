@@ -367,7 +367,7 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
     # https://github.com/googlefonts/glyphsLib/issues/557#issuecomment-667074856
     assert self.is_vertical
 
-    ascender, descender = _get_typo_ascender_descender(layer.master)
+    ascender, descender = _get_ascender_descender(layer.master)
 
     if layer.vertWidth is not None:
         ufo_glyph.height = layer.vertWidth
@@ -380,18 +380,92 @@ def to_ufo_glyph_height_and_vertical_origin(self, ufo_glyph, layer):
         ufo_glyph.verticalOrigin = ascender
 
 
-def _get_typo_ascender_descender(master):
+def _get_ascender_descender(master):
     # Glyphsapp will use the typo metrics to set the verOrigin and
     # vertWidth. If typo metrics are not present, the master
     # ascender and descender are used instead.
-    if "typoAscender" in master.customParameters:
-        ascender = master.customParameters["typoAscender"]
-    else:
-        ascender = master.ascender
-    if "typoDescender" in master.customParameters:
-        descender = master.customParameters["typoDescender"]
-    else:
-        descender = master.descender
+
+    # Simply using the sTypo entries will not guarantee we get 
+    # the right glyph height per GF spec. So we take a different approach
+    # first attempting to reference the BASE table data, then seeing if there
+    # has been a padding applied to the sTypo metrics, then falling back to the old method. 
+
+    valid_BASE = False
+    has_BASE = [False,0]
+    for i, prefix in enumerate(master.font.featurePrefixes):
+        if prefix.name == "BASE":
+            has_BASE = [True,i]
+
+    
+    if has_BASE[0] == True: #we determine that we have a BASE table, so parsing to figure out if it is useful
+        from fontTools.feaLib.parser import Parser
+        from fontTools.feaLib.ast import BaseAxis, TableBlock
+        import io
+        feature_file = io.StringIO(master.font.featurePrefixes[has_BASE[1]].code)
+        BASE_TABLE = Parser(feature_file).parse()
+
+        base_axes = []
+        for block in BASE_TABLE.statements:
+            for statement in block.statements:
+                if isinstance(statement, BaseAxis):  # Check if the statement matches BaseAxis and converts
+                    base_axes.append(statement)
+        
+        ascender = 0
+        descender = 0
+        for entry in base_axes:
+            if entry.vertical == False:
+                if "idtp" in entry.bases and "ideo" in entry.bases: #these values are the em-box
+                    topIndex = 0
+                    bottomIndex = 0
+                    for i,val in enumerate(entry.bases):
+                        if val == "idtp":
+                            topIndex = i
+                        elif val == "ideo":
+                            bottomIndex = i
+                    ascender = entry.scripts[0][2][topIndex]
+                    descender = entry.scripts[0][2][bottomIndex]
+                    valid_BASE = True
+                elif "ideo" in entry.bases: # but even with just one or the other, we can make an educated guess
+                    bottomIndex = 0
+                    for i,val in enumerate(entry.bases):
+                        if val == "ideo":
+                            bottomIndex = i
+                    descender = entry.scripts[0][2][bottomIndex]
+                    ascender = entry.scripts[0][2][bottomIndex] + master.font.upm
+                    valid_BASE = True
+                elif "idtp" in entry.bases:
+                    topIndex = 0
+                    for i,val in enumerate(entry.bases):
+                        if val == "idtp":
+                            topIndex = i
+                    ascender = entry.scripts[0][2][topIndex]
+                    descender = entry.scripts[0][2][topIndex] - master.font.upm
+                    valid_BASE = True   
+                else:
+                    pass # potentially could try and figure it out from the character face, but easier to use alt method.
+
+    # for this approach, if the sTypo is bigger than the upm, we determine by "how much" and use that adjustment to right size the sTypo values. If we have incomplete information, or it doesn't appear that the sum of the sTypo values is greater than the upm, then something else is going on and we bypass this code to use the standard, old method. 
+
+    if valid_BASE == False: 
+        if "typoAscender" in master.customParameters and "typoDescender" in master.customParameters:
+            if master.customParameters["typoAscender"] - master.customParameters["typoDescender"] > master.font.upm:
+                glyphHeight = master.customParameters["typoAscender"] - master.customParameters["typoDescender"]
+                adjustment = int((glyphHeight - master.font.upm)/2)
+                ascender = master.customParameters["typoAscender"] - adjustment
+                descender = master.customParameters["typoDescender"] + adjustment
+            else:
+               ascender = master.customParameters["typoAscender"]
+               descender = master.customParameters["typoDescender"]
+        else:
+            if "typoAscender" in master.customParameters:
+                ascender = master.customParameters["typoAscender"]
+            else:
+                ascender = master.ascender
+
+            if "typoDescender" in master.customParameters:
+                descender = master.customParameters["typoDescender"]
+            else:
+                descender = master.descender
     return ascender, descender
 
 
@@ -570,7 +644,7 @@ def _to_glyphs_color(color):
 
 
 def to_glyphs_glyph_height_and_vertical_origin(self, ufo_glyph, master, layer):
-    ascender, descender = _get_typo_ascender_descender(master)
+    ascender, descender = _get_ascender_descender(master)
     if ufo_glyph.height != (ascender - descender):
         layer.vertWidth = ufo_glyph.height
 
