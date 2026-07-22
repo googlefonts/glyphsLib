@@ -307,7 +307,11 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
         elif glyph.export:
             layers = []
             for layerId, colorId in layerMapping:
-                layers.append((glyph.layers[layerId], colorId))
+                color_layer = glyph.layers[layerId]
+                # Intermediate color layers are built separately.
+                if color_layer._is_brace_layer():
+                    continue
+                layers.append((color_layer, colorId))
             self._color_palette_layers.append(((glyph, layer), layers))
 
     if self.minimal:

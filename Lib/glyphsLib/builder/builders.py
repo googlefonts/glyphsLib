@@ -337,8 +337,10 @@ class UFOBuilder(LoggerMixin):
             elif (
                 self.minimal
                 and layer.layerId not in master_layer_ids
-                and not layer._is_brace_layer()
+                and (not layer._is_brace_layer() or layer._is_color_palette_layer())
             ):
+                # Only plain intermediate layers are built here, color
+                # palette layers are handled by to_ufo_color_layers.
                 continue
             else:
                 ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
