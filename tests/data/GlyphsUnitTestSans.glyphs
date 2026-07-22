@@ -742,7 +742,7 @@ position = "{248, 480}";
 annotations = (
 {
 position = "{427, 535}";
-text = "This is a text annotation";
+text = "This is a text annotation 일";
 type = Text;
 },
 {

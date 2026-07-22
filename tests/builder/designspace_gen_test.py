@@ -668,7 +668,7 @@ def test_designspace_generation_multiaxis_bracket(datadir, ufo_module):
 def test_designspace_generation_instances_disabled_custom_params(
     datadir, ufo_module, minimal
 ):
-    with open(str(datadir.join("GlyphsUnitTestSans.glyphs"))) as f:
+    with open(str(datadir.join("GlyphsUnitTestSans.glyphs")), encoding="utf-8") as f:
         font = glyphsLib.load(f)
 
     designspace = to_designspace(font, ufo_module=ufo_module, minimal=minimal)
