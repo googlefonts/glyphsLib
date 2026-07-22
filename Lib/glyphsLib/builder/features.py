@@ -439,15 +439,13 @@ def _normalize_whitespace(text):
 def _to_glyphs_features_basic(self):
     prefix = self.glyphs_module.GSFeaturePrefix()
     prefix.name = "WARNING"
-    prefix.code = dedent(
-        """\
+    prefix.code = dedent("""\
         # Do not use Glyphs to edit features.
         #
         # This Glyphs file was made from several UFOs that had different
         # features. As a result, the features are not editable in Glyphs and
         # the original features will be restored when you go back to UFOs.
-    """
-    )
+    """)
     self.font.featurePrefixes.append(prefix)
     for master_id, source in self._sources.items():
         master = self.font.masters[master_id]

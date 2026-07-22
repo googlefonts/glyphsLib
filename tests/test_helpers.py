@@ -48,14 +48,10 @@ class AssertLinesEqual:
     def assertLinesEqual(self, expected, actual, message):
         if actual != expected:
             if len(actual) < len(expected):
-                sys.stderr.write(
-                    dedent(
-                        """\
+                sys.stderr.write(dedent("""\
                     WARNING: the actual text is shorter that the expected text.
                              Some information may be LOST!
-                    """
-                    )
-                )
+                    """))
             for line in difflib.unified_diff(
                 expected, actual, fromfile="<expected>", tofile="<actual>"
             ):

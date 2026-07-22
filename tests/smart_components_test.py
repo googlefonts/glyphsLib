@@ -29,7 +29,6 @@ from glyphsLib.classes import (
     GSComponent,
 )
 
-
 # https://glyphsapp.com/tutorials/smart-components
 
 

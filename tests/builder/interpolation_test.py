@@ -29,7 +29,6 @@ from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue
 from glyphsLib import to_designspace, to_glyphs
 import ufoLib2
 
-
 # Current limitation of glyphsLib for designspace to designspace round-trip:
 # the designspace's axes, sources and instances must be as such:
 #  - the axes' min, max must match extreme masters

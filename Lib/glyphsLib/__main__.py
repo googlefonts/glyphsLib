@@ -17,6 +17,5 @@ import sys
 
 import glyphsLib.cli
 
-
 if __name__ == "__main__":
     sys.exit(glyphsLib.cli.main())

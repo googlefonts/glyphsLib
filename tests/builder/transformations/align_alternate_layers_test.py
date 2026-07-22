@@ -9,7 +9,6 @@ from glyphsLib.builder.transformations.align_alternate_layers import (
     align_alternate_layers,
 )
 
-
 DATA = Path(__file__).parent.parent.parent / "data"
 
 

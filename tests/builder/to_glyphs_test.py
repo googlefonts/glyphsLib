@@ -603,7 +603,7 @@ def test_custom_default_layer_name(ufo_module):
         ufo2.layers.defaultLayer.name = "other default"
 
     font = to_glyphs([ufo1, ufo2])
-    (ufo1, ufo2) = to_ufos(font)
+    ufo1, ufo2 = to_ufos(font)
 
     assert ufo1.layers.defaultLayer.name == "custom default"
     assert ufo2.layers.defaultLayer.name == "other default"

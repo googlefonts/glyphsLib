@@ -21,8 +21,7 @@ def test_contextual_anchors(datadir):
         assert feature.name == "mark"
         # note there are two mark2base lookups because ufo2ft v3 generates one lookup
         # per mark class (previously 'top' and 'bottom' would go into one lookup)
-        assert str(feature) == dedent(
-            """\
+        assert str(feature) == dedent("""\
             feature mark {
                 lookup mark2base;
                 lookup mark2base_1;
@@ -30,8 +29,7 @@ def test_contextual_anchors(datadir):
                 lookup ContextualMarkDispatch_1;
                 lookup ContextualMarkDispatch_2;
             } mark;
-            """
-        )
+            """)
 
         lookup = feature.statements[-3].lookup
         assert str(lookup) == (

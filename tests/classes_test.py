@@ -56,7 +56,6 @@ from glyphsLib.classes import (
 )
 from glyphsLib.types import Point, Transform, Rect
 
-
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans.glyphs")
 )

@@ -122,10 +122,8 @@ class EraseOpenCornersPen(BasePen):
                 and t2 > 0.001
             ):
                 logger.debug("Found an open corner")
-                (segs[ix - 1], _) = _split_segment_at_t(
-                    segs[ix - 1], intersection[0].t1
-                )
-                (_, segs[next_ix]) = _split_segment_at_t(
+                segs[ix - 1], _ = _split_segment_at_t(segs[ix - 1], intersection[0].t1)
+                _, segs[next_ix] = _split_segment_at_t(
                     segs[next_ix], intersection[0].t2
                 )
                 # Ensure the ends match up

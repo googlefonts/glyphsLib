@@ -49,7 +49,6 @@ from .axes import (
 )
 from .custom_params import to_ufo_custom_params
 
-
 logger = logging.getLogger(__name__)
 
 

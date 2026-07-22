@@ -21,7 +21,6 @@ import openstep_plist
 import os
 import sys
 
-
 logger = logging.getLogger(__name__)
 
 

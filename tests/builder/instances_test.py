@@ -23,7 +23,6 @@ import pytest
 import py.path
 from ..test_helpers import write_designspace_and_UFOs
 
-
 DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 

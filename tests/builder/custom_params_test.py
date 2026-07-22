@@ -46,7 +46,6 @@ from glyphsLib.types import parse_datetime
 
 import pytest
 
-
 DATA = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 
 
@@ -285,8 +284,7 @@ class SetCustomParamsTestBase(object):
         #       interpolated value
 
     def test_replace_feature(self):
-        self.ufo.features.text = dedent(
-            """
+        self.ufo.features.text = dedent("""
             feature liga {
             # only the first match is replaced
             sub f i by fi;
@@ -299,8 +297,7 @@ class SetCustomParamsTestBase(object):
             feature liga {
             sub f l by fl;
             } liga;
-        """
-        )
+        """)
 
         repl = "liga; sub f f by ff;"
 
@@ -309,8 +306,7 @@ class SetCustomParamsTestBase(object):
 
         self.assertEqual(
             self.ufo.features.text,
-            dedent(
-                """
+            dedent("""
             feature liga {
             sub f f by ff;
             } liga;
@@ -322,8 +318,7 @@ class SetCustomParamsTestBase(object):
             feature liga {
             sub f l by fl;
             } liga;
-        """
-            ),
+        """),
         )
 
         # only replace feature body if tag already present
@@ -336,8 +331,7 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(self.ufo.features.text, original)
 
     def test_replace_prefix(self):
-        self.ufo.features.text = dedent(
-            """\
+        self.ufo.features.text = dedent("""\
             # Prefix: AAA
             include(../aaa.fea);
 
@@ -361,8 +355,7 @@ class SetCustomParamsTestBase(object):
                 , # Mark
                 ;
             } GDEF;
-            """
-        )
+            """)
 
         self.master.customParameters.append(
             GSCustomParameter("Replace Prefix", "FOO; include(../foo.fea);")
@@ -374,8 +367,7 @@ class SetCustomParamsTestBase(object):
 
         self.assertEqual(
             self.ufo.features.text,
-            dedent(
-                """\
+            dedent("""\
                 # Prefix: AAA
                 include(../aaa.fea);
 
@@ -399,8 +391,7 @@ class SetCustomParamsTestBase(object):
                 feature liga {
                 sub f i by f_i;
                 } liga;
-                """
-            ),
+                """),
         )
 
     def test_useProductionNames(self):
