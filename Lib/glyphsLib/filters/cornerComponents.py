@@ -21,7 +21,6 @@ from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
 
-
 try:
     from math import dist
 except ImportError:
@@ -438,7 +437,7 @@ class CornerComponentApplier:
             return
 
         if len(outstroke) == 2:
-            (outstroke[0].x, outstroke[0].y) = otRound(intersection[0]), otRound(
+            outstroke[0].x, outstroke[0].y = otRound(intersection[0]), otRound(
                 intersection[1]
             )
         else:

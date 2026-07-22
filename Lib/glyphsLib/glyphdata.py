@@ -20,14 +20,12 @@ These properties assist in applying automatisms to glyphs when round-
 tripping.
 """
 
-
 import collections
 import re
 from fontTools import unicodedata
 import xml.etree.ElementTree
 
 import fontTools.agl
-
 
 __all__ = ["get_glyph", "GlyphData"]
 

@@ -627,16 +627,14 @@ class GlyphsBuilder(LoggerMixin):
             for name in ("familyName", "styleName"):
                 if getattr(source, name) != getattr(source.font.info, name):
                     self.logger.warning(
-                        dedent(
-                            """\
+                        dedent("""\
                     The {name} is different between the UFO and the designspace source:
                         source filename: {filename}
                         source {name}: {source_name}
                         ufo {name}: {ufo_name}
 
                     The UFO name will be used.
-                    """
-                        ).format(
+                    """).format(
                             name=name,
                             filename=source.filename,
                             source_name=getattr(source, name),

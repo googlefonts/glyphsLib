@@ -27,7 +27,6 @@ from glyphsLib import glyphdata
 from glyphsLib.classes import GSAnchor
 from glyphsLib.types import Point
 
-
 logger = logging.getLogger(__name__)
 
 

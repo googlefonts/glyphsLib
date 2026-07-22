@@ -57,7 +57,6 @@ from ..classes_test import (
     add_component,
 )
 
-
 pytestmark = pytest.mark.parametrize("ufo_module", [ufoLib2, defcon])
 
 
@@ -1010,8 +1009,7 @@ def test_glyph_lib_Export_feature_names_from_labels(ufo_module):
     ):
         font.features[0].labels.append(dict(language=lang, value=name))
     ufos = to_ufos(font, ufo_module=ufo_module)
-    assert ufos[0].features.text == dedent(
-        """\
+    assert ufos[0].features.text == dedent("""\
         feature ss01 {
         featureNames {
           name "Single\\005cstorey \\0022a\\0022";
@@ -1020,8 +1018,7 @@ def test_glyph_lib_Export_feature_names_from_labels(ufo_module):
         };
         sub a by a.ss01;
         } ss01;
-        """
-    )
+        """)
 
 
 def test_glyph_lib_Export_fake_designspace(ufo_module):

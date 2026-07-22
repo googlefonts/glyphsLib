@@ -32,7 +32,6 @@ from glyphsLib.builder.constants import (
 )
 from glyphsLib import to_glyphs, to_ufos, to_designspace
 
-
 # GOAL: Test the translations between the various UFO lib and Glyphs userData.
 # See the associated UML diagram: `lib_and_user_data.png`
 
@@ -207,7 +206,7 @@ def test_layer_lib_into_master_user_data(ufo_module):
         "layerLibKey2": "ufo2 layerLibValue2"
     }
 
-    (ufo1, ufo2) = to_ufos(font, minimal=False)
+    ufo1, ufo2 = to_ufos(font, minimal=False)
 
     assert ufo1.layers["public.default"].lib["layerLibKey1"] == "ufo1 layerLibValue1"
     assert "layerLibKey1" not in ufo1.layers["sketches"].lib

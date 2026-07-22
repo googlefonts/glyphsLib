@@ -38,17 +38,11 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
     def assertWritesValue(self, glyphs_value, text, format_version=2):
         """Assert that the writer produces the given text for the given value."""
-        expected = (
-            dedent(
-                """\
+        expected = dedent("""\
         {{
         writtenValue = {0};
         }}
-        """
-            )
-            .format(text)
-            .splitlines()
-        )
+        """).format(text).splitlines()
         # We wrap the value in a dict to use the same test helper
         actual = test_helpers.write_to_lines(
             {"writtenValue": glyphs_value}, format_version
@@ -146,8 +140,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         font.appVersion = "895"
         self.assertWrites(
             font,
-            dedent(
-                """\
+            dedent("""\
             {
             .appVersion = "895";
             classes = (
@@ -240,8 +233,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             versionMajor = 2;
             versionMinor = 104;
             }
-        """
-            ),
+        """),
         )
 
         # Don't write the keyboardIncrement if it's 1 (default)
@@ -310,8 +302,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         master.customParameters["underlinePosition"] = -135
         self.assertWrites(
             master,
-            dedent(
-                """\
+            dedent("""\
             {
             alignmentZones = (
             "{0, -30}"
@@ -361,8 +352,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             widthValue = 0.99;
             xHeight = 59.1;
             }
-        """
-            ),
+        """),
         )
 
         # Write the capHeight and xHeight even if they are "0"
@@ -425,8 +415,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
 
         self.assertWrites(
             instance,
-            dedent(
-                """\
+            dedent("""\
             {
             customParameters = (
             {
@@ -473,8 +462,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             weightClass = "SemiBold (weight)";
             widthClass = "Compressed (width)";
             }
-        """
-            ),
+        """),
         )
 
     def test_write_custom_parameter(self):
@@ -521,30 +509,26 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         class_.automatic = True
         self.assertWrites(
             class_,
-            dedent(
-                """\
+            dedent("""\
             {
             automatic = 1;
             code = "e eacute egrave";
             name = e;
             }
-        """
-            ),
+        """),
         )
 
         # When the code is an empty string, write an empty string
         class_.code = ""
         self.assertWrites(
             class_,
-            dedent(
-                """\
+            dedent("""\
             {
             automatic = 1;
             code = "";
             name = e;
             }
-        """
-            ),
+        """),
         )
 
     def test_write_feature_prefix(self):
@@ -554,15 +538,13 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         fp.automatic = True
         self.assertWrites(
             fp,
-            dedent(
-                """\
+            dedent("""\
             {
             automatic = 1;
             code = "languagesystem DFLT dflt;";
             name = Languagesystems;
             }
-        """
-            ),
+        """),
         )
 
     def test_write_feature(self):
@@ -573,16 +555,14 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         feature.notes = "notes about sups"
         self.assertWrites(
             feature,
-            dedent(
-                """\
+            dedent("""\
             {
             automatic = 1;
             code = "    sub @standard by @sups;";
             name = sups;
             notes = "notes about sups";
             }
-        """
-            ),
+        """),
         )
 
     def test_write_glyph(self):
@@ -659,8 +639,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         glyph.lastChange = parse_datetime("2017-10-03 07:35:46 +0000")
         self.assertWrites(
             glyph,
-            dedent(
-                """\
+            dedent("""\
             {
             color = 11;
             export = 0;
@@ -713,8 +692,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             }
             );
             }
-        """
-            ),
+        """),
         )
 
         # Write the script even when it's an empty string
@@ -808,8 +786,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         layer.smartComponentPoleMapping["shoulderWidth"] = 1  # Bottom pole
         self.assertWrites(
             layer,
-            dedent(
-                """\
+            dedent("""\
             {
             anchors = (
             {
@@ -865,8 +842,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             width = 890.4;
             }
-        """
-            ),
+        """),
         )
 
         # Don't write a blank layer name
@@ -883,28 +859,24 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         anchor = classes.GSAnchor("top", Point(23, 45.5))
         self.assertWrites(
             anchor,
-            dedent(
-                """\
+            dedent("""\
             {
             name = top;
             position = "{23, 45.5}";
             }
-        """
-            ),
+        """),
         )
 
         # Write a position of 0, 0
         anchor = classes.GSAnchor("top", Point(0, 0))
         self.assertWrites(
             anchor,
-            dedent(
-                """\
+            dedent("""\
             {
             name = top;
             position = "{0, 0}";
             }
-        """
-            ),
+        """),
         )
 
     def test_write_component(self):
@@ -931,8 +903,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bezierPath: read-only, objective-c
         self.assertWrites(
             component,
-            dedent(
-                """\
+            dedent("""\
             {
             anchor = top;
             name = dieresis;
@@ -941,8 +912,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             };
             transform = "{0, 2, -2, 0, 45.5, 250}";
             }
-        """
-            ),
+        """),
         )
 
     def test_write_smart_component_axis(self):
@@ -955,8 +925,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         axis.bottomValue = -100
         self.assertWrites(
             axis,
-            dedent(
-                """\
+            dedent("""\
             {
             name = crotchDepth;
             bottomName = Low;
@@ -964,8 +933,7 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
             topName = High;
             topValue = 0;
             }
-        """
-            ),
+        """),
         )
 
     def test_write_path(self):
@@ -984,16 +952,14 @@ class WriterTest(unittest.TestCase, test_helpers.AssertLinesEqual):
         # bezierPath: computed
         self.assertWrites(
             path,
-            dedent(
-                """\
+            dedent("""\
             {
             closed = 1;
             nodes = (
             "0 0 LINE"
             );
             }
-        """
-            ),
+        """),
         )
 
     def test_write_node(self):
@@ -1050,15 +1016,13 @@ rememberToDownloadARealRemindersApp = 1;}"',
         # selected: not written
         self.assertWrites(
             line,
-            dedent(
-                """\
+            dedent("""\
             {
             angle = 11;
             name = "italic angle";
             position = "{56, 45}";
             }
-        """
-            ),
+        """),
         )
 
     def test_write_annotation(self):
@@ -1071,8 +1035,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         annotation.width = 135
         self.assertWrites(
             annotation,
-            dedent(
-                """\
+            dedent("""\
             {
             angle = 123.5;
             position = "{12, 34}";
@@ -1080,8 +1043,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             type = 1;
             width = 135;
             }
-        """
-            ),
+        """),
         )
 
     def test_write_hint(self):
@@ -1115,8 +1077,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         hint.name = "My favourite hint"
         self.assertWrites(
             hint,
-            dedent(
-                """\
+            dedent("""\
             {
             horizontal = 1;
             name = "My favourite hint";
@@ -1127,8 +1088,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             target = "{0, 1}";
             type = 16;
             }
-        """
-            ),
+        """),
         )
 
         # FIXME: (jany) What about the undocumented scale & stem?
@@ -1213,8 +1173,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
         # transform: Already set with scale/rotation
         self.assertWrites(
             image,
-            dedent(
-                """\
+            dedent("""\
             {
             alpha = 70;
             crop = "{{0, 10}, {500, 510}}";
@@ -1222,8 +1181,7 @@ rememberToDownloadARealRemindersApp = 1;}"',
             locked = 1;
             transform = "{1.09998, 0.00576, -0.00628, 1.19998, 40, 90}";
             }
-        """
-            ),
+        """),
         )
 
 

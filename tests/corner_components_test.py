@@ -3,7 +3,6 @@ from glyphsLib.filters.cornerComponents import CornerComponentsFilter
 import py
 import pytest
 
-
 datadir = py.path.local(py.path.local(__file__).dirname).join("data")
 
 ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]

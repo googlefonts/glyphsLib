@@ -13,7 +13,6 @@
 # limitations under the License.
 import re
 
-
 PUBLIC_PREFIX = "public."
 GLYPH_ORDER_KEY = PUBLIC_PREFIX + "glyphOrder"
 OBJECT_LIBS_KEY = PUBLIC_PREFIX + "objectLibs"
