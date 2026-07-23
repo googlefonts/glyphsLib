@@ -326,8 +326,13 @@ def font_uses_axis_locations(font):
 
 
 def to_glyphs_axes(self):
+    from glyphsLib.builder.stat import is_stat_only_ital
+
+    # The STAT-only “ital” axis is not a real Glyphs axis.
+    axes = [a for a in self.designspace.axes if not is_stat_only_ital(a)]
+
     axes_parameter = []
-    for axis in self.designspace.axes:
+    for axis in axes:
         if axis.tag == "wght":
             name = axis.name or "Weight"
         elif axis.tag == "wdth":
@@ -341,10 +346,8 @@ def to_glyphs_axes(self):
     if axes_parameter and not _is_subset_of_default_axes(axes_parameter):
         self.font.axes = axes_parameter
 
-    if any(_has_meaningful_map(a, self.designspace) for a in self.designspace.axes):
-        mapping = {
-            axis.tag: {str(k): v for k, v in axis.map} for axis in self.designspace.axes
-        }
+    if any(_has_meaningful_map(a, self.designspace) for a in axes):
+        mapping = {axis.tag: {str(k): v for k, v in axis.map} for axis in axes}
         self.font.customParameters["Axis Mappings"] = mapping
 
 

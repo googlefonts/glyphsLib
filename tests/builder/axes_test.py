@@ -22,6 +22,7 @@ from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster, GSAxis, GSInstance
 from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
+from glyphsLib.builder.stat import is_stat_only_ital
 
 """
 Goal: check how files with custom axes are roundtripped.
@@ -684,7 +685,8 @@ def test_variable_instance(ufo_module):
     varfont = doc.variableFonts[0]
     assert varfont.name == "Variable Foo Bar"
     assert varfont.filename == "Cairo-VariableFooBarVF"
-    assert len(varfont.axisSubsets) == len(doc.axes)
+    real_axes = [a for a in doc.axes if not is_stat_only_ital(a)]
+    assert len(varfont.axisSubsets) == len(real_axes)
     assert "public.fontInfo" in varfont.lib
 
     info = varfont.lib["public.fontInfo"]
