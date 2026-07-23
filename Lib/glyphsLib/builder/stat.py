@@ -42,6 +42,14 @@ def _stat_disabled(instance):
     return export is not None and not export
 
 
+def _is_elidable(instance, axis):
+    return any(
+        param.value == axis.tag
+        for param in instance.customParameters
+        if param.name == "Elidable STAT Axis Value Name"
+    )
+
+
 def _stat_entry_tags(instance):
     return [
         param.value
@@ -137,7 +145,7 @@ def _manual_labels(designspace, instances, user_loc):
             if axis.tag in _stat_entry_tags(instance):
                 loc = user_loc(axis, instance)
                 if loc is not None and loc not in labels:
-                    labels[loc] = (instance.name, False)
+                    labels[loc] = (instance.name, _is_elidable(instance, axis))
         _set_axisLabels(axis, labels)
 
 
@@ -200,7 +208,7 @@ def _automatic_labels(
                 labels[loc] = (default, True)
                 continue
             name = _label_name(instance, default, plain_italic)
-            labels[loc] = (name, name == default)
+            labels[loc] = (name, name == default or _is_elidable(instance, axis))
         _set_axisLabels(axis, labels)
 
     # The regular weight links to a style-linked bold wherever it sits on the

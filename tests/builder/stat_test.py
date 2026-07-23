@@ -338,6 +338,57 @@ def test_export_stat_table_off_on_only_one_variable_font_keeps_stat():
     ]
 
 
+def test_elidable_stat_axis_value_name_param():
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Regular", [400]), ("Bold", [700])],
+        [
+            ("Regular", [400], {"weight": "Regular"}),
+            (
+                "Bold",
+                [700],
+                {
+                    "weight": "Bold",
+                    "customParameters": {"Elidable STAT Axis Value Name": "wght"},
+                },
+            ),
+        ],
+    )
+    doc = to_designspace(font)
+
+    # Bold at wght=700 is normally not elidable, the parameter marks it elidable.
+    assert _labels(_axis(doc, "wght")) == [
+        ("Regular", 400, True, None),
+        ("Bold", 700, True, None),
+    ]
+
+
+def test_elidable_default_still_links_to_the_style_linked_bold():
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Regular", [400]), ("Bold", [700])],
+        [
+            (
+                "Book",
+                [400],
+                {
+                    "weight": "Regular",
+                    "customParameters": {"Elidable STAT Axis Value Name": "wght"},
+                },
+            ),
+            ("Bold", [700], {"weight": "Bold", "isBold": True, "linkStyle": "Regular"}),
+        ],
+    )
+    doc = to_designspace(font)
+
+    # The default value is named “Book”, but the parameter elides it, so Glyphs
+    # still pairs it with the bold.
+    assert _labels(_axis(doc, "wght")) == [
+        ("Book", 400, True, 700),
+        ("Bold", 700, False, None),
+    ]
+
+
 def test_style_name_as_stat_entry_manual_mode():
     # The parameter on any instance disables automatic derivation.
     font = _make_font(
