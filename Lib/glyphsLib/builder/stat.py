@@ -37,6 +37,11 @@ def _default_name(tag):
     return "Normal" if tag == "wdth" else "Regular"
 
 
+def _stat_disabled(instance):
+    export = instance.customParameters["Export STAT Table"]
+    return export is not None and not export
+
+
 def _stat_entry_tags(instance):
     return [
         param.value
@@ -59,7 +64,14 @@ def to_designspace_stat(self):
 
     # Glyphs builds a STAT only for a variable font, which needs a Variable Font
     # Setting instance. Do the same here.
-    if not any(i.type == InstanceType.VARIABLE for i in font.instances):
+    variable = [i for i in font.instances if i.type == InstanceType.VARIABLE]
+    if not variable:
+        return
+
+    # “Export STAT Table” = 0 turns the STAT off. Glyphs applies this per variable
+    # font, but varLib builds the STAT from the document as a whole, so we can only
+    # drop it when every variable-font instance turns it off.
+    if all(_stat_disabled(instance) for instance in variable):
         return
 
     axis_defs = {ad.tag: ad for ad in get_axis_definitions(font)}
