@@ -14,9 +14,25 @@
 
 
 import datetime
+import re
+
 from glyphsLib.types import parse_datetime
 
 UFO_FORMAT = "%Y/%m/%d %H:%M:%S"
+
+# Expand “text tokens”: https://handbook.glyphsapp.com/tokens/text/
+_TEXT_TOKEN_RE = re.compile(r"\{\{\{(.+?)\}\}\}")
+
+
+def expand_text_tokens(value, obj):
+    if not isinstance(value, str) or "{{{" not in value:
+        return value
+
+    def replace(match):
+        resolved = getattr(obj, match.group(1).strip(), None)
+        return str(resolved) if resolved is not None else match.group(0)
+
+    return _TEXT_TOKEN_RE.sub(replace, value)
 
 
 def to_ufo_time(datetime_obj):

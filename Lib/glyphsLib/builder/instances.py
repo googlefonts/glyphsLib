@@ -39,6 +39,7 @@ from .constants import (
     PROPERTIES_KEY,
     PROPERTIES_WHITELIST,
 )
+from .common import expand_text_tokens
 from .names import build_stylemap_names
 from .axes import (
     get_axis_definitions,
@@ -118,12 +119,13 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     # at least according to https://docu.glyphsapp.com/#fontName
 
     # Read either from properties or custom parameters or the font
-    ufo_instance.familyName = instance.familyName
-    ufo_instance.styleName = instance.name
-    ufo_instance.postScriptFontName = (
+    ufo_instance.familyName = expand_text_tokens(instance.familyName, instance)
+    ufo_instance.styleName = expand_text_tokens(instance.name, instance)
+    ufo_instance.postScriptFontName = expand_text_tokens(
         instance.properties.get("variablePostscriptFontName")
         or instance.properties.get("postscriptFontName")
-        or instance.customParameters["postscriptFontName"]
+        or instance.customParameters["postscriptFontName"],
+        instance,
     )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
@@ -177,7 +179,7 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
 
 def _to_custom_parameters(instance, ignore_disabled=False):
     return [
-        (item.name, item.value)
+        (item.name, expand_text_tokens(item.value, instance))
         for item in instance.customParameters
         if item.name not in CUSTOM_PARAMETERS_BLACKLIST
         and not (ignore_disabled and item.disabled)
@@ -209,7 +211,7 @@ def _to_filename(self, instance, ufo_instance):
 
 def _to_properties(instance):
     return [
-        (item.name, item.value)
+        (item.name, expand_text_tokens(item.value, instance))
         for item in instance.properties
         if item.name in PROPERTIES_WHITELIST
     ]

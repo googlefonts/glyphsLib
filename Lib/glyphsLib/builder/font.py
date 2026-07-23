@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from .common import to_ufo_time, from_ufo_time
+from .common import expand_text_tokens, to_ufo_time, from_ufo_time
 from .constants import (
     DEFAULT_FEATURE_WRITERS,
     UFO2FT_FEATURE_WRITERS_KEY,
@@ -103,7 +103,7 @@ def fill_ufo_metadata(master, ufo):
     for info_key, glyphs_key, name_id in PROPERTIES_FIELDS:
         value = properties.get(glyphs_key)
         if value:
-            setattr(ufo.info, info_key, value.value)
+            setattr(ufo.info, info_key, expand_text_tokens(value.value, font))
             # If the property has localized values, add them to openTypeNameRecords
             if name_id is not None and value._localized_values:
                 for lang, val in value._localized_values.items():
@@ -115,7 +115,7 @@ def fill_ufo_metadata(master, ufo):
                         {
                             "nameID": name_id,
                             "languageID": lang_id,
-                            "string": val,
+                            "string": expand_text_tokens(val, font),
                             "platformID": 3,  # Windows
                             "encodingID": 1,  # Unicode BMP
                         }

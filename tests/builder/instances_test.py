@@ -254,3 +254,153 @@ def test_rename_glyphs(tmpdir):
     assert len(ufos[1]["b"][0]) == 4  # Square
     assert ufos[0]["a"].unicode == 0x0061
     assert ufos[0]["b"].unicode == 0x0062
+
+
+def test_expand_instance_naming_tokens(ufo_module):
+    from glyphsLib.builder.instances import expand_text_tokens
+    from glyphsLib.builder.constants import PROPERTIES_KEY
+
+    font = glyphsLib.GSFont()
+    font.familyName = "Test"
+    font.copyright = "Some rights"
+    master = glyphsLib.GSFontMaster()
+    master.id = "m01"
+    font.masters.append(master)
+    instance = glyphsLib.GSInstance()
+    instance.name = "Bold"
+    font.instances = [instance]
+
+    assert expand_text_tokens("{{{familyName}}}-{{{name}}}", instance) == "Test-Bold"
+    assert expand_text_tokens("{{{fullName}}}", instance) == "Test Bold"
+    assert (
+        expand_text_tokens("{{{familyName}}}-{{{unknownKey}}}", instance)
+        == "Test-{{{unknownKey}}}"
+    )
+    assert expand_text_tokens("PlainName", instance) == "PlainName"
+    assert expand_text_tokens(None, instance) is None
+    # A font-only name (copyright) does not resolve against the instance, but
+    # does resolve against the font.
+    assert expand_text_tokens("{{{copyright}}}", instance) == "{{{copyright}}}"
+    assert expand_text_tokens("{{{copyright}}}", font) == "Some rights"
+
+    # End to end: tokens are expanded in the PostScript name, in the other
+    # instance name properties, and in the font-level names.
+    instance.customParameters["postscriptFontName"] = "{{{familyName}}}-{{{name}}}"
+    instance.properties["preferredFamilyNames"] = "{{{familyName}}} Text"
+    font.copyright = "(c) {{{familyName}}}"
+
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+    ds_instance = designspace.instances[0]
+    assert ds_instance.postScriptFontName == "Test-Bold"
+    assert dict(ds_instance.lib[PROPERTIES_KEY])["preferredFamilyNames"] == "Test Text"
+    assert designspace.sources[0].font.info.copyright == "(c) Test"
+
+
+def _token_test_font(family_name="Test", instance_name="Bold"):
+    """Minimal one-master, one-instance font with parent links set."""
+    font = glyphsLib.GSFont()
+    font.familyName = family_name
+    master = glyphsLib.GSFontMaster()
+    master.id = "m01"
+    font.masters.append(master)
+    instance = glyphsLib.GSInstance()
+    instance.name = instance_name
+    font.instances = [instance]
+    return font, instance
+
+
+def test_expand_font_level_name_properties(ufo_module):
+    font, _instance = _token_test_font("PropOnly", "Regular")
+    font.copyright = "(c) {{{familyName}}}"
+    font.properties["trademarks"] = "TM {{{familyName}}}"
+    font.properties["descriptions"] = "Desc {{{familyName}}}"
+    font.properties["licenses"] = "Lic {{{familyName}}}"
+    font.properties["sampleTexts"] = "Sample {{{familyName}}}"
+    font.properties["versionString"] = "Version {{{familyName}}}"
+    font.properties["manufacturers"] = "Mfg {{{familyName}}}"
+    font.properties["designers"] = "Des {{{familyName}}}"
+
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+    info = designspace.sources[0].font.info
+
+    assert info.copyright == "(c) PropOnly"
+    assert info.trademark == "TM PropOnly"
+    assert info.openTypeNameDescription == "Desc PropOnly"
+    assert info.openTypeNameLicense == "Lic PropOnly"
+    assert info.openTypeNameSampleText == "Sample PropOnly"
+    assert info.openTypeNameVersion == "Version PropOnly"
+    assert info.openTypeNameManufacturer == "Mfg PropOnly"
+    assert info.openTypeNameDesigner == "Des PropOnly"
+
+
+def test_expand_font_and_instance_custom_parameter_names(ufo_module):
+    from glyphsLib.builder.constants import CUSTOM_PARAMETERS_KEY
+    from glyphsLib.builder.instances import apply_instance_data_to_ufo
+
+    font, instance = _token_test_font("CpOnly", "Bold")
+    font.copyright = "(c) {{{familyName}}}"
+    font.customParameters["versionString"] = "CPVer {{{familyName}}}"
+    font.customParameters["trademark"] = "CPFontTM {{{familyName}}}"
+    font.customParameters["description"] = "CPDesc {{{familyName}}}"
+    font.customParameters["license"] = "CPLic {{{familyName}}}"
+    font.customParameters["sampleText"] = "CPSample {{{familyName}}}"
+
+    instance.customParameters["postscriptFontName"] = "{{{familyName}}}-{{{name}}}"
+    instance.customParameters["preferredFamilyName"] = "CP {{{familyName}}}"
+    instance.customParameters["postscriptFullName"] = "CPFull {{{familyName}}}"
+    instance.customParameters["trademark"] = "CPTM {{{familyName}}}"
+
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+    info = designspace.sources[0].font.info
+    assert info.copyright == "(c) CpOnly"
+    assert info.openTypeNameVersion == "CPVer CpOnly"
+    assert info.trademark == "CPFontTM CpOnly"
+    assert info.openTypeNameDescription == "CPDesc CpOnly"
+    assert info.openTypeNameLicense == "CPLic CpOnly"
+    assert info.openTypeNameSampleText == "CPSample CpOnly"
+
+    ds_instance = designspace.instances[0]
+    assert ds_instance.postScriptFontName == "CpOnly-Bold"
+    # Tokens must be expanded in Designspace custom parameters as well.
+    cps = dict(ds_instance.lib.get(CUSTOM_PARAMETERS_KEY) or [])
+    assert cps.get("preferredFamilyName") == "CP CpOnly"
+    assert cps.get("postscriptFullName") == "CPFull CpOnly"
+    assert cps.get("trademark") == "CPTM CpOnly"
+
+    ufo = ufo_module.Font()
+    apply_instance_data_to_ufo(ufo, ds_instance, designspace)
+    assert ufo.info.openTypeNamePreferredFamilyName == "CP CpOnly"
+    assert ufo.info.postscriptFullName == "CPFull CpOnly"
+    assert ufo.info.trademark == "CPTM CpOnly"
+
+
+def test_expand_variable_instance_naming_tokens(ufo_module):
+    from glyphsLib.classes import InstanceType
+
+    font = glyphsLib.GSFont()
+    font.familyName = "VFBase"
+    master = glyphsLib.GSFontMaster()
+    master.id = "m01"
+    font.masters.append(master)
+
+    variable = glyphsLib.GSInstance()
+    variable.name = "Regular"
+    variable.type = InstanceType.VARIABLE
+    variable.properties["postscriptFontName"] = "{{{familyName}}}VF"
+    variable.properties["preferredFamilyNames"] = "{{{familyName}}} Pref"
+
+    static = glyphsLib.GSInstance()
+    static.name = "Bold"
+    static.properties["postscriptFontName"] = "{{{familyName}}}-{{{name}}}"
+
+    font.instances = [variable, static]
+
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+
+    assert len(designspace.variableFonts) == 1
+    info = designspace.variableFonts[0].lib["public.fontInfo"]
+    assert info.get("postscriptFontName") == "VFBaseVF"
+    assert info.get("openTypeNamePreferredFamilyName") == "VFBase Pref"
+
+    # Static sibling on the same file still expands.
+    assert designspace.instances[0].postScriptFontName == "VFBase-Bold"

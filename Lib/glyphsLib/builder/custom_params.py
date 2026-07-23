@@ -19,7 +19,7 @@ import logging
 
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
-from .common import to_ufo_color
+from .common import expand_text_tokens, to_ufo_color
 from .constants import (
     GLYPHS_PREFIX,
     UFO2FT_COLOR_PALETTES_KEY,
@@ -114,13 +114,13 @@ class GlyphsObjectProxy:
         if len(values) > 1:
             raise RuntimeError(f"More than one value for this customParameter: {key}")
         if values:
-            return values[0]
+            return expand_text_tokens(values[0], self._owner)
         return None
 
     def get_custom_values(self, key):
         """Return a set of values for the given customParameter name."""
         self._handled.add(key)
-        return self._lookup[key]
+        return [expand_text_tokens(value, self._owner) for value in self._lookup[key]]
 
     def set_custom_value(self, key, value):
         """Set one custom parameter with the given value.
@@ -157,7 +157,7 @@ class GlyphsObjectProxy:
 
     def get_property(self, key):
         if key and hasattr(self._owner, "properties"):
-            return self._owner.properties.get(key)
+            return expand_text_tokens(self._owner.properties.get(key), self._owner)
         return None
 
 
