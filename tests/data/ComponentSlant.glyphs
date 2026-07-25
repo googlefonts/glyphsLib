@@ -1,0 +1,177 @@
+{
+.appVersion = "3260";
+.formatVersion = 3;
+date = "2024-11-13 17:01:56 +0000";
+familyName = "New Font";
+fontMaster = (
+{
+id = m01;
+metricValues = (
+{
+over = 16;
+pos = 800;
+},
+{
+over = 16;
+pos = 700;
+},
+{
+over = 16;
+pos = 500;
+},
+{
+over = -16;
+},
+{
+over = -16;
+pos = -200;
+},
+{
+pos = 10;
+}
+);
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = B;
+lastChange = "2024-11-13 17:03:00 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(207,0,ls),
+(340,0,o),
+(440,87,o),
+(440,203,cs),
+(440,274,o),
+(403,330,o),
+(343,358,c),
+(425,380,o),
+(482,452,o),
+(482,535,cs),
+(482,635,o),
+(402,700,o),
+(288,700,cs),
+(185,700,l),
+(62,0,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(176,338,l),
+(234,338,ls),
+(325,338,o),
+(384,284,o),
+(384,204,cs),
+(384,116,o),
+(311,52,o),
+(208,52,cs),
+(126,52,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(230,648,l),
+(286,648,ls),
+(374,648,o),
+(428,601,o),
+(428,531,cs),
+(428,449,o),
+(358,390,o),
+(263,390,cs),
+(185,390,l)
+);
+}
+);
+width = 508;
+}
+);
+unicode = 66;
+},
+{
+glyphname = bitcoin;
+lastChange = "2024-11-13 17:03:44 +0000";
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(297,650,l),
+(324,800,l),
+(276,800,l),
+(249,650,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(412,650,l),
+(439,800,l),
+(391,800,l),
+(364,650,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(163,-110,l),
+(191,50,l),
+(143,50,l),
+(115,-110,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(278,-110,l),
+(307,50,l),
+(259,50,l),
+(230,-110,l)
+);
+},
+{
+pos = (5,21);
+ref = B;
+scale = (1,0.94);
+slant = (-0.7,0);
+}
+);
+width = 508;
+}
+);
+unicode = 8383;
+}
+);
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

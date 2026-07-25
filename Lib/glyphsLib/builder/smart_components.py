@@ -202,12 +202,13 @@ def instantiate_smart_component(self, layer, component, pen):
 
     # Don't forget that the GSComponent might also be transformed, so
     # we need to apply that transformation to the new layer as well
-    if component.transform:
+    transform = component._transformMatrix()
+    if transform:
         # We must reverse path direction for flipped components
         # https://github.com/googlefonts/glyphsLib/issues/882
-        should_reverse = component.transform.determinant() < 0
+        should_reverse = transform.determinant() < 0
         for p in new_layer.paths:
-            p.applyTransform(component.transform)
+            p.applyTransform(transform)
             if should_reverse:
                 p.reverse()
 
