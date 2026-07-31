@@ -6,8 +6,8 @@ from .apply_origin_anchor import apply_origin_anchor
 from .propagate_anchors import propagate_all_anchors
 
 TRANSFORMATIONS = [
-    align_alternate_layers,
     apply_origin_anchor,
+    align_alternate_layers,
     propagate_all_anchors,
 ]
 
