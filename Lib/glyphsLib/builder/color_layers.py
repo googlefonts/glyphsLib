@@ -89,6 +89,21 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                     is_color_layer_glyph=is_color_layer_glyph,
                 )
             colorLayers.append((layerGlyphName, colorId))
+
+        # Intermediate color palette layers whose palette index is not used by
+        # any color layer can’t be mapped to a color layer glyph. Create their
+        # UFO layers anyway, since a sparse source is generated for each of them.
+        for by_color in brace_color_layers.values():
+            for colorId, brace_layers in by_color.items():
+                for brace_layer in brace_layers[seen[colorId] :]:
+                    builder.logger.warning(
+                        "%s: Glyph %s, layer %s: Intermediate color layer has no "
+                        "matching color layer and will be skipped",
+                        builder.font.familyName,
+                        glyph.name,
+                        brace_layer._brace_layer_name(),
+                    )
+                    _to_ufo_brace_layer(builder, master, brace_layer)
         layerMapping[glyph.name] = colorLayers
 
 
