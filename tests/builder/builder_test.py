@@ -26,6 +26,7 @@ import defcon
 import ufoLib2
 from textwrap import dedent
 from glyphsLib.classes import (
+    GSAxis,
     GSComponent,
     GSFeature,
     GSFont,
@@ -1417,6 +1418,200 @@ def test_glyph_color_palette_layers_explode_v3(ufo_module):
 
     assert len(ufo["a.color2"].components) == 1
     assert len(ufo["a.color2"]) == 0
+
+
+def test_glyph_color_palette_layers_with_intermediate_layers(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    def quad(offset):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(offset + i, offset + i), nodetype="line") for i in range(4)
+        ]
+        return path
+
+    master_id = font.masters[0].id
+    glypha = add_glyph(font, "a")
+    glypha.layers[0].paths.append(quad(0))
+
+    def add_layer(colorPalette=None, coordinates=None, offset=0):
+        layer = GSLayer()
+        layer.associatedMasterId = master_id
+        layer.width = 0
+        if colorPalette is not None:
+            layer.attributes["colorPalette"] = colorPalette
+        if coordinates is not None:
+            layer.attributes["coordinates"] = coordinates
+        layer.paths.append(quad(offset))
+        glypha.layers.append(layer)
+
+    # Two master color layers
+    add_layer(colorPalette=0, offset=1)
+    add_layer(colorPalette=1, offset=2)
+    # A plain intermediate layer at {50}
+    add_layer(coordinates=[50], offset=5)
+    # The intermediate counterparts of the two color layers.
+    add_layer(colorPalette=0, coordinates=[50], offset=6)
+    add_layer(colorPalette=1, coordinates=[50], offset=7)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    # Only the two master color layers end up in the COLR table.
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 0), ("a.color1", 1)]
+    }
+
+    # The color layer glyphs exist both in the default layer and in the {50}
+    # intermediate layer, so that they interpolate along the axis.
+    assert {"a", "a.color0", "a.color1"} <= set(ufo.layers.defaultLayer.keys())
+    intermediate_layer = ufo.layers["{50}"]
+    assert {"a", "a.color0", "a.color1"} <= set(intermediate_layer.keys())
+
+    # A sparse source was generated for the intermediate location.
+    assert [s.layerName for s in ds.sources] == [None, "{50}"]
+
+
+def test_glyph_color_palette_master_layer_with_intermediate_layer(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    def quad(offset):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(offset + i, offset + i), nodetype="line") for i in range(4)
+        ]
+        return path
+
+    master_id = font.masters[0].id
+    glypha = add_glyph(font, "a")
+    master_layer = glypha.layers[0]
+    master_layer.attributes["colorPalette"] = 0
+    master_layer.paths.append(quad(0))
+
+    color1 = GSLayer()
+    color1.associatedMasterId = master_id
+    color1.attributes["colorPalette"] = 1
+    color1.paths.append(quad(10))
+    glypha.layers.append(color1)
+
+    intermediate0 = GSLayer()
+    intermediate0.associatedMasterId = master_id
+    intermediate0.attributes["colorPalette"] = 0
+    intermediate0.attributes["coordinates"] = [50]
+    intermediate0.paths.append(quad(20))
+    intermediate0.paths.append(quad(30))
+    glypha.layers.append(intermediate0)
+
+    intermediate1 = GSLayer()
+    intermediate1.associatedMasterId = master_id
+    intermediate1.attributes["colorPalette"] = 1
+    intermediate1.attributes["coordinates"] = [50]
+    intermediate1.paths.append(quad(40))
+    glypha.layers.append(intermediate1)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a", 0), ("a.color1", 1)]
+    }
+
+    intermediate_layer = ufo.layers["{50}"]
+    assert {"a", "a.color1"} <= set(intermediate_layer.keys())
+    assert len(intermediate_layer["a"]) == 2
+    assert len(intermediate_layer["a.color1"]) == 1
+
+
+def test_glyph_color_palette_partial_intermediate_layers(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    def quad(offset):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(offset + i, offset + i), nodetype="line") for i in range(4)
+        ]
+        return path
+
+    master_id = font.masters[0].id
+    glypha = add_glyph(font, "a")
+
+    def add_layer(color_palette, coordinates=None, offset=0):
+        layer = GSLayer()
+        layer.associatedMasterId = master_id
+        layer.attributes["colorPalette"] = color_palette
+        if coordinates is not None:
+            layer.attributes["coordinates"] = coordinates
+        layer.paths.append(quad(offset))
+        glypha.layers.append(layer)
+        return layer
+
+    add_layer(color_palette=0, offset=10)
+    add_layer(color_palette=1, offset=20)
+    intermediate1 = add_layer(color_palette=1, coordinates=[50], offset=30)
+    intermediate1.paths.append(quad(40))
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 0), ("a.color1", 1)]
+    }
+
+    intermediate_layer = ufo.layers["{50}"]
+    assert "a.color1" in intermediate_layer
+    assert "a.color0" not in intermediate_layer
+    assert len(intermediate_layer["a.color1"]) == 2
+
+
+def test_glyph_color_palette_unordered_intermediate_layers(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    def quad(offset):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(offset + i, offset + i), nodetype="line") for i in range(4)
+        ]
+        return path
+
+    master_id = font.masters[0].id
+    glypha = add_glyph(font, "a")
+
+    def add_layer(color_palette, coordinates=None, offset=0):
+        layer = GSLayer()
+        layer.associatedMasterId = master_id
+        layer.attributes["colorPalette"] = color_palette
+        if coordinates is not None:
+            layer.attributes["coordinates"] = coordinates
+        layer.paths.append(quad(offset))
+        glypha.layers.append(layer)
+        return layer
+
+    add_layer(color_palette=0, offset=10)
+    add_layer(color_palette=1, offset=20)
+    # The intermediates come in the opposite order of the color layers.
+    add_layer(color_palette=1, coordinates=[50], offset=30).paths.append(quad(40))
+    add_layer(color_palette=0, coordinates=[50], offset=50)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 0), ("a.color1", 1)]
+    }
+
+    # Each color layer glyph gets the intermediate of its own palette, not the
+    # one that happens to come at the same position in the layer list.
+    intermediate_layer = ufo.layers["{50}"]
+    assert len(intermediate_layer["a.color0"]) == 1
+    assert len(intermediate_layer["a.color1"]) == 2
 
 
 def test_glyph_color_layers_no_unicode_mapping(ufo_module):

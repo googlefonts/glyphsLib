@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import math
 
 from fontTools.misc.transform import Identity, Transform
@@ -21,23 +22,88 @@ from .common import to_ufo_color
 from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
 
 
+def _to_ufo_brace_layer(builder, master, layer):
+    ufo_font = builder._sources[master.id].font
+    layer_name = layer._brace_layer_name()
+    if layer_name in ufo_font.layers:
+        return ufo_font.layers[layer_name]
+    return ufo_font.newLayer(layer_name)
+
+
 def _to_ufo_color_palette_layers(builder, master, layerMapping):
     for (glyph, masterLayer), layers in builder._color_palette_layers:
         if master.id != masterLayer.associatedMasterId:
             continue
 
+        # Group the intermediate color palette layers by location and then by
+        # palette index, so that each color layer glyph gets the intermediate
+        # with the same palette index. Several color layers can share a palette
+        # index, so we keep a list per index and consume it in document order.
+        brace_color_layers = {}
+        for l in glyph.layers:
+            if (
+                l.associatedMasterId == master.id
+                and l._is_color_palette_layer()
+                and l._is_brace_layer()
+            ):
+                by_color = brace_color_layers.setdefault(l._brace_layer_name(), {})
+                by_color.setdefault(l._color_palette_index(), []).append(l)
+
+        seen = collections.Counter()
         colorLayers = []
         for i, (layer, colorId) in enumerate(layers):
             if layer.layerId == master.id:
                 # This is master layer, we can re-use its UFO glyph.
                 layerGlyphName = glyph.name
+                is_color_layer_glyph = False
             else:
                 # Not the master layer, create a new UFO glyph for it.
                 layerGlyphName = f"{glyph.name}.color{i}"
+                is_color_layer_glyph = True
                 ufo_layer = builder.to_ufo_layer(glyph, masterLayer)
                 ufo_glyph = ufo_layer.newGlyph(layerGlyphName)
                 builder.to_ufo_glyph(ufo_glyph, layer, glyph, is_color_layer_glyph=True)
+
+            # Emit the same color layer glyph at each intermediate location.
+            n = seen[colorId]
+            seen[colorId] += 1
+            for by_color in brace_color_layers.values():
+                brace_layers = by_color.get(colorId, ())
+                if n >= len(brace_layers):
+                    continue
+                brace_layer = brace_layers[n]
+                ufo_brace_layer = _to_ufo_brace_layer(builder, master, brace_layer)
+                if layerGlyphName in ufo_brace_layer:
+                    builder.logger.warning(
+                        "%s: Glyph %s, layer %s: Duplicate color layer glyph",
+                        builder.font.familyName,
+                        layerGlyphName,
+                        ufo_brace_layer.name,
+                    )
+                    continue
+                ufo_brace_glyph = ufo_brace_layer.newGlyph(layerGlyphName)
+                builder.to_ufo_glyph(
+                    ufo_brace_glyph,
+                    brace_layer,
+                    glyph,
+                    is_color_layer_glyph=is_color_layer_glyph,
+                )
             colorLayers.append((layerGlyphName, colorId))
+
+        # Intermediate color palette layers whose palette index is not used by
+        # any color layer can’t be mapped to a color layer glyph. Create their
+        # UFO layers anyway, since a sparse source is generated for each of them.
+        for by_color in brace_color_layers.values():
+            for colorId, brace_layers in by_color.items():
+                for brace_layer in brace_layers[seen[colorId] :]:
+                    builder.logger.warning(
+                        "%s: Glyph %s, layer %s: Intermediate color layer has no "
+                        "matching color layer and will be skipped",
+                        builder.font.familyName,
+                        glyph.name,
+                        brace_layer._brace_layer_name(),
+                    )
+                    _to_ufo_brace_layer(builder, master, brace_layer)
         layerMapping[glyph.name] = colorLayers
 
 
