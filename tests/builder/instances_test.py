@@ -404,3 +404,56 @@ def test_expand_variable_instance_naming_tokens(ufo_module):
 
     # Static sibling on the same file still expands.
     assert designspace.instances[0].postScriptFontName == "VFBase-Bold"
+
+
+def test_expand_font_level_tokens_in_instance_context(ufo_module):
+    from glyphsLib.builder.instances import apply_instance_data_to_ufo
+
+    font, instance = _token_test_font("Acme", "Bold")
+    instance.properties["familyNames"] = "Other"
+    font.copyright = "(c) {{{familyName}}}"
+    font.properties["trademarks"] = "TM {{{familyName}}}"
+    font.properties["descriptions"] = "Desc {{{familyName}}}"
+    font.properties["licenses"] = "Lic {{{familyName}}}"
+    font.properties["sampleTexts"] = "Sample {{{familyName}}}"
+    font.properties["versionString"] = "Version {{{familyName}}}"
+    font.properties["manufacturers"] = "Mfg {{{familyName}}}"
+    font.properties["designers"] = "Des {{{familyName}}}"
+
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+    ds_instance = designspace.instances[0]
+    assert ds_instance.familyName == "Other"
+
+    ufo = ufo_module.Font()
+    master_info = designspace.sources[0].font.info
+    for attr in (
+        "copyright",
+        "trademark",
+        "openTypeNameDescription",
+        "openTypeNameLicense",
+        "openTypeNameSampleText",
+        "openTypeNameVersion",
+        "openTypeNameManufacturer",
+        "openTypeNameDesigner",
+        "familyName",
+        "styleName",
+    ):
+        value = getattr(master_info, attr, None)
+        if value is not None:
+            setattr(ufo.info, attr, value)
+
+    apply_instance_data_to_ufo(ufo, ds_instance, designspace)
+    if ds_instance.familyName is not None:
+        ufo.info.familyName = ds_instance.familyName
+    if ds_instance.styleName is not None:
+        ufo.info.styleName = ds_instance.styleName
+
+    assert ufo.info.familyName == "Other"
+    assert ufo.info.copyright == "(c) Other"
+    assert ufo.info.trademark == "TM Other"
+    assert ufo.info.openTypeNameDescription == "Desc Other"
+    assert ufo.info.openTypeNameLicense == "Lic Other"
+    assert ufo.info.openTypeNameSampleText == "Sample Other"
+    assert ufo.info.openTypeNameVersion == "Version Other"
+    assert ufo.info.openTypeNameManufacturer == "Mfg Other"
+    assert ufo.info.openTypeNameDesigner == "Des Other"
