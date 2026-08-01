@@ -39,6 +39,8 @@ from .constants import (
     PROPERTIES_KEY,
     PROPERTIES_WHITELIST,
 )
+from .common import expand_text_tokens
+from .font import PROPERTIES_FIELDS
 from .names import build_stylemap_names
 from .axes import (
     get_axis_definitions,
@@ -118,12 +120,13 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     # at least according to https://docu.glyphsapp.com/#fontName
 
     # Read either from properties or custom parameters or the font
-    ufo_instance.familyName = instance.familyName
-    ufo_instance.styleName = instance.name
-    ufo_instance.postScriptFontName = (
+    ufo_instance.familyName = expand_text_tokens(instance.familyName, instance)
+    ufo_instance.styleName = expand_text_tokens(instance.name, instance)
+    ufo_instance.postScriptFontName = expand_text_tokens(
         instance.properties.get("variablePostscriptFontName")
         or instance.properties.get("postscriptFontName")
-        or instance.customParameters["postscriptFontName"]
+        or instance.customParameters["postscriptFontName"],
+        instance,
     )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
@@ -168,7 +171,7 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     parameters = _to_custom_parameters(instance, ignore_disabled_cp)
     if parameters:
         ufo_instance.lib[CUSTOM_PARAMETERS_KEY] = parameters
-    properties = _to_properties(instance)
+    properties = _to_properties(self, instance)
     if properties:
         ufo_instance.lib[PROPERTIES_KEY] = properties
 
@@ -177,7 +180,7 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
 
 def _to_custom_parameters(instance, ignore_disabled=False):
     return [
-        (item.name, item.value)
+        (item.name, expand_text_tokens(item.value, instance))
         for item in instance.customParameters
         if item.name not in CUSTOM_PARAMETERS_BLACKLIST
         and not (ignore_disabled and item.disabled)
@@ -207,12 +210,21 @@ def _to_filename(self, instance, ufo_instance):
     )
 
 
-def _to_properties(instance):
-    return [
-        (item.name, item.value)
-        for item in instance.properties
-        if item.name in PROPERTIES_WHITELIST
-    ]
+def _to_properties(self, instance):
+    properties = {}
+    if not self.minimize_glyphs_diffs:
+        # A font-level name string resolves its tokens against the instance
+        # being exported. Carry the properties that have tokens over to the
+        # instance so they override the value the master was built with.
+        for item in self.font.properties:
+            if item.key in PROPERTIES_WHITELIST and item.value != (
+                expanded := expand_text_tokens(item.value, instance)
+            ):
+                properties[item.key] = expanded
+    for item in instance.properties:
+        if item.name in PROPERTIES_WHITELIST:
+            properties[item.name] = expand_text_tokens(item.value, instance)
+    return list(properties.items())
 
 
 def _is_instance_included_in_family(self, instance):
@@ -467,3 +479,11 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
     to_ufo_custom_params(None, ufo, glyphs_instance)
+
+    # The name properties that have no custom parameter handler are only read
+    # by fill_ufo_metadata, which builds masters. Apply them here so instances
+    # get their own values.
+    for info_key, glyphs_key, _ in PROPERTIES_FIELDS:
+        value = glyphs_instance.properties.get(glyphs_key)
+        if value is not None:
+            setattr(ufo.info, info_key, value)
