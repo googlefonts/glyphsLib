@@ -54,7 +54,7 @@ from glyphsLib.classes import (
     CURVE,
     OFFCURVE,
 )
-from glyphsLib.types import Point, Transform, Rect
+from glyphsLib.types import Point, Rect
 
 TESTFILE_PATH = os.path.join(
     os.path.dirname(__file__), os.path.join("data", "GlyphsUnitTestSans.glyphs")
@@ -1379,7 +1379,7 @@ class GSLayerFromFileTest(GSObjectsTestCase):
         self.assertEqual([0.0, 0.0, 489.0, 637.0], list(image.crop))
         # Default values
         self.assertEqual(50, image.alpha)
-        self.assertEqual([1, 0, 0, 1, 0, 0], image.transform.value)
+        self.assertEqual((1, 0, 0, 1, 0, 0), image.transform)
         self.assertEqual(False, image.locked)
 
         # Test documented behaviour of "alpha"
@@ -1493,8 +1493,8 @@ class GSComponentFromFileTest(GSObjectsTestCase):
         self.assertFloat(self.component.rotation)
 
     def test_transform(self):
-        self.assertIsInstance(self.component.transform, Transform)
-        self.assertEqual(len(self.component.transform.value), 6)
+        self.assertIs(type(self.component.transform), tuple)
+        self.assertEqual(len(self.component.transform), 6)
 
     def test_bounds(self):
         self.assertIsInstance(self.component.bounds, Rect)

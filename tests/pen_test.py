@@ -2,7 +2,6 @@ import fontTools.pens.recordingPen
 from fontTools.pens.pointPen import PointToSegmentPen
 
 import glyphsLib.classes as classes
-from glyphsLib.types import Transform
 
 
 def test_pen_roundtrip(datadir, ufo_module):
@@ -77,10 +76,10 @@ def test_pen_recording(datadir):
         ("moveTo", ((462, 387),)),
         ("curveTo", ((458, 358), (514, 295), (450, 301))),
         ("endPath", ()),
-        ("addComponent", ("dieresis", Transform(1, 0, 0, 1, 108, -126))),
+        ("addComponent", ("dieresis", (1, 0, 0, 1, 108, -126))),
         (
             "addComponent",
-            ("adieresis", Transform(0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
+            ("adieresis", (0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
         ),
     ]
 
@@ -130,10 +129,10 @@ def test_pointpen_recording(datadir):
         ("addPoint", ((514, 295), None, False, None), {"userData": {}}),
         ("addPoint", ((450, 301), "curve", False, None), {"userData": {}}),
         ("endPath", (), {}),
-        ("addComponent", ("dieresis", Transform(1, 0, 0, 1, 108, -126)), {}),
+        ("addComponent", ("dieresis", (1, 0, 0, 1, 108, -126)), {}),
         (
             "addComponent",
-            ("adieresis", Transform(0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
+            ("adieresis", (0.84572, 0.30782, -0.27362, 0.75175, 517, 308)),
             {},
         ),
     ]

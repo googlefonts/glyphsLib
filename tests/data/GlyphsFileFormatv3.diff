@@ -666,7 +666,7 @@
   locked = 1;
   ref = A;
   scale = (0.8,0.8);
-- slant = (10,0);
+  slant = (10,0);
   }
   );
   width = 367;

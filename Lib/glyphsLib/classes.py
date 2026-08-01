@@ -25,6 +25,7 @@ from enum import IntEnum
 from io import StringIO
 
 # renamed to avoid shadowing glyphsLib.types.Transform imported further below
+from fontTools.misc.bezierTools import solveQuadratic
 from fontTools.misc.transform import Identity, Transform as Affine
 from fontTools.pens.basePen import AbstractPen
 from fontTools.pens.pointPen import (
@@ -291,6 +292,118 @@ def transformStructToScaleAndRotation(transform):
         _R += 360
 
     return _sX, _sY, _R
+
+
+# Anything smaller than this is float noise, not a meaningful transform value.
+_TRANSFORM_EPSILON = 1e-12
+
+
+def composeGlyphs3Transform(position, scale, rotation, slant):
+    """Combine the Glyphs 3 transform fields into an affine matrix.
+
+    Points are scaled first, then rotated, then slanted, then translated, which
+    is the order Glyphs.app uses. `rotation` and both components of `slant` are
+    in degrees.
+    """
+    if not rotation and not slant[0] and not slant[1]:
+        # Shortcut for the overwhelmingly common case, and not only for speed:
+        # it keeps the numbers exactly as the file spelled them, so a component
+        # placed at an integer offset does not turn its anchors into floats on
+        # the way to the UFO.
+        return Transform(scale[0], 0, 0, scale[1], position[0], position[1])
+    return Transform(
+        *Affine()
+        .translate(position[0], position[1])
+        .skew(math.radians(slant[0]), math.radians(slant[1]))
+        .rotate(math.radians(rotation))
+        .scale(scale[0], scale[1])
+    )
+
+
+def _linearPartClose(t1, t2, epsilon=1e-9):
+    magnitude = max(1.0, max(abs(v) for v in t2[:4]))
+    return all(abs(v1 - v2) <= epsilon * magnitude for v1, v2 in zip(t1[:4], t2[:4]))
+
+
+def _snapToZero(value, epsilon=1e-9):
+    return 0.0 if abs(value) < epsilon else value
+
+
+def decomposeGlyphs3Transform(transform):
+    """Split an affine matrix into Glyphs 3 transform fields.
+
+    The inverse of :func:`composeGlyphs3Transform`; returns
+    ``(position, scale, rotation, slant)``, or None for a matrix that cannot be
+    expressed that way (a singular one, essentially).
+
+    Only needed when writing a format 3 file, which has no raw matrix key for
+    components. Reading format 3 goes the other way, and format 2 stores the
+    matrix as-is.
+    """
+    # Read the matrix column-vector style, translation peeled off:
+    #     M = [[a, b], [d, e]]  with a=xx, b=yx, d=xy, e=yy
+    a, d, b, e = transform[0], transform[1], transform[2], transform[3]
+
+    # M is expressible as K @ R @ S -- with K = [[1, kx], [ky, 1]],
+    # kx = tan(slantX), ky = tan(slantY) -- exactly when the columns of
+    # K^-1 @ M are orthogonal, i.e. when (kx, ky) lies on the conic
+    #     de*kx^2 + ab*ky^2 - (ae+bd)*(kx+ky) + (ab+de) = 0.
+    # We need canonical points on that curve, not the whole curve.
+    linear = a * e + b * d
+    constant = a * b + d * e
+    candidates = [(kx, 0.0) for kx in solveQuadratic(d * e, -linear, constant)]
+    candidates += [(0.0, ky) for ky in solveQuadratic(a * b, -linear, constant)]
+    if abs(a) > _TRANSFORM_EPSILON and abs(e) > _TRANSFORM_EPSILON:
+        # The rotation-free solution. It is always on the conic when a and e are
+        # nonzero: substituting kx=b/e, ky=d/a leaves (ab+de) - (ab+de) = 0. It
+        # is what covers the shears the two branches above cannot reach -- a
+        # vertical shear steeper than atan(1/2) has no slantY=0 form at all.
+        candidates.append((b / e, d / a))
+
+    best = None
+    for kx, ky in candidates:
+        detK = 1.0 - kx * ky
+        if abs(detK) < 1e-9:
+            continue
+        # N = K^-1 @ M has orthogonal columns by construction, so it is
+        # R(rotation) @ S(scale) and can be read off directly
+        n00, n01 = (a - kx * d) / detK, (b - kx * e) / detK
+        n10, n11 = (d - ky * a) / detK, (e - ky * b) / detK
+        scaleX = math.hypot(n00, n10)
+        if scaleX < _TRANSFORM_EPSILON:
+            continue
+        angle = math.atan2(n10, n00)
+        scaleY = -math.sin(angle) * n01 + math.cos(angle) * n11
+        fields = (
+            Point(transform[4], transform[5]),
+            (scaleX, scaleY),
+            math.degrees(angle),
+            (math.degrees(math.atan(kx)), math.degrees(math.atan(ky))),
+        )
+        if not _linearPartClose(composeGlyphs3Transform(*fields), transform):
+            continue
+        # prefer no vertical slant (all the Glyphs UI can express), then the
+        # gentlest shear
+        rank = (0 if abs(ky) < _TRANSFORM_EPSILON else 1, kx * kx + ky * ky)
+        if best is None or rank < best[0]:
+            best = (rank, fields)
+
+    if best is None:
+        return None
+    position, (scaleX, scaleY), rotation, slant = best[1]
+    if abs(abs(rotation) - 180.0) < 1e-9 and scaleY < 0:
+        # A mirror reads (and diffs) better as scale=(-1,1) than as angle=180
+        # scale=(1,-1) -- same matrix, same one negative scale, but no angle
+        # key at all. Only mirrors: a real 180 degree rotation has a positive
+        # scaleY here, and folding that one would just make both scales
+        # negative for nothing.
+        rotation, scaleX, scaleY = 0.0, -scaleX, -scaleY
+    return (
+        position,
+        (scaleX, scaleY),
+        _snapToZero(rotation),
+        (_snapToZero(slant[0]), _snapToZero(slant[1])),
+    )
 
 
 class GSApplication:
@@ -2586,13 +2699,189 @@ class segment(list):
         return min(xvalues), min(yvalues), max(xvalues), max(yvalues)
 
 
-class GSComponent(GSBase):
+def _asPair(value, singleY=None):
+    """Normalize a scale/slant value to a pair.
+
+    A lone number means both components for scale, but only the x component for
+    slant -- a single slant value is an italic angle, not a diagonal one. The
+    numbers are passed through as they came, ints included: a component written
+    with whole-number values should not gain a decimal point on a round trip.
+    """
+    if isinstance(value, (int, float)):
+        return (value, value if singleY is None else singleY)
+    if len(value) == 2:
+        return (value[0], value[1])
+    raise ValueError(value)
+
+
+class _GSTransformable(GSBase):
+    """Base for objects carrying a Glyphs 3 style transform.
+
+    Glyphs 3 stores a component transform as separate `pos`, `scale`, `angle`
+    and `slant` values; Glyphs 2 stores a raw matrix. We keep whichever the
+    source used, and convert only in the direction that is lossless.
+
+    A field-born object -- parsed from format 3, or built through the
+    `position`/`scale`/`rotation`/`slant` properties -- keeps those fields
+    authoritative and caches their composed matrix, so the numbers a user
+    typed round-trip verbatim and a nonzero vertical slant survives (no
+    skewX-only decomposition could regenerate it).
+    A matrix-born object -- parsed from format 2, converted from UFO, or handed
+    a `transform` -- keeps the matrix, and decomposes only where it has to: on
+    the way out to format 3, which has no matrix key.
+
+    The public `transform` property is a tuple, matching Glyphs.app. Internal
+    code may use `_transformMatrix()` when it consumes the matrix immediately,
+    but must not expose that mutable backing object.
+    """
+
+    _parent = None
+
+    def _initTransform(self):
+        self._position = Point(0, 0)
+        self._scale = (1, 1)
+        self._rotation = 0.0
+        self._slant = (0, 0)
+        # None means the fields above are the source of truth
+        self._transform = None
+        # The default fields already describe this identity matrix. Field
+        # setters invalidate it; the first matrix consumer composes it again.
+        self._composedTransform = Transform(1, 0, 0, 1, 0, 0)
+
+    @property
+    def parent(self):
+        return self._parent
+
+    def _transformFields(self):
+        """The (position, scale, rotation, slant) view of this transform."""
+        if self._transform is None:
+            return self._position, self._scale, self._rotation, self._slant
+        decomposed = decomposeGlyphs3Transform(self._transform)
+        if decomposed is None:
+            # A singular matrix has no such decomposition -- a collapsed or
+            # empty shape. Fall back to the legacy approximation, which drops
+            # the shear and is what this did for every matrix before slant
+            # existed, or to plain column lengths where even that divides by
+            # zero (it scales the angle by sX/sY).
+            matrix = self._transform
+            if math.hypot(matrix[2], matrix[3]):
+                scaleX, scaleY, rotation = transformStructToScaleAndRotation(
+                    matrix.value
+                )
+            else:
+                scaleX, scaleY, rotation = math.hypot(matrix[0], matrix[1]), 0.0, 0.0
+            decomposed = (
+                Point(matrix[4], matrix[5]),
+                (scaleX, scaleY),
+                rotation,
+                (0.0, 0.0),
+            )
+        return decomposed
+
+    def _switchToFields(self):
+        """Make the fields the source of truth, decomposing a stored matrix."""
+        if self._transform is not None:
+            (
+                self._position,
+                self._scale,
+                self._rotation,
+                self._slant,
+            ) = self._transformFields()
+            self._transform = None
+
+    # .transform
+    def _invalidateTransformCache(self):
+        # Glyphs 3 parsing assigns pos, scale, angle and slant one at a time.
+        # Rebuilding the matrix here would compose several partial transforms,
+        # or require parser-specific lifecycle hooks to batch those updates.
+        # Leave it dirty instead: the first matrix consumer composes it once,
+        # and later consumers reuse that result.
+        self._composedTransform = None
+
+    def _transformMatrix(self):
+        """The raw matrix for internal consumers that will not mutate it."""
+        if self._transform is not None:
+            return self._transform
+        if self._composedTransform is None:
+            self._composedTransform = composeGlyphs3Transform(
+                self._position, self._scale, self._rotation, self._slant
+            )
+        return self._composedTransform
+
+    @property
+    def transform(self):
+        return tuple(self._transformMatrix())
+
+    @transform.setter
+    def transform(self, value):
+        # Store a value copy: Glyphs.app's getter returns a tuple, so assigning
+        # a complete transform never exposes mutable backing storage.
+        self._transform = Transform(*value)
+
+    # .position
+    @property
+    def position(self):
+        if self._transform is not None:
+            return Point(self._transform[4], self._transform[5])
+        # Match the matrix-born and Glyphs.app value semantics: mutating the
+        # returned Point does not mutate the component behind the property's
+        # back (and therefore cannot make the composed-matrix cache stale).
+        return Point(self._position[0], self._position[1])
+
+    @position.setter
+    def position(self, value):
+        # Translation is independent of the linear part, so this is exact on a
+        # matrix-born object too -- no reason to decompose for it.
+        if self._transform is not None:
+            self._transform[4] = value[0]
+            self._transform[5] = value[1]
+        else:
+            self._position = Point(value[0], value[1])
+            self._invalidateTransformCache()
+
+    # .scale
+    @property
+    def scale(self):
+        return self._transformFields()[1]
+
+    @scale.setter
+    def scale(self, value):
+        self._switchToFields()
+        self._scale = _asPair(value)
+        self._invalidateTransformCache()
+
+    # .rotation
+    @property
+    def rotation(self):
+        return self._transformFields()[2]
+
+    @rotation.setter
+    def rotation(self, value):
+        self._switchToFields()
+        self._rotation = float(value)
+        self._invalidateTransformCache()
+
+    # .slant
+    @property
+    def slant(self):
+        return self._transformFields()[3]
+
+    @slant.setter
+    def slant(self, value):
+        self._switchToFields()
+        self._slant = _asPair(value, singleY=0.0)
+        self._invalidateTransformCache()
+
+
+class GSComponent(_GSTransformable):
     def _serialize_to_plist(self, writer):
         # NOTE: The fields should come in alphabetical order.
         writer.writeObjectKeyValue(self, "alignment", "if_true")
         writer.writeObjectKeyValue(self, "anchor", "if_true")
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            position, scale, rotation, slant = self._transformFields()
+            if rotation != 0:
+                writer.writeKeyValue("angle", rotation)
             if self.attributes:
                 writer.writeObjectKeyValue(self, "attributes", keyName="attr")
         writer.writeObjectKeyValue(self, "locked", "if_true")
@@ -2601,22 +2890,23 @@ class GSComponent(GSBase):
         if self.smartComponentValues:
             writer.writeKeyValue("piece", self.smartComponentValues)
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(
-                self, "position", keyName="pos", default=Point(0, 0)
-            )
+            if position != Point(0, 0):
+                writer.writeKeyValue("pos", position)
             writer.writeObjectKeyValue(self, "name", keyName="ref")
-            if self.scale != (1, 1):
-                writer.writeKeyValue("scale", Point(list(self.scale)))
+            if tuple(scale) != (1, 1):
+                writer.writeKeyValue("scale", Point(*scale))
+            if tuple(slant) != (0, 0):
+                writer.writeKeyValue("slant", Point(*slant))
         if writer.format_version == 2:
-            writer.writeObjectKeyValue(
-                self, "transform", self.transform != Transform(1, 0, 0, 1, 0, 0)
-            )
+            transform = self._transformMatrix()
+            if transform != Transform(1, 0, 0, 1, 0, 0):
+                writer.writeKeyValue("transform", transform)
 
     _defaultsForName = {"transform": Transform(1, 0, 0, 1, 0, 0)}
-    _parent = None
 
     # TODO: glyph arg is required
     def __init__(self, glyph="", offset=(0, 0), scale=(1, 1), transform=None):
+        self._initTransform()
         self.alignment = 0
         self.anchor = ""
         self.locked = False
@@ -2629,84 +2919,29 @@ class GSComponent(GSBase):
 
         self.smartComponentValues = {}
 
-        if transform is None:
-            if scale != (1, 1) or offset != (0, 0):
-                xx, yy = scale
-                dx, dy = offset
-                self.transform = Transform(xx, 0, 0, yy, dx, dy)
-            else:
-                self.transform = copy.deepcopy(self._defaultsForName["transform"])
-        else:
+        if transform is not None:
             self.transform = transform
+        else:
+            if tuple(scale) != (1, 1):
+                self.scale = scale
+            if tuple(offset) != (0, 0):
+                self.position = Point(offset[0], offset[1])
 
     def clone(self):
-        return GSComponent(self.name, transform=copy.deepcopy(self.transform))
+        component = GSComponent(self.name)
+        component._position = copy.deepcopy(self._position)
+        component._scale = self._scale
+        component._rotation = self._rotation
+        component._slant = self._slant
+        component._transform = copy.deepcopy(self._transform)
+        component._composedTransform = copy.deepcopy(self._composedTransform)
+        return component
 
     def __repr__(self):
+        position = self.position
         return '<GSComponent "{}" x={:.1f} y={:.1f}>'.format(
-            self.name, self.transform[4], self.transform[5]
+            self.name, position[0], position[1]
         )
-
-    @property
-    def parent(self):
-        return self._parent
-
-    # .position
-    @property
-    def position(self):
-        return Point(self.transform[4], self.transform[5])
-
-    @position.setter
-    def position(self, value):
-        self.transform[4] = value[0]
-        self.transform[5] = value[1]
-
-    # .scale
-    @property
-    def scale(self):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
-        return self._sX, self._sY
-
-    @scale.setter
-    def scale(self, value):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
-        if type(value) in [int, float]:
-            self._sX = value
-            self._sY = value
-        elif type(value) in [tuple, list] and len(value) == 2:
-            self._sX, self._sY = value
-        else:
-            raise ValueError
-        self.updateAffineTransform()
-
-    # .rotation
-    @property
-    def rotation(self):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
-        return self._R
-
-    @rotation.setter
-    def rotation(self, value):
-        self._sX, self._sY, self._R = transformStructToScaleAndRotation(
-            self.transform.value
-        )
-        self._R = value
-        self.updateAffineTransform()
-
-    def updateAffineTransform(self):
-        affine = (
-            Affine()
-            .translate(self.transform[4], self.transform[5])
-            .rotate(math.radians(self._R))
-            .scale(self._sX, self._sY)
-        )
-        self.transform = Transform(*affine)
 
     @property
     def componentName(self):
@@ -2774,6 +3009,7 @@ GSComponent._add_parsers(
         {"plist_name": "pos", "object_name": "position", "converter": Point},
         {"plist_name": "ref", "object_name": "name"},
         {"plist_name": "locked", "converter": bool},
+        {"plist_name": "slant", "converter": Point},
     ]
 )
 
@@ -3510,37 +3746,41 @@ GSInstance._add_parsers(
 )
 
 
-class GSBackgroundImage(GSBase):
+class GSBackgroundImage(_GSTransformable):
     def _serialize_to_plist(self, writer):
         writer.writeObjectKeyValue(self, "_alpha", keyName="alpha", default=50)
         if writer.format_version > 2:
-            writer.writeObjectKeyValue(self, "rotation", keyName="angle", default=0)
+            position, scale, rotation, slant = self._transformFields()
+            if rotation != 0:
+                writer.writeKeyValue("angle", rotation)
             writer.writeObjectKeyValue(self, "crop", default=Rect())
         else:
             writer.writeObjectKeyValue(self, "crop")
         writer.writeObjectKeyValue(self, "imagePath")
         writer.writeObjectKeyValue(self, "locked", "if_true")
         if writer.format_version > 2:
-            if self.position != Point(0, 0):
-                writer.writeObjectKeyValue(self, "position", keyName="pos")
-            if self.scale != (1.0, 1.0):
-                writer.writeKeyValue("scale", Point(list(self.scale)))
+            if position != Point(0, 0):
+                writer.writeKeyValue("pos", position)
+            if tuple(scale) != (1.0, 1.0):
+                writer.writeKeyValue("scale", Point(*scale))
+            # Background images take a slant key just like components do:
+            # Glyphs 3.4.1 reads one, applies it to the image, and writes it
+            # back unchanged.
+            if tuple(slant) != (0, 0):
+                writer.writeKeyValue("slant", Point(*slant))
         else:
-            writer.writeObjectKeyValue(
-                self, "transform", default=Transform(1, 0, 0, 1, 0, 0)
-            )
+            transform = self._transformMatrix()
+            if transform != Transform(1, 0, 0, 1, 0, 0):
+                writer.writeKeyValue("transform", transform)
 
     _defaultsForName = {"alpha": 50, "transform": Transform(1, 0, 0, 1, 0, 0)}
 
     def __init__(self, path=None):
-        self._R = 0.0
-        self._sX = 1.0
-        self._sY = 1.0
+        self._initTransform()
         self.alpha = self._defaultsForName["alpha"]
         self.crop = Rect()
         self.imagePath = path
         self.locked = False
-        self.transform = copy.deepcopy(self._defaultsForName["transform"])
 
     def __repr__(self):
         return "<GSBackgroundImage '%s'>" % self.imagePath
@@ -3562,42 +3802,6 @@ class GSBackgroundImage(GSBase):
         # else:
         self.imagePath = value
 
-    # .position
-    @property
-    def position(self):
-        return Point(self.transform[4], self.transform[5])
-
-    @position.setter
-    def position(self, value):
-        self.transform[4] = value[0]
-        self.transform[5] = value[1]
-
-    # .scale
-    @property
-    def scale(self):
-        return self._sX, self._sY
-
-    @scale.setter
-    def scale(self, value):
-        if type(value) in [int, float]:
-            self._sX = value
-            self._sY = value
-        elif type(value) in [tuple, list] and len(value) == 2:
-            self._sX, self._sY = value
-        else:
-            raise ValueError
-        self.updateAffineTransform()
-
-    # .rotation
-    @property
-    def rotation(self):
-        return self._R
-
-    @rotation.setter
-    def rotation(self, value):
-        self._R = value
-        self.updateAffineTransform()
-
     # .alpha
     @property
     def alpha(self):
@@ -3609,15 +3813,6 @@ class GSBackgroundImage(GSBase):
             value = 50
         self._alpha = value
 
-    def updateAffineTransform(self):
-        affine = (
-            Affine()
-            .translate(self.transform[4], self.transform[5])
-            .rotate(math.radians(self._R))
-            .scale(self._sX, self._sY)
-        )
-        self.transform = Transform(*affine)
-
 
 GSBackgroundImage._add_parsers(
     [
@@ -3625,7 +3820,8 @@ GSBackgroundImage._add_parsers(
         {"plist_name": "crop", "converter": Rect},
         {"plist_name": "locked", "converter": bool},
         {"plist_name": "angle", "object_name": "rotation"},
-        {"plist_name": "pos", "object_name": "position"},
+        {"plist_name": "pos", "object_name": "position", "converter": Point},
+        {"plist_name": "slant", "converter": Point},
     ]
 )
 
