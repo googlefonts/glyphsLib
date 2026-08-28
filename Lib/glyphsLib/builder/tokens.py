@@ -1,6 +1,39 @@
-import re
+import ast
 import fnmatch
+import operator
+import re
 from collections import OrderedDict
+
+_BINARY_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+}
+_UNARY_OPERATORS = {
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
+}
+
+
+def _evaluate_number_expression(expression):
+    try:
+        tree = ast.parse(expression.strip(), mode="eval")
+    except SyntaxError as e:
+        raise ValueError("Invalid number token expression") from e
+
+    def evaluate(node):
+        if isinstance(node, ast.Constant) and type(node.value) in (int, float):
+            return node.value
+        if isinstance(node, ast.BinOp) and type(node.op) in _BINARY_OPERATORS:
+            return _BINARY_OPERATORS[type(node.op)](
+                evaluate(node.left), evaluate(node.right)
+            )
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _UNARY_OPERATORS:
+            return _UNARY_OPERATORS[type(node.op)](evaluate(node.operand))
+        raise ValueError("Unsupported number token expression")
+
+    return evaluate(tree.body)
 
 
 def _like(got, expected):
@@ -102,9 +135,7 @@ class TokenExpander:
             else:
                 expression += self.parse_bare_number_value(m[1])
             token = token[len(m[0]) :]
-        # This expression is now just numbers and operators - safe to eval,
-        # but needs to be an integer
-        return "%i" % eval(expression)
+        return "%i" % _evaluate_number_expression(expression)
 
     def parse_glyph_property(self, token):
         glyphname, token = token.split(":")

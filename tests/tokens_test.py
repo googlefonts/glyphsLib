@@ -20,9 +20,10 @@ from glyphsLib.classes import GSFont
 from glyphsLib.builder.tokens import TokenExpander
 from glyphsLib.builder import to_ufos
 
-TESTFONT = GSFont(
-    os.path.join(os.path.dirname(__file__), os.path.join("data", "TokenTest.glyphs"))
+TESTFONT_PATH = os.path.join(
+    os.path.dirname(__file__), os.path.join("data", "TokenTest.glyphs")
 )
+TESTFONT = GSFont(TESTFONT_PATH)
 master = TESTFONT.masters[1]
 expander = TokenExpander(TESTFONT, master)
 
@@ -35,6 +36,7 @@ expander = TokenExpander(TESTFONT, master)
         (r"pos a ${padding} b;", "pos a 250 b;", False),
         (r"pos a ${padding * 2} b;", "pos a 500 b;", False),
         (r"pos a ${padding + padding} b;", "pos a 500 b;", False),
+        (r"pos a ${ padding + 1 } b;", "pos a 251 b;", False),
         (r"pos a ${padding + (padding/2)} b;", "pos a 375 b;", False),
         (r"pos a ${padding + (padding/2.5)} b;", "pos a 350 b;", False),
         ("pos a $xxx b;", "", True),
@@ -159,6 +161,31 @@ def test_token_expander(test_input, expected, throws):
     else:
         output = expander.expand(test_input)
         assert output == expected
+
+
+def test_number_token_rejects_code_from_number_value():
+    font = GSFont(TESTFONT_PATH)
+    master = font.masters[1]
+    master.numbers[0] = "__import__('builtins').len('x')"
+
+    with pytest.raises(ValueError, match="Unsupported number token expression"):
+        TokenExpander(font, master).expand("${padding}")
+
+
+def test_number_token_rejects_code_from_glyph_property():
+    font = GSFont(TESTFONT_PATH)
+    master = font.masters[1]
+    master.customParameters["Master Name"] = "__import__('builtins').len('x')"
+
+    with pytest.raises(ValueError, match="Unsupported number token expression"):
+        TokenExpander(font, master).expand("${A:name}")
+
+
+@pytest.mark.parametrize("expression", ["2**10", "250//3", "250%3"])
+def test_number_token_rejects_unsupported_operators(expression):
+    # Only the documented +, -, *, and / operators are supported.
+    with pytest.raises(ValueError):
+        expander.expand("${%s}" % expression)
 
 
 def test_end_to_end():
