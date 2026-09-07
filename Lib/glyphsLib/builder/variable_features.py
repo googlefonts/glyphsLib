@@ -450,8 +450,13 @@ class VariableFeatureConverter:
                 if other_box is box or _box_within(box, other_box):
                     for d in other_values:
                         merged.update(d)
-            rules = "\n".join(text.strip() for _, text in sorted(merged.items()))
-            parts.append(f"\nvariation {tag} {name} {{\n{rules}\n}} {tag};\n")
+            # One block per condition: each is its own lookup, so the rules
+            # apply in sequence. Sharing a block would share a lookup, and
+            # feaLib refuses two rules for the same glyph in one.
+            for _, text in sorted(merged.items()):
+                parts.append(
+                    f"\nvariation {tag} {name} {{\n{text.strip()}\n}} {tag};\n"
+                )
 
         return "".join(parts)
 
