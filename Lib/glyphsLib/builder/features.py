@@ -195,13 +195,15 @@ def _to_ufo_features(  # noqa: C901
     full_text = "\n\n".join(filter(None, [class_str, prefix_str, fea_str])) + "\n"
     full_text = full_text if full_text.strip() else ""
 
-    # Expand Glyphs' multiple languages syntax (`language AZE CRT;`) into the
-    # one-tag-per-statement form the FEA spec allows.
-    full_text = expand_multi_language_statements(full_text)
-
     # Convert Glyphs conditional features and variable GPOS to feaLib syntax.
     if master is not None:
         full_text = VariableFeatureConverter(font).convert(full_text)
+
+    # Expand Glyphs' multiple languages syntax (`language AZE CRT;`) into the
+    # one-tag-per-statement form the FEA spec allows. After the conversion
+    # above, so that `#ifndef VARIABLE` blocks are already resolved and no rule
+    # is ever replayed out of one.
+    full_text = expand_multi_language_statements(full_text)
 
     if not full_text or not expand_includes:
         return full_text
