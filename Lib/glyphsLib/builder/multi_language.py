@@ -51,6 +51,11 @@ _LANGUAGE_KEYWORDS = frozenset(("exclude_dflt", "include_dflt", "required"))
 # A `language` or `script` statement closes the block opened by the previous one.
 _BLOCK_DELIMITERS = frozenset(("language", "script"))
 
+# The language every other one inherits from. It has to be specified alone --
+# see the spec proposal linked above -- so a statement listing it beside other
+# tags is not the shorthand, and Glyphs rejects it too.
+_DFLT = "dflt"
+
 # An OpenType language system tag. Unlike a feature tag it may be shorter than
 # four characters (`ROM`, `AZE`).
 _TAG_LENGTH = 4
@@ -74,6 +79,10 @@ _PLAIN = "plain"
 # `language` as a whole word. `languagesystem` does not match, which matters:
 # the guard below would otherwise fire for nearly every font.
 _language_re = re.compile(r"\blanguage\b")
+
+# What feaLib treats as one line ending. `\r\n` has to come first so that the
+# pair is not read as two.
+_line_ending_re = re.compile(r"\r\n|\r|\n")
 
 _Token = collections.namedtuple("_Token", "kind value start")
 
@@ -103,7 +112,10 @@ def expand_multi_language_statements(fea):
     A statement that is already spec-compliant, or that cannot be classified
     with confidence, is left exactly as it is: the shorthand is invalid FEA, so
     leaving it alone means feaLib reports it rather than glyphsLib emitting a
-    silently wrong language mapping.
+    silently wrong language mapping. So is one listing ``dflt`` beside other
+    tags, which is not the shorthand at all, one sitting outside any block,
+    where FEA does not allow ``language`` in the first place, and one whose
+    scope holds a statement with no closing semicolon.
     """
     # Lexing is not free -- feaLib takes a few microseconds per token -- and
     # most feature code has no `language` statement at all. The keyword has to
@@ -127,16 +139,46 @@ def expand_multi_language_statements(fea):
             continue
 
         end = _statement_end(tokens, i)
+        if end is None:
+            # No semicolon closes it, so where the statement stops is anyone's
+            # guess. Skip the keyword and let feaLib report the code.
+            i += 1
+            continue
+
         tags, keywords = _split_language_tokens(tokens, i + 1, end)
         if not tags or len(tags) < 2:
             i = end
             continue
 
-        items, scope_end = _scan_scope(tokens, end)
+        if _depth_at(tokens, i) < 1:
+            # FEA only allows `language` inside a feature block, so a
+            # shorthand at the top level is invalid whatever it was meant to
+            # say. There is no enclosing brace for its scope to end at either,
+            # so replaying it would swallow whatever block follows.
+            logger.warning(
+                "'language %s;' sits outside any block and was left unexpanded",
+                " ".join(tags),
+            )
+            i = end
+            continue
+
+        if _DFLT in tags:
+            # Expanding this one would compile: `language AZE;` implies
+            # `include_dflt`, so AZE would carry the rules twice, once
+            # inherited from `dflt` and once replayed. Leaving it alone keeps
+            # the failure loud instead.
+            logger.warning(
+                "'language %s;' lists dflt beside other tags; dflt has to be "
+                "specified alone, so the statement was left unexpanded",
+                " ".join(tags),
+            )
+            i = end
+            continue
+
+        items, scope_end, reason = _scan_scope(tokens, end)
         if items is None:
             logger.warning(
-                "'language %s;' governs an include() and was left unexpanded",
-                " ".join(tags),
+                "'language %s;' %s and was left unexpanded", " ".join(tags), reason
             )
             i = end
             continue
@@ -182,7 +224,7 @@ def _tokenize(fea):
             if kind == Lexer.COMMENT:
                 continue
             tokens.append(_Token(kind, value, starts[line - 1] + column - 1))
-    except (FeatureLibError, IndexError):
+    except FeatureLibError:
         return None
     return tokens
 
@@ -190,12 +232,14 @@ def _tokenize(fea):
 def _line_starts(fea):
     """Offset of the first character of every line.
 
-    feaLib counts a ``\\r\\n`` as one line ending, same as splitting on ``\\n``
-    does.
+    feaLib ends a line at ``\\n``, at ``\\r`` and at the pair ``\\r\\n``, each
+    counting as one. Splitting on ``\\n`` alone would leave every offset after
+    a lone carriage return short by one per line, and the whole module slices
+    ``fea`` by offset.
     """
     starts = [0]
-    for line in fea.split("\n"):
-        starts.append(starts[-1] + len(line) + 1)
+    for line_ending in _line_ending_re.finditer(fea):
+        starts.append(line_ending.end())
     return starts
 
 
@@ -213,6 +257,11 @@ def _statement_end(tokens, i):
     That is the first semicolon at nesting depth zero. A block statement
     (``lookup X { ... } X;``) therefore ends at the semicolon following its
     closing brace, wherever the braces happen to sit on the page.
+
+    Returns ``None`` if the statement does not end that way: the tokens run
+    out, or the brace closing the block the statement sits in comes first.
+    Both mean a semicolon is missing, and the code cannot then be split into
+    statements with confidence.
     """
     depth = 0
     while i < len(tokens):
@@ -222,20 +271,34 @@ def _statement_end(tokens, i):
                 depth += 1
             elif token.value == "}":
                 depth -= 1
-            elif token.value == ";" and depth <= 0:
+                if depth < 0:
+                    return None
+            elif token.value == ";" and depth == 0:
                 return i + 1
         i += 1
-    return len(tokens)
+    return None
+
+
+def _depth_at(tokens, i):
+    """How many blocks are open just before the token at ``i``."""
+    depth = 0
+    for token in tokens[:i]:
+        if token.kind == Lexer.SYMBOL:
+            if token.value == "{":
+                depth += 1
+            elif token.value == "}":
+                depth -= 1
+    return depth
 
 
 def _split_language_tokens(tokens, start, end):
     """Split the inside of a ``language ...;`` statement.
 
-    Returns ``(tags, keywords)``, or ``(None, None)`` for anything unexpected,
-    so that the caller leaves the statement alone rather than guessing.
+    ``end`` is what ``_statement_end`` returned, so the closing semicolon is
+    already known to be there. Returns ``(tags, keywords)``, or
+    ``(None, None)`` for anything unexpected, so that the caller leaves the
+    statement alone rather than guessing.
     """
-    if end > len(tokens) or not _is_symbol(tokens[end - 1], ";"):
-        return None, None
     tags = []
     keywords = []
     for token in tokens[start : end - 1]:
@@ -255,9 +318,8 @@ def _scan_scope(tokens, start):
     """Split the statements governed by the shorthand into ``_Item``s.
 
     The scope runs to the next ``language``/``script`` statement or to the end
-    of the enclosing block, whichever comes first. Returns ``(None, start)`` if
-    the scope contains an ``include()``, whose contents cannot be seen and
-    therefore cannot be replayed.
+    of the enclosing block, whichever comes first. Returns
+    ``(None, start, reason)`` when the scope cannot be replayed at all.
     """
     items = []
     i = start
@@ -269,12 +331,14 @@ def _scan_scope(tokens, start):
         if token.kind == Lexer.NAME and token.value in _BLOCK_DELIMITERS:
             break
         end = _statement_end(tokens, i)
+        if end is None:
+            return None, i, "governs a statement that does not end in ';'"
         kind, name = _classify(tokens, i, end)
         if kind == _INCLUDE:
-            return None, i
+            return None, i, "governs an include()"
         items.append(_Item(kind, name, i, end))
         i = end
-    return items, i
+    return items, i, None
 
 
 def _classify(tokens, i, end):
