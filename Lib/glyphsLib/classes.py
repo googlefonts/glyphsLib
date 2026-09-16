@@ -47,10 +47,85 @@ from glyphsLib.types import (
     parse_float_or_int,
     readIntlist,
 )
+
 from glyphsLib.util import designspace_min_max
 from glyphsLib.writer import Writer
 
 logger = logging.getLogger(__name__)
+
+
+def _script_from_unicode(cp):
+    """Derive the Glyphs.app script name from a Unicode codepoint.
+
+    This implements the same script detection that Glyphs.app uses when
+    the ``script`` property is not explicitly set on a glyph.
+    """
+    if (
+        0xAC00 <= cp <= 0xD7AF  # Hangul Syllables
+        or 0x1100 <= cp <= 0x11FF  # Hangul Jamo
+        or 0x3130 <= cp <= 0x318F  # Hangul Compatibility Jamo
+        or 0xA960 <= cp <= 0xA97C  # Hangul Jamo Extended-A
+        or 0xD7B0 <= cp <= 0xD7FF
+    ):  # Hangul Jamo Extended-B
+        return "hangul"
+    if (
+        0x3040 <= cp <= 0x309F  # Hiragana
+        or 0x30A0 <= cp <= 0x30FF  # Katakana
+        or 0x31F0 <= cp <= 0x31FF  # Katakana Phonetic Extensions
+        or 0xFF65 <= cp <= 0xFF9F
+    ):  # Halfwidth and Fullwidth Forms (kana)
+        return "kana"
+    if (
+        0x4E00 <= cp <= 0x9FFF  # CJK Unified Ideographs
+        or 0x3400 <= cp <= 0x4DBF  # CJK Unified Ideographs Extension A
+        or 0x20000 <= cp <= 0x2A6DF  # CJK Unified Ideographs Extension B
+        or 0x2A700 <= cp <= 0x2B73F  # CJK Unified Ideographs Extension C
+        or 0x2B740 <= cp <= 0x2B81F  # CJK Unified Ideographs Extension D
+        or 0x2B820 <= cp <= 0x2CEAF  # CJK Unified Ideographs Extension E
+        or 0xF900 <= cp <= 0xFAFF  # CJK Compatibility Ideographs
+        or 0x2F800 <= cp <= 0x2FA1F
+    ):  # CJK Compatibility Ideographs Supplement
+        return "han"
+    if (
+        0x0041 <= cp <= 0x005A  # Basic Latin (uppercase)
+        or 0x0061 <= cp <= 0x007A  # Basic Latin (lowercase)
+        or 0x00C0 <= cp <= 0x024F  # Latin Extended-A, B
+        or 0x1E00 <= cp <= 0x1EFF  # Latin Extended Additional
+        or 0x2C60 <= cp <= 0x2C7F  # Latin Extended-C
+        or 0xA720 <= cp <= 0xA7FF  # Latin Extended-D
+        or 0xAB30 <= cp <= 0xAB6F  # Latin Extended-E
+        or 0xFB00 <= cp <= 0xFB06  # Alphabetic Presentation Forms (Latin)
+        or 0xFE20 <= cp <= 0xFE2F
+    ):  # Combining Half Marks
+        return "latin"
+    if (
+        0x0400 <= cp <= 0x04FF  # Cyrillic
+        or 0x0500 <= cp <= 0x052F  # Cyrillic Supplement
+        or 0x2DE0 <= cp <= 0x2DFF  # Cyrillic Extended-A
+        or 0xA640 <= cp <= 0xA69F  # Cyrillic Extended-B
+        or 0x1C80 <= cp <= 0x1C8F
+    ):  # Cyrillic Extended-C
+        return "cyrillic"
+    if (
+        0x0600 <= cp <= 0x06FF  # Arabic
+        or 0x0750 <= cp <= 0x077F  # Arabic Supplement
+        or 0x08A0 <= cp <= 0x08FF  # Arabic Extended-A
+        or 0xFB50 <= cp <= 0xFDFF  # Arabic Presentation Forms-A
+        or 0xFE70 <= cp <= 0xFEFF
+    ):  # Arabic Presentation Forms-B
+        return "arabic"
+    if 0x0590 <= cp <= 0x05FF:  # Hebrew
+        return "hebrew"
+    if 0x0E00 <= cp <= 0x0E7F:  # Thai
+        return "thai"
+    if 0x0900 <= cp <= 0x097F:  # Devanagari
+        return "devanagari"
+    if 0x3000 <= cp <= 0x303F:  # CJK Symbols and Punctuation
+        return "han"
+    if 0x3100 <= cp <= 0x312F:  # Bopomofo
+        return "han"
+    return None
+
 
 __all__ = [
     "Glyphs",
@@ -4381,7 +4456,10 @@ class GSGlyph(GSBase):
             writer.writeKeyValue("unicode", self.unicodes)
         if writer.format_version > 2:
             writer.writeObjectKeyValue(self, "production", "if_true")
-        writer.writeObjectKeyValue(self, "script")
+        if self._script is not None:
+            writer.writeKey("script")
+            writer.writeValue(self._script, "script")
+            writer.file.write(";\n")
         if writer.format_version == 2:
             writer.writeObjectKeyValue(self, "category")
         writer.writeObjectKeyValue(self, "subCategory")
@@ -4455,7 +4533,7 @@ class GSGlyph(GSBase):
         self.rightKerningGroup = self._defaultsForName["rightKerningGroup"]
         self.rightKerningKey = ""
         self.metricRight = self._defaultsForName["metricRight"]
-        self.script = self._defaultsForName["script"]
+        self._script = self._defaultsForName["script"]
         self.selected = False
         self.subCategory = self._defaultsForName["subCategory"]
         self.tags = []
@@ -4545,6 +4623,23 @@ class GSGlyph(GSBase):
     @unicodes.setter
     def unicodes(self, unicodes):
         self._unicodes = UnicodesList(unicodes)
+
+    @property
+    def script(self):
+        if self._script is not None:
+            return self._script
+        # Derive script from Unicode codepoint if not explicitly set
+        if self._unicodes:
+            try:
+                cp = int(self._unicodes[0], 16)
+                return _script_from_unicode(cp)
+            except (ValueError, IndexError):
+                pass
+        return None
+
+    @script.setter
+    def script(self, script):
+        self._script = script
 
     # V2 compatible interface
     @property
