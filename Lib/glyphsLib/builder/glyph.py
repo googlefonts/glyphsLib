@@ -126,7 +126,7 @@ def to_ufo_glyph(  # noqa: C901
         subCategory = glyph.subCategory or (
             custom.subCategory if custom.subCategory != glyphinfo.subCategory else None
         )
-        script = glyph.script or (
+        script = glyph._script or (
             custom.script if custom.script != glyphinfo.script else None
         )
     else:
@@ -134,7 +134,7 @@ def to_ufo_glyph(  # noqa: C901
             glyph.production,
             glyph.category,
             glyph.subCategory,
-            glyph.script,
+            glyph._script,
         )
 
     production_name = production_name or glyphinfo.production_name

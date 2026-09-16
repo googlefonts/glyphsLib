@@ -103,7 +103,7 @@ expander = TokenExpander(TESTFONT, master)
         ),  # "matches": regular expression
         # ('$[leftMetricsKey like "*"]', "", False), # "like": wildcard search
         # ('$[name like "*e*"]', "", False), # e anywhere in the glyph name
-        ('$[script like "latin"]', "A C", False),
+        ('$[script like "latin"]', "A C D E F G H I Sacute", False),
         ('$[category like "Separator"]', "Sacute", False),
         ('$[leftKerningGroup like "H"]', "A", False),
         ('$[rightKerningGroup like "L"]', "A", False),
@@ -119,7 +119,7 @@ expander = TokenExpander(TESTFONT, master)
         ("$[isAppleColorGlyph == true]", "E", False),
         (
             '$[script == "latin"]',
-            "A C",
+            "A C D E F G H I Sacute",
             False,
         ),  # connect multiple conditions with ORor AND
         (
@@ -147,7 +147,7 @@ expander = TokenExpander(TESTFONT, master)
         ('$["TestTag" in tags]', "", False),
         ("$[countOfLayers between {2, 2}]", "A I A.sc Sacute", False),
         ("$[countOfLayers between {3, 3}]", "C D E F G H space", False),
-        ('$[script in {"latin"}]', "A C", False),
+        ('$[script in {"latin"}]', "A C D E F G H I Sacute", False),
         ('$[script in {"latin",}]', "", True),
         ('$[nme endswith ".sc"]', "", True),
     ],
