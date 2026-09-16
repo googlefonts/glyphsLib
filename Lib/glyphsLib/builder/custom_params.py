@@ -1074,11 +1074,12 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
         ufo = ufo._owner
         for entry in rename_list:
             oldname, newname = entry.split("=")
-            ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
-            ufo[newname].unicodes, ufo[oldname].unicodes = (
-                ufo[oldname].unicodes,
-                ufo[newname].unicodes,
-            )
+            if oldname in ufo and newname in ufo:
+                ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
+                ufo[newname].unicodes, ufo[oldname].unicodes = (
+                    ufo[oldname].unicodes,
+                    ufo[newname].unicodes,
+                )
 
     def to_glyphs(self, glyphs, ufo):
         # The 'Reencode Glyphs' parameter only applies to instances, which
