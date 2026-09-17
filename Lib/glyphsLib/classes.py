@@ -1565,8 +1565,16 @@ class GSMetricValue(GSBase):
 
 GSMetricValue._add_parsers(
     [
-        {"plist_name": "over", "object_name": "overshoot"},
-        {"plist_name": "pos", "object_name": "position"},
+        {
+            "plist_name": "over",
+            "object_name": "overshoot",
+            "converter": parse_float_or_int,
+        },
+        {
+            "plist_name": "pos",
+            "object_name": "position",
+            "converter": parse_float_or_int,
+        },
     ]
 )
 
@@ -1890,6 +1898,9 @@ class GSFontMaster(GSBase):
         return self.metrics[metricIndex].position
 
     def _set_metric(self, metricname, value):
+        if isinstance(value, str):
+            # Older Glyphs versions quote negative numbers, e.g. descender = "-200";
+            value = parse_float_or_int(value)
         if not self.font:
             metrics = GSFont._defaultMetrics
         else:

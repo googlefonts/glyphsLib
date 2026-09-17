@@ -20,6 +20,7 @@ import copy
 import unittest
 import pytest
 
+import glyphsLib
 from glyphsLib.classes import (
     GSFont,
     GSFontMaster,
@@ -797,6 +798,68 @@ class GSFontMasterFromFileTest(GSObjectsTestCase):
         self.assertEqual(master.customValue1, 0.0)
         self.assertEqual(master.customValue2, 0.0)
         self.assertEqual(master.customValue3, 0.0)
+
+    def test_quoted_metrics(self):
+        # Older Glyphs versions quote negative numbers, so the plist parser hands
+        # us a string where the rest of the library expects a number.
+        font = glyphsLib.loads("""{
+            .formatVersion = 2;
+            familyName = QuotedMetrics;
+            fontMaster = (
+            {
+            ascender = 800;
+            descender = "-200";
+            id = "M1";
+            italicAngle = "-12.5";
+            }
+            );
+            unitsPerEm = 1000;
+            }""")
+        master = font.masters[0]
+        self.assertEqual(master.ascender, 800)
+        self.assertEqual(master.descender, -200)
+        self.assertEqual(master.italicAngle, -12.5)
+
+    def test_quoted_metric_values(self):
+        # Same, for the Glyphs 3 "metricValues" spelling.
+        font = glyphsLib.loads("""{
+            .formatVersion = 3;
+            familyName = QuotedMetricValues;
+            fontMaster = (
+            {
+            id = "M1";
+            metricValues = (
+            {
+            pos = 800;
+            },
+            {
+            over = "-16";
+            pos = "-200";
+            }
+            );
+            }
+            );
+            metrics = (
+            {
+            type = ascender;
+            },
+            {
+            type = descender;
+            }
+            );
+            unitsPerEm = 1000;
+            }""")
+        master = font.masters[0]
+        self.assertEqual(master.ascender, 800)
+        self.assertEqual(master.descender, -200)
+        self.assertEqual(master.metrics[1].overshoot, -16)
+
+    def test_set_metric_from_string(self):
+        font = GSFont()
+        master = GSFontMaster()
+        font.masters.append(master)
+        master.descender = "-200"
+        self.assertEqual(master.descender, -200)
 
 
 class GSAlignmentZoneFromFileTest(GSObjectsTestCase):
