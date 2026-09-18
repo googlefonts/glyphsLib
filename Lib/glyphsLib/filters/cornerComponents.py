@@ -167,15 +167,19 @@ def point_on_seg_at_distance(seg, distance):
 
 
 def split_cubic_at_point(seg, point, inward=True):
-    # There's a horrible edge case here where the curve wraps around and
-    # the ray hits twice, but I'm not worrying about it.
+    # When splitting inward we keep the first segment and want its end to be
+    # at the point; when splitting outward we keep the last segment and want
+    # its start to be at the point. The other end is the original segment
+    # endpoint either way, so comparing that tells us nothing.
     if inward:
         new_cubic_1 = splitCubic(*seg, point[0], False)[0]
         new_cubic_2 = splitCubic(*seg, point[1], True)[0]
+        split_end = -1
     else:
         new_cubic_1 = splitCubic(*seg, point[0], False)[-1]
         new_cubic_2 = splitCubic(*seg, point[1], True)[-1]
-    if dist(new_cubic_1[-1], point) < dist(new_cubic_2[-1], point):
+        split_end = 0
+    if dist(new_cubic_1[split_end], point) < dist(new_cubic_2[split_end], point):
         return new_cubic_1
     else:
         return new_cubic_2
