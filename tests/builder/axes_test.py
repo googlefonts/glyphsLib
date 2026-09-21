@@ -777,3 +777,21 @@ def test_hidden_axis(ufo_module):
 
     font = to_glyphs(doc)
     assert font.customParameters["Axes"] == axes
+
+
+def test_hidden_default_axis(ufo_module):
+    # A hidden axis must survive even when the axes are otherwise the
+    # implicit Weight/Width defaults.
+    font = to_glyphs([ufo_module.Font(), ufo_module.Font()])
+    font.axes = [
+        GSAxis(name="Weight", tag="wght"),
+        GSAxis(name="Width", tag="wdth", hidden=True),
+    ]
+    doc = to_designspace(font, ufo_module=ufo_module)
+    assert [(a.tag, a.hidden) for a in doc.axes] == [("wght", False), ("wdth", True)]
+
+    font = to_glyphs(doc)
+    assert [(a.axisTag, a.hidden) for a in font.axes] == [
+        ("wght", False),
+        ("wdth", True),
+    ]

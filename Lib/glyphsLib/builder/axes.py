@@ -596,6 +596,8 @@ def _is_subset_of_default_axes(axes_parameter):
             return False
         if axis.axisTag != axis_def.tag:
             return False
+        if axis.hidden:
+            return False
     return True
 
 

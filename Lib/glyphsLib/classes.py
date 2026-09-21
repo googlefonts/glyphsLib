@@ -5094,11 +5094,13 @@ class GSFont(GSBase):
         # synthesise one.
 
         # However, if the axes are default, we don't synthesise one *unless*
-        # we also have an Axis Mappings custom parameter.
+        # we also have an Axis Mappings custom parameter or one of the axes
+        # is hidden (GSAxis equality ignores 'hidden').
         if (
             len(self.axes) == 2
             and self.axes[0] == self._defaultAxes[0]
             and self.axes[1] == self._defaultAxes[1]
+            and not any(ax.hidden for ax in self.axes)
         ) and "Axis Mappings" not in self.customParameters:
             return None
         values = []
