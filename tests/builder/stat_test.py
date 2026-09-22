@@ -316,6 +316,45 @@ def test_export_stat_table_off_disables_stat():
     assert not any(a.tag == "ital" for a in doc.axes)
 
 
+def test_inactive_variable_font_instance_gets_no_stat():
+    # Glyphs.app does not export an inactive Variable Font Setting at all.
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Regular", [400]), ("Bold", [700])],
+        [
+            ("Regular", [400], {"weight": "Regular"}),
+            ("Bold", [700], {"weight": "Bold"}),
+        ],
+    )
+    font.instances[-1].exports = False
+
+    doc = to_designspace(font)
+    assert not any(a.axisLabels for a in doc.axes)
+    assert not any(a.tag == "ital" for a in doc.axes)
+
+
+def test_inactive_variable_font_instance_does_not_block_export_stat_table_off():
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Regular", [400]), ("Bold", [700])],
+        [
+            ("Regular", [400], {"weight": "Regular"}),
+            ("Bold", [700], {"weight": "Bold"}),
+        ],
+    )
+    font.instances[-1].customParameters["Export STAT Table"] = 0
+    inactive = GSInstance()
+    inactive.name = "VF2"
+    inactive.type = InstanceType.VARIABLE
+    inactive.exports = False
+    inactive.parent = font
+    font.instances.append(inactive)
+
+    doc = to_designspace(font)
+    assert not any(a.axisLabels for a in doc.axes)
+    assert not any(a.tag == "ital" for a in doc.axes)
+
+
 def test_export_stat_table_off_on_only_one_variable_font_keeps_stat():
     font = _make_font(
         [("wght", "Weight")],
