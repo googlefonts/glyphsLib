@@ -72,7 +72,11 @@ def to_designspace_stat(self):
 
     # Glyphs builds a STAT only for a variable font, which needs a Variable Font
     # Setting instance. Do the same here.
-    variable = [i for i in font.instances if i.type == InstanceType.VARIABLE]
+    variable = [
+        i
+        for i in font.instances
+        if i.type == InstanceType.VARIABLE and is_instance_active(i)
+    ]
     if not variable:
         return
 
