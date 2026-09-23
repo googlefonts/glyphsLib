@@ -98,9 +98,14 @@ def to_designspace_stat(self):
         if instance.type != InstanceType.VARIABLE and is_instance_active(instance)
     ]
 
+    # An instance sits where its design location maps to through the axis map,
+    # the same conversion fvar and avar use. Its weightClass/widthClass or
+    # "Axis Location" only matter insofar as they went into building that map.
     def user_loc(axis, instance):
         axis_def = axis_defs.get(axis.tag)
-        return axis_def.get_user_loc(instance) if axis_def else None
+        if axis_def is None:
+            return None
+        return axis.map_backward(axis_def.get_design_loc(instance))
 
     default_instance = next(
         (i for i in instances if _at_default(i, designspace.axes, user_loc)), None
