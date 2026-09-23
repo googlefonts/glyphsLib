@@ -648,6 +648,32 @@ def test_axis_location_uses_user_space_values():
     ]
 
 
+def test_axis_mappings_positions_values_over_weight_class():
+    # "Axis Mappings" puts the masters at user 300 and 800. The instances'
+    # weightClass values (400, 500, 700) disagree with it and must not decide
+    # where their STAT values sit, or they would not match fvar.
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Regular", [400]), ("Bold", [700])],
+        [
+            ("Regular", [400], {"weight": "Regular"}),
+            ("Medium", [550], {"weight": "Medium"}),
+            ("Bold", [700], {"weight": "Bold", "isBold": True}),
+        ],
+    )
+    font.customParameters["Axis Mappings"] = {"wght": {"300": 400, "800": 700}}
+
+    doc = to_designspace(font)
+
+    wght = _axis(doc, "wght")
+    assert (wght.minimum, wght.default, wght.maximum) == (300, 300, 800)
+    assert _labels(wght) == [
+        ("Regular", 300, True, 800),
+        ("Medium", 550, False, None),
+        ("Bold", 800, False, None),
+    ]
+
+
 @pytest.mark.parametrize("style, italic", [("Regular", False), ("Italic", True)])
 def test_stat_only_italic_does_not_roundtrip_to_glyphs(style, italic):
     font = _make_font(
