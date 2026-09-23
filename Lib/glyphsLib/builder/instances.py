@@ -350,6 +350,7 @@ class InstanceDescriptorAsGSInstance:
 
     def __init__(self, descriptor):
         self._descriptor = descriptor
+        self.name = descriptor.styleName
 
         self.customParameters = CustomParametersProxy(None)
         if CUSTOM_PARAMETERS_KEY in descriptor.lib:

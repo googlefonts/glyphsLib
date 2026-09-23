@@ -17,6 +17,7 @@ from collections import defaultdict
 import re
 import logging
 
+from glyphsLib.classes import InstanceType
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .filters import parse_glyphs_filter
 from .common import expand_text_tokens, to_ufo_color
@@ -1071,15 +1072,36 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
         rename_list = glyphs.get_custom_value("Rename Glyphs")
         if not rename_list:
             return
+        instance = glyphs._owner
+        if getattr(instance, "type", None) == InstanceType.VARIABLE:
+            # Variable font instances are converted to a designspace variable
+            # font descriptor from an empty dummy UFO: there are no glyphs to
+            # swap here, and nothing downstream applies the parameter later.
+            logger.warning(
+                "'Rename Glyphs' custom parameter is not supported for "
+                "variable font instance '%s' and will be ignored",
+                instance.name,
+            )
+            return
         ufo = ufo._owner
         for entry in rename_list:
             oldname, newname = entry.split("=")
-            if oldname in ufo and newname in ufo:
-                ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
-                ufo[newname].unicodes, ufo[oldname].unicodes = (
-                    ufo[oldname].unicodes,
-                    ufo[newname].unicodes,
+            missing = [name for name in (oldname, newname) if name not in ufo]
+            if missing:
+                logger.warning(
+                    "Cannot swap glyphs '%s' and '%s' in instance '%s': %s not "
+                    "found in the UFO",
+                    oldname,
+                    newname,
+                    instance.name,
+                    " and ".join(repr(name) for name in missing),
                 )
+                continue
+            ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
+            ufo[newname].unicodes, ufo[oldname].unicodes = (
+                ufo[oldname].unicodes,
+                ufo[newname].unicodes,
+            )
 
     def to_glyphs(self, glyphs, ufo):
         # The 'Reencode Glyphs' parameter only applies to instances, which
