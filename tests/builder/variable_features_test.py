@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
 from textwrap import dedent
 
 import pytest
+from fontTools.feaLib.builder import addOpenTypeFeatures
+from fontTools.fontBuilder import FontBuilder
 
 from glyphsLib import classes, to_ufos
 from glyphsLib.builder.variable_features import VariableFeatureConverter
@@ -275,6 +278,9 @@ def convert(fea, axes=("wght",), font=None):
 
                 variation rlig conditionset_1 {
                 sub a by b;
+                } rlig;
+
+                variation rlig conditionset_1 {
                 sub c by d;
                 } rlig;
 
@@ -425,6 +431,9 @@ def convert(fea, axes=("wght",), font=None):
 
                 variation rlig conditionset_1 {
                 sub a by b;
+                } rlig;
+
+                variation rlig conditionset_1 {
                 sub c by d;
                 } rlig;
 
@@ -459,6 +468,9 @@ def convert(fea, axes=("wght",), font=None):
 
                 variation rlig conditionset_1 {
                 sub a by b;
+                } rlig;
+
+                variation rlig conditionset_1 {
                 sub c by d;
                 } rlig;
 
@@ -471,8 +483,7 @@ def convert(fea, axes=("wght",), font=None):
                 } rlig;
                 """),
         ),
-        # Duplicate conditions merge into one variation block, keeping source
-        # order.
+        # Duplicate conditions each keep their own block, in source order.
         (
             dedent("""\
                 feature rlig {
@@ -493,6 +504,9 @@ def convert(fea, axes=("wght",), font=None):
 
                 variation rlig conditionset_1 {
                 sub a' b by c;
+                } rlig;
+
+                variation rlig conditionset_1 {
                 sub a by d;
                 } rlig;
                 """),
@@ -578,6 +592,104 @@ def convert(fea, axes=("wght",), font=None):
                 #endif
                 sub p by q;
                 } rlig;
+                """),
+        ),
+        # Two conditions substituting the same glyph. Each keeps its own
+        # variation block, so the rules chain (a -> a.alt -> a.alt.bold) instead
+        # of sharing a lookup, which feaLib rejects as a duplicate substitution.
+        (
+            dedent("""\
+                feature rlig {
+                condition 50 < KASH;
+                sub a by a.alt;
+                condition 600 < wght;
+                sub a by a.bold;
+                sub a.alt by a.alt.bold;
+                } rlig;"""),
+            ("wght", "KASH"),
+            dedent("""\
+                feature rlig {
+
+                } rlig;
+
+                conditionset conditionset_1 {
+                    KASH 50.0 100.0;
+                    wght 600.0 1000.0;
+                } conditionset_1;
+
+                variation rlig conditionset_1 {
+                sub a by a.alt;
+                } rlig;
+
+                variation rlig conditionset_1 {
+                sub a by a.bold;
+                sub a.alt by a.alt.bold;
+                } rlig;
+
+                conditionset conditionset_2 {
+                    wght 600.0 1000.0;
+                } conditionset_2;
+
+                variation rlig conditionset_2 {
+                sub a by a.bold;
+                sub a.alt by a.alt.bold;
+                } rlig;
+
+                conditionset conditionset_3 {
+                    KASH 50.0 100.0;
+                } conditionset_3;
+
+                variation rlig conditionset_3 {
+                sub a by a.alt;
+                } rlig;
+                """),
+        ),
+        # Positioning rules split the same way. In the overlap both lookups
+        # apply and their values add up, which is what the Glyphs.app export of
+        # an equivalent source does.
+        (
+            dedent("""\
+                feature kern {
+                pos a b -10;
+                condition 50 < KASH;
+                pos a b 20;
+                condition 600 < wght;
+                pos a b 30;
+                } kern;"""),
+            ("wght", "KASH"),
+            dedent("""\
+                feature kern {
+                pos a b -10;
+                } kern;
+
+                conditionset conditionset_1 {
+                    KASH 50.0 100.0;
+                    wght 600.0 1000.0;
+                } conditionset_1;
+
+                variation kern conditionset_1 {
+                pos a b 20;
+                } kern;
+
+                variation kern conditionset_1 {
+                pos a b 30;
+                } kern;
+
+                conditionset conditionset_2 {
+                    wght 600.0 1000.0;
+                } conditionset_2;
+
+                variation kern conditionset_2 {
+                pos a b 30;
+                } kern;
+
+                conditionset conditionset_3 {
+                    KASH 50.0 100.0;
+                } conditionset_3;
+
+                variation kern conditionset_3 {
+                pos a b 20;
+                } kern;
                 """),
         ),
     ],
@@ -774,3 +886,77 @@ def test_to_ufos_plain_features_untouched(ufo_module):
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
     assert "sub a by b;" in ufo.features.text
     assert "conditionset" not in ufo.features.text
+
+
+def compile_variable(fea, glyph_order):
+    builder = FontBuilder(1000)
+    builder.setupGlyphOrder(glyph_order)
+    builder.setupNameTable({"familyName": "Test", "styleName": "Regular"})
+    builder.setupFvar(
+        [("wght", 100, 400, 1000, "Weight"), ("KASH", 0, 0, 100, "Kashida")], []
+    )
+    addOpenTypeFeatures(builder.font, io.StringIO(fea))
+    return builder.font
+
+
+def overlap_lookups(font, table_tag):
+    # The region where both conditions hold is the one with two conditions.
+    table = font[table_tag].table
+    (record,) = [
+        r
+        for r in table.FeatureVariations.FeatureVariationRecord
+        if len(r.ConditionSet.ConditionTable) == 2
+    ]
+    (substitution,) = record.FeatureTableSubstitution.SubstitutionRecord
+    return [table.LookupList.Lookup[i] for i in substitution.Feature.LookupListIndex]
+
+
+def test_overlapping_conditions_compile():
+    # Two conditions substituting the same glyph. Sharing a variation block
+    # would share a lookup, which feaLib refuses with "Already defined
+    # substitution"; in separate lookups the rules chain instead.
+    fea = convert(
+        dedent("""\
+            feature rlig {
+            condition 50 < KASH;
+            sub a by a.alt;
+            condition 600 < wght;
+            sub a by a.bold;
+            sub a.alt by a.alt.bold;
+            } rlig;"""),
+        axes=("wght", "KASH"),
+    )
+
+    font = compile_variable(fea, [".notdef", "a", "a.alt", "a.bold", "a.alt.bold"])
+
+    # In the region where both conditions hold, the rules keep their source
+    # order: `a` becomes `a.alt`, and the second lookup turns that into
+    # `a.alt.bold`.
+    lookups = overlap_lookups(font, "GSUB")
+    assert [lookup.SubTable[0].mapping for lookup in lookups] == [
+        {"a": "a.alt"},
+        {"a": "a.bold", "a.alt": "a.alt.bold"},
+    ]
+
+
+def test_overlapping_positioning_conditions_both_apply():
+    # Positioning lookups accumulate rather than chain, so both conditions
+    # adjust the pair in the region where both hold. Sharing a block kept only
+    # the first, without an error.
+    fea = convert(
+        dedent("""            feature kern {
+            condition 50 < KASH;
+            pos a b 20;
+            condition 600 < wght;
+            pos a b 30;
+            } kern;"""),
+        axes=("wght", "KASH"),
+    )
+
+    font = compile_variable(fea, [".notdef", "a", "b"])
+
+    lookups = overlap_lookups(font, "GPOS")
+    assert [
+        lookup.SubTable[0].PairSet[0].PairValueRecord[0].Value1.XAdvance
+        for lookup in lookups
+    ] == [20, 30]
