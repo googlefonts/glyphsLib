@@ -14,8 +14,10 @@
 # limitations under the License.
 
 
+import logging
 import os
 import glyphsLib
+from glyphsLib.classes import InstanceType
 from fontTools.designspaceLib import DesignSpaceDocument
 from glyphsLib.builder.instances import apply_instance_data
 
@@ -254,6 +256,60 @@ def test_rename_glyphs(tmpdir):
     assert len(ufos[1]["b"][0]) == 4  # Square
     assert ufos[0]["a"].unicode == 0x0061
     assert ufos[0]["b"].unicode == 0x0062
+
+
+def test_rename_glyphs_missing_glyph_warns_and_skips(caplog):
+    # defcon has no Font.__setitem__, so the swap only works with ufoLib2
+    import ufoLib2
+    from glyphsLib.builder.instances import apply_instance_data_to_ufo
+
+    ufo_module = ufoLib2
+
+    font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
+    instance = font.instances[1]
+    assert instance.name == "Swapped"
+    instance.customParameters["Rename Glyphs"] = ["a=b", "c=a", "b=zzz"]
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+
+    ufo = ufo_module.Font()
+    for name, unicode, width in [("a", 0x61, 100), ("b", 0x62, 200), ("c", 0x63, 300)]:
+        ufo.newGlyph(name)
+        ufo[name].unicode = unicode
+        ufo[name].width = width
+
+    with caplog.at_level(logging.WARNING, logger="glyphsLib.builder.custom_params"):
+        apply_instance_data_to_ufo(ufo, designspace.instances[1], designspace)
+
+    # "a=b" applied, "c=a" applied on the already swapped "a", "b=zzz" skipped
+    assert ufo["a"].width == 300
+    assert ufo["b"].width == 100
+    assert ufo["c"].width == 200
+    assert ufo["a"].unicode == 0x61
+    assert ufo["b"].unicode == 0x62
+    assert ufo["c"].unicode == 0x63
+    assert len(caplog.records) == 1
+    assert "'zzz' not found" in caplog.text
+    assert "instance 'Swapped'" in caplog.text
+
+
+def test_rename_glyphs_variable_instance_ignored(ufo_module, caplog):
+    # https://github.com/googlefonts/glyphsLib/issues/1165
+    font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
+    variable = glyphsLib.GSInstance()
+    variable.name = "Regular"
+    variable.type = InstanceType.VARIABLE
+    variable.customParameters["Rename Glyphs"] = ["a=b"]
+    font.instances.append(variable)
+
+    with caplog.at_level(logging.WARNING, logger="glyphsLib.builder.custom_params"):
+        designspace = glyphsLib.to_designspace(
+            font, ufo_module=ufo_module, minimal=True
+        )
+
+    assert len(designspace.variableFonts) == 1
+    assert "Rename Glyphs" not in str(designspace.variableFonts[0].lib)
+    assert len(caplog.records) == 1
+    assert "not supported for variable font instance 'Regular'" in caplog.text
 
 
 def test_expand_instance_naming_tokens(ufo_module):
