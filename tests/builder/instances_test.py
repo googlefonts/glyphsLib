@@ -232,6 +232,11 @@ def test_glyphs3_instance_properties(tmpdir):
 
 def test_rename_glyphs(tmpdir):
     font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
+    font.instances[1].customParameters["Rename Glyphs"] = [
+        "a=b",
+        "missing=a",
+        "a=missing",
+    ]
     instance_dir = tmpdir.ensure_dir("instance_ufo")
     designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
     path = str(tmpdir / (font.familyName + ".designspace"))
@@ -249,11 +254,19 @@ def test_rename_glyphs(tmpdir):
     assert len(ufos[0]["b"][0]) == 12  # Circle
     assert ufos[0]["a"].unicode == 0x0061
     assert ufos[0]["b"].unicode == 0x0062
+    assert [component.baseGlyph for component in ufos[0]["d"].components] == [
+        "a",
+        "b",
+    ]
 
     assert len(ufos[1]["a"][0]) == 12  # Circle
     assert len(ufos[1]["b"][0]) == 4  # Square
-    assert ufos[0]["a"].unicode == 0x0061
-    assert ufos[0]["b"].unicode == 0x0062
+    assert ufos[1]["a"].unicode == 0x0061
+    assert ufos[1]["b"].unicode == 0x0062
+    assert [component.baseGlyph for component in ufos[1]["d"].components] == [
+        "b",
+        "a",
+    ]
 
 
 def test_expand_instance_naming_tokens(ufo_module):

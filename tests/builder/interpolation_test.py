@@ -23,6 +23,8 @@ import xml.etree.ElementTree as etree
 from xmldiff import main, formatting
 
 import defcon
+from fontTools.varLib import load_designspace
+from fontTools.varLib.errors import VarLibValidationError
 from glyphsLib.builder.constants import GLYPHS_PREFIX
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.classes import GSFont, GSFontMaster, GSInstance, GSFontInfoValue
@@ -239,6 +241,185 @@ class DesignspaceTest(unittest.TestCase):
         self.assertEqual(weightAxis.attrib["maximum"], "900")
 
         self.expect_designspace_roundtrip(designspace)
+
+    def test_inferred_default_is_explicit_axis_mapping_knot(self):
+        masters = [
+            makeMaster("Thin", weight=45),
+            makeMaster("Regular", weight=400),
+            makeMaster("Heavy", weight=930),
+        ]
+        instances = [
+            makeInstance("Thin", weight=("Thin", 100, 100)),
+            makeInstance("Light", weight=("Light", 300, 300)),
+            makeInstance("Regular", weight=("Regular", 400, 413)),
+            makeInstance("Black", weight=("Black", 900, 900)),
+        ]
+        font = makeFont(masters, instances, "Mapped Default")
+
+        designspace = to_designspace(font, instance_dir="out")
+        weight_axis = designspace.axes[0]
+        regular_user_location = weight_axis.default
+
+        self.assertEqual(weight_axis.minimum, masters[0].weightValue)
+        self.assertEqual(weight_axis.maximum, masters[-1].weightValue)
+        self.assertEqual(dict(weight_axis.map)[45], 45)
+        self.assertEqual(dict(weight_axis.map)[930], 930)
+        self.assertEqual(
+            dict(weight_axis.map)[regular_user_location],
+            masters[1].weightValue,
+        )
+
+        path = self.write_to_tmp_path(designspace, "mapped-default.designspace")
+        reloaded = type(designspace).fromfile(path)
+        self.assertEqual(reloaded.findDefault().styleName, "Regular")
+
+    def test_inferred_default_preserves_flat_axis_mapping(self):
+        masters = [
+            makeMaster("Thin", weight=100),
+            makeMaster("Regular", weight=350),
+            makeMaster("Black", weight=900),
+        ]
+        instances = [
+            makeInstance("Thin", weight=("Thin", 100, 100)),
+            makeInstance("Light", weight=("Light", 300, 400)),
+            makeInstance("Regular", weight=("Regular", 400, 400)),
+            makeInstance("Black", weight=("Black", 900, 900)),
+        ]
+        font = makeFont(masters, instances, "Flat Mapped Default")
+
+        designspace = to_designspace(font, instance_dir="out")
+        weight_axis = designspace.axes[0]
+        mapping = weight_axis.map
+        design_locations = [design for _, design in mapping]
+
+        self.assertEqual(design_locations, sorted(design_locations))
+        self.assertAlmostEqual(weight_axis.default, 266.6666666666667)
+        self.assertEqual(
+            dict(mapping)[weight_axis.default],
+            masters[1].weightValue,
+        )
+
+        path = self.write_to_tmp_path(designspace, "flat-mapped-default.designspace")
+        reloaded = type(designspace).fromfile(path)
+        self.assertEqual(reloaded.findDefault().styleName, "Regular")
+
+    def test_explicit_axis_mapping_default_survives_serialization(self):
+        for mapping, regular_weight in (
+            ([(100, 100), (400, 413), (900, 900)], 400),
+            ([(100, 100), (300, 400), (400, 400), (900, 900)], 350),
+            ([(100, 100), (300, 400), (400, 400), (900, 900)], 400),
+        ):
+            with self.subTest(mapping=mapping, regular_weight=regular_weight):
+                font = makeFont(
+                    [
+                        makeMaster("Thin", weight=100),
+                        makeMaster("Regular", weight=regular_weight),
+                        makeMaster("Black", weight=900),
+                    ],
+                    [],
+                    "Explicit Mapped Default",
+                )
+                font.customParameters["Axis Mappings"] = {
+                    "wght": {str(user): design for user, design in mapping}
+                }
+
+                designspace = to_designspace(font)
+                axis = designspace.axes[0]
+                self.assertEqual((axis.minimum, axis.maximum), (100, 900))
+                self.assertEqual(dict(axis.map)[axis.default], regular_weight)
+                self.assertTrue(set(mapping).issubset(axis.map))
+                expected_knots = len(mapping) + (
+                    regular_weight not in dict(mapping).values()
+                )
+                self.assertEqual(len(axis.map), expected_knots)
+
+                path = self.write_to_tmp_path(
+                    designspace, "explicit-default.designspace"
+                )
+                reloaded = type(designspace).fromfile(path)
+                self.assertEqual(reloaded.findDefault().styleName, "Regular")
+                axis = reloaded.axes[0]
+                self.assertEqual(dict(axis.map)[axis.default], regular_weight)
+                # Exercise the same default-source validation used by varLib builds.
+                load_designspace(reloaded)
+
+    def test_explicit_mapping_default_does_not_extend_bounds(self):
+        for mapping, master_locations in (
+            # Reversed AndadaPro and Familjen Grotesk mappings from issue #993.
+            ([(96, 400), (140, 840)], [96, 140]),
+            ([(120, 400), (150, 496), (165, 600), (180, 700)], [120, 180]),
+            # Also cover a default extrapolated above the mapping range.
+            ([(96, 40), (140, 84)], [96, 140]),
+        ):
+            with self.subTest(mapping=mapping):
+                font = makeFont(
+                    [
+                        makeMaster("Regular", weight=master_locations[0]),
+                        makeMaster("Black", weight=master_locations[1]),
+                    ],
+                    [],
+                    "Out-of-Range Default",
+                )
+                font.customParameters["Axis Mappings"] = {
+                    "wght": {str(user): design for user, design in mapping}
+                }
+
+                designspace = to_designspace(font)
+                axis = designspace.axes[0]
+                self.assertEqual(axis.map, mapping)
+                self.assertEqual(
+                    (axis.minimum, axis.maximum), (mapping[0][0], mapping[-1][0])
+                )
+                path = self.write_to_tmp_path(designspace, "out-of-range.designspace")
+                reloaded = type(designspace).fromfile(path)
+                # Adding a default knot must not hide the invalid source locations.
+                with self.assertRaisesRegex(VarLibValidationError, "out-of-range"):
+                    load_designspace(reloaded)
+
+    def test_explicit_flat_mapping_preserves_direction_and_endpoints(self):
+        # The valid mapping before Glyphs.app flips it in issue #993.
+        mapping = [(400, 120), (496, 150), (500, 150), (600, 165), (700, 180)]
+        font = makeFont(
+            [
+                makeMaster("Regular", weight=120),
+                makeMaster("Medium", weight=150),
+                makeMaster("Bold", weight=180),
+            ],
+            [],
+            "Flat Explicit Mapping",
+        )
+        font.customParameters["Axis Mappings"] = {
+            "wght": {str(user): design for user, design in mapping}
+        }
+
+        designspace = to_designspace(font)
+        path = self.write_to_tmp_path(designspace, "flat-explicit.designspace")
+        reloaded = type(designspace).fromfile(path)
+        axis = reloaded.axes[0]
+        self.assertEqual(axis.map, mapping)
+        self.assertEqual((axis.minimum, axis.default, axis.maximum), (400, 400, 700))
+        self.assertEqual(axis.map_forward(498), 150)
+        self.assertAlmostEqual(axis.map_backward(149), 492.8)
+        self.assertAlmostEqual(axis.map_backward(151), 506.6666666666667)
+        self.assertEqual(reloaded.findDefault().styleName, "Regular")
+        load_designspace(reloaded)
+
+    def test_non_monotonic_axis_mapping_is_rejected(self):
+        masters = [
+            makeMaster("Thin", weight=100),
+            makeMaster("Regular", weight=350),
+            makeMaster("Black", weight=900),
+        ]
+        instances = [
+            makeInstance("Thin", weight=("Thin", 100, 100)),
+            makeInstance("Light", weight=("Light", 300, 400)),
+            makeInstance("Regular", weight=("Regular", 400, 350)),
+            makeInstance("Black", weight=("Black", 900, 900)),
+        ]
+        font = makeFont(masters, instances, "Non-Monotonic Mapping")
+
+        with self.assertRaisesRegex(ValueError, "must not be less"):
+            to_designspace(font, instance_dir="out")
 
     def test_postscriptFontNameCustomParameter(self):
         master = makeMaster("Master")

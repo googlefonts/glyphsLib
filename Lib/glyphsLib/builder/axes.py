@@ -15,8 +15,6 @@
 
 import logging
 
-from fontTools.varLib.models import piecewiseLinearMap
-
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
 from glyphsLib.builder.constants import WIDTH_CLASS_TO_VALUE
@@ -158,6 +156,30 @@ def is_identity(mapping):
     return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
 
 
+def _validate_axis_mapping(mapping, axis_tag):
+    """Return a user-sorted mapping whose design values never decrease."""
+    ordered = sorted(mapping.items())
+    for (user1, design1), (user2, design2) in zip(ordered, ordered[1:]):
+        if design1 > design2:
+            raise ValueError(
+                f"Axis {axis_tag}: mapping output at user location {user2} "
+                f"({design2}) must not be less than the previous output at "
+                f"user location {user1} ({design1})"
+            )
+    return ordered
+
+
+def _add_axis_mapping_default(mapping, user_location, design_location):
+    # Preserve interpolated defaults without extending the mapping to accommodate
+    # invalid source locations, such as the reversed mappings in issue #993.
+    if (
+        len(mapping) > 1
+        and min(mapping) < user_location < max(mapping)
+        and design_location not in mapping.values()
+    ):
+        mapping[user_location] = design_location
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -194,9 +216,12 @@ def to_designspace_axes(self):
         if custom_mapping:
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                axis.map = _validate_axis_mapping(mapping, axis.tag)
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
-                reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
-                regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
+                regularUserLoc = axis.map_backward(regularDesignLoc)
+                # Preserve the default through serialization for explicit maps,
+                # just as for mappings inferred from instances below.
+                _add_axis_mapping_default(mapping, regularUserLoc, regularDesignLoc)
             else:
                 logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
@@ -256,13 +281,32 @@ def to_designspace_axes(self):
                 else master_mapping
             )
 
+            # Some sources place masters just outside an instance-based mapping
+            # whose end knots are identity mappings. Extend those identity
+            # segments so the masters reverse-map inside the user-space bounds.
+            ordered_mapping = _validate_axis_mapping(mapping, axis.tag)
+            min_user, min_design = ordered_mapping[0]
+            max_user, max_design = ordered_mapping[-1]
+            for designLoc in master_mapping.values():
+                if designLoc < min_design and min_user == min_design:
+                    mapping[designLoc] = designLoc
+                elif designLoc > max_design and max_user == max_design:
+                    mapping[designLoc] = designLoc
+
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
-            reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
-            regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
-            # TODO make sure that the default is in mapping?
+            axis.map = _validate_axis_mapping(mapping, axis.tag)
+            regularUserLoc = axis.map_backward(regularDesignLoc)
+            # Keep an interpolated default as an explicit mapping knot.
+            # Designspace serialization rounds float attributes, and without
+            # this point the rounded default can map to a value infinitesimally
+            # different from the regular master's design location. Consumers
+            # such as varLib then fail to find a default source. A one-point
+            # map has no interpolation segment and must remain unchanged.
+            _add_axis_mapping_default(mapping, regularUserLoc, regularDesignLoc)
 
+        ordered_mapping = _validate_axis_mapping(mapping, axis.tag)
         is_identity_map = is_identity(mapping)
 
         # Virtual Masters can't have an Axis Location parameter; their coordinates
@@ -291,8 +335,7 @@ def to_designspace_axes(self):
             or not is_identity_map
             or axis_wanted
         ):
-            if not is_identity_map:
-                axis.map = sorted(mapping.items())
+            axis.map = [] if is_identity_map else ordered_mapping
             axis.minimum = minimum
             axis.maximum = maximum
             axis.default = default
