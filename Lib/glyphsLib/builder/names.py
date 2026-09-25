@@ -22,9 +22,13 @@ def to_ufo_names(self, ufo, master, family_name):
     if not self.minimal:
         to_ufo_names_roundtrip(master, ufo)
 
-    is_italic = bool(master.italicAngle)
-
     styleName = master.name
+    # A master named e.g. "Italic" or "Thin Italic" is italic even if its
+    # italic angle was left at 0.
+    is_italic = bool(master.italicAngle) or any(
+        part in ("Italic", "Oblique") for part in styleName.split()
+    )
+
     ufo.info.familyName = family_name
     ufo.info.styleName = styleName
 
