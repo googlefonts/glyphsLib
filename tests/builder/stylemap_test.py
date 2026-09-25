@@ -1,4 +1,9 @@
+import pytest
+
+from glyphsLib.builder import to_ufos
 from glyphsLib.builder.names import build_stylemap_names
+
+from ..classes_test import generate_minimal_font
 
 
 def test_regular():
@@ -201,3 +206,30 @@ def test_linked_style_bold_italic():
     )
     assert map_family == "NotoSans Cd"
     assert map_style == "bold italic"
+
+
+@pytest.mark.parametrize(
+    "master_name, expected_family, expected_style",
+    [
+        ("Regular", "MyFont", "regular"),
+        ("Bold", "MyFont", "bold"),
+        ("Thin", "MyFont Thin", "regular"),
+        ("Italic", "MyFont", "italic"),
+        ("Bold Italic", "MyFont", "bold italic"),
+        ("Thin Italic", "MyFont Thin", "italic"),
+        ("Oblique", "MyFont", "italic"),
+        ("Bold Oblique", "MyFont", "bold italic"),
+    ],
+)
+def test_master_stylemap_names_without_italic_angle(
+    master_name, expected_family, expected_style
+):
+    font = generate_minimal_font()
+    font.masters[0].name = master_name
+    assert not font.masters[0].italicAngle
+
+    (ufo,) = to_ufos(font)
+
+    assert ufo.info.styleName == master_name
+    assert ufo.info.styleMapFamilyName == expected_family
+    assert ufo.info.styleMapStyleName == expected_style
