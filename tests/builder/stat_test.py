@@ -579,8 +579,9 @@ def test_italic_family_labels_drop_the_italic_word():
     ]
 
 
-def test_italic_family_labels_keep_a_named_default():
-    # The default instance is "Book Italic", not the bare "Italic".
+def test_italic_family_labels_keep_names_without_a_regular_italic():
+    # No instance is called "Italic" or "Regular Italic", so Glyphs keeps the
+    # whole names and elides nothing.
     font = _make_font(
         [("wght", "Weight")],
         [("Book Italic", [400]), ("Bold Italic", [700])],
@@ -689,3 +690,134 @@ def test_stat_only_italic_does_not_roundtrip_to_glyphs(style, italic):
 
     roundtripped = to_glyphs(doc)
     assert "ital" not in [a.axisTag for a in roundtripped.axes]
+
+
+@pytest.mark.parametrize("regular_name", ["Italic", "Regular Italic"])
+def test_italic_family_regular_instance_off_the_default(regular_name):
+    # Glyphs 3.5: the default master is the Thin one, but the instance called
+    # "Italic" or "Regular Italic" is the regular style: the italic word is
+    # dropped everywhere, and that instance's value is "Regular", elidable and
+    # linked to the bold.
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Thin Italic", [100]), ("Black Italic", [900])],
+        [
+            ("Thin Italic", [100], {"weight": 100, "isItalic": True}),
+            (regular_name, [400], {"weight": "Regular", "isItalic": True}),
+            (
+                "Bold Italic",
+                [700],
+                {"weight": "Bold", "isItalic": True, "isBold": True},
+            ),
+            ("Black Italic", [900], {"weight": 900, "isItalic": True}),
+        ],
+    )
+    doc = to_designspace(font)
+
+    assert _labels(_axis(doc, "wght")) == [
+        ("Thin", 100, False, None),
+        ("Regular", 400, True, 700),
+        ("Bold", 700, False, None),
+        ("Black", 900, False, None),
+    ]
+    assert _labels(_axis(doc, "ital")) == [("Italic", 1, False, None)]
+
+
+@pytest.mark.parametrize("regular_name", ["Normal Italic", "Book Italic"])
+def test_italic_family_other_regular_names_do_not_qualify(regular_name):
+    # Only "Italic" and "Regular Italic" mark the regular style: with any other
+    # name Glyphs keeps the whole names, elides and links nothing, and the
+    # synthetic ital axis is the same as ever.
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Thin Italic", [100]), ("Bold Italic", [700])],
+        [
+            ("Thin Italic", [100], {"weight": 100, "isItalic": True}),
+            (regular_name, [400], {"weight": "Regular", "isItalic": True}),
+            (
+                "Bold Italic",
+                [700],
+                {"weight": "Bold", "isItalic": True, "isBold": True},
+            ),
+        ],
+    )
+    doc = to_designspace(font)
+
+    assert _labels(_axis(doc, "wght")) == [
+        ("Thin Italic", 100, False, None),
+        (regular_name, 400, False, None),
+        ("Bold Italic", 700, False, None),
+    ]
+    assert _labels(_axis(doc, "ital")) == [("Italic", 1, False, None)]
+
+
+def test_italic_family_regular_instance_takes_the_axis_default_name():
+    # On a width axis the regular instance's value is "Normal", and there is no
+    # bold link.
+    font = _make_font(
+        [("wdth", "Width")],
+        [("Condensed Italic", [75]), ("Expanded Italic", [125])],
+        [
+            ("Condensed Italic", [75], {"width": "Condensed", "isItalic": True}),
+            ("Italic", [100], {"width": "Medium (normal)", "isItalic": True}),
+            ("Expanded Italic", [125], {"width": "Expanded", "isItalic": True}),
+        ],
+    )
+    doc = to_designspace(font)
+
+    assert _labels(_axis(doc, "wdth")) == [
+        ("Condensed", 75, False, None),
+        ("Normal", 100, True, None),
+        ("Expanded", 125, False, None),
+    ]
+    assert _labels(_axis(doc, "ital")) == [("Italic", 1, False, None)]
+
+
+def test_italic_family_manual_mode_drops_the_italic_word_too():
+    # Glyphs 3.5 strips the italic word from "Style Name as STAT entry" labels
+    # as well; the elidable entry for the regular instance keeps its own name.
+    font = _make_font(
+        [("wght", "Weight")],
+        [("Thin Italic", [100]), ("Bold Italic", [700])],
+        [
+            (
+                "Thin Italic",
+                [100],
+                {
+                    "weight": 100,
+                    "isItalic": True,
+                    "customParameters": {"Style Name as STAT entry": "wght"},
+                },
+            ),
+            (
+                "Italic",
+                [400],
+                {
+                    "weight": "Regular",
+                    "isItalic": True,
+                    "customParameters": {
+                        "Style Name as STAT entry": "wght",
+                        "Elidable STAT Axis Value Name": "wght",
+                    },
+                },
+            ),
+            (
+                "Bold Italic",
+                [700],
+                {
+                    "weight": "Bold",
+                    "isItalic": True,
+                    "isBold": True,
+                    "customParameters": {"Style Name as STAT entry": "wght"},
+                },
+            ),
+        ],
+    )
+    doc = to_designspace(font)
+
+    assert _labels(_axis(doc, "wght")) == [
+        ("Thin", 100, False, None),
+        ("Italic", 400, True, 700),
+        ("Bold", 700, False, None),
+    ]
+    assert _labels(_axis(doc, "ital")) == [("Italic", 1, False, None)]

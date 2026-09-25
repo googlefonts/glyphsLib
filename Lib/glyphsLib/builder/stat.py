@@ -112,17 +112,22 @@ def to_designspace_stat(self):
     )
 
     italic = default_instance is not None and _is_italic(default_instance)
-    # Glyphs drops the italic part of the names only when the default instance is
-    # called nothing but “Italic”.
-    plain_italic = italic and default_instance.name.strip().lower() == "italic"
+    # In a family without a real slope axis, an instance called nothing but
+    # “Italic” or “Regular Italic” marks the regular style, wherever it sits and
+    # whatever its weight class. Only then does Glyphs drop the italic part of
+    # every name, and label that instance’s value on each axis with the axis
+    # default name.
+    regular = None
+    if slope_tag is None:
+        regular = next((i for i in instances if _is_regular_italic(i)), None)
 
     # “Style Name as STAT entry” on any instance switches the whole font to manual
     # mode.
     if any(_stat_entry_tags(instance) for instance in instances):
-        _manual_labels(designspace, instances, user_loc)
+        _manual_labels(designspace, instances, user_loc, regular)
     else:
         _automatic_labels(
-            designspace, instances, user_loc, slope_tag, default_instance, plain_italic
+            designspace, instances, user_loc, slope_tag, default_instance, regular
         )
 
     designspace.elidedFallbackName = "Regular"
@@ -147,15 +152,25 @@ def to_designspace_stat(self):
         )
 
 
-def _manual_labels(designspace, instances, user_loc):
+def _is_regular_italic(instance):
+    return instance.name.strip().lower() in ("italic", "regular italic")
+
+
+def _manual_labels(designspace, instances, user_loc, regular=None):
     for axis in designspace.axes:
         labels = {}
         for instance in instances:
             if axis.tag in _stat_entry_tags(instance):
                 loc = user_loc(axis, instance)
                 if loc is not None and loc not in labels:
-                    labels[loc] = (instance.name, _is_elidable(instance, axis))
+                    # The italic part is dropped here too, but the entry for the
+                    # regular instance keeps its own name rather than the axis
+                    # default name.
+                    name = _strip_italic(instance.name, regular) or instance.name
+                    labels[loc] = (name, _is_elidable(instance, axis))
         _set_axisLabels(axis, labels)
+
+    _link_bold(designspace, instances, user_loc)
 
 
 def _at_default(instance, axes, user_loc, skip=None):
@@ -175,15 +190,20 @@ def _representative_instance(instances, axis, designspace, user_loc):
     return instances[0]
 
 
-def _label_name(instance, default, plain_italic):
-    name = instance.name
-    if plain_italic:
-        name = re.sub(r"\s*italic\s*", " ", name, flags=re.IGNORECASE).strip()
-    return name or default
+def _strip_italic(name, regular):
+    if regular is None:
+        return name
+    return re.sub(r"\s*italic\s*", " ", name, flags=re.IGNORECASE).strip()
+
+
+def _label_name(instance, default, regular):
+    if instance is regular:
+        return default
+    return _strip_italic(instance.name, regular) or default
 
 
 def _automatic_labels(
-    designspace, instances, user_loc, slope_tag, default_instance, plain_italic=False
+    designspace, instances, user_loc, slope_tag, default_instance, regular=None
 ):
     # The default value of the first axis the instances vary on takes the
     # default instance’s name, every other default value elides to the
@@ -216,16 +236,11 @@ def _automatic_labels(
             else:
                 labels[loc] = (default, True)
                 continue
-            name = _label_name(instance, default, plain_italic)
+            name = _label_name(instance, default, regular)
             labels[loc] = (name, name == default or _is_elidable(instance, axis))
         _set_axisLabels(axis, labels)
 
-    # The regular weight links to a style-linked bold wherever it sits on the
-    # other axes.
-    wght = next((a for a in designspace.axes if a.tag == "wght"), None)
-    if wght is not None and _default_value_elides(wght):
-        bold = next((i for i in instances if i.isBold), None)
-        _set_linked_value(wght, user_loc(wght, bold) if bold else None)
+    _link_bold(designspace, instances, user_loc)
 
     # On a real “ital” axis the upright value links to the italic value.
     if slope_tag == "ital":
@@ -235,11 +250,19 @@ def _automatic_labels(
         )
 
 
-def _default_value_elides(axis):
-    label = next(
-        (l for l in axis.axisLabels or [] if l.userValue == axis.default), None
-    )
-    return label is not None and label.elidable
+def _link_bold(designspace, instances, user_loc):
+    # The elidable weight, the regular, links to the style-linked bold wherever
+    # the bold sits on the other axes.
+    wght = next((a for a in designspace.axes if a.tag == "wght"), None)
+    if wght is None:
+        return
+    elidable = next((l for l in wght.axisLabels or [] if l.elidable), None)
+    bold = next((i for i in instances if i.isBold), None)
+    if elidable is None or bold is None:
+        return
+    value = user_loc(wght, bold)
+    if value is not None and value != elidable.userValue:
+        elidable.linkedUserValue = value
 
 
 def _set_linked_value(axis, value):
