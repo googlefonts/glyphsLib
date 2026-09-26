@@ -20,12 +20,15 @@ We handle smart components by decomposing them and then applying a standard
 OpenType interpolation model to adjust the node positions.
 """
 
+import logging
 from enum import IntEnum
 
 from fontTools.varLib.models import VariationModel, normalizeValue, VariationModelError
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
 from glyphsLib.classes import GSLayer
+
+logger = logging.getLogger(__name__)
 
 
 # smartComponentPoleMapping returns 1 for bottom of axis and 2 for top.
@@ -143,10 +146,17 @@ def get_smart_component_variation_model(layer, component):
             l for l in masters if l.associatedMasterId == layer.associatedMasterId
         ]
     if not masters:
-        raise ValueError(
-            "Could not find any masters for the smart component %s used in %s"
-            % (root.name, layer.name)
+        # The glyph declares smart component axes but no layer of this master
+        # is mapped to a pole, so there is nothing to interpolate. Glyphs.app
+        # treats such a component as a regular one; do the same instead of
+        # failing the whole build.
+        logger.warning(
+            "Smart component %s used in %s declares axes but has no layers "
+            "mapped to poles; treating it as a regular component",
+            root.name,
+            layer.name,
         )
+        return None, None, None
 
     if len(masters) == 1:
         return None, None, None

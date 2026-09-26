@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import pytest
 
 from fontTools.pens.areaPen import AreaPen
@@ -301,3 +303,49 @@ def test_smart_component_at_default_location(smart_font):
     rect, clockwise = get_rectangle_data(ufo)
     assert rect == (100, 100, 100, 100)
     assert not clockwise
+
+
+def test_smart_component_without_pole_layers(caplog):
+    """A glyph that declares smart component axes but has no layer mapped to a
+    pole has nothing to interpolate. Glyphs.app draws such a component as a
+    regular component; so should we, instead of raising.
+
+    Noto Sans Bengali has 22 such glyphs (iMatra-beng and its alternates), which
+    made the family unbuildable from glyphsLib 6.13.0 on.
+    """
+    font = GSFont()
+    master = GSFontMaster()
+    font.masters.append(master)
+
+    part = GSGlyph()
+    part.name = "_part.noPoles"
+    font.glyphs.append(part)
+    axis = GSSmartComponentAxis()
+    axis.name = "Length"
+    axis.bottomValue = 0
+    axis.topValue = 100
+    part.smartComponentAxes.append(axis)
+    layer = GSLayer()
+    layer.layerId = master.id
+    layer.associatedMasterId = master.id
+    layer.width = 300
+    layer.paths.append(rectangle_path(100, 100, 100, 100))
+    part.layers.append(layer)  # no smartComponentPoleMapping on any layer
+
+    a = GSGlyph()
+    a.name = "a"
+    font.glyphs.append(a)
+    layer = GSLayer()
+    layer.layerId = master.id
+    layer.associatedMasterId = master.id
+    layer.width = 1000
+    layer.components.append(GSComponent(part.name))
+    a.layers.append(layer)
+
+    with caplog.at_level(logging.WARNING, logger="glyphsLib.builder"):
+        (ufo,) = to_ufos(font)
+
+    assert len(ufo["a"].components) == 1
+    assert ufo["a"].components[0].baseGlyph == part.name
+    assert len(ufo["a"]) == 0
+    assert "has no layers mapped to poles" in caplog.text
