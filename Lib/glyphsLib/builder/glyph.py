@@ -109,15 +109,23 @@ def to_ufo_glyph(  # noqa: C901
             USV_KEY = PUBLIC_PREFIX + "unicodeVariationSequences"
             ufo_font.lib.setdefault(USV_KEY, {}).setdefault(usv, {})[uni] = glyph.name
 
-    # we can't use use the glyphs.unicodes values since they aren't always
-    # correctly padded
-    unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
+    if is_color_layer_glyph:
+        # Glyphs.app resolves a color layer glyph like its parent, unicodes
+        # included, then suffixes the production name (okHand.layer0 ->
+        # u1F44C.layer0), so look up the parent rather than the suffixed name.
+        lookup_name = glyph.name
+        unicodes = [f"{int(uval, 16):04X}" for uval in glyph.unicodes]
+    else:
+        lookup_name = ufo_glyph.name
+        # we can't use use the glyphs.unicodes values since they aren't always
+        # correctly padded
+        unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(ufo_glyph.name, unicodes=unicodes)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(lookup_name, unicodes=unicodes)
 
     if self.glyphdata is not None:
         custom = glyphsLib.glyphdata.get_glyph(
-            ufo_glyph.name, self.glyphdata, unicodes=unicodes
+            lookup_name, self.glyphdata, unicodes=unicodes
         )
         production_name = glyph.production or (
             custom.production_name
@@ -142,6 +150,10 @@ def to_ufo_glyph(  # noqa: C901
         )
 
     production_name = production_name or glyphinfo.production_name
+    if is_color_layer_glyph and production_name:
+        suffix = ufo_glyph.name[len(glyph.name) :]
+        assert suffix.startswith(".")
+        production_name += suffix
 
     if production_name:
         # Make sure production names of bracket glyphs also get a BRACKET suffix.
