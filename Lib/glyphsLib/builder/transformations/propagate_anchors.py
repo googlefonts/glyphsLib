@@ -707,7 +707,11 @@ def get_component_layer_anchors(
     layer_anchors = None
 
     parent_is_master = _is_master_layer(layer)
-    parent_is_bracket = layer._is_bracket_layer()
+    # Glyphs.app can leave a stale (empty) 'axisRules' attribute behind on a
+    # master layer, which makes GSLayer._is_bracket_layer() true for it. A
+    # master layer is never a bracket layer though: it must only ever be
+    # matched by its layerId, on both the parent and the component side.
+    parent_is_bracket = not parent_is_master and layer._is_bracket_layer()
     parent_is_brace = layer._is_brace_layer()
     parent_axis_rules = (
         [] if not parent_is_bracket else list(layer._bracket_axis_rules())
@@ -721,6 +725,7 @@ def get_component_layer_anchors(
     for comp_layer in _interesting_layers(glyph):
         if (
             parent_is_bracket
+            and not _is_master_layer(comp_layer)
             and comp_layer._is_bracket_layer()
             and comp_layer.associatedMasterId == layer.associatedMasterId
             and (list(comp_layer._bracket_axis_rules()) == parent_axis_rules)

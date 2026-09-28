@@ -140,6 +140,10 @@ class GlyphBuilder:
         self.current_layer = layer
         return self
 
+    def set_layer_attribute(self, name: str, value) -> Self:
+        self.current_layer.attributes[name] = value
+        return self
+
     def set_category(self, category: str) -> Self:
         self.glyph.category = category
         return self
@@ -1064,6 +1068,83 @@ def test_bracket_ligature_anchor_numbering():
     assert_anchors(
         bracket_layers[0].anchors,
         [("top_1", (100, 700)), ("top_2", (500, 600))],
+    )
+
+
+def test_bracket_anchors_not_taken_from_master_with_stale_axis_rules():
+    """A master layer with a leftover 'axisRules' attribute is not a bracket layer.
+
+    Glyphs.app can leave an empty ``axisRules`` attribute behind on a *master*
+    layer, which makes GSLayer._is_bracket_layer() return True for it. When the
+    composite's bracket layer looks for the matching bracket layer of its
+    component, it must not match the component's master layer, even though it
+    has the same associated master and the same (empty) axis rules; otherwise
+    the composite gets the master's anchors instead of the alternate's.
+    """
+    stale_axis_rules = [{}]
+
+    glyphs = (
+        GlyphSetBuilder()
+        .add_glyph(
+            "a",
+            lambda glyph: (
+                glyph.set_layer_attribute("axisRules", stale_axis_rules)
+                .add_anchor("bottom", (205, 0))
+                .add_anchor("ogonek", (387, 0))
+                .add_anchor("top", (230, 500))
+                .add_bracket_layer(stale_axis_rules)
+                .add_anchor("bottom", (177, 0))
+                .add_anchor("ogonek", (369, 10))
+                .add_anchor("top", (200, 500))
+            ),
+        )
+        .add_glyph(
+            "acutecomb",
+            lambda glyph: (
+                glyph.add_anchor("_top", (100, 500)).add_anchor("top", (100, 700))
+            ),
+        )
+        .add_glyph(
+            "aacute",
+            lambda glyph: (
+                glyph.add_component("a", (0, 0))
+                .add_component("acutecomb", (130, 0))
+                .add_bracket_layer(stale_axis_rules)
+                .add_component("a", (0, 0))
+                .add_component("acutecomb", (100, 0))
+            ),
+        )
+        .build()
+    )
+
+    # sanity check: the master layer of 'a' is (wrongly) seen as a bracket layer
+    a_master = glyphs["a"].layers["master-0"]
+    assert a_master._is_master_layer
+    assert a_master._is_bracket_layer()
+
+    propagate_all_anchors_impl(glyphs)
+
+    aacute = glyphs["aacute"]
+    assert_anchors(
+        aacute.layers["master-0"].anchors,
+        [
+            ("bottom", (205, 0)),
+            ("ogonek", (387, 0)),
+            ("top", (230, 700)),
+        ],
+    )
+
+    bracket_layers = [l for l in aacute.layers if not l._is_master_layer]
+    assert len(bracket_layers) == 1
+    assert bracket_layers[0]._is_bracket_layer()
+    # anchors come from the bracket layer of 'a', not from its master layer
+    assert_anchors(
+        bracket_layers[0].anchors,
+        [
+            ("bottom", (177, 0)),
+            ("ogonek", (369, 10)),
+            ("top", (200, 700)),
+        ],
     )
 
 
