@@ -138,6 +138,10 @@ def get_smart_component_variation_model(layer, component):
     root = component.component
 
     masters = [l for l in root.layers if l.smartComponentPoleMapping]
+    if not masters:
+        # No layer of the glyph is mapped to a pole: nothing to interpolate,
+        # use it as a regular component (see instantiate_smart_component).
+        return None, None, None
     if layer.associatedMasterId:
         # Each master in the font can have its own set of smart component
         # "master layers", so we need to filter by those smart components
@@ -146,17 +150,10 @@ def get_smart_component_variation_model(layer, component):
             l for l in masters if l.associatedMasterId == layer.associatedMasterId
         ]
     if not masters:
-        # The glyph declares smart component axes but no layer of this master
-        # is mapped to a pole, so there is nothing to interpolate. Glyphs.app
-        # treats such a component as a regular one; do the same instead of
-        # failing the whole build.
-        logger.warning(
-            "Smart component %s used in %s declares axes but has no layers "
-            "mapped to poles; treating it as a regular component",
-            root.name,
-            layer.name,
+        raise ValueError(
+            "Could not find any masters for the smart component %s used in %s"
+            % (root.name, layer.name)
         )
-        return None, None, None
 
     if len(masters) == 1:
         return None, None, None
@@ -185,6 +182,22 @@ def instantiate_smart_component(self, layer, component, pen):
     """Instantiate a smart component by interpolating and drawing to a pointPen."""
     # Find the GSGlyph that is being used as a component by this GSComponent
     root = component.component
+
+    # A glyph can declare smart component axes without any layer mapped to a
+    # pole (e.g. left over from duplicating a smart glyph). There is nothing to
+    # interpolate, and Glyphs.app exports it as a regular component.
+    # If only some masters lack poles we still raise below, since keeping a
+    # component in one master and decomposing it in another is incompatible.
+    if not any(l.smartComponentPoleMapping for l in root.layers):
+        if root.name not in self._smart_glyphs_without_poles:
+            self._smart_glyphs_without_poles.add(root.name)
+            logger.debug(
+                "Smart component %s has no layers mapped to poles; "
+                "keeping it as a regular component",
+                root.name,
+            )
+        pen.addComponent(component.name, component.transform)
+        return
 
     model, normalized_location, masters = get_smart_component_variation_model(
         layer, component
