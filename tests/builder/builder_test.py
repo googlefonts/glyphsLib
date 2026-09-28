@@ -26,6 +26,7 @@ import defcon
 import ufoLib2
 from textwrap import dedent
 from glyphsLib.classes import (
+    GSAnchor,
     GSAxis,
     GSComponent,
     GSFeature,
@@ -2387,6 +2388,42 @@ def test_glyph_color_layers_group_paths_nonconsecutive(ufo_module):
     }
 
     assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+
+def test_glyph_color_layers_split_keeps_width(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+
+    color = GSLayer()
+    color.attributes["color"] = 1
+    color.width = 500
+    color.anchors.append(GSAnchor(name="top", position=Point(250, 700)))
+    glypha.layers.append(color)
+
+    # Two paths with different fill colors, so the layer gets split into two
+    # .colorN glyphs.
+    for i in range(2):
+        path = GSPath()
+        path.nodes = [
+            GSNode(position=(i + 0, i + 0), nodetype="line"),
+            GSNode(position=(i + 100, i + 100), nodetype="line"),
+            GSNode(position=(i + 200, i + 200), nodetype="line"),
+            GSNode(position=(i + 300, i + 300), nodetype="line"),
+        ]
+        path.attributes["fillColor"] = [255 * i, 0, 0, 255]
+        color.paths.append(path)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+    layers = ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"]["a"]["Layers"]
+    assert [layer["Glyph"] for layer in layers] == ["a.color0", "a.color1"]
+
+    # Each split glyph keeps the color layer's width, as an unsplit color
+    # layer would, but not its anchors: nothing in the compiled font reaches
+    # a .colorN glyph except the COLR paint graph.
+    for name in ("a.color0", "a.color1"):
+        assert ufo[name].width == 500
+        assert not ufo[name].anchors
 
 
 def test_glyph_color_layers_master_layer(ufo_module):
