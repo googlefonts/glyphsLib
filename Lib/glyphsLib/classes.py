@@ -1270,7 +1270,10 @@ class CustomParametersProxy(ListDictionaryProxy):
         for param in axes_params:
             self._owner._set_axes_from_custom_parameter(param.value)
 
-        params = [i for i in items if i.name != "Axes"]
+        # A parameter whose value is None is a placeholder that setValue
+        # discarded; keep it out of the list so it is neither written back
+        # out as 'value = None;' nor copied into the UFO lib.
+        params = [i for i in items if i.name != "Axes" and i.value is not None]
         super().__setter__(params)
 
     def __iter__(self):

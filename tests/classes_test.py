@@ -15,6 +15,7 @@
 
 
 import os
+from io import StringIO
 import datetime
 import copy
 import unittest
@@ -56,6 +57,7 @@ from glyphsLib.classes import (
     OFFCURVE,
 )
 from glyphsLib.parser import Parser
+from glyphsLib.writer import Writer
 from glyphsLib.types import Point, Rect
 
 TESTFILE_PATH = os.path.join(
@@ -1906,10 +1908,30 @@ class GSCustomParameterTest(unittest.TestCase):
 
     def test_setValue_placeholder_discarded_when_parsed(self):
         """The name must be applied before the value for the check above to
-        fire, so cover a real parse and not just direct construction."""
+        fire, so cover a real parse and not just direct construction. The
+        discarded parameter is dropped from the list entirely."""
         source = '{customParameters = ({name = fsType; value = "New Value";});}'
         master = Parser(current_type=GSFontMaster).parse(source)
-        self.assertIsNone(master.customParameters[0].value)
+        self.assertEqual(len(master.customParameters), 0)
+
+    def test_placeholder_param_dropped_on_parse_and_round_trip(self):
+        """A discarded placeholder must not linger as a None-valued parameter:
+        the writer would emit 'value = None;', which fails to parse again."""
+        source = (
+            "{customParameters = ("
+            '{name = fsType; value = "New Value";},'
+            "{name = weightClass; value = 400;}"
+            ");}"
+        )
+        master = Parser(current_type=GSFontMaster).parse(source)
+        self.assertEqual([p.name for p in master.customParameters], ["weightClass"])
+        writer = Writer(StringIO())
+        master._serialize_to_plist(writer)
+        written = writer.file.getvalue()
+        self.assertNotIn("fsType", written)
+        self.assertNotIn("None", written)
+        reparsed = Parser(current_type=GSFontMaster).parse("{" + written + "}")
+        self.assertEqual(reparsed.customParameters["weightClass"], 400)
 
     def test_setValue_placeholder_spellings(self):
         """Older Glyphs versions used different placeholder wording. These are
