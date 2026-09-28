@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import pytest
 
 from fontTools.pens.areaPen import AreaPen
@@ -301,3 +303,84 @@ def test_smart_component_at_default_location(smart_font):
     rect, clockwise = get_rectangle_data(ufo)
     assert rect == (100, 100, 100, 100)
     assert not clockwise
+
+
+def smart_font_without_poles(num_masters=1, poles_in_first_master=False):
+    """Make a font whose smart glyph declares an axis but, unless
+    poles_in_first_master is set, has no layer mapped to a pole. Glyph "a" uses
+    it twice in every master."""
+    font = GSFont()
+    for _ in range(num_masters):
+        font.masters.append(GSFontMaster())
+
+    part = GSGlyph()
+    part.name = "_part.noPoles"
+    font.glyphs.append(part)
+    axis = GSSmartComponentAxis()
+    axis.name = "Length"
+    axis.bottomValue = 0
+    axis.topValue = 100
+    part.smartComponentAxes.append(axis)
+
+    a = GSGlyph()
+    a.name = "a"
+    font.glyphs.append(a)
+
+    for i, master in enumerate(font.masters):
+        layer = GSLayer()
+        layer.layerId = master.id
+        layer.associatedMasterId = master.id
+        layer.width = 300
+        layer.paths.append(rectangle_path(100, 100, 100, 100))
+        part.layers.append(layer)
+        if i == 0 and poles_in_first_master:
+            layer.smartComponentPoleMapping["Length"] = 1
+            long = GSLayer()
+            long.name = "Long"
+            long.layerId = "long"
+            long.associatedMasterId = master.id
+            long.width = 300
+            long.paths.append(rectangle_path(100, 100, 500, 100))
+            part.layers.append(long)
+            long.smartComponentPoleMapping["Length"] = 2
+
+        layer = GSLayer()
+        layer.layerId = master.id
+        layer.associatedMasterId = master.id
+        layer.width = 1000
+        layer.components.append(GSComponent(part.name))
+        layer.components.append(GSComponent(part.name))
+        a.layers.append(layer)
+
+    return font
+
+
+def test_smart_component_without_pole_layers(caplog):
+    """A glyph that declares smart component axes but has no layer mapped to a
+    pole has nothing to interpolate. Glyphs.app exports such a component as a
+    regular component; so should we, instead of raising.
+
+    Noto Sans Bengali has 22 such glyphs (iMatra-beng and its alternates), which
+    made the family unbuildable from glyphsLib 6.13.0 on.
+    """
+    font = smart_font_without_poles(num_masters=2)
+
+    with caplog.at_level(logging.DEBUG, logger="glyphsLib.builder"):
+        ufos = to_ufos(font)
+
+    for ufo in ufos:
+        assert [c.baseGlyph for c in ufo["a"].components] == ["_part.noPoles"] * 2
+        assert len(ufo["a"]) == 0
+    # logged once per glyph, not once per use
+    records = [r for r in caplog.records if "no layers mapped to poles" in r.message]
+    assert len(records) == 1
+    assert records[0].levelno == logging.DEBUG
+
+
+def test_smart_component_with_poles_in_some_masters_only():
+    """Keeping the component in one master while decomposing it in another would
+    make the masters incompatible, so this still raises."""
+    font = smart_font_without_poles(num_masters=2, poles_in_first_master=True)
+
+    with pytest.raises(ValueError, match="Could not find any masters"):
+        to_ufos(font)

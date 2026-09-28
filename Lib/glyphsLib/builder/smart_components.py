@@ -20,12 +20,15 @@ We handle smart components by decomposing them and then applying a standard
 OpenType interpolation model to adjust the node positions.
 """
 
+import logging
 from enum import IntEnum
 
 from fontTools.varLib.models import VariationModel, normalizeValue, VariationModelError
 from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 
 from glyphsLib.classes import GSLayer
+
+logger = logging.getLogger(__name__)
 
 
 # smartComponentPoleMapping returns 1 for bottom of axis and 2 for top.
@@ -135,6 +138,10 @@ def get_smart_component_variation_model(layer, component):
     root = component.component
 
     masters = [l for l in root.layers if l.smartComponentPoleMapping]
+    if not masters:
+        # No layer of the glyph is mapped to a pole: nothing to interpolate,
+        # use it as a regular component (see instantiate_smart_component).
+        return None, None, None
     if layer.associatedMasterId:
         # Each master in the font can have its own set of smart component
         # "master layers", so we need to filter by those smart components
@@ -175,6 +182,22 @@ def instantiate_smart_component(self, layer, component, pen):
     """Instantiate a smart component by interpolating and drawing to a pointPen."""
     # Find the GSGlyph that is being used as a component by this GSComponent
     root = component.component
+
+    # A glyph can declare smart component axes without any layer mapped to a
+    # pole (e.g. left over from duplicating a smart glyph). There is nothing to
+    # interpolate, and Glyphs.app exports it as a regular component.
+    # If only some masters lack poles we still raise below, since keeping a
+    # component in one master and decomposing it in another is incompatible.
+    if not any(l.smartComponentPoleMapping for l in root.layers):
+        if root.name not in self._smart_glyphs_without_poles:
+            self._smart_glyphs_without_poles.add(root.name)
+            logger.debug(
+                "Smart component %s has no layers mapped to poles; "
+                "keeping it as a regular component",
+                root.name,
+            )
+        pen.addComponent(component.name, component.transform)
+        return
 
     model, normalized_location, masters = get_smart_component_variation_model(
         layer, component

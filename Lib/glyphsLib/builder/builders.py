@@ -103,6 +103,7 @@ class UFOBuilder(LoggerMixin):
         self.bracket_layers = []
         self.write_skipexportglyphs = write_skipexportglyphs
         self.skip_export_glyphs = set()
+        self._smart_glyphs_without_poles = set()
         self.expand_includes = expand_includes
         self.minimal = minimal
 
