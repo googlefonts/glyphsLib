@@ -1279,6 +1279,106 @@ def test_glyph_color_palette_layers_postscript_names(ufo_module):
     assert ufo["caroncomb.alt.color1"].unicode is None
 
 
+def _add_color_palette_layers(glyph, count=2):
+    for i in range(count):
+        layer = GSLayer()
+        layer.attributes["colorPalette"] = i
+        glyph.layers.append(layer)
+
+
+def test_glyph_color_palette_layers_postscript_names_from_parent(ufo_module):
+    # Like Glyphs.app, color layer glyphs are named after the parent's
+    # production name plus the suffix, even when that name comes from the
+    # parent's unicode or from an explicit production name.
+    font = generate_minimal_font(format_version=3)
+
+    # Unknown to GlyphData; production name comes from the codepoint.
+    okhand = add_glyph(font, "okHand")
+    okhand.unicode = "1F44C"
+    _add_color_palette_layers(okhand)
+
+    # Explicit production name on the parent.
+    explicit = add_glyph(font, "foo.alt")
+    explicit.production = "foo"
+    _add_color_palette_layers(explicit)
+
+    # Known to GlyphData by name.
+    acaron = add_glyph(font, "Acaron")
+    acaron.unicode = "01CD"
+    _add_color_palette_layers(acaron)
+
+    # Unknown to GlyphData, no unicode: no production name at all.
+    unknown = add_glyph(font, "unknownGlyph")
+    _add_color_palette_layers(unknown)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+    postscriptNames = ufo.lib["public.postscriptNames"]
+
+    assert postscriptNames["okHand"] == "u1F44C"
+    assert postscriptNames["okHand.color0"] == "u1F44C.color0"
+    assert postscriptNames["okHand.color1"] == "u1F44C.color1"
+
+    assert postscriptNames["foo.alt"] == "foo"
+    assert postscriptNames["foo.alt.color0"] == "foo.color0"
+    assert postscriptNames["foo.alt.color1"] == "foo.color1"
+
+    assert postscriptNames["Acaron"] == "uni01CD"
+    assert postscriptNames["Acaron.color0"] == "uni01CD.color0"
+    assert postscriptNames["Acaron.color1"] == "uni01CD.color1"
+
+    assert "unknownGlyph" not in postscriptNames
+    assert "unknownGlyph.color0" not in postscriptNames
+    assert "unknownGlyph.color1" not in postscriptNames
+
+    assert len(set(postscriptNames.values())) == len(postscriptNames)
+
+
+def test_glyph_color_palette_layers_mark_widths(ufo_module):
+    # Like Glyphs.app, color layer glyphs of a nonspacing mark get zero width,
+    # including when the parent is a mark only by its codepoint.
+    font = generate_minimal_font(format_version=3)
+
+    # Known to GlyphData by name.
+    acutecomb = add_glyph(font, "acutecomb")
+    acutecomb.layers[0].width = 500
+    _add_color_palette_layers(acutecomb)
+
+    # Unknown to GlyphData by name; a mark by codepoint only.
+    bycodepoint = add_glyph(font, "mymark")
+    bycodepoint.unicode = "0311"
+    bycodepoint.layers[0].width = 500
+    _add_color_palette_layers(bycodepoint)
+
+    # Explicit category on the parent.
+    explicit = add_glyph(font, "mymark2")
+    explicit.category = "Mark"
+    explicit.subCategory = "Nonspacing"
+    explicit.layers[0].width = 500
+    _add_color_palette_layers(explicit)
+
+    # Not a mark: widths are kept.
+    letter = add_glyph(font, "A")
+    letter.layers[0].width = 600
+    _add_color_palette_layers(letter)
+
+    for glyph in (acutecomb, bycodepoint, explicit, letter):
+        width = glyph.layers[0].width
+        for layer in glyph.layers:
+            layer.width = width
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    for name in ("acutecomb", "mymark", "mymark2"):
+        assert ufo[name].width == 0
+        assert ufo[name + ".color0"].width == 0
+        assert ufo[name + ".color1"].width == 0
+    assert ufo["A"].width == 600
+    assert ufo["A.color0"].width == 600
+    assert ufo["A.color1"].width == 600
+
+
 def test_glyph_color_layers_components_2(ufo_module):
     filename = os.path.join(
         os.path.dirname(__file__), "..", "data", "ColorComponents.glyphs"
