@@ -201,6 +201,43 @@ class GSFontTest(unittest.TestCase):
         font.masters.append(master)
         self.assertEqual(master.font, font)
 
+    def test_quoted_kerning_values(self):
+        # Older Glyphs versions quote negative kerning values, e.g. "-47".
+        font = glyphsLib.loads("""{
+            .formatVersion = 2;
+            familyName = QuotedKerning;
+            fontMaster = (
+            {
+            id = M1;
+            }
+            );
+            kerning = {
+            M1 = {
+            "@MMK_L_T" = {
+            "@MMK_R_o" = "-47";
+            a = "12.5";
+            };
+            a = {
+            v = "-13";
+            w = 20;
+            };
+            };
+            };
+            unitsPerEm = 1000;
+            }""")
+        kerning = font.kerning["M1"]
+        self.assertEqual(kerning["@MMK_L_T"]["@MMK_R_o"], -47)
+        self.assertIsInstance(kerning["@MMK_L_T"]["@MMK_R_o"], int)
+        self.assertEqual(kerning["@MMK_L_T"]["a"], 12.5)
+        self.assertEqual(kerning["a"]["v"], -13)
+        self.assertIsInstance(kerning["a"]["v"], int)
+        self.assertEqual(kerning["a"]["w"], 20)
+
+        written = glyphsLib.dumps(font)
+        self.assertIn('"@MMK_R_o" = -47;', written)
+        self.assertIn("a = 12.5;", written)
+        self.assertIn("v = -13;", written)
+
 
 class GSInstanceTest(unittest.TestCase):
     def test_variable_instance(self):

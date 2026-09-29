@@ -5178,7 +5178,7 @@ GSFont._add_parsers(
         {"plist_name": "featurePrefixes", "type": GSFeaturePrefix},
         {"plist_name": "features", "type": GSFeature},
         {"plist_name": "fontMaster", "object_name": "masters", "type": GSFontMaster},
-        {"plist_name": "kerning", "object_name": "_kerningLTR", "type": OrderedDict},
+        {"plist_name": "kerning", "object_name": "kerningLTR", "type": OrderedDict},
         {"plist_name": "kerningLTR", "type": OrderedDict},
         {"plist_name": "kerningRTL", "type": OrderedDict},
         {"plist_name": "kerningVertical", "type": OrderedDict},
