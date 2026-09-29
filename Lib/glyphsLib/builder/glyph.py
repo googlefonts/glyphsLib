@@ -25,8 +25,6 @@ from .constants import (
     GLYPHS_COLORS,
     PUBLIC_PREFIX,
     UFO2FT_COLOR_LAYER_MAPPING_KEY,
-    BRACKET_GLYPH_RE,
-    BRACKET_GLYPH_SUFFIX_RE,
     SCRIPT_LIB_KEY,
     SHAPE_ORDER_LIB_KEY,
     ORIGINAL_WIDTH_KEY,
@@ -109,23 +107,16 @@ def to_ufo_glyph(  # noqa: C901
             USV_KEY = PUBLIC_PREFIX + "unicodeVariationSequences"
             ufo_font.lib.setdefault(USV_KEY, {}).setdefault(usv, {})[uni] = glyph.name
 
-    if is_color_layer_glyph:
-        # Glyphs.app resolves a color layer glyph like its parent, unicodes
-        # included, then suffixes the production name (okHand.layer0 ->
-        # u1F44C.layer0), so look up the parent rather than the suffixed name.
-        lookup_name = glyph.name
-        unicodes = [f"{int(uval, 16):04X}" for uval in glyph.unicodes]
-    else:
-        lookup_name = ufo_glyph.name
-        # we can't use use the glyphs.unicodes values since they aren't always
-        # correctly padded
-        unicodes = [f"{c:04X}" for c in ufo_glyph.unicodes]
+    # A bracket or color layer glyph is named after its parent plus a suffix
+    # and resolves like the parent, as in Glyphs.app (okHand.layer0 ->
+    # u1F44C.layer0), so always look up the parent's name and unicodes.
+    unicodes = [f"{int(uval, 16):04X}" for uval in glyph.unicodes]
     # FIXME: (jany) next line should be an API of GSGlyph?
-    glyphinfo = glyphsLib.glyphdata.get_glyph(lookup_name, unicodes=unicodes)
+    glyphinfo = glyphsLib.glyphdata.get_glyph(glyph.name, unicodes=unicodes)
 
     if self.glyphdata is not None:
         custom = glyphsLib.glyphdata.get_glyph(
-            lookup_name, self.glyphdata, unicodes=unicodes
+            glyph.name, self.glyphdata, unicodes=unicodes
         )
         production_name = glyph.production or (
             custom.production_name
@@ -150,17 +141,8 @@ def to_ufo_glyph(  # noqa: C901
         )
 
     production_name = production_name or glyphinfo.production_name
-    if is_color_layer_glyph and production_name:
-        suffix = ufo_glyph.name[len(glyph.name) :]
-        assert suffix.startswith(".")
-        production_name += suffix
-
-    if production_name:
-        # Make sure production names of bracket glyphs also get a BRACKET suffix.
-        bracket_glyph_name = BRACKET_GLYPH_RE.match(ufo_glyph.name)
-        prod_bracket_glyph_name = BRACKET_GLYPH_RE.match(production_name)
-        if bracket_glyph_name and not prod_bracket_glyph_name:
-            production_name += BRACKET_GLYPH_SUFFIX_RE.match(ufo_glyph.name).group(1)
+    if production_name and ufo_glyph.name != glyph.name:
+        production_name += ufo_glyph.name[len(glyph.name) :]
     if production_name and production_name != ufo_glyph.name:
         postscriptNamesKey = PUBLIC_PREFIX + "postscriptNames"
         if postscriptNamesKey not in ufo_font.lib:
