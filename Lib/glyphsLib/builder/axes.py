@@ -158,6 +158,25 @@ def is_identity(mapping):
     return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
 
 
+def _virtual_master_locations(font):
+    """Return an {axis name: location} dict for each enabled Virtual Master.
+
+    Some versions of Glyphs store the locations as strings, so we convert them;
+    a Virtual Master with a location that isn't a number is skipped.
+    """
+    locations = []
+    for cp in font.customParameters:
+        if cp.name != "Virtual Master" or cp.disabled:
+            continue
+        try:
+            location = {v["Axis"]: parse_float_or_int(v["Location"]) for v in cp.value}
+        except (TypeError, ValueError):
+            logger.warning(f"Ignoring Virtual Master with invalid location: {cp.value}")
+            continue
+        locations.append(location)
+    return locations
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -165,12 +184,7 @@ def to_designspace_axes(self):
     assert isinstance(regular_master, classes.GSFontMaster)
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
-    virtual_masters = [
-        {v["Axis"]: v["Location"] for v in cp.value}
-        for cp in self.font.customParameters
-        if cp.name == "Virtual Master"
-        if not cp.disabled
-    ]
+    virtual_masters = _virtual_master_locations(self.font)
 
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()

@@ -744,6 +744,57 @@ def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
     ] == virtual_masters
 
 
+def _font_with_virtual_master(weight_location):
+    # Modelled on the DM Serif sources, whose Glyphs 2 files store
+    # 'Location = "150";' in the Virtual Master parameter.
+    font = GSFont()
+    font.customParameters["Axes"] = [
+        {"Name": "Weight", "Tag": "wght"},
+        {"Name": "Contrast", "Tag": "CONT"},
+    ]
+    master = GSFontMaster()
+    master.weightValue = 723
+    master.widthValue = 200
+    font.masters.append(master)
+    font.customParameters["Virtual Master"] = [
+        {"Axis": "Weight", "Location": weight_location},
+        {"Axis": "Contrast", "Location": "100"},
+    ]
+    return font
+
+
+def test_virtual_master_string_locations(ufo_module):
+    font = _font_with_virtual_master("150")
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+
+    assert [(a.name, a.minimum, a.default, a.maximum) for a in ds.axes] == [
+        ("Weight", 150, 723, 723),
+        ("Contrast", 100, 200, 200),
+    ]
+
+    font2 = to_glyphs(ds)
+    assert font2.customParameters["Virtual Master"] == [
+        {"Axis": "Weight", "Location": "150"},
+        {"Axis": "Contrast", "Location": "100"},
+    ]
+
+
+def test_virtual_master_non_numeric_location_is_skipped(ufo_module, caplog):
+    font = _font_with_virtual_master("Light")
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+
+    assert [(a.name, a.minimum, a.default, a.maximum) for a in ds.axes] == [
+        ("Weight", 723, 723, 723),
+        ("Contrast", 200, 200, 200),
+    ]
+    assert any(
+        "Ignoring Virtual Master" in r.message and r.levelname == "WARNING"
+        for r in caplog.records
+    )
+
+
 def test_axis_location_cp_uses_floats(ufo_module, datadir):
     # https://github.com/googlefonts/glyphsLib/issues/1100
     font = GSFont(datadir.join("WghtVar_AxisLocationFloat.glyphs"))
