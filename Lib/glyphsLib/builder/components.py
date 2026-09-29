@@ -15,7 +15,6 @@
 
 import logging
 
-from fontTools.pens.basePen import MissingComponentError
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
@@ -108,9 +107,11 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
     if isinstance(layer, GSBackgroundLayer):
         layer_id = layer.foreground.layerId
         layer_master_id = layer.foreground.associatedMasterId
+        layer_label = f"background layer of '{layer.foreground.name}'"
     else:
         layer_id = layer.layerId
         layer_master_id = layer.associatedMasterId
+        layer_label = f"layer '{layer.name}'"
 
     if layer_id in self._glyph_sets:
         layers = self._glyph_sets[layer_id]
@@ -142,15 +143,24 @@ def to_ufo_components_nonmaster_decompose(self, ufo_glyph, layer):
                 **layers_nonmaster,
             }
 
+    # A background is a sketch pad: it is never compiled, and Glyphs.app is happy
+    # for one to reference a glyph that was renamed or deleted since, so skip such
+    # a component. https://github.com/googlefonts/glyphsLib/issues/743
     rpen = DecomposingRecordingPen(glyphSet=layers)
+    # The loop takes the direct misses; only nested ones reach the pen.
+    rpen.skipMissingComponents = True
+    missing = []
     for component in layer.components:
-        try:
-            component.draw(rpen)
-        except MissingComponentError as e:
-            raise MissingComponentError(
-                f"Glyph '{ufo_glyph.name}', background layer: component "
-                f"'{component.name}' points to a non-existent glyph."
-            ) from e
+        if component.name not in layers:
+            missing.append(component.name)
+            continue
+        component.draw(rpen)
+    if missing:
+        names = ", ".join(sorted(set(missing)))
+        logger.warning(
+            f"Glyph '{ufo_glyph.name}', {layer_label}: skipped "
+            f"{len(missing)} component(s) with no glyph in this master: {names}"
+        )
     rpen.replay(ufo_glyph.getPen())
 
 
