@@ -135,7 +135,9 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     for axis_def in get_axis_definitions(self.font):
         # Only write locations along defined axes
         if axis_def.tag in designspace_axis_tags:
-            location[axis_def.name] = axis_def.get_design_loc(instance)
+            location[axis_def.name] = self._instance_locations_on_master.get(
+                axis_def.name, axis_def.get_design_loc(instance)
+            )
     ufo_instance.location = location
 
     # FIXME: (jany) should be the responsibility of ufo2ft?
