@@ -47,6 +47,10 @@ def _clone_layer(layer, paths=None, components=None):
     new_layer.paths = paths
     new_layer.components = components
     new_layer.attributes = layer.attributes
+    # Keep the width, as an unsplit color layer would. Anchors are left off:
+    # nothing reaches a .colorN glyph except the COLR paint graph, so anchors
+    # on it would only add dead mark or caret data.
+    new_layer.width = layer.width
     return new_layer
 
 
