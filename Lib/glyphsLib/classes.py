@@ -2133,7 +2133,7 @@ GSFontMaster._add_parsers(
         {"plist_name": "customParameters", "type": GSCustomParameter},
         {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # v2
         {"plist_name": "guides", "object_name": "guides", "type": GSGuide},  # v3
-        {"plist_name": "custom", "object_name": "customName"},
+        {"plist_name": "custom", "object_name": "customName", "converter": str},
         {"plist_name": "axesValues", "object_name": "axes"},  # v3
         {"plist_name": "numberValues", "object_name": "numbers"},  # v3
         {"plist_name": "stemValues", "object_name": "stems"},  # v3
@@ -2142,7 +2142,7 @@ GSFontMaster._add_parsers(
             "object_name": "metrics",
             "type": GSMetricValue,
         },  # v3
-        {"plist_name": "name", "object_name": "_name"},
+        {"plist_name": "name", "object_name": "_name", "converter": str},
     ]
 )
 
@@ -3777,6 +3777,8 @@ GSInstance._add_parsers(
         {"plist_name": "widthClass", "object_name": "width"},
         {"plist_name": "axesValues", "object_name": "axes"},
         {"plist_name": "manualInterpolation", "converter": bool},
+        {"plist_name": "name", "converter": str},
+        {"plist_name": "linkStyle", "converter": str},
         {"plist_name": "properties", "type": GSFontInfoValue},
         {"plist_name": "type", "converter": instance_type},
     ]
@@ -5169,6 +5171,7 @@ class GSFont(GSBase):
 GSFont._add_parsers(
     [
         {"plist_name": "customParameters", "type": GSCustomParameter},
+        {"plist_name": "familyName", "converter": str},
         {"plist_name": "unitsPerEm", "object_name": "upm"},
         {"plist_name": "gridLength", "object_name": "grid"},
         {"plist_name": "gridSubDivisions", "object_name": "gridSubDivision"},

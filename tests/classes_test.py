@@ -990,6 +990,73 @@ class GSInstanceFromFileTest(GSObjectsTestCase):
         self.assertEqual(instance.customValue3, 0.0)
 
 
+class NumericNamesTest(unittest.TestCase):
+    # Glyphs 2 writes numeric-looking names unquoted (name = 50;), so the plist
+    # parser hands us a number where the rest of the library expects a str.
+    GLYPHS2 = """{
+        .formatVersion = 2;
+        familyName = 1942;
+        fontMaster = (
+        {
+        custom = 12;
+        id = "M1";
+        }
+        );
+        instances = (
+        {
+        interpolationWeight = 50;
+        linkStyle = 50;
+        name = 50;
+        },
+        {
+        name = 50.5;
+        }
+        );
+        unitsPerEm = 1000;
+        }"""
+
+    GLYPHS3 = """{
+        .formatVersion = 3;
+        familyName = NumericNames;
+        fontMaster = (
+        {
+        id = "M1";
+        name = 50;
+        }
+        );
+        unitsPerEm = 1000;
+        }"""
+
+    def assert_glyphs2_names(self, font):
+        self.assertEqual(font.familyName, "1942")
+        self.assertEqual(font.masters[0].customName, "12")
+        self.assertEqual(font.masters[0].name, "12")
+        self.assertEqual(font.instances[0].name, "50")
+        self.assertEqual(font.instances[0].linkStyle, "50")
+        self.assertEqual(font.instances[1].name, "50.5")
+
+    def test_numeric_names_glyphs2(self):
+        self.assert_glyphs2_names(glyphsLib.loads(self.GLYPHS2))
+
+    def test_numeric_master_name_glyphs3(self):
+        font = glyphsLib.loads(self.GLYPHS3)
+        self.assertEqual(font.masters[0].name, "50")
+
+    def test_numeric_names_roundtrip_glyphs2(self):
+        text = glyphsLib.dumps(glyphsLib.loads(self.GLYPHS2))
+        self.assertIn('familyName = "1942";', text)
+        self.assertIn('custom = "12";', text)
+        self.assertIn('linkStyle = "50";', text)
+        self.assertIn('name = "50";', text)
+        self.assertIn('name = "50.5";', text)
+        self.assert_glyphs2_names(glyphsLib.loads(text))
+
+    def test_numeric_master_name_roundtrip_glyphs3(self):
+        text = glyphsLib.dumps(glyphsLib.loads(self.GLYPHS3))
+        self.assertIn('name = "50";', text)
+        self.assertEqual(glyphsLib.loads(text).masters[0].name, "50")
+
+
 class GSGlyphFromFileTest(GSObjectsTestCase):
     def setUp(self):
         super().setUp()

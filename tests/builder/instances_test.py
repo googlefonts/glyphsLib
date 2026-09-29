@@ -232,6 +232,40 @@ def test_glyphs3_instance_properties(tmpdir):
         assert expected == len(instance.properties)
 
 
+def test_numeric_instance_name(ufo_module):
+    # Glyphs 2 writes numeric-looking instance names unquoted.
+    font = glyphsLib.loads("""{
+        .formatVersion = 2;
+        familyName = "Numeric Name";
+        fontMaster = (
+        {
+        id = "M1";
+        weight = Light;
+        weightValue = 0;
+        },
+        {
+        id = "M2";
+        weight = Bold;
+        }
+        );
+        instances = (
+        {
+        interpolationWeight = 50;
+        name = 50;
+        }
+        );
+        unitsPerEm = 1000;
+        }""")
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+
+    instance = designspace.instances[0]
+    assert instance.styleName == "50"
+    assert instance.name == "Numeric Name 50"
+    assert instance.filename == "instance_ufos/NumericName-50.ufo"
+    assert instance.styleMapFamilyName == "Numeric Name 50"
+    assert instance.styleMapStyleName == "regular"
+
+
 def test_rename_glyphs(tmpdir):
     font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
     instance_dir = tmpdir.ensure_dir("instance_ufo")
