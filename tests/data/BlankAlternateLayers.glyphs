@@ -1,0 +1,272 @@
+{
+.appVersion = "895";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+familyName = BlankAlternateLayers;
+fontMaster = (
+{
+axesValues = (
+50
+);
+id = LIGHT;
+metricValues = (
+{
+over = 0;
+pos = 800;
+},
+{
+over = 0;
+pos = 700;
+},
+{
+over = 0;
+pos = 500;
+},
+{
+over = 0;
+},
+{
+over = 0;
+pos = -200;
+}
+);
+name = Light;
+},
+{
+axesValues = (
+150
+);
+id = BOLD;
+metricValues = (
+{
+over = 0;
+pos = 800;
+},
+{
+over = 0;
+pos = 700;
+},
+{
+over = 0;
+pos = 500;
+},
+{
+over = 0;
+},
+{
+over = 0;
+pos = -200;
+}
+);
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = .notdef;
+layers = (
+{
+layerId = LIGHT;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+},
+{
+layerId = BOLD;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = B;
+layers = (
+{
+anchors = (
+{
+name = top;
+pos = (300,700);
+}
+);
+associatedMasterId = LIGHT;
+attr = {
+axisRules = (
+{
+}
+);
+};
+layerId = "LIGHT-ALT";
+name = "29 Sep 26, 16:00";
+shapes = (
+{
+closed = 1;
+nodes = (
+(3000,0,l),
+(3000,50,l),
+(3010,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (100,700);
+}
+);
+attr = {
+axisRules = (
+{
+}
+);
+};
+layerId = LIGHT;
+shapes = (
+{
+closed = 1;
+nodes = (
+(1000,0,l),
+(1000,50,l),
+(1010,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (400,700);
+}
+);
+associatedMasterId = BOLD;
+attr = {
+axisRules = (
+{
+}
+);
+};
+layerId = "BOLD-ALT";
+name = "29 Sep 26, 16:01";
+shapes = (
+{
+closed = 1;
+nodes = (
+(4000,0,l),
+(4000,50,l),
+(4010,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (200,700);
+}
+);
+attr = {
+axisRules = (
+{
+}
+);
+};
+layerId = BOLD;
+shapes = (
+{
+closed = 1;
+nodes = (
+(2000,0,l),
+(2000,50,l),
+(2010,0,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 66;
+},
+{
+glyphname = Bcomp;
+layers = (
+{
+layerId = LIGHT;
+shapes = (
+{
+ref = B;
+}
+);
+width = 600;
+},
+{
+layerId = BOLD;
+shapes = (
+{
+ref = B;
+}
+);
+width = 600;
+}
+);
+}
+);
+instances = (
+);
+kerningLTR = {
+};
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+stems = (
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

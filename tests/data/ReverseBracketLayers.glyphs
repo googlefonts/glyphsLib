@@ -1,0 +1,353 @@
+{
+.appVersion = "895";
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+familyName = ReverseBracketLayers;
+fontMaster = (
+{
+axesValues = (
+50
+);
+id = LIGHT;
+metricValues = (
+{
+over = 0;
+pos = 800;
+},
+{
+over = 0;
+pos = 700;
+},
+{
+over = 0;
+pos = 500;
+},
+{
+over = 0;
+},
+{
+over = 0;
+pos = -200;
+}
+);
+name = Light;
+},
+{
+axesValues = (
+150
+);
+id = BOLD;
+metricValues = (
+{
+over = 0;
+pos = 800;
+},
+{
+over = 0;
+pos = 700;
+},
+{
+over = 0;
+pos = 500;
+},
+{
+over = 0;
+},
+{
+over = 0;
+pos = -200;
+}
+);
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = .notdef;
+layers = (
+{
+layerId = LIGHT;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+},
+{
+layerId = BOLD;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = A;
+layers = (
+{
+anchors = (
+{
+name = top;
+pos = (10,700);
+}
+);
+layerId = LIGHT;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (20,700);
+}
+);
+associatedMasterId = LIGHT;
+attr = {
+axisRules = (
+{
+min = 100;
+}
+);
+};
+layerId = "A-LIGHT-ALT";
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (30,700);
+}
+);
+layerId = BOLD;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+},
+{
+anchors = (
+{
+name = top;
+pos = (40,700);
+}
+);
+associatedMasterId = BOLD;
+attr = {
+axisRules = (
+{
+min = 100;
+}
+);
+};
+layerId = "A-BOLD-ALT";
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,0,l),
+(100,500,l),
+(300,500,l),
+(300,0,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 65;
+},
+{
+glyphname = Aacute;
+layers = (
+{
+layerId = LIGHT;
+shapes = (
+{
+ref = A;
+}
+);
+width = 600;
+},
+{
+associatedMasterId = LIGHT;
+attr = {
+axisRules = (
+{
+min = 100;
+}
+);
+};
+layerId = "AA-LIGHT-ALT";
+shapes = (
+{
+ref = A;
+}
+);
+width = 600;
+},
+{
+attr = {
+axisRules = (
+{
+min = 100;
+}
+);
+};
+layerId = BOLD;
+shapes = (
+{
+ref = A;
+}
+);
+width = 600;
+},
+{
+associatedMasterId = BOLD;
+attr = {
+axisRules = (
+{
+}
+);
+};
+layerId = "AA-BOLD-FULL";
+shapes = (
+{
+ref = A;
+}
+);
+width = 600;
+}
+);
+unicode = 193;
+},
+{
+category = Mark;
+glyphname = acutecomb;
+layers = (
+{
+anchors = (
+{
+name = _top;
+pos = (0,0);
+}
+);
+layerId = LIGHT;
+shapes = (
+{
+closed = 1;
+nodes = (
+(0,0,l),
+(0,100,l),
+(50,0,l)
+);
+}
+);
+width = 0;
+},
+{
+anchors = (
+{
+name = _top;
+pos = (0,0);
+}
+);
+layerId = BOLD;
+shapes = (
+{
+closed = 1;
+nodes = (
+(0,0,l),
+(0,100,l),
+(50,0,l)
+);
+}
+);
+width = 0;
+}
+);
+subCategory = Nonspacing;
+unicode = 769;
+}
+);
+instances = (
+);
+kerningLTR = {
+};
+metrics = (
+{
+type = ascender;
+},
+{
+type = "cap height";
+},
+{
+type = "x-height";
+},
+{
+type = baseline;
+},
+{
+type = descender;
+},
+{
+type = "italic angle";
+}
+);
+stems = (
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

@@ -317,6 +317,62 @@ def test_designspace_generation_bracket_roundtrip(datadir, ufo_module):
     assert "x.BRACKET.600" not in font_rt.glyphs
 
 
+@pytest.mark.parametrize(
+    "filename", ["ReverseBracketLayers.glyphs", "ReverseBracketLayersMirror.glyphs"]
+)
+def test_designspace_generation_reverse_bracket_layers(datadir, ufo_module, filename):
+    # https://glyphsapp.com/learn/switching-shapes#reverse-bracket-layers
+    # In ReverseBracketLayers, Aacute's Bold master is a [100<wg] layer and its
+    # blank alternate is the design used below 100; in the Mirror file, the
+    # same holds for A. Glyphs 3.5 (3532) exports both files the same way:
+    # one feature variation substituting both glyphs from 100 upwards, with
+    # 'top' anchors at x=10..30 on the default glyph and x=20..40 on the
+    # alternate.
+    with open(str(datadir.join(filename))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=True)
+
+    assert len(designspace.rules) == 1
+    assert designspace.rules[0].conditionSets == [
+        [dict(name="Weight", minimum=100, maximum=150)]
+    ]
+    assert sorted(designspace.rules[0].subs) == [
+        ("A", "A.BRACKET.varAlt01"),
+        ("Aacute", "Aacute.BRACKET.varAlt01"),
+    ]
+
+    expected = {
+        50: {"Aacute": 10, "Aacute.BRACKET.varAlt01": 20},
+        150: {"Aacute": 30, "Aacute.BRACKET.varAlt01": 40},
+    }
+    for source in designspace.sources:
+        for glyph_name, x in expected[source.location["Weight"]].items():
+            anchors = source.font[glyph_name].anchors
+            assert [(a.name, a.x) for a in anchors] == [("top", x)]
+
+
+def test_designspace_generation_blank_alternate_layers(datadir, ufo_module):
+    # Glyph B has an alternate layer with blank [] axis rules for each master,
+    # stored before the master layer, which also has blank axis rules. Glyphs
+    # 3.5 (3532) exports B from the master layers only, without a substitution
+    # (checked before the Bcomp composite and the anchors were added). Bcomp
+    # then gets no bracket variant either, and takes B's master anchors.
+    with open(str(datadir.join("BlankAlternateLayers.glyphs"))) as f:
+        font = glyphsLib.load(f)
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=True)
+
+    assert not designspace.rules
+    for source in designspace.sources:
+        assert "B.BRACKET.varAlt01" not in source.font
+        # the master layers' contour ends at x=1010 (Light) and 2010 (Bold),
+        # the alternates' at 3010 and 4010
+        x_max = max(point.x for point in source.font["B"][0])
+        assert x_max == {50: 1010, 150: 2010}[source.location["Weight"]]
+        assert "Bcomp.BRACKET.varAlt01" not in source.font
+        anchors = [(a.name, a.x) for a in source.font["Bcomp"].anchors]
+        assert anchors == [("top", {50: 100, 150: 200}[source.location["Weight"]])]
+
+
 def test_designspace_generation_bracket_roundtrip_v3(datadir, ufo_module):
     # v3 supports bracket layers that reference positions on multiple axes.
     # of particular interest for this test is that we don't bother including
