@@ -154,7 +154,8 @@ def point_on_seg_at_distance(seg, distance):
         solutions = solveCubic(a[0], b[0], c[0], d[0] - (aligned_seg[0][0] + distance))
         solutions = sorted(t for t in solutions if 0 <= t < 1)
         if not solutions:
-            return None
+            # The distance runs off one end of the segment
+            return 1.0 if distance > 0 else 0.0
         return solutions[0]
     else:
         start, end = aligned_seg
@@ -283,7 +284,11 @@ class CornerComponentApplier:
         # potentially stretch the corner component so that it meets the
         # instroke.
         if self.alignment != Alignment.INSTROKE and correction:
-            instroke_intersection_point = self.recompute_instroke_intersection_point()
+            # If the corner's first segment misses the instroke, keep the
+            # point we found while aligning.
+            recomputed = self.recompute_instroke_intersection_point()
+            if recomputed is not None:
+                instroke_intersection_point = recomputed
             # The instroke of the corner path may need stretching to fit...
             if len(self.first_seg) == 4:
                 self.stretch_first_seg_to_fit(instroke_intersection_point)
@@ -352,9 +357,10 @@ class CornerComponentApplier:
 
         # To align along the outstroke, work out how much the end of the
         # corner pokes out, then find a point on the curve that distance
-        # away. Use that as the vector
+        # away. Use that as the vector. The angle above already turns the end
+        # of the corner onto the positive x axis, so ignore the sign.
         distance = self.last_seg[-1].y if self.flipped else self.last_seg[-1].x
-        t = point_on_seg_at_distance(as_tuples(self.outstroke), distance)
+        t = point_on_seg_at_distance(as_tuples(self.outstroke), abs(distance))
         outstroke_intersection_point = segmentPointAtT(as_tuples(self.outstroke), t)
         outstroke_angle = math.atan2(
             outstroke_intersection_point[1] - self.target_node.y,
@@ -364,7 +370,7 @@ class CornerComponentApplier:
         # And the same for the instroke, determined by the Y value of
         # the first point on the corner component
         distance = -self.first_seg[0].x if self.flipped else self.first_seg[0].y
-        t2 = point_on_seg_at_distance(as_tuples(self.instroke), distance)
+        t2 = point_on_seg_at_distance(as_tuples(self.instroke), abs(distance))
         instroke_intersection_point = segmentPointAtT(
             as_tuples(reversed(self.instroke)), t2
         )
