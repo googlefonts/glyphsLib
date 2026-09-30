@@ -126,6 +126,75 @@ def test_load_kerning(ufo_module):
     assert ufo.kerning["a", "public.kern2.V"] == 100
 
 
+def test_load_quoted_kerning_values(ufo_module):
+    """Test that quoted kerning values in Glyphs 2 files reach the UFO as numbers."""
+    font = glyphsLib.loads(dedent("""\
+        {
+        .appVersion = "1089";
+        familyName = QuotedKerning;
+        fontMaster = (
+        {
+        id = M1;
+        }
+        );
+        glyphs = (
+        {
+        glyphname = T;
+        layers = (
+        {
+        layerId = M1;
+        width = 600;
+        }
+        );
+        rightKerningGroup = T;
+        },
+        {
+        glyphname = o;
+        layers = (
+        {
+        layerId = M1;
+        width = 500;
+        }
+        );
+        leftKerningGroup = o;
+        },
+        {
+        glyphname = v;
+        layers = (
+        {
+        layerId = M1;
+        width = 500;
+        }
+        );
+        }
+        );
+        kerning = {
+        M1 = {
+        "@MMK_L_T" = {
+        "@MMK_R_o" = "-47";
+        v = "-12.5";
+        };
+        T = {
+        o = "-20";
+        v = 15;
+        };
+        };
+        };
+        unitsPerEm = 1000;
+        }
+        """))
+
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+
+    assert dict(ufo.kerning) == {
+        ("public.kern1.T", "public.kern2.o"): -47,
+        ("public.kern1.T", "v"): -12.5,
+        ("T", "o"): -20,
+        ("T", "v"): 15,
+    }
+    assert all(isinstance(value, (int, float)) for value in ufo.kerning.values())
+
+
 def test_propagate_anchors_on(ufo_module):
     """Test anchor propagation for some relatively complicated cases."""
 
