@@ -19,9 +19,11 @@ import os.path
 import pytest
 
 from fontTools import designspaceLib
+from fontTools.designspaceLib.split import splitInterpolable
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster, GSAxis, GSInstance
 from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
+from glyphsLib.interpolation import apply_instance_data_to_ufo
 from glyphsLib.builder.stat import is_stat_only_ital
 
 """
@@ -566,6 +568,82 @@ def test_single_master_default_weight_400(ufo_module):
 
     assert len(font2.masters) == 1
     assert font2.masters[0].weightValue == 400
+
+
+def _instantiable(doc):
+    # What fontmake -i does: split off the interpolable subspace (dropping
+    # instances outside the axis ranges) and instantiate it from its default.
+    ((_, sub),) = splitInterpolable(doc)
+    assert sub.findDefault() is not None
+    return sub
+
+
+@pytest.mark.parametrize(
+    "master_weight, weight, weight_class",
+    [(400, "Regular", 400), (500, "Medium", 500), (250, "ExtraLight", 200)],
+)
+def test_single_master_instance_sits_on_master(
+    ufo_module, master_weight, weight, weight_class
+):
+    # Glyphs 2 leaves an instance's interpolation weight at 100, and with a
+    # single master Glyphs.app ignores it: the instance is the master.
+    font = GSFont()
+    master = GSFontMaster()
+    master.weightValue = master_weight
+    font.masters.append(master)
+    font.instances = [GSInstance()]
+    font.instances[0].name = weight
+    font.instances[0].weight = weight
+    font.instances[0].weightValue = 100
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
+    assert axis.map_forward(axis.default) == master_weight
+    assert doc.findDefault() is doc.sources[0]
+    sub = _instantiable(doc)
+    (instance,) = sub.instances
+    assert instance.location == {"Weight": master_weight}
+    ufo = ufo_module.Font()
+    apply_instance_data_to_ufo(ufo, instance, sub)
+    assert ufo.info.openTypeOS2WeightClass == weight_class
+
+
+def test_single_master_instance_sits_on_master_width(ufo_module):
+    # Old Glyphs 2 masters often have widthValue 5 while the instance keeps
+    # its default of 100; the instance must still fall inside the Width axis.
+    font = GSFont()
+    master = GSFontMaster()
+    master.widthValue = 5
+    font.masters.append(master)
+    font.instances = [GSInstance()]
+    font.instances[0].name = "Regular"
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    sub = _instantiable(doc)
+    (instance,) = sub.instances
+    ufo = ufo_module.Font()
+    apply_instance_data_to_ufo(ufo, instance, sub)
+    assert ufo.info.openTypeOS2WidthClass == 5
+
+
+def test_single_master_instances_at_different_weights(ufo_module):
+    # Instances at different user locations can't all be the master; they keep
+    # their own design locations.
+    font = GSFont()
+    master = GSFontMaster()
+    master.weightValue = 100
+    font.masters.append(master)
+    font.instances = [GSInstance(), GSInstance()]
+    for instance, weight, value in zip(font.instances, ("Regular", "Bold"), (100, 147)):
+        instance.name = instance.weight = weight
+        instance.weightValue = value
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    assert doc.axes[0].map == [(400, 100), (700, 147)]
+    assert [i.location for i in doc.instances] == [{"Weight": 100}, {"Weight": 147}]
 
 
 def test_axis_mapping(ufo_module):

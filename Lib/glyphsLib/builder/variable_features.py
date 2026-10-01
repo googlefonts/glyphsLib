@@ -156,6 +156,7 @@ class VariableFeatureConverter:
             font=font,
             designspace=DesignSpaceDocument(),
             minimize_glyphs_diffs=False,
+            _instance_locations_on_master={},
         )
         to_designspace_axes(shim)
         axes = shim.designspace.axes

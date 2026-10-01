@@ -263,6 +263,19 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
+            # With one master, Glyphs.app exports every instance as that master
+            # whatever its design location. If the instances agree on a user
+            # location, map it to the master and put the instances there.
+            if (
+                len(self.font.masters) == 1
+                and len(instance_mapping) == 1
+                and not any(axis.name in vm for vm in virtual_masters)
+            ):
+                (userLoc,) = instance_mapping
+                designLoc = axis_def.get_design_loc(regular_master)
+                instance_mapping = {userLoc: designLoc}
+                self._instance_locations_on_master[axis.name] = designLoc
+
             # Prefer the instance-based mapping (but only if interesting)
             mapping = (
                 instance_mapping

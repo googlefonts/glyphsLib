@@ -104,6 +104,8 @@ class UFOBuilder(LoggerMixin):
         self.write_skipexportglyphs = write_skipexportglyphs
         self.skip_export_glyphs = set()
         self._smart_glyphs_without_poles = set()
+        # axis name -> master design location, set by to_designspace_axes
+        self._instance_locations_on_master = {}
         self.expand_includes = expand_includes
         self.minimal = minimal
 
