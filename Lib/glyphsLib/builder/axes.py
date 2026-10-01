@@ -153,6 +153,14 @@ def update_mapping_from_instances(
             mapping[userLoc] = designLoc
 
 
+def _covers(mapping, design_locs):
+    """Return whether all the design locations are within the mapping's range."""
+    return bool(mapping) and (
+        min(mapping.values()) <= min(design_locs)
+        and max(design_locs) <= max(mapping.values())
+    )
+
+
 def is_identity(mapping):
     """Return whether the mapping is an identity mapping."""
     return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
@@ -177,6 +185,39 @@ def _virtual_master_locations(font):
     return locations
 
 
+def _choose_instance_or_master_mapping(
+    self, axis_def, instance_mapping, master_mapping
+):
+    """Return the instance mapping if it's usable, else the masters' (identity).
+
+    The instance mapping is only usable if it spans all the masters: Glyphs.app
+    doesn't derive a mapping from the instances, and when the instances don't
+    span the masters the axis would leave out some masters, or not even reach
+    the regular one (e.g. the single instance of a single-master font, left at
+    the default weight value). We then do like Glyphs.app, which without Axis
+    Location parameters uses the design locations as user locations. The
+    instances' user locations can't come from the mapping then, so they are
+    stored apart (see `axes_with_unmapped_instances`).
+    """
+    master_locs = list(master_mapping.values())
+    if not instance_mapping:
+        return master_mapping
+    if is_identity(instance_mapping):
+        if not _covers(master_mapping, list(instance_mapping.values())):
+            # see _to_designspace_instance for instances outside the masters
+            self.axes_with_unmapped_instances.add(axis_def.tag)
+        return master_mapping
+    if not _covers(instance_mapping, master_locs):
+        logger.warning(
+            f"Axis {axis_def.tag}: not using the mapping from the instances, "
+            "as they don't span all the masters; add Axis Location parameters "
+            "to the masters to map the axis"
+        )
+        self.axes_with_unmapped_instances.add(axis_def.tag)
+        return master_mapping
+    return instance_mapping
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -185,6 +226,9 @@ def to_designspace_axes(self):
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
     virtual_masters = _virtual_master_locations(self.font)
+    # Tags of the axes whose mapping doesn't come from the instances although
+    # they have one, so the instances' user locations must be stored apart.
+    self.axes_with_unmapped_instances = set()
 
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
@@ -263,19 +307,20 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
-            # Prefer the instance-based mapping (but only if interesting)
-            mapping = (
-                instance_mapping
-                if (instance_mapping and not is_identity(instance_mapping))
-                else master_mapping
-            )
-
             regularDesignLoc = axis_def.get_design_loc(regular_master)
+            mapping = _choose_instance_or_master_mapping(
+                self, axis_def, instance_mapping, master_mapping
+            )
+            if axis_def.tag in self.axes_with_unmapped_instances and not is_identity(
+                instance_mapping
+            ):
+                # keep the axis, which the instance mapping would have made
+                axis_wanted = True
+
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
             reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
             regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
-            # TODO make sure that the default is in mapping?
 
         is_identity_map = is_identity(mapping)
 

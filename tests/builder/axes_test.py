@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from copy import deepcopy
+import logging
 import os.path
 
 import pytest
@@ -22,6 +23,7 @@ from fontTools import designspaceLib
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster, GSAxis, GSInstance
 from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
+from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.builder.stat import is_stat_only_ital
 
 """
@@ -402,10 +404,12 @@ def test_mapping_using_axis_location_cp_on_masters_none(ufo_module):
     ]
 
     doc = to_designspace(font, ufo_module=ufo_module)
-    assert doc.axes[0].minimum == 400
-    assert doc.axes[0].default == 400
-    assert doc.axes[0].maximum == 400
-    assert doc.axes[0].map == [(400, 72)]
+    # all the instances are at weight 72, their mapping would leave out the
+    # Thin and Bold masters
+    assert doc.axes[0].minimum == 48
+    assert doc.axes[0].default == 72
+    assert doc.axes[0].maximum == 112
+    assert doc.axes[0].map == []
 
     assert doc.axes[1].minimum == 50
     assert doc.axes[1].default == 100
@@ -704,7 +708,6 @@ def test_virtual_masters_extend_min_max_for_unmapped_axis(ufo_module, datadir):
     font = GSFont(datadir.join("IntermediateLayer.glyphs"))
     assert ["Cap Height", "Weight"] == [a.name for a in font.axes]
 
-    assert "Axis Mappings" not in font.customParameters
     for master in font.masters:
         assert "Axis Location" not in master.customParameters
         # all non-virtual masters are at the default Cap Height location
@@ -846,3 +849,198 @@ def test_hidden_default_axis(ufo_module):
         ("wght", False),
         ("wdth", True),
     ]
+
+
+def _instance(name, weight, weight_value):
+    instance = GSInstance()
+    instance.name = name
+    instance.weight = weight
+    instance.weightValue = weight_value
+    return instance
+
+
+def _weight_classes(doc, ufo_module):
+    classes = []
+    for instance in doc.instances:
+        ufo = ufo_module.Font()
+        set_weight_class(ufo, doc, instance)
+        classes.append(ufo.info.openTypeOS2WeightClass)
+    return classes
+
+
+def test_instance_mapping_not_reaching_single_master(ufo_module):
+    # A Glyphs 2 font with one master: the instances, at their default or some
+    # other weight value, don't sit on the master, and only give their weight
+    # classes; they can't map the axis default to a design location without
+    # a master
+    font = GSFont()
+    master = GSFontMaster()
+    master.weightValue = 400
+    font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 100),
+        _instance("Bold", "Bold", 147),
+        _instance("Thin", "Thin", 20),
+    ]
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
+    assert (axis.minimum, axis.default, axis.maximum) == (400, 400, 400)
+    assert not axis.map
+    assert [i.location["Weight"] for i in doc.instances] == [400, 400, 400]
+    assert _weight_classes(doc, ufo_module) == [400, 700, 100]
+
+    # the round trip keeps the instances' weight values and classes
+    doc = to_designspace(font, ufo_module=ufo_module, minimize_glyphs_diffs=True)
+    font = to_glyphs(doc)
+    assert [(i.weight, i.weightValue) for i in font.instances] == [
+        ("Regular", 100),
+        ("Bold", 147),
+        ("Thin", 20),
+    ]
+
+
+def test_instance_mapping_spanning_masters(ufo_module):
+    font = GSFont()
+    for weight_value in (90, 190):
+        master = GSFontMaster()
+        master.weightValue = weight_value
+        font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 90),
+        _instance("Bold", "Bold", 190),
+    ]
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
+    assert (axis.minimum, axis.default, axis.maximum) == (400, 400, 700)
+    assert axis.map == [(400, 90), (700, 190)]
+    assert not any(i.lib for i in doc.instances)
+    assert _weight_classes(doc, ufo_module) == [400, 700]
+
+
+def test_instance_mapping_not_spanning_masters(ufo_module):
+    # The Black master is beyond the instances, the mapping would leave it out
+    font = GSFont()
+    for weight_value in (90, 190):
+        master = GSFontMaster()
+        master.weightValue = weight_value
+        font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 90),
+        _instance("Bold", "Bold", 151),
+    ]
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
+    assert (axis.minimum, axis.default, axis.maximum) == (90, 90, 190)
+    assert not axis.map
+    assert [i.location["Weight"] for i in doc.instances] == [90, 151]
+    assert _weight_classes(doc, ufo_module) == [400, 700]
+
+
+def test_identity_instance_mapping_outside_masters(ufo_module):
+    # A Glyphs 2 font with its master at width value 5, and its instance at the
+    # default width value of 100: the axis stays on the master, and the
+    # instance gets built there, keeping its width class
+    font = GSFont()
+    master = GSFontMaster()
+    master.widthValue = 5
+    font.masters.append(master)
+    instance = GSInstance()
+    instance.name = "Regular"
+    instance.width = "Medium (normal)"
+    instance.widthValue = 100
+    font.instances = [instance]
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    wdth = doc.getAxisByTag("wdth")
+    assert (wdth.minimum, wdth.default, wdth.maximum) == (5, 5, 5)
+    assert not wdth.map
+    (instance,) = doc.instances
+    assert instance.location["Width"] == 5
+    ufo = ufo_module.Font()
+    set_width_class(ufo, doc, instance)
+    assert ufo.info.openTypeOS2WidthClass == 5
+
+    doc = to_designspace(font, ufo_module=ufo_module, minimize_glyphs_diffs=True)
+    font = to_glyphs(doc)
+    assert [(i.width, i.widthValue) for i in font.instances] == [
+        ("Medium (normal)", 100)
+    ]
+
+
+def test_identity_instance_mapping_outside_masters_custom_axis(ufo_module):
+    # Only the weight and width classes go in the instance lib: a custom axis
+    # has none, and its user location is its design location
+    font = GSFont()
+    font.customParameters["Axes"] = [{"Name": "Grade", "Tag": "GRAD"}]
+    master = GSFontMaster()
+    master.weightValue = 5
+    font.masters.append(master)
+    instance = GSInstance()
+    instance.name = "Regular"
+    instance.weightValue = 10
+    font.instances = [instance]
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
+    assert (axis.tag, axis.minimum, axis.default, axis.maximum) == ("GRAD", 5, 5, 5)
+    (instance,) = doc.instances
+    assert instance.location["Grade"] == 5
+    assert not instance.lib
+
+
+def test_os2_classes_from_public_font_info(ufo_module):
+    # The instance's public.fontInfo takes precedence over the axis mapping,
+    # like in ufo2ft's instantiator, which fontmake runs before us
+    doc = designspaceLib.DesignSpaceDocument()
+    doc.addAxisDescriptor(
+        name="Weight", tag="wght", minimum=100, default=400, maximum=900
+    )
+    doc.addAxisDescriptor(
+        name="Width", tag="wdth", minimum=50, default=100, maximum=200
+    )
+    instance = doc.addInstanceDescriptor(
+        userLocation={"Weight": 400, "Width": 100},
+        lib={
+            "public.fontInfo": {
+                "openTypeOS2WeightClass": 450,
+                "openTypeOS2WidthClass": 7,
+            }
+        },
+    )
+
+    ufo = ufo_module.Font()
+    set_weight_class(ufo, doc, instance)
+    set_width_class(ufo, doc, instance)
+
+    assert ufo.info.openTypeOS2WeightClass == 450
+    assert ufo.info.openTypeOS2WidthClass == 7
+
+
+def test_identity_instance_mapping_outside_masters_range(ufo_module, caplog):
+    # The masters vary along the axis: an instance beyond them would need
+    # extrapolating, so it keeps its location, with a warning
+    font = GSFont()
+    for weight_value in (400, 700):
+        master = GSFontMaster()
+        master.weightValue = weight_value
+        font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 400),
+        _instance("Black", "Black", 900),
+    ]
+
+    with caplog.at_level(logging.WARNING, logger="glyphsLib.builder.instances"):
+        doc = to_designspace(font, ufo_module=ufo_module)
+
+    wght = doc.getAxisByTag("wght")
+    assert (wght.minimum, wght.default, wght.maximum) == (400, 400, 700)
+    assert [i.location["Weight"] for i in doc.instances] == [400, 900]
+    assert "Instance Black: Weight 900 is outside the masters" in caplog.text

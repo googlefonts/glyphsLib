@@ -43,7 +43,9 @@ from .common import expand_text_tokens
 from .font import PROPERTIES_FIELDS
 from .names import build_stylemap_names
 from .axes import (
+    class_to_value,
     get_axis_definitions,
+    user_loc_value_to_class,
     is_instance_active,
     WEIGHT_AXIS_DEF,
     WIDTH_AXIS_DEF,
@@ -52,6 +54,19 @@ from .axes import (
 from .custom_params import to_ufo_custom_params
 
 logger = logging.getLogger(__name__)
+
+
+_CLASS_ATTRS = {"wght": "openTypeOS2WeightClass", "wdth": "openTypeOS2WidthClass"}
+
+
+def _user_loc_from_class(instance, axis_tag):
+    """Return the user location of the weight or width class set in the
+    instance's public.fontInfo lib key, or None."""
+    attr = _CLASS_ATTRS.get(axis_tag)
+    font_info = instance.lib.get("public.fontInfo", {})
+    if attr is None or attr not in font_info:
+        return None
+    return class_to_value(axis_tag, font_info[attr])
 
 
 def to_designspace_instances(self):
@@ -130,13 +145,50 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
     )
     ufo_instance.filename = _to_filename(self, instance, ufo_instance)
 
-    designspace_axis_tags = {a.tag for a in self.designspace.axes}
+    designspace_axes = {a.tag: a for a in self.designspace.axes}
     location = {}
     for axis_def in get_axis_definitions(self.font):
         # Only write locations along defined axes
-        if axis_def.tag in designspace_axis_tags:
-            location[axis_def.name] = axis_def.get_design_loc(instance)
+        if axis_def.tag in designspace_axes:
+            design_loc = axis_def.get_design_loc(instance)
+            axis = designspace_axes[axis_def.tag]
+            if axis.map:
+                design_min = min(dl for _, dl in axis.map)
+                design_max = max(dl for _, dl in axis.map)
+            else:
+                design_min, design_max = axis.minimum, axis.maximum
+            if (
+                axis_def.tag in self.axes_with_unmapped_instances
+                and not self.minimize_glyphs_diffs
+                and not design_min <= design_loc <= design_max
+            ):
+                # Such an axis only spans the masters. When they don't vary
+                # along it, building the instance at their location is exact;
+                # otherwise it would need extrapolating, which we can't do.
+                if design_min == design_max:
+                    design_loc = design_min
+                else:
+                    logger.warning(
+                        f"Instance {instance.name}: {axis_def.name} {design_loc} "
+                        f"is outside the masters ({design_min} to "
+                        f"{design_max}), it can't be interpolated"
+                    )
+            location[axis_def.name] = design_loc
     ufo_instance.location = location
+
+    # Where the axis mapping doesn't come from all the instances, it may not
+    # give back their weight and width classes
+    for axis_def in get_axis_definitions(self.font):
+        attr = _CLASS_ATTRS.get(axis_def.tag)
+        if attr is None or axis_def.tag not in self.axes_with_unmapped_instances:
+            continue
+        user_loc = axis_def.get_user_loc(instance)
+        if user_loc is None:
+            continue
+        axis = designspace_axes.get(axis_def.tag)
+        if axis is None or axis.map_backward(location[axis_def.name]) != user_loc:
+            font_info = ufo_instance.lib.setdefault("public.fontInfo", {})
+            font_info[attr] = user_loc_value_to_class(axis_def.tag, user_loc)
 
     # FIXME: (jany) should be the responsibility of ufo2ft?
     # Anyway, only generate the styleMap names if the Glyphs instance already
@@ -266,7 +318,10 @@ def to_glyphs_instances(self):  # noqa: C901
                 for axis in self.designspace.axes:
                     if axis.tag == axis_def.tag:
                         mapping = axis.map
-                if mapping:
+                class_user_loc = _user_loc_from_class(ufo_instance, axis_def.tag)
+                if class_user_loc is not None:
+                    user_loc = class_user_loc
+                elif mapping:
                     reverse_mapping = {dl: ul for ul, dl in mapping}
                     user_loc = piecewiseLinearMap(design_loc, reverse_mapping)
                 if user_loc is not None:
@@ -377,12 +432,17 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
         axis_def = WEIGHT_AXIS_DEF if axis_tag == "wght" else WIDTH_AXIS_DEF
         mapping = []
 
+    class_user_loc = _user_loc_from_class(instance, axis_tag)
     try:
         design_loc = instance.location[axis_def.name]
     except KeyError:
-        user_loc = axis_def.default_user_loc
+        user_loc = (
+            class_user_loc if class_user_loc is not None else axis_def.default_user_loc
+        )
     else:
-        if mapping:
+        if class_user_loc is not None:
+            user_loc = class_user_loc
+        elif mapping:
             # Retrieve the user location (weightClass/widthClass)
             # by going through the axis mapping in reverse.
             reverse_mapping = {dl: ul for ul, dl in mapping}
@@ -394,15 +454,17 @@ def _set_class_from_instance(ufo, designspace, instance, axis_tag):
 
 
 def set_weight_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WeightClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
+    """Set ufo.info.openTypeOS2WeightClass from the designspace instance's
+    public.fontInfo, or else from its user location, as calculated from the
+    axis mapping.
     """
     _set_class_from_instance(ufo, designspace, instance, "wght")
 
 
 def set_width_class(ufo, designspace, instance):
-    """Set ufo.info.openTypeOS2WidthClass according to the user location
-    of the designspace instance, as calculated from the axis mapping.
+    """Set ufo.info.openTypeOS2WidthClass from the designspace instance's
+    public.fontInfo, or else from its user location, as calculated from the
+    axis mapping.
     """
     _set_class_from_instance(ufo, designspace, instance, "wdth")
 
@@ -473,9 +535,10 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
     Returns:
         None.
     """
-    if any(axis.tag == "wght" for axis in designspace.axes):
+    axis_tags = {axis.tag for axis in designspace.axes}
+    if "wght" in axis_tags or _user_loc_from_class(instance, "wght") is not None:
         set_weight_class(ufo, designspace, instance)
-    if any(axis.tag == "wdth" for axis in designspace.axes):
+    if "wdth" in axis_tags or _user_loc_from_class(instance, "wdth") is not None:
         set_width_class(ufo, designspace, instance)
 
     glyphs_instance = InstanceDescriptorAsGSInstance(instance)
