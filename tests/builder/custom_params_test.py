@@ -443,7 +443,9 @@ class SetCustomParamsTestBase(object):
         font_rt = glyphsLib.to_glyphs([self.ufo])
         self.assertNotIn("PreFilter", font_rt.masters[0].customParameters)
         self.assertEqual(font_rt.masters[0].userData[UFO2FT_FILTERS_KEY], ufo_filters)
-        ufo_rt = glyphsLib.to_ufos(font_rt, ufo_module=self.ufo_module)[0]
+        ufo_rt = glyphsLib.to_ufos(
+            font_rt, ufo_module=self.ufo_module, propagate_anchors=False
+        )[0]
         self.assertEqual(ufo_rt.lib[UFO2FT_FILTERS_KEY], ufo_filters)
 
     def test_color_palettes(self):

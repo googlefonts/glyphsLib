@@ -24,6 +24,7 @@ from fontTools.ttLib.tables._g_l_y_f import GlyphCoordinates
 from fontTools.varLib.models import VariationModel, normalizeLocation
 
 from glyphsLib import glyphdata
+from glyphsLib.builder.constants import UFO2FT_FILTERS_KEY
 from glyphsLib.classes import GSAnchor
 from glyphsLib.types import Point
 
@@ -42,9 +43,26 @@ def propagate_all_anchors(
 
     If a custom `glyph_data` is provided, it will be used to override the
     category and subCategory of glyphs.
+
+    Any ufo2ft propagateAnchors filter in the font or master userData is
+    removed, since it would propagate the anchors a second time.
     """
     glyphs = {glyph.name: glyph for glyph in font.glyphs}
     propagate_all_anchors_impl(glyphs, font=font, glyph_data=glyph_data)
+    _remove_propagate_anchors_filters(font)
+
+
+def _remove_propagate_anchors_filters(font: GSFont) -> None:
+    for owner in chain([font], font.masters):
+        filters = owner.userData[UFO2FT_FILTERS_KEY]
+        if not filters:
+            continue
+        kept = [f for f in filters if f.get("name") != "propagateAnchors"]
+        if len(kept) != len(filters):
+            logger.info(
+                "Removing ufo2ft propagateAnchors filter from %r userData", owner
+            )
+            owner.userData[UFO2FT_FILTERS_KEY] = kept
 
 
 # the actual implementation, easier to test and compare with the original Rust code
