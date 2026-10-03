@@ -204,8 +204,17 @@ def to_ufo_glyph(  # noqa: C901
     self.to_ufo_hints(ufo_glyph, layer)  # .hints
     self.to_ufo_paths(ufo_glyph, layer)  # .paths
     self.to_ufo_components(ufo_glyph, layer)  # .components
-    # Store shape order for mixed glyphs
-    if layer.paths and layer.components:
+    # Store shape order for mixed glyphs.
+    #
+    # Only format 3 sources have an authored shapes array. In a format 2 file
+    # paths and components are separate plist keys, and GSLayer rebuilds
+    # _shapes through the paths/components proxy setters, each of which drops
+    # the shapes of its own type and appends the new ones, so the resulting
+    # order reflects whichever setter ran last rather than anything in the
+    # file. Recording that as shapeOrder records an artefact, and the
+    # cornerComponents filter then resolves a format 2 corner origin, whose
+    # first index counts paths, against it.
+    if layer.paths and layer.components and self.font.format_version >= 3:
         ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] = ""
         for shape in layer.shapes:
             if isinstance(shape, GSPath):

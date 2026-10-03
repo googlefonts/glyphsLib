@@ -39,3 +39,31 @@ def test_split_cubic_at_point_outward_picks_segment_starting_at_point():
     result = split_cubic_at_point(seg, point, inward=False)
     assert result[0] == pytest.approx(point, abs=1e-6)
     assert result[-1] == pytest.approx(seg[-1], abs=1e-6)
+
+
+def test_corner_components_format2_mixed_glyph():
+    # A format 2 source whose glyph has both a component and a path, with a
+    # corner component on the path. The other fixture in this file is format
+    # 3 and has no glyph mixing paths and components, so neither the format 2
+    # reading of a corner origin nor the mixed-glyph shapeOrder path was
+    # covered before.
+    #
+    # Only format 3 has an authored shapes array. Here the layer reports its
+    # shapes as "CP", which is an artefact of the order glyphsLib assigns
+    # paths and components rather than anything in the file, so no shapeOrder
+    # may be recorded; the origin "{0, 0}" counts paths and means path 0.
+    # Recording it made the filter resolve index 0 to the component and raise
+    # "Could not find shape number 0".
+    ufo2 = glyphsLib.load_to_ufos(datadir.join("CornerComponentsFormat2.glyphs"))[0]
+    glyph = ufo2["mixedcorner"]
+    assert "com.schriftgestaltung.Glyphs.shapeOrder" not in glyph.lib
+    assert len(glyph.components) == 1
+    assert len(glyph.contours) == 1
+    assert len(glyph.contours[0]) == 3
+
+    assert CornerComponentsFilter(include={"mixedcorner"})(ufo2)
+
+    # The corner component is applied to the path, not rejected and not
+    # applied to the component.
+    assert len(ufo2["mixedcorner"].contours[0]) == 6
+    assert len(ufo2["mixedcorner"].components) == 1

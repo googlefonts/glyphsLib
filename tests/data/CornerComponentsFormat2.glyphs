@@ -1,0 +1,197 @@
+{
+.appVersion = "3225";
+DisplayStrings = (
+"/_corner.large/aw_direction",
+"/aw_direction.expectation"
+);
+customParameters = (
+{
+name = glyphOrder;
+value = (
+_corner.one,
+_corner.two,
+_corner.three,
+_corner.four,
+_corner.five,
+_corner.pretty,
+_corner.slab,
+aa_simple_angleinstroke,
+aa_simple_angleinstroke.expectation,
+ab_simple_angled,
+ab_simple_angled.expectation,
+ac_scale,
+ac_scale.expectation,
+ad_curved_instroke,
+ad_curved_instroke.expectation,
+ae_curved_corner_firstseg,
+ae_curved_corner_firstseg.expectation,
+af_curved_corner_firstseg_slanted,
+af_curved_corner_firstseg_slanted.expectation,
+ag_curved_corner_bothsegs,
+ag_curved_corner_bothsegs.expectation,
+ag_curved_corner_bothsegs_rotated,
+ag_curved_corner_bothsegs_rotated.expectation,
+ah_origin,
+ah_origin.expectation,
+ai_curved_outstroke,
+ai_curved_outstroke.expectation,
+aj_right_alignment,
+aj_right_alignment.expectation,
+ak_right_slanted,
+ak_right_slanted.expectation,
+al_unaligned,
+al_unaligned.expectation,
+am_middle,
+am_middle.expectation,
+an_flippy,
+an_flippy.expectation,
+ao_firstnode,
+ao_firstnode.expectation,
+ap_twoofthem,
+ap_twoofthem.expectation,
+aq_rightleg,
+aq_rightleg.expectation,
+ar_leftleg,
+ar_leftleg.expectation,
+as_closedpaths,
+as_closedpaths.expectation,
+at_unaligned_lastseg,
+at_unaligned_lastseg.expectation,
+space
+);
+}
+);
+date = "2022-11-14 14:19:00 +0000";
+disablesNiceNames = 1;
+familyName = "Corner Component Alignment Test";
+fontMaster = (
+{
+alignmentZones = (
+"{800, 16}",
+"{700, 16}",
+"{500, 16}",
+"{0, -16}",
+"{-200, -16}"
+);
+ascender = 800;
+capHeight = 700;
+descender = -200;
+id = m01;
+userData = {
+GSOffsetHorizontal = 5;
+GSOffsetMakeStroke = 1;
+GSOffsetVertical = 5;
+};
+xHeight = 500;
+}
+);
+glyphs = (
+{
+export = 0;
+glyphname = _corner.one;
+lastChange = "2022-11-22 09:48:36 +0000";
+layers = (
+{
+layerId = m01;
+paths = (
+{
+closed = 0;
+nodes = (
+"0 50 LINE",
+"-50 50 LINE",
+"-50 0 LINE",
+"25 0 LINE"
+);
+}
+);
+width = 250;
+}
+);
+},
+{
+glyphname = aa_simple_angleinstroke;
+lastChange = "2022-11-17 09:18:35 +0000";
+layers = (
+{
+hints = (
+{
+name = _corner.one;
+origin = "{0, 0}";
+type = Corner;
+}
+);
+layerId = m01;
+paths = (
+{
+closed = 1;
+nodes = (
+"200 100 LINE",
+"414 100 LINE",
+"100 300 LINE"
+);
+}
+);
+width = 600;
+}
+);
+category = Letter;
+subCategory = Other;
+},
+{
+glyphname = donorsquare;
+layers = (
+{
+layerId = m01;
+paths = (
+{
+closed = 1;
+nodes = (
+"50 0 LINE",
+"450 0 LINE",
+"450 400 LINE",
+"50 400 LINE"
+);
+}
+);
+width = 500;
+}
+);
+},
+{
+glyphname = mixedcorner;
+layers = (
+{
+components = (
+{
+name = donorsquare;
+}
+);
+hints = (
+{
+name = _corner.one;
+origin = "{0, 0}";
+type = Corner;
+}
+);
+layerId = m01;
+paths = (
+{
+closed = 1;
+nodes = (
+"200 100 LINE",
+"414 100 LINE",
+"100 300 LINE"
+);
+}
+);
+width = 600;
+}
+);
+}
+);
+instances = (
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}
