@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from fontTools.misc.transform import Transform as Affine
 
+from glyphsLib import to_ufos
 from glyphsLib.classes import (
     GSAnchor,
     GSFont,
@@ -25,6 +26,7 @@ from glyphsLib.glyphdata import get_glyph
 from glyphsLib.types import Point, Transform
 from glyphsLib.writer import dumps
 
+from glyphsLib.builder.constants import UFO2FT_FILTERS_KEY
 from glyphsLib.builder.transformations.align_alternate_layers import (
     align_alternate_layers,
 )
@@ -1377,3 +1379,25 @@ def test_interpolate_brace_uses_default_source_anchor_names():
         brace_layers[0].anchors,
         [("top", (150, 650)), ("bottom", (100, 0))],
     )
+
+
+@pytest.mark.parametrize(
+    "to_ufos_kwargs, custom_params, dropped",
+    [
+        ({}, {}, True),
+        ({"propagate_anchors": False}, {}, False),
+        ({}, {"Propagate Anchors": False}, True),
+    ],
+)
+def test_propagate_anchors_filter_dropped(to_ufos_kwargs, custom_params, dropped):
+    filters = [{"name": "propagateAnchors", "pre": 1}, {"name": "flattenComponents"}]
+    font = GSFont()
+    for name, value in custom_params.items():
+        font.customParameters[name] = value
+    master = GSFontMaster()
+    master.userData[UFO2FT_FILTERS_KEY] = deepcopy(filters)
+    font.masters.append(master)
+
+    (ufo,) = to_ufos(font, **to_ufos_kwargs)
+
+    assert ufo.lib[UFO2FT_FILTERS_KEY] == (filters[1:] if dropped else filters)
