@@ -18,6 +18,7 @@ import logging
 from glyphsLib import classes, glyphdata
 
 from .builders import UFOBuilder, GlyphsBuilder
+from .constants import UFO2FT_FILTERS_KEY
 from .transformations import TRANSFORMATIONS, TRANSFORMATION_CUSTOM_PARAMS
 
 logger = logging.getLogger(__name__)
@@ -183,10 +184,17 @@ def preflight_glyphs(font, *, glyph_data=None, **flags):
             named `do_<transformation_name>`, e.g. `do_propagate_all_anchors=False`
             will disable the propagation of anchors.
 
+    Any ufo2ft propagateAnchors filter in the masters' userData is removed, since
+    the "Propagate Anchors" custom parameter controls anchor propagation for
+    Glyphs sources. It is only kept when `do_propagate_all_anchors=False` is
+    passed explicitly, leaving the propagation to ufo2ft.
+
     Returns:
         the modified GSFont object
     """
 
+    if flags.get("do_propagate_all_anchors") is not False:
+        _drop_propagate_anchors_filters(font)
     for transform in TRANSFORMATIONS:
         do_transform = flags.pop("do_" + transform.__name__, None)
         if do_transform is True:
@@ -205,6 +213,22 @@ def preflight_glyphs(font, *, glyph_data=None, **flags):
     if flags:
         logger.warning(f"preflight_glyphs has unused `flags` arguments: {flags}")
     return font
+
+
+def _drop_propagate_anchors_filters(font):
+    # Keeping the filter would make ufo2ft propagate anchors a second time, or
+    # even when the "Propagate Anchors" custom parameter disables it; fontc
+    # ignores it for Glyphs sources too.
+    for master in font.masters:
+        filters = master.userData[UFO2FT_FILTERS_KEY]
+        if not filters:
+            continue
+        kept = [f for f in filters if f.get("name") != "propagateAnchors"]
+        if len(kept) != len(filters):
+            logger.info(
+                "Removing ufo2ft propagateAnchors filter from %r userData", master
+            )
+            master.userData[UFO2FT_FILTERS_KEY] = kept
 
 
 def to_glyphs(

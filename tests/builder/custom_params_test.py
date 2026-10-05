@@ -428,9 +428,13 @@ class SetCustomParamsTestBase(object):
 
     def test_ufo2ft_filter_roundtrip(self):
         ufo_filters = [
-            {"name": "propagateAnchors", "pre": True, "include": ["a", "b", "c"]}
+            {
+                "name": "decomposeTransformedComponents",
+                "pre": True,
+                "include": ["a", "b", "c"],
+            }
         ]
-        glyphs_filter = "propagateAnchors;include:a,b,c"
+        glyphs_filter = "decomposeTransformedComponents;include:a,b,c"
 
         # Test the one-way conversion of (Pre)Filters into ufo2ft filters. See the
         # docstring for FilterParamHandler.

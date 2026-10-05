@@ -15,6 +15,7 @@
 
 import os
 from collections import OrderedDict
+from copy import deepcopy
 
 import pytest
 
@@ -25,6 +26,7 @@ from glyphsLib.builder.constants import (
     GLYPHLIB_PREFIX,
     FONT_CUSTOM_PARAM_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
+    UFO2FT_FILTERS_KEY,
     DEFAULT_FEATURE_WRITERS,
     GLYPHS_MATH_CONSTANTS_KEY,
     GLYPHS_MATH_EXTENDED_SHAPE_KEY,
@@ -149,6 +151,45 @@ def test_ufo_lib_equivalent_to_font_master_user_data(ufo_module):
     assert ufo2.lib["ufoLibKey2"] == "ufoLibValue2"
     assert "ufoLibKey2" not in ufo1.lib
     assert "ufoLibKey1" not in ufo2.lib
+
+
+@pytest.mark.parametrize(
+    "to_ufos_kwargs, custom_params, dropped",
+    [
+        ({}, {}, True),
+        ({}, {"Propagate Anchors": False}, True),
+        ({"propagate_anchors": False}, {}, False),
+        ({"propagate_anchors": False}, {"Propagate Anchors": False}, False),
+    ],
+)
+@pytest.mark.parametrize(
+    "filters",
+    [
+        [{"name": "propagateAnchors", "pre": 1}, {"name": "flattenComponents"}],
+        [{"name": "propagateAnchors", "pre": 1}],
+    ],
+)
+@pytest.mark.parametrize("use_designspace", [False, True])
+def test_propagate_anchors_filter_in_master_user_data(
+    filters, to_ufos_kwargs, custom_params, dropped, use_designspace
+):
+    # The "Propagate Anchors" custom parameter alone controls anchor propagation
+    # for Glyphs sources, so the ufo2ft filter is dropped whether or not
+    # glyphsLib propagates anchors itself; unless the caller explicitly turned
+    # off glyphsLib's propagation, leaving it to ufo2ft.
+    font = classes.GSFont()
+    for name, value in custom_params.items():
+        font.customParameters[name] = value
+    master = classes.GSFontMaster()
+    master.userData[UFO2FT_FILTERS_KEY] = deepcopy(filters)
+    font.masters.append(master)
+
+    if use_designspace:
+        ufo = to_designspace(font, **to_ufos_kwargs).sources[0].font
+    else:
+        (ufo,) = to_ufos(font, **to_ufos_kwargs)
+
+    assert ufo.lib[UFO2FT_FILTERS_KEY] == (filters[1:] if dropped else filters)
 
 
 def test_ufo_data_into_font_master_user_data(tmpdir, ufo_module):
