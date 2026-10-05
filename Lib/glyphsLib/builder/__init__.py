@@ -19,6 +19,7 @@ from glyphsLib import classes, glyphdata
 
 from .builders import UFOBuilder, GlyphsBuilder
 from .transformations import TRANSFORMATIONS, TRANSFORMATION_CUSTOM_PARAMS
+from .transformations.propagate_anchors import remove_propagate_anchors_filters
 
 logger = logging.getLogger(__name__)
 
@@ -183,10 +184,16 @@ def preflight_glyphs(font, *, glyph_data=None, **flags):
             named `do_<transformation_name>`, e.g. `do_propagate_all_anchors=False`
             will disable the propagation of anchors.
 
+    Any ufo2ft propagateAnchors filter in the font or master userData is removed,
+    unless `do_propagate_all_anchors=False` is passed explicitly, leaving the
+    propagation to ufo2ft.
+
     Returns:
         the modified GSFont object
     """
 
+    if flags.get("do_propagate_all_anchors") is not False:
+        remove_propagate_anchors_filters(font)
     for transform in TRANSFORMATIONS:
         do_transform = flags.pop("do_" + transform.__name__, None)
         if do_transform is True:

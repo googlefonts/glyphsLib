@@ -1382,16 +1382,14 @@ def test_interpolate_brace_uses_default_source_anchor_names():
 
 
 @pytest.mark.parametrize(
-    "to_ufos_kwargs, custom_params, propagated",
+    "to_ufos_kwargs, custom_params, dropped",
     [
         ({}, {}, True),
         ({"propagate_anchors": False}, {}, False),
-        ({}, {"Propagate Anchors": False}, False),
+        ({}, {"Propagate Anchors": False}, True),
     ],
 )
-def test_propagate_anchors_filter_dropped_once_propagated(
-    to_ufos_kwargs, custom_params, propagated
-):
+def test_propagate_anchors_filter_dropped(to_ufos_kwargs, custom_params, dropped):
     filters = [{"name": "propagateAnchors", "pre": 1}, {"name": "flattenComponents"}]
     font = GSFont()
     for name, value in custom_params.items():
@@ -1402,4 +1400,4 @@ def test_propagate_anchors_filter_dropped_once_propagated(
 
     (ufo,) = to_ufos(font, **to_ufos_kwargs)
 
-    assert ufo.lib[UFO2FT_FILTERS_KEY] == (filters[1:] if propagated else filters)
+    assert ufo.lib[UFO2FT_FILTERS_KEY] == (filters[1:] if dropped else filters)

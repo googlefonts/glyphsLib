@@ -43,16 +43,18 @@ def propagate_all_anchors(
 
     If a custom `glyph_data` is provided, it will be used to override the
     category and subCategory of glyphs.
-
-    Any ufo2ft propagateAnchors filter in the font or master userData is
-    removed, since it would propagate the anchors a second time.
     """
     glyphs = {glyph.name: glyph for glyph in font.glyphs}
     propagate_all_anchors_impl(glyphs, font=font, glyph_data=glyph_data)
-    _remove_propagate_anchors_filters(font)
 
 
-def _remove_propagate_anchors_filters(font: GSFont) -> None:
+def remove_propagate_anchors_filters(font: GSFont) -> None:
+    """Remove any ufo2ft propagateAnchors filter from the font or master userData.
+
+    For Glyphs sources, anchor propagation is controlled by the "Propagate Anchors"
+    custom parameter (as in fontc); keeping the filter would make ufo2ft propagate
+    anchors a second time, or even when the custom parameter disables it.
+    """
     for owner in chain([font], font.masters):
         filters = owner.userData[UFO2FT_FILTERS_KEY]
         if not filters:
