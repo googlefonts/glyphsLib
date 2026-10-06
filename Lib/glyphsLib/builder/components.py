@@ -19,6 +19,7 @@ from fontTools.pens.recordingPen import DecomposingRecordingPen
 from glyphsLib.classes import GSBackgroundLayer
 from glyphsLib.types import Transform
 
+from .color_layers import color_palette_layers
 from .smart_components import instantiate_smart_component
 from .constants import GLYPHS_PREFIX, COMPONENT_INFO_KEY, SMART_COMPONENT_AXES_LIB_KEY
 
@@ -51,18 +52,17 @@ def to_ufo_components(self, ufo_glyph, layer):
         if layer._is_color_palette_layer():
             # Glyphs handles components for color layers in a special way. If
             # the component glyph has color layers of its own, the component
-            # use the first color layer with the same color index, otherwise it
-            # fallback to the default layer. We try to do that here as well.
+            # use the first non-empty color layer with the same color index,
+            # otherwise it fallback to the default layer. We try to do that
+            # here as well.
             font = layer.parent.parent
             component_glyph = font.glyphs[component_name]
-            color_layers = [
-                l
-                for l in component_glyph.layers
-                if l._is_color_palette_layer()
-                and l.associatedMasterId == layer.associatedMasterId
-            ]
+            color_index = layer._color_palette_index()
+            color_layers = color_palette_layers(
+                component_glyph, layer.associatedMasterId
+            )
             for i, l in enumerate(color_layers):
-                if l._color_palette_index() == layer._color_palette_index():
+                if l._color_palette_index() == color_index:
                     if l.layerId != l.associatedMasterId:
                         # If it is not a master layer, we rename it in
                         # _to_ufo_color_palette_layers(), so we reference the
