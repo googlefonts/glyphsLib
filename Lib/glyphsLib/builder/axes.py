@@ -15,6 +15,7 @@
 
 import logging
 
+from fontTools.misc.fixedTools import floatToFixedToFloat
 from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib import classes
@@ -186,7 +187,7 @@ def _virtual_master_locations(font):
 
 
 def _choose_instance_or_master_mapping(
-    self, axis_def, instance_mapping, master_mapping
+    self, axis_def, instance_mapping, master_mapping, regular_design_loc
 ):
     """Return the instance mapping if it's usable, else the masters' (identity).
 
@@ -198,6 +199,11 @@ def _choose_instance_or_master_mapping(
     Location parameters uses the design locations as user locations. The
     instances' user locations can't come from the mapping then, so they are
     stored apart (see `axes_with_unmapped_instances`).
+
+    Points beyond the first and last masters are dropped (see
+    `_trim_to_masters`). When the regular master lies between two instances, we
+    add the user location it interpolates to (rounded like fvar does) as a
+    mapping point.
     """
     master_locs = list(master_mapping.values())
     if not instance_mapping:
@@ -215,7 +221,44 @@ def _choose_instance_or_master_mapping(
         )
         self.axes_with_unmapped_instances.add(axis_def.tag)
         return master_mapping
-    return instance_mapping
+    mapping = _trim_to_masters(self, axis_def, instance_mapping, master_locs)
+    if regular_design_loc not in mapping.values():
+        user_loc = _interpolated_user_loc(mapping, regular_design_loc)
+        logger.warning(
+            f"Axis {axis_def.tag}: no instance is at the regular master, "
+            f"mapping it to the interpolated user location {user_loc}; "
+            "add an instance or Axis Location parameters to map it explicitly"
+        )
+        mapping[user_loc] = regular_design_loc
+    return mapping
+
+
+def _trim_to_masters(self, axis_def, mapping, master_locs):
+    """Drop the mapping points beyond the first and last masters.
+
+    The axis then only spans the masters: instances beyond them would need
+    extrapolating, which OpenType variations can't do. The first and last
+    masters, if between two points, get the user location they interpolate to
+    (rounded like fvar does). The instances' user locations can't all come
+    from the mapping then, so they are stored apart (see
+    `axes_with_unmapped_instances`).
+    """
+    first, last = min(master_locs), max(master_locs)
+    trimmed = {ul: dl for ul, dl in mapping.items() if first <= dl <= last}
+    if len(trimmed) == len(mapping):
+        return dict(mapping)
+    self.axes_with_unmapped_instances.add(axis_def.tag)
+    for design_loc in (first, last):
+        if design_loc not in trimmed.values():
+            trimmed[_interpolated_user_loc(mapping, design_loc)] = design_loc
+    return trimmed
+
+
+def _interpolated_user_loc(mapping, design_loc):
+    """Return the user location the mapping interpolates to at the design
+    location, rounded to 16.16 like fvar coordinates."""
+    reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
+    return floatToFixedToFloat(piecewiseLinearMap(design_loc, reverse_mapping), 16)
 
 
 def to_designspace_axes(self):
@@ -288,6 +331,13 @@ def to_designspace_axes(self):
                 cp_only=True,
             )
 
+            mapping = _trim_to_masters(
+                self,
+                axis_def,
+                mapping,
+                [axis_def.get_design_loc(m) for m in self.font.masters],
+            )
+
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
@@ -309,7 +359,7 @@ def to_designspace_axes(self):
 
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             mapping = _choose_instance_or_master_mapping(
-                self, axis_def, instance_mapping, master_mapping
+                self, axis_def, instance_mapping, master_mapping, regularDesignLoc
             )
             if axis_def.tag in self.axes_with_unmapped_instances and not is_identity(
                 instance_mapping
