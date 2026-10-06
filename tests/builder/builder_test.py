@@ -1178,6 +1178,14 @@ def test_glyph_lib_component_alignment_and_locked_and_smart_values(ufo_module):
     ]
 
 
+def _quad(offset=0):
+    path = GSPath()
+    path.nodes = [
+        GSNode(position=(offset + i, offset + i), nodetype="line") for i in range(4)
+    ]
+    return path
+
+
 def test_glyph_lib_color_mapping(ufo_module):
     font = generate_minimal_font()
     glyph = add_glyph(font, "a")
@@ -1189,6 +1197,8 @@ def test_glyph_lib_color_mapping(ufo_module):
     color0.name = "Color 0"
     color1.name = "Color 1"
     color3.name = "Color 3"
+    for layer in (color0, color1, color3):
+        layer.paths.append(_quad())
 
     glyph.layers.append(color1)
     glyph.layers.append(color0)
@@ -1210,6 +1220,7 @@ def test_glyph_lib_color_mapping_foreground_color(ufo_module):
     glyph = add_glyph(font, "a")
     color = GSLayer()
     color.name = "Color *"
+    color.paths.append(_quad())
 
     glyph.layers.append(color)
 
@@ -1226,10 +1237,12 @@ def test_glyph_lib_color_mapping_invalid_index(ufo_module):
     glyph = add_glyph(font, "a")
     color = GSLayer()
     color.name = "Color f"
+    color.paths.append(_quad())
     glyph.layers.append(color)
 
     color = GSLayer()
     color.name = "Color 0"
+    color.paths.append(_quad())
     glyph.layers.append(color)
 
     ds = to_designspace(font, ufo_module=ufo_module)
@@ -1249,6 +1262,7 @@ def test_glyph_color_layers_components(ufo_module):
     glypha.layers[0].name = "Color 0"
     glyphd.layers.append(GSLayer())
     glyphd.layers[1].name = "Color 0"
+    glyphd.layers[1].paths.append(_quad())
 
     color0 = GSLayer()
     color1 = GSLayer()
@@ -1294,6 +1308,8 @@ def test_glyph_color_palette_layers_no_unicode_mapping(ufo_module):
     color1 = GSLayer()
     color0.name = "Color 0"
     color1.name = "Color 1"
+    color0.paths.append(_quad())
+    color1.paths.append(_quad())
 
     glypha.layers.append(color0)
     glypha.layers.append(color1)
@@ -1322,6 +1338,8 @@ def test_glyph_color_palette_layers_postscript_names(ufo_module):
         color1 = GSLayer()
         color0.attributes["colorPalette"] = 0
         color1.attributes["colorPalette"] = 1
+        color0.paths.append(_quad())
+        color1.paths.append(_quad())
         glyph.layers.append(color0)
         glyph.layers.append(color1)
 
@@ -1352,6 +1370,7 @@ def _add_color_palette_layers(glyph, count=2):
     for i in range(count):
         layer = GSLayer()
         layer.attributes["colorPalette"] = i
+        layer.paths.append(_quad())
         glyph.layers.append(layer)
 
 
@@ -1527,6 +1546,8 @@ def test_glyph_color_palette_layers_explode_no_export(ufo_module):
     color1 = GSLayer()
     color0.name = "Color 0"
     color1.name = "Color 1"
+    color0.paths.append(_quad())
+    color1.paths.append(_quad())
 
     glypha.export = False
     glypha.layers.append(color0)
@@ -1588,6 +1609,156 @@ def test_glyph_color_palette_layers_explode_v3(ufo_module):
 
     assert len(ufo["a.color2"].components) == 1
     assert len(ufo["a.color2"]) == 0
+
+
+def test_glyph_color_palette_layers_skip_empty(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+    glypha.layers[0].paths.append(_quad())
+
+    empty0 = GSLayer()
+    empty0.attributes["colorPalette"] = 0
+    color2 = GSLayer()
+    color2.attributes["colorPalette"] = 2
+    color2.paths.append(_quad(1))
+    color0 = GSLayer()
+    color0.attributes["colorPalette"] = 0
+    color0.paths.append(_quad(2))
+    glypha.layers.extend([empty0, color2, color0])
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    # The empty layer gets no layer glyph and the others are numbered without it.
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 2), ("a.color1", 0)]
+    }
+    assert sorted(ufo.keys()) == ["a", "a.color0", "a.color1"]
+    assert min(p.x for p in ufo["a.color0"][0]) == 1
+    assert min(p.x for p in ufo["a.color1"][0]) == 2
+
+
+def test_glyph_color_palette_layers_all_empty(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+    glypha.layers[0].paths.append(_quad())
+    for i in range(2):
+        layer = GSLayer()
+        layer.attributes["colorPalette"] = i
+        glypha.layers.append(layer)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    # A glyph with only empty color layers is not a color glyph at all.
+    assert "com.github.googlei18n.ufo2ft.colorLayers" not in ufo.lib
+    assert sorted(ufo.keys()) == ["a"]
+
+
+def test_glyph_color_palette_layers_all_empty_non_minimal(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+    layer = GSLayer()
+    layer.attributes["colorPalette"] = 0
+    glypha.layers.append(layer)
+
+    ds = to_designspace(font, ufo_module=ufo_module)
+    ufo = ds.sources[0].font
+
+    assert "com.github.googlei18n.ufo2ft.colorLayerMapping" not in ufo["a"].lib
+
+
+def test_glyph_color_palette_layers_skip_empty_components(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+    glyphb = add_glyph(font, "b")
+    glyphc = add_glyph(font, "c")
+    glyphd = add_glyph(font, "d")
+    for g in (glypha, glyphb, glyphc, glyphd):
+        g.layers[0].paths.append(_quad())
+
+    # b: an empty palette 0 layer followed by a palette 1 layer with a shape,
+    # so its only layer glyph is b.color0, holding palette 1.
+    b_empty0 = GSLayer()
+    b_empty0.attributes["colorPalette"] = 0
+    b_color1 = GSLayer()
+    b_color1.attributes["colorPalette"] = 1
+    b_color1.paths.append(_quad(1))
+    glyphb.layers.extend([b_empty0, b_color1])
+
+    # c: only an empty palette 1 layer.
+    c_empty1 = GSLayer()
+    c_empty1.attributes["colorPalette"] = 1
+    glyphc.layers.append(c_empty1)
+
+    # a: palette 1 layer composed of b and c, palette 0 layer composed of b
+    # and d (which has no palette layers at all).
+    a_color1 = GSLayer()
+    a_color1.attributes["colorPalette"] = 1
+    a_color1.components.append(GSComponent(glyph=glyphb))
+    a_color1.components.append(GSComponent(glyph=glyphc))
+    a_color0 = GSLayer()
+    a_color0.attributes["colorPalette"] = 0
+    a_color0.components.append(GSComponent(glyph=glyphb))
+    a_color0.components.append(GSComponent(glyph=glyphd))
+    glypha.layers.extend([a_color1, a_color0])
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 1), ("a.color1", 0)],
+        "b": [("b.color0", 1)],
+    }
+    # b's palette 1 layer glyph is b.color0 once the empty layer is skipped;
+    # c's palette 1 layer is empty, so like Glyphs the component falls back to
+    # c itself.
+    assert [c.baseGlyph for c in ufo["a.color0"].components] == ["b.color0", "c"]
+    # b's palette 0 layer is empty too, so that component falls back to b, the
+    # same as d, which has no palette layers at all.
+    assert [c.baseGlyph for c in ufo["a.color1"].components] == ["b", "d"]
+
+
+def test_glyph_color_palette_layers_skip_empty_intermediate(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    master_id = font.masters[0].id
+    glypha = add_glyph(font, "a")
+    glypha.layers[0].paths.append(_quad())
+
+    def add_layer(color_palette, coordinates=None, offset=None):
+        layer = GSLayer()
+        layer.associatedMasterId = master_id
+        layer.attributes["colorPalette"] = color_palette
+        if coordinates is not None:
+            layer.attributes["coordinates"] = coordinates
+        if offset is not None:
+            layer.paths.append(_quad(offset))
+        glypha.layers.append(layer)
+        return layer
+
+    add_layer(color_palette=0)
+    add_layer(color_palette=1, offset=10)
+    add_layer(color_palette=1, offset=20)
+    # Intermediates: palette 0 has a shape but no master layer to go with,
+    # the first palette 1 intermediate is empty and the second is not.
+    add_layer(color_palette=0, coordinates=[50], offset=30)
+    add_layer(color_palette=1, coordinates=[50])
+    add_layer(color_palette=1, coordinates=[50], offset=40)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 1), ("a.color1", 1)]
+    }
+    # Empty intermediates don't count either: the non-empty palette 1
+    # intermediate goes with the first palette 1 layer glyph.
+    intermediate_layer = ufo.layers["{50}"]
+    assert sorted(intermediate_layer.keys()) == ["a.color0"]
+    assert min(p.x for p in intermediate_layer["a.color0"][0]) == 40
 
 
 def test_glyph_color_palette_layers_with_intermediate_layers(ufo_module):

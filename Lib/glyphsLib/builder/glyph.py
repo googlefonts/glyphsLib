@@ -19,6 +19,7 @@ import logging
 import glyphsLib.glyphdata
 
 from .. import GSLayer, GSPath, GSComponent
+from .color_layers import color_palette_layers
 from .common import from_loose_ufo_time, to_ufo_time
 from .constants import (
     GLYPHLIB_PREFIX,
@@ -289,27 +290,14 @@ def to_ufo_glyph_color(self, ufo_glyph, layer, glyph, do_color_layers=True):
     # When building minimal UFOs, we instead collect color layers and later
     # add them as separate glyphs to the UFO font.
 
-    if any(
-        l._is_color_palette_layer() and l.associatedMasterId == layer.associatedMasterId
-        for l in glyph.layers
-    ):
-        layerMapping = [
-            (l.layerId, l._color_palette_index())
-            for l in glyph.layers
-            if l._is_color_palette_layer()
-            and l.associatedMasterId == layer.associatedMasterId
-        ]
-
+    palette_layers = color_palette_layers(glyph, layer.associatedMasterId)
+    if palette_layers:
         if not self.minimal:
-            ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = layerMapping
+            ufo_glyph.lib[UFO2FT_COLOR_LAYER_MAPPING_KEY] = [
+                (l.layerId, l._color_palette_index()) for l in palette_layers
+            ]
         elif glyph.export:
-            layers = []
-            for layerId, colorId in layerMapping:
-                color_layer = glyph.layers[layerId]
-                # Intermediate color layers are built separately.
-                if color_layer._is_brace_layer():
-                    continue
-                layers.append((color_layer, colorId))
+            layers = [(l, l._color_palette_index()) for l in palette_layers]
             self._color_palette_layers.append(((glyph, layer), layers))
 
     if self.minimal:

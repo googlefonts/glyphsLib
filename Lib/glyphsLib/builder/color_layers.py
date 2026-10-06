@@ -22,6 +22,25 @@ from .common import to_ufo_color
 from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
 
 
+def color_palette_layers(glyph, master_id):
+    """Return the color palette layers of a glyph for a master, in document order.
+
+    Intermediate palette layers are excluded; they are matched to these by
+    palette index in _to_ufo_color_palette_layers(). Empty layers (no paths
+    and no components) are excluded too: Glyphs exports no layer glyph for
+    them and numbers the remaining layer glyphs consecutively, so everything
+    that names a ``.colorN`` glyph must count from this list.
+    """
+    return [
+        l
+        for l in glyph.layers
+        if l.associatedMasterId == master_id
+        and l._is_color_palette_layer()
+        and not l._is_brace_layer()
+        and (l.paths or l.components)
+    ]
+
+
 def _to_ufo_brace_layer(builder, master, layer):
     ufo_font = builder._sources[master.id].font
     layer_name = layer._brace_layer_name()
@@ -45,6 +64,7 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                 l.associatedMasterId == master.id
                 and l._is_color_palette_layer()
                 and l._is_brace_layer()
+                and (l.paths or l.components)
             ):
                 by_color = brace_color_layers.setdefault(l._brace_layer_name(), {})
                 by_color.setdefault(l._color_palette_index(), []).append(l)
