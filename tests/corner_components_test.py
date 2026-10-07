@@ -127,3 +127,123 @@ def test_corner_leaving_along_instroke(instroke):
         (80, 0, "curve"),
         (110, 0, "line"),
     ]
+
+
+# A format 2 glyph with a component and two paths, written the way Glyphs
+# writes it, components first. The corner's origin counts paths only.
+FORMAT2_MIXED_GLYPH = """{
+familyName = CornerComponentsFormat2;
+fontMaster = (
+{
+id = m01;
+}
+);
+glyphs = (
+{
+export = 0;
+glyphname = _corner.one;
+layers = (
+{
+layerId = m01;
+paths = (
+{
+closed = 0;
+nodes = (
+"0 50 LINE",
+"-50 50 LINE",
+"-50 0 LINE",
+"25 0 LINE"
+);
+}
+);
+width = 250;
+}
+);
+},
+{
+glyphname = square;
+layers = (
+{
+layerId = m01;
+paths = (
+{
+closed = 1;
+nodes = (
+"450 0 LINE",
+"550 0 LINE",
+"550 100 LINE",
+"450 100 LINE"
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = mixed;
+layers = (
+{
+components = (
+{
+name = square;
+}
+);
+hints = (
+{
+name = _corner.one;
+origin = "{PATH_INDEX, 0}";
+type = Corner;
+}
+);
+layerId = m01;
+paths = (
+{
+closed = 1;
+nodes = (
+"200 100 LINE",
+"414 100 LINE",
+"100 300 LINE"
+);
+},
+{
+closed = 1;
+nodes = (
+"200 500 LINE",
+"414 500 LINE",
+"100 700 LINE"
+);
+}
+);
+width = 600;
+}
+);
+}
+);
+unitsPerEm = 1000;
+}"""
+
+
+@pytest.mark.parametrize("path_index", [0, 1])
+def test_corner_components_format2_mixed_glyph(path_index):
+    source = FORMAT2_MIXED_GLYPH.replace("PATH_INDEX", str(path_index))
+    ufo = glyphsLib.to_ufos(glyphsLib.loads(source))[0]
+    assert CornerComponentsFilter(include={"mixed"})(ufo)
+
+    # The corner from aa_simple_angleinstroke in CornerComponents.glyphs; the
+    # second path is the same triangle moved up by 400 units. (A UFO contour
+    # starts at the last node of the Glyphs path.)
+    plain = [
+        [(100, 300), (200, 100), (414, 100)],
+        [(100, 700), (200, 500), (414, 500)],
+    ]
+    cornered = [
+        [(100, 300), (175, 150), (150, 150), (150, 100), (225, 100), (414, 100)],
+        [(100, 700), (175, 550), (150, 550), (150, 500), (225, 500), (414, 500)],
+    ]
+    expected = list(plain)
+    expected[path_index] = cornered[path_index]
+
+    glyph = ufo["mixed"]
+    assert [[(pt.x, pt.y) for pt in contour] for contour in glyph] == expected
+    assert [component.baseGlyph for component in glyph.components] == ["square"]

@@ -202,6 +202,104 @@ def test_glyphs3_shape_order(datadir, ufo_module):
     assert isinstance(glyph_a.shapes[0], GSPath)
     assert isinstance(glyph_b.shapes[0], GSComponent)
 
+    # ...and back again. to_glyphs builds a GSFont with the default format
+    # version of 2, but its shape order came from the UFO, not from separate
+    # paths and components keys, so it must survive.
+    ufo = glyphsLib.to_ufos(round_trip, ufo_module=ufo_module)[0]
+    assert ufo["A"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "PC"
+    assert ufo["B"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "CP"
+
+
+def test_glyphs2_shape_order(ufo_module):
+    # Glyphs writes a format 2 layer's keys alphabetically, so its components
+    # come before its paths, but Glyphs itself orders the shapes paths first,
+    # which is also what format 2 hint origins assume.
+    font = glyphsLib.loads("""{
+        familyName = ShapeOrder;
+        fontMaster = (
+        {
+        id = m01;
+        }
+        );
+        glyphs = (
+        {
+        glyphname = A;
+        layers = (
+        {
+        background = {
+        components = (
+        {
+        name = _comp;
+        }
+        );
+        paths = (
+        {
+        closed = 1;
+        nodes = (
+        "0 0 LINE",
+        "100 0 LINE",
+        "100 100 LINE"
+        );
+        }
+        );
+        };
+        components = (
+        {
+        name = _comp;
+        }
+        );
+        layerId = m01;
+        paths = (
+        {
+        closed = 1;
+        nodes = (
+        "0 0 LINE",
+        "100 0 LINE",
+        "100 100 LINE"
+        );
+        },
+        {
+        closed = 1;
+        nodes = (
+        "200 0 LINE",
+        "300 0 LINE",
+        "300 100 LINE"
+        );
+        }
+        );
+        width = 600;
+        }
+        );
+        },
+        {
+        glyphname = _comp;
+        layers = (
+        {
+        layerId = m01;
+        paths = (
+        {
+        closed = 1;
+        nodes = (
+        "0 200 LINE",
+        "100 200 LINE",
+        "100 300 LINE"
+        );
+        }
+        );
+        width = 600;
+        }
+        );
+        }
+        );
+        unitsPerEm = 1000;
+        }""")
+    layer = font.glyphs["A"].layers[0]
+    assert [type(shape) for shape in layer.shapes] == [GSPath, GSPath, GSComponent]
+    assert [type(shape) for shape in layer.background.shapes] == [GSPath, GSComponent]
+
+    ufo = glyphsLib.to_ufos(font, ufo_module=ufo_module)[0]
+    assert ufo["A"].lib["com.schriftgestaltung.Glyphs.shapeOrder"] == "PPC"
+
 
 def test_glyph_locked(datadir):
     font = glyphsLib.load(str(datadir.join("Locked.glyphs")))
