@@ -6,12 +6,14 @@ import math
 
 from fontTools.misc.bezierTools import (
     _alignment_transformation,
+    calcCubicArcLength,
     calcCubicParameters,
     solveCubic,
     cubicPointAtT,
     linePointAtT,
     segmentPointAtT,
     splitCubic,
+    splitCubicAtT,
 )
 from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.misc.roundTools import otRound
@@ -167,6 +169,97 @@ def point_on_seg_at_distance(seg, distance):
             return distance / (end[0] - start[0])
 
 
+def point_along_segment(seg, distance):
+    """Find the point `distance` along `seg` from its start.
+
+    The distance is measured along the curve. Returns the point and the
+    direction of the segment there, as a unit vector. Past the end of a line,
+    the point lies on the line's continuation; past the end of a curve, it is
+    the curve's end.
+    """
+    if len(seg) == 2:
+        t = point_on_seg_at_distance(seg, distance)
+    elif calcCubicArcLength(*seg) <= distance:
+        t = 1.0
+    else:
+        low, high = 0.0, 1.0
+        for _ in range(40):
+            t = (low + high) / 2
+            if calcCubicArcLength(*splitCubicAtT(*seg, t)[0]) < distance:
+                low = t
+            else:
+                high = t
+    point = segmentPointAtT(seg, t)
+    direction = (seg[-1][0] - seg[0][0], seg[-1][1] - seg[0][1])
+    if len(seg) == 4:
+        derivative = tuple(
+            3 * (1 - t) ** 2 * (seg[1][i] - seg[0][i])
+            + 6 * (1 - t) * t * (seg[2][i] - seg[1][i])
+            + 3 * t**2 * (seg[3][i] - seg[2][i])
+            for i in range(2)
+        )
+        if derivative != (0, 0):
+            direction = derivative
+    return point, unit_vector(direction)
+
+
+def is_on_segment(seg, pt, tolerance=0.5):
+    # Unlike closest_point_on_segment, this doesn't extend lines past their
+    # ends: as a cubic with its handles on its ends, a line stays put.
+    if len(seg) == 2:
+        seg = [seg[0], seg[0], seg[1], seg[1]]
+    return dist(closest_point_on_cubic(seg, pt), pt) < tolerance
+
+
+def runs_along_axis(end, neighbour):
+    # Whether the segment from a corner's `end` node towards `neighbour`
+    # runs along the line from that node to the origin.
+    along = (end.x, end.y)
+    leaving = (neighbour.x - end.x, neighbour.y - end.y)
+    lengths = math.hypot(*along) * math.hypot(*leaving)
+    if lengths == 0:
+        return False
+    return abs(cross(along, leaving)) / lengths < math.sin(math.radians(5))
+
+
+def distance_to_segment(point, direction, seg):
+    """Find how far `point` must move along `direction` to land on `seg`.
+
+    `direction` must be a unit vector. Lines are treated as unbounded; a curve
+    that the line misses is extended straight back from its start. The
+    distance may be negative. Returns None if `direction` is parallel to
+    `seg`.
+    """
+    aligned = _alignment_transformation(
+        [point, (point[0] + direction[0], point[1] + direction[1])]
+    )
+    if len(seg) == 4:
+        curve = aligned.transformPoints(seg)
+        a, b, c, d = calcCubicParameters(*curve)
+        hits = [
+            cubicPointAtT(*curve, t)[0]
+            for t in solveCubic(a[1], b[1], c[1], d[1])
+            if 0 <= t <= 1
+        ]
+        if hits:
+            return min(hits, key=abs)
+        seg = [seg[0], seg[1] if seg[1] != seg[0] else seg[2]]
+    (x0, y0), (x1, y1) = aligned.transformPoints(seg)
+    if math.isclose(y0, y1):
+        return None
+    t = y0 / (y0 - y1)
+    return x0 + (x1 - x0) * t
+
+
+def unit_vector(vector):
+    length = math.hypot(*vector)
+    return (vector[0] / length, vector[1] / length)
+
+
+def cross(a, b):
+    return a[0] * b[1] - a[1] * b[0]
+
+
 def split_cubic_at_point(seg, point, inward=True):
     # When splitting inward we keep the first segment and want its end to be
     # at the point; when splitting outward we keep the last segment and want
@@ -201,11 +294,9 @@ class CornerComponentApplier:
     target_node: object
     target_node_ix: int = None
     origin: (int, int) = (0, 0)
-    effective_start: (int, int) = None
-    effective_end: (int, int) = None
+    left: (int, int) = None
+    right: (int, int) = None
     scale: (int, int) = None
-    left_x: int = 0
-    right_x: int = 0
     outstroke_intersection_point: (int, int) = None
 
     def fail(self, msg, hard=True):
@@ -242,36 +333,85 @@ class CornerComponentApplier:
         if self.target_node_ix is None:
             self.fail("Lost track of where the corner should be applied")
 
-        if self.corner_path[0].x != self.origin[0]:
+        aligned = self.alignment in (Alignment.OUTSTROKE, Alignment.INSTROKE)
+        if not aligned and (self.left or self.right):
             self.fail(
-                "Can't deal with offset instrokes yet; start corner components on axis",
+                "left and right anchors to corner components are"
+                " only supported with left or right alignment",
                 hard=False,
             )
 
-        # This is for handling the left and right anchors and doesn't
-        # quite work yet
-        self.determine_start_and_end_vectors()
-
-        # Align all paths to the "origin" anchor.
+        # Align all paths, and the anchors, to the "origin" anchor.
         for path in [self.corner_path] + self.other_paths:
             for pt in path:
                 pt.x, pt.y = pt.x - self.origin[0], pt.y - self.origin[1]
+        self.left, self.right = (
+            None if pt is None else (pt[0] - self.origin[0], pt[1] - self.origin[1])
+            for pt in (self.left, self.right)
+        )
 
         # Apply scaling. We are considered "flipped" if one or other
         # of the scale factors is negative, but not both. Being flipped
-        # means that the corner path gets applied backwards.
+        # means that the corner path gets applied backwards, and that the
+        # left and right anchors trade places.
         self.flipped = False
         if self.scale is not None:
             self.flipped = (self.scale[0] * self.scale[1]) < 0
             self.scale_paths()
+        if self.flipped:
+            self.reverse_corner_path()
+            self.left, self.right = self.right, self.left
+
+        # The corner's first and last nodes may point any which way from
+        # the origin; it is how far away they are that tells us where the
+        # corner meets the host path.
+        first, last = self.corner_path[0], self.corner_path[-1]
+        instroke_distance = math.hypot(first.x, first.y)
+        outstroke_distance = math.hypot(last.x, last.y)
+        # Glyphs turns the corner towards points that far along each
+        # stroke's chord, but where it puts a node on a curved stroke, it
+        # measures along the curve. Both strokes are measured from the target
+        # node, so the instroke is taken backwards, and the directions point
+        # away from the node.
+        instroke = as_tuples(reversed(self.instroke))
+        outstroke = as_tuples(self.outstroke)
+        instroke_target = segmentPointAtT(
+            instroke, point_on_seg_at_distance(instroke, instroke_distance)
+        )
+        outstroke_target = segmentPointAtT(
+            outstroke, point_on_seg_at_distance(outstroke, outstroke_distance)
+        )
+        instroke_point, instroke_direction = point_along_segment(
+            instroke, instroke_distance
+        )
+        outstroke_point, outstroke_direction = point_along_segment(
+            outstroke, outstroke_distance
+        )
+
+        # If the corner turns the other way from the host path, Glyphs
+        # mirrors it to fit, unless the corner is unaligned.
+        node = (self.target_node.x, self.target_node.y)
+        host_turn = cross(
+            (instroke_target[0] - node[0], instroke_target[1] - node[1]),
+            (outstroke_target[0] - node[0], outstroke_target[1] - node[1]),
+        )
+        if (
+            self.alignment != Alignment.UNALIGNED
+            and host_turn * cross((first.x, first.y), (last.x, last.y)) < 0
+        ):
+            self.mirror_paths()
+
+        leaves_along_instroke = runs_along_axis(first, self.corner_path[1])
+        arrives_along_outstroke = len(self.last_seg) == 4 and runs_along_axis(
+            last, self.corner_path[-2]
+        )
+        left_on_first_seg = self.left is not None and is_on_segment(
+            as_tuples(self.first_seg), self.left
+        )
 
         # Align and rotate the corner paths so that they fit onto
         # the host path
-        (
-            instroke_intersection_point,
-            outstroke_intersection_point,
-            correction,
-        ) = self.align_my_path_to_main_path()
+        self.align_my_path_to_main_path(instroke_target, outstroke_target)
 
         # Keep hold of the original outstroke segment. Fitting the
         # instroke to the corner component will change the position
@@ -279,20 +419,54 @@ class CornerComponentApplier:
         # so we need to recover it later.
         original_outstroke = as_tuples(self.outstroke)
 
-        # If we are not aligned to the instroke, we need to re-fit the
-        # instroke based on where we put the corner component, and
-        # potentially stretch the corner component so that it meets the
-        # instroke.
-        if self.alignment != Alignment.INSTROKE and correction:
-            # If the corner's first segment misses the instroke, keep the
-            # point we found while aligning.
-            recomputed = self.recompute_instroke_intersection_point()
-            if recomputed is not None:
-                instroke_intersection_point = recomputed
-            # The instroke of the corner path may need stretching to fit...
-            if len(self.first_seg) == 4:
-                self.stretch_first_seg_to_fit(instroke_intersection_point)
+        # Now fit the instroke to where we put the corner component. If we
+        # are not aligned to the instroke, we may need to stretch the corner
+        # component so that it meets the instroke.
+        instroke_intersection_point = instroke_target
+        if self.alignment == Alignment.INSTROKE:
+            # Fit the first node to the instroke the way we fit the last
+            # node to the outstroke below
+            instroke_intersection_point = closest_point_on_segment(
+                as_tuples(self.instroke), (first.x, first.y)
+            )
+        elif instroke_distance > 0:
+            if leaves_along_instroke:
+                # The corner's first segment runs along the instroke, so
+                # there's no crossing to fit it to. Glyphs puts the first
+                # node on the instroke instead, with its handle along it.
+                instroke_intersection_point = instroke_point
+                if len(self.first_seg) == 4:
+                    self.move_end_onto_stroke(
+                        first,
+                        self.first_seg[1],
+                        instroke_point,
+                        (-instroke_direction[0], -instroke_direction[1]),
+                    )
+            else:
+                # If the corner's first segment misses the instroke, keep the
+                # point we found while aligning. If the left anchor is on the
+                # first segment, that's where the corner already meets the
+                # instroke, and Glyphs leaves the first node alone.
+                recomputed = self.recompute_instroke_intersection_point()
+                if left_on_first_seg:
+                    instroke_intersection_point = (first.x, first.y)
+                elif recomputed is not None:
+                    instroke_intersection_point = recomputed
+                # The instroke of the corner path may need stretching to fit...
+                if len(self.first_seg) == 4:
+                    self.stretch_first_seg_to_fit(instroke_intersection_point)
         self.split_instroke(instroke_intersection_point)
+
+        # Aligned to the instroke, it's the other end of the corner that
+        # needs fitting: a last segment that curves in along the outstroke
+        # gets the same treatment as the first segment above.
+        if self.alignment == Alignment.INSTROKE and arrives_along_outstroke:
+            self.move_end_onto_stroke(
+                last,
+                self.last_seg[-2],
+                outstroke_point,
+                (-outstroke_direction[0], -outstroke_direction[1]),
+            )
 
         # Now we insert the aligned and rotated corner path into the host
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
@@ -309,98 +483,88 @@ class CornerComponentApplier:
         # they just get copied into the glyph.
         self.insert_other_paths()
 
-    def determine_start_and_end_vectors(self):
-        # Left and right anchors provide an additional offset, depending
-        # on their relationship with the start/end of the first/last points
-        # of the corner seg
-        if not self.effective_start:
-            self.effective_start = (0, 0)
-        else:
-            self.effective_start = (
-                self.corner_path[0].x - self.effective_start[0],
-                self.corner_path[0].y - self.effective_start[1],
-            )
-            self.fail(
-                "left and right anchors to corner components are"
-                " not currently supported",
-                hard=False,
-            )
-
-        if not self.effective_end:
-            self.effective_end = (0, 0)
-        else:
-            self.effective_end = (
-                self.corner_path[-1].x - self.effective_end[0],
-                self.corner_path[-1].y - self.effective_end[1],
-            )
-            self.fail(
-                "left and right anchors to corner components are"
-                " not currently supported",
-                hard=False,
-            )
-
     def scale_paths(self):
         scaling = Transform().scale(*self.scale)
         for path in [self.corner_path] + self.other_paths:
             for pt in path:
                 pt.x, pt.y = scaling.transformPoint((pt.x, pt.y))
-
-    def align_my_path_to_main_path(self):
-        # Work out my rotation (1): Rotation occurring due to corner paths
-        angle = math.atan2(-self.corner_path[-1].y, self.corner_path[-1].x)
-
-        # Work out my rotation (2): Rotation occurring due to host paths
-        if self.flipped:
-            angle += math.radians(90)
-
-            self.reverse_corner_path()
-
-        # To align along the outstroke, work out how much the end of the
-        # corner pokes out, then find a point on the curve that distance
-        # away. Use that as the vector. The angle above already turns the end
-        # of the corner onto the positive x axis, so ignore the sign.
-        distance = self.last_seg[-1].y if self.flipped else self.last_seg[-1].x
-        t = point_on_seg_at_distance(as_tuples(self.outstroke), abs(distance))
-        outstroke_intersection_point = segmentPointAtT(as_tuples(self.outstroke), t)
-        outstroke_angle = math.atan2(
-            outstroke_intersection_point[1] - self.target_node.y,
-            outstroke_intersection_point[0] - self.target_node.x,
+        self.left, self.right = (
+            None if pt is None else scaling.transformPoint(pt)
+            for pt in (self.left, self.right)
         )
 
-        # And the same for the instroke, determined by the Y value of
-        # the first point on the corner component
-        distance = -self.first_seg[0].x if self.flipped else self.first_seg[0].y
-        t2 = point_on_seg_at_distance(as_tuples(self.instroke), abs(distance))
-        instroke_intersection_point = segmentPointAtT(
-            as_tuples(reversed(self.instroke)), t2
+    def mirror_paths(self):
+        # Reflect across the line from the origin to the first node, which
+        # stays put. Unlike flipping with a negative scale, the path keeps
+        # its direction.
+        first = self.corner_path[0]
+        angle = math.atan2(first.y, first.x)
+        mirror = Transform().rotate(angle).scale(1, -1).rotate(-angle)
+        for path in [self.corner_path] + self.other_paths:
+            for pt in path:
+                pt.x, pt.y = mirror.transformPoint((pt.x, pt.y))
+        self.left, self.right = (
+            None if pt is None else mirror.transformPoint(pt)
+            for pt in (self.left, self.right)
         )
-        correction = not (math.isclose(t2, 0.0) or math.isclose(t2, 1.0))
+
+    def move_end_onto_stroke(self, end, handle, point, towards_node):
+        # Put an end node of the corner path on the host path, at `point`,
+        # and point its handle back along the host path, keeping its length.
+        length = dist((end.x, end.y), (handle.x, handle.y))
+        end.x, end.y = point
+        handle.x = point[0] + towards_node[0] * length
+        handle.y = point[1] + towards_node[1] * length
+
+    def align_my_path_to_main_path(self, instroke_target, outstroke_target):
+        # Turn the corner so that its first node points back along the
+        # instroke, or its last node along the outstroke, or halfway between.
+        node = (self.target_node.x, self.target_node.y)
+        first, last = self.corner_path[0], self.corner_path[-1]
         instroke_angle = math.atan2(
-            self.target_node.y - instroke_intersection_point[1],
-            self.target_node.x - instroke_intersection_point[0],
-        )
-        instroke_angle += math.radians(90)
+            instroke_target[1] - node[1], instroke_target[0] - node[0]
+        ) - math.atan2(first.y, first.x)
+        outstroke_angle = math.atan2(
+            outstroke_target[1] - node[1], outstroke_target[0] - node[0]
+        ) - math.atan2(last.y, last.x)
 
         if self.alignment == Alignment.OUTSTROKE:
-            angle += outstroke_angle
+            angle = outstroke_angle
         elif self.alignment == Alignment.INSTROKE:
-            angle += instroke_angle
+            angle = instroke_angle
         elif self.alignment == Alignment.MIDDLE:
-            angle += (instroke_angle + outstroke_angle) / 2
+            difference = math.remainder(outstroke_angle - instroke_angle, math.tau)
+            angle = instroke_angle + difference / 2
         else:  # Unaligned, do nothing
-            pass
+            angle = 0
 
         # Rotate the paths around the origin and then align them
         # so that the origin of the corner starts on the target node
-        rot = Transform().rotate(angle)
-        translation = Transform().translate(
-            self.target_node.x + self.effective_start[0], self.target_node.y
-        )
+        transform = Transform().translate(*node).rotate(angle)
+
+        # Glyphs then slides the corner along the stroke it is aligned to,
+        # until its left anchor sits on the instroke, or its right anchor on
+        # the outstroke
+        anchor = None
+        if self.alignment == Alignment.OUTSTROKE and self.left is not None:
+            anchor, along, onto = self.left, outstroke_target, self.instroke
+        elif self.alignment == Alignment.INSTROKE and self.right is not None:
+            anchor, along, onto = self.right, instroke_target, self.outstroke[::-1]
+        if anchor is not None and along != node:
+            direction = unit_vector((along[0] - node[0], along[1] - node[1]))
+            distance = distance_to_segment(
+                transform.transformPoint(anchor), direction, as_tuples(onto)
+            )
+            if distance is not None:
+                transform = (
+                    Transform()
+                    .translate(direction[0] * distance, direction[1] * distance)
+                    .transform(transform)
+                )
+
         for path in [self.corner_path] + self.other_paths:
             for pt in path:
-                pt.x, pt.y = translation.transform(rot).transformPoint((pt.x, pt.y))
-
-        return instroke_intersection_point, outstroke_intersection_point, correction
+                pt.x, pt.y = transform.transformPoint((pt.x, pt.y))
 
     def recompute_instroke_intersection_point(self):
         return unbounded_seg_seg_intersection(
@@ -492,6 +656,7 @@ class CornerComponentsFilter(BaseFilter):
             return False
 
         todo_list = []
+        corner_nodes = set()
 
         for glyphs_cc in corner_components:
             shape_index, node_idx = glyphs_cc["origin"]
@@ -516,6 +681,18 @@ class CornerComponentsFilter(BaseFilter):
                     glyph.name,
                 )
                 continue
+
+            # A corner replaces the node it is attached to, so like Glyphs we
+            # only apply the first one on each node.
+            if (path_idx, node_idx) in corner_nodes:
+                logger.warning(
+                    "Ignoring corner component %s in %s: there is already a "
+                    "corner on that node",
+                    glyphs_cc["name"],
+                    glyph.name,
+                )
+                continue
+            corner_nodes.add((path_idx, node_idx))
             layer = self.context.font[glyphs_cc["name"]]
             cc_anchor_dict = {anchor.name: anchor for anchor in layer.anchors}
             if "origin" in cc_anchor_dict:
@@ -546,8 +723,8 @@ class CornerComponentsFilter(BaseFilter):
                 path_index=path_idx,
                 glyph=glyph,
                 origin=cc_origin,
-                effective_start=cc_left,
-                effective_end=cc_right,
+                left=cc_left,
+                right=cc_right,
                 # We pass in the current starting node, because its
                 # position may change if we apply more than one corner.
                 target_node=glyph[path_idx][(node_idx + 1) % len(glyph[path_idx])],
