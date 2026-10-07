@@ -15,6 +15,7 @@
 
 import logging
 
+from fontTools.misc.fixedTools import floatToFixedToFloat
 from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib import classes
@@ -153,6 +154,14 @@ def update_mapping_from_instances(
             mapping[userLoc] = designLoc
 
 
+def _covers(mapping, design_locs):
+    """Return whether all the design locations are within the mapping's range."""
+    return bool(mapping) and (
+        min(mapping.values()) <= min(design_locs)
+        and max(design_locs) <= max(mapping.values())
+    )
+
+
 def is_identity(mapping):
     """Return whether the mapping is an identity mapping."""
     return all(userLoc == designLoc for userLoc, designLoc in mapping.items())
@@ -177,6 +186,128 @@ def _virtual_master_locations(font):
     return locations
 
 
+def _choose_instance_or_master_mapping(
+    axis_def, instance_mapping, master_mapping, regular_design_loc
+):
+    """Return the mapping for an axis without Axis Location parameters, and
+    whether the instances' user locations can't all come from it.
+
+    The instance mapping must span all the masters, or the axis would leave
+    out some masters, or not even reach the regular one. When the instances
+    don't span them, we extend the mapping's end segments out to the masters
+    (see `_extend_to_masters`). When that isn't possible (e.g. the single
+    instance of a single-master font, left at the default weight value), we do
+    like Glyphs.app, which without Axis Location parameters uses the design
+    locations as user locations; the instances' user locations must then be
+    stored apart (see `axes_with_unmapped_instances`).
+
+    Points beyond the first and last masters are dropped (see
+    `_trim_to_masters`). When the regular master lies between two instances, we
+    add the user location it interpolates to (rounded like fvar does) as a
+    mapping point.
+    """
+    master_locs = list(master_mapping.values())
+    if not instance_mapping:
+        return master_mapping, False
+    if is_identity(instance_mapping):
+        # see _to_designspace_instance for instances outside the masters
+        return master_mapping, not _covers(
+            master_mapping, list(instance_mapping.values())
+        )
+    if not _covers(instance_mapping, master_locs):
+        extended = _extend_to_masters(axis_def, instance_mapping, master_locs)
+        if extended is None:
+            logger.warning(
+                f"Axis {axis_def.tag}: not using the mapping from the instances, "
+                "as they don't span all the masters; add Axis Location "
+                "parameters to the masters to map the axis"
+            )
+            return master_mapping, True
+        logger.warning(
+            f"Axis {axis_def.tag}: the instances don't span all the masters, "
+            "extending their mapping out to the masters; add Axis Location "
+            "parameters to the masters to map the axis explicitly"
+        )
+        instance_mapping = extended
+    mapping = _trim_to_masters(instance_mapping, master_locs)
+    # the instances beyond the masters aren't on the axis
+    unmapped = mapping != instance_mapping
+    if regular_design_loc not in mapping.values():
+        user_loc = _interpolated_user_loc(mapping, regular_design_loc)
+        logger.warning(
+            f"Axis {axis_def.tag}: no instance is at the regular master, "
+            f"mapping it to the interpolated user location {user_loc}; "
+            "add an instance or Axis Location parameters to map it explicitly"
+        )
+        mapping[user_loc] = regular_design_loc
+    return mapping, unmapped
+
+
+# The user locations an extended mapping may reach, i.e. the valid fvar ranges
+# of the registered axes; beyond them, extending the instances' mapping isn't
+# a sensible guess.
+_VALID_USER_LOCS = {"wght": lambda v: 1 <= v <= 1000, "wdth": lambda v: v > 0}
+
+
+def _extend_to_masters(axis_def, mapping, master_locs):
+    """Extend the mapping's end segments out to the masters beyond them.
+
+    The first and last masters, if beyond the mapping, get the user location
+    the nearest segment extrapolates to (rounded like fvar does), whether the
+    mapping increases or decreases. Return None if the mapping has a single
+    point, if no point is within the masters (the extended mapping would then
+    keep none of the instances' user locations), if that segment is flat, or
+    if the user location isn't valid for the axis.
+    """
+    points = sorted((dl, ul) for ul, dl in mapping.items())
+    first, last = min(master_locs), max(master_locs)
+    if len(points) < 2 or not any(first <= dl <= last for dl, _ in points):
+        return None
+    is_valid = _VALID_USER_LOCS.get(axis_def.tag, lambda v: True)
+    extended = dict(mapping)
+    for design_loc in (first, last):
+        if design_loc < points[0][0]:
+            (d0, u0), (d1, u1) = points[:2]
+        elif design_loc > points[-1][0]:
+            (d0, u0), (d1, u1) = points[-2:]
+        else:
+            continue
+        if not (d0 < d1 and u0 != u1):
+            return None
+        user_loc = floatToFixedToFloat(
+            u0 + (design_loc - d0) * (u1 - u0) / (d1 - d0), 16
+        )
+        if not is_valid(user_loc):
+            return None
+        extended[user_loc] = design_loc
+    return extended
+
+
+def _trim_to_masters(mapping, master_locs):
+    """Drop the mapping points beyond the first and last masters.
+
+    The axis then only spans the masters: instances beyond them would need
+    extrapolating, which OpenType variations can't do. The first and last
+    masters, if between two points, get the user location they interpolate to
+    (rounded like fvar does).
+    """
+    first, last = min(master_locs), max(master_locs)
+    trimmed = {ul: dl for ul, dl in mapping.items() if first <= dl <= last}
+    if len(trimmed) == len(mapping):
+        return dict(mapping)
+    for design_loc in (first, last):
+        if design_loc not in trimmed.values():
+            trimmed[_interpolated_user_loc(mapping, design_loc)] = design_loc
+    return trimmed
+
+
+def _interpolated_user_loc(mapping, design_loc):
+    """Return the user location the mapping interpolates to at the design
+    location, rounded to 16.16 like fvar coordinates."""
+    reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
+    return floatToFixedToFloat(piecewiseLinearMap(design_loc, reverse_mapping), 16)
+
+
 def to_designspace_axes(self):
     if not self.font.masters:
         return
@@ -185,6 +316,9 @@ def to_designspace_axes(self):
 
     custom_mapping = self.font.customParameters["Axis Mappings"]
     virtual_masters = _virtual_master_locations(self.font)
+    # Tags of the axes whose mapping doesn't come from the instances although
+    # they have one, so the instances' user locations must be stored apart.
+    self.axes_with_unmapped_instances = set()
 
     for axis_def in get_axis_definitions(self.font):
         axis = self.designspace.newAxisDescriptor()
@@ -244,6 +378,14 @@ def to_designspace_axes(self):
                 cp_only=True,
             )
 
+            trimmed = _trim_to_masters(
+                mapping, [axis_def.get_design_loc(m) for m in self.font.masters]
+            )
+            if trimmed != mapping:
+                # the instances beyond the masters aren't on the axis
+                self.axes_with_unmapped_instances.add(axis_def.tag)
+            mapping = trimmed
+
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             regularUserLoc = axis_def.get_user_loc(regular_master)
         else:
@@ -263,19 +405,21 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
-            # Prefer the instance-based mapping (but only if interesting)
-            mapping = (
-                instance_mapping
-                if (instance_mapping and not is_identity(instance_mapping))
-                else master_mapping
+            regularDesignLoc = axis_def.get_design_loc(regular_master)
+            mapping, unmapped = _choose_instance_or_master_mapping(
+                axis_def, instance_mapping, master_mapping, regularDesignLoc
+            )
+            if unmapped:
+                self.axes_with_unmapped_instances.add(axis_def.tag)
+            # keep the axis, which the instance mapping would have made
+            axis_wanted = axis_wanted or (
+                unmapped and not is_identity(instance_mapping)
             )
 
-            regularDesignLoc = axis_def.get_design_loc(regular_master)
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
             reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
             regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
-            # TODO make sure that the default is in mapping?
 
         is_identity_map = is_identity(mapping)
 
