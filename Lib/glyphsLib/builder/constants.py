@@ -61,6 +61,8 @@ LOCKED_GUIDE_NAME_SUFFIX = " [locked]"
 
 HINTS_LIB_KEY = GLYPHS_PREFIX + "hints"
 SHAPE_ORDER_LIB_KEY = GLYPHLIB_PREFIX + "shapeOrder"
+# Set by the cornerComponents filter on a glyph whose open corners it erased
+OPEN_CORNERS_ERASED_KEY = GLYPHLIB_PREFIX + "openCornersErased"
 
 SMART_COMPONENT_AXES_LIB_KEY = GLYPHS_PREFIX + "smartComponentAxes"
 

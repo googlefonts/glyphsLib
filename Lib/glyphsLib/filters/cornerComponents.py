@@ -23,7 +23,11 @@ from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Contour, Glyph
 from ufoLib2.objects import Point as Node
 
-from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
+from glyphsLib.builder.constants import (
+    HINTS_LIB_KEY,
+    OPEN_CORNERS_ERASED_KEY,
+    SHAPE_ORDER_LIB_KEY,
+)
 from glyphsLib.filters.eraseOpenCorners import erase_open_corners_in_contour
 
 logger = logging.getLogger(__name__)
@@ -714,6 +718,9 @@ class CornerComponentsFilter(BaseFilter):
             for contour in glyph:
                 if not contour.open:
                     erase_open_corners_in_contour(contour)
+            # Glyphs doesn't erase again once the corners are on, so neither
+            # does the eraseOpenCorners filter
+            glyph.lib[OPEN_CORNERS_ERASED_KEY] = True
         for cc in todo_list:
             if not any(pt is cc.target_node for pt in glyph[cc.path_index]):
                 logger.warning(

@@ -8,6 +8,8 @@ from fontTools.misc.bezierTools import (
 )
 from ufo2ft.filters import BaseFilter
 
+from glyphsLib.builder.constants import OPEN_CORNERS_ERASED_KEY
+
 logger = logging.getLogger(__name__)
 
 
@@ -208,6 +210,10 @@ class EraseOpenCornersPen(BasePen):
 class EraseOpenCornersFilter(BaseFilter):
     def filter(self, glyph):
         if not len(glyph):
+            return False
+        # The cornerComponents filter already erased them, before it applied
+        # its corners, which may leave new spurs that Glyphs keeps
+        if glyph.lib.get(OPEN_CORNERS_ERASED_KEY):
             return False
 
         contours = list(glyph)
