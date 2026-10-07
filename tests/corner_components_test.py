@@ -86,7 +86,6 @@ MISMATCHES = {
     "curve_flare_turned_outstroke_curvedboth",
     "curve_flare_turned_outstroke_curvedin",
     "curve_flare_turned_outstroke_tight",
-    "multi_flipx",
     "multi_instroke_acute",
     "orient_tilted_acute",
     "real_aoboshi_g",
