@@ -380,13 +380,14 @@ class CornerComponentApplier:
         # Apply scaling. We are considered "flipped" if one or other
         # of the scale factors is negative, but not both. Being flipped
         # means that the corner path gets applied backwards, and that the
-        # left and right anchors trade places.
+        # left and right anchors trade places. The other paths are reversed
+        # too, so that they keep their direction.
         self.flipped = False
         if self.scale is not None:
             self.flipped = (self.scale[0] * self.scale[1]) < 0
             self.scale_paths()
         if self.flipped:
-            self.reverse_corner_path()
+            self.reverse_paths()
             self.left, self.right = self.right, self.left
 
         self.warn_about_unused_anchor()
@@ -663,10 +664,11 @@ class CornerComponentApplier:
         self.first_seg[1].x += delta[0]
         self.first_seg[1].y += delta[1]
 
-    def reverse_corner_path(self):
-        new_glyph = Glyph()
-        self.corner_path.draw(ReverseContourPen(new_glyph.getPen()))
-        self.corner_path[:] = new_glyph[0]
+    def reverse_paths(self):
+        for path in [self.corner_path] + self.other_paths:
+            new_glyph = Glyph()
+            path.draw(ReverseContourPen(new_glyph.getPen()))
+            path[:] = new_glyph[0]
 
     def insert_other_paths(self):
         for path in self.other_paths:
