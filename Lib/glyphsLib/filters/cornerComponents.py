@@ -12,9 +12,6 @@ import logging
 import math
 
 from fontTools.misc.bezierTools import (
-    _alignment_transformation,
-    calcCubicParameters,
-    solveCubic,
     cubicPointAtT,
     segmentPointAtT,
     splitCubicAtT,
@@ -134,33 +131,18 @@ def point_along_segment(seg, distance):
     return segmentPointAtT(seg, t)
 
 
-def distance_to_segment(point, direction, seg):
-    """Find how far `point` must move along `direction` to land on `seg`.
+def distance_to_line(point, direction, origin, line_direction):
+    """Find how far `point` must move along `direction` to land on a line.
 
-    `direction` must be a unit vector. Lines are treated as unbounded; a curve
-    that the line misses is extended straight back from its start. The
-    distance may be negative. Returns None if `direction` is parallel to
-    `seg`.
+    The line runs through `origin` along `line_direction`, unbounded both
+    ways. The distance may be negative. Returns None if the line runs along
+    `direction`.
     """
-    aligned = _alignment_transformation(
-        [point, (point[0] + direction[0], point[1] + direction[1])]
-    )
-    if len(seg) == 4:
-        curve = aligned.transformPoints(seg)
-        a, b, c, d = calcCubicParameters(*curve)
-        hits = [
-            cubicPointAtT(*curve, t)[0]
-            for t in solveCubic(a[1], b[1], c[1], d[1])
-            if 0 <= t <= 1
-        ]
-        if hits:
-            return min(hits, key=abs)
-        seg = [seg[0], seg[1] if seg[1] != seg[0] else seg[2]]
-    (x0, y0), (x1, y1) = aligned.transformPoints(seg)
-    if math.isclose(y0, y1):
+    denominator = cross(direction, line_direction)
+    if math.isclose(denominator, 0, abs_tol=1e-9):
         return None
-    t = y0 / (y0 - y1)
-    return x0 + (x1 - x0) * t
+    offset = (origin[0] - point[0], origin[1] - point[1])
+    return cross(offset, line_direction) / denominator
 
 
 def unit_vector(vector):
@@ -439,15 +421,16 @@ class CornerComponentApplier:
 
         # Glyphs then slides the corner along the stroke it is aligned to,
         # until its left anchor sits on the instroke, or its right anchor on
-        # the outstroke
+        # the outstroke. It takes the other stroke to run straight from the
+        # node towards where that end aims, even when it's curved.
         anchor = None
         if self.alignment == Alignment.OUTSTROKE and self.left is not None:
-            anchor, along, onto = self.left, outstroke_direction, self.instroke
+            anchor, along, onto = self.left, outstroke_direction, instroke_direction
         elif self.alignment == Alignment.INSTROKE and self.right is not None:
-            anchor, along, onto = self.right, instroke_direction, self.outstroke[::-1]
+            anchor, along, onto = self.right, instroke_direction, outstroke_direction
         if anchor is not None and along != (0, 0):
-            distance = distance_to_segment(
-                transform.transformPoint(anchor), along, as_tuples(onto)
+            distance = distance_to_line(
+                transform.transformPoint(anchor), along, node, onto
             )
             if distance is not None:
                 transform = (
