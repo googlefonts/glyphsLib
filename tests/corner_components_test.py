@@ -493,3 +493,20 @@ def test_corner_on_shape_that_is_not_a_path_is_ignored(
         CornerComponentsFilter(include={"host"})(font)
     assert [(pt.x, pt.y) for pt in host[0]] == [(100, 500), (100, 100), (500, 100)]
     assert "is not a path" in caplog.text
+
+
+def test_corner_on_off_curve_point_is_ignored(caplog):
+    # Glyphs ignores these, as in Iansui's uni7BE1 and Hina Mincho's uni654D
+    corner = [((0, 60), "move"), ((-70, 60), "line"), ((-70, 0), "line")]
+    host = [
+        ((450, 120), "line"),
+        ((450, 550), "line"),
+        ((150, 550), "line"),
+        ((150, 400), None),
+        ((150, 250), None),
+        ((150, 120), "curve"),
+    ]
+    with caplog.at_level(logging.WARNING):
+        points = _apply_corner(corner, host, 2)
+    assert points == [(x, y, segment_type) for (x, y), segment_type in host]
+    assert "off-curve point" in caplog.text
