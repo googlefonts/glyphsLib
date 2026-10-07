@@ -536,16 +536,23 @@ class CornerComponentApplier:
         """Cut the instroke where the corner starts.
 
         A line ends at the corner's first node. A curve is cut `distance`
-        along it from the target node, and the corner starts there. A
-        `straight` curve becomes a line.
+        along it from the target node, and the corner starts there.
+
+        A `straight` curve runs straight to the corner's first node, as a
+        line would. Glyphs makes it a line, but we keep it a curve, with its
+        handles on the line at a third and two thirds of the way along. A cut
+        may run past the start of a curve in one master but not in another,
+        and dropping the handles would leave the masters with different
+        numbers of points.
         """
         if straight and len(self.instroke) == 4:
-            for handle in self.instroke[1:3]:
-                del self.path[next(i for i, pt in enumerate(self.path) if pt is handle)]
-            self.target_node.type = "line"
-            self.target_node_ix = next(
-                i for i, pt in enumerate(self.path) if pt is self.target_node
-            )
+            start, handle1, handle2, end = self.instroke
+            x, y = otRound(first[0]), otRound(first[1])
+            for handle, f in ((handle1, 1 / 3), (handle2, 2 / 3)):
+                handle.x = otRound(start.x + (x - start.x) * f)
+                handle.y = otRound(start.y + (y - start.y) * f)
+            end.x, end.y = x, y
+            return
         if len(self.instroke) == 2:
             (
                 self.path[self.target_node_ix].x,

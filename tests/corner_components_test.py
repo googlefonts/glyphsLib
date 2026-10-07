@@ -220,6 +220,62 @@ def test_corner_leaving_along_instroke(instroke):
     ]
 
 
+def test_straightened_instroke_keeps_its_handles():
+    # From Iansui uni5320. The corner's first node is further from the target
+    # node than the curved instroke is long, so Glyphs 3.5 runs the instroke
+    # straight to it, past the start of the curve. We draw the same line, but
+    # keep it a curve, so that a master where the cut stays on the curve has
+    # as many points.
+    corner = [
+        ((0, 168), "move"),
+        ((-1, 47), "line"),
+        ((-1, 26), None),
+        ((4, 7), None),
+        ((21, -2), "curve"),
+        ((27, -6), None),
+        ((33, -7), None),
+        ((39, -7), "curve"),
+        ((48, -7), None),
+        ((57, -3), None),
+        ((69, -3), "curve"),
+        ((184, 0), "line"),
+    ]
+    # The corner is on the last node in Glyphs, which starts the UFO contour
+    host = [
+        ((158, -52), "curve"),
+        ((913, -31), "line"),
+        ((913, 300), "line"),
+        ((159, 300), "line"),
+        ((159, 72), "line"),
+        ((159, 56), None),
+        ((153, -36), None),
+    ]
+    points = _apply_corner(corner, host, 6, options=0, scale=[1, 1])
+    start = points.index((159, 72, "line"))
+    points = points[start:] + points[:start]
+    on_curves = [(x, y) for x, y, segment_type in points if segment_type]
+    # Glyphs' nodes, then the rest of the host
+    assert on_curves == [
+        (159, 72),
+        (159, 116),
+        (156, -5),
+        (179, -53),
+        (197, -58),
+        (227, -53),
+        (342, -47),
+        (913, -31),
+        (913, 300),
+        (159, 300),
+    ]
+    # Its handles are at a third and two thirds of the way along the line
+    assert points[:4] == [
+        (159, 72, "line"),
+        (159, 87, None),
+        (159, 101, None),
+        (159, 116, "curve"),
+    ]
+
+
 # A format 2 glyph with a component and two paths, written the way Glyphs
 # writes it, components first. The corner's origin counts paths only.
 FORMAT2_MIXED_GLYPH = """{
