@@ -249,6 +249,7 @@ class CornerComponentApplier:
         # left and right anchors trade places. The other paths are reversed
         # too, so that they keep their direction.
         self.flipped = False
+        self.axes = [(1, 0), (0, 1)]
         if self.scale is not None:
             self.flipped = (self.scale[0] * self.scale[1]) < 0
             self.scale_paths()
@@ -353,6 +354,8 @@ class CornerComponentApplier:
             None if pt is None else mirror.transformPoint(pt)
             for pt in (self.left, self.right)
         )
+        # The corner's axes are mirrored with it
+        self.axes = [mirror.transformPoint(axis) for axis in self.axes]
 
     def fit_end(self, index, turn, anchor):
         """Turn one end of the corner path by `turn`, to fit it to its stroke.
@@ -379,7 +382,7 @@ class CornerComponentApplier:
             # The axis would turn parallel to its stroke
             return
         else:
-            axis = max([(1, 0), (0, 1)], key=lambda axis: abs(dot(axis, towards)))
+            axis = max(self.axes, key=lambda axis: abs(dot(axis, towards)))
             fit = shear_across(axis, turn)
         transform = (
             Transform().translate(*pivot).transform(fit).translate(-pivot[0], -pivot[1])
