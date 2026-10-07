@@ -22,17 +22,8 @@ ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]
 # Cases where we don't yet match Glyphs
 MISMATCHES = {
     "ad_curved_instroke",
-    "curve_bracketed_instroke_tight",
-    "curve_bracketed_outstroke_tight",
-    "curve_cupped_instroke_tight",
-    "curve_cupped_outstroke_tight",
-    "curve_flare_instroke_tight",
-    "curve_flare_outstroke_tight",
-    "curve_flare_turned_instroke_tight",
-    "curve_flare_turned_outstroke_tight",
     "real_aoboshi_g",
     "real_bellota_sha",
-    "real_iansui_sturn",
 }
 
 
