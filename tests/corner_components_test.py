@@ -6,6 +6,7 @@ from fontTools.pens.basePen import BasePen
 import glyphsLib
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
 from glyphsLib.filters.cornerComponents import CornerComponentsFilter
+from glyphsLib.filters.eraseOpenCorners import EraseOpenCornersFilter
 import py
 import pytest
 import ufoLib2
@@ -132,7 +133,7 @@ def test_corner_components(glyph):
     assert outline <= 1, f"the outline is {outline:.1f} units from Glyphs'"
 
 
-def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
+def _corner_font(corner_nodes, host_nodes, node_index, anchors=None, **hint):
     font = ufoLib2.Font()
     for name, nodes in (("_corner.test", corner_nodes), ("host", host_nodes)):
         pen = font.newGlyph(name).getPointPen()
@@ -145,6 +146,11 @@ def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
     font["host"].lib[HINTS_LIB_KEY] = [
         {"type": "Corner", "name": "_corner.test", "origin": [0, node_index], **hint}
     ]
+    return font
+
+
+def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
+    font = _corner_font(corner_nodes, host_nodes, node_index, anchors, **hint)
     assert CornerComponentsFilter(include={"host"})(font)
     return [(pt.x, pt.y, pt.segmentType) for pt in font["host"][0]]
 
@@ -274,6 +280,40 @@ def test_straightened_instroke_keeps_its_handles():
         (159, 101, None),
         (159, 116, "curve"),
     ]
+
+
+def test_open_corners_not_erased_after_corners():
+    # Bellota's n, Bold master, cut down to its stem. The corner leaves a spur
+    # whose neighbouring segments cross, like an open corner. Glyphs erases
+    # open corners before it applies corners but not after, so it keeps the
+    # spur. In the other masters the spur doesn't count as an open corner,
+    # so erasing it would leave the masters incompatible.
+    corner = [
+        ((-5, 57), "move"),
+        ((-5, 52), "line"),
+        ((-4, -7), None),
+        ((34, -58), None),
+        ((64, -75), "curve"),
+        ((119, -24), "line"),
+        ((93, -2), None),
+        ((77, 34), None),
+        ((77, 90), "curve"),
+    ]
+    host = [
+        ((165, -1), "line"),
+        ((152, 436), "line"),
+        ((83, 354), "line"),
+        ((83, -1), "line"),
+    ]
+    font = _corner_font(corner, host, 1, anchors={"origin": (77, 86)})
+    assert CornerComponentsFilter(include={"host"})(font)
+    points = [(pt.x, pt.y, pt.segmentType) for pt in font["host"][0]]
+    assert points[1:4] == [(152, 436, "line"), (165, 431, "line"), (165, 388, "line")]
+
+    # The same outline without corners loses its spur, but the host keeps it
+    font["host"].drawPoints(font.newGlyph("plain").getPointPen())
+    assert EraseOpenCornersFilter(include={"host", "plain"})(font) == {"plain"}
+    assert [(pt.x, pt.y, pt.segmentType) for pt in font["host"][0]] == points
 
 
 # A format 2 glyph with a component and two paths, written the way Glyphs
