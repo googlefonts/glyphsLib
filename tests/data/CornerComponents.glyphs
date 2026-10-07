@@ -1,10 +1,6 @@
 {
-.appVersion = "3225";
+.appVersion = "3532";
 .formatVersion = 3;
-DisplayStrings = (
-"/_corner.large/aw_direction",
-"/aw_direction.expectation"
-);
 customParameters = (
 {
 name = glyphOrder;
@@ -102,7 +98,6 @@ glyphs = (
 {
 export = 0;
 glyphname = _corner.one;
-lastChange = "2022-11-22 09:48:36 +0000";
 layers = (
 {
 layerId = m01;
@@ -124,7 +119,6 @@ width = 250;
 {
 export = 0;
 glyphname = _corner.two;
-lastChange = "2022-11-17 14:20:23 +0000";
 layers = (
 {
 layerId = m01;
@@ -147,7 +141,6 @@ width = 20;
 {
 export = 0;
 glyphname = _corner.three;
-lastChange = "2022-11-17 14:20:24 +0000";
 layers = (
 {
 layerId = m01;
@@ -173,7 +166,6 @@ width = 20;
 {
 export = 0;
 glyphname = _corner.four;
-lastChange = "2022-11-17 09:45:44 +0000";
 layers = (
 {
 anchors = (
@@ -201,7 +193,6 @@ width = 200;
 {
 export = 0;
 glyphname = _corner.five;
-lastChange = "2022-11-21 09:59:10 +0000";
 layers = (
 {
 layerId = m01;
@@ -223,7 +214,6 @@ width = 200;
 {
 export = 0;
 glyphname = _corner.pretty;
-lastChange = "2022-11-18 13:48:51 +0000";
 layers = (
 {
 layerId = m01;
@@ -284,7 +274,6 @@ width = 200;
 {
 export = 0;
 glyphname = _corner.slab;
-lastChange = "2022-11-17 14:09:13 +0000";
 layers = (
 {
 layerId = m01;
@@ -306,7 +295,6 @@ width = 200;
 {
 category = Letter;
 glyphname = aa_simple_angleinstroke;
-lastChange = "2022-11-17 09:18:35 +0000";
 layers = (
 {
 hints = (
@@ -335,7 +323,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = aa_simple_angleinstroke.expectation;
-lastChange = "2022-11-17 09:18:35 +0000";
 layers = (
 {
 layerId = m01;
@@ -360,7 +347,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ab_simple_angled;
-lastChange = "2022-11-17 09:18:59 +0000";
 layers = (
 {
 hints = (
@@ -390,7 +376,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ab_simple_angled.expectation;
-lastChange = "2022-11-17 09:18:59 +0000";
 layers = (
 {
 layerId = m01;
@@ -416,7 +401,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ac_scale;
-lastChange = "2022-11-17 09:18:59 +0000";
 layers = (
 {
 hints = (
@@ -448,7 +432,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ac_scale.expectation;
-lastChange = "2022-11-17 09:18:59 +0000";
 layers = (
 {
 layerId = m01;
@@ -475,7 +458,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ad_curved_instroke;
-lastChange = "2022-11-21 20:48:47 +0000";
 layers = (
 {
 anchors = (
@@ -513,17 +495,22 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ad_curved_instroke.expectation;
-lastChange = "2022-11-17 09:18:59 +0000";
 layers = (
 {
+anchors = (
+{
+name = intersection;
+pos = (134,188);
+}
+);
 layerId = m01;
 shapes = (
 {
 closed = 1;
 nodes = (
-(143,316,o),
-(150,253,o),
-(134,188,c),
+(143,315,o),
+(151,251,o),
+(134,186,c),
 (30,110,l),
 (60,70,l),
 (120,115,l),
@@ -541,7 +528,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ae_curved_corner_firstseg;
-lastChange = "2022-11-21 21:52:20 +0000";
 layers = (
 {
 hints = (
@@ -571,7 +557,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ae_curved_corner_firstseg.expectation;
-lastChange = "2022-11-17 09:18:35 +0000";
 layers = (
 {
 layerId = m01;
@@ -598,7 +583,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = af_curved_corner_firstseg_slanted;
-lastChange = "2022-11-21 22:02:07 +0000";
 layers = (
 {
 anchors = (
@@ -635,9 +619,14 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = af_curved_corner_firstseg_slanted.expectation;
-lastChange = "2022-11-21 21:16:15 +0000";
 layers = (
 {
+anchors = (
+{
+name = intersection;
+pos = (113,50);
+}
+);
 layerId = m01;
 shapes = (
 {
@@ -657,13 +646,12 @@ nodes = (
 width = 600;
 }
 );
-production = af_curved_corner_firstseg_slanted.expectation;
+production = af_curved_corner_firstseg_slanted;
 subCategory = Other;
 },
 {
 category = Letter;
 glyphname = ag_curved_corner_bothsegs;
-lastChange = "2022-11-17 09:24:10 +0000";
 layers = (
 {
 hints = (
@@ -694,7 +682,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ag_curved_corner_bothsegs.expectation;
-lastChange = "2022-11-17 09:41:12 +0000";
 layers = (
 {
 layerId = m01;
@@ -719,13 +706,12 @@ nodes = (
 width = 600;
 }
 );
-production = ae_curved_corner_bothsegs.001;
+production = ae_curved_corner_bothsegs;
 subCategory = Other;
 },
 {
 category = Letter;
 glyphname = ag_curved_corner_bothsegs_rotated;
-lastChange = "2022-11-17 09:42:08 +0000";
 layers = (
 {
 hints = (
@@ -756,7 +742,6 @@ subCategory = Other;
 {
 category = Letter;
 glyphname = ag_curved_corner_bothsegs_rotated.expectation;
-lastChange = "2022-11-17 09:42:40 +0000";
 layers = (
 {
 layerId = m01;
@@ -781,12 +766,11 @@ nodes = (
 width = 600;
 }
 );
-production = ae_curved_corner_bothsegs.rotated.001;
+production = ae_curved_corner_bothsegs.rotated;
 subCategory = Other;
 },
 {
 glyphname = ah_origin;
-lastChange = "2022-11-17 09:45:35 +0000";
 layers = (
 {
 hints = (
@@ -814,7 +798,6 @@ width = 600;
 },
 {
 glyphname = ah_origin.expectation;
-lastChange = "2022-11-17 09:46:23 +0000";
 layers = (
 {
 layerId = m01;
@@ -838,7 +821,6 @@ width = 600;
 },
 {
 glyphname = ai_curved_outstroke;
-lastChange = "2022-11-22 12:46:24 +0000";
 layers = (
 {
 anchors = (
@@ -873,39 +855,27 @@ width = 600;
 },
 {
 glyphname = ai_curved_outstroke.expectation;
-lastChange = "2022-11-22 13:21:43 +0000";
 layers = (
 {
-background = {
-shapes = (
+anchors = (
 {
-closed = 1;
-nodes = (
-(505,226,l),
-(550,181,l),
-(585,217,l),
-(532,270,l),
-(455,333,o),
-(166,492,o),
-(90,448,c),
-(290,102,l)
-);
+name = foo;
+pos = (531,270);
 }
 );
-};
 layerId = m01;
 shapes = (
 {
 closed = 1;
 nodes = (
+(290,102,l),
 (505,226,l),
-(550,181,l),
-(585,217,l),
-(532,270,l),
-(455,334,o),
+(549,181,l),
+(585,216,l),
+(533,270,l),
+(456,333,o),
 (166,492,o),
-(90,448,c),
-(290,102,l)
+(90,448,c)
 );
 }
 );
@@ -915,7 +885,6 @@ width = 600;
 },
 {
 glyphname = aj_right_alignment;
-lastChange = "2022-11-22 10:27:50 +0000";
 layers = (
 {
 hints = (
@@ -944,7 +913,6 @@ width = 600;
 },
 {
 glyphname = aj_right_alignment.expectation;
-lastChange = "2022-11-17 11:18:16 +0000";
 layers = (
 {
 layerId = m01;
@@ -968,7 +936,6 @@ width = 600;
 },
 {
 glyphname = ak_right_slanted;
-lastChange = "2022-11-22 12:28:56 +0000";
 layers = (
 {
 anchors = (
@@ -1003,9 +970,14 @@ width = 600;
 },
 {
 glyphname = ak_right_slanted.expectation;
-lastChange = "2022-11-17 12:42:33 +0000";
 layers = (
 {
+anchors = (
+{
+name = "out anchor";
+pos = (212,40);
+}
+);
 layerId = m01;
 shapes = (
 {
@@ -1015,7 +987,7 @@ nodes = (
 (184,0,l),
 (184,-50,l),
 (234,-50,l),
-(245,18,l),
+(247,21,l),
 (534,500,l),
 (384,500,l)
 );
@@ -1027,7 +999,6 @@ width = 600;
 },
 {
 glyphname = al_unaligned;
-lastChange = "2022-11-17 12:26:14 +0000";
 layers = (
 {
 anchors = (
@@ -1062,9 +1033,14 @@ width = 600;
 },
 {
 glyphname = al_unaligned.expectation;
-lastChange = "2022-11-17 12:33:21 +0000";
 layers = (
 {
+anchors = (
+{
+name = foo;
+pos = (254,-17);
+}
+);
 layerId = m01;
 shapes = (
 {
@@ -1073,7 +1049,7 @@ nodes = (
 (207,21,l),
 (186,21,l),
 (186,-29,l),
-(255,-18,l),
+(258,-17,l),
 (496,121,l),
 (246,554,l),
 (-14,404,l)
@@ -1086,7 +1062,6 @@ width = 600;
 },
 {
 glyphname = am_middle;
-lastChange = "2022-11-17 12:53:12 +0000";
 layers = (
 {
 hints = (
@@ -1115,7 +1090,6 @@ width = 600;
 },
 {
 glyphname = am_middle.expectation;
-lastChange = "2022-11-18 12:33:25 +0000";
 layers = (
 {
 layerId = m01;
@@ -1127,7 +1101,7 @@ nodes = (
 (373,0,l),
 (390,-62,l),
 (438,-48,l),
-(413,21,l),
+(412,21,l),
 (125,500,l),
 (25,500,l)
 );
@@ -1139,7 +1113,6 @@ width = 600;
 },
 {
 glyphname = an_flippy;
-lastChange = "2022-11-22 10:11:53 +0000";
 layers = (
 {
 hints = (
@@ -1168,7 +1141,6 @@ width = 600;
 },
 {
 glyphname = an_flippy.expectation;
-lastChange = "2022-11-17 14:39:39 +0000";
 layers = (
 {
 layerId = m01;
@@ -1193,7 +1165,6 @@ width = 600;
 },
 {
 glyphname = ao_firstnode;
-lastChange = "2022-11-17 15:12:47 +0000";
 layers = (
 {
 hints = (
@@ -1221,7 +1192,6 @@ width = 600;
 },
 {
 glyphname = ao_firstnode.expectation;
-lastChange = "2022-11-17 15:15:24 +0000";
 layers = (
 {
 layerId = m01;
@@ -1229,14 +1199,14 @@ shapes = (
 {
 closed = 1;
 nodes = (
+(141,0,l),
+(141,500,l),
+(91,500,l),
 (91,534,o),
 (91,587,o),
 (41,587,c),
 (41,479,l),
-(41,0,l),
-(141,0,l),
-(141,500,l),
-(91,500,l)
+(41,0,l)
 );
 }
 );
@@ -1246,7 +1216,6 @@ width = 600;
 },
 {
 glyphname = ap_twoofthem;
-lastChange = "2022-11-22 12:13:37 +0000";
 layers = (
 {
 hints = (
@@ -1281,30 +1250,8 @@ width = 933;
 },
 {
 glyphname = ap_twoofthem.expectation;
-lastChange = "2022-11-22 12:56:14 +0000";
 layers = (
 {
-background = {
-shapes = (
-{
-closed = 1;
-nodes = (
-(148,53,l),
-(116,42,o),
-(49,17,o),
-(66,-30,c),
-(168,7,l),
-(263,43,l),
-(364,80,l),
-(347,127,o),
-(315,115,o),
-(283,103,c),
-(283,500,l),
-(148,450,l)
-);
-}
-);
-};
 layerId = m01;
 shapes = (
 {
@@ -1316,9 +1263,9 @@ nodes = (
 (66,-30,c),
 (168,7,l),
 (263,43,l),
-(364,80,l),
+(365,80,l),
 (347,127,o),
-(297,109,o),
+(315,115,o),
 (283,103,c),
 (283,500,l),
 (148,450,l)
@@ -1331,7 +1278,6 @@ width = 933;
 },
 {
 glyphname = aq_rightleg;
-lastChange = "2022-11-22 10:40:46 +0000";
 layers = (
 {
 hints = (
@@ -1361,7 +1307,6 @@ width = 600;
 },
 {
 glyphname = aq_rightleg.expectation;
-lastChange = "2022-11-18 12:45:53 +0000";
 layers = (
 {
 layerId = m01;
@@ -1385,7 +1330,6 @@ width = 600;
 },
 {
 glyphname = ar_leftleg;
-lastChange = "2022-11-18 12:17:17 +0000";
 layers = (
 {
 hints = (
@@ -1415,7 +1359,6 @@ width = 600;
 },
 {
 glyphname = ar_leftleg.expectation;
-lastChange = "2022-11-18 12:13:40 +0000";
 layers = (
 {
 layerId = m01;
@@ -1439,7 +1382,6 @@ width = 600;
 },
 {
 glyphname = as_closedpaths;
-lastChange = "2022-11-18 14:17:51 +0000";
 layers = (
 {
 hints = (
@@ -1472,7 +1414,6 @@ width = 600;
 },
 {
 glyphname = as_closedpaths.expectation;
-lastChange = "2022-11-18 14:37:09 +0000";
 layers = (
 {
 layerId = m01;
@@ -1480,6 +1421,7 @@ shapes = (
 {
 closed = 1;
 nodes = (
+(152,501,l),
 (152,28,l),
 (113,66,o),
 (28,12,o),
@@ -1494,8 +1436,7 @@ nodes = (
 (597,553,c),
 (557,578,o),
 (507,587,o),
-(443,501,c),
-(152,501,l)
+(443,501,c)
 );
 },
 {
@@ -1518,6 +1459,7 @@ nodes = (
 {
 closed = 1;
 nodes = (
+(183,9,l),
 (101,-101,o),
 (39,-93,o),
 (-13,-62,c),
@@ -1530,8 +1472,7 @@ nodes = (
 (-25,-66,c),
 (30,-101,o),
 (101,-117,o),
-(191,3,c),
-(183,9,l)
+(191,3,c)
 );
 },
 {
@@ -1554,6 +1495,7 @@ nodes = (
 {
 closed = 1;
 nodes = (
+(421,493,l),
 (503,603,o),
 (565,595,o),
 (617,564,c),
@@ -1566,8 +1508,7 @@ nodes = (
 (629,568,c),
 (574,603,o),
 (503,619,o),
-(413,499,c),
-(421,493,l)
+(413,499,c)
 );
 }
 );
@@ -1577,7 +1518,6 @@ width = 600;
 },
 {
 glyphname = at_unaligned_lastseg;
-lastChange = "2022-11-18 14:46:55 +0000";
 layers = (
 {
 hints = (
@@ -1605,7 +1545,6 @@ width = 600;
 },
 {
 glyphname = at_unaligned_lastseg.expectation;
-lastChange = "2022-11-18 14:49:32 +0000";
 layers = (
 {
 layerId = m01;
@@ -1639,7 +1578,6 @@ unicode = 32;
 },
 {
 glyphname = au_left_anchoronpath;
-lastChange = "2022-11-22 12:59:37 +0000";
 layers = (
 {
 anchors = (
@@ -1673,7 +1611,6 @@ width = 600;
 },
 {
 glyphname = av_left_anchoroffpath;
-lastChange = "2022-11-21 11:36:53 +0000";
 layers = (
 {
 hints = (
@@ -1701,9 +1638,14 @@ width = 600;
 },
 {
 glyphname = au_left_anchoronpath.expectation;
-lastChange = "2022-11-22 12:59:46 +0000";
 layers = (
 {
+anchors = (
+{
+name = "new anchor";
+pos = (170,150);
+}
+);
 layerId = m01;
 shapes = (
 {
@@ -1725,7 +1667,6 @@ width = 600;
 },
 {
 glyphname = av_left_anchoroffpath.expectation;
-lastChange = "2022-11-21 22:03:14 +0000";
 layers = (
 {
 layerId = m01;
@@ -1823,9 +1764,2777 @@ width = 171;
 subCategory = Fraction;
 },
 {
+glyphname = anchor_left_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = anchor_left_instroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; instroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on a square corner; instroke alignment.";
+},
+{
+glyphname = anchor_left_middle;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 2;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; middle alignment.";
+},
+{
+glyphname = anchor_left_middle_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 2;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; middle alignment; flipped.";
+},
+{
+glyphname = anchor_left_on_path_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = anchor_left_on_path_instroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; instroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_on_path_middle;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 2;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; middle alignment.";
+},
+{
+glyphname = anchor_left_on_path_middle_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 2;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; middle alignment; flipped.";
+},
+{
+glyphname = anchor_left_on_path_outstroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_on_path_unaligned;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 4;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; unaligned alignment.";
+},
+{
+glyphname = anchor_left_on_path_unaligned_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_on_path;
+options = 4;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor on its first segment, on an acute 60 degree corner; unaligned alignment; flipped.";
+},
+{
+glyphname = anchor_left_outstroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_right_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = anchor_left_right_instroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; instroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_right_middle;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 2;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; middle alignment.";
+},
+{
+glyphname = anchor_left_right_middle_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 2;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; middle alignment; flipped.";
+},
+{
+glyphname = anchor_left_right_outstroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = anchor_left_right_outstroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_left_right_unaligned;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 4;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; unaligned alignment.";
+},
+{
+glyphname = anchor_left_right_unaligned_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left_right;
+options = 4;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with left and right anchors, on an acute 60 degree corner; unaligned alignment; flipped.";
+},
+{
+glyphname = anchor_left_unaligned;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 4;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; unaligned alignment.";
+},
+{
+glyphname = anchor_left_unaligned_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_left;
+options = 4;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a left anchor off the path, on an acute 60 degree corner; unaligned alignment; flipped.";
+},
+{
+glyphname = anchor_origin_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_origin;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn away from (0, 0), with an origin anchor, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = anchor_origin_left;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_origin_left;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with origin and left anchors, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = anchor_origin_left_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_origin_left;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with origin and left anchors, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_origin_outstroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_origin;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn away from (0, 0), with an origin anchor, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_right_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = anchor_right_instroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; instroke alignment; flipped.";
+},
+{
+glyphname = anchor_right_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on a square corner; instroke alignment.";
+},
+{
+glyphname = anchor_right_middle;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 2;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; middle alignment.";
+},
+{
+glyphname = anchor_right_middle_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 2;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; middle alignment; flipped.";
+},
+{
+glyphname = anchor_right_outstroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = anchor_right_outstroke_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = anchor_right_outstroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on a square corner; outstroke alignment.";
+},
+{
+glyphname = anchor_right_unaligned;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 4;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; unaligned alignment.";
+},
+{
+glyphname = anchor_right_unaligned_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_right;
+options = 4;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a right anchor, on an acute 60 degree corner; unaligned alignment; flipped.";
+},
+{
+glyphname = angle_150;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(350,320,l),
+(150,320,l),
+(496,120,l),
+(696,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an obtuse 150 degree corner; outstroke alignment.";
+},
+{
+glyphname = angle_30;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(870,420,l),
+(670,420,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 30 degree corner; outstroke alignment.";
+},
+{
+glyphname = angle_90;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on a square corner; outstroke alignment.";
+},
+{
+glyphname = angle_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = angle_counter;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (1,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,550,l),
+(100,550,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(220,220,l),
+(220,430,l),
+(380,430,l),
+(380,220,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on a corner of a counter; outstroke alignment.";
+},
+{
+glyphname = anchor_left_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(195,160,l),
+(148,212,l),
+(104,172,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_instroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(179,170,l),
+(129,83,l),
+(181,53,l),
+(233,143,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(169,177,l),
+(103,199,l),
+(84,142,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_middle.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(187,169,l),
+(111,203,l),
+(86,149,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_middle_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(143,50,l),
+(203,44,l),
+(211,127,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(202,150,l),
+(167,211,l),
+(115,181,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_instroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(200,206,l),
+(150,120,l),
+(202,90,l),
+(237,150,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_middle.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(120,207,l),
+(89,155,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_middle_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_outstroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(185,60,l),
+(237,90,l),
+(202,150,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_unaligned.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_on_path_unaligned_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(220,120,l),
+(220,180,l),
+(150,180,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_outstroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(172,54,l),
+(229,73,l),
+(207,139,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(200,168,l),
+(153,221,l),
+(108,181,l),
+(180,107,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_instroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(159,162,l),
+(153,62,l),
+(213,58,l),
+(217,140,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_middle.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(191,164,l),
+(131,210,l),
+(94,163,l),
+(176,102,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_middle_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(148,152,l),
+(159,51,l),
+(219,58,l),
+(209,134,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_outstroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(201,168,l),
+(128,205,l),
+(101,151,l),
+(190,107,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_outstroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(153,153,l),
+(182,54,l),
+(239,73,l),
+(217,139,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_unaligned.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(184,180,l),
+(80,180,l),
+(80,120,l),
+(174,117,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_right_unaligned_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(121,141,l),
+(220,120,l),
+(220,180,l),
+(240,180,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_unaligned.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(184,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_left_unaligned_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(220,120,l),
+(220,180,l),
+(240,180,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_origin_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(119,207,l),
+(89,155,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_origin_left.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(211,180,l),
+(107,180,l),
+(107,120,l),
+(207,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_origin_left_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(172,54,l),
+(229,73,l),
+(207,139,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_origin_outstroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(181,173,l),
+(120,208,l),
+(90,156,l),
+(178,107,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_instroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(152,150,l),
+(146,50,l),
+(206,47,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,170,l),
+(80,170,l),
+(80,110,l),
+(174,107,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_middle.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(117,206,l),
+(88,153,l),
+(177,106,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_middle_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(151,150,l),
+(148,50,l),
+(208,48,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_outstroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(114,205,l),
+(87,151,l),
+(177,107,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_outstroke_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(152,151,l),
+(152,50,l),
+(212,50,l),
+(212,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_outstroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,187,l),
+(114,205,l),
+(87,151,l),
+(177,107,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_unaligned.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(174,117,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = anchor_right_unaligned_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(121,141,l),
+(220,120,l),
+(220,180,l),
+(150,180,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = angle_150.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(350,320,l),
+(150,320,l),
+(392,180,l),
+(426,180,l),
+(426,120,l),
+(526,120,l),
+(696,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = angle_30.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(870,420,l),
+(670,420,l),
+(254,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = angle_90.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = angle_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = angle_counter.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,550,l),
+(100,550,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(280,220,l),
+(280,150,l),
+(220,150,l),
+(220,250,l),
+(220,430,l),
+(380,430,l),
+(380,220,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.alkatra_serif;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (175,491);
+},
+{
+name = origin;
+pos = (95,491);
+},
+{
+name = right;
+pos = (75,304);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(175,491,l),
+(158,491,o),
+(57,473,o),
+(57,444,c),
+(57,432,o),
+(65,422,o),
+(69,410,c),
+(76,392,o),
+(81,361,o),
+(78,330,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.aoboshi_serfLeft2;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(28,0,l),
+(-42,0,l),
+(-42,19,l),
+(-25,19,o),
+(0,32,o),
+(0,40,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.aoboshi_serfRight;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,30,l),
+(0,22,o),
+(15,19,o),
+(22,19,c),
+(22,0,l),
+(-28,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.bellota_caps_vert;
+layers = (
+{
+anchors = (
+{
+name = origin;
+pos = (7,35);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(7,35,l),
+(7,9,l),
+(7,-51,o),
+(45,-94,o),
+(104,-94,c),
+(147,-94,o),
+(176,-67,o),
+(189,-43,c),
+(144,-11,l),
+(138,-21,o),
+(125,-37,o),
+(103,-37,c),
+(80,-37,o),
+(67,-17,o),
+(67,9,c),
+(67,35,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.bellota_left;
+layers = (
+{
+anchors = (
+{
+name = origin;
+pos = (59,135);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(-1,100,l),
+(-1,99,l),
+(-1,45,o),
+(33,0,o),
+(61,-18,c),
+(101,22,l),
+(76,44,o),
+(59,78,o),
+(59,138,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.bracketed;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,100,l),
+(0,55,o),
+(-30,30,o),
+(-70,30,c),
+(-70,15,l),
+(-70,0,o),
+(-20,0,o),
+(40,0,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.cupped;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-60,60,l),
+(-60,30,l),
+(-60,10,o),
+(-30,0,o),
+(40,0,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.flare;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,100,l),
+(0,50,o),
+(-25,20,o),
+(-70,20,c),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.flare_turned;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(100,0,l),
+(50,0,o),
+(20,25,o),
+(20,70,c),
+(0,70,l),
+(0,-30,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.hina_uroko;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (-4,306);
+},
+{
+name = origin;
+pos = (0,307);
+},
+{
+name = right;
+pos = (0,380);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,307,l),
+(137,307,l),
+(176,307,o),
+(181,335,o),
+(161,357,c),
+(153,366,o),
+(144,374,o),
+(133,381,c),
+(113,394,o),
+(87,392,o),
+(62,367,c),
+(48,353,o),
+(30,335,o),
+(0,335,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.hina_yoko_left;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (-34,334);
+},
+{
+name = origin;
+pos = (1,334);
+},
+{
+name = right;
+pos = (1,306);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(1,334,l),
+(31,334,o),
+(58,336,o),
+(122,340,c),
+(151,342,o),
+(150,298,o),
+(122,300,c),
+(62,304,o),
+(39,306,o),
+(1,306,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.iansui_rHook;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(1,128,l),
+(1,118,o),
+(2,51,o),
+(-5,40,c),
+(-13,27,o),
+(10,-3,o),
+(23,-3,c),
+(38,-3,o),
+(72,17,o),
+(133,41,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.iansui_sTurn;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(64,106,l),
+(43,74,o),
+(22,73,o),
+(9,62,c),
+(4,57,o),
+(2,53,o),
+(2,47,c),
+(2,33,o),
+(35,6,o),
+(53,6,c),
+(64,6,o),
+(86,18,o),
+(125,32,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.inconsolata_rightSpur;
+layers = (
+{
+anchors = (
+{
+name = origin;
+pos = (200,0);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(199,-44,l),
+(199,-22,o),
+(201,-15,o),
+(209,-7,c),
+(209,0,l),
+(199,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.montagu_serif;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (0,45);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,96,l),
+(-68,96,l),
+(-68,0,l),
+(9,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = "_corner.playfair_LC-outstroke";
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (252,70);
+},
+{
+name = origin;
+pos = (252,0);
+},
+{
+name = right;
+pos = (342,0);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(252,0,l),
+(269,2,o),
+(287,3,o),
+(306,3,c),
+(330,3,o),
+(371,1,o),
+(418,0,c),
+(418,1,l),
+(407,2,l),
+(359,6,o),
+(342,23,o),
+(342,73,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = "_corner.playfair_LC-serif";
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (106,70);
+},
+{
+name = origin;
+pos = (106,0);
+},
+{
+name = right;
+pos = (151,3);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(106,73,l),
+(106,23,o),
+(89,6,o),
+(41,2,c),
+(30,1,l),
+(30,0,l),
+(73,1,o),
+(110,3,o),
+(151,3,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.plexkr_round;
+layers = (
+{
+anchors = (
+{
+name = origin;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(19,0,l),
+(7,0,o),
+(0,7,o),
+(0,18,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
 export = 0;
 glyphname = _corner.seven;
-lastChange = "2022-11-22 12:06:08 +0000";
 layers = (
 {
 anchors = (
@@ -1853,7 +4562,6 @@ width = 200;
 {
 export = 0;
 glyphname = _corner.six;
-lastChange = "2022-11-22 11:53:42 +0000";
 layers = (
 {
 anchors = (
@@ -1879,9 +4587,1012 @@ width = 200;
 );
 },
 {
+export = 0;
+glyphname = _corner.slab_dot;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(-110,20,l),
+(-85,20,l),
+(-110,50,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_left;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (-10,30);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_left_on_path;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (-35,60);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_left_right;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (-10,30);
+},
+{
+name = right;
+pos = (20,10);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_mirrored;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(70,60,l),
+(70,0,l),
+(-30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_mirrored_turned;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(60,0,l),
+(60,-70,l),
+(0,-70,l),
+(0,30,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_origin;
+layers = (
+{
+anchors = (
+{
+name = origin;
+pos = (200,300);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(200,360,l),
+(130,360,l),
+(130,300,l),
+(230,300,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_origin_left;
+layers = (
+{
+anchors = (
+{
+name = left;
+pos = (190,330);
+},
+{
+name = origin;
+pos = (200,300);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(200,360,l),
+(130,360,l),
+(130,300,l),
+(230,300,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_plain;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_reversed;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(30,0,l),
+(-70,0,l),
+(-70,60,l),
+(0,60,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_right;
+layers = (
+{
+anchors = (
+{
+name = right;
+pos = (20,10);
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,60,l),
+(-70,60,l),
+(-70,0,l),
+(30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_tilted;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(-30,52,l),
+(-91,17,l),
+(-61,-35,l),
+(26,15,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_turned;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(60,0,l),
+(60,70,l),
+(0,70,l),
+(0,-30,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_turned_back;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(-60,0,l),
+(-60,-70,l),
+(0,-70,l),
+(0,30,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+export = 0;
+glyphname = _corner.slab_upside_down;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 0;
+nodes = (
+(0,-60,l),
+(70,-60,l),
+(70,0,l),
+(-30,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_instroke_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; instroke alignment.";
+},
+{
+glyphname = align_instroke_flipx_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,3);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; instroke alignment; flipped.";
+},
+{
+glyphname = align_instroke_flipxy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,2);
+scale = (-1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; instroke alignment; scaled by -1, -1.";
+},
+{
+glyphname = align_instroke_flipy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,2);
+scale = (1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; instroke alignment; flipped vertically.";
+},
+{
+glyphname = align_instroke_squashed;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,2);
+scale = (1.5,0.6);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; instroke alignment; scaled by 1.5, 0.6.";
+},
+{
+glyphname = align_middle_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; middle alignment.";
+},
+{
+glyphname = align_middle_flipx_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; middle alignment; flipped.";
+},
+{
+glyphname = align_middle_flipx_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,3);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; middle alignment; flipped.";
+},
+{
+glyphname = align_middle_flipxy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,2);
+scale = (-1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; middle alignment; scaled by -1, -1.";
+},
+{
+glyphname = align_middle_flipy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,2);
+scale = (1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; middle alignment; flipped vertically.";
+},
+{
+glyphname = align_middle_squashed;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 2;
+origin = (0,2);
+scale = (1.5,0.6);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; middle alignment; scaled by 1.5, 0.6.";
+},
+{
+glyphname = align_outstroke_flipx_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; outstroke alignment; flipped.";
+},
+{
+glyphname = align_outstroke_flipx_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,3);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; outstroke alignment; flipped.";
+},
+{
+glyphname = align_outstroke_flipxy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+scale = (-1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; outstroke alignment; scaled by -1, -1.";
+},
+{
+glyphname = align_outstroke_flipy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+scale = (1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; outstroke alignment; flipped vertically.";
+},
+{
+glyphname = align_unaligned_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; unaligned alignment.";
+},
+{
+glyphname = align_unaligned_flipx_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; unaligned alignment; flipped.";
+},
+{
+glyphname = align_unaligned_flipx_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,3);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the inside corner of an L; unaligned alignment; flipped.";
+},
+{
+glyphname = align_unaligned_flipxy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,2);
+scale = (-1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; unaligned alignment; scaled by -1, -1.";
+},
+{
+glyphname = align_unaligned_flipy_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,2);
+scale = (1,-1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; unaligned alignment; flipped vertically.";
+},
+{
+glyphname = align_unaligned_squashed;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+options = 4;
+origin = (0,2);
+scale = (1.5,0.6);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on an acute 60 degree corner; unaligned alignment; scaled by 1.5, 0.6.";
+},
+{
 color = 9;
 glyphname = aw_direction;
-lastChange = "2023-11-18 04:55:35 +0000";
 layers = (
 {
 hints = (
@@ -1910,35 +5621,7 @@ width = 286;
 );
 },
 {
-color = 9;
-glyphname = aw_direction.expectation;
-lastChange = "2023-11-18 04:58:15 +0000";
-layers = (
-{
-layerId = m01;
-shapes = (
-{
-closed = 1;
-nodes = (
-(246,0,l),
-(246,217,l),
-(198,154,o),
-(92,112,o),
-(37,112,c),
-(24,107,l),
-(0,12,l),
-(8,0,l),
-(8,0,l)
-);
-}
-);
-width = 286;
-}
-);
-},
-{
 glyphname = ax_curved_instroke2;
-lastChange = "2022-11-21 22:09:49 +0000";
 layers = (
 {
 hints = (
@@ -1966,8 +5649,2725 @@ width = 600;
 );
 },
 {
-glyphname = ax_curved_instroke2.expectation;
-lastChange = "2022-11-21 22:11:23 +0000";
+glyphname = curve_bracketed_instroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on curved instroke and outstroke; instroke alignment.";
+},
+{
+glyphname = curve_bracketed_instroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_bracketed_instroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a curved outstroke; instroke alignment.";
+},
+{
+glyphname = curve_bracketed_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a square corner; instroke alignment.";
+},
+{
+glyphname = curve_bracketed_instroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a tightly curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_bracketed_outstroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on curved instroke and outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_bracketed_outstroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_bracketed_outstroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a curved outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_bracketed_outstroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.bracketed;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "serif leaving along the instroke and arriving along the outstroke, on a tightly curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_cupped_instroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on curved instroke and outstroke; instroke alignment.";
+},
+{
+glyphname = curve_cupped_instroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_cupped_instroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a curved outstroke; instroke alignment.";
+},
+{
+glyphname = curve_cupped_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a square corner; instroke alignment.";
+},
+{
+glyphname = curve_cupped_instroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a tightly curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_cupped_outstroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on curved instroke and outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_cupped_outstroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_cupped_outstroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a curved outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_cupped_outstroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a square corner; outstroke alignment.";
+},
+{
+glyphname = curve_cupped_outstroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.cupped;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "rounded foot arriving along the outstroke, on a tightly curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_instroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on curved instroke and outstroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_instroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_instroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved outstroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_instroke_flipx_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,4);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved instroke; instroke alignment; flipped.";
+},
+{
+glyphname = curve_flare_instroke_flipx_square;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a square corner; instroke alignment; flipped.";
+},
+{
+glyphname = curve_flare_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a square corner; instroke alignment.";
+},
+{
+glyphname = curve_flare_instroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a tightly curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_outstroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on curved instroke and outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_outstroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_outstroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_outstroke_flipx_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,4);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a curved instroke; outstroke alignment; flipped.";
+},
+{
+glyphname = curve_flare_outstroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, on a tightly curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_turned_instroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on curved instroke and outstroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_turned_instroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_turned_instroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a curved outstroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_turned_instroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a square corner; instroke alignment.";
+},
+{
+glyphname = curve_flare_turned_instroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+options = 1;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a tightly curved instroke; instroke alignment.";
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedboth;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on curved instroke and outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedin;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,420,o),
+(100,220,o),
+(150,120,c),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a curved instroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedout;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(260,100,o),
+(380,110,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a curved outstroke; outstroke alignment.";
+},
+{
+glyphname = curve_flare_turned_outstroke_square;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a square corner; outstroke alignment.";
+},
+{
+glyphname = curve_flare_turned_outstroke_tight;
+layers = (
+{
+hints = (
+{
+name = _corner.flare_turned;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(230,400,o),
+(150,330,o),
+(150,120,c),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "bracketed serif leaving along the instroke, drawn a quarter turn round, on a tightly curved instroke; outstroke alignment.";
+},
+{
+glyphname = multi_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_dot;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a second, closed path, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = multi_flipx;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_dot;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a second, closed path, on a square corner; outstroke alignment; flipped.";
+},
+{
+glyphname = multi_instroke_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_dot;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab with a second, closed path, on an acute 60 degree corner; instroke alignment.";
+},
+{
+glyphname = orient_mirrored_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored, turning the other way, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_mirrored_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored, turning the other way, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_mirrored_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored, turning the other way, on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_mirrored_turned_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored and a quarter turn round, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_mirrored_turned_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored_turned;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored and a quarter turn round, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_mirrored_turned_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_mirrored_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn mirrored and a quarter turn round, on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_reversed_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_reversed;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn backwards, from the outstroke to the instroke, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_reversed_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_reversed;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn backwards, from the outstroke to the instroke, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_reversed_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_reversed;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn backwards, from the outstroke to the instroke, on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_tilted_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_tilted;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn tilted by 30 degrees, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_tilted_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_tilted;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn tilted by 30 degrees, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_tilted_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_tilted;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn tilted by 30 degrees, on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_turned_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn clockwise (first node on +x), on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_turned_back_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned_back;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn anticlockwise (first node on -x), on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_turned_back_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned_back;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn anticlockwise (first node on -x), on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_turned_back_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned_back;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn anticlockwise (first node on -x), on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_turned_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn clockwise (first node on +x), on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_turned_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_turned;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a quarter turn clockwise (first node on +x), on a square corner; outstroke alignment.";
+},
+{
+glyphname = orient_upside_down_acute;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_upside_down;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(150,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a half turn round, on an acute 60 degree corner; outstroke alignment.";
+},
+{
+glyphname = orient_upside_down_concave;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_upside_down;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,250,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a half turn round, on the inside corner of an L; outstroke alignment.";
+},
+{
+glyphname = orient_upside_down_square;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_upside_down;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab drawn a half turn round, on a square corner; outstroke alignment.";
+},
+{
+glyphname = real_alkatra_l;
+layers = (
+{
+hints = (
+{
+name = _corner.alkatra_serif;
+origin = (0,0);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(188,-14,l),
+(195,72,o),
+(201,177,o),
+(214,273,c),
+(58,233,l),
+(101,-14,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Alkatra's l, simplified; outstroke alignment.";
+},
+{
+glyphname = real_aoboshi_g;
+layers = (
+{
+hints = (
+{
+name = _corner.aoboshi_serfLeft2;
+options = 1;
+origin = (0,3);
+scale = (1.25,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(406,-10,l),
+(495,-10,o),
+(631,10,o),
+(773,115,c),
+(740,64,l),
+(740,440,l),
+(406,440,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Aoboshi One's G, simplified; instroke alignment; scaled by 1.25, 1; on a cusp, where the outstroke doubles back.";
+},
+{
+glyphname = real_aoboshi_l;
+layers = (
+{
+hints = (
+{
+name = _corner.aoboshi_serfRight;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(207,0,l),
+(207,750,l),
+(73,750,l),
+(73,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Aoboshi One's L, simplified; outstroke alignment.";
+},
+{
+glyphname = real_aoboshi_x;
+layers = (
+{
+hints = (
+{
+name = _corner.aoboshi_serfLeft2;
+options = 1;
+origin = (0,4);
+scale = (1,0.97);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(170,0,l),
+(301,171,l),
+(344,222,l),
+(526,460,l),
+(386,460,l),
+(31,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Aoboshi One's x, simplified; instroke alignment; scaled by 1, 0.97.";
+},
+{
+glyphname = real_bellota_p;
+layers = (
+{
+hints = (
+{
+name = _corner.bellota_left;
+origin = (0,6);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(143,-260,l),
+(143,330,l),
+(291,508,l),
+(226,508,o),
+(169,487,o),
+(138,424,c),
+(86,355,l),
+(86,-260,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Bellota's p, simplified; outstroke alignment; the corner's first node reaches past the start of the short instroke.";
+},
+{
+glyphname = real_bellota_sha;
+layers = (
+{
+hints = (
+{
+name = _corner.bellota_caps_vert;
+options = 1;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(137,0,l),
+(196,0,l),
+(196,572,l),
+(136,572,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Bellota's Sha-cy, simplified; instroke alignment; the corner starts at its origin anchor, so it has no instroke to align to.";
+},
+{
+glyphname = real_hina_uroko;
+layers = (
+{
+hints = (
+{
+name = _corner.hina_uroko;
+origin = (0,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,121,l),
+(782,120,l),
+(782,149,l),
+(200,149,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Hina Mincho's uni4E8C, simplified; outstroke alignment; the corner starts at its origin anchor and ends at the far end of the outstroke.";
+},
+{
+glyphname = real_hina_yoko;
+layers = (
+{
+hints = (
+{
+name = _corner.hina_yoko_left;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,121,l),
+(782,120,l),
+(782,149,l),
+(200,149,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Hina Mincho's uni4E8C, simplified; outstroke alignment; the corner starts at its origin anchor and caps the stroke, ending at the far end of the outstroke.";
+},
+{
+glyphname = real_iansui_rhook;
+layers = (
+{
+hints = (
+{
+name = _corner.iansui_rHook;
+options = 2;
+origin = (0,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(467,665,l),
+(464,-38,l),
+(510,-35,o),
+(674,109,o),
+(674,137,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "Iansui's uni8C7C, simplified; middle alignment; a curved corner on a straight instroke and a curved outstroke.";
+},
+{
+glyphname = real_iansui_sturn;
+layers = (
+{
+hints = (
+{
+name = _corner.iansui_sTurn;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(588,444,l),
+(588,411,o),
+(550,295,o),
+(473,138,c),
+(510,138,o),
+(581,149,o),
+(725,209,c)
+);
+}
+);
+width = 600;
+}
+);
+note = "Iansui's uni920E, simplified; outstroke alignment; a curved corner on curved instroke and outstroke.";
+},
+{
+glyphname = real_inconsolata_d;
+layers = (
+{
+hints = (
+{
+name = _corner.inconsolata_rightSpur;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(371,0,l),
+(439,0,l),
+(438,665,l),
+(371,665,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Inconsolata's d (stem leaning by one unit), simplified; outstroke alignment.";
+},
+{
+glyphname = real_montagu_k_arm;
+layers = (
+{
+hints = (
+{
+name = _corner.montagu_serif;
+origin = (0,0);
+scale = (0.02,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(800,682,l),
+(629,682,l),
+(184,283,l),
+(257,198,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Montagu Slab's K arm, simplified; outstroke alignment; scaled by 0.02, 1.";
+},
+{
+glyphname = real_montagu_k_leg;
+layers = (
+{
+hints = (
+{
+name = _corner.montagu_serif;
+options = 1;
+origin = (0,0);
+scale = (-0.2,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(796,0,l),
+(462,428,l),
+(326,307,l),
+(558,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Montagu Slab's K leg, simplified; instroke alignment; scaled by -0.2, 1.";
+},
+{
+glyphname = real_playfair_de;
+layers = (
+{
+hints = (
+{
+name = "_corner.playfair_LC-serif";
+options = 1;
+origin = (0,1);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(221,509,l),
+(178,512,l),
+(172,59,o),
+(115,2,o),
+(47,1,c),
+(47,0,l),
+(260,0,l),
+(260,509,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Playfair 2.2's _LC-de-cy-upper, simplified; instroke alignment; flipped; a curved corner on a curved outstroke.";
+},
+{
+glyphname = real_playfair_descender;
+layers = (
+{
+hints = (
+{
+name = "_corner.playfair_LC-outstroke";
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(120,-231,l),
+(120,260,l),
+(30,260,l),
+(30,-231,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "Playfair 2.2's _part.LC-descender-outstroke; outstroke alignment; the corner starts at its origin anchor and ends on the segment after the outstroke.";
+},
+{
+glyphname = real_plexkr_mil;
+layers = (
+{
+hints = (
+{
+name = _corner.plexkr_round;
+origin = (0,5);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(802,-130,l),
+(802,-111,l),
+(265,-111,l),
+(265,68,l),
+(244,68,l),
+(244,-130,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "IBM Plex Sans KR's mil-ko, simplified; outstroke alignment; a rounded corner drawn a quarter turn round.";
+},
+{
+glyphname = where_duplicate;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+},
+{
+name = _corner.flare;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "A slab and then a flare on the same node of a square corner.";
+},
+{
+glyphname = where_last_node;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,3);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(150,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on the last node of a path; outstroke alignment.";
+},
+{
+glyphname = where_short_instroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,4);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,300,l),
+(200,300,l),
+(200,160,l),
+(150,160,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on a corner whose instroke is shorter than the serif; outstroke alignment.";
+},
+{
+glyphname = where_short_outstroke;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,120,l),
+(170,120,l),
+(170,80,l),
+(450,80,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on a corner whose outstroke is shorter than the serif; outstroke alignment.";
+},
+{
+glyphname = where_stem_bracketed;
+layers = (
+{
+hints = (
+{
+name = _corner.flare;
+origin = (0,3);
+type = Corner;
+},
+{
+name = _corner.flare;
+options = 1;
+origin = (0,0);
+scale = (-1,1);
+type = Corner;
+},
+{
+name = _corner.flare;
+origin = (0,1);
+type = Corner;
+},
+{
+name = _corner.flare;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(250,0,l),
+(250,500,l),
+(150,500,l),
+(150,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "A stem with a flare on each corner, flipped and aligned to the instroke on the bottom right and top left.";
+},
+{
+glyphname = where_stem_slab;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,3);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,0);
+scale = (-1,1);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+origin = (0,1);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(250,0,l),
+(250,500,l),
+(150,500,l),
+(150,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "A stem with a slab on each corner, flipped and aligned to the instroke on the bottom right and top left.";
+},
+{
+glyphname = where_stem_slanted;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,3);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,0);
+scale = (-1,1);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+origin = (0,1);
+type = Corner;
+},
+{
+name = _corner.slab_plain;
+options = 1;
+origin = (0,2);
+scale = (-1,1);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(250,0,l),
+(380,500,l),
+(280,500,l),
+(150,0,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "A slanted stem with a slab on each corner, flipped and aligned to the instroke on the bottom right and top left.";
+},
+{
+glyphname = where_straight_node;
+layers = (
+{
+hints = (
+{
+name = _corner.slab_plain;
+origin = (0,2);
+type = Corner;
+}
+);
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,335,l),
+(150,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+note = "slab serif, drawn the usual way, on a node in the middle of a straight line; outstroke alignment.";
+},
+{
+glyphname = align_instroke_concave.expectation;
 layers = (
 {
 layerId = m01;
@@ -1975,14 +8375,2943 @@ shapes = (
 {
 closed = 1;
 nodes = (
-(388,469,o),
-(169,305,o),
-(117,178,c),
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_instroke_flipx_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(280,250,l),
+(180,250,l),
+(180,310,l),
+(250,310,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_instroke_flipxy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(119,207,l),
+(89,155,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_instroke_flipy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(115,59,l),
+(167,29,l),
+(219,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_instroke_squashed.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(168,151,l),
+(77,204,l),
+(59,172,l),
+(195,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_flipx_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(132,52,l),
+(190,37,l),
+(212,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_flipx_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(280,250,l),
+(180,250,l),
+(180,310,l),
+(250,310,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_flipxy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(181,174,l),
+(98,196,l),
+(82,138,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_flipy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(132,52,l),
+(190,37,l),
+(212,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_middle_squashed.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(169,152,l),
+(58,182,l),
+(49,147,l),
+(195,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_outstroke_flipx_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_outstroke_flipx_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(280,250,l),
+(180,250,l),
+(180,310,l),
+(250,310,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_outstroke_flipxy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_outstroke_flipy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(250,310,l),
+(180,310,l),
+(180,250,l),
+(250,220,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_flipx_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(220,120,l),
+(220,180,l),
+(150,180,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_flipx_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(280,250,l),
+(320,250,l),
+(320,310,l),
+(250,310,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_flipxy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(115,60,l),
+(220,60,l),
+(220,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_flipy_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(80,120,l),
+(80,60,l),
+(150,60,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = align_unaligned_squashed.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(171,156,l),
+(45,156,l),
+(45,120,l),
+(195,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+color = 9;
+glyphname = aw_direction.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(246,0,l),
+(246,217,l),
+(198,154,o),
+(92,112,o),
+(37,112,c),
+(24,107,l),
+(0,12,l),
+(8,0,l),
+(8,0,l)
+);
+}
+);
+width = 286;
+}
+);
+},
+{
+glyphname = ax_curved_instroke2.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(387,469,o),
+(168,304,o),
+(117,177,c),
 (82,194,l),
 (61,149,l),
 (129,117,l),
 (382,0,l),
 (501,469,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_instroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(133,172,o),
+(112,139,o),
+(74,127,c),
+(79,113,l),
+(83,99,o),
+(130,123,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_instroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(133,172,o),
+(112,139,o),
+(74,127,c),
+(79,113,l),
+(83,99,o),
+(130,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_instroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,175,o),
+(120,150,o),
+(80,150,c),
+(80,135,l),
+(80,120,o),
+(130,123,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,175,o),
+(120,150,o),
+(80,150,c),
+(80,135,l),
+(80,120,o),
+(130,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_instroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,120,l),
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,175,o),
+(122,152,o),
+(83,155,c),
+(81,140,l),
+(80,125,o),
+(130,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_outstroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(133,172,o),
+(125,154,o),
+(85,160,c),
+(83,145,l),
+(81,130,o),
+(130,123,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_outstroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(133,172,o),
+(120,150,o),
+(80,150,c),
+(80,135,l),
+(80,120,o),
+(130,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_outstroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,175,o),
+(125,154,o),
+(85,160,c),
+(83,145,l),
+(81,130,o),
+(130,123,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_bracketed_outstroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,120,l),
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,175,o),
+(120,150,o),
+(80,150,c),
+(80,135,l),
+(80,120,o),
+(130,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_instroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(100,441,o),
+(99,283,o),
+(129,176,c),
+(73,155,l),
+(83,127,l),
+(90,108,o),
+(120,124,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_instroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(100,441,o),
+(99,283,o),
+(129,176,c),
+(73,155,l),
+(83,127,l),
+(90,108,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_instroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(90,180,l),
+(90,150,l),
+(90,130,o),
+(120,124,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(90,180,l),
+(90,150,l),
+(90,130,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_instroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,120,l),
+(500,400,l),
+(350,400,l),
+(243,400,o),
+(167,344,o),
+(153,182,c),
+(93,183,l),
+(91,153,l),
+(90,133,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_outstroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(101,444,o),
+(99,290,o),
+(127,183,c),
+(99,188,l),
+(95,158,l),
+(92,139,o),
+(120,124,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_outstroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(100,442,o),
+(99,287,o),
+(128,179,c),
+(90,180,l),
+(90,150,l),
+(90,130,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_outstroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,181,l),
+(99,188,l),
+(95,158,l),
+(92,139,o),
+(120,124,o),
+(190,114,c),
+(288,103,o),
+(388,117,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_outstroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(90,180,l),
+(90,150,l),
+(90,130,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_cupped_outstroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,120,l),
+(500,400,l),
+(350,400,l),
+(243,400,o),
+(167,344,o),
+(153,182,c),
+(90,180,l),
+(90,150,l),
+(90,130,o),
+(120,120,o),
+(190,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(120,131,o),
+(77,118,c),
+(83,99,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(120,131,o),
+(77,118,c),
+(83,99,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_flipx_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(95,431,o),
+(99,253,o),
+(138,147,c),
+(178,56,l),
+(196,64,l),
+(178,105,o),
+(200,120,o),
+(250,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_flipx_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(150,150,l),
+(150,50,l),
+(170,50,l),
+(170,95,o),
+(200,120,o),
+(250,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_instroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,170,o),
+(127,142,o),
+(82,145,c),
+(80,125,l),
+(180,120,l),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_outstroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(128,144,o),
+(84,151,c),
+(81,131,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_outstroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_outstroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(128,144,o),
+(84,151,c),
+(81,131,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_outstroke_flipx_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,120,l),
+(450,550,l),
+(150,550,l),
+(95,431,o),
+(99,253,o),
+(138,147,c),
+(150,50,l),
+(170,50,l),
+(170,95,o),
+(200,120,o),
+(250,120,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_outstroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_instroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(120,131,o),
+(77,118,c),
+(83,99,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_instroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(120,131,o),
+(77,118,c),
+(83,99,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_instroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_instroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_instroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,170,o),
+(127,142,o),
+(82,145,c),
+(80,125,l),
+(180,120,l),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedboth.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(128,144,o),
+(84,151,c),
+(81,131,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedin.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(105,454,o),
+(100,319,o),
+(120,214,c),
+(135,168,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_outstroke_curvedout.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(128,144,o),
+(84,151,c),
+(81,131,l),
+(180,115,l),
+(281,102,o),
+(386,115,o),
+(450,170,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_outstroke_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,220,l),
+(150,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = curve_flare_turned_outstroke_tight.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(500,400,l),
+(350,400,l),
+(252,400,o),
+(181,354,o),
+(158,223,c),
+(154,170,o),
+(125,140,o),
+(80,140,c),
+(80,120,l),
+(180,120,l),
+(500,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = multi_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(270,140,l),
+(270,165,l),
+(300,140,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = multi_flipx.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,150,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(450,120,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(170,35,l),
+(170,10,l),
+(200,10,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = multi_instroke_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(180,172,l),
+(119,207,l),
+(89,155,l),
+(180,120,l),
+(350,120,l)
+);
+},
+{
+closed = 1;
+nodes = (
+(64.704,192.282,l),
+(86.361,179.792,l),
+(79.693,218.269,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_turned_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_turned_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_mirrored_turned_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_reversed_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(165,146,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_reversed_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(280,250,l),
+(180,250,l),
+(180,310,l),
+(250,310,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_reversed_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,150,l),
+(150,50,l),
+(210,50,l),
+(210,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_tilted_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(176,165,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_tilted_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_tilted_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_back_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_back_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_back_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_turned_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_upside_down_acute.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(598,550,l),
+(398,550,l),
+(185,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(350,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_upside_down_concave.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,100,l),
+(500,100,l),
+(500,250,l),
+(310,250,l),
+(310,180,l),
+(250,180,l),
+(250,280,l),
+(250,600,l),
+(100,600,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = orient_upside_down_square.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_alkatra_l.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(108,-14,l),
+(125,-14,o),
+(226,7,o),
+(225,36,c),
+(224,48,o),
+(216,58,o),
+(212,70,c),
+(204,88,o),
+(198,119,o),
+(201,150,c),
+(204,189,o),
+(208,232,o),
+(214,273,c),
+(58,233,l),
+(101,-14,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_aoboshi_g.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(406,-10,l),
+(482,-10,o),
+(591,4,o),
+(710,73,c),
+(785,120,l),
+(775,136,l),
+(757,125,o),
+(740,124,o),
+(740,132,c),
+(740,440,l),
+(406,440,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_aoboshi_l.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(207,750,l),
+(73,750,l),
+(73,30,l),
+(73,22,o),
+(58,19,o),
+(51,19,c),
+(51,0,l),
+(101,0,l),
+(207,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_aoboshi_x.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(31,0,l),
+(170,0,l),
+(301,171,l),
+(344,222,l),
+(526,460,l),
+(414,460,l),
+(344,460,l),
+(344,442,l),
+(361,442,o),
+(367,435,o),
+(362,429,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_bellota_p.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(86,-260,l),
+(143,-260,l),
+(143,330,l),
+(291,508,l),
+(226,508,o),
+(169,487,o),
+(138,424,c),
+(146,415,l),
+(146,391,l),
+(146,445,o),
+(112,490,o),
+(84,508,c),
+(44,468,l),
+(69,446,o),
+(86,412,o),
+(86,352,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_bellota_sha.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(137,0,l),
+(196,0,l),
+(196,572,l),
+(196,598,l),
+(196,658,o),
+(158,701,o),
+(99,701,c),
+(56,701,o),
+(27,674,o),
+(14,650,c),
+(59,618,l),
+(65,628,o),
+(78,644,o),
+(100,644,c),
+(123,644,o),
+(136,624,o),
+(136,598,c),
+(136,572,l),
+(136,572,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_hina_uroko.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,121,l),
+(782,120,l),
+(919,121,l),
+(958,121,o),
+(963,149,o),
+(943,171,c),
+(935,180,o),
+(926,188,o),
+(915,195,c),
+(895,208,o),
+(869,206,o),
+(844,181,c),
+(830,167,o),
+(812,149,o),
+(782,149,c),
+(782,149,l),
+(200,149,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_hina_yoko.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(200,121,l),
+(782,120,l),
+(782,149,l),
+(200,149,l),
+(170,149,o),
+(143,151,o),
+(79,155,c),
+(50,157,o),
+(51,113,o),
+(79,115,c),
+(139,119,o),
+(162,121,o),
+(200,121,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_iansui_rhook.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(467,665,l),
+(465,90,l),
+(465,80,o),
+(459,13,o),
+(454,1,c),
+(448,-13,o),
+(474,-40,o),
+(487,-38,c),
+(502,-36,o),
+(529,-3,o),
+(582,36,c),
+(630,77,o),
+(674,122,o),
+(674,137,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_iansui_sturn.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(588,444,l),
+(588,420,o),
+(568,351,o),
+(527,255,c),
+(507,216,o),
+(499,210,o),
+(486,199,c),
+(480,195,o),
+(478,191,o),
+(478,185,c),
+(477,171,o),
+(508,142,o),
+(526,141,c),
+(537,140,o),
+(560,151,o),
+(600,163,c),
+(633,173,o),
+(675,188,o),
+(725,209,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_inconsolata_d.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(371,0,l),
+(439,0,l),
+(438,621,l),
+(438,643,o),
+(439,650,o),
+(447,658,c),
+(447,665,l),
+(437,665,l),
+(371,665,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_montagu_k_arm.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(692,586,l),
+(751,586,l),
+(751,682,l),
+(749,682,l),
+(629,682,l),
+(184,283,l),
+(257,198,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_montagu_k_leg.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(759,0,l),
+(774,0,l),
+(774,96,l),
+(721,96,l),
+(462,428,l),
+(326,307,l),
+(558,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_playfair_de.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(221,509,l),
+(222,509,l),
+(181,509,o),
+(144,511,o),
+(101,512,c),
+(101,511,l),
+(112,510,l),
+(160,506,o),
+(178,489,o),
+(177,439,c),
+(165,52,o),
+(111,2,o),
+(47,1,c),
+(47,0,l),
+(260,0,l),
+(260,509,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_playfair_descender.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(120,-231,l),
+(120,260,l),
+(30,260,l),
+(30,-231,l),
+(47,-229,o),
+(65,-228,o),
+(84,-228,c),
+(108,-228,o),
+(149,-230,o),
+(196,-231,c),
+(196,-230,l),
+(185,-229,l),
+(137,-225,o),
+(120,-208,o),
+(120,-158,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = real_plexkr_mil.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(802,-130,l),
+(802,-111,l),
+(265,-111,l),
+(265,68,l),
+(244,68,l),
+(244,-111,l),
+(244,-123,o),
+(251,-130,o),
+(262,-130,c)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_duplicate.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_last_node.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_short_instroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,300,l),
+(200,300,l),
+(200,160,l),
+(150,160,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(450,120,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_short_outstroke.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(150,180,l),
+(80,180,l),
+(80,120,l),
+(180,120,l),
+(170,120,l),
+(170,80,l),
+(450,80,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_stem_bracketed.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(320,0,l),
+(320,20,l),
+(275,20,o),
+(250,50,o),
+(250,100,c),
+(250,400,l),
+(250,450,o),
+(275,480,o),
+(320,480,c),
+(320,500,l),
+(220,500,l),
+(180,500,l),
+(80,500,l),
+(80,480,l),
+(125,480,o),
+(150,450,o),
+(150,400,c),
+(150,100,l),
+(150,50,o),
+(125,20,o),
+(80,20,c),
+(80,0,l),
+(180,0,l),
+(220,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_stem_slab.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(320,0,l),
+(320,60,l),
+(250,60,l),
+(250,440,l),
+(320,440,l),
+(320,500,l),
+(220,500,l),
+(180,500,l),
+(80,500,l),
+(80,440,l),
+(150,440,l),
+(150,60,l),
+(80,60,l),
+(80,0,l),
+(180,0,l),
+(220,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_stem_slanted.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(320,0,l),
+(320,60,l),
+(266,60,l),
+(364,440,l),
+(450,440,l),
+(450,500,l),
+(350,500,l),
+(310,500,l),
+(210,500,l),
+(210,440,l),
+(264,440,l),
+(166,60,l),
+(80,60,l),
+(80,0,l),
+(180,0,l),
+(220,0,l)
+);
+}
+);
+width = 600;
+}
+);
+},
+{
+glyphname = where_straight_node.expectation;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(450,550,l),
+(150,550,l),
+(90,335,l),
+(90,405,l),
+(150,405,l),
+(150,305,l),
+(150,120,l),
+(450,120,l)
 );
 }
 );
