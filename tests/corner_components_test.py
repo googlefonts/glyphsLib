@@ -23,21 +23,11 @@ MISMATCHES = {
     "ad_curved_instroke",
     "ak_right_slanted",
     "al_unaligned",
-    "align_instroke_concave",
-    "align_instroke_flipx_concave",
     "align_instroke_flipxy_acute",
     "align_instroke_squashed",
-    "align_middle_concave",
-    "align_middle_flipx_acute",
-    "align_middle_flipx_concave",
-    "align_middle_flipy_acute",
     "align_middle_squashed",
-    "align_outstroke_flipx_acute",
-    "align_outstroke_flipx_concave",
-    "align_outstroke_flipy_acute",
     "align_unaligned_concave",
     "align_unaligned_flipx_acute",
-    "align_unaligned_flipx_concave",
     "align_unaligned_flipxy_acute",
     "align_unaligned_flipy_acute",
     "anchor_left_instroke",
@@ -50,7 +40,6 @@ MISMATCHES = {
     "anchor_left_on_path_middle",
     "anchor_left_on_path_middle_flipx",
     "anchor_left_on_path_outstroke_flipx",
-    "anchor_left_on_path_unaligned",
     "anchor_left_on_path_unaligned_flipx",
     "anchor_left_outstroke_flipx",
     "anchor_left_right_instroke",
@@ -61,12 +50,10 @@ MISMATCHES = {
     "anchor_left_right_outstroke_flipx",
     "anchor_left_right_unaligned",
     "anchor_left_right_unaligned_flipx",
-    "anchor_left_unaligned",
     "anchor_left_unaligned_flipx",
     "anchor_origin_instroke",
     "anchor_origin_left",
     "anchor_origin_left_flipx",
-    "anchor_origin_outstroke_flipx",
     "anchor_right_instroke",
     "anchor_right_instroke_flipx",
     "anchor_right_instroke_square",
@@ -77,80 +64,38 @@ MISMATCHES = {
     "anchor_right_outstroke_square",
     "anchor_right_unaligned",
     "anchor_right_unaligned_flipx",
-    "angle_concave",
-    "angle_counter",
     "ap_twoofthem",
-    "au_left_anchoronpath",
-    "av_left_anchoroffpath",
     "curve_bracketed_instroke_curvedboth",
     "curve_bracketed_instroke_curvedin",
-    "curve_bracketed_instroke_curvedout",
     "curve_bracketed_instroke_tight",
     "curve_bracketed_outstroke_curvedboth",
     "curve_bracketed_outstroke_curvedin",
-    "curve_bracketed_outstroke_curvedout",
     "curve_bracketed_outstroke_tight",
-    "curve_cupped_instroke_curvedboth",
-    "curve_cupped_instroke_curvedin",
-    "curve_cupped_instroke_curvedout",
     "curve_cupped_instroke_tight",
     "curve_cupped_outstroke_tight",
     "curve_flare_instroke_curvedboth",
     "curve_flare_instroke_curvedin",
-    "curve_flare_instroke_flipx_curvedin",
     "curve_flare_instroke_tight",
     "curve_flare_outstroke_curvedboth",
     "curve_flare_outstroke_curvedin",
-    "curve_flare_outstroke_curvedout",
-    "curve_flare_outstroke_flipx_curvedin",
     "curve_flare_outstroke_tight",
     "curve_flare_turned_instroke_curvedboth",
     "curve_flare_turned_instroke_curvedin",
-    "curve_flare_turned_instroke_curvedout",
-    "curve_flare_turned_instroke_square",
     "curve_flare_turned_instroke_tight",
     "curve_flare_turned_outstroke_curvedboth",
     "curve_flare_turned_outstroke_curvedin",
-    "curve_flare_turned_outstroke_curvedout",
-    "curve_flare_turned_outstroke_square",
     "curve_flare_turned_outstroke_tight",
-    "multi_concave",
     "multi_flipx",
     "multi_instroke_acute",
-    "orient_mirrored_acute",
-    "orient_mirrored_square",
-    "orient_mirrored_turned_acute",
-    "orient_mirrored_turned_concave",
-    "orient_mirrored_turned_square",
-    "orient_reversed_acute",
-    "orient_reversed_concave",
-    "orient_reversed_square",
     "orient_tilted_acute",
-    "orient_tilted_concave",
-    "orient_turned_acute",
-    "orient_turned_back_acute",
-    "orient_turned_back_concave",
-    "orient_turned_back_square",
-    "orient_turned_concave",
-    "orient_turned_square",
-    "orient_upside_down_concave",
-    "real_alkatra_l",
     "real_aoboshi_g",
-    "real_aoboshi_l",
-    "real_aoboshi_x",
     "real_bellota_p",
     "real_bellota_sha",
-    "real_hina_uroko",
     "real_hina_yoko",
     "real_iansui_rhook",
     "real_iansui_sturn",
-    "real_inconsolata_d",
-    "real_montagu_k_arm",
-    "real_montagu_k_leg",
     "real_playfair_de",
     "real_playfair_descender",
-    "real_plexkr_mil",
-    "where_duplicate",
     "where_straight_node",
 }
 
@@ -278,7 +223,7 @@ def test_split_cubic_at_point_outward_picks_segment_starting_at_point():
     assert result[-1] == pytest.approx(seg[-1], abs=1e-6)
 
 
-def _apply_corner(corner_nodes, host_nodes, node_index):
+def _apply_corners(corner_nodes, host_nodes, hints, anchors=None):
     font = ufoLib2.Font()
     for name, nodes in (("_corner.test", corner_nodes), ("host", host_nodes)):
         pen = font.newGlyph(name).getPointPen()
@@ -286,11 +231,18 @@ def _apply_corner(corner_nodes, host_nodes, node_index):
         for pt, segment_type in nodes:
             pen.addPoint(pt, segment_type)
         pen.endPath()
+    for name, (x, y) in (anchors or {}).items():
+        font["_corner.test"].appendAnchor({"name": name, "x": x, "y": y})
     font["host"].lib[HINTS_LIB_KEY] = [
-        {"type": "Corner", "name": "_corner.test", "origin": [0, node_index]}
+        {"type": "Corner", "name": "_corner.test", **hint} for hint in hints
     ]
     assert CornerComponentsFilter(include={"host"})(font)
     return [(pt.x, pt.y, pt.segmentType) for pt in font["host"][0]]
+
+
+def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
+    hint["origin"] = [0, node_index]
+    return _apply_corners(corner_nodes, host_nodes, [hint], anchors)
 
 
 @pytest.mark.parametrize(
@@ -302,7 +254,7 @@ def _apply_corner(corner_nodes, host_nodes, node_index):
         ),
         (
             [((310, 100), None), ((310, 200), None)],
-            [(310, 0, "line"), (311, 14, "line"), (303, 40, "line")],
+            [(310, 0, "line"), (311, 15, "line"), (303, 40, "line")],
         ),
     ],
     ids=["line", "curve"],
@@ -482,3 +434,137 @@ def test_corner_components_format2_mixed_glyph(path_index):
     glyph = ufo["mixed"]
     assert [[(pt.x, pt.y) for pt in contour] for contour in glyph] == expected
     assert [component.baseGlyph for component in glyph.components] == ["square"]
+
+
+def _path(*nodes):
+    # Bare points are line nodes
+    return [node if isinstance(node[0], tuple) else (node, "line") for node in nodes]
+
+
+SERIF = _path((0, 96), (-68, 96), (-68, 0), (9, 0))
+SERIF[0] = (SERIF[0][0], "move")
+
+
+# Corners taken from real fonts, with the on-curve points Glyphs gave them
+@pytest.mark.parametrize(
+    "corner, anchors, host, node_index, hint, expected",
+    [
+        pytest.param(
+            # The serif slides along the outstroke until its left anchor is
+            # on the instroke. (Glyphs 2 decomposing Montagu Slab's K)
+            SERIF,
+            {"left": (0, 45)},
+            _path((257, 198), (800, 682), (629, 682), (184, 283)),
+            0,
+            {"scale": [0.02, 1]},
+            [(692, 586), (751, 586), (751, 682)],
+            id="left-anchor",
+        ),
+        pytest.param(
+            # Flipped, the left anchor becomes the right one, and aligned to
+            # the instroke, the serif slides along it until that anchor is on
+            # the outstroke. (Ditto)
+            SERIF,
+            {"left": (0, 45)},
+            _path((558, 0), (796, 0), (462, 428), (326, 307)),
+            0,
+            {"options": 1, "scale": [-0.2, 1]},
+            [(774, 0), (774, 96), (721, 96)],
+            id="right-anchor",
+        ),
+        pytest.param(
+            # The serif turns the other way from the stem, so Glyphs mirrors
+            # it. (Glyphs' export of Aoboshi One's L)
+            [
+                ((0, 30), "move"),
+                ((0, 22), None),
+                ((15, 19), None),
+                ((22, 19), "curve"),
+                ((22, 0), "line"),
+                ((-28, 0), "line"),
+            ],
+            None,
+            _path((73, 0), (207, 0), (207, 750), (73, 750)),
+            3,
+            {},
+            [(73, 30), (51, 19), (51, 0)],
+            id="mirrored",
+        ),
+        pytest.param(
+            # Unaligned, the serif isn't mirrored, though it turns the other
+            # way from the inside corner of this L. (Glyphs 3.5)
+            [((0, 60), "move"), *_path((-70, 60), (-70, 0), (30, 0))],
+            None,
+            _path(
+                (100, 600), (100, 100), (500, 100), (500, 250), (250, 250), (250, 600)
+            ),
+            3,
+            {"options": 4, "scale": [-1, 1]},
+            [(280, 250), (320, 250), (320, 310), (250, 310)],
+            id="unaligned-not-mirrored",
+        ),
+        pytest.param(
+            # Aligned to the instroke, a last segment that curves in along the
+            # outstroke ends on it, |last node| along. (Aoboshi One's x)
+            [
+                ((28, 0), "move"),
+                ((-42, 0), "line"),
+                ((-42, 19), "line"),
+                ((-25, 19), None),
+                ((0, 32), None),
+                ((0, 40), "curve"),
+            ],
+            None,
+            _path((31, 0), (170, 0), (301, 171), (344, 222), (526, 460), (386, 460)),
+            4,
+            {"options": 1, "scale": [1, 0.97]},
+            [(344, 460), (344, 442), (362, 429)],
+            id="curved-end-on-outstroke",
+        ),
+        pytest.param(
+            # Drawn a quarter turn round, leaving along the instroke, with a
+            # left anchor and a curved outstroke. (Glyphs 3.5's export of
+            # Alkatra's l)
+            [
+                ((175, 491), "move"),
+                ((158, 491), None),
+                ((57, 473), None),
+                ((57, 444), "curve"),
+                ((57, 432), None),
+                ((65, 422), None),
+                ((69, 410), "curve"),
+                ((76, 392), None),
+                ((81, 361), None),
+                ((78, 330), "curve"),
+            ],
+            {"origin": (95, 491), "left": (175, 491), "right": (75, 304)},
+            _path(
+                (101, -14),
+                (188, -14),
+                ((195, 72), None),
+                ((201, 177), None),
+                ((214, 273), "curve"),
+                (58, 233),
+            ),
+            0,
+            {},
+            [(108, -14), (225, 36), (212, 70), (201, 150)],
+            id="quarter-turn",
+        ),
+    ],
+)
+def test_corner_matches_glyphs(corner, anchors, host, node_index, hint, expected):
+    points = _apply_corner(corner, host, node_index, anchors, **hint)
+    on_curves = [(x, y) for x, y, segment_type in points if segment_type]
+    assert any(
+        on_curves[i : i + len(expected)] == expected for i in range(len(on_curves))
+    ), on_curves
+
+
+def test_second_corner_on_a_node_is_ignored():
+    # The first corner replaces the node, so in Glyphs a second one on the
+    # same node does nothing. (Aoboshi One's a.ss01)
+    corner = [((0, 50), "move"), ((-50, 50), "line"), ((-50, 0), "line")]
+    host = [((100, 500), "line"), ((100, 100), "line"), ((500, 100), "line")]
+    hint = {"origin": [0, 0]}
+    assert _apply_corners(corner, host, [hint, hint]) == _apply_corner(corner, host, 0)
