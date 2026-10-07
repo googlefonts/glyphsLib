@@ -161,13 +161,33 @@ def shear_across(axis, angle):
     return Transform(1 - k * x * y, k * x * x, -k * y * y, 1 + k * x * y, 0, 0)
 
 
-def turn_towards(vector, origin, target):
-    # The angle that turns `vector` to point from `origin` towards `target`
+def turn_towards(vector, direction):
+    # The angle that turns `vector` to point along `direction`
+    if direction == (0, 0):
+        return 0
     return math.remainder(
-        math.atan2(target[1] - origin[1], target[0] - origin[0])
-        - math.atan2(vector[1], vector[0]),
+        math.atan2(direction[1], direction[0]) - math.atan2(vector[1], vector[0]),
         math.tau,
     )
+
+
+def aim_along(seg, distance, anchor):
+    """Find the direction a corner end aims in along its stroke `seg`.
+
+    The end aims from the start of `seg` at the point `distance` along it.
+    An end at the origin would aim at the start itself, so there it aims its
+    anchor along the stroke as it leaves its start instead. Without an
+    anchor, such an end has no direction.
+    """
+    start = seg[0]
+    if distance == 0 and anchor is None:
+        return (0, 0)
+    target = point_along_segment(seg, distance)
+    for pt in (target, *seg[1:]):
+        if pt != start:
+            return unit_vector((pt[0] - start[0], pt[1] - start[1]))
+    # A stroke with no length points straight up
+    return (0, 1)
 
 
 def split_cubic_at_point(seg, point, inward=True):
@@ -264,20 +284,19 @@ class CornerComponentApplier:
         # along the outstroke.
         first, last = self.corner_path[0], self.corner_path[-1]
         node = (self.target_node.x, self.target_node.y)
-        instroke_target = point_along_segment(
-            as_tuples(reversed(self.instroke)), math.hypot(first.x, first.y)
+        instroke = as_tuples(reversed(self.instroke))
+        outstroke = as_tuples(self.outstroke)
+        instroke_direction = aim_along(
+            instroke, math.hypot(first.x, first.y), self.left
         )
-        outstroke_target = point_along_segment(
-            as_tuples(self.outstroke), math.hypot(last.x, last.y)
+        outstroke_direction = aim_along(
+            outstroke, math.hypot(last.x, last.y), self.right
         )
 
         # If the corner turns the other way from the host path, Glyphs
         # mirrors it to fit. Unaligned, it isn't mirrored, but its ends turn
         # the other way instead.
-        host_turn = cross(
-            (instroke_target[0] - node[0], instroke_target[1] - node[1]),
-            (outstroke_target[0] - node[0], outstroke_target[1] - node[1]),
-        )
+        host_turn = cross(instroke_direction, outstroke_direction)
         corner_turn = cross(
             self.left or (first.x, first.y), self.right or (last.x, last.y)
         )
@@ -286,10 +305,10 @@ class CornerComponentApplier:
             self.mirror_paths()
             turns_other_way = False
         instroke_turn = turn_towards(
-            self.left or (first.x, first.y), node, instroke_target
+            self.left or (first.x, first.y), instroke_direction
         )
         outstroke_turn = turn_towards(
-            self.right or (last.x, last.y), node, outstroke_target
+            self.right or (last.x, last.y), outstroke_direction
         )
 
         # The corner as a whole turns to fit the stroke it's aligned to
@@ -310,7 +329,7 @@ class CornerComponentApplier:
         self.fit_end(0, sign * (instroke_turn - rotation), self.left)
         self.fit_end(-1, sign * (outstroke_turn - rotation), self.right)
 
-        self.place(node, rotation, instroke_target, outstroke_target)
+        self.place(node, rotation, instroke_direction, outstroke_direction)
 
         # Keep hold of the original outstroke segment. Fitting the
         # instroke to the corner component will change the position
@@ -390,7 +409,7 @@ class CornerComponentApplier:
         for pt in moving:
             pt.x, pt.y = transform.transformPoint((pt.x, pt.y))
 
-    def place(self, node, rotation, instroke_target, outstroke_target):
+    def place(self, node, rotation, instroke_direction, outstroke_direction):
         # Rotate the paths around the origin and then align them
         # so that the origin of the corner starts on the target node
         transform = Transform().translate(*node).rotate(rotation)
@@ -400,18 +419,17 @@ class CornerComponentApplier:
         # the outstroke
         anchor = None
         if self.alignment == Alignment.OUTSTROKE and self.left is not None:
-            anchor, along, onto = self.left, outstroke_target, self.instroke
+            anchor, along, onto = self.left, outstroke_direction, self.instroke
         elif self.alignment == Alignment.INSTROKE and self.right is not None:
-            anchor, along, onto = self.right, instroke_target, self.outstroke[::-1]
-        if anchor is not None and along != node:
-            direction = unit_vector((along[0] - node[0], along[1] - node[1]))
+            anchor, along, onto = self.right, instroke_direction, self.outstroke[::-1]
+        if anchor is not None and along != (0, 0):
             distance = distance_to_segment(
-                transform.transformPoint(anchor), direction, as_tuples(onto)
+                transform.transformPoint(anchor), along, as_tuples(onto)
             )
             if distance is not None:
                 transform = (
                     Transform()
-                    .translate(direction[0] * distance, direction[1] * distance)
+                    .translate(along[0] * distance, along[1] * distance)
                     .transform(transform)
                 )
 
