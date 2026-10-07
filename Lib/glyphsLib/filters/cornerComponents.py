@@ -700,11 +700,19 @@ class CornerComponentsFilter(BaseFilter):
                 for ix, sign in enumerate(glyph.lib[SHAPE_ORDER_LIB_KEY]):
                     if sign == "P":
                         path_indices[ix] = len(path_indices.keys())
-                if shape_index not in path_indices:
-                    raise ValueError(
-                        f"Could not find shape number {shape_index} in {glyph.name}"
-                    )
-            path_idx = path_indices.get(shape_index, shape_index)
+                path_idx = path_indices.get(shape_index)
+            else:
+                path_idx = shape_index
+            # Glyphs ignores a corner on a component, or on a shape that isn't
+            # there any more
+            if path_idx is None or not 0 <= path_idx < len(glyph):
+                logger.warning(
+                    "Ignoring corner component %s in %s: shape %d is not a path",
+                    glyphs_cc["name"],
+                    glyph.name,
+                    shape_index,
+                )
+                continue
 
             # We use font, not .glyphSet here because corner components
             # aren't normally exported
