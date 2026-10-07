@@ -32,7 +32,6 @@ MISMATCHES = {
     "curve_flare_turned_outstroke_tight",
     "real_aoboshi_g",
     "real_bellota_sha",
-    "real_hina_yoko",
     "real_iansui_sturn",
 }
 
