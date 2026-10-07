@@ -18,6 +18,58 @@ def _pointIsLeftOfLine(line, aPoint):
     ) >= 0
 
 
+def open_corner_crossing(prev_seg, line, next_seg):
+    """Find where the segments either side of an open corner cross.
+
+    If the straight segment `line`, between `prev_seg` and `next_seg`, joins
+    an open corner, return the t values on `prev_seg` and `next_seg` where
+    they cross. Otherwise return None.
+    """
+    # Are the incoming point from the previous segment and the outgoing point
+    # from the next segment both on the right side of the line?
+    # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
+    pt1 = prev_seg[-2]
+    pt2 = next_seg[1]
+    if _pointIsLeftOfLine(line, pt1) or _pointIsLeftOfLine(line, pt2):
+        logger.debug(
+            "Crossing points (%i, %i) and (%i, %i) were not on "
+            "same side of line segment",
+            *pt1,
+            *pt2,
+        )
+        return None
+
+    logger.debug("Testing for intersections between %s and %s", prev_seg, next_seg)
+    intersection = [
+        i
+        for i in segmentSegmentIntersections(prev_seg, next_seg)
+        if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
+    ]
+    logger.debug("Intersections: %s", intersection)
+    if not intersection:
+        return None
+
+    # The t values of the intersection are measured as follows:
+    #  line1 is coming *towards* the open corner line, i.e. t1=0.9 is very near
+    #  the open corner.
+    #  line2 is going *away from* the open corner line, i.e. t2=0.1 is very near
+    #  the open corner.
+    # This is a bit confusing, so we invert the value of t1 so that
+    # both values mean 0 is at the open corner and 1 is far from it.
+    t1 = 1 - intersection[0].t1
+    t2 = intersection[0].t2
+
+    # Glyphs logic provided by Georg at
+    # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
+    # and subsequently further clarified in
+    # https://github.com/googlefonts/fontc/issues/1600#issuecomment-3190896627
+    if (
+        (t1 < 0.5 and t2 < 0.5) or (t1 < 0.3 and t2 < 0.99) or (t1 < 0.99 and t2 < 0.3)
+    ) and (t1 > 0.001 and t2 > 0.001):
+        return intersection[0].t1, intersection[0].t2
+    return None
+
+
 class EraseOpenCornersPen(BasePen):
     def __init__(self, outpen):
         self.segments = []
@@ -66,66 +118,11 @@ class EraseOpenCornersPen(BasePen):
             logger.debug(
                 "Considering line segment (%i,%i)-(%i,%i)", *segs[ix][0], *segs[ix][1]
             )
-            # Are the incoming point from the previous segment and the outgoing point
-            # from the next segment both on the right side of the line?
-            # (see discussion at https://github.com/googlefonts/glyphsLib/pull/663)
-            pt1 = segs[ix - 1][-2]
-            pt2 = segs[next_ix][1]
-            if _pointIsLeftOfLine(segs[ix], pt1) or _pointIsLeftOfLine(segs[ix], pt2):
-                logger.debug(
-                    "Crossing points (%i, %i) and (%i, %i) were not on "
-                    "same side of line segment",
-                    *pt1,
-                    *pt2,
-                )
-                ix = ix + 1
-                continue
-
-            logger.debug(
-                "Testing for intersections between %s and %s",
-                segs[ix - 1],
-                segs[next_ix],
-            )
-
-            intersection = [
-                i
-                for i in segmentSegmentIntersections(segs[ix - 1], segs[next_ix])
-                if 0 <= i.t1 <= 1 and 0 <= i.t2 <= 1
-            ]
-            logger.debug("Intersections: %s", intersection)
-            if not intersection:
-                logger.debug("No intersections")
-                ix = ix + 1
-                continue
-
-            # The t values of the intersection are measured as follows:
-            #  line1 is coming *towards* the open corner line, i.e. t1=0.9 is very near
-            #  the open corner.
-            #  line2 is going *away from* the open corner line, i.e. t2=0.1 is very near
-            #  the open corner.
-            # This is a bit confusing, so we invert the value of t1 so that
-            # both values mean 0 is at the open corner and 1 is far from it.
-            t1 = 1 - intersection[0].t1
-            t2 = intersection[0].t2
-
-            # Glyphs logic provided by Georg at
-            # https://github.com/googlefonts/glyphsLib/pull/663#issuecomment-925667615
-            # and subsequently further clarified in
-            # https://github.com/googlefonts/fontc/issues/1600#issuecomment-3190896627
-            if (
-                (
-                    (t1 < 0.5 and t2 < 0.5)
-                    or (t1 < 0.3 and t2 < 0.99)
-                    or (t1 < 0.99 and t2 < 0.3)
-                )
-                and t1 > 0.001
-                and t2 > 0.001
-            ):
+            crossing = open_corner_crossing(segs[ix - 1], segs[ix], segs[next_ix])
+            if crossing is not None:
                 logger.debug("Found an open corner")
-                segs[ix - 1], _ = _split_segment_at_t(segs[ix - 1], intersection[0].t1)
-                _, segs[next_ix] = _split_segment_at_t(
-                    segs[next_ix], intersection[0].t2
-                )
+                segs[ix - 1], _ = _split_segment_at_t(segs[ix - 1], crossing[0])
+                _, segs[next_ix] = _split_segment_at_t(segs[next_ix], crossing[1])
                 # Ensure the ends match up
                 segs[next_ix] = (segs[ix - 1][-1],) + segs[next_ix][1:]
                 segs[ix : ix + 1] = []
