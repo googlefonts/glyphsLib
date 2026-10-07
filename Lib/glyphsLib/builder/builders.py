@@ -234,6 +234,7 @@ class UFOBuilder(LoggerMixin):
         #     on demand.
         self.to_ufo_font_attributes(self.family_name)  # .font
 
+        self.warn_incompatible_color_palette_layers()  # .color_layers
         self.to_ufo_layers()  # below!
 
         for master_id, source in self._sources.items():
@@ -341,7 +342,13 @@ class UFOBuilder(LoggerMixin):
                 and (not layer._is_brace_layer() or layer._is_color_palette_layer())
             ):
                 # Only plain intermediate layers are built here, color
-                # palette layers are handled by to_ufo_color_layers.
+                # palette layers are handled by to_ufo_color_layers. But an
+                # intermediate gets a sparse source even if no layer glyph
+                # ends up in it, so make sure its UFO layer exists.
+                if layer._is_brace_layer():
+                    self._to_ufo_brace_layer(
+                        self.font.masters[layer.associatedMasterId], layer
+                    )
                 continue
             else:
                 ufo_layer = self.to_ufo_layer(glyph, layer)  # .layers
@@ -406,7 +413,11 @@ class UFOBuilder(LoggerMixin):
     from .background_image import to_ufo_background_image
     from .bracket_layers import to_designspace_bracket_layers
     from .blue_values import to_ufo_blue_values
-    from .color_layers import to_ufo_color_layers
+    from .color_layers import (
+        _to_ufo_brace_layer,
+        to_ufo_color_layers,
+        warn_incompatible_color_palette_layers,
+    )
     from .common import to_ufo_time
     from .components import to_ufo_components, to_ufo_smart_component_axes
     from .custom_params import to_ufo_custom_params

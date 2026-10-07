@@ -22,6 +22,20 @@ from .common import to_ufo_color
 from .constants import UFO2FT_COLOR_LAYERS_KEY, UFO2FT_COLOR_PALETTES_KEY
 
 
+def _is_empty(layer):
+    return not (layer.paths or layer.components)
+
+
+def _palette_layers(glyph, master_id):
+    return [
+        l
+        for l in glyph.layers
+        if l.associatedMasterId == master_id
+        and l._is_color_palette_layer()
+        and not l._is_brace_layer()
+    ]
+
+
 def color_palette_layers(glyph, master_id):
     """Return the color palette layers of a glyph for a master, in document order.
 
@@ -31,14 +45,58 @@ def color_palette_layers(glyph, master_id):
     them and numbers the remaining layer glyphs consecutively, so everything
     that names a ``.colorN`` glyph must count from this list.
     """
-    return [
-        l
-        for l in glyph.layers
-        if l.associatedMasterId == master_id
-        and l._is_color_palette_layer()
-        and not l._is_brace_layer()
-        and (l.paths or l.components)
-    ]
+    return [l for l in _palette_layers(glyph, master_id) if not _is_empty(l)]
+
+
+def color_palette_component_name(component_glyph, master_id, palette_index):
+    """Return the name of the glyph a component in a color palette layer uses.
+
+    Like Glyphs, this takes the component glyph's first palette layer with
+    the same palette index, even if it is empty, so an empty layer hides any
+    later layer with that index. If there is no such layer, or it is empty
+    or a master layer, the component uses the component glyph itself.
+    """
+    match = next(
+        (
+            l
+            for l in _palette_layers(component_glyph, master_id)
+            if l._color_palette_index() == palette_index
+        ),
+        None,
+    )
+    if match is None or _is_empty(match) or match.layerId == match.associatedMasterId:
+        return component_glyph.name
+    layers = color_palette_layers(component_glyph, master_id)
+    i = next(i for i, l in enumerate(layers) if l is match)
+    return f"{component_glyph.name}.color{i}"
+
+
+def warn_incompatible_color_palette_layers(builder):
+    """Warn about glyphs whose masters have different color palette layers.
+
+    The n-th layer glyph of each master is interpolated with the n-th layer
+    glyph of the others, but palette layers are skipped per master if they
+    are empty. If that leaves masters with different sequences of palette
+    indices, a variable font would interpolate between layers with different
+    palette indices. Glyphs refuses to export such a variable font.
+    """
+    if len(builder.font.masters) < 2:
+        return
+    for glyph in builder.font.glyphs:
+        indices = {
+            master.name: [
+                l._color_palette_index() for l in color_palette_layers(glyph, master.id)
+            ]
+            for master in builder.font.masters
+        }
+        if len({tuple(v) for v in indices.values()}) > 1:
+            builder.logger.warning(
+                "%s: Glyph %s: color palette layers are not compatible between "
+                "masters (palette indices per master: %s)",
+                builder.font.familyName,
+                glyph.name,
+                ", ".join(f"{name}: {v}" for name, v in indices.items()),
+            )
 
 
 def _to_ufo_brace_layer(builder, master, layer):
@@ -64,7 +122,7 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                 l.associatedMasterId == master.id
                 and l._is_color_palette_layer()
                 and l._is_brace_layer()
-                and (l.paths or l.components)
+                and not _is_empty(l)
             ):
                 by_color = brace_color_layers.setdefault(l._brace_layer_name(), {})
                 by_color.setdefault(l._color_palette_index(), []).append(l)
@@ -111,8 +169,8 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
             colorLayers.append((layerGlyphName, colorId))
 
         # Intermediate color palette layers whose palette index is not used by
-        # any color layer can’t be mapped to a color layer glyph. Create their
-        # UFO layers anyway, since a sparse source is generated for each of them.
+        # any color layer can’t be mapped to a color layer glyph. Their UFO
+        # layers were already created in UFOBuilder.to_ufo_layers().
         for by_color in brace_color_layers.values():
             for colorId, brace_layers in by_color.items():
                 for brace_layer in brace_layers[seen[colorId] :]:
@@ -123,7 +181,6 @@ def _to_ufo_color_palette_layers(builder, master, layerMapping):
                         glyph.name,
                         brace_layer._brace_layer_name(),
                     )
-                    _to_ufo_brace_layer(builder, master, brace_layer)
         layerMapping[glyph.name] = colorLayers
 
 
