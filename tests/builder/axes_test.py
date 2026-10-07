@@ -23,7 +23,11 @@ from fontTools import designspaceLib
 from fontTools.misc.fixedTools import floatToFixedToFloat
 from glyphsLib import to_glyphs, to_designspace, to_ufos
 from glyphsLib.classes import GSFont, GSFontMaster, GSAxis, GSInstance
-from glyphsLib.builder.axes import _is_subset_of_default_axes, get_regular_master
+from glyphsLib.builder.axes import (
+    WEIGHT_AXIS_DEF,
+    _is_subset_of_default_axes,
+    get_regular_master,
+)
 from glyphsLib.builder.instances import set_weight_class, set_width_class
 from glyphsLib.builder.stat import is_stat_only_ital
 
@@ -923,8 +927,9 @@ def test_instance_mapping_spanning_masters(ufo_module):
     assert _weight_classes(doc, ufo_module) == [400, 700]
 
 
-def test_instance_mapping_not_spanning_masters(ufo_module):
-    # The Black master is beyond the instances, the mapping would leave it out
+def test_instance_mapping_extended_to_masters(ufo_module):
+    # The Black master is beyond the instances: the mapping's last segment is
+    # extended out to it, so the axis keeps the instances' user locations
     font = GSFont()
     for weight_value in (90, 190):
         master = GSFontMaster()
@@ -938,10 +943,73 @@ def test_instance_mapping_not_spanning_masters(ufo_module):
     doc = to_designspace(font, ufo_module=ufo_module)
 
     (axis,) = doc.axes
+    black_user_loc = floatToFixedToFloat(700 + (190 - 151) * 300 / (151 - 90), 16)
+    assert (axis.minimum, axis.default, axis.maximum) == (400, 400, black_user_loc)
+    assert axis.map == [(400, 90), (700, 151), (black_user_loc, 190)]
+    assert not any(i.lib for i in doc.instances)
+    assert _weight_classes(doc, ufo_module) == [400, 700]
+
+
+def test_instance_mapping_not_extendable_to_masters(ufo_module, caplog):
+    # Extending the instances' steep mapping out to the Black master would go
+    # beyond weight 1000, so the axis falls back to the masters' locations
+    font = GSFont()
+    for weight_value in (90, 190):
+        master = GSFontMaster()
+        master.weightValue = weight_value
+        font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 90),
+        _instance("Black", "Black", 100),
+    ]
+
+    with caplog.at_level(logging.WARNING, logger="glyphsLib.builder.axes"):
+        doc = to_designspace(font, ufo_module=ufo_module)
+
+    (axis,) = doc.axes
     assert (axis.minimum, axis.default, axis.maximum) == (90, 90, 190)
     assert not axis.map
-    assert [i.location["Weight"] for i in doc.instances] == [90, 151]
-    assert _weight_classes(doc, ufo_module) == [400, 700]
+    assert [i.location["Weight"] for i in doc.instances] == [90, 100]
+    assert _weight_classes(doc, ufo_module) == [400, 900]
+    assert "not using the mapping from the instances" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "mapping, master_locs, expected",
+    [
+        # each master is extended along the segment on its side
+        (
+            {400: 50, 700: 100, 800: 150},
+            [10, 20, 160],
+            {160: 10, 400: 50, 700: 100, 800: 150, 820: 160},
+        ),
+        # both masters are beyond the same end, along the same segment
+        (
+            {400: 50, 700: 100, 800: 150},
+            [10, 50],
+            {160: 10, 400: 50, 700: 100, 800: 150},
+        ),
+        # all the points are beyond the masters, so none would be kept
+        ({400: 50, 700: 100, 800: 150}, [10, 20], None),
+        # a single point has no segment
+        ({400: 100}, [50, 100], None),
+        # a decreasing mapping is extended the same way
+        (
+            {400: 100, 300: 150},
+            [50, 200],
+            {200: 200, 300: 150, 400: 100, 500: 50},
+        ),
+        # the segment is flat
+        ({400: 100, 700: 100}, [50, 100], None),
+        # out of the valid weight range
+        ({400: 90, 900: 100}, [90, 190], None),
+        ({100: 50, 400: 100}, [0, 100], None),
+    ],
+)
+def test_extend_to_masters(mapping, master_locs, expected):
+    from glyphsLib.builder.axes import _extend_to_masters
+
+    assert _extend_to_masters(WEIGHT_AXIS_DEF, mapping, master_locs) == expected
 
 
 def test_instance_mapping_regular_master_between_instances(ufo_module):

@@ -189,16 +189,16 @@ def _virtual_master_locations(font):
 def _choose_instance_or_master_mapping(
     axis_def, instance_mapping, master_mapping, regular_design_loc
 ):
-    """Return the instance mapping if it's usable, else the masters' (identity),
-    and whether the instances' user locations can't all come from it.
+    """Return the mapping for an axis without Axis Location parameters, and
+    whether the instances' user locations can't all come from it.
 
-    The instance mapping is only usable if it spans all the masters: Glyphs.app
-    doesn't derive a mapping from the instances, and when the instances don't
-    span the masters the axis would leave out some masters, or not even reach
-    the regular one (e.g. the single instance of a single-master font, left at
-    the default weight value). We then do like Glyphs.app, which without Axis
-    Location parameters uses the design locations as user locations. The
-    instances' user locations can't come from the mapping then, so they are
+    The instance mapping must span all the masters, or the axis would leave
+    out some masters, or not even reach the regular one. When the instances
+    don't span them, we extend the mapping's end segments out to the masters
+    (see `_extend_to_masters`). When that isn't possible (e.g. the single
+    instance of a single-master font, left at the default weight value), we do
+    like Glyphs.app, which without Axis Location parameters uses the design
+    locations as user locations; the instances' user locations must then be
     stored apart (see `axes_with_unmapped_instances`).
 
     Points beyond the first and last masters are dropped (see
@@ -215,12 +215,20 @@ def _choose_instance_or_master_mapping(
             master_mapping, list(instance_mapping.values())
         )
     if not _covers(instance_mapping, master_locs):
+        extended = _extend_to_masters(axis_def, instance_mapping, master_locs)
+        if extended is None:
+            logger.warning(
+                f"Axis {axis_def.tag}: not using the mapping from the instances, "
+                "as they don't span all the masters; add Axis Location "
+                "parameters to the masters to map the axis"
+            )
+            return master_mapping, True
         logger.warning(
-            f"Axis {axis_def.tag}: not using the mapping from the instances, "
-            "as they don't span all the masters; add Axis Location parameters "
-            "to the masters to map the axis"
+            f"Axis {axis_def.tag}: the instances don't span all the masters, "
+            "extending their mapping out to the masters; add Axis Location "
+            "parameters to the masters to map the axis explicitly"
         )
-        return master_mapping, True
+        instance_mapping = extended
     mapping = _trim_to_masters(instance_mapping, master_locs)
     # the instances beyond the masters aren't on the axis
     unmapped = mapping != instance_mapping
@@ -233,6 +241,46 @@ def _choose_instance_or_master_mapping(
         )
         mapping[user_loc] = regular_design_loc
     return mapping, unmapped
+
+
+# The user locations an extended mapping may reach, i.e. the valid fvar ranges
+# of the registered axes; beyond them, extending the instances' mapping isn't
+# a sensible guess.
+_VALID_USER_LOCS = {"wght": lambda v: 1 <= v <= 1000, "wdth": lambda v: v > 0}
+
+
+def _extend_to_masters(axis_def, mapping, master_locs):
+    """Extend the mapping's end segments out to the masters beyond them.
+
+    The first and last masters, if beyond the mapping, get the user location
+    the nearest segment extrapolates to (rounded like fvar does), whether the
+    mapping increases or decreases. Return None if the mapping has a single
+    point, if no point is within the masters (the extended mapping would then
+    keep none of the instances' user locations), if that segment is flat, or
+    if the user location isn't valid for the axis.
+    """
+    points = sorted((dl, ul) for ul, dl in mapping.items())
+    first, last = min(master_locs), max(master_locs)
+    if len(points) < 2 or not any(first <= dl <= last for dl, _ in points):
+        return None
+    is_valid = _VALID_USER_LOCS.get(axis_def.tag, lambda v: True)
+    extended = dict(mapping)
+    for design_loc in (first, last):
+        if design_loc < points[0][0]:
+            (d0, u0), (d1, u1) = points[:2]
+        elif design_loc > points[-1][0]:
+            (d0, u0), (d1, u1) = points[-2:]
+        else:
+            continue
+        if not (d0 < d1 and u0 != u1):
+            return None
+        user_loc = floatToFixedToFloat(
+            u0 + (design_loc - d0) * (u1 - u0) / (d1 - d0), 16
+        )
+        if not is_valid(user_loc):
+            return None
+        extended[user_loc] = design_loc
+    return extended
 
 
 def _trim_to_masters(mapping, master_locs):
