@@ -182,8 +182,12 @@ def aim_along(seg, distance, anchor):
     start = seg[0]
     if distance == 0 and anchor is None:
         return (0, 0)
-    target = point_along_segment(seg, distance)
-    for pt in (target, *seg[1:]):
+    if len(seg) == 2:
+        # Along a line, that's just the line's own direction
+        candidates = seg[1:]
+    else:
+        candidates = (point_along_segment(seg, distance), *seg[1:])
+    for pt in candidates:
         if pt != start:
             return unit_vector((pt[0] - start[0], pt[1] - start[1]))
     # A stroke with no length points straight up
@@ -295,8 +299,11 @@ class CornerComponentApplier:
 
         # If the corner turns the other way from the host path, Glyphs
         # mirrors it to fit. Unaligned, it isn't mirrored, but its ends turn
-        # the other way instead.
+        # the other way instead. A host that runs straight on through the node
+        # counts as turning clockwise, like an inside corner.
         host_turn = cross(instroke_direction, outstroke_direction)
+        if host_turn == 0 and dot(instroke_direction, outstroke_direction) < 0:
+            host_turn = 1
         corner_turn = cross(
             self.left or (first.x, first.y), self.right or (last.x, last.y)
         )
