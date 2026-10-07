@@ -1719,6 +1719,100 @@ def test_glyph_color_palette_layers_skip_empty_components(ufo_module):
     assert [c.baseGlyph for c in ufo["a.color1"].components] == ["b", "d"]
 
 
+def test_glyph_color_palette_layers_skip_empty_components_repeated_index(ufo_module):
+    font = generate_minimal_font(format_version=3)
+    glypha = add_glyph(font, "a")
+
+    def add_color_glyph(name, palette_layers):
+        glyph = add_glyph(font, name)
+        glyph.layers[0].paths.append(_quad())
+        for color_palette, has_shape in palette_layers:
+            layer = GSLayer()
+            layer.attributes["colorPalette"] = color_palette
+            if has_shape:
+                layer.paths.append(_quad())
+            glyph.layers.append(layer)
+        return glyph
+
+    # Like Glyphs, a component uses the first palette layer with the same
+    # palette index, and the component glyph itself if that layer is empty,
+    # even when a later layer with that index has shapes.
+    glyphn = add_color_glyph("n", [(0, False), (0, True)])
+    glypht = add_color_glyph("t", [(1, False), (0, True), (1, True)])
+    glyphr = add_color_glyph("r", [(0, True), (0, False), (0, True)])
+
+    a_color0 = GSLayer()
+    a_color0.attributes["colorPalette"] = 0
+    a_color0.components.append(GSComponent(glyph=glyphn))
+    a_color0.components.append(GSComponent(glyph=glyphr))
+    a_color1 = GSLayer()
+    a_color1.attributes["colorPalette"] = 1
+    a_color1.components.append(GSComponent(glyph=glypht))
+    glypha.layers.extend([a_color0, a_color1])
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+
+    assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
+        "a": [("a.color0", 0), ("a.color1", 1)],
+        "n": [("n.color0", 0)],
+        "t": [("t.color0", 0), ("t.color1", 1)],
+        "r": [("r.color0", 0), ("r.color1", 0)],
+    }
+    assert [c.baseGlyph for c in ufo["a.color0"].components] == ["n", "r.color0"]
+    assert [c.baseGlyph for c in ufo["a.color1"].components] == ["t"]
+
+
+def test_glyph_color_palette_layers_incompatible_masters(ufo_module, caplog):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    regular = font.masters[0]
+    regular.name = "Regular"
+    regular.axes = [400]
+    bold = GSFontMaster()
+    bold.id = "bold"
+    bold.name = "Bold"
+    bold.axes = [700]
+    font.masters.append(bold)
+
+    def add_color_glyph(name, palette_layers):
+        glyph = add_glyph(font, name)
+        bold_layer = GSLayer()
+        bold_layer.layerId = bold_layer.associatedMasterId = bold.id
+        glyph.layers.append(bold_layer)
+        for master, layers in palette_layers.items():
+            for color_palette, has_shape in layers:
+                layer = GSLayer()
+                layer.associatedMasterId = master.id
+                layer.attributes["colorPalette"] = color_palette
+                if has_shape:
+                    layer.paths.append(_quad())
+                glyph.layers.append(layer)
+
+    # a's palette 0 layer is empty in Regular only, so once it is skipped the
+    # masters have different palette layers.
+    add_color_glyph(
+        "a",
+        {regular: [(0, False), (1, True)], bold: [(0, True), (1, True)]},
+    )
+    # b's palette 0 layer is empty in both masters, which is fine.
+    add_color_glyph(
+        "b",
+        {regular: [(0, False), (1, True)], bold: [(0, False), (1, True)]},
+    )
+
+    to_designspace(font, ufo_module=ufo_module, minimal=True)
+
+    assert [
+        r.getMessage()
+        for r in caplog.records
+        if "not compatible between masters" in r.getMessage()
+    ] == [
+        "MyFont: Glyph a: color palette layers are not compatible between "
+        "masters (palette indices per master: Regular: [1], Bold: [0, 1])"
+    ]
+
+
 def test_glyph_color_palette_layers_skip_empty_intermediate(ufo_module):
     font = generate_minimal_font(format_version=3)
     font.axes = [GSAxis(name="Weight", tag="wght")]
@@ -1754,11 +1848,46 @@ def test_glyph_color_palette_layers_skip_empty_intermediate(ufo_module):
     assert ufo.lib["com.github.googlei18n.ufo2ft.colorLayers"] == {
         "a": [("a.color0", 1), ("a.color1", 1)]
     }
-    # Empty intermediates don't count either: the non-empty palette 1
-    # intermediate goes with the first palette 1 layer glyph.
-    intermediate_layer = ufo.layers["{50}"]
-    assert sorted(intermediate_layer.keys()) == ["a.color0"]
-    assert min(p.x for p in intermediate_layer["a.color0"][0]) == 40
+
+
+@pytest.mark.parametrize(
+    "master_has_shape, intermediate_has_shape, export",
+    [
+        pytest.param(True, False, True, id="empty-intermediate"),
+        pytest.param(False, True, True, id="empty-master-layer"),
+        pytest.param(False, False, True, id="all-empty"),
+        pytest.param(True, True, False, id="not-exported"),
+    ],
+)
+def test_glyph_color_palette_layers_intermediate_without_layer_glyph(
+    ufo_module, master_has_shape, intermediate_has_shape, export
+):
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    font.masters[0].axes = [0]
+
+    glypha = add_glyph(font, "a")
+    glypha.layers[0].paths.append(_quad())
+    glypha.export = export
+    for coordinates, has_shape in (
+        (None, master_has_shape),
+        ([50], intermediate_has_shape),
+    ):
+        layer = GSLayer()
+        layer.associatedMasterId = font.masters[0].id
+        layer.attributes["colorPalette"] = 0
+        if coordinates is not None:
+            layer.attributes["coordinates"] = coordinates
+        if has_shape:
+            layer.paths.append(_quad())
+        glypha.layers.append(layer)
+
+    ds = to_designspace(font, ufo_module=ufo_module, minimal=True)
+
+    # The intermediate gets a sparse source even though no layer glyph ends up
+    # in it, so its UFO layer must exist.
+    assert [s.layerName for s in ds.sources] == [None, "{50}"]
+    assert "{50}" in ds.sources[0].font.layers
 
 
 def test_glyph_color_palette_layers_with_intermediate_layers(ufo_module):
