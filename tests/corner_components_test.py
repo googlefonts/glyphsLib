@@ -1,9 +1,10 @@
+import logging
 import math
 
 from fontTools.misc.bezierTools import cubicPointAtT
 from fontTools.pens.basePen import BasePen
 import glyphsLib
-from glyphsLib.builder.constants import HINTS_LIB_KEY
+from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
 from glyphsLib.filters.cornerComponents import (
     CornerComponentsFilter,
     split_cubic_at_point,
@@ -454,3 +455,41 @@ def test_corner_next_to_a_duplicate_node(node_index, expected):
     points = _apply_corner(corner, host, node_index)
     on_curves = [(x, y) for x, y, segment_type in points if segment_type]
     assert on_curves[1:-2] == expected
+
+
+@pytest.mark.parametrize(
+    "shape_order, shape_index",
+    [(None, 1), ("PC", 2), ("CP", 0)],
+    ids=["no-such-path", "no-such-shape", "component"],
+)
+def test_corner_on_shape_that_is_not_a_path_is_ignored(
+    caplog, shape_order, shape_index
+):
+    # Glyphs ignores these. Aoboshi One's uni5B57 has two corners on a path
+    # that isn't there any more.
+    font = ufoLib2.Font()
+    pen = font.newGlyph("_corner.test").getPointPen()
+    pen.beginPath()
+    for pt, segment_type in (
+        ((0, 50), "move"),
+        ((-50, 50), "line"),
+        ((-50, 0), "line"),
+    ):
+        pen.addPoint(pt, segment_type)
+    pen.endPath()
+    host = font.newGlyph("host")
+    pen = host.getPointPen()
+    pen.beginPath()
+    for pt in ((100, 500), (100, 100), (500, 100)):
+        pen.addPoint(pt, "line")
+    pen.endPath()
+    if shape_order:
+        pen.addComponent("_corner.test", (1, 0, 0, 1, 0, 0))
+        host.lib[SHAPE_ORDER_LIB_KEY] = shape_order
+    host.lib[HINTS_LIB_KEY] = [
+        {"type": "Corner", "name": "_corner.test", "origin": [shape_index, 0]}
+    ]
+    with caplog.at_level(logging.WARNING):
+        CornerComponentsFilter(include={"host"})(font)
+    assert [(pt.x, pt.y) for pt in host[0]] == [(100, 500), (100, 100), (500, 100)]
+    assert "is not a path" in caplog.text
