@@ -20,20 +20,18 @@ from fontTools.pens.reverseContourPen import ReverseContourPen
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
 from ufo2ft.filters import BaseFilter
-from ufoLib2.objects import Glyph
+from ufoLib2.objects import Contour, Glyph
+from ufoLib2.objects import Point as Node
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
 from glyphsLib.filters.eraseOpenCorners import erase_open_corners_in_contour
 
-try:
-    from math import dist
-except ImportError:
-
-    def dist(p1, p2):
-        return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
-
-
 logger = logging.getLogger(__name__)
+
+# The geometry helpers work on plain tuples rather than UFO points
+Point = tuple[float, float]  # a position
+Vector = tuple[float, float]  # a direction, usually of unit length
+Segment = list[Point]  # two points for a line, four for a cubic
 
 
 class Alignment(IntEnum):
@@ -47,18 +45,18 @@ class Alignment(IntEnum):
 # Lots of boring curve math stuff...
 
 
-def otRoundNode(node):
+def otRoundNode(node: Node) -> Node:
     node.x, node.y = otRound(node.x), otRound(node.y)
     return node
 
 
 # We often have Points (of some unknown UFO class), but fontTools
 # math stuff needs tuples.
-def as_tuples(pts):
+def as_tuples(pts) -> list[Point]:
     return [(pt.x, pt.y) for pt in pts]
 
 
-def get_next_segment(path, index):
+def get_next_segment(path: Contour, index: int) -> list[Node]:
     seg = [path[index]]
     index = (index + 1) % len(path)
     seg.append(path[index])
@@ -70,7 +68,7 @@ def get_next_segment(path, index):
     return seg
 
 
-def get_previous_segment(path, index):
+def get_previous_segment(path: Contour, index: int) -> list[Node]:
     seg = [path[index]]
     index = (index - 1) % len(path)
     seg.append(path[index])
@@ -82,13 +80,13 @@ def get_previous_segment(path, index):
     return list(reversed(seg))
 
 
-def cubic_length(seg):
+def cubic_length(seg: Segment) -> float:
     """Measure a cubic the way Glyphs does, as ten chords at even steps of t."""
     points = [cubicPointAtT(*seg, i / 10) for i in range(11)]
-    return sum(dist(a, b) for a, b in zip(points, points[1:]))
+    return sum(math.dist(a, b) for a, b in zip(points, points[1:]))
 
 
-def cubic_t_for_distance(seg, distance):
+def cubic_t_for_distance(seg: Segment, distance: float) -> float:
     """Find the t at `distance` along `seg`.
 
     This tries to match the behaviour of Glyphs, so that our points land
@@ -117,7 +115,7 @@ def cubic_t_for_distance(seg, distance):
     return t
 
 
-def point_along_segment(seg, distance):
+def point_along_segment(seg: Segment, distance: float) -> Point:
     """Find the point `distance` along `seg` from its start.
 
     The distance is measured along the curve. Past the end of a line, the
@@ -125,14 +123,16 @@ def point_along_segment(seg, distance):
     curve's end.
     """
     if len(seg) == 2:
-        length = dist(*seg)
+        length = math.dist(*seg)
         t = distance / length if length else 0
     else:
         t = cubic_t_for_distance(seg, distance)
     return segmentPointAtT(seg, t)
 
 
-def distance_to_line(point, direction, origin, line_direction):
+def distance_to_line(
+    point: Point, direction: Vector, origin: Point, line_direction: Vector
+) -> float | None:
     """Find how far `point` must move along `direction` to land on a line.
 
     The line runs through `origin` along `line_direction`, unbounded both
@@ -146,20 +146,20 @@ def distance_to_line(point, direction, origin, line_direction):
     return cross(offset, line_direction) / denominator
 
 
-def unit_vector(vector):
+def unit_vector(vector: Vector) -> Vector:
     length = math.hypot(*vector)
     return (vector[0] / length, vector[1] / length)
 
 
-def cross(a, b):
+def cross(a: Vector, b: Vector) -> float:
     return a[0] * b[1] - a[1] * b[0]
 
 
-def dot(a, b):
+def dot(a: Vector, b: Vector) -> float:
     return a[0] * b[0] + a[1] * b[1]
 
 
-def shear_across(axis, angle):
+def shear_across(axis: Vector, angle: float) -> Transform:
     """Shear points across the unit vector `axis`, so that it turns by `angle`.
 
     Points keep their distance along the axis.
@@ -169,18 +169,18 @@ def shear_across(axis, angle):
     return Transform(1 - k * x * y, k * x * x, -k * y * y, 1 + k * x * y, 0, 0)
 
 
-def angle_of(vector):
+def angle_of(vector: Vector) -> float:
     return math.atan2(vector[1], vector[0])
 
 
-def turn_towards(vector, direction):
+def turn_towards(vector: Vector, direction: Vector) -> float:
     # The angle that turns `vector` to point along `direction`
     if direction == (0, 0):
         return 0
     return math.remainder(angle_of(direction) - angle_of(vector), math.tau)
 
 
-def aim_along(seg, distance):
+def aim_along(seg: Segment, distance: float) -> Vector:
     """Find the direction a corner end aims in along its stroke `seg`.
 
     The end aims from the start of `seg` at the point `distance` along it.
@@ -208,16 +208,16 @@ class CornerComponentApplier:
     corner_name: str
     glyph_name: str
     alignment: Alignment
-    glyph: object
+    glyph: Glyph
     path_index: int
-    corner_path: object
-    other_paths: list
-    target_node: object
-    target_node_ix: int = None
-    origin: (int, int) = (0, 0)
-    left: (int, int) = None
-    right: (int, int) = None
-    scale: (int, int) = None
+    corner_path: Contour
+    other_paths: list[Contour]
+    target_node: Node
+    target_node_ix: int | None = None
+    origin: Point = (0, 0)
+    left: Point | None = None
+    right: Point | None = None
+    scale: tuple[float, float] | None = None
 
     def fail(self, msg, hard=True):
         full_msg = f"{msg} (corner {self.corner_name} in {self.glyph_name})"
