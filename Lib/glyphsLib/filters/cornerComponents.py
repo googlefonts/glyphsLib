@@ -168,27 +168,25 @@ def shear_across(axis, angle):
     return Transform(1 - k * x * y, k * x * x, -k * y * y, 1 + k * x * y, 0, 0)
 
 
+def angle_of(vector):
+    return math.atan2(vector[1], vector[0])
+
+
 def turn_towards(vector, direction):
     # The angle that turns `vector` to point along `direction`
     if direction == (0, 0):
         return 0
-    return math.remainder(
-        math.atan2(direction[1], direction[0]) - math.atan2(vector[1], vector[0]),
-        math.tau,
-    )
+    return math.remainder(angle_of(direction) - angle_of(vector), math.tau)
 
 
-def aim_along(seg, distance, anchor):
+def aim_along(seg, distance):
     """Find the direction a corner end aims in along its stroke `seg`.
 
     The end aims from the start of `seg` at the point `distance` along it.
-    An end at the origin would aim at the start itself, so there it aims its
-    anchor along the stroke as it leaves its start instead. Without an
-    anchor, such an end has no direction.
+    An end at the origin would aim at the start itself, so it aims along the
+    stroke as it leaves its start instead.
     """
     start = seg[0]
-    if distance == 0 and anchor is None:
-        return (0, 0)
     if len(seg) == 2:
         # Along a line, that's just the line's own direction
         candidates = seg[1:]
@@ -279,8 +277,10 @@ class CornerComponentApplier:
         instroke = as_tuples(reversed(self.instroke))
         outstroke = as_tuples(self.outstroke)
         distances = math.hypot(first.x, first.y), math.hypot(last.x, last.y)
-        instroke_direction = aim_along(instroke, distances[0], self.left)
-        outstroke_direction = aim_along(outstroke, distances[1], self.right)
+        instroke_direction = aim_along(instroke, distances[0])
+        outstroke_direction = aim_along(outstroke, distances[1])
+        left = self.left or (first.x, first.y)
+        right = self.right or (last.x, last.y)
 
         # If the corner turns the other way from the host path, Glyphs
         # mirrors it to fit. Unaligned, it isn't mirrored, but its ends turn
@@ -289,9 +289,11 @@ class CornerComponentApplier:
         host_turn = cross(instroke_direction, outstroke_direction)
         if host_turn == 0 and dot(instroke_direction, outstroke_direction) < 0:
             host_turn = 1
-        corner_turn = cross(
-            self.left or (first.x, first.y), self.right or (last.x, last.y)
-        )
+        # A corner with no vector for one end, because that end node or its
+        # anchor is on the origin, counts as turning like an outside corner.
+        corner_turn = cross(left, right)
+        if (0, 0) in (left, right):
+            corner_turn = -1
         turns_other_way = host_turn * corner_turn < 0
         if turns_other_way and self.alignment != Alignment.UNALIGNED:
             self.mirror_paths()
@@ -300,6 +302,11 @@ class CornerComponentApplier:
         left = self.left or (first.x, first.y)
         right = self.right or (last.x, last.y)
 
+        # Glyphs takes an end with no vector to point along the corner's y
+        # axis, which is mirrored with the corner
+        left_or_up = left if left != (0, 0) else self.axes[1]
+        right_or_up = right if right != (0, 0) else self.axes[1]
+
         # Glyphs fits the corner twice. The second time, each end aims as far
         # along its stroke as the first fit left it from the origin, which
         # makes a difference where an end is sheared to fit a curved stroke.
@@ -307,16 +314,25 @@ class CornerComponentApplier:
         for _ in range(2):
             for pt, (x, y) in zip(self.corner_path, unfitted):
                 pt.x, pt.y = x, y
-            instroke_direction = aim_along(instroke, distances[0], self.left)
-            outstroke_direction = aim_along(outstroke, distances[1], self.right)
-            instroke_turn = turn_towards(left, instroke_direction)
-            outstroke_turn = turn_towards(right, outstroke_direction)
+            instroke_direction = aim_along(instroke, distances[0])
+            outstroke_direction = aim_along(outstroke, distances[1])
+            instroke_turn = turn_towards(left_or_up, instroke_direction)
+            outstroke_turn = turn_towards(right_or_up, outstroke_direction)
 
             # The corner as a whole turns to fit the stroke it's aligned to
             if self.alignment == Alignment.OUTSTROKE:
                 rotation = outstroke_turn
             elif self.alignment == Alignment.INSTROKE:
                 rotation = instroke_turn
+            elif self.alignment == Alignment.MIDDLE and (0, 0) in (left, right):
+                # Glyphs turns such a corner's x axis to the host's bisector
+                in_angle = angle_of(instroke_direction)
+                out_angle = angle_of(outstroke_direction)
+                rotation = (
+                    in_angle
+                    + math.remainder(out_angle - in_angle, math.tau) / 2
+                    - angle_of(self.axes[0])
+                )
             elif self.alignment == Alignment.MIDDLE:
                 rotation = (
                     instroke_turn
@@ -325,16 +341,27 @@ class CornerComponentApplier:
             else:
                 rotation = 0
 
-            # The ends of the corner do the rest of the turning
-            self.fit_end(0, sign * (instroke_turn - rotation), self.left)
-            self.fit_end(-1, sign * (outstroke_turn - rotation), self.right)
+            # The ends of the corner do the rest of the turning. An end with
+            # no vector does all of its turning itself.
+            if left != (0, 0):
+                instroke_turn -= rotation
+            if right != (0, 0):
+                outstroke_turn -= rotation
+            self.fit_end(0, sign * instroke_turn, self.left)
+            self.fit_end(-1, sign * outstroke_turn, self.right)
             distances = math.hypot(first.x, first.y), math.hypot(last.x, last.y)
 
         # Curved strokes are cut as far along them as the fitted end nodes
         # are from the origin, before the corner slides into place
         instroke_cut, outstroke_cut = distances
 
-        self.place(node, rotation, instroke_direction, outstroke_direction)
+        # An end with no vector doesn't slide the corner along its stroke
+        self.place(
+            node,
+            rotation,
+            instroke_direction if left != (0, 0) else (0, 0),
+            outstroke_direction if right != (0, 0) else (0, 0),
+        )
 
         # Keep hold of the original outstroke segment. Fitting the
         # instroke to the corner component will change the position
@@ -387,7 +414,8 @@ class CornerComponentApplier:
         If the end's segment runs within 30 degrees of the line from the
         origin to the anchor (or without one, to the end node), as a
         bracketed serif leaving along its stem does, the end node turns
-        around the anchor (or the origin), taking its handle with it.
+        around the anchor (or the origin), taking its handle with it. So does
+        an end with no such line, on the origin.
         Otherwise the end is sheared instead, along whichever of the
         corner's axes is nearer that line: points keep their distance from
         the anchor along the axis, and the axis turns by `turn`.
@@ -398,9 +426,12 @@ class CornerComponentApplier:
         pivot = anchor or (0, 0)
         towards = anchor or (end.x, end.y)
         segment = (neighbour.x - end.x, neighbour.y - end.y)
-        if segment == (0, 0) or towards == (0, 0):
+        if segment == (0, 0):
             return
-        if abs(cross(unit_vector(segment), unit_vector(towards))) < 0.5:
+        if (
+            towards == (0, 0)
+            or abs(cross(unit_vector(segment), unit_vector(towards))) < 0.5
+        ):
             fit = Transform().rotate(turn)
         elif math.isclose(math.cos(turn), 0, abs_tol=1e-4):
             # The axis would turn parallel to its stroke
