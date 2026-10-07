@@ -3931,6 +3931,17 @@ class GSLayer(GSBase):
                 shape = parser._parse_dict(shape_dict, GSPath)
                 self.paths.append(shape)
 
+    # Format 2 keeps paths and components under separate keys, which Glyphs
+    # writes alphabetically, components first. Glyphs itself reads such a layer
+    # as all paths followed by all components, which is also what a format 2
+    # hint origin assumes when it counts paths only, so keep that order
+    # whichever key is parsed first.
+    def _parse_paths_dict(self, parser, paths):
+        self.shapes = parser._parse(paths, GSPath) + list(self.components)
+
+    def _parse_components_dict(self, parser, components):
+        self.shapes = list(self.paths) + parser._parse(components, GSComponent)
+
     _defaultsForName = {
         "width": 600,
         "metricLeft": None,
@@ -4322,11 +4333,9 @@ GSLayer._add_parsers(
             "type": GSAnnotation,
         },
         {"plist_name": "backgroundImage", "type": GSBackgroundImage},
-        {"plist_name": "paths", "type": GSPath},
         {"plist_name": "anchors", "type": GSAnchor},
         {"plist_name": "guideLines", "object_name": "guides", "type": GSGuide},  # V2
         {"plist_name": "guides", "type": GSGuide},  # V3
-        {"plist_name": "components", "type": GSComponent},
         {"plist_name": "hints", "type": GSHint},
         {"plist_name": "userData", "object_name": "_userData", "type": dict},
         {"plist_name": "partSelection", "object_name": "partSelection", "type": dict},
