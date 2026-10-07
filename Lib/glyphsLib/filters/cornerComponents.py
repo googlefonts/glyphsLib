@@ -713,6 +713,19 @@ class CornerComponentsFilter(BaseFilter):
                     shape_index,
                 )
                 continue
+            path = glyph[path_idx]
+            target_node = path[(node_idx + 1) % len(path)]
+            # Glyphs ignores a corner on an off-curve point too
+            if target_node.segmentType is None:
+                logger.warning(
+                    "Ignoring corner component %s in %s: node %d of shape %d is "
+                    "an off-curve point",
+                    glyphs_cc["name"],
+                    glyph.name,
+                    node_idx,
+                    shape_index,
+                )
+                continue
 
             # We use font, not .glyphSet here because corner components
             # aren't normally exported
@@ -769,7 +782,7 @@ class CornerComponentsFilter(BaseFilter):
                 right=cc_right,
                 # We pass in the current starting node, because its
                 # position may change if we apply more than one corner.
-                target_node=glyph[path_idx][(node_idx + 1) % len(glyph[path_idx])],
+                target_node=target_node,
             )
             todo_list.append(cc)
 
