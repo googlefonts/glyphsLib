@@ -271,7 +271,8 @@ class CornerComponentApplier:
         )
 
         # If the corner turns the other way from the host path, Glyphs
-        # mirrors it to fit, unless the corner is unaligned.
+        # mirrors it to fit. Unaligned, it isn't mirrored, but its ends turn
+        # the other way instead.
         host_turn = cross(
             (instroke_target[0] - node[0], instroke_target[1] - node[1]),
             (outstroke_target[0] - node[0], outstroke_target[1] - node[1]),
@@ -279,8 +280,10 @@ class CornerComponentApplier:
         corner_turn = cross(
             self.left or (first.x, first.y), self.right or (last.x, last.y)
         )
-        if self.alignment != Alignment.UNALIGNED and host_turn * corner_turn < 0:
+        turns_other_way = host_turn * corner_turn < 0
+        if turns_other_way and self.alignment != Alignment.UNALIGNED:
             self.mirror_paths()
+            turns_other_way = False
         instroke_turn = turn_towards(
             self.left or (first.x, first.y), node, instroke_target
         )
@@ -302,8 +305,9 @@ class CornerComponentApplier:
             rotation = 0
 
         # The ends of the corner do the rest of the turning
-        self.fit_end(0, instroke_turn - rotation, self.left)
-        self.fit_end(-1, outstroke_turn - rotation, self.right)
+        sign = -1 if turns_other_way else 1
+        self.fit_end(0, sign * (instroke_turn - rotation), self.left)
+        self.fit_end(-1, sign * (outstroke_turn - rotation), self.right)
 
         self.place(node, rotation, instroke_target, outstroke_target)
 
