@@ -310,11 +310,11 @@ class CornerComponentApplier:
         # its stroke as fitting the corner to the strokes would leave that end
         # node from the origin. That makes a difference where an end is
         # sheared to fit a curved stroke.
+        reach = [0, 0]
         for index, end in enumerate((first, last)):
-            fit = self.end_fit(index, directions, aiming=True)
-            if fit is not None:
-                distance = math.hypot(*fit.transformPoint((end.x, end.y)))
-                directions[index] = aim_along(strokes[index], distance)
+            fit = self.end_fit(index, directions, aiming=True) or Transform()
+            reach[index] = math.hypot(*fit.transformPoint((end.x, end.y)))
+            directions[index] = aim_along(strokes[index], reach[index])
 
         rotation = self.rotation(directions)
         for index in range(2):
@@ -324,8 +324,15 @@ class CornerComponentApplier:
                     pt.x, pt.y = fit.transformPoint((pt.x, pt.y))
 
         # Curved strokes are cut as far along them as the fitted end nodes
-        # are from the origin, before the corner slides into place
+        # are from the origin, before the corner slides into place. Where an
+        # end aims past the end of a curve, Glyphs takes the stroke to be a
+        # line: it straightens the instroke, and leaves the outstroke uncut.
+        # It also straightens an instroke it would cut past the end of.
         cuts = [math.hypot(first.x, first.y), math.hypot(last.x, last.y)]
+        past_end = [
+            len(stroke) == 4 and distance >= cubic_length(stroke)
+            for stroke, distance in zip(strokes, (max(reach[0], cuts[0]), reach[1]))
+        ]
 
         # An end with no vector doesn't slide the corner along its stroke
         self.place(
@@ -345,11 +352,12 @@ class CornerComponentApplier:
 
         # The corner's first node takes the place of the target node, and its
         # last node starts the outstroke.
-        self.split_instroke((first.x, first.y), cuts[0])
+        self.split_instroke((first.x, first.y), cuts[0], past_end[0])
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
-        self.fixup_outstroke(original_outstroke, cuts[1])
+        if not past_end[1]:
+            self.fixup_outstroke(original_outstroke, cuts[1])
 
         # Last of all, if there are other paths in the corner component,
         # they just get copied into the glyph.
@@ -524,12 +532,20 @@ class CornerComponentApplier:
             for pt in path:
                 pt.x, pt.y = transform.transformPoint((pt.x, pt.y))
 
-    def split_instroke(self, first, distance):
+    def split_instroke(self, first, distance, straight=False):
         """Cut the instroke where the corner starts.
 
         A line ends at the corner's first node. A curve is cut `distance`
-        along it from the target node, and the corner starts there.
+        along it from the target node, and the corner starts there. A
+        `straight` curve becomes a line.
         """
+        if straight and len(self.instroke) == 4:
+            for handle in self.instroke[1:3]:
+                del self.path[next(i for i, pt in enumerate(self.path) if pt is handle)]
+            self.target_node.type = "line"
+            self.target_node_ix = next(
+                i for i, pt in enumerate(self.path) if pt is self.target_node
+            )
         if len(self.instroke) == 2:
             (
                 self.path[self.target_node_ix].x,
