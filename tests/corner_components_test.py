@@ -160,7 +160,7 @@ def test_split_cubic_at_point_outward_picks_segment_starting_at_point():
     assert result[-1] == pytest.approx(seg[-1], abs=1e-6)
 
 
-def _apply_corner(corner_nodes, host_nodes, node_index, **hint):
+def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
     font = ufoLib2.Font()
     for name, nodes in (("_corner.test", corner_nodes), ("host", host_nodes)):
         pen = font.newGlyph(name).getPointPen()
@@ -168,6 +168,8 @@ def _apply_corner(corner_nodes, host_nodes, node_index, **hint):
         for pt, segment_type in nodes:
             pen.addPoint(pt, segment_type)
         pen.endPath()
+    for name, (x, y) in (anchors or {}).items():
+        font["_corner.test"].appendAnchor({"name": name, "x": x, "y": y})
     font["host"].lib[HINTS_LIB_KEY] = [
         {"type": "Corner", "name": "_corner.test", "origin": [0, node_index], **hint}
     ]
@@ -446,3 +448,28 @@ def test_corner_on_off_curve_point_is_ignored(caplog):
         points = _apply_corner(corner, host, 2)
     assert points == [(x, y, segment_type) for (x, y), segment_type in host]
     assert "off-curve point" in caplog.text
+
+
+def test_mirrored_corner_shears_along_mirrored_axes():
+    # Drawn tilted and mirrored to fit the inside corner of an L, the serif is
+    # sheared along its own axes, which are mirrored with it. (Glyphs 3.5)
+    corner = [
+        ((-36, 48), "move"),
+        ((-92, 6), "line"),
+        ((-56, -42), "line"),
+        ((24, 18), "line"),
+    ]
+    host = [
+        (pt, "line")
+        for pt in (
+            (100, 600),
+            (100, 100),
+            (500, 100),
+            (500, 250),
+            (250, 250),
+            (250, 600),
+        )
+    ]
+    points = _apply_corner(corner, host, 3, anchors={"left": (-26, 18)})
+    on_curves = [(x, y) for x, y, segment_type in points if segment_type]
+    assert on_curves[4:8] == [(313, 262), (310, 190), (250, 190), (250, 290)]
