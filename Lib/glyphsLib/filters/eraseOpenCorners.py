@@ -70,6 +70,53 @@ def open_corner_crossing(prev_seg, line, next_seg):
     return None
 
 
+def _segments(contour):
+    # The point indices of each segment of a closed contour, starting from its
+    # first on-curve point as a pen would
+    on_curves = [i for i, pt in enumerate(contour) if pt.segmentType]
+    return [
+        [(start + i) % len(contour) for i in range((end - start) % len(contour) + 1)]
+        for start, end in zip(on_curves, on_curves[1:] + on_curves[:1])
+    ]
+
+
+def erase_open_corners_in_contour(contour):
+    """Erase the open corners of a closed contour of points, in place.
+
+    Each open corner's line starts at a point that moves to where the
+    segments either side cross, and ends at a point that is removed. The
+    other points stay the same objects.
+    """
+
+    def points(seg):
+        return [(contour[i].x, contour[i].y) for i in seg]
+
+    while True:
+        segments = _segments(contour)
+        # we need at least two segments to find a corner
+        if len(segments) < 3:
+            return
+        for ix, line in enumerate(segments):
+            if contour[line[-1]].segmentType != "line":
+                continue
+            prev_seg, next_seg = segments[ix - 1], segments[(ix + 1) % len(segments)]
+            crossing = open_corner_crossing(
+                points(prev_seg), points(line), points(next_seg)
+            )
+            if crossing is None:
+                continue
+            first, _ = _split_segment_at_t(points(prev_seg), crossing[0])
+            _, second = _split_segment_at_t(points(next_seg), crossing[1])
+            for i, pt in zip(prev_seg, first):
+                contour[i].x, contour[i].y = pt
+            for i, pt in zip(next_seg[1:], second[1:]):
+                contour[i].x, contour[i].y = pt
+            del contour[line[-1]]
+            break
+        else:
+            return
+
+
 class EraseOpenCornersPen(BasePen):
     def __init__(self, outpen):
         self.segments = []

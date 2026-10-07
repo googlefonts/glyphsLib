@@ -23,6 +23,7 @@ from ufo2ft.filters import BaseFilter
 from ufoLib2.objects import Glyph
 
 from glyphsLib.builder.constants import HINTS_LIB_KEY, SHAPE_ORDER_LIB_KEY
+from glyphsLib.filters.eraseOpenCorners import erase_open_corners_in_contour
 
 try:
     from math import dist
@@ -634,7 +635,22 @@ class CornerComponentsFilter(BaseFilter):
             )
             todo_list.append(cc)
 
+        # Glyphs erases the open corners in a glyph before it applies its
+        # corners. A corner on the node that ends an open corner's line goes
+        # with that node.
+        if todo_list:
+            for contour in glyph:
+                if not contour.open:
+                    erase_open_corners_in_contour(contour)
         for cc in todo_list:
+            if not any(pt is cc.target_node for pt in glyph[cc.path_index]):
+                logger.warning(
+                    "Ignoring corner component %s in %s: its node was removed "
+                    "with an open corner",
+                    cc.corner_name,
+                    glyph.name,
+                )
+                continue
             cc.apply()
 
         return True

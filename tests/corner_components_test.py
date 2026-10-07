@@ -16,10 +16,10 @@ datadir = py.path.local(py.path.local(__file__).dirname).join("data")
 # of its corners, made by tests/tools/corner_components_expectations.py.
 ufo = glyphsLib.load_to_ufos(datadir.join("CornerComponents.glyphs"))[0]
 
-# Cases where we don't yet match Glyphs
-MISMATCHES = {
-    "real_aoboshi_g",
-}
+# Cases we don't yet match Glyphs on, run as strict xfails: a case that
+# starts matching fails until it's taken out of here. Empty for now; add a
+# new case here if it lands before the code that handles it.
+MISMATCHES = set()
 
 
 def _cases():
