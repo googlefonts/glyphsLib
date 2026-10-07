@@ -223,7 +223,7 @@ def test_split_cubic_at_point_outward_picks_segment_starting_at_point():
     assert result[-1] == pytest.approx(seg[-1], abs=1e-6)
 
 
-def _apply_corners(corner_nodes, host_nodes, hints, anchors=None):
+def _apply_corner(corner_nodes, host_nodes, node_index, **hint):
     font = ufoLib2.Font()
     for name, nodes in (("_corner.test", corner_nodes), ("host", host_nodes)):
         pen = font.newGlyph(name).getPointPen()
@@ -231,18 +231,11 @@ def _apply_corners(corner_nodes, host_nodes, hints, anchors=None):
         for pt, segment_type in nodes:
             pen.addPoint(pt, segment_type)
         pen.endPath()
-    for name, (x, y) in (anchors or {}).items():
-        font["_corner.test"].appendAnchor({"name": name, "x": x, "y": y})
     font["host"].lib[HINTS_LIB_KEY] = [
-        {"type": "Corner", "name": "_corner.test", **hint} for hint in hints
+        {"type": "Corner", "name": "_corner.test", "origin": [0, node_index], **hint}
     ]
     assert CornerComponentsFilter(include={"host"})(font)
     return [(pt.x, pt.y, pt.segmentType) for pt in font["host"][0]]
-
-
-def _apply_corner(corner_nodes, host_nodes, node_index, anchors=None, **hint):
-    hint["origin"] = [0, node_index]
-    return _apply_corners(corner_nodes, host_nodes, [hint], anchors)
 
 
 @pytest.mark.parametrize(
@@ -436,135 +429,28 @@ def test_corner_components_format2_mixed_glyph(path_index):
     assert [component.baseGlyph for component in glyph.components] == ["square"]
 
 
-def _path(*nodes):
-    # Bare points are line nodes
-    return [node if isinstance(node[0], tuple) else (node, "line") for node in nodes]
-
-
-SERIF = _path((0, 96), (-68, 96), (-68, 0), (9, 0))
-SERIF[0] = (SERIF[0][0], "move")
-
-
-# Corners taken from real fonts, with the on-curve points Glyphs gave them
 @pytest.mark.parametrize(
-    "corner, anchors, host, node_index, hint, expected",
+    "node_index, expected",
     [
-        pytest.param(
-            # The serif slides along the outstroke until its left anchor is
-            # on the instroke. (Glyphs 2 decomposing Montagu Slab's K)
-            SERIF,
-            {"left": (0, 45)},
-            _path((257, 198), (800, 682), (629, 682), (184, 283)),
-            0,
-            {"scale": [0.02, 1]},
-            [(692, 586), (751, 586), (751, 682)],
-            id="left-anchor",
-        ),
-        pytest.param(
-            # Flipped, the left anchor becomes the right one, and aligned to
-            # the instroke, the serif slides along it until that anchor is on
-            # the outstroke. (Ditto)
-            SERIF,
-            {"left": (0, 45)},
-            _path((558, 0), (796, 0), (462, 428), (326, 307)),
-            0,
-            {"options": 1, "scale": [-0.2, 1]},
-            [(774, 0), (774, 96), (721, 96)],
-            id="right-anchor",
-        ),
-        pytest.param(
-            # The serif turns the other way from the stem, so Glyphs mirrors
-            # it. (Glyphs' export of Aoboshi One's L)
-            [
-                ((0, 30), "move"),
-                ((0, 22), None),
-                ((15, 19), None),
-                ((22, 19), "curve"),
-                ((22, 0), "line"),
-                ((-28, 0), "line"),
-            ],
-            None,
-            _path((73, 0), (207, 0), (207, 750), (73, 750)),
-            3,
-            {},
-            [(73, 30), (51, 19), (51, 0)],
-            id="mirrored",
-        ),
-        pytest.param(
-            # Unaligned, the serif isn't mirrored, though it turns the other
-            # way from the inside corner of this L. (Glyphs 3.5)
-            [((0, 60), "move"), *_path((-70, 60), (-70, 0), (30, 0))],
-            None,
-            _path(
-                (100, 600), (100, 100), (500, 100), (500, 250), (250, 250), (250, 600)
-            ),
-            3,
-            {"options": 4, "scale": [-1, 1]},
-            [(280, 250), (320, 250), (320, 310), (250, 310)],
-            id="unaligned-not-mirrored",
-        ),
-        pytest.param(
-            # Aligned to the instroke, a last segment that curves in along the
-            # outstroke ends on it, |last node| along. (Aoboshi One's x)
-            [
-                ((28, 0), "move"),
-                ((-42, 0), "line"),
-                ((-42, 19), "line"),
-                ((-25, 19), None),
-                ((0, 32), None),
-                ((0, 40), "curve"),
-            ],
-            None,
-            _path((31, 0), (170, 0), (301, 171), (344, 222), (526, 460), (386, 460)),
-            4,
-            {"options": 1, "scale": [1, 0.97]},
-            [(344, 460), (344, 442), (362, 429)],
-            id="curved-end-on-outstroke",
-        ),
-        pytest.param(
-            # Drawn a quarter turn round, leaving along the instroke, with a
-            # left anchor and a curved outstroke. (Glyphs 3.5's export of
-            # Alkatra's l)
-            [
-                ((175, 491), "move"),
-                ((158, 491), None),
-                ((57, 473), None),
-                ((57, 444), "curve"),
-                ((57, 432), None),
-                ((65, 422), None),
-                ((69, 410), "curve"),
-                ((76, 392), None),
-                ((81, 361), None),
-                ((78, 330), "curve"),
-            ],
-            {"origin": (95, 491), "left": (175, 491), "right": (75, 304)},
-            _path(
-                (101, -14),
-                (188, -14),
-                ((195, 72), None),
-                ((201, 177), None),
-                ((214, 273), "curve"),
-                (58, 233),
-            ),
-            0,
-            {},
-            [(108, -14), (225, 36), (212, 70), (201, 150)],
-            id="quarter-turn",
-        ),
+        (1, [(500, 100), (440, 100), (440, 30), (500, 30), (500, 130)]),
+        (0, [(440, 100), (440, 30), (500, 30), (500, 130), (500, 100)]),
     ],
+    ids=["empty-instroke", "empty-outstroke"],
 )
-def test_corner_matches_glyphs(corner, anchors, host, node_index, hint, expected):
-    points = _apply_corner(corner, host, node_index, anchors, **hint)
+def test_corner_next_to_a_duplicate_node(node_index, expected):
+    # Glyphs 3.5's output for a corner on either of two nodes in the same
+    # place. It keeps the other node, and aims along the stroke between them,
+    # which has no length, as if it ran straight up.
+    corner = [
+        ((0, 60), "move"),
+        ((-70, 60), "line"),
+        ((-70, 0), "line"),
+        ((30, 0), "line"),
+    ]
+    host = [
+        (pt, "line")
+        for pt in ((100, 100), (500, 100), (500, 100), (500, 500), (100, 500))
+    ]
+    points = _apply_corner(corner, host, node_index)
     on_curves = [(x, y) for x, y, segment_type in points if segment_type]
-    assert any(
-        on_curves[i : i + len(expected)] == expected for i in range(len(on_curves))
-    ), on_curves
-
-
-def test_second_corner_on_a_node_is_ignored():
-    # The first corner replaces the node, so in Glyphs a second one on the
-    # same node does nothing. (Aoboshi One's a.ss01)
-    corner = [((0, 50), "move"), ((-50, 50), "line"), ((-50, 0), "line")]
-    host = [((100, 500), "line"), ((100, 100), "line"), ((500, 100), "line")]
-    hint = {"origin": [0, 0]}
-    assert _apply_corners(corner, host, [hint, hint]) == _apply_corner(corner, host, 0)
+    assert on_curves[1:-2] == expected

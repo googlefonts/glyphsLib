@@ -251,6 +251,22 @@ def distance_to_segment(point, direction, seg):
     return x0 + (x1 - x0) * t
 
 
+def has_length(seg):
+    return any(pt != seg[0] for pt in seg[1:])
+
+
+def aimable(stroke):
+    """Return `stroke`, or if it has no length, a line running straight up.
+
+    Glyphs aims a corner along a stroke with no length, such as one between
+    two nodes in the same place, as if it ran straight up from the node.
+    """
+    if has_length(stroke):
+        return stroke
+    x, y = stroke[0]
+    return [(x, y), (x, y + 1)]
+
+
 def unit_vector(vector):
     length = math.hypot(*vector)
     return (vector[0] / length, vector[1] / length)
@@ -299,6 +315,25 @@ class CornerComponentApplier:
     scale: (int, int) = None
     outstroke_intersection_point: (int, int) = None
 
+    def warn_about_unused_anchor(self):
+        # We only use the left anchor of a corner aligned to the outstroke,
+        # and the right anchor of one aligned to the instroke. Glyphs uses
+        # them in other ways too.
+        if self.alignment == Alignment.OUTSTROKE:
+            unused = self.right
+        elif self.alignment == Alignment.INSTROKE:
+            unused = self.left
+        else:
+            unused = self.left or self.right
+        if unused is not None:
+            logger.warning(
+                "Ignoring an anchor of corner %s in %s: left anchors are only"
+                " supported with outstroke alignment, and right anchors with"
+                " instroke alignment (the other way round when flipped)",
+                self.corner_name,
+                self.glyph_name,
+            )
+
     def fail(self, msg, hard=True):
         full_msg = f"{msg} (corner {self.corner_name} in {self.glyph_name})"
         if hard:
@@ -328,18 +363,10 @@ class CornerComponentApplier:
         # changed, if we have applied a corner component in this path
         # already.
         for ix, node in enumerate(self.path):
-            if node == self.target_node:
+            if node is self.target_node:
                 self.target_node_ix = ix
         if self.target_node_ix is None:
             self.fail("Lost track of where the corner should be applied")
-
-        aligned = self.alignment in (Alignment.OUTSTROKE, Alignment.INSTROKE)
-        if not aligned and (self.left or self.right):
-            self.fail(
-                "left and right anchors to corner components are"
-                " only supported with left or right alignment",
-                hard=False,
-            )
 
         # Align all paths, and the anchors, to the "origin" anchor.
         for path in [self.corner_path] + self.other_paths:
@@ -362,6 +389,8 @@ class CornerComponentApplier:
             self.reverse_corner_path()
             self.left, self.right = self.right, self.left
 
+        self.warn_about_unused_anchor()
+
         # The corner's first and last nodes may point any which way from
         # the origin; it is how far away they are that tells us where the
         # corner meets the host path.
@@ -373,8 +402,8 @@ class CornerComponentApplier:
         # measures along the curve. Both strokes are measured from the target
         # node, so the instroke is taken backwards, and the directions point
         # away from the node.
-        instroke = as_tuples(reversed(self.instroke))
-        outstroke = as_tuples(self.outstroke)
+        instroke = aimable(as_tuples(reversed(self.instroke)))
+        outstroke = aimable(as_tuples(self.outstroke))
         instroke_target = segmentPointAtT(
             instroke, point_on_seg_at_distance(instroke, instroke_distance)
         )
@@ -423,7 +452,11 @@ class CornerComponentApplier:
         # are not aligned to the instroke, we may need to stretch the corner
         # component so that it meets the instroke.
         instroke_intersection_point = instroke_target
-        if self.alignment == Alignment.INSTROKE:
+        if not has_length(as_tuples(self.instroke)):
+            # There's no instroke to fit the first node to, so like Glyphs we
+            # leave it where the corner put it
+            instroke_intersection_point = (first.x, first.y)
+        elif self.alignment == Alignment.INSTROKE:
             # Fit the first node to the instroke the way we fit the last
             # node to the outstroke below
             instroke_intersection_point = closest_point_on_segment(
@@ -473,11 +506,12 @@ class CornerComponentApplier:
             otRoundNode(node) for node in self.corner_path[1:]
         ]
 
-        # And fix up the outstroke
-        outstroke_intersection_point = self.recompute_outstroke_intersection_point(
-            original_outstroke
-        )
-        self.fixup_outstroke(original_outstroke, outstroke_intersection_point)
+        # And fix up the outstroke, if it has any length to fit the last node to
+        if has_length(original_outstroke):
+            outstroke_intersection_point = self.recompute_outstroke_intersection_point(
+                original_outstroke
+            )
+            self.fixup_outstroke(original_outstroke, outstroke_intersection_point)
 
         # Last of all, if there are other paths in the corner component,
         # they just get copied into the glyph.
