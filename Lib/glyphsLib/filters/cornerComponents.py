@@ -17,7 +17,6 @@ from fontTools.misc.bezierTools import (
     solveCubic,
     cubicPointAtT,
     segmentPointAtT,
-    splitCubic,
     splitCubicAtT,
 )
 from fontTools.pens.reverseContourPen import ReverseContourPen
@@ -220,25 +219,6 @@ def aim_along(seg, distance, anchor):
     return (0, 1)
 
 
-def split_cubic_at_point(seg, point, inward=True):
-    # When splitting inward we keep the first segment and want its end to be
-    # at the point; when splitting outward we keep the last segment and want
-    # its start to be at the point. The other end is the original segment
-    # endpoint either way, so comparing that tells us nothing.
-    if inward:
-        new_cubic_1 = splitCubic(*seg, point[0], False)[0]
-        new_cubic_2 = splitCubic(*seg, point[1], True)[0]
-        split_end = -1
-    else:
-        new_cubic_1 = splitCubic(*seg, point[0], False)[-1]
-        new_cubic_2 = splitCubic(*seg, point[1], True)[-1]
-        split_end = 0
-    if dist(new_cubic_1[split_end], point) < dist(new_cubic_2[split_end], point):
-        return new_cubic_1
-    else:
-        return new_cubic_2
-
-
 # Using a class here is mild overkill but it allows us to store
 # the information about the component in a slightly more readable
 # manner.
@@ -362,9 +342,10 @@ class CornerComponentApplier:
         self.fit_end(0, sign * (instroke_turn - rotation), self.left)
         self.fit_end(-1, sign * (outstroke_turn - rotation), self.right)
 
-        # Glyphs cuts a curved instroke as far along it as the fitted first
-        # node is from the origin, before the corner slides into place
+        # Curved strokes are cut as far along them as the fitted end nodes
+        # are from the origin, before the corner slides into place
         instroke_cut = math.hypot(first.x, first.y)
+        outstroke_cut = math.hypot(last.x, last.y)
 
         self.place(node, rotation, instroke_direction, outstroke_direction)
 
@@ -380,7 +361,7 @@ class CornerComponentApplier:
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
-        self.fixup_outstroke(original_outstroke, (last.x, last.y))
+        self.fixup_outstroke(original_outstroke, outstroke_cut)
 
         # Last of all, if there are other paths in the corner component,
         # they just get copied into the glyph.
@@ -492,27 +473,22 @@ class CornerComponentApplier:
             for new_pt, old in zip(new_cubic, self.instroke):
                 old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
 
-    def fixup_outstroke(self, original_outstroke, intersection):
-        # Split the outstroke at the nearest point to the intersection.
+    def fixup_outstroke(self, original_outstroke, distance):
+        """Cut the outstroke where the corner ends.
+
+        The outstroke starts at the corner's last node. A curve keeps the
+        handles of what's left of it, once it's cut `distance` along from
+        the target node.
+        """
         # The outstroke has moved now, since we have inserted the path
         outstroke = get_next_segment(
             self.path,
             (self.target_node_ix + len(self.corner_path) - 1) % len(self.path),
         )
-
-        if not intersection:
-            # Something's probably wrong...
-            return
-
-        if len(outstroke) == 2:
-            outstroke[0].x, outstroke[0].y = otRound(intersection[0]), otRound(
-                intersection[1]
-            )
-        else:
-            new_cubic = split_cubic_at_point(
-                original_outstroke, intersection, inward=False
-            )
-            for new_pt, old in zip(new_cubic, outstroke):
+        if len(outstroke) == 4:
+            t = cubic_t_for_distance(original_outstroke, distance)
+            new_cubic = splitCubicAtT(*original_outstroke, t)[-1]
+            for new_pt, old in zip(new_cubic[1:3], outstroke[1:3]):
                 old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
 
     def reverse_paths(self):
