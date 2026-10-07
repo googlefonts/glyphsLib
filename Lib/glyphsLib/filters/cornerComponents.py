@@ -13,7 +13,6 @@ import math
 
 from fontTools.misc.bezierTools import (
     _alignment_transformation,
-    calcCubicArcLength,
     calcCubicParameters,
     solveCubic,
     cubicPointAtT,
@@ -86,6 +85,41 @@ def get_previous_segment(path, index):
     return list(reversed(seg))
 
 
+def cubic_length(seg):
+    """Measure a cubic the way Glyphs does, as ten chords at even steps of t."""
+    points = [cubicPointAtT(*seg, i / 10) for i in range(11)]
+    return sum(dist(a, b) for a, b in zip(points, points[1:]))
+
+
+def cubic_t_for_distance(seg, distance):
+    """Find the t at `distance` along `seg`.
+
+    This tries to match the behaviour of Glyphs, so that our points land
+    where its do:
+
+    1. Start by assuming t = distance / L, where L is the whole curve's
+       length.
+    2. Measure the length l of the curve up to t.
+    3. Move t halfway towards t * distance / l (where it would be if length
+       grew linearly with t).
+    4. Repeat steps 2-3, four times in all.
+
+    Lengths come from `cubic_length`, which sums ten chords rather than
+    measuring the curve exactly. On a straight cubic with its handles at
+    thirds this is exact; on other curves it lands slightly off the true arc
+    length.
+    """
+    length = cubic_length(seg)
+    if distance >= length:
+        return 1.0
+    if distance <= 0:
+        return 0.0
+    t = distance / length
+    for _ in range(4):
+        t = t * (1 + distance / cubic_length(splitCubicAtT(*seg, t)[0])) / 2
+    return t
+
+
 def point_along_segment(seg, distance):
     """Find the point `distance` along `seg` from its start.
 
@@ -96,16 +130,8 @@ def point_along_segment(seg, distance):
     if len(seg) == 2:
         length = dist(*seg)
         t = distance / length if length else 0
-    elif calcCubicArcLength(*seg) <= distance:
-        t = 1.0
     else:
-        low, high = 0.0, 1.0
-        for _ in range(40):
-            t = (low + high) / 2
-            if calcCubicArcLength(*splitCubicAtT(*seg, t)[0]) < distance:
-                low = t
-            else:
-                high = t
+        t = cubic_t_for_distance(seg, distance)
     return segmentPointAtT(seg, t)
 
 
