@@ -362,6 +362,10 @@ class CornerComponentApplier:
         self.fit_end(0, sign * (instroke_turn - rotation), self.left)
         self.fit_end(-1, sign * (outstroke_turn - rotation), self.right)
 
+        # Glyphs cuts a curved instroke as far along it as the fitted first
+        # node is from the origin, before the corner slides into place
+        instroke_cut = math.hypot(first.x, first.y)
+
         self.place(node, rotation, instroke_direction, outstroke_direction)
 
         # Keep hold of the original outstroke segment. Fitting the
@@ -372,7 +376,7 @@ class CornerComponentApplier:
 
         # The corner's first node takes the place of the target node, and its
         # last node starts the outstroke.
-        self.split_instroke((first.x, first.y))
+        self.split_instroke((first.x, first.y), instroke_cut)
         self.path[self.target_node_ix + 1 : self.target_node_ix + 1] = [
             otRoundNode(node) for node in self.corner_path[1:]
         ]
@@ -470,17 +474,21 @@ class CornerComponentApplier:
             for pt in path:
                 pt.x, pt.y = transform.transformPoint((pt.x, pt.y))
 
-    def split_instroke(self, intersection):
+    def split_instroke(self, first, distance):
+        """Cut the instroke where the corner starts.
+
+        A line ends at the corner's first node. A curve is cut `distance`
+        along it from the target node, and the corner starts there.
+        """
         if len(self.instroke) == 2:
-            # Splitting a line is easy...
             (
                 self.path[self.target_node_ix].x,
                 self.path[self.target_node_ix].y,
-            ) = otRound(intersection[0]), otRound(intersection[1])
+            ) = otRound(first[0]), otRound(first[1])
         else:
-            new_cubic = split_cubic_at_point(
-                as_tuples(self.instroke), intersection, inward=True
-            )
+            instroke = as_tuples(self.instroke)
+            t = cubic_t_for_distance(instroke[::-1], distance)
+            new_cubic = splitCubicAtT(*instroke, 1 - t)[0]
             for new_pt, old in zip(new_cubic, self.instroke):
                 old.x, old.y = otRound(new_pt[0]), otRound(new_pt[1])
 
