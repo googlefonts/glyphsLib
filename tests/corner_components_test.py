@@ -284,10 +284,10 @@ def test_straightened_instroke_keeps_its_handles():
 
 def test_open_corners_not_erased_after_corners():
     # Bellota's n, Bold master, cut down to its stem. The corner leaves a spur
-    # whose neighbouring segments cross, like an open corner. Glyphs erases
-    # open corners before it applies corners but not after, so it keeps the
-    # spur. In the other masters the spur doesn't count as an open corner,
-    # so erasing it would leave the masters incompatible.
+    # whose neighbouring segments cross, like an open corner.
+    # decomposeCorners() keeps the spur, but Glyphs' export erases it again,
+    # in the masters where the segments cross, which breaks interpolation. We
+    # keep the spur so the masters stay compatible.
     corner = [
         ((-5, 57), "move"),
         ((-5, 52), "line"),
