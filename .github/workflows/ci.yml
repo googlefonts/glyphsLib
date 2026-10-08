@@ -7,13 +7,16 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
       with:
         python-version: "3.11"
     - name: Install dependencies
@@ -27,9 +30,9 @@ jobs:
         python-version: ["3.14", "3.10"]
         platform: [ubuntu-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -41,7 +44,7 @@ jobs:
         coverage combine
         coverage xml
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457 # v3.1.6
       with:
         file: coverage.xml
         flags: unittests
@@ -67,12 +70,12 @@ jobs:
       # IMPORTANT: mandatory for trusted publishing:
       id-token: write
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
       with:
         # setuptools_scm requires the git clone to not be 'shallow'
         fetch-depth: 0
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
       with:
         python-version: "3.x"
     - name: Extract release notes from annotated tag message
@@ -99,13 +102,8 @@ jobs:
         fi
     - name: Create GitHub release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        # This token is provided by Actions, you do not need to create your own token
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
-        tag_name: ${{ github.ref }}
-        release_name: ${{ github.ref }}
         body_path: "${{ runner.temp }}/release_notes.md"
         draft: false
         prerelease: ${{ env.IS_PRERELEASE }}
@@ -119,4 +117,4 @@ jobs:
         # use https://github.com/pypa/build for our setup.py-less setup
         pipx run build
     - name: Publish package distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
