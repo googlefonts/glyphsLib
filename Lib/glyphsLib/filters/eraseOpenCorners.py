@@ -212,7 +212,7 @@ class EraseOpenCornersFilter(BaseFilter):
         if not len(glyph):
             return False
         # The cornerComponents filter already erased them, before it applied
-        # its corners, which may leave new spurs that Glyphs keeps
+        # its corners, which may leave new spurs that we keep
         if glyph.lib.get(OPEN_CORNERS_ERASED_KEY):
             return False
 

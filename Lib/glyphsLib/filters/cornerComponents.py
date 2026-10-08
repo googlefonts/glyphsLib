@@ -718,8 +718,9 @@ class CornerComponentsFilter(BaseFilter):
             for contour in glyph:
                 if not contour.open:
                     erase_open_corners_in_contour(contour)
-            # Glyphs doesn't erase again once the corners are on, so neither
-            # does the eraseOpenCorners filter
+            # Don't let the eraseOpenCorners filter erase again once the corners
+            # are on. Glyphs' export does, but only in the masters where the
+            # new spurs cross, which breaks compatibility
             glyph.lib[OPEN_CORNERS_ERASED_KEY] = True
         for cc in todo_list:
             if not any(pt is cc.target_node for pt in glyph[cc.path_index]):
