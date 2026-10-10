@@ -87,7 +87,7 @@ def convert(fea, axes=("wght",), font=None):
             "feature cpsp { pos @Uppercase 10 (wdth:80) 20 (wdth:40 opsz:28) 30; }"
             " cpsp;",
             ("wdth", "opsz"),
-            "feature cpsp { pos @Uppercase (wdth=100,opsz=12:10 wdth=80.0:20"
+            "feature cpsp { pos @Uppercase (wdth=100,opsz=12.0:10 wdth=80.0:20"
             " wdth=40.0,opsz=28.0:30); } cpsp;",
         ),
         # The handbook’s tab-indented four-value example.
@@ -100,9 +100,9 @@ def convert(fea, axes=("wght",), font=None):
                 } test;"""),
             ("wdth", "opsz"),
             "feature test {\n"
-            "pos @Digit colon' <(wdth=100,opsz=12:10 wdth=80.0:30"
-            " wdth=40.0,opsz=28.0:5) (wdth=100,opsz=12:50 wdth=80.0:40"
-            " wdth=40.0,opsz=28.0:10) (wdth=100,opsz=12:20 wdth=80.0:60"
+            "pos @Digit colon' <(wdth=100,opsz=12.0:10 wdth=80.0:30"
+            " wdth=40.0,opsz=28.0:5) (wdth=100,opsz=12.0:50 wdth=80.0:40"
+            " wdth=40.0,opsz=28.0:10) (wdth=100,opsz=12.0:20 wdth=80.0:60"
             " wdth=40.0,opsz=28.0:10) 0> @Digit;\n"
             "} test;",
         ),
@@ -110,8 +110,8 @@ def convert(fea, axes=("wght",), font=None):
         (
             "feature kern { pos a b <10 0 5 0 (wght:900) 20 10 5 2>; } kern;",
             ("wght",),
-            "feature kern { pos a b <(wght=400:10 wght=900.0:20)"
-            " (wght=400:0 wght=900.0:10) 5 (wght=400:0 wght=900.0:2)>; } kern;",
+            "feature kern { pos a b <(wght=400.0:10 wght=900.0:20)"
+            " (wght=400.0:0 wght=900.0:10) 5 (wght=400.0:0 wght=900.0:2)>; } kern;",
         ),
         (
             "feature cpsp { pos a 10 (wdth:80) 20.5; } cpsp;",
@@ -122,8 +122,8 @@ def convert(fea, axes=("wght",), font=None):
         (
             "feature kern { pos a b -10 (MSHQ:100, SPAC:50) -30; } kern;",
             ("MSHQ", "SPAC"),
-            "feature kern { pos a b (MSHQ=10,SPAC=0:-10 MSHQ=100.0,SPAC=50.0:-30); }"
-            " kern;",
+            "feature kern { pos a b (MSHQ=10.0,SPAC=0.0:-10"
+            " MSHQ=100.0,SPAC=50.0:-30); } kern;",
         ),
         # An unbounded side becomes the axis maximum.
         (
@@ -253,7 +253,7 @@ def convert(fea, axes=("wght",), font=None):
                 } conditionset_1;
 
                 variation kern conditionset_1 {
-                pos a b (wght=400:10 wght=80.0:20);
+                pos a b (wght=400.0:10 wght=80.0:20);
                 } kern;
                 """),
         ),
@@ -345,8 +345,8 @@ def convert(fea, axes=("wght",), font=None):
             ("wght",),
             "feature dist {\n"
             "markClass acutecomb <anchor 0 0> @TOP;\n"
-            "pos base a <anchor (wght=400:250 wght=1000.0:300)"
-            " (wght=400:700 wght=1000.0:760)> mark @TOP;\n"
+            "pos base a <anchor (wght=400.0:250 wght=1000.0:300)"
+            " (wght=400.0:700 wght=1000.0:760)> mark @TOP;\n"
             "} dist;",
         ),
         # Cursive anchors,
@@ -357,8 +357,8 @@ def convert(fea, axes=("wght",), font=None):
                 } dist;"""),
             ("wght",),
             "feature dist {\n"
-            "pos cursive a <anchor (wght=400:100 wght=1000.0:150)"
-            " (wght=400:200 wght=1000.0:260)> <anchor NULL>;\n"
+            "pos cursive a <anchor (wght=400.0:100 wght=1000.0:150)"
+            " (wght=400.0:200 wght=1000.0:260)> <anchor NULL>;\n"
             "} dist;",
         ),
         # A component equal across all masters stays a plain number.
@@ -369,7 +369,7 @@ def convert(fea, axes=("wght",), font=None):
                 } dist;"""),
             ("wght",),
             "feature dist {\n"
-            "pos cursive a <anchor (wght=400:100 wght=1000.0:150) 700>"
+            "pos cursive a <anchor (wght=400.0:100 wght=1000.0:150) 700>"
             " <anchor NULL>;\n"
             "} dist;",
         ),
@@ -381,8 +381,8 @@ def convert(fea, axes=("wght",), font=None):
             "} dist;",
             ("wght", "wdth"),
             "feature dist {\n"
-            "pos cursive a <anchor (wght=400,wdth=100:100"
-            " wght=1000.0,wdth=80.0:150) (wght=400,wdth=100:200"
+            "pos cursive a <anchor (wght=400.0,wdth=100:100"
+            " wght=1000.0,wdth=80.0:150) (wght=400.0,wdth=100:200"
             " wght=1000.0,wdth=80.0:260)> <anchor NULL>;\n"
             "} dist;",
         ),

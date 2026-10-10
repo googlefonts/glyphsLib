@@ -1043,6 +1043,36 @@ def test_instance_mapping_regular_master_between_instances(ufo_module):
     assert not any(i.lib for i in doc.instances)
 
 
+def test_trim_to_masters_preserves_flat_mapping():
+    from glyphsLib.builder.axes import _trim_to_masters
+
+    mapping = {100: 100, 300: 400, 400: 400, 900: 900}
+    # Trimming must approach the plateau from its left endpoint, not use
+    # the right endpoint for both interpolation segments.
+    assert _trim_to_masters(mapping, [350, 450]) == {
+        floatToFixedToFloat(100 + 250 * 200 / 300, 16): 350,
+        300: 400,
+        400: 400,
+        450: 450,
+    }
+    assert mapping == {100: 100, 300: 400, 400: 400, 900: 900}
+
+
+def test_decreasing_instance_mapping_rejected_before_fallback(ufo_module):
+    font = GSFont()
+    master = GSFontMaster()
+    master.weightValue = 400
+    font.masters.append(master)
+    font.instances = [
+        _instance("Regular", "Regular", 100),
+        _instance("Bold", "Bold", 90),
+    ]
+    # The upstream fallback would otherwise discard the invalid mapping
+    # because neither instance reaches the single master.
+    with pytest.raises(ValueError, match="must not be less"):
+        to_designspace(font, ufo_module=ufo_module)
+
+
 def test_identity_instance_mapping_outside_masters(ufo_module):
     # A Glyphs 2 font with its master at width value 5, and its instance at the
     # default width value of 100: the axis stays on the master, and the

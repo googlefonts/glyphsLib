@@ -1098,6 +1098,12 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
                 )
                 continue
             ufo[newname], ufo[oldname] = ufo[oldname], ufo[newname]
+            for glyph in ufo:
+                for component in glyph.components:
+                    if component.baseGlyph == oldname:
+                        component.baseGlyph = newname
+                    elif component.baseGlyph == newname:
+                        component.baseGlyph = oldname
             ufo[newname].unicodes, ufo[oldname].unicodes = (
                 ufo[oldname].unicodes,
                 ufo[newname].unicodes,
