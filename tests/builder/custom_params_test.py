@@ -488,7 +488,14 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(self.ufo.lib["public.openTypeMeta"], ufo_meta)
 
         font = glyphsLib.to_glyphs([self.ufo])
-        self.assertEqual(font.customParameters["meta Table"], glyphs_meta)
+        self.assertEqual(
+            font.customParameters["meta Table"],
+            [
+                {"data": "de-Latn, en-Latn", "tag": "dlng"},
+                {"data": "sr-Cyrl", "tag": "slng"},
+                {"data": "\x00\x00...", "tag": "appl"},
+            ],
+        )
 
     def test_meta_table_comma_separated_lists(self):
         # A dlng/slng data string can hold a whole list of script/language tags,

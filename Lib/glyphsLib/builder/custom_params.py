@@ -597,9 +597,11 @@ def to_ufo_meta_table(value):
     meta = {}
     # In:  {data = "de-Latn"; tag = dlng; }, {data = "sr-Cyrl"; tag = slng; }
     # Out: { "dlng": [ "de-Latn" ], "slng": [ "sr-Cyrl" ] }
+    # In:  {data = "Latn, Am"; tag = dlng; }
+    # Out: { "dlng": [ "Latn", "Am" ] }
     for entry in value:
         tag, data = entry["tag"], entry["data"]
-        if tag in meta:
+        if tag in ("appl", "bild") and tag in meta:
             logger.warning(
                 f"Multiple '{tag}' tags in meta table; only the last one will be used"
             )
@@ -607,7 +609,8 @@ def to_ufo_meta_table(value):
         if tag in ("appl", "bild"):
             meta[tag] = data
         else:
-            meta.setdefault(tag, []).append(data)
+            items = [item.strip() for item in data.split(",")]
+            meta.setdefault(tag, []).extend(item for item in items if item)
     return meta
 
 
@@ -615,10 +618,8 @@ def to_glyphs_meta_table(value):
     meta = []
     for tag, data in value.items():
         if isinstance(data, list):
-            for entry in data:
-                meta.append({"tag": tag, "data": entry})
-        else:
-            meta.append({"tag": tag, "data": data})
+            data = ", ".join(data)
+        meta.append({"tag": tag, "data": data})
     return meta
 
 
