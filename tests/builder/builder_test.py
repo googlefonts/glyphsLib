@@ -610,6 +610,56 @@ def test_set_blue_values_empty(ufo_module):
         assert ufo.info.postscriptOtherBlues == []
 
 
+@pytest.mark.parametrize(
+    "zones,expected",
+    [
+        (
+            [
+                (740, 12),
+                (700, 12),
+                (546, 12),
+                (516, 12),
+                (0, 0),
+                (0, 0),
+                (0, -12),
+                (-220, 12),
+            ],
+            [-220, -208, -12, 0, 516, 528, 546, 558, 700, 712, 740, 752],
+        ),
+        (
+            [
+                (800, 20),
+                (0, -20),
+                (700, 20),
+                (300, 20),
+                (700, 20),
+                (300, 20),
+                (600, 20),
+                (600, 20),
+                (700, 20),
+                (300, 20),
+                (600, 20),
+            ],
+            [-20, 0, 300, 320, 600, 620, 700, 720, 800, 820],
+        ),
+    ],
+    ids=["Voces", "BadeenDisplay"],
+)
+def test_blue_values_match_glyphs_without_redundant_zones(ufo_module, zones, expected):
+    # BlueValues from native Glyphs 3.5 (3532) CFF exports of these fonts.
+    # Parse source text: the alignmentZones setter already deduplicates values,
+    # but loading Glyphs sources can retain duplicate zones.
+    zone_text = ",".join(f'"{{{pos}, {size}}}"' for pos, size in zones)
+    font = glyphsLib.loads(
+        "{ .appVersion = 895; familyName = Test; fontMaster = ("
+        "{id = M1; name = Regular; alignmentZones = (" + zone_text + ");});}"
+    )
+    assert [(z.position, z.size) for z in font.masters[0].alignmentZones] == zones
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+    assert ufo.info.postscriptBlueValues == expected
+    assert [(z.position, z.size) for z in font.masters[0].alignmentZones] == zones
+
+
 def test_missing_date(ufo_module):
     font = generate_minimal_font()
     font.date = None
