@@ -38,8 +38,9 @@ from glyphsLib.classes import (
     GSNode,
     GSAlignmentZone,
     GSGuide,
+    GSHint,
 )
-from glyphsLib.types import Point
+from glyphsLib.types import IndexPath, Point
 
 from glyphsLib.builder import to_glyphs, to_designspace, to_ufos
 from glyphsLib.builder.builders import UFOBuilder, GlyphsBuilder
@@ -49,6 +50,8 @@ from glyphsLib.builder.constants import (
     GLYPHS_PREFIX,
     GLYPHLIB_PREFIX,
     FONT_CUSTOM_PARAM_PREFIX,
+    HINTS_LIB_KEY,
+    SHAPE_ORDER_LIB_KEY,
 )
 
 from ..classes_test import (
@@ -3245,6 +3248,7 @@ class _PointDataPen:
 
 class _Glyph:
     def __init__(self):
+        self.name = "test"
         self.pen = _PointDataPen()
 
     def getPointPen(self):
@@ -3252,7 +3256,7 @@ class _Glyph:
 
 
 class _UFOBuilder:
-    def to_ufo_node_user_data(self, *args):
+    def to_ufo_node_user_data(self, *args, **kwargs):
         pass
 
 
@@ -3287,6 +3291,154 @@ def test_to_ufo_draw_paths_open(ufo_module):
             (2, 2, None, False),
             (3, 3, "curve", True),
         ]
+    ]
+
+
+@pytest.mark.parametrize(
+    "rotation,expected_corners",
+    [
+        pytest.param(
+            0, [(500, 500), (100, 500), (100, 100), (500, 100)], id="original-start"
+        ),
+        pytest.param(
+            4,
+            [(500, 100), (500, 500), (100, 500), (100, 100)],
+            id="discarded-start-control",
+        ),
+    ],
+)
+def test_to_ufo_offcurve_before_line_native_fixture(
+    ufo_module, datadir, rotation, expected_corners
+):
+    font = GSFont(str(datadir.join("OffcurveBeforeLine.glyphs")))
+    path = font.glyphs["a"].layers[0].paths[0]
+    nodes = list(path.nodes)
+    path.nodes = nodes[rotation:] + nodes[:rotation]
+
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+    pen = _PointDataPen()
+    ufo["a"].drawPoints(pen)
+    points = pen.contours[0]
+
+    # Glyphs 3.5 (3532) exports the original fixture with these four line corners.
+    # Every rotation must preserve their order and retain the starting node,
+    # unless that node is the invalid control being discarded.
+    assert [(x, y) for x, y, _, _ in points] == expected_corners
+    assert all(segment_type == "line" for _, _, segment_type, _ in points)
+
+
+def test_dropping_controls_preserves_source_and_node_data(ufo_module, datadir, caplog):
+    font = GSFont(str(datadir.join("OffcurveBeforeLine.glyphs")))
+    layer = font.glyphs["a"].layers[0]
+    path = layer.paths[0]
+    path.nodes[-1].userData["test"] = "retained endpoint"
+    original_nodes = [(tuple(n.position), n.type) for n in path.nodes]
+
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+
+    # Conversion leaves the source contour intact, including its invalid control.
+    assert [(tuple(n.position), n.type) for n in path.nodes] == original_nodes
+    assert path.nodes[-1].userData["test"] == "retained endpoint"
+
+    # Dropping a node shifts indices; the endpoint's data must still follow it.
+    restored = to_glyphs([ufo]).glyphs["a"].layers[0].paths[0]
+    assert tuple(restored.nodes[-1].position) == (500, 500)
+    assert restored.nodes[-1].userData["test"] == "retained endpoint"
+
+    warnings = [r for r in caplog.records if "off-curve" in r.getMessage()]
+    assert len(warnings) == 1
+    assert warnings[0].levelname == "WARNING"
+    assert "'a'" in warnings[0].getMessage()
+    assert layer.layerId in warnings[0].getMessage()
+
+
+@pytest.mark.parametrize("reference", ["origin", "target", "other1", "other2"])
+def test_dropping_controls_remaps_hints(ufo_module, datadir, caplog, reference):
+    font = GSFont(str(datadir.join("OffcurveBeforeLine.glyphs")))
+    layer = font.glyphs["a"].layers[0]
+    other_path = GSPath()
+    other_path.nodes = [
+        GSNode(position=(100, 500), nodetype="line"),
+        GSNode(position=(100, 100), nodetype="line"),
+        GSNode(position=(500, 100), nodetype="line"),
+    ]
+    layer.paths.append(other_path)
+    # In the fixture, node 3 is the invalid control at (650, 350), followed
+    # by the surviving corner at (500, 500). Removing node 3 shifts node 4.
+    surviving_corner = IndexPath(0, 4)
+    discarded_control = IndexPath(0, 3)
+    other_contour_corner = IndexPath(1, 2)
+    for index_path in [surviving_corner, discarded_control, other_contour_corner]:
+        hint = GSHint()
+        hint.type = "STEM"
+        setattr(hint, reference, index_path)
+        if reference != "target":
+            hint.target = IndexPath("up")
+        layer.hints.append(hint)
+
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+
+    # The surviving corner is now node 3; the other contour is unchanged.
+    assert [h[reference] for h in ufo["a"].lib[HINTS_LIB_KEY]] == [[0, 3], [1, 2]]
+    if reference != "target":
+        assert [h["target"] for h in ufo["a"].lib[HINTS_LIB_KEY]] == ["up", "up"]
+    restored = to_glyphs([ufo]).glyphs["a"].layers[0]
+    assert [
+        tuple(restored._find_node_by_indices(getattr(h, reference)).position)
+        for h in restored.hints
+    ] == [(500, 500), (500, 100)]
+    # Stored IndexPaths in the original font must not be rewritten in place.
+    assert [list(getattr(h, reference)) for h in layer.hints] == [
+        [0, 4],
+        [0, 3],
+        [1, 2],
+    ]
+    warnings = [r for r in caplog.records if r.levelname == "WARNING"]
+    assert len(warnings) == 1
+    assert "Dropping off-curve points" in warnings[0].getMessage()
+    assert "'a'" in warnings[0].getMessage()
+    assert layer.layerId in warnings[0].getMessage()
+
+
+def test_dropping_controls_drops_last_hint(ufo_module, datadir):
+    font = GSFont(str(datadir.join("OffcurveBeforeLine.glyphs")))
+    layer = font.glyphs["a"].layers[0]
+    hint = GSHint()
+    hint.type = "STEM"
+    hint.originNode = layer.paths[0].nodes[3]
+    layer.hints.append(hint)
+
+    ufo = to_ufos(font, ufo_module=ufo_module)[0]
+
+    assert HINTS_LIB_KEY not in ufo["a"].lib
+    assert not to_glyphs([ufo]).glyphs["a"].layers[0].hints
+    assert layer.hints[0].originNode is layer.paths[0].nodes[3]
+
+
+def test_dropping_controls_remaps_hints_in_mixed_shapes(ufo_module, datadir):
+    font = GSFont(str(datadir.join("OffcurveBeforeLine.glyphs")))
+    add_glyph(font, "base")
+    layer = font.glyphs["a"].layers[0]
+    layer.shapes.insert(0, GSComponent("base"))
+    # Hint references use shape indices: component 0, rectangle path 1.
+    # The fixture's node 3 is discarded; its corner at node 4 survives.
+    for name, origin in [
+        ("surviving-corner", IndexPath(1, 4)),
+        ("discarded-control", IndexPath(1, 3)),
+        ("component-reference", IndexPath(0, 3)),
+    ]:
+        hint = GSHint()
+        hint.type = "Corner"
+        hint.name = name
+        hint.origin = origin
+        layer.hints.append(hint)
+
+    ufo_glyph = to_ufos(font, ufo_module=ufo_module)[0]["a"]
+
+    assert ufo_glyph.lib[SHAPE_ORDER_LIB_KEY] == "CP"
+    assert [(h["name"], h["origin"]) for h in ufo_glyph.lib[HINTS_LIB_KEY]] == [
+        ("surviving-corner", [1, 3]),
+        ("component-reference", [0, 3]),
     ]
 
 
