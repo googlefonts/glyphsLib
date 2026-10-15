@@ -18,12 +18,13 @@ from glyphsLib.util import pairs
 def to_ufo_blue_values(self, ufo, master):
     """Set postscript blue values from Glyphs alignment zones."""
 
-    alignment_zones = master.alignmentZones
+    # Glyphs ignores zero-height zones and emits each zone only once.
+    alignment_zones = sorted(
+        {(zone.position, zone.size) for zone in master.alignmentZones if zone.size}
+    )
     blue_values = []
     other_blues = []
-    for zone in sorted(alignment_zones):
-        pos = zone.position
-        size = zone.size
+    for pos, size in alignment_zones:
         val_list = blue_values if pos == 0 or size >= 0 else other_blues
         val_list.extend(sorted((pos, pos + size)))
 
