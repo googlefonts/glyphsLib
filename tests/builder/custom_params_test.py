@@ -330,6 +330,87 @@ class SetCustomParamsTestBase(object):
 
         self.assertEqual(self.ufo.features.text, original)
 
+    def test_replace_feature_removes_feature_variations(self):
+        # VariableFeatureConverter leaves variation/conditionset blocks next to
+        # the feature. Replace Feature must clear those so static builds do not
+        # try to compile FeatureVariations without an fvar table.
+        self.ufo.features.text = dedent("""\
+            feature calt {
+            # skip in statics
+            } calt;
+
+            conditionset conditionset_1 {
+                wdth 62.5 75.0;
+                wght 100.0 436.0;
+            } conditionset_1;
+
+            variation calt conditionset_1 {
+            sub G by G.crossbar;
+            } calt;
+            """)
+
+        self.master.customParameters["Replace Feature"] = (
+            "calt; # static-only calt rules;\n"
+        )
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+                feature calt {
+                # static-only calt rules;
+                } calt;
+
+                """),
+        )
+
+    def test_replace_feature_keeps_shared_conditionsets(self):
+        self.ufo.features.text = dedent("""\
+            feature calt {
+
+            } calt;
+
+            feature rlig {
+
+            } rlig;
+
+            conditionset conditionset_1 {
+                wght 100.0 500.0;
+            } conditionset_1;
+
+            variation calt conditionset_1 {
+            sub G by G.crossbar;
+            } calt;
+
+            variation rlig conditionset_1 {
+            sub a by b;
+            } rlig;
+            """)
+
+        self.master.customParameters["Replace Feature"] = "calt; # replaced;\n"
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+                feature calt {
+                # replaced;
+                } calt;
+
+                feature rlig {
+
+                } rlig;
+
+                conditionset conditionset_1 {
+                    wght 100.0 500.0;
+                } conditionset_1;
+
+                variation rlig conditionset_1 {
+                sub a by b;
+                } rlig;
+                """),
+        )
+
     def test_replace_prefix(self):
         self.ufo.features.text = dedent("""\
             # Prefix: AAA
