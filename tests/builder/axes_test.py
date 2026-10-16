@@ -28,7 +28,11 @@ from glyphsLib.builder.axes import (
     _is_subset_of_default_axes,
     get_regular_master,
 )
-from glyphsLib.builder.instances import set_weight_class, set_width_class
+from glyphsLib.builder.instances import (
+    apply_instance_data_to_ufo,
+    set_weight_class,
+    set_width_class,
+)
 from glyphsLib.builder.stat import is_stat_only_ital
 
 """
@@ -1095,6 +1099,38 @@ def test_identity_instance_mapping_outside_masters_custom_axis(ufo_module):
     (instance,) = doc.instances
     assert instance.location["Grade"] == 5
     assert not instance.lib
+
+
+def test_instance_class_without_axis(ufo_module):
+    # A Glyphs 3 font with only a weight axis: its instances' width class has
+    # no axis location to come from, so it goes in the instance lib
+    font = GSFont()
+    font.format_version = 3
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    master = GSFontMaster()
+    master.axes = [400]
+    font.masters.append(master)
+    instances = []
+    # Regular has no widthClass, which leaves the "Medium (normal)" default
+    # string even in Glyphs 3, where a set width class is an int
+    for name, width in [("Regular", None), ("Expanded", 8)]:
+        instance = GSInstance()
+        instance.name = name
+        instance.axes = [400]
+        if width is not None:
+            instance.width = width
+        instances.append(instance)
+    font.instances = instances
+
+    doc = to_designspace(font, ufo_module=ufo_module)
+
+    assert [axis.tag for axis in doc.axes] == ["wght"]
+    regular, expanded = doc.instances
+    assert "public.fontInfo" not in regular.lib
+    assert expanded.lib["public.fontInfo"] == {"openTypeOS2WidthClass": 8}
+    ufo = ufo_module.Font()
+    apply_instance_data_to_ufo(ufo, expanded, doc)
+    assert ufo.info.openTypeOS2WidthClass == 8
 
 
 def test_os2_classes_from_public_font_info(ufo_module):

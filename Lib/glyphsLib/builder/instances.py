@@ -190,6 +190,17 @@ def _to_designspace_instance(self, instance, ignore_disabled_cp=False):
             font_info = ufo_instance.lib.setdefault("public.fontInfo", {})
             font_info[attr] = user_loc_value_to_class(axis_def.tag, user_loc)
 
+    # Without a weight or width axis there is no location to give back the
+    # instance's class either, so keep it unless it's the default
+    font_axis_tags = {axis_def.tag for axis_def in get_axis_definitions(self.font)}
+    for axis_def in (WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF):
+        if axis_def.tag in font_axis_tags:
+            continue
+        class_ = user_loc_value_to_class(axis_def.tag, axis_def.get_user_loc(instance))
+        if class_ != user_loc_value_to_class(axis_def.tag, axis_def.default_user_loc):
+            font_info = ufo_instance.lib.setdefault("public.fontInfo", {})
+            font_info[_CLASS_ATTRS[axis_def.tag]] = class_
+
     # FIXME: (jany) should be the responsibility of ufo2ft?
     # Anyway, only generate the styleMap names if the Glyphs instance already
     # has a linkStyle set up, or if we're not round-tripping (i.e. generating
