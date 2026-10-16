@@ -119,9 +119,11 @@ def to_ufo_layer_user_data(self, ufo_glyph, layer):
             ufo_glyph.lib[key] = other_data[key]
 
 
-def to_ufo_node_user_data(self, ufo_glyph, node, user_data: dict):
+def to_ufo_node_user_data(self, ufo_glyph, node, user_data: dict, node_index=None):
     if user_data:
-        path_index, node_index = node._indices()
+        path_index, original_index = node._indices()
+        if node_index is None:
+            node_index = original_index
         key = f"{NODE_USER_DATA_KEY}.{path_index}.{node_index}"
         ufo_glyph.lib[key] = user_data
 

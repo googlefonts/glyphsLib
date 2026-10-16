@@ -35,7 +35,7 @@ from fontTools.pens.pointPen import (
 )
 
 from glyphsLib.parser import load, Parser
-from glyphsLib.pens import LayerPointPen
+from glyphsLib.pens import LayerPointPen, _drop_offcurves_before_lines
 from glyphsLib.types import (
     IndexPath,
     Point,
@@ -2573,6 +2573,13 @@ class GSPath(GSBase):
     def drawPoints(self, pointPen: AbstractPointPen) -> None:
         """Draws points of contour with the given point pen."""
         nodes = list(self.nodes)
+        if nodes and not self.closed:
+            assert nodes[0].type == "line", "Open path starts with off-curve points"
+
+        kept = _drop_offcurves_before_lines(nodes, self.closed)
+        if len(kept) != len(nodes):
+            logger.warning("Dropping off-curve points before line points")
+            nodes = kept
 
         pointPen.beginPath()
 
@@ -2582,7 +2589,6 @@ class GSPath(GSBase):
 
         if not self.closed:
             node = nodes.pop(0)
-            assert node.type == "line", "Open path starts with off-curve points"
             node_data = dict(node.userData)
             node_name = node_data.pop("name", None)
             pointPen.addPoint(

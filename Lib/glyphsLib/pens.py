@@ -7,6 +7,24 @@ from glyphsLib.types import Transform, Point
 Number = Union[int, float]
 
 
+def _drop_offcurves_before_lines(nodes, closed):
+    """Return nodes in source order, excluding controls before line points."""
+    # Find the following on-curve type by walking backwards, wrapping around
+    # for closed paths.
+    next_type = (
+        next((n.type for n in nodes if n.type != "offcurve"), None) if closed else None
+    )
+    kept = []
+    for node in reversed(nodes):
+        if node.type != "offcurve":
+            next_type = node.type
+        elif next_type == "line":
+            continue
+        kept.append(node)
+    kept.reverse()
+    return kept
+
+
 class LayerPointPen(AbstractPointPen):
     """A point pen to draw onto GSLayer object.
 

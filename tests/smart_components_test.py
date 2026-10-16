@@ -169,6 +169,28 @@ def test_smart_component_regular(values, expected_rect, smart_font):
     assert not clockwise
 
 
+def test_smart_component_drops_offcurves_before_lines(smart_font, ufo_module):
+    rectangle = smart_font.glyphs["_part.rectangle"]
+    for layer in rectangle.layers:
+        # An invalid control before the rectangle's final line endpoint.
+        layer.paths[0].nodes.insert(3, GSNode((1000, 1000), "offcurve"))
+    component = smart_font.glyphs["a"].layers[0].components[0]
+    component.smartComponentValues = {"Width": 0.5, "Height": 300, "Shift": -50}
+
+    (ufo,) = to_ufos(smart_font, ufo_module=ufo_module)
+
+    contour = ufo["a"][0]
+    assert [(p.x, p.y, p.segmentType) for p in contour] == [
+        (50, 350, "line"),
+        (50, 50, "line"),
+        (350, 50, "line"),
+        (350, 350, "line"),
+    ]
+    # Drawing the interpolated component must leave the source masters intact.
+    assert all(len(layer.paths[0].nodes) == 5 for layer in rectangle.layers)
+    assert all(layer.paths[0].nodes[3].type == "offcurve" for layer in rectangle.layers)
+
+
 @pytest.mark.parametrize(
     "values,expected_rect",
     [

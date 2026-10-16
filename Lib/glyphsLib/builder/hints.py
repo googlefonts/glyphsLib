@@ -18,9 +18,10 @@ from glyphsLib.types import IndexPath
 from glyphsLib.types import Point
 
 
-def to_ufo_hints(self, ufo_glyph, layer):
+def to_ufo_hints(self, ufo_glyph, layer, node_index_maps=None):
     if not hasattr(layer, "hints"):
         return
+    node_index_maps = node_index_maps or {}
     hints = []
     for source in layer.hints:
         hint = {}
@@ -32,12 +33,20 @@ def to_ufo_hints(self, ufo_glyph, layer):
                 if name == "target" and index_path.value in (["up"], ["down"]):
                     hint[name] = index_path.value[0]
                 elif not any(value is None for value in index_path):
-                    hint[name] = index_path.value
-        for name in ["place", "scale"]:
-            point = getattr(source, name, None)
-            if point and not any(value is None for value in point):
-                hint[name] = point.value
-        hints.append(hint)
+                    value = index_path.value
+                    # Only two-element paths index nodes directly in this layer.
+                    if len(value) == 2 and value[0] in node_index_maps:
+                        new_index = node_index_maps[value[0]].get(value[1])
+                        if new_index is None:
+                            break
+                        value = [value[0], new_index]
+                    hint[name] = value
+        else:
+            for name in ["place", "scale"]:
+                point = getattr(source, name, None)
+                if point and not any(value is None for value in point):
+                    hint[name] = point.value
+            hints.append(hint)
     if hints:
         ufo_glyph.lib[HINTS_LIB_KEY] = hints
 

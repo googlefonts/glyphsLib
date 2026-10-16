@@ -13,15 +13,27 @@
 # limitations under the License.
 
 
-from glyphsLib import types
-from glyphsLib.pens import _to_glyphs_node_type, _to_ufo_node_type
+import logging
+
+from glyphsLib import GSPath, types
+from glyphsLib.pens import (
+    _drop_offcurves_before_lines,
+    _to_glyphs_node_type,
+    _to_ufo_node_type,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def to_ufo_paths(self, ufo_glyph, layer):
-    """Draw .glyphs paths onto a pen."""
+    """Draw paths and return old-to-new node indices for pruned contours."""
     pen = ufo_glyph.getPointPen()
+    node_index_maps = {}
 
-    for path in layer.paths:
+    # Hint references count components as well as paths in the shape index.
+    for shape_index, path in enumerate(layer.shapes):
+        if not isinstance(path, GSPath):
+            continue
         # the list is changed below, otherwise you can't draw more than once
         # per session.
         nodes = list(path.nodes)
@@ -33,8 +45,27 @@ def to_ufo_paths(self, ufo_glyph, layer):
             continue
 
         if not path.closed:
+            assert nodes[0].type == "line", "Open path starts with off-curve points"
+
+        kept = _drop_offcurves_before_lines(nodes, path.closed)
+        node_indices = None
+        if len(kept) != len(nodes):
+            logger.warning(
+                "Dropping off-curve points before line points "
+                "in glyph '%s', layer '%s'",
+                ufo_glyph.name,
+                layer.layerId,
+            )
+            nodes = kept
+            node_indices = {id(node): i for i, node in enumerate(nodes)}
+            node_index_maps[shape_index] = {
+                i: node_indices[id(node)]
+                for i, node in enumerate(path.nodes)
+                if id(node) in node_indices
+            }
+
+        if not path.closed:
             node = nodes.pop(0)
-            assert node.type == "line", "Open path starts with off-curve points"
             pen.addPoint(
                 tuple(node.position),
                 segmentType="move",
@@ -64,8 +95,15 @@ def to_ufo_paths(self, ufo_glyph, layer):
                 for k, v in node.userData.items()
                 if k not in ("UFO.identifier", "name")
             }
-            self.to_ufo_node_user_data(ufo_glyph, node, node_user_data)
+            self.to_ufo_node_user_data(
+                ufo_glyph,
+                node,
+                node_user_data,
+                node_index=node_indices[id(node)] if node_indices else None,
+            )
         pen.endPath()
+
+    return node_index_maps
 
 
 def to_glyphs_paths(self, ufo_glyph, layer):

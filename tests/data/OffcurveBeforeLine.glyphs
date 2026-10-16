@@ -1,0 +1,41 @@
+{
+.appVersion = "3217";
+.formatVersion = 3;
+familyName = "Offcurve Before Line";
+fontMaster = (
+{
+id = M1;
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = a;
+layers = (
+{
+layerId = M1;
+shapes = (
+{
+closed = 1;
+nodes = (
+(100,500,l),
+(100,100,l),
+(500,100,l),
+(650,350,o),
+(500,500,l)
+);
+}
+);
+width = 700;
+}
+);
+unicode = 97;
+}
+);
+instances = (
+{
+name = Regular;
+}
+);
+unitsPerEm = 1000;
+}
