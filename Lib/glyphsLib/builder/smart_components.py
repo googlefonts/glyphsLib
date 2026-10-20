@@ -46,7 +46,9 @@ class Pole(IntEnum):
 def normalized_location(layer, base_layer):
     loc = {}
     for axis_name, current_value in layer.smartComponentPoleMapping.items():
-        base_value = base_layer.smartComponentPoleMapping[axis_name]
+        # Glyphs defaults an omitted pole on the default layer to the top.
+        # Omitted alternate-layer poles inherit it (normalized coordinate 0).
+        base_value = base_layer.smartComponentPoleMapping.get(axis_name, Pole.MAX)
         if current_value == base_value:
             loc[axis_name] = 0.0
         elif base_value == Pole.MIN and current_value == Pole.MAX:
@@ -155,6 +157,13 @@ def get_smart_component_variation_model(layer, component):
             % (root.name, layer.name)
         )
 
+    # The default layer still participates if its whole pole mapping is empty.
+    # Keep the no-poles fallback/error above for glyphs/masters with no smart layers.
+    if layer.associatedMasterId:
+        base_layer = root.layers[layer.associatedMasterId]
+        if base_layer is not None and not base_layer.smartComponentPoleMapping:
+            masters.insert(0, base_layer)
+
     if len(masters) == 1:
         return None, None, None
 
@@ -165,7 +174,7 @@ def get_smart_component_variation_model(layer, component):
     # default value is by looking at the first "master"
     axes_tuples = {}
     for ax in root.smartComponentAxes:
-        if masters[0].smartComponentPoleMapping[ax.name] == Pole.MIN:
+        if masters[0].smartComponentPoleMapping.get(ax.name, Pole.MAX) == Pole.MIN:
             defaultValue = ax.bottomValue
         else:
             defaultValue = ax.topValue

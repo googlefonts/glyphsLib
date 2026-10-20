@@ -1,0 +1,61 @@
+{
+.appVersion = "3532";
+familyName = MissingPoles;
+fontMaster = ({ id = m01; });
+glyphs = (
+{
+export = 0;
+glyphname = _part;
+layers = (
+{
+layerId = m01;
+paths = ({
+closed = 1;
+nodes = (
+"100 0 LINE",
+"120 0 LINE",
+"120 20 LINE",
+"100 20 LINE"
+);
+});
+userData = { PartSelection = { U = 1; }; };
+width = 1000;
+},
+{
+associatedMasterId = m01;
+layerId = alternate;
+name = alternate;
+paths = ({
+closed = 1;
+nodes = (
+"300 0 LINE",
+"320 0 LINE",
+"320 20 LINE",
+"300 20 LINE"
+);
+});
+userData = { PartSelection = { U = 1; X = 1; }; };
+width = 1000;
+}
+);
+partsSettings = (
+{ name = X; bottomValue = -20; topValue = 80; },
+{ name = U; bottomValue = 0; topValue = 100; }
+);
+},
+{
+glyphname = a;
+layers = ({
+components = ({
+alignment = -1;
+name = _part;
+piece = { U = 0; X = 30; };
+});
+layerId = m01;
+width = 1000;
+});
+}
+);
+instances = ({ name = Regular; });
+unitsPerEm = 1000;
+}

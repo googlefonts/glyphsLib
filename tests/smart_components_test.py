@@ -15,10 +15,12 @@
 # limitations under the License.
 
 import logging
+from pathlib import Path
 
 import pytest
 
 from fontTools.pens.areaPen import AreaPen
+from fontTools.pens.boundsPen import BoundsPen
 from glyphsLib import to_ufos, load
 from glyphsLib.classes import (
     GSFont,
@@ -325,6 +327,78 @@ def test_smart_component_at_default_location(smart_font):
     rect, clockwise = get_rectangle_data(ufo)
     assert rect == (100, 100, 100, 100)
     assert not clockwise
+
+
+@pytest.fixture
+def missing_poles_font():
+    # Expected outlines below come from native Glyphs 3.5 (3532) exports.
+    return GSFont(Path(__file__).parent / "data" / "SmartComponentMissingPoles.glyphs")
+
+
+@pytest.fixture
+def missing_poles_font_with_upper(missing_poles_font):
+    # Add a third layer with its square at x=700, mapped to U's top pole.
+    # Its X pole is omitted, so it inherits the default layer's X pole.
+    part = missing_poles_font.glyphs["_part"]
+    upper = GSLayer()
+    upper.layerId = "upper"
+    upper.associatedMasterId = part.layers[0].layerId
+    upper.paths.append(rectangle_path(700, 0, 20, 20))
+    part.layers.append(upper)
+    upper.smartComponentPoleMapping = {"U": 2}
+    return missing_poles_font
+
+
+def assert_smart_component_bounds(font, values, expected_bounds):
+    font.glyphs["a"].layers[0].components[0].smartComponentValues = values
+    (ufo,) = to_ufos(font)
+    assert not ufo["a"].components
+    pen = BoundsPen(ufo)
+    ufo["a"].draw(pen)
+    assert pen.bounds == expected_bounds
+
+
+def test_missing_default_pole_uses_top(missing_poles_font):
+    # The default square at x=100 omits X, so it belongs to the top endpoint,
+    # X=80. The alternate at x=300 is at X=-20, so X=30 must put the square
+    # halfway between them, at x=200.
+    assert_smart_component_bounds(missing_poles_font, {"X": 30}, (200, 0, 220, 20))
+
+
+def test_missing_default_pole_with_only_top_layers(missing_poles_font):
+    # Both layers are at X's top pole, implicitly on the default layer.
+    # X=30 must not move the outline; U=50 puts it halfway from x=100 to x=300.
+    part = missing_poles_font.glyphs["_part"]
+    part.layers[1].smartComponentPoleMapping = {"X": 2, "U": 2}
+    assert_smart_component_bounds(
+        missing_poles_font, {"X": 30, "U": 50}, (200, 0, 220, 20)
+    )
+
+
+@pytest.mark.parametrize("base_pole,alternate_pole", [(1, 2), (2, 1)])
+def test_missing_alternate_pole_inherits_default(
+    missing_poles_font_with_upper, base_pole, alternate_pole
+):
+    # The upper square at x=700 omits X and must inherit either default pole.
+    # At X=30, U=50, the X and U deltas add 100 and 300 to the default x=100,
+    # placing the interpolated square at x=500 for both pole directions.
+    font = missing_poles_font_with_upper
+    part = font.glyphs["_part"]
+    part.layers[0].smartComponentPoleMapping["X"] = base_pole
+    part.layers[1].smartComponentPoleMapping["X"] = alternate_pole
+    assert_smart_component_bounds(font, {"X": 30, "U": 50}, (500, 0, 520, 20))
+
+
+def test_empty_default_mapping_participates(missing_poles_font_with_upper):
+    # An empty mapping still puts the default layer at both top poles.
+    # X=80 selects the default X pole; U=50 adds half the upper layer's delta:
+    # 100 + (700 - 100) / 2 = 400. Dropping the default layer would give 500.
+    font = missing_poles_font_with_upper
+    base, alternate, upper = font.glyphs["_part"].layers
+    base.smartComponentPoleMapping = {}
+    alternate.smartComponentPoleMapping = {"X": 1}
+    upper.smartComponentPoleMapping = {"U": 1}
+    assert_smart_component_bounds(font, {"X": 80, "U": 50}, (400, 0, 420, 20))
 
 
 def smart_font_without_poles(num_masters=1, poles_in_first_master=False):
