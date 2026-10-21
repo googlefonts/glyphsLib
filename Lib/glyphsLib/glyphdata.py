@@ -175,6 +175,9 @@ def _lookup_attributes_by_unicode(unicode, data):
     or return empty dictionary.
     """
     attributes = data.unicodes.get(unicode) or {}
+    # If we are using custom GlyphData, fallback to default GlyphData
+    if not attributes and data is not GLYPHDATA:
+        attributes = _lookup_attributes_by_unicode(unicode, GLYPHDATA)
     return attributes
 
 
