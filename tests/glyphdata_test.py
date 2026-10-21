@@ -20,7 +20,7 @@ import xml.etree.ElementTree
 
 import pytest
 
-from glyphsLib.glyphdata import get_glyph
+from glyphsLib.glyphdata import GlyphData, get_glyph
 
 
 class GlyphDataTest(unittest.TestCase):
@@ -414,6 +414,16 @@ def test_prod_names(test_input, expected):
         return get_glyph(n).production_name
 
     assert prod(test_input) == expected
+
+
+def test_custom_data_unicode_fallback():
+    # custom GlyphData that mentions neither the name nor the codepoint
+    path = os.path.join(os.path.dirname(__file__), "data", "CustomGlyphData.xml")
+    with open(path, "rb") as f:
+        custom = GlyphData.from_files(f)
+    glyph = get_glyph("dandaDouble", data=custom, unicodes=["0965"])
+    assert glyph.production_name == "uni0965"
+    assert glyph.category == "Punctuation"
 
 
 if __name__ == "__main__":

@@ -3151,6 +3151,22 @@ def test_custom_glyph_data(ufo_module):
     assert lib.get(scriptKey) == "Arabic"
 
 
+def test_custom_glyph_data_unicode_fallback(ufo_module):
+    # Custom GlyphData that does not mention these glyphs must not hide the
+    # default GlyphData entries found by unicode, as in Glyphs.app.
+    font = generate_minimal_font()
+    add_glyph(font, "dandaDouble").unicodes = ["0965"]
+    add_glyph(font, "foo")
+    filename = os.path.join(
+        os.path.dirname(__file__), "..", "data", "CustomGlyphData.xml"
+    )
+    (ufo,) = to_ufos(font, minimize_glyphs_diffs=True, glyph_data=[filename])
+
+    postscriptNames = ufo.lib["public.postscriptNames"]
+    assert postscriptNames["dandaDouble"] == "uni0965"
+    assert postscriptNames["foo"] == "fooprod"
+
+
 def test_load_kerning_bracket(ufo_module):
     filename = os.path.join(
         os.path.dirname(__file__), "..", "data", "BracketTestFontKerning.glyphs"
