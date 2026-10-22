@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
+from fontTools.misc.fixedTools import floatToFixedToFloat
 
 import glyphsLib
 
@@ -68,6 +69,18 @@ def test_glyphs_to_designspace(filename: Path, caplog: Any) -> None:
             glyphsLib.build_masters(filename, tmp_dir, None, designspace_path=ds)
 
         reference_output_dir = filename.parent / filename.stem
+        if filename.name == "Lexend-Arabic.glyphs":
+            reloaded = DesignSpaceDocument.fromfile(ds)
+            weight = next(axis for axis in reloaded.axes if axis.tag == "wght")
+            # Upstream inserts a 16.16-rounded default knot; XML uses six decimals.
+            expected_default = round(floatToFixedToFloat(300 + 66 * 400 / 94, 16), 6)
+            assert weight.default == expected_default
+            assert dict(weight.map)[weight.default] == 108
+            assert weight.map_forward(weight.default) == 108
+            default = reloaded.findDefault()
+            assert default is not None
+            assert default.designLocation == {"Weight": 108, "Lexend": 0}
+
         report = diff_directories(reference_output_dir, tmp_dir)
         if report:
             print("".join(report))
