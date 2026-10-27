@@ -309,8 +309,41 @@ def _replace_block(kind, tag, repl, features):
     )
 
 
+def _remove_variation_blocks(tag, features):
+    """Remove top-level ``variation TAG ... TAG;`` blocks for *tag*."""
+    return re.sub(
+        rf"^variation {re.escape(tag)} .*?^}} {re.escape(tag)};\n*",
+        "",
+        features,
+        flags=re.DOTALL | re.MULTILINE,
+    )
+
+
+def _prune_unreferenced_conditionsets(features):
+    """Drop ``conditionset`` blocks not referenced by any ``variation``."""
+    referenced = set(
+        re.findall(r"^variation \S+ (\S+) \{", features, flags=re.MULTILINE)
+    )
+    return re.sub(
+        r"^conditionset (\S+) \{.*?^\} \1;\n*",
+        lambda m: m.group(0) if m.group(1) in referenced else "",
+        features,
+        flags=re.DOTALL | re.MULTILINE,
+    )
+
+
 def replace_feature(tag, repl, features):
-    return _replace_block("feature", tag, repl, features)
+    """Replace the body of the first ``feature TAG`` block.
+
+    Also removes that tag's ``variation`` blocks and any ``conditionset``s
+    that are left unreferenced. VariableFeatureConverter emits feature
+    variations as separate top-level statements; Replace Feature must clear
+    those too so static builds are not left with FeatureVariations and no
+    ``fvar``.
+    """
+    features = _replace_block("feature", tag, repl, features)
+    features = _remove_variation_blocks(tag, features)
+    return _prune_unreferenced_conditionsets(features)
 
 
 def replace_table(tag, repl, features):
