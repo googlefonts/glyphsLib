@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import importlib
 import os
 import re
 from textwrap import dedent
@@ -311,6 +312,39 @@ def _replace_block(kind, tag, repl, features):
 
 def replace_feature(tag, repl, features):
     return _replace_block("feature", tag, repl, features)
+
+
+def remove_feature(tag, features):
+    """Remove the blocks of a feature, and its references in other features
+    such as aalt."""
+    features = re.sub(
+        rf"^feature {tag} {{\n.*?^}} {tag};\n\n?",
+        "",
+        features,
+        flags=re.DOTALL | re.MULTILINE,
+    )
+    return re.sub(rf"^[ \t]*feature {tag};\n", "", features, flags=re.MULTILINE)
+
+
+def remove_written_features(tags, writers):
+    """Return the feature writers without the features of tags, as feature
+    writers add features after the feature text was edited. ufo2ft rejects
+    writers without features, so these are left out."""
+    result = []
+    for writer in writers:
+        options = writer.get("options", {})
+        features = options.get("features")
+        if features is None:
+            module = importlib.import_module(
+                writer.get("module", "ufo2ft.featureWriters")
+            )
+            features = getattr(module, writer["class"]).features
+        remaining = sorted(set(features) - set(tags))
+        if len(remaining) == len(features):
+            result.append(writer)
+        elif remaining:
+            result.append({**writer, "options": {**options, "features": remaining}})
+    return result
 
 
 def replace_table(tag, repl, features):
