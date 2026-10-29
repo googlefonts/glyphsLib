@@ -8,6 +8,7 @@ from fontTools.varLib.featureVars import overlayFeatureVariations
 
 from glyphsLib import util
 from .constants import (
+    BRACKET_GLYPH_RE,
     BRACKET_GLYPH_TEMPLATE,
     GLYPHLIB_PREFIX,
 )
@@ -183,3 +184,50 @@ def _expand_kerning_to_brackets(
         elif second_match:
             bracket_kerning[(first, ufo_glyph_name)] = value
     ufo_font.kerning.update(bracket_kerning)
+
+
+def remove_unused_bracket_glyphs(ufo: Any) -> None:
+    """Remove the bracket glyphs that a static instance UFO no longer uses.
+
+    By now the instantiator has swapped in the bracket glyphs whose rules match
+    the instance's location. A static font has no feature variations, so the
+    rest are unreachable, and Glyphs.app leaves bracket layers out of static
+    exports. A bracket glyph that a component or the feature code still refers
+    to is kept, as removing it would change an outline or break the features.
+    """
+    bracket_glyphs = {name for name in ufo.keys() if BRACKET_GLYPH_RE.match(name)}
+    if not bracket_glyphs:
+        return
+
+    # Glyphs.app can't refer to bracket glyphs in feature code, but UFOs once
+    # converted from Glyphs sources can, e.g. in a GDEF table written by older
+    # glyphsLib. A plain substring test errs on the side of keeping a glyph.
+    features = ufo.features.text or ""
+    used = {name for name in bracket_glyphs if name in features}
+    todo = [glyph for glyph in ufo if glyph.name not in bracket_glyphs]
+    todo.extend(ufo[name] for name in used)
+    while todo:
+        for component in todo.pop().components:
+            name = component.baseGlyph
+            if name in bracket_glyphs and name not in used:
+                used.add(name)
+                todo.append(ufo[name])
+
+    unused = bracket_glyphs - used
+    for name in unused:
+        del ufo[name]
+    for pair in [pair for pair in ufo.kerning.keys() if not unused.isdisjoint(pair)]:
+        del ufo.kerning[pair]
+    for group, names in list(ufo.groups.items()):
+        if not unused.isdisjoint(names):
+            ufo.groups[group] = [name for name in names if name not in unused]
+    for key in ("public.glyphOrder", "public.skipExportGlyphs"):
+        if key in ufo.lib:
+            ufo.lib[key] = [name for name in ufo.lib[key] if name not in unused]
+    for key in ("public.openTypeCategories", "public.postscriptNames"):
+        if key in ufo.lib:
+            ufo.lib[key] = {
+                name: value
+                for name, value in ufo.lib[key].items()
+                if name not in unused
+            }

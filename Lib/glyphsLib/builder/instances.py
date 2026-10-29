@@ -39,6 +39,7 @@ from .constants import (
     PROPERTIES_KEY,
     PROPERTIES_WHITELIST,
 )
+from .bracket_layers import remove_unused_bracket_glyphs
 from .common import expand_text_tokens
 from .font import PROPERTIES_FIELDS
 from .names import build_stylemap_names
@@ -562,3 +563,5 @@ def apply_instance_data_to_ufo(ufo, instance, designspace):
         value = glyphs_instance.properties.get(glyphs_key)
         if value is not None:
             setattr(ufo.info, info_key, value)
+
+    remove_unused_bracket_glyphs(ufo)

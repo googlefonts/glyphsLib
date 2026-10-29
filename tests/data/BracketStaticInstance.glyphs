@@ -1,0 +1,145 @@
+{
+.formatVersion = 3;
+axes = (
+{
+name = Weight;
+tag = wght;
+}
+);
+familyName = "Bracket Static Instance";
+fontMaster = (
+{
+axesValues = (
+400
+);
+id = m01;
+name = Regular;
+},
+{
+axesValues = (
+700
+);
+id = m02;
+name = Bold;
+}
+);
+glyphs = (
+{
+glyphname = a;
+layers = (
+{
+layerId = m01;
+width = 500;
+},
+{
+layerId = m02;
+width = 500;
+},
+{
+associatedMasterId = m02;
+attr = {
+axisRules = (
+{
+min = 600;
+}
+);
+};
+layerId = a.alt;
+width = 600;
+}
+);
+},
+{
+glyphname = b;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+ref = a;
+}
+);
+},
+{
+layerId = m02;
+shapes = (
+{
+ref = a;
+}
+);
+}
+);
+},
+{
+export = 0;
+glyphname = _bar;
+layers = (
+{
+layerId = m01;
+},
+{
+layerId = m02;
+},
+{
+associatedMasterId = m02;
+attr = {
+axisRules = (
+{
+min = 600;
+}
+);
+};
+layerId = _bar.alt;
+}
+);
+},
+{
+glyphname = dollar;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+ref = _bar;
+}
+);
+},
+{
+layerId = m02;
+shapes = (
+{
+ref = _bar;
+}
+);
+}
+);
+}
+);
+instances = (
+{
+axesValues = (
+400
+);
+name = Regular;
+},
+{
+axesValues = (
+700
+);
+name = Bold;
+weightClass = 700;
+}
+);
+kerningLTR = {
+m01 = {
+a = {
+b = -50;
+};
+};
+m02 = {
+a = {
+b = -50;
+};
+};
+};
+}
