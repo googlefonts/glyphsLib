@@ -156,6 +156,10 @@ class GlyphsObjectProxy:
         opposed to a master or instance."""
         return hasattr(self._owner, "glyphs")
 
+    def is_master(self):
+        """Returns whether we are looking at a GSFontMaster."""
+        return self._owner.__class__.__name__ == "GSFontMaster"
+
     def get_property(self, key):
         if key and hasattr(self._owner, "properties"):
             return expand_text_tokens(self._owner.properties.get(key), self._owner)
@@ -312,6 +316,24 @@ def register(handler):
     KNOWN_PARAM_HANDLERS.append(handler)
 
 
+class NonMasterParamHandler(ParamHandler):
+    """Handle a parameter on the font and instances, but not on masters.
+
+    A master's value is left unhandled, so it is stored in the UFO lib and
+    round-trips back to the master.
+    """
+
+    def to_glyphs(self, glyphs, ufo):
+        if glyphs.is_master():
+            return
+        super().to_glyphs(glyphs, ufo)
+
+    def to_ufo(self, builder, glyphs, ufo):
+        if glyphs.is_master():
+            return
+        super().to_ufo(builder, glyphs, ufo)
+
+
 GLYPHS_UFO_CUSTOM_PARAMS = (
     # These are be stored in the official descriptor attributes.
     # "familyName",
@@ -358,8 +380,16 @@ GLYPHS_UFO_CUSTOM_PARAMS = (
     ("underlinePosition", "postscriptUnderlinePosition"),
     ("underlineThickness", "postscriptUnderlineThickness"),
 )
+# Glyphs.app ignores these when they are set on a master. For example, it
+# exports post.isFixedPitch = 0 even when every master sets isFixedPitch.
+# https://github.com/googlefonts/fontc/issues/1856
+NON_MASTER_CUSTOM_PARAMS = {"isFixedPitch"}
 for glyphs_name, ufo_name in GLYPHS_UFO_CUSTOM_PARAMS:
-    register(ParamHandler(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
+    if glyphs_name in NON_MASTER_CUSTOM_PARAMS:
+        handler_class = NonMasterParamHandler
+    else:
+        handler_class = ParamHandler
+    register(handler_class(glyphs_name, ufo_name, glyphs_long_name=ufo_name))
 
 # Reference:
 # https://github.com/googlefonts/glyphsLib/pull/881#issuecomment-1474226616

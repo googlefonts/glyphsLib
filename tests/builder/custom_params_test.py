@@ -41,7 +41,14 @@ from glyphsLib.builder.constants import (
     UFO_FILENAME_KEY,
     FULL_FILENAME_KEY,
 )
-from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter, GSGlyph, GSLayer
+from glyphsLib.classes import (
+    GSFont,
+    GSFontMaster,
+    GSInstance,
+    GSCustomParameter,
+    GSGlyph,
+    GSLayer,
+)
 from glyphsLib.types import parse_datetime
 
 import pytest
@@ -818,3 +825,72 @@ def test_disabled_glyphOrder_custom_params(ufo_module, disabled):
         assert ufo.lib["public.glyphOrder"] == implicit_glyph_order
     else:
         assert ufo.lib["public.glyphOrder"] == custom_glyph_order
+
+
+def _fixed_pitch_font(font_value=None, master_value=None):
+    font = GSFont()
+    for name, weight in (("Regular", 400), ("Bold", 700)):
+        master = GSFontMaster()
+        master.name = name
+        master.weightValue = weight
+        if master_value is not None:
+            master.customParameters["isFixedPitch"] = master_value
+        font.masters.append(master)
+    if font_value is not None:
+        font.customParameters["isFixedPitch"] = font_value
+    return font
+
+
+def _fixed_pitch_values(glyphs_object):
+    return [p.value for p in glyphs_object.customParameters if p.name == "isFixedPitch"]
+
+
+# Glyphs.app ignores isFixedPitch on masters; only the font and instance
+# parameters set post.isFixedPitch.
+# https://github.com/googlefonts/fontc/issues/1856
+def test_master_isFixedPitch_ignored(ufo_module):
+    font = _fixed_pitch_font(master_value=True)
+
+    for ufo in to_ufos(font, ufo_module=ufo_module):
+        assert ufo.info.postscriptIsFixedPitch is None
+        assert ufo.lib[MASTER_CUSTOM_PARAM_PREFIX + "isFixedPitch"] is True
+
+
+@pytest.mark.parametrize("master_value", [None, False])
+def test_font_isFixedPitch(ufo_module, master_value):
+    font = _fixed_pitch_font(font_value=True, master_value=master_value)
+
+    for ufo in to_ufos(font, ufo_module=ufo_module):
+        assert ufo.info.postscriptIsFixedPitch is True
+
+
+def test_instance_isFixedPitch(ufo_module):
+    from glyphsLib.interpolation import apply_instance_data_to_ufo
+
+    font = _fixed_pitch_font(font_value=False, master_value=False)
+    instance = GSInstance()
+    instance.name = "Regular"
+    instance.weightValue = 400
+    instance.customParameters["isFixedPitch"] = True
+    font.instances = [instance]
+
+    ds = glyphsLib.to_designspace(font, ufo_module=ufo_module, minimal=True)
+    ufo = ds.sources[0].font
+    apply_instance_data_to_ufo(ufo, ds.instances[0], ds)
+
+    assert ufo.info.postscriptIsFixedPitch is True
+
+
+@pytest.mark.parametrize(
+    "font_value, master_value",
+    [(True, None), (None, True), (True, False), (False, True)],
+)
+def test_isFixedPitch_roundtrip(ufo_module, font_value, master_value):
+    font = _fixed_pitch_font(font_value, master_value)
+
+    ds = glyphsLib.to_designspace(font, ufo_module=ufo_module)
+    font_rt = glyphsLib.to_glyphs(ds)
+
+    assert _fixed_pitch_values(font_rt) == _fixed_pitch_values(font)
+    for master, master_rt in zip(font.masters, font_rt.masters):
+        assert _fixed_pitch_values(master_rt) == _fixed_pitch_values(master)
