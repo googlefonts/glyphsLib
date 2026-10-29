@@ -326,6 +326,87 @@ def test_rename_glyphs_missing_glyph_warns_and_skips(caplog):
     assert "instance 'Swapped'" in caplog.text
 
 
+def test_static_instance_drops_bracket_glyphs():
+    # https://github.com/googlefonts/fontmake/issues/629
+    # before ufo2ft 3.7 the instantiator only works with ufoLib2
+    import ufoLib2
+    from ufo2ft.instantiator import Instantiator
+    from glyphsLib.builder.instances import apply_instance_data_to_ufo
+
+    font = glyphsLib.GSFont(os.path.join(DATA, "BracketStaticInstance.glyphs"))
+    designspace = glyphsLib.to_designspace(
+        font, ufo_module=ufoLib2, minimal=True, write_skipexportglyphs=True
+    )
+    instantiator = Instantiator.from_designspace(designspace)
+    regular, bold = designspace.instances
+
+    ufo = instantiator.generate_instance(regular)
+    apply_instance_data_to_ufo(ufo, regular, designspace)
+
+    assert not any(".BRACKET." in name for name in ufo.keys())
+    assert ufo["a"].width == 500
+    assert dict(ufo.kerning) == {("a", "b"): -50}
+    assert ufo.lib["public.skipExportGlyphs"] == ["_bar"]
+
+    ufo = instantiator.generate_instance(bold)
+    apply_instance_data_to_ufo(ufo, bold, designspace)
+
+    # The alternates have been swapped in; only the alternate of the
+    # non-exporting _bar is left, since dollar uses it as a component.
+    assert [name for name in ufo.keys() if ".BRACKET." in name] == [
+        "_bar.BRACKET.varAlt01"
+    ]
+    assert ufo["a"].width == 600
+    assert [c.baseGlyph for c in ufo["b"].components] == ["a"]
+    assert [c.baseGlyph for c in ufo["dollar"].components] == ["_bar.BRACKET.varAlt01"]
+    assert dict(ufo.kerning) == {("a", "b"): -50}
+    assert ufo.lib["public.skipExportGlyphs"] == ["_bar", "_bar.BRACKET.varAlt01"]
+
+
+def test_remove_unused_bracket_glyphs(ufo_module):
+    from glyphsLib.builder.bracket_layers import remove_unused_bracket_glyphs
+
+    ufo = ufo_module.Font()
+    components = {
+        "a": [],
+        "a.BRACKET.varAlt01": [],
+        "b": ["b.BRACKET.varAlt01"],
+        "b.BRACKET.varAlt01": ["c.BRACKET.varAlt01"],
+        "c.BRACKET.varAlt01": [],
+        "d.BRACKET.varAlt01": ["e.BRACKET.varAlt01"],
+        "e.BRACKET.varAlt01": [],
+    }
+    for name, base_glyphs in components.items():
+        pen = ufo.newGlyph(name).getPointPen()
+        for base_glyph in base_glyphs:
+            pen.addComponent(base_glyph, (1, 0, 0, 1, 0, 0))
+    ufo.kerning[("a", "b")] = -10
+    ufo.kerning[("a.BRACKET.varAlt01", "b")] = -10
+    ufo.groups["public.kern1.a"] = ["a", "a.BRACKET.varAlt01"]
+    ufo.lib["public.glyphOrder"] = list(components)
+    ufo.lib["public.openTypeCategories"] = {"a": "base", "a.BRACKET.varAlt01": "base"}
+    ufo.features.text = "table GDEF { GlyphClassDef [d.BRACKET.varAlt01], , , ; } GDEF;"
+
+    remove_unused_bracket_glyphs(ufo)
+
+    # a's alternate is unused; b uses c's through its own, and the features
+    # use d's, which uses e's.
+    assert sorted(ufo.keys()) == [
+        "a",
+        "b",
+        "b.BRACKET.varAlt01",
+        "c.BRACKET.varAlt01",
+        "d.BRACKET.varAlt01",
+        "e.BRACKET.varAlt01",
+    ]
+    assert dict(ufo.kerning) == {("a", "b"): -10}
+    assert dict(ufo.groups) == {"public.kern1.a": ["a"]}
+    assert ufo.lib["public.glyphOrder"] == [
+        name for name in components if name != "a.BRACKET.varAlt01"
+    ]
+    assert ufo.lib["public.openTypeCategories"] == {"a": "base"}
+
+
 def test_rename_glyphs_variable_instance_ignored(ufo_module, caplog):
     # https://github.com/googlefonts/glyphsLib/issues/1165
     font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
