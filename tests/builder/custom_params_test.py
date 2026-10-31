@@ -32,6 +32,7 @@ from glyphsLib.builder.custom_params import (
     GLYPHS_UFO_CUSTOM_PARAMS,
 )
 from glyphsLib.builder.constants import (
+    UFO2FT_FEATURE_WRITERS_KEY,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     FONT_CUSTOM_PARAM_PREFIX,
@@ -43,6 +44,7 @@ from glyphsLib.builder.constants import (
 )
 from glyphsLib.classes import GSFont, GSFontMaster, GSCustomParameter, GSGlyph, GSLayer
 from glyphsLib.types import parse_datetime
+from ufo2ft.featureWriters import ast, loadFeatureWriters
 
 import pytest
 
@@ -384,6 +386,59 @@ class SetCustomParamsTestBase(object):
         self.set_custom_params()
 
         self.assertEqual(self.ufo.features.text, original)
+
+    def test_remove_features(self):
+        self.ufo.features.text = dedent("""\
+            feature aalt {
+            feature ss01;
+            feature ss02;
+            } aalt;
+
+            feature ss01 {
+            sub A by A.ss01;
+            } ss01;
+
+            feature ss02 {
+            sub B by B.ss02;
+            } ss02;
+        """)
+
+        self.master.customParameters["Remove Features"] = ["ss01"]
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+            feature aalt {
+            feature ss02;
+            } aalt;
+
+            feature ss02 {
+            sub B by B.ss02;
+            } ss02;
+        """),
+        )
+
+    def test_remove_features_of_feature_writers(self):
+        for name, unicode in (("a", 0x61), ("b", 0x62)):
+            self.ufo.newGlyph(name).unicodes = [unicode]
+        self.ufo.kerning[("a", "b")] = -10
+        self.master.customParameters["Remove Features"] = ["kern", "curs"]
+        self.set_custom_params()
+
+        # The kern writer keeps dist, the curs writer has nothing left.
+        self.assertEqual(
+            self.ufo.lib[UFO2FT_FEATURE_WRITERS_KEY],
+            [
+                {"class": "KernFeatureWriter", "options": {"features": ["dist"]}},
+                {"class": "MarkFeatureWriter"},
+                {"class": "GdefFeatureWriter"},
+            ],
+        )
+        fea = ast.FeatureFile()
+        for writer in loadFeatureWriters(self.ufo, ignoreErrors=False):
+            writer.write(self.ufo, fea)
+        self.assertNotIn("feature kern", str(fea))
 
     def test_replace_prefix(self):
         self.ufo.features.text = dedent("""\

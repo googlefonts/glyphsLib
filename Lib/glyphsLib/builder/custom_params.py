@@ -25,6 +25,7 @@ from .common import expand_text_tokens, to_ufo_color
 from .constants import (
     GLYPHS_PREFIX,
     UFO2FT_COLOR_PALETTES_KEY,
+    UFO2FT_FEATURE_WRITERS_KEY,
     UFO2FT_FILTERS_KEY,
     UFO2FT_USE_PROD_NAMES_KEY,
     CODEPAGE_RANGES,
@@ -32,8 +33,14 @@ from .constants import (
     PUBLIC_PREFIX,
     UFO_FILENAME_CUSTOM_PARAM,
     UFO2FT_META_TABLE_KEY,
+    DEFAULT_FEATURE_WRITERS,
 )
-from .features import replace_feature, replace_prefixes
+from .features import (
+    remove_feature,
+    remove_written_features,
+    replace_feature,
+    replace_prefixes,
+)
 
 """Set Glyphs custom parameters in UFO info or lib, where appropriate.
 
@@ -1055,6 +1062,35 @@ class ReplaceFeatureParamHandler(AbstractParamHandler):
 
 
 register(ReplaceFeatureParamHandler())
+
+
+class RemoveFeaturesParamHandler(AbstractParamHandler):
+    """The "Remove Features" parameter of an instance: the features it leaves out."""
+
+    def to_ufo(self, builder, glyphs, ufo):
+        removed = [
+            tag
+            for tags in glyphs.get_custom_values("Remove Features")
+            for tag in ([tags] if isinstance(tags, str) else tags)
+        ]
+        if not removed:
+            return
+        for tag in removed:
+            ufo._owner.features.text = remove_feature(
+                tag, ufo._owner.features.text or ""
+            )
+        writers = ufo.get_lib_value(UFO2FT_FEATURE_WRITERS_KEY)
+        if writers is None:
+            writers = DEFAULT_FEATURE_WRITERS
+        remaining = remove_written_features(removed, writers)
+        if remaining != writers:
+            ufo.set_lib_value(UFO2FT_FEATURE_WRITERS_KEY, remaining)
+
+    def to_glyphs(self, glyphs, ufo):
+        pass
+
+
+register(RemoveFeaturesParamHandler())
 
 
 class ReencodeGlyphsParamHandler(AbstractParamHandler):
