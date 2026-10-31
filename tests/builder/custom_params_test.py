@@ -249,6 +249,61 @@ class SetCustomParamsTestBase(object):
         self.assertEqual(rec3["rangeMaxPPEM"], 65535)
         self.assertEqual(rec3["rangeGaspBehavior"], [0, 1, 2, 3])
 
+    def test_family_alignment_zones(self):
+        # Glyphs 2 files store "{pos, size}" strings, Glyphs 3 files dicts.
+        for zones in (
+            ["{709, 15}", "{500, 19}", "{0, -14}", "{-216, -14}"],
+            [
+                {"pos": 709, "size": 15},
+                {"pos": 500, "size": 19},
+                {"pos": 0, "size": -14},
+                {"pos": -216, "size": -14},
+            ],
+        ):
+            self.setUp()
+            self.font.customParameters["Family Alignment Zones"] = zones
+            self.set_custom_params()
+            self.assertEqual(
+                self.ufo.info.postscriptFamilyBlues, [-14, 0, 500, 519, 709, 724]
+            )
+            self.assertEqual(self.ufo.info.postscriptFamilyOtherBlues, [-230, -216])
+            self.assertNotIn(
+                "com.schriftgestaltung.customParameter.GSFont.Family Alignment Zones",
+                self.ufo.lib,
+            )
+
+    def test_family_blues_take_precedence_over_family_alignment_zones(self):
+        self.font.customParameters["postscriptFamilyBlues"] = [-10, 0, 500, 510]
+        self.font.customParameters["Family Alignment Zones"] = ["{0, -14}"]
+        self.set_custom_params()
+        self.assertEqual(self.ufo.info.postscriptFamilyBlues, [-10, 0, 500, 510])
+
+    def test_family_alignment_zones_round_trip(self):
+        # Glyphs ignores the postscriptFamily* parameters, so the family blues
+        # go back to Glyphs as "Family Alignment Zones".
+        zones = ["{709, 15}", "{500, 19}", "{0, -14}", "{-216, -14}"]
+        self.font.customParameters["Family Alignment Zones"] = zones
+        self.set_custom_params()
+        font_rt = glyphsLib.to_glyphs([self.ufo])
+        self.assertNotIn("postscriptFamilyBlues", font_rt.customParameters)
+        self.assertNotIn("postscriptFamilyOtherBlues", font_rt.customParameters)
+        self.assertNotIn("Family Alignment Zones", font_rt.masters[0].customParameters)
+        self.assertEqual(
+            [
+                zone.plistValue()
+                for zone in font_rt.customParameters["Family Alignment Zones"]
+            ],
+            [f'"{zone}"' for zone in zones],
+        )
+        ufo_rt = glyphsLib.to_ufos(font_rt, ufo_module=self.ufo_module)[0]
+        self.assertEqual(
+            ufo_rt.info.postscriptFamilyBlues, self.ufo.info.postscriptFamilyBlues
+        )
+        self.assertEqual(
+            ufo_rt.info.postscriptFamilyOtherBlues,
+            self.ufo.info.postscriptFamilyOtherBlues,
+        )
+
     def test_set_disables_nice_names(self):
         self.font.disablesNiceNames = False
         self.set_custom_params()

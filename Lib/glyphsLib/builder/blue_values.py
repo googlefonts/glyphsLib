@@ -15,42 +15,56 @@
 from glyphsLib.util import pairs
 
 
-def to_ufo_blue_values(self, ufo, master):
-    """Set postscript blue values from Glyphs alignment zones."""
+def blues_from_alignment_zones(zones):
+    """Return the blue values and other blues of Glyphs alignment zones:
+    zones below the baseline are other blues."""
 
     # Glyphs ignores zero-height zones and emits each zone only once.
     alignment_zones = sorted(
-        {(zone.position, zone.size) for zone in master.alignmentZones if zone.size}
+        {(zone.position, zone.size) for zone in zones if zone.size}
     )
     blue_values = []
     other_blues = []
     for pos, size in alignment_zones:
         val_list = blue_values if pos == 0 or size >= 0 else other_blues
         val_list.extend(sorted((pos, pos + size)))
+    return blue_values, other_blues
 
+
+def to_ufo_blue_values(self, ufo, master):
+    """Set postscript blue values from Glyphs alignment zones."""
+
+    blue_values, other_blues = blues_from_alignment_zones(master.alignmentZones)
     if blue_values:
         ufo.info.postscriptBlueValues = blue_values
     if other_blues:
         ufo.info.postscriptOtherBlues = other_blues
 
 
-def to_glyphs_blue_values(self, ufo, master):
-    """Sets the GSFontMaster alignmentZones from the postscript blue values."""
+def alignment_zones_from_blues(blue_values, other_blues):
+    """Return the positions and sizes of the Glyphs alignment zones of blue
+    values and other blues, from the top down."""
 
     zones = []
-    blue_values = pairs(ufo.info.postscriptBlueValues or [])
-    other_blues = pairs(ufo.info.postscriptOtherBlues or [])
-    for y1, y2 in blue_values:
+    for y1, y2 in pairs(blue_values or []):
         size = y2 - y1
         if y2 == 0:
             pos = 0
             size = -size
         else:
             pos = y1
-        zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
-    for y1, y2 in other_blues:
-        size = y1 - y2
-        pos = y2
-        zones.append(self.glyphs_module.GSAlignmentZone(pos, size))
+        zones.append((pos, size))
+    for y1, y2 in pairs(other_blues or []):
+        zones.append((y2, y1 - y2))
+    return sorted(zones, key=lambda zone: -zone[0])
 
-    master.alignmentZones = sorted(zones, key=lambda zone: -zone.position)
+
+def to_glyphs_blue_values(self, ufo, master):
+    """Sets the GSFontMaster alignmentZones from the postscript blue values."""
+
+    master.alignmentZones = [
+        self.glyphs_module.GSAlignmentZone(pos, size)
+        for pos, size in alignment_zones_from_blues(
+            ufo.info.postscriptBlueValues, ufo.info.postscriptOtherBlues
+        )
+    ]
