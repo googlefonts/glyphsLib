@@ -3807,3 +3807,73 @@ def test_vhea_custom_params_trigger_is_vertical(ufo_module):
     assert ufo.info.openTypeVheaVertTypoAscender == 500
     assert ufo.info.openTypeVheaVertTypoDescender == -500
     assert ufo.info.openTypeVheaVertTypoLineGap == 0
+
+
+@pytest.mark.parametrize("minimal", [False, True])
+def test_empty_master_glyphs_are_marked(ufo_module, minimal):
+    key = "com.github.googlei18n.ufo2ft.instantiator.emptyNotSparse"
+    font = generate_minimal_font(format_version=3)
+    font.axes = [GSAxis(name="Weight", tag="wght")]
+    regular = font.masters[0]
+    regular.name = "Regular"
+    regular.axes = [100]
+    bold = GSFontMaster()
+    bold.id = "bold"
+    bold.name = "Bold"
+    bold.axes = [200]
+    font.masters.append(bold)
+
+    def add_layer(glyph, master, layer_id=None, path=False, component=None, **attrs):
+        layer = GSLayer()
+        layer.layerId = layer_id or master.id
+        layer.associatedMasterId = master.id
+        layer.attributes.update(attrs)
+        if path:
+            layer.paths.append(_quad())
+        if component:
+            layer.components.append(GSComponent(component))
+        glyph.layers.append(layer)
+
+    def add_two_master_glyph(name, regular_path=False, bold_path=False, component=None):
+        glyph = GSGlyph(name)
+        font.glyphs.append(glyph)
+        add_layer(glyph, regular, path=regular_path, component=component)
+        add_layer(glyph, bold, path=bold_path)
+        return glyph
+
+    add_two_master_glyph("emptyInBold", regular_path=True)
+    add_two_master_glyph("compositeEmptyInBold", component="emptyInBold")
+    add_two_master_glyph("emptyInBoth")
+    add_two_master_glyph("emptyInRegular", bold_path=True)
+    # A brace layer is a sparse intermediate source: never marked, even if empty.
+    glyph = add_two_master_glyph("emptyBrace", regular_path=True, bold_path=True)
+    add_layer(glyph, bold, "brace", coordinates=[150])
+    glyph.layers["brace"].name = "{150}"
+    # Bold has no bracket layer of its own, so it uses its (empty) master layer.
+    glyph = add_two_master_glyph("implicitBracket", regular_path=True)
+    add_layer(glyph, regular, "regularAlt", path=True, axisRules=[{"min": 150}])
+    # Bold has its own bracket layer, drawn empty.
+    glyph = add_two_master_glyph("explicitBracket", regular_path=True, bold_path=True)
+    add_layer(glyph, regular, "regularAlt", path=True, axisRules=[{"min": 150}])
+    add_layer(glyph, bold, "boldAlt", axisRules=[{"min": 150}])
+
+    ufos = to_ufos(font, ufo_module=ufo_module, minimal=minimal, preserve_original=True)
+    assert ufos[1]["emptyInBold"].lib[key] is True
+
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=minimal)
+    default, bold_ufo = [s.font for s in designspace.sources if s.layerName is None]
+    assert not any(key in glyph.lib for glyph in default)
+    assert {glyph.name for glyph in bold_ufo if key in glyph.lib} == {
+        "emptyInBold",
+        "compositeEmptyInBold",
+        "implicitBracket",
+        "implicitBracket.BRACKET.varAlt01",
+        "explicitBracket.BRACKET.varAlt01",
+    }
+    brace_source = next(s for s in designspace.sources if s.layerName == "{150}")
+    assert key not in brace_source.font.layers["{150}"]["emptyBrace"].lib
+
+    roundtrip = to_glyphs(designspace)
+    for glyph in roundtrip.glyphs:
+        for layer in glyph.layers:
+            assert key not in layer.userData

@@ -26,8 +26,15 @@ from .constants import (
     GLYPHLIB_PREFIX,
     BRACKET_GLYPH_RE,
     FONT_CUSTOM_PARAM_PREFIX,
+    UFO2FT_EMPTY_NOT_SPARSE_KEY,
 )
-from .axes import WEIGHT_AXIS_DEF, WIDTH_AXIS_DEF, find_base_style, class_to_value
+from .axes import (
+    WEIGHT_AXIS_DEF,
+    WIDTH_AXIS_DEF,
+    find_base_style,
+    class_to_value,
+    get_regular_master,
+)
 from glyphsLib.util import LoggerMixin, _DeprecatedArgument
 
 
@@ -271,6 +278,7 @@ class UFOBuilder(LoggerMixin):
 
         self.to_ufo_groups()  # .groups
         self.to_ufo_kerning()  # .kerning
+        self.mark_empty_master_glyphs()
 
         for source in self._sources.values():
             yield source.font
@@ -373,6 +381,7 @@ class UFOBuilder(LoggerMixin):
         if self.bracket_layers:
             self.to_designspace_bracket_layers()  # .bracket_layers
 
+        self.mark_empty_master_glyphs()
         self.to_designspace_stat()  # .axisLabels
 
         # append base style shared by all masters to designspace file name
@@ -384,6 +393,27 @@ class UFOBuilder(LoggerMixin):
         self.designspace.filename = name
 
         return self._designspace
+
+    def mark_empty_master_glyphs(self):
+        """Mark glyphs drawn empty in a non-default master as not sparse.
+
+        ufo2ft's instantiator treats a glyph that is empty in a non-default source,
+        while the default's isn't, as sparse and fills it from the other sources.
+        In Glyphs an empty master layer is just empty.
+        """
+        default_master = get_regular_master(self.font)
+        if default_master is None:
+            return
+        default_font = self._sources[default_master.id].font
+        for master_id, source in self._sources.items():
+            if master_id == default_master.id:
+                continue
+            for glyph in source.font:
+                if glyph.name not in default_font or len(glyph) or glyph.components:
+                    continue
+                default_glyph = default_font[glyph.name]
+                if len(default_glyph) or default_glyph.components:
+                    glyph.lib[UFO2FT_EMPTY_NOT_SPARSE_KEY] = True
 
     # DEPRECATED
     @property

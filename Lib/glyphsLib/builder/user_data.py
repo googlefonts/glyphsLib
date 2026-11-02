@@ -21,6 +21,7 @@ from .constants import (
     GLYPHS_PREFIX,
     PUBLIC_PREFIX,
     UFO2FT_FEATURE_WRITERS_KEY,
+    UFO2FT_EMPTY_NOT_SPARSE_KEY,
     DEFAULT_FEATURE_WRITERS,
     DEFAULT_LAYER_NAME,
     UFO_DATA_KEY,
@@ -209,6 +210,8 @@ def to_glyphs_layer_lib(self, ufo_layer, master):
 def to_glyphs_layer_user_data(self, ufo_glyph, layer):
     user_data = layer.userData
     for key, value in ufo_glyph.lib.items():
+        if key == UFO2FT_EMPTY_NOT_SPARSE_KEY:
+            continue
         if key == GLYPHS_MATH_VARIANTS_KEY:
             glyph_user_data = layer.parent.userData
             for sub_key, sub_value in value.items():
