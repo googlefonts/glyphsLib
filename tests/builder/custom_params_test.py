@@ -274,6 +274,56 @@ class SetCustomParamsTestBase(object):
                 self.ufo.lib,
             )
 
+    def test_family_alignment_zones_from_file(self):
+        # Glyphs quotes negative numbers, so the parser leaves them as
+        # strings, and Glyphs 2 files can hold named zones with "position".
+        glyphs3_zones = """
+            {
+            pos = 709;
+            size = 15;
+            },
+            {
+            pos = 0;
+            size = "-14";
+            },
+            {
+            pos = "-216";
+            size = "-14";
+            }
+        """
+        glyphs2_zones = """
+            "{709, 15}",
+            "{0, -14}",
+            "{-216, -14}",
+            {
+            name = "Marks bottom";
+            position = 893;
+            size = "-10";
+            }
+        """
+        for format_version, zones, other_blues in (
+            (".formatVersion = 3;", glyphs3_zones, [-230, -216]),
+            ("", glyphs2_zones, [-230, -216, 883, 893]),
+        ):
+            font = glyphsLib.loads(f"""{{
+                {format_version}
+                customParameters = (
+                {{
+                name = "Family Alignment Zones";
+                value = ({zones});
+                }}
+                );
+                fontMaster = (
+                {{
+                id = m01;
+                }}
+                );
+                unitsPerEm = 1000;
+                }}""")
+            ufo = glyphsLib.to_ufos(font, ufo_module=self.ufo_module)[0]
+            self.assertEqual(ufo.info.postscriptFamilyBlues, [-14, 0, 709, 724])
+            self.assertEqual(ufo.info.postscriptFamilyOtherBlues, other_blues)
+
     def test_family_blues_take_precedence_over_family_alignment_zones(self):
         self.font.customParameters["postscriptFamilyBlues"] = [-10, 0, 500, 510]
         self.font.customParameters["Family Alignment Zones"] = ["{0, -14}"]
