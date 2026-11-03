@@ -18,6 +18,7 @@ import re
 import logging
 
 from glyphsLib.classes import GSAlignmentZone, InstanceType
+from glyphsLib.types import parse_float_or_int
 from glyphsLib.util import bin_to_int_list, int_list_to_bin
 from .blue_values import alignment_zones_from_blues, blues_from_alignment_zones
 from .filters import parse_glyphs_filter
@@ -495,11 +496,16 @@ class FamilyAlignmentZonesParamHandler(AbstractParamHandler):
         if not value:
             return
         # Glyphs 2 files store "{pos, size}" strings, Glyphs 3 files dicts,
-        # and fonts converted from UFOs hold zones.
+        # and fonts converted from UFOs hold zones. Glyphs quotes negative
+        # numbers, so dict values can be strings, and Glyphs 2 files can
+        # also hold dicts with "name" and "position" keys.
         zones = []
         for zone in value:
             if isinstance(zone, dict):
-                zone = GSAlignmentZone(zone["pos"], zone["size"])
+                zone = GSAlignmentZone(
+                    parse_float_or_int(zone.get("pos", zone.get("position", 0))),
+                    parse_float_or_int(zone.get("size", 0)),
+                )
             elif isinstance(zone, str):
                 zone = GSAlignmentZone().read(zone)
             zones.append(zone)
