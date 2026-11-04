@@ -571,6 +571,110 @@ class SetCustomParamsTestBase(object):
                 """),
         )
 
+    def test_replace_feature_use_extension(self):
+        # VariableFeatureConverter keeps useExtension on the feature block.
+        self.ufo.features.text = dedent("""\
+            feature kern useExtension {
+            pos a b -10;
+            } kern;
+
+            conditionset conditionset_1 {
+                wght 600.0 1000.0;
+            } conditionset_1;
+
+            variation kern conditionset_1 {
+            pos a b 10;
+            } kern;
+            """)
+
+        self.master.customParameters["Replace Feature"] = "kern; pos a b 5;\n"
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+                feature kern useExtension {
+                pos a b 5;
+                } kern;
+
+                """),
+        )
+
+    def test_replace_feature_variation_with_lookup_named_after_feature(self):
+        # The lookup closes with the same `} calt;` line as the variation block.
+        self.ufo.features.text = dedent("""\
+            feature calt {
+            sub a by b;
+            } calt;
+
+            conditionset conditionset_1 {
+                wght 100.0 436.0;
+            } conditionset_1;
+
+            variation calt conditionset_1 {
+            lookup calt {
+            sub G by G.crossbar;
+            } calt;
+            sub e by e.alt;
+            } calt;
+            """)
+
+        self.master.customParameters["Replace Feature"] = "calt; sub c by c;\n"
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+                feature calt {
+                sub c by c;
+                } calt;
+
+                """),
+        )
+
+    def test_remove_features_removes_feature_variations(self):
+        self.ufo.features.text = dedent("""\
+            feature calt {
+            sub a by b;
+            } calt;
+
+            feature rlig useExtension {
+            sub c by d;
+            } rlig;
+
+            conditionset conditionset_1 {
+                wght 100.0 436.0;
+            } conditionset_1;
+
+            variation calt conditionset_1 {
+            sub G by G.crossbar;
+            } calt;
+
+            variation rlig conditionset_1 {
+            sub e by e.alt;
+            } rlig;
+            """)
+
+        self.master.customParameters["Remove Features"] = ["calt"]
+        self.set_custom_params()
+
+        self.assertEqual(
+            self.ufo.features.text,
+            dedent("""\
+                feature rlig useExtension {
+                sub c by d;
+                } rlig;
+
+                conditionset conditionset_1 {
+                    wght 100.0 436.0;
+                } conditionset_1;
+
+                variation rlig conditionset_1 {
+                sub e by e.alt;
+                } rlig;
+                """),
+        )
+
     def test_replace_prefix(self):
         self.ufo.features.text = dedent("""\
             # Prefix: AAA
