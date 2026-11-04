@@ -35,7 +35,11 @@ from .constants import (
     INSERT_FEATURE_MARKER_COMMENT,
 )
 from .tokens import TokenExpander, PassThruExpander
-from .variable_features import VariableFeatureConverter
+from .variable_features import (
+    VariableFeatureConverter,
+    _blank_comments_and_strings,
+    _match_block,
+)
 
 if TYPE_CHECKING:
     from ufoLib2 import Font
@@ -301,9 +305,10 @@ def regenerate_opentype_categories(font: GSFont, ufo: Font) -> None:
 def _replace_block(kind, tag, repl, features):
     if not repl.endswith("\n"):
         repl += "\n"
+    extension = r"(?: useExtension)?" if kind == "feature" else ""
     return re.sub(
-        rf"(?<=^{kind} {tag} {{\n)(.*?)(?=^}} {tag};$)",
-        repl,
+        rf"(^{kind} {tag}{extension} {{\n)(.*?)(?=^}} {tag};$)",
+        lambda match: match.group(1) + repl,
         features,
         count=1,
         flags=re.DOTALL | re.MULTILINE,
@@ -312,12 +317,21 @@ def _replace_block(kind, tag, repl, features):
 
 def _remove_variation_blocks(tag, features):
     """Remove top-level ``variation TAG ... TAG;`` blocks for *tag*."""
-    return re.sub(
-        rf"^variation {re.escape(tag)} .*?^}} {re.escape(tag)};\n*",
-        "",
-        features,
-        flags=re.DOTALL | re.MULTILINE,
-    )
+    masked = _blank_comments_and_strings(features)
+    out, pos = [], 0
+    for m in re.finditer(rf"^variation {re.escape(tag)} [^{{}}]*\{{", masked, re.M):
+        if m.start() < pos:
+            continue
+        close = _match_block(masked, m.end())
+        tail = close is not None and re.match(
+            rf"[ \t]*{re.escape(tag)}[ \t]*;\n*", masked[close + 1 :]
+        )
+        if not tail:
+            continue
+        out.append(features[pos : m.start()])
+        pos = close + 1 + tail.end()
+    out.append(features[pos:])
+    return "".join(out)
 
 
 def _prune_unreferenced_conditionsets(features):
@@ -348,15 +362,18 @@ def replace_feature(tag, repl, features):
 
 
 def remove_feature(tag, features):
-    """Remove the blocks of a feature, and its references in other features
-    such as aalt."""
+    """Remove the blocks of a feature, its feature variations, and its
+    references in other features such as aalt."""
     features = re.sub(
-        rf"^feature {tag} {{\n.*?^}} {tag};\n\n?",
+        rf"^feature {tag}(?: useExtension)? {{\n.*?^}} {tag};\n\n?",
         "",
         features,
         flags=re.DOTALL | re.MULTILINE,
     )
-    return re.sub(rf"^[ \t]*feature {tag};\n", "", features, flags=re.MULTILINE)
+    features = re.sub(rf"^[ \t]*feature {tag};\n", "", features, flags=re.MULTILINE)
+    # Also drop the feature variations VariableFeatureConverter emits next to it.
+    features = _remove_variation_blocks(tag, features)
+    return _prune_unreferenced_conditionsets(features)
 
 
 def remove_written_features(tags, writers):
