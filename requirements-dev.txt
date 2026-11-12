@@ -6,7 +6,7 @@
 #
 attrs==26.1.0
     # via flake8-bugbear
-black==26.5.1
+black==26.10.1
     # via -r requirements-dev.in
 booleanoperations==0.10.0
     # via ufo2ft
