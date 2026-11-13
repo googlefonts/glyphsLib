@@ -326,6 +326,47 @@ def test_rename_glyphs_missing_glyph_warns_and_skips(caplog):
     assert "instance 'Swapped'" in caplog.text
 
 
+def test_rename_glyphs_components():
+    # Glyphs renames the components of the renamed glyphs along with them, and
+    # leaves the components of every other glyph alone.
+    import ufoLib2
+    from glyphsLib.builder.instances import apply_instance_data_to_ufo
+
+    font = glyphsLib.GSFont(os.path.join(DATA, "RenameGlyphsTest.glyphs"))
+    instance = font.instances[1]
+    instance.customParameters["Rename Glyphs"] = ["a.sc=a", "bb=c", "b=b.ss01"]
+    designspace = glyphsLib.to_designspace(font, ufo_module=ufoLib2)
+
+    ufo = ufoLib2.Font()
+    for name in ["a", "a.sc", "x", "b", "b.ss01", "bb", "c"]:
+        ufo.newGlyph(name)
+    pen = ufo["a"].getPen()
+    pen.moveTo((0, 0))
+    pen.lineTo((0, 100))
+    pen.lineTo((100, 100))
+    pen.closePath()
+    ufo["a.sc"].components.append(ufoLib2.objects.Component("a", (1, 0, 0, 1, 0, -130)))
+    ufo["x"].components.append(ufoLib2.objects.Component("a"))
+    ufo["bb"].components.append(ufoLib2.objects.Component("b"))
+
+    apply_instance_data_to_ufo(ufo, designspace.instances[1], designspace)
+
+    def components(name):
+        return [(c.baseGlyph, c.transformation) for c in ufo[name].components]
+
+    # "a" has the data of "a.sc", whose component now names "a.sc", which has
+    # the drawing: no cycle
+    assert components("a") == [("a.sc", (1, 0, 0, 1, 0, -130))]
+    assert len(ufo["a"]) == 0
+    assert components("a.sc") == []
+    assert len(ufo["a.sc"]) == 1
+    # "x" isn't renamed: it keeps "a", and so shows the drawing from "a.sc"
+    assert components("x") == [("a", (1, 0, 0, 1, 0, 0))]
+    # "c" has the data of "bb", whose component goes through the other swap
+    assert components("c") == [("b.ss01", (1, 0, 0, 1, 0, 0))]
+    assert components("bb") == []
+
+
 def test_static_instance_drops_bracket_glyphs():
     # https://github.com/googlefonts/fontmake/issues/629
     # before ufo2ft 3.7 the instantiator only works with ufoLib2
