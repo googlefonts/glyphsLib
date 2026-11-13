@@ -219,6 +219,99 @@ def test_designspace_generation_v3_brace_component_without_a_name(datadir, ufo_m
     assert "aacute" in light.font.layers["{100}"]
 
 
+# Text inside a Glyphs 2 brace layer's braces that isn't a number turns the
+# layer off, as in IBM Plex Sans KR's "Rg {400, 100off}", and Glyphs 3 and 4
+# open such a layer as an ordinary layer. "Rg {400}" is a brace layer that is on.
+# https://github.com/googlefonts/glyphsLib/issues/826
+GLYPHS2_BRACE_LAYER_OFF = """\
+{
+.appVersion = "1286";
+familyName = "Brace Off";
+fontMaster = (
+{
+id = thin;
+weight = Thin;
+},
+{
+id = bold;
+weight = Bold;
+weightValue = 700;
+}
+);
+glyphs = (
+{
+glyphname = a;
+layers = (
+{
+layerId = thin;
+},
+{
+layerId = bold;
+},
+{
+associatedMasterId = thin;
+layerId = on;
+name = "Rg {400}";
+},
+{
+associatedMasterId = thin;
+layerId = off;
+name = "Rg {400, 100off}";
+}
+);
+}
+);
+}
+"""
+
+
+@pytest.mark.parametrize(
+    "name, expected",
+    [
+        ("Rg {400, 100}", [400.0, 100.0]),
+        ("Rg {400, 100off}", None),
+        # The example from Glyphs' tutorial on the Glyphs 2 brace trick.
+        ("Intermediate {90, 100 off}", None),
+        # So is deleting a brace.
+        ("Intermediate {90, 100", None),
+        # Glyphs ignores text after the braces, so this layer is still on.
+        ("Rg {400, 100} off", [400.0, 100.0]),
+        # Glyphs reads up to the first "}" after the first "{".
+        ("x}{400, 100}", [400.0, 100.0]),
+    ],
+)
+def test_glyphs2_brace_layer_off(name, expected):
+    font = glyphsLib.loads(GLYPHS2_BRACE_LAYER_OFF.replace("Rg {400, 100off}", name))
+    layer = font.glyphs["a"].layers["off"]
+    assert layer.name == name
+    assert layer._is_brace_layer() == (expected is not None)
+    assert layer._brace_coordinates() == expected
+
+
+def test_designspace_generation_glyphs2_brace_layer_off(ufo_module):
+    font = glyphsLib.loads(GLYPHS2_BRACE_LAYER_OFF)
+
+    designspace = to_designspace(font, ufo_module=ufo_module, minimal=True)
+    assert [s.layerName for s in designspace.sources] == [None, "Rg {400}", None]
+    thin = designspace.sources[0].font
+    assert [l.name for l in thin.layers] == ["public.default", "Rg {400}"]
+
+    # Outside minimal mode the layer is kept as an ordinary layer, and its name
+    # survives the round trip.
+    designspace = to_designspace(
+        font, ufo_module=ufo_module, minimize_glyphs_diffs=True
+    )
+    assert [s.layerName for s in designspace.sources] == [None, "Rg {400}", None]
+    thin = designspace.sources[0].font
+    assert "a" in thin.layers["Rg {400, 100off}"]
+
+    font = to_glyphs(designspace)
+    layer = font.glyphs["a"].layers["off"]
+    assert layer.name == "Rg {400, 100off}"
+    assert layer.associatedMasterId == "thin"
+    assert not layer._is_brace_layer()
+
+
 @pytest.mark.parametrize("filename", ["BraceTestFont.glyphs", "BraceTestFontV3.glyphs"])
 def test_designspace_generation_instances(datadir, filename, ufo_module):
     with open(str(datadir.join(filename))) as f:
