@@ -1122,7 +1122,7 @@ def test_ufo_opentype_os2_selection():
 def test_mutiple_params(ufo_module):
     """Test multiple custom parameters with the same name on GSFont."""
 
-    font = GSFont(os.path.join(DATA, "CustomPrametersTest.glyphs"))
+    font = GSFont(os.path.join(DATA, "CustomParametersTest.glyphs"))
     assert len(font.customParameters) == 3
 
     assert all("Virtual Master" == c.name for c in font.customParameters)
@@ -1132,12 +1132,14 @@ def test_mutiple_params(ufo_module):
     assert font.customParameters[2].value == [{"Axis": "Spacing", "Location": 100}]
 
     instance = font.instances[0]
-    assert len(instance.customParameters) == 2
+    assert len(instance.customParameters) == 4
 
     assert all("Replace Feature" == c.name for c in instance.customParameters)
 
-    assert instance.customParameters[0].value == "ccmp;sub space by space;"
-    assert instance.customParameters[1].value == "liga;sub space space by space;"
+    assert instance.customParameters[0].value == "afrc;sub A by B;"
+    assert instance.customParameters[1].value == "ss05;sub A by B;"
+    assert instance.customParameters[2].value == "ccmp;sub space by space;"
+    assert instance.customParameters[3].value == "liga;sub space space by space;"
 
 
 @pytest.mark.parametrize("disabled", [False, True])
