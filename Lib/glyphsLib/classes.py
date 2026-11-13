@@ -4276,7 +4276,7 @@ class GSLayer(GSBase):
         if self.parent.parent.format_version > 2:
             return "coordinates" in self.attributes  # Glyphs 3
         # Glyphs 2
-        return "{" in self.name and "}" in self.name and ".background" not in self.name
+        return self._glyphs2_brace_coordinates() is not None
 
     def _brace_coordinates(self):
         if not self._is_brace_layer():
@@ -4285,10 +4285,30 @@ class GSLayer(GSBase):
         if self.parent.parent.format_version > 2:
             return [float(v) for v in self.attributes["coordinates"]]  # Glyphs 3
 
-        # Glyphs 2
+        return self._glyphs2_brace_coordinates()
+
+    def _glyphs2_brace_coordinates(self):
+        """Parse the coordinates in a Glyphs 2 brace layer's name.
+
+        Glyphs 2 makes a layer a brace layer by putting its coordinates in
+        curly braces in the layer name, as in "Intermediate {90, 100}". Text
+        inside the braces that isn't a number, as in "Intermediate {90, 100
+        off}", turns the brace layer off, and Glyphs 3 and 4 then open it as an
+        ordinary layer. Return None in that case, as for any other layer that
+        isn't a brace layer. See Glyphs' tutorial on the Glyphs 2 brace trick:
+        https://glyphsapp.com/learn/additional-masters-for-individual-glyphs-the-brace-trick
+        """
         name = self.name
-        coordinates = name[name.index("{") + 1 : name.index("}")]
-        return [float(c) for c in coordinates.split(",")]
+        if ".background" in name:
+            return None
+        start = name.find("{")
+        end = name.find("}", start + 1)
+        if start == -1 or end == -1:
+            return None
+        try:
+            return [float(c) for c in name[start + 1 : end].split(",")]
+        except ValueError:
+            return None
 
     def _brace_layer_name(self):
         # For Glyphs 3's intermediate (formerly 'brace') layers we must generate the
