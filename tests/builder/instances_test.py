@@ -19,7 +19,10 @@ import os
 import glyphsLib
 from glyphsLib.classes import InstanceType
 from fontTools.designspaceLib import DesignSpaceDocument
-from glyphsLib.builder.instances import apply_instance_data, InstanceDescriptorAsGSInstance
+from glyphsLib.builder.instances import (
+    apply_instance_data,
+    InstanceDescriptorAsGSInstance,
+)
 
 import pytest
 import py.path
@@ -90,7 +93,8 @@ def test_apply_instance_data_multiple_params(tmpdir, ufo_module):
     for instance in designspace.instances:
         # Expect instances to have all the custom params with same name.
         instance_descriptor = InstanceDescriptorAsGSInstance(instance)
-        assert(len(instance_descriptor.customParameters) == 4)
+        assert len(instance_descriptor.customParameters) == 4
+
 
 def test_reexport_apply_instance_data():
     # this is for compatibility with fontmake
