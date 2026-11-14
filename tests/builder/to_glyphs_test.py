@@ -232,6 +232,40 @@ def test_guidelines(ufo_module):
         assert horizontal.angle is None
 
 
+def test_guidelines_at_zero(ufo_module):
+    ufo = ufo_module.Font()
+    a = ufo.newGlyph("a")
+    for obj in [ufo, a]:
+        # Horizontal guideline on the baseline
+        obj.appendGuideline({"y": 0})
+        # Vertical guideline on the origin
+        obj.appendGuideline({"x": 0})
+
+    font = to_glyphs([ufo])
+
+    for gobj in [font.masters[0], font.glyphs["a"].layers[0]]:
+        horizontal, vertical = gobj.guides
+
+        assert horizontal.position.y == 0
+        assert horizontal.angle == 0
+
+        assert vertical.position.x == 0
+        assert vertical.angle == 90
+
+    (ufo,) = to_ufos(font, minimal=False)
+
+    for obj in [ufo, ufo["a"]]:
+        horizontal, vertical = obj.guidelines
+
+        assert horizontal.x is None
+        assert horizontal.y == 0
+        assert horizontal.angle is None
+
+        assert vertical.x == 0
+        assert vertical.y is None
+        assert vertical.angle is None
+
+
 def test_glyph_color(ufo_module):
     ufo = ufo_module.Font()
     a = ufo.newGlyph("a")
