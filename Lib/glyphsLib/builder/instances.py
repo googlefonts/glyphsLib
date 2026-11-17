@@ -421,8 +421,10 @@ class InstanceDescriptorAsGSInstance:
 
         self.customParameters = CustomParametersProxy(None)
         if CUSTOM_PARAMETERS_KEY in descriptor.lib:
+            # Append rather than assign by name: parameters such as Replace
+            # Feature can repeat, and assigning would keep only the last one.
             for name, value in descriptor.lib[CUSTOM_PARAMETERS_KEY]:
-                self.customParameters[name] = value
+                self.customParameters.append(GSCustomParameter(name, value))
         self.properties = PropertiesProxy(None)
         if PROPERTIES_KEY in descriptor.lib:
             for name, value in descriptor.lib[PROPERTIES_KEY]:

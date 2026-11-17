@@ -1119,6 +1119,32 @@ def test_ufo_opentype_os2_selection():
             assert actual == [7, 8], filename
 
 
+def test_apply_instance_data_repeated_params(ufo_module):
+    """Apply every instance parameter that repeats, not only the last one."""
+    from glyphsLib.interpolation import apply_instance_data_to_ufo
+
+    # The instance has two Replace Feature parameters, for ccmp and liga.
+    font = GSFont(os.path.join(DATA, "CustomPrametersTest.glyphs"))
+    space = glyphsLib.to_designspace(font, minimal=True, ufo_module=ufo_module)
+    ufo = space.sources[0].font
+    apply_instance_data_to_ufo(ufo, space.instances[0], space)
+
+    assert ufo.features.text == dedent("""\
+        # Prefix: Languagesystems
+        # automatic
+        languagesystem DFLT dflt;
+
+
+        feature ccmp {
+        sub space by space;
+        } ccmp;
+
+        feature liga {
+        sub space space by space;
+        } liga;
+        """)
+
+
 def test_mutiple_params(ufo_module):
     """Test multiple custom parameters with the same name on GSFont."""
 
