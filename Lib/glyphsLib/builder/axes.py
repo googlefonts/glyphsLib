@@ -15,8 +15,8 @@
 
 import logging
 
+from fontTools.designspaceLib import AxisDescriptor
 from fontTools.misc.fixedTools import floatToFixedToFloat
-from fontTools.varLib.models import piecewiseLinearMap
 
 from glyphsLib import classes
 from glyphsLib.classes import WEIGHT_CODES, WIDTH_CODES, InstanceType
@@ -304,8 +304,33 @@ def _trim_to_masters(mapping, master_locs):
 def _interpolated_user_loc(mapping, design_loc):
     """Return the user location the mapping interpolates to at the design
     location, rounded to 16.16 like fvar coordinates."""
-    reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
-    return floatToFixedToFloat(piecewiseLinearMap(design_loc, reverse_mapping), 16)
+    axis = AxisDescriptor()
+    axis.map = sorted(mapping.items())
+    return floatToFixedToFloat(axis.map_backward(design_loc), 16)
+
+
+def _validate_axis_mapping(mapping, axis_tag):
+    """Return a user-sorted mapping whose design values never decrease."""
+    ordered = sorted(mapping.items())
+    for (user1, design1), (user2, design2) in zip(ordered, ordered[1:]):
+        if design1 > design2:
+            raise ValueError(
+                f"Axis {axis_tag}: mapping output at user location {user2} "
+                f"({design2}) must not be less than the previous output at "
+                f"user location {user1} ({design1})"
+            )
+    return ordered
+
+
+def _add_axis_mapping_default(mapping, user_location, design_location):
+    # Preserve interpolated defaults without extending the mapping to accommodate
+    # invalid source locations, such as the reversed mappings in issue #993.
+    if (
+        len(mapping) > 1
+        and min(mapping) < user_location < max(mapping)
+        and design_location not in mapping.values()
+    ):
+        mapping[user_location] = design_location
 
 
 def to_designspace_axes(self):
@@ -342,9 +367,12 @@ def to_designspace_axes(self):
         if custom_mapping:
             if axis.tag in custom_mapping:
                 mapping = {float(k): v for k, v in custom_mapping[axis.tag].items()}
+                axis.map = _validate_axis_mapping(mapping, axis.tag)
                 regularDesignLoc = axis_def.get_design_loc(regular_master)
-                reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
-                regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
+                regularUserLoc = axis.map_backward(regularDesignLoc)
+                # Preserve the default through serialization for explicit maps,
+                # just as for mappings inferred from instances below.
+                _add_axis_mapping_default(mapping, regularUserLoc, regularDesignLoc)
             else:
                 logger.debug(
                     f"Skipping {axis.tag} since it hasn't been defined "
@@ -378,6 +406,7 @@ def to_designspace_axes(self):
                 cp_only=True,
             )
 
+            _validate_axis_mapping(mapping, axis.tag)
             trimmed = _trim_to_masters(
                 mapping, [axis_def.get_design_loc(m) for m in self.font.masters]
             )
@@ -405,6 +434,7 @@ def to_designspace_axes(self):
                 userLoc = designLoc = axis_def.get_design_loc(master)
                 master_mapping[userLoc] = designLoc
 
+            _validate_axis_mapping(instance_mapping, axis.tag)
             regularDesignLoc = axis_def.get_design_loc(regular_master)
             mapping, unmapped = _choose_instance_or_master_mapping(
                 axis_def, instance_mapping, master_mapping, regularDesignLoc
@@ -418,9 +448,10 @@ def to_designspace_axes(self):
 
             # Glyphs masters don't have a user location, so we compute it by
             # looking at the axis mapping in reverse.
-            reverse_mapping = {dl: ul for ul, dl in sorted(mapping.items())}
-            regularUserLoc = piecewiseLinearMap(regularDesignLoc, reverse_mapping)
+            axis.map = _validate_axis_mapping(mapping, axis.tag)
+            regularUserLoc = axis.map_backward(regularDesignLoc)
 
+        ordered_mapping = _validate_axis_mapping(mapping, axis.tag)
         is_identity_map = is_identity(mapping)
 
         # Virtual Masters can't have an Axis Location parameter; their coordinates
@@ -449,8 +480,7 @@ def to_designspace_axes(self):
             or not is_identity_map
             or axis_wanted
         ):
-            if not is_identity_map:
-                axis.map = sorted(mapping.items())
+            axis.map = [] if is_identity_map else ordered_mapping
             axis.minimum = minimum
             axis.maximum = maximum
             axis.default = default
