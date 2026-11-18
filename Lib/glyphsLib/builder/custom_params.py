@@ -1152,6 +1152,13 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
 
     The glyph data is swapped, but the unicode assignments remain the
     same.
+
+    Because the names are swapped, a swapped glyph that uses either name as
+    a component has to be remapped too. With "b.sc=b", where b.sc is a
+    composite of b, the glyph now called b must use b.sc as its component;
+    otherwise it would use itself. Glyphs that aren't swapped keep their
+    components as they are, so a composite of b shows the drawing that came
+    from b.sc.
     """
 
     def to_ufo(self, builder, glyphs, ufo):
@@ -1170,6 +1177,8 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
             )
             return
         ufo = ufo._owner
+        # for each swapped glyph, the name its data had before the swaps
+        origin = {}
         for entry in rename_list:
             oldname, newname = entry.split("=")
             missing = [name for name in (oldname, newname) if name not in ufo]
@@ -1188,6 +1197,21 @@ class RenameGlyphsParamHandler(AbstractParamHandler):
                 ufo[oldname].unicodes,
                 ufo[newname].unicodes,
             )
+            origin[oldname], origin[newname] = (
+                origin.get(newname, newname),
+                origin.get(oldname, oldname),
+            )
+
+        # The names were swapped, so the components of the swapped glyphs
+        # still use the old names: point each one at the new name of the
+        # glyph it used.
+        moved = {name: source for name, source in origin.items() if name != source}
+        new_names = {source: name for name, source in moved.items()}
+        for name in moved:
+            for component in ufo[name].components:
+                component.baseGlyph = new_names.get(
+                    component.baseGlyph, component.baseGlyph
+                )
 
     def to_glyphs(self, glyphs, ufo):
         # The 'Reencode Glyphs' parameter only applies to instances, which
