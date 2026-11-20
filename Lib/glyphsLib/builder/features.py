@@ -259,7 +259,7 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
         has_attaching_anchor = False
         for anchor in glyph.anchors:
             name = anchor.name
-            if name and not name.startswith("_"):
+            if name and not name.startswith("_") and not _is_ignorable_anchor(name):
                 has_attaching_anchor = True
 
         # First check glyph.lib for category/subCategory overrides. Otherwise,
@@ -280,6 +280,18 @@ def _build_public_opentype_categories(ufo: Font) -> dict[str, str]:
             categories[glyph_name] = "base"
 
     return categories
+
+
+def _is_ignorable_anchor(name: str) -> bool:
+    """Whether an anchor name only serves to align components.
+
+    Glyphs ignores anchors whose name does not start with a letter (e.g.
+    "2top", "#exit") when inferring the GDEF class, as ufo2ft's mark feature
+    writer does. A leading "*" (contextual anchor) is not counted.
+
+    See https://github.com/googlefonts/ufo2ft/blob/541fd0e8a1739f48f334ad95af1d74b6aaaffb56/Lib/ufo2ft/featureWriters/markFeatureWriter.py#L172  # noqa: B950
+    """
+    return not name.removeprefix("*")[:1].isalpha()
 
 
 def regenerate_gdef(self: UFOBuilder) -> None:
