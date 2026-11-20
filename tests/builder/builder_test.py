@@ -516,12 +516,18 @@ def test_GDEF_base_ignores_non_letter_anchors(ufo_module):
         ("U", "#exit"),
         ("fi", "2top"),
         ("fl", "top"),
+        # a contextual anchor counts as the anchor it wraps
+        ("Q", "*top"),
     ]:
         add_glyph(font, name)
         add_anchor(font, name, anchor, 400, 1000)
     add_anchor(font, "Y", "2top_1", 400, 1000)
     ufo = to_ufos(font, ufo_module=ufo_module)[0]
-    assert ufo.lib["public.openTypeCategories"] == {"Y": "base", "fl": "ligature"}
+    assert ufo.lib["public.openTypeCategories"] == {
+        "Y": "base",
+        "fl": "ligature",
+        "Q": "base",
+    }
 
 
 def test_GDEF_mark(ufo_module):
