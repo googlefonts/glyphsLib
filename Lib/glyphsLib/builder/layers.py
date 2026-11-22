@@ -29,8 +29,8 @@ def to_ufo_color_layer_names(self, master, ufo):
             ]
 
 
-def to_ufo_layer(self, glyph, layer):
-    ufo_font = self._sources[layer.associatedMasterId or layer.layerId].font
+def to_ufo_layer(self, glyph, layer, masterId=None):
+    ufo_font = self._sources[masterId or layer.associatedMasterId or layer.layerId].font
 
     layer_name = layer.name
     # Give color layers better names
