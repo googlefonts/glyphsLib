@@ -81,7 +81,9 @@ def to_glyphs_guidelines(self, ufo_obj, glyphs_obj):
         new_guideline.position = Point(guideline.x or 0, guideline.y or 0)
         if guideline.angle is not None:
             new_guideline.angle = guideline.angle % 360
-        elif _is_vertical(guideline.x, guideline.y, None):
+        elif guideline.y is None:
+            # A UFO guideline without "y" and "angle" is vertical; one without
+            # "x" and "angle" is horizontal, even when "y" is 0.
             new_guideline.angle = 90
         glyphs_obj.guides.append(new_guideline)
 
