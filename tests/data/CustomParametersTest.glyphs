@@ -1,0 +1,202 @@
+{
+.appVersion = "3532";
+.formatVersion = 3;
+axes = (
+{
+name = Spacing;
+tag = SPAC;
+}
+);
+customParameters = (
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = 0;
+}
+);
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = -100;
+}
+);
+},
+{
+name = "Virtual Master";
+value = (
+{
+Axis = Spacing;
+Location = 100;
+}
+);
+}
+);
+date = "2023-05-15 18:23:31 +0000";
+familyName = "Custom Parameters Test";
+featurePrefixes = (
+{
+automatic = 1;
+code = "languagesystem DFLT dflt;
+";
+name = Languagesystems;
+}
+);
+features = (
+{
+code = "";
+tag = ccmp;
+},
+{
+code = "";
+tag = liga;
+},
+{
+code = "";
+tag = afrc;
+},
+{
+code = "";
+labels = (
+{
+language = dflt;
+value = "";
+}
+);
+tag = ss05;
+}
+);
+fontMaster = (
+{
+axesValues = (
+0
+);
+id = m01;
+name = Regular;
+}
+);
+glyphs = (
+{
+glyphname = A;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(206,198,l),
+(330,198,l),
+(330,500,l),
+(206,500,l)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = m01;
+layerId = "36D74E4D-4BBA-4BFF-9A97-E2B10411ED48";
+name = Bold;
+shapes = (
+{
+closed = 1;
+nodes = (
+(206,198,l),
+(330,198,l),
+(330,500,l),
+(206,500,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 65;
+},
+{
+glyphname = B;
+layers = (
+{
+layerId = m01;
+shapes = (
+{
+closed = 1;
+nodes = (
+(138.806,249.23,l),
+(246.194,187.23,l),
+(397.194,448.77,l),
+(289.806,510.77,l)
+);
+}
+);
+width = 600;
+},
+{
+associatedMasterId = m01;
+layerId = "36D74E4D-4BBA-4BFF-9A97-E2B10411ED48";
+name = Bold;
+shapes = (
+{
+closed = 1;
+nodes = (
+(138.806,249.23,l),
+(246.194,187.23,l),
+(397.194,448.77,l),
+(289.806,510.77,l)
+);
+}
+);
+width = 600;
+}
+);
+unicode = 66;
+},
+{
+glyphname = space;
+layers = (
+{
+layerId = m01;
+width = 200;
+}
+);
+unicode = 32;
+}
+);
+instances = (
+{
+axesValues = (
+0
+);
+customParameters = (
+{
+name = "Replace Feature";
+value = "afrc;sub A by B;";
+},
+{
+name = "Replace Feature";
+value = "ss05;sub A by B;";
+},
+{
+name = "Replace Feature";
+value = "ccmp;sub space by space;";
+},
+{
+name = "Replace Feature";
+value = "liga;sub space space by space;";
+}
+);
+instanceInterpolations = {
+m01 = 1;
+};
+name = Regular;
+}
+);
+unitsPerEm = 1000;
+versionMajor = 1;
+versionMinor = 0;
+}

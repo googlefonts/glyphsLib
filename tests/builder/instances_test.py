@@ -19,7 +19,10 @@ import os
 import glyphsLib
 from glyphsLib.classes import InstanceType
 from fontTools.designspaceLib import DesignSpaceDocument
-from glyphsLib.builder.instances import apply_instance_data
+from glyphsLib.builder.instances import (
+    apply_instance_data,
+    InstanceDescriptorAsGSInstance,
+)
 
 import pytest
 import py.path
@@ -78,6 +81,19 @@ def test_apply_instance_data(tmpdir, instance_names, ufo_module):
             357,
         }
         assert ufo.info.openTypeOS2WidthClass is None  # GlyphsUnitTestSans is wght only
+
+
+def test_apply_instance_data_multiple_params(tmpdir, ufo_module):
+    font = glyphsLib.GSFont(os.path.join(DATA, "CustomParametersTest.glyphs"))
+    instance_dir = "instances"
+    designspace = glyphsLib.to_designspace(font, instance_dir=instance_dir)
+    path = str(tmpdir / (font.familyName + ".designspace"))
+    write_designspace_and_UFOs(designspace, path)
+
+    for instance in designspace.instances:
+        # Expect instances to have all the custom params with same name.
+        instance_descriptor = InstanceDescriptorAsGSInstance(instance)
+        assert len(instance_descriptor.customParameters) == 4
 
 
 def test_reexport_apply_instance_data():
